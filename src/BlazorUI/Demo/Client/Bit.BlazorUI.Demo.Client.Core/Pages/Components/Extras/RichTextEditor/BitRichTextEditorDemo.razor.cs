@@ -614,7 +614,7 @@ public partial class BitRichTextEditorDemo
         ["ctrl+shift+1"] = "h1",
     };
 
-    private string? emojiHtml = "<p>Add a little ✨ to your text — or a → arrow, a ½ fraction, or π.</p>";
+    private string? emojiHtml = "<p>Add a little ✨ to your text - or a → arrow, a ½ fraction, or π.</p>";
 
     private string? countHtml = "<p>Counting characters and words.</p>";
 

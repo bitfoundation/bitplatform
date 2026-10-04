@@ -1,0 +1,162 @@
+@namespace Bit.BlazorUI
+@inject IJSRuntime JS
+
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    // The hidden weekdays are dropped from the column set, so a work-week configuration renders
+    // exactly the days it allows; a shorter week (WeekDayCount) is the run of days it starts at.
+    var weekDays = State.GetVisibleWeekDates();
+    var weekStart = weekDays[0];
+    var visibleHours = State.VisibleHours.ToArray();
+    var slotMinutes = State.SlotMinutes;
+    var slotHeightPercent = 100.0 / slotMinutes.Length;
+    var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(weekStart, State.Culture, State.FirstDayOfWeekOverride);
+    // The rendered columns are what the roving tabindex walks and what decides which column can own
+    // the grid's single tab stop, so they are captured for the key handler.
+    _weekDays = weekDays;
+}
+
+<div class="bit-bfc-week-layout">
+    @* A week of three days or fewer is what a phone is meant to show, so it carries no warning. *@
+    @if (weekDays.Length > 3)
+    {
+        <div class="bit-bfc-week-mobile-warning">
+            @Texts.WeekMobileWarning
+        </div>
+    }
+
+    <BitFcWeekViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.WeekSpanStart" EventTemplate="EventTemplate" />
+
+    <div id="@_timeGridScrollElementId" class="bit-bfc-week-scroll">
+        <div class="bit-bfc-week-header">
+            <div class="bit-bfc-week-header-time">
+                @if (State.ShowWeekNumbers)
+                {
+                    @* A name on a role-less span is not read, so the spoken form travels as hidden text. *@
+                    <span class="bit-bfc-weeknum-cell">
+                        <span aria-hidden="true">@string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)</span>
+                        <span class="bit-bfc-sr-only">@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)</span>
+                    </span>
+                }
+            </div>
+            @foreach (var day in weekDays)
+            {
+                var d = day;
+                var isToday = d.Date == State.Today;
+                <div class="bit-bfc-week-header-day">
+                    @* With nav links on, the column header opens that single day - the affordance
+                       every calendar puts there - and stays plain text otherwise. *@
+                    @if (State.NavLinks)
+                    {
+                        <button type="button" class="bit-bfc-navlink bit-bfc-week-header-day-link"
+                                aria-current="@(isToday ? "date" : null)"
+                                aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))"
+                                disabled="@(State.IsDateInAllowedRange(d) is false)"
+                                @onclick="() => GoToDayView(d)">
+                            <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
+                            <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
+                        <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
+                    }
+                    <BitFcDayBackgroundLabels Events="State.BackgroundEvents" Day="d" />
+                </div>
+            }
+        </div>
+
+        <div class="bit-bfc-week-body">
+            <BitFcTimeColumn />
+            @* A press that is released outside a slot has to end the range selection too, or the
+               highlight would stay latched to the pointer. *@
+            <div class="bit-bfc-timegrid-days" style="--bit-bfc-visible-hours:@(visibleHours.Length);"
+                 @onmouseleave="CancelRangeSelection"
+                 @onmouseup="CancelRangeSelection">
+                @for (var wi = 0; wi < weekDays.Length; wi++)
+                {
+                    var dayIndex = wi;
+                    var day = weekDays[wi];
+                    var d = day;
+                    // Interval-overlap against the day's half-open window [dayStart, dayEnd) so events
+                    // that span day boundaries are included once, and a 00:00 end (exclusive midnight)
+                    // does not bleed onto the next day.
+                    var dayStart = d.Date;
+                    var dayEnd = d.Date.AddDays(1);
+                    var dayEvents = SingleDayEvents.Where(e =>
+                        e.StartDate < dayEnd && e.EndDate > dayStart).ToList();
+                    var grouped = BitFullCalendarHelpers.GroupEvents(dayEvents);
+                    var isOutOfRange = State.IsDateInAllowedRange(d) is false;
+
+                    @* Today's column is tinted so the eye finds it without reading the header. *@
+                    <div class="bit-bfc-week-day-col @(isOutOfRange ? "bit-bfc-out-of-range" : null) @(d.Date == State.Today ? "bit-bfc-today-col" : null)" style="--bit-bfc-visible-hours:@(visibleHours.Length);">
+                        @foreach (var h in visibleHours)
+                        {
+                            var hour = h;
+                            <div class="bit-bfc-hour-row">
+                                @if (hour > State.VisibleStartHour)
+                                {
+                                    <div class="bit-bfc-hour-line" aria-hidden="true"></div>
+                                }
+                                @for (var si = 0; si < slotMinutes.Length; si++)
+                                {
+                                    var slotIndex = si;
+                                    var minute = slotMinutes[si];
+                                    var topPercent = (slotIndex * slotHeightPercent).ToString("F4", inv);
+                                    var heightPercent = slotHeightPercent.ToString("F4", inv);
+                                    @* A column outside the allowed date window accepts nothing, so its
+                                       slots also leave the tab order and the accessibility tree
+                                       instead of announcing an add affordance that does nothing. *@
+                                    <div class="@(slotIndex == 0 ? "bit-bfc-hour-slot" : "bit-bfc-hour-row-half") bit-bfc-droppable @GetWeekDropClass(d, hour, minute) @OffHoursClass(d, hour, minute) @(IsSlotSelected(dayIndex, hour, minute) ? "bit-bfc-slot-selected" : null)"
+                                         id="@SlotElementId(dayIndex, hour, minute)"
+                                         style="top:@(topPercent)%;height:@(heightPercent)%;bottom:auto;"
+                                         role="@(isOutOfRange ? null : _slotRole)"
+                                         data-bit-bfc-roving tabindex="@SlotTabIndex(dayIndex, hour, minute)"
+                                         aria-label="@(isOutOfRange ? null : HourSlotAriaLabel(d, hour, minute))"
+                                         @ondragenter="() => OnDragEnterSlot(d, hour, minute)"
+                                         @ondragover:preventDefault="true"
+                                         @ondrop="() => OnDrop(d, hour, minute)"
+                                         @onmousedown="() => OnSlotMouseDown(dayIndex, hour, minute)"
+                                         @onmouseenter="() => OnSlotMouseEnter(dayIndex, hour, minute)"
+                                         @onmouseup="() => OnSlotMouseUpAsync(dayIndex, d, hour, minute)"
+                                         @onmouseup:stopPropagation="true"
+                                         @onclick="() => OnHourClickAsync(d, hour, minute)"
+                                         @onkeydown="e => OnHourKeyDownAsync(e, dayIndex, d, hour, minute)"></div>
+                                }
+                                @if (State.CanAdd && !isOutOfRange)
+                                {
+                                    <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        @Texts.AddEventHoverHint
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <BitFcBackgroundEvents Events="State.BackgroundEvents" AxisStart="d.Date.AddHours(State.VisibleStartHour)" AxisEnd="d.Date.AddHours(State.VisibleEndHour)" />
+
+                        <BitFcRenderGroupedEvents GroupedEvents="grouped" Day="d" OnEventSelected="SelectEvent" EventTemplate="EventTemplate" />
+
+                        @if (d.Date == State.Today
+                             && State.ShowCurrentTimeIndicator
+                             && BitFullCalendarHelpers.IsNowInVisibleHours(State.VisibleStartHour, State.VisibleEndHour, State.Now))
+                        {
+                            <BitFcNowIndicator />
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="_addDate" StartHour="_addHour" StartMinute="_addMinute" DurationMinutes="_addDurationMinutes" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}

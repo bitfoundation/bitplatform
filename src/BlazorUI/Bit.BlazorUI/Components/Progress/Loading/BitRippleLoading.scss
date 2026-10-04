@@ -1,3 +1,8 @@
+// The width the stroke was drawn at, which Thickness and --bit-Loading-thickness replace.
+.bit-ldn-rpl {
+    --bit-ldn-stroke-authored: calc(4 * var(--bit-ldn-unit));
+}
+
 .bit-ldn-rpl-ccn {
     position: relative;
     display: inline-block;
@@ -10,7 +15,7 @@
     box-sizing: border-box;
     position: absolute;
     border-radius: 50%;
-    border: var(--bit-ldn-stroke, var(--bit-ldn-rpl-4)) $shp-border-style var(--bit-ldn-color);
+    border: var(--bit-ldn-thickness) $shp-border-style var(--bit-ldn-color);
     animation: bit-ldn-rpl-anm calc(1s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 0.2, 0.8, 1) infinite;
 
     // A stroke thicker than half the authored 8px starting diameter no longer fits inside it: border-box
@@ -18,7 +23,7 @@
     // would still be centering the smaller box the keyframe asked for - so the ripple would be born past
     // the center and slide back into it as the diameter overtakes the stroke. Starting from the stroke's
     // own footprint, with the offset derived from it, keeps it born in the center whatever the Thickness.
-    --bit-ldn-rpl-min: max(var(--bit-ldn-rpl-8), calc(2 * var(--bit-ldn-stroke, var(--bit-ldn-rpl-4))));
+    --bit-ldn-rpl-min: max(calc(8 * var(--bit-ldn-unit)), calc(2 * var(--bit-ldn-thickness)));
     --bit-ldn-rpl-off: calc((var(--bit-ldn-size) - var(--bit-ldn-rpl-min)) / 2);
 }
 
@@ -55,7 +60,7 @@
         top: 0px;
         left: 0px;
         opacity: 0;
-        width: var(--bit-ldn-rpl-80);
-        height: var(--bit-ldn-rpl-80);
+        width: calc(80 * var(--bit-ldn-unit));
+        height: calc(80 * var(--bit-ldn-unit));
     }
 }

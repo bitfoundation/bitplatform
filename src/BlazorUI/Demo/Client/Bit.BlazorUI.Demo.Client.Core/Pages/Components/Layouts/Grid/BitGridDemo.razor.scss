@@ -3,9 +3,10 @@
     min-height: 56px;
     font-size: 0.75rem;
     text-align: center;
-    border-radius: 2px;
     align-content: center;
-    border: 1px solid gray;
+    border-radius: var(--bit-shp-radius-sm);
+    background: var(--bit-clr-bg-sec);
+    border: 1px solid var(--bit-clr-brd-pri);
 }
 
 ::deep .grid-item.tall {
@@ -26,9 +27,9 @@
 }
 
 ::deep .grid-item.custom-item {
-    color: white;
     border-color: transparent;
-    background: rebeccapurple;
+    color: var(--bit-clr-pri-text);
+    background: var(--bit-clr-pri);
 }
 
 ::deep .resizable {
@@ -37,11 +38,6 @@
     max-width: 100%;
     min-width: 200px;
     padding: 0.5rem;
-    border: 1px dashed gray;
+    border: 1px dashed var(--bit-clr-brd-pri);
 }
 
-::deep .plain-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}

@@ -25,6 +25,43 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
             Draw(ctx, a, behind: false);
     }
 
+    /// <summary>
+    /// Names every annotation that says something: its <see cref="BitChartAnnotation.Description"/>, or else its label
+    /// with the value a line marks, spelled the way its axis shows it (a date on a time axis). An annotation with
+    /// neither is decoration and is left out, and so is every one on a chart that is not cartesian, where none is drawn.
+    /// </summary>
+    public IEnumerable<string> Describe(BitChartPluginContext ctx)
+    {
+        if (!ctx.IsCartesian || ctx.Plot is null) yield break;
+        var labels = ctx.Config.Data.Labels;
+        foreach (var a in Annotations)
+        {
+            if (string.IsNullOrWhiteSpace(a.Description) is false)
+            {
+                yield return a.Description!;
+            }
+            else if (string.IsNullOrWhiteSpace(a.Label) is false)
+            {
+                if (a.Kind != BitChartAnnotationKind.Line)
+                {
+                    yield return a.Label!;
+                    continue;
+                }
+
+                if (a.Orientation == BitChartLineOrientation.Horizontal)
+                {
+                    yield return $"{a.Label}: {ctx.FormatValue(a.Value, a.AxisId)}";
+                    continue;
+                }
+
+                // A vertical line placed by category index marks that category, which is what its name says.
+                int index = (int)a.Value;
+                bool category = a.XIsIndex && index >= 0 && index < labels.Count;
+                yield return $"{a.Label}: {(category ? labels[index] : ctx.FormatIndexValue(a.Value))}";
+            }
+        }
+    }
+
     private void Draw(BitChartPluginContext ctx, BitChartAnnotation a, bool behind)
     {
         if (!ctx.IsCartesian || ctx.Plot is not { } plot) return;
@@ -69,7 +106,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
                 {
                     X = Math.Min(x1, x2), Y = Math.Min(y1, y2),
                     Width = Math.Abs(x2 - x1), Height = Math.Abs(y2 - y1),
-                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.15),
+                    Fill = a.FillColor ?? BitChartColorUtil.Translucent(a.Color, 0.15),
                     Stroke = a.Color, StrokeWidth = a.LineWidth
                 });
                 if (!string.IsNullOrEmpty(a.Label))
@@ -114,7 +151,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
                     D = $"M {BitChartSvg.N(cx - rx)} {BitChartSvg.N(cy)} " +
                         $"A {BitChartSvg.N(rx)} {BitChartSvg.N(ry)} 0 1 0 {BitChartSvg.N(cx + rx)} {BitChartSvg.N(cy)} " +
                         $"A {BitChartSvg.N(rx)} {BitChartSvg.N(ry)} 0 1 0 {BitChartSvg.N(cx - rx)} {BitChartSvg.N(cy)} Z",
-                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.15),
+                    Fill = a.FillColor ?? BitChartColorUtil.Translucent(a.Color, 0.15),
                     Stroke = a.Color, StrokeWidth = a.LineWidth,
                     Dash = BitChartSvg.Dash(a.Dash)
                 });
@@ -133,7 +170,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
 
                 var poly = new BitChartSvgPolygon
                 {
-                    Fill = a.FillColor ?? BitChartColorUtil.WithAlpha(a.Color, 0.2),
+                    Fill = a.FillColor ?? BitChartColorUtil.Translucent(a.Color, 0.2),
                     Stroke = a.Color, StrokeWidth = a.LineWidth
                 };
                 // Starts at the top so a triangle points up, which is what a reader expects of one.
@@ -166,7 +203,7 @@ public sealed class BitChartAnnotationPlugin : IBitChartPlugin
         double w = BitChartTextMeasure.Width(a.Label, fontSize, a.LabelFont.Weight) + 12;
         double h = a.LabelFont.LineHeightPx + 6;
         double left = anchor == "end" ? x - w : anchor == "middle" ? x - w / 2 : x;
-        add(new BitChartSvgRect { X = left, Y = y - h / 2, Width = w, Height = h, Rx = 4, Fill = a.LabelBackground });
+        add(new BitChartSvgRect { X = left, Y = y - h / 2, Width = w, Height = h, Rx = 4, Fill = a.LabelBackground ?? a.Color });
         add(new BitChartSvgText
         {
             X = left + w / 2, Y = y, Text = a.Label!, Fill = a.LabelColor,

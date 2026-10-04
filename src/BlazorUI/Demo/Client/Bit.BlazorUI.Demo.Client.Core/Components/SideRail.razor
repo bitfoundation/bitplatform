@@ -27,12 +27,11 @@
                    OnClick="OpenPanel" />
     </div>
 
-    @* LazyRender keeps the list out of the page until the panel is first opened, so a second copy of
-       it does not sit in every page at every width - including the wide ones, where the panel can
-       never open. It stays mounted from then on, so that closing the panel still has something to
-       slide out. *@
+    @* A panel keeps its content out of the page until it is first opened, so a second copy of the list
+       does not sit in every page at every width - including the wide ones, where the panel can never
+       open. KeepMounted keeps it from then on, so reopening the panel does not rebuild the list. *@
     <BitPanel @bind-IsOpen="_isPanelOpen"
-              LazyRender
+              KeepMounted
               AriaLabel="On this page"
               Position="BitPanelPosition.End"
               Size="280">

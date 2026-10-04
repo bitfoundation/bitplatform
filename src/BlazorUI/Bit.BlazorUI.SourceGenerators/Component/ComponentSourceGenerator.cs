@@ -82,6 +82,8 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             componentBaseType is not null &&
             SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
         var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
+        var tracksSetByMarkup = inheritsFromBit && CanOverrideIsSetByMarkup(containingType, compilation, bitComponentBaseType!);
+        var isCascadedParams = tracksSetByMarkup && IsCascadedParams(prop, compilation);
 
         return new BlazorParameter(
             ContainingTypeFullName: containingType.ToDisplayString(),
@@ -96,7 +98,35 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             ResetStyleBuilder: resetStyleBuilder,
             IsTwoWayBound: isTwoWayBound,
             CallOnSetMethodName: callOnSetName,
-            CallOnSetAsyncMethodName: callOnSetAsyncName);
+            CallOnSetAsyncMethodName: callOnSetAsyncName,
+            TracksSetByMarkup: tracksSetByMarkup,
+            IsCascadedParams: isCascadedParams);
+    }
+
+    /// <summary>
+    /// Whether the class can add its own parameters to the IsSetByMarkup answer of BitComponentBase, which it only
+    /// can from inside the assemblies that see that internal member.
+    /// </summary>
+    private static bool CanOverrideIsSetByMarkup(INamedTypeSymbol type, Compilation compilation, INamedTypeSymbol bitComponentBaseType)
+    {
+        var member = bitComponentBaseType.GetMembers("IsSetByMarkup").FirstOrDefault();
+
+        return member is not null && compilation.IsSymbolAccessibleWithin(member, type);
+    }
+
+    /// <summary>
+    /// Whether the property is the cascading parameter a component takes its params object by, which the restore of
+    /// BitComponentBase then reads directly rather than through reflection on every render.
+    /// </summary>
+    private static bool IsCascadedParams(IPropertySymbol prop, Compilation compilation)
+    {
+        var paramsType = compilation.GetTypeByMetadataName("Bit.BlazorUI.IBitComponentParams");
+
+        if (paramsType is null) return false;
+
+        var isCascading = prop.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute");
+
+        return isCascading && prop.Type.AllInterfaces.Contains(paramsType, SymbolEqualityComparer.Default);
     }
 
     private static void Execute(SourceProductionContext spc, ImmutableArray<BlazorParameter> parameters)
@@ -150,6 +180,12 @@ namespace {namespaceName}
         foreach (var par in twoWayParameters)
         {
             builder.AppendLine($"            {par.PropertyName}HasBeenSet = false;");
+        }
+        // A params cascade that no longer reaches the component is absent from the ParameterView rather than
+        // passed as null, so it is cleared first; otherwise the last one it saw would keep being applied.
+        foreach (var par in parameters.Where(p => p.IsCascadedParams))
+        {
+            builder.AppendLine($"            {par.PropertyName} = default!;");
         }
         if (doesSupportParametersViewCache)
         {
@@ -237,6 +273,29 @@ namespace {namespaceName}
         {{");
         builder.AppendLine("            return __assignedParameters.Contains(name) is false;");
         builder.AppendLine("        }");
+
+        if (classInfo.TracksSetByMarkup)
+        {
+            builder.AppendLine("");
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        private protected override bool IsSetByMarkup(string name)
+        {{
+            return __assignedParameters.Contains(name) || base.IsSetByMarkup(name);
+        }}");
+        }
+
+        var cascadedParams = parameters.Where(p => p.IsCascadedParams).ToArray();
+
+        // A class that reads more than one params object is left to the reflection of BitComponentBase, which then
+        // reads none of them.
+        if (cascadedParams.Length == 1)
+        {
+            builder.AppendLine("");
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        private protected override global::Bit.BlazorUI.IBitComponentParams? CascadedParams => {cascadedParams[0].PropertyName};");
+        }
 
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         foreach (var par in twoWayParameters)

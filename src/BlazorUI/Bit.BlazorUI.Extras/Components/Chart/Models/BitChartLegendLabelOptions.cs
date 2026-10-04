@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>Legend label configuration.</summary>
 public sealed class BitChartLegendLabelOptions
 {
-    public string Color { get; set; } = "var(--bit-clr-fg-sec, #525252)";
+    public string Color { get; set; } = "var(--bit-Chart-legend-color, var(--bit-clr-fg-sec))";
     public BitChartFont Font { get; set; } = new();
     public double BoxWidth { get; set; } = 40;
     public double BoxHeight { get; set; } = 12;

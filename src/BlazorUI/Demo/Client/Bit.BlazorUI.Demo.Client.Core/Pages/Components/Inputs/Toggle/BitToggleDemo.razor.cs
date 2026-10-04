@@ -877,7 +877,7 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-label-font-weight",
-            DefaultValue = "$tg-fw-semibold",
+            DefaultValue = "$tg-field-label-font-weight",
             Description = "The label.",
         },
         new()

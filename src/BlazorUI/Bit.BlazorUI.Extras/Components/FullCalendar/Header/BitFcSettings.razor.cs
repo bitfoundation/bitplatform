@@ -9,18 +9,69 @@ public partial class BitFcSettings : IDisposable
     private static readonly int[] _slotDurations = BitFullCalendarSettings.SlotDurations;
 
     // Unique per instance so multiple calendars on one page don't produce duplicate element IDs.
-    private readonly string _menuId = $"bit-bfc-settings-menu-{Guid.NewGuid():N}";
+    private static string NewId(string part) => $"bit-bfc-settings-{part}-{Guid.NewGuid():N}";
+    private readonly string _menuId = NewId("menu");
+    private readonly string _buttonId = NewId("button");
+    private readonly string _titleId = NewId("title");
+    private readonly string _startHourId = NewId("start-hour");
+    private readonly string _slotDurationId = NewId("slot");
+    private readonly string _groupById = NewId("group-by");
+    private readonly string _choiceIdPrefix = NewId("choice");
 
     private CancellationTokenSource? _closeCts;
+    private string? _pendingFocusId;
 
-    private void Toggle() => _open = !_open;
+    private string ChoiceId(BitFullCalendarAgendaGroupBy value) => $"{_choiceIdPrefix}-{(int)value}";
+
+    private void Toggle()
+    {
+        _open = !_open;
+
+        // The focus moves into the panel as it opens, the way a dialog is entered. Without it a browser that does
+        // not focus a clicked button (Safari) would leave the focus outside, where neither Escape nor a click
+        // elsewhere - both read off the focus - could close the panel again.
+        if (_open)
+            _pendingFocusId = _menuId;
+    }
+
+    private void ToggleBadgeVariant() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot
+        ? BitFullCalendarBadgeVariant.Colored
+        : BitFullCalendarBadgeVariant.Dot);
 
     private void OnKeyDown(KeyboardEventArgs e)
     {
-        // A menu that only closes by clicking its trigger again traps keyboard users; Escape is the
-        // expected way out of a popup.
+        // A panel that only closes by clicking its trigger again traps keyboard users; Escape is the
+        // expected way out of a popup. The focus was inside the panel that is about to go away, so it is
+        // handed back to the gear rather than left to fall to the document.
         if (_open && e.Key is "Escape" or "Esc")
+        {
             _open = false;
+            _pendingFocusId = _buttonId;
+        }
+    }
+
+    /// <summary>
+    /// The agenda grouping is a radio group, a single tab stop the arrow keys move the choice within.
+    /// </summary>
+    private void OnChoiceKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowDown" or "ArrowUp" or "ArrowLeft" or "ArrowRight"))
+            return;
+
+        var next = State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date
+            ? BitFullCalendarAgendaGroupBy.Color
+            : BitFullCalendarAgendaGroupBy.Date;
+        State.SetAgendaModeGroupBy(next);
+        _pendingFocusId = ChoiceId(next);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocusId is not { } id)
+            return;
+
+        _pendingFocusId = null;
+        await BitFcFocusInterop.TryFocusAsync(JS, id);
     }
 
     private void OnFocusIn(FocusEventArgs _)

@@ -4,6 +4,7 @@ public partial class BitFcModeTabs
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     private static readonly BitFullCalendarMode[] _modes =
     [
@@ -11,12 +12,10 @@ public partial class BitFcModeTabs
         BitFullCalendarMode.Timeline
     ];
 
-    // Unique per instance so two calendars on one page don't produce duplicate element ids.
-    private readonly string _stripId = "bit-bfc-mode-tabs-" + Guid.NewGuid().ToString("N");
-
     private bool _pendingFocus;
 
-    private string TabId(BitFullCalendarMode mode) => $"{_stripId}-{(int)mode}";
+    // Derived from the calendar's id, so the body can name the tab that labels it.
+    private string TabId(BitFullCalendarMode mode) => Parts.ModeTabId(mode);
 
     /// <summary>
     /// Arrow, Home, and End move the selection along the strip - the tab pattern every toolbar

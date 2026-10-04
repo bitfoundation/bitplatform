@@ -126,6 +126,9 @@ public partial class BitPivotItem : BitComponentBase
 
     private bool _IsReorderable => Parent?.GetItemReorderable(this) is true;
 
+    // A tab of a disabled pivot cannot be activated either, so it says so like one disabled on its own.
+    private bool _IsDisabled => IsEnabled is false || Parent?.IsEnabled is false;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Parent?.Classes?.HeaderItem);
@@ -161,14 +164,19 @@ public partial class BitPivotItem : BitComponentBase
 
         if (state == _lastHeaderState) return;
 
+        // A tab shown or hidden also moves the position every other tab announces in the set.
+        var visibilityChanged = state.Item2 != _lastHeaderState.Item2;
+
         _lastHeaderState = state;
 
-        Parent?.Refresh();
-    }
-
-    protected override void OnVisibilityChanged(BitVisibility visibility)
-    {
-        Parent?.Refresh();
+        if (visibilityChanged)
+        {
+            Parent?.RefreshWithItems();
+        }
+        else
+        {
+            Parent?.Refresh();
+        }
     }
 
 

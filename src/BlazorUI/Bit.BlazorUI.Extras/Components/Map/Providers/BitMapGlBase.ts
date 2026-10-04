@@ -289,51 +289,51 @@ namespace BitBlazorUI {
             s.map.panBy([dx, dy], { duration: animate === false ? 0 : 300, essential: true });
         }
 
-        public static fitBounds(provider: string, id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
+        public static fitBounds(provider: string, id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapGlBase._require(provider, id);
-            s.map.fitBounds([[swLng, swLat], [neLng, neLat]], { padding: paddingPx ?? 48, maxZoom: maxZoom ?? 18 });
+            s.map.fitBounds([[swLng, swLat], [neLng, neLat]], { padding: paddingPx ?? 48, maxZoom: maxZoom ?? 18, animate });
         }
 
-        public static fitBoundsToMarkers(provider: string, id: string, paddingPx: number, maxZoom?: number) {
+        public static fitBoundsToMarkers(provider: string, id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapGlBase._require(provider, id);
             const ids = Object.keys(s.markers);
             if (ids.length === 0) return;
             const b = new s.gl.LngLatBounds();
             for (const k of ids) b.extend(s.markers[k].marker.getLngLat());
-            s.map.fitBounds(b, { padding: paddingPx ?? 48, maxZoom: maxZoom ?? 18 });
+            s.map.fitBounds(b, { padding: paddingPx ?? 48, maxZoom: maxZoom ?? 18, animate });
         }
 
         public static addMarker(provider: string, id: string, markerId: string, opts: any) {
+            opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapGlBase._require(provider, id);
             const gl = s.gl;
             const lat = opts.lat, lng = opts.lng;
             const draggable = !!opts.draggable;
 
-            let marker: any;
-            if (opts.iconUrl) {
-                const w = opts.iconWidth || 32;
-                const h = opts.iconHeight || 32;
-                const el = document.createElement('div');
-                el.style.width = `${w}px`;
-                el.style.height = `${h}px`;
-                el.style.backgroundImage = `url(${opts.iconUrl})`;
-                el.style.backgroundSize = 'contain';
-                el.style.cursor = 'pointer';
-                // A GL marker built from a custom element is centred on the coordinate, where
-                // Leaflet anchors the image's bottom-centre. Translate the anchor into the offset
-                // that reproduces it, so the same marker lands in the same place on every backend.
-                const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
-                const offset: [number, number] = [Math.round(w / 2) - ax, Math.round(h / 2) - ay];
-                marker = new gl.Marker({ element: el, draggable, offset }).setLngLat([lng, lat]).addTo(s.map);
-            } else {
-                marker = new gl.Marker({ draggable }).setLngLat([lng, lat]).addTo(s.map);
-            }
+            // Every marker has an icon by now - its own, or the default pin withDefaultIcon drew.
+            const w = opts.iconWidth || 32;
+            const h = opts.iconHeight || 32;
+            const el = document.createElement('div');
+            el.style.width = `${w}px`;
+            el.style.height = `${h}px`;
+            // Quoted: an unquoted url() ends at the first parenthesis or space in the address.
+            el.style.backgroundImage = `url("${String(opts.iconUrl).replace(/["\\]/g, c => '%' + c.charCodeAt(0).toString(16))}")`;
+            el.style.backgroundSize = 'contain';
+            el.style.cursor = 'pointer';
+            // A GL marker built from a custom element is centred on the coordinate, where
+            // Leaflet anchors the image's bottom-centre. Translate the anchor into the offset
+            // that reproduces it, so the same marker lands in the same place on every backend.
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            const offset: [number, number] = [Math.round(w / 2) - ax, Math.round(h / 2) - ay];
+            const marker = new gl.Marker({ element: el, draggable, offset }).setLngLat([lng, lat]).addTo(s.map);
 
-            // PopupHtml takes precedence; PopupText uses safe setText to avoid XSS.
+            // PopupHtml takes precedence; PopupText uses safe setText to avoid XSS. The popup's tip
+            // sits on the edge of the icon facing it, however large the icon is, rather than over it.
+            const popupOffset = BitMapHelpers.popupOffsets(opts, w, h);
             if (opts.popupHtml) {
-                marker.setPopup(new gl.Popup({ offset: 25 }).setHTML(String(opts.popupHtml)));
+                marker.setPopup(new gl.Popup({ offset: popupOffset }).setHTML(String(opts.popupHtml)));
             } else if (opts.popupText) {
-                marker.setPopup(new gl.Popup({ offset: 25 }).setText(String(opts.popupText)));
+                marker.setPopup(new gl.Popup({ offset: popupOffset }).setText(String(opts.popupText)));
             }
             const element = marker.getElement();
             if (element) {
@@ -369,9 +369,12 @@ namespace BitBlazorUI {
             // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
             // the field, and a stale capture would invoke a released .NET reference.
             marker.getElement()?.addEventListener('click', (ev: Event) => {
+                // Kept from the map so a marker click is not also a map click - but the library opens
+                // a marker's popup from the map's click, so the popup is toggled here instead.
                 ev.stopPropagation();
                 if (s.isDisposed) return;
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+                if (marker.getPopup()) marker.togglePopup();
             });
             if (draggable) {
                 marker.on('dragend', () => {
@@ -435,7 +438,22 @@ namespace BitBlazorUI {
             }
         }
 
+        /** Closes whichever marker popup is open. Returns whether there was one. */
+        public static closeMarkerPopup(provider: string, id: string): boolean {
+            const s = BitMapGlBase._store(provider)[id];
+            if (!s) return false;
+            for (const key in s.markers) {
+                const popup = s.markers[key].marker.getPopup();
+                if (popup?.isOpen?.()) {
+                    popup.remove();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static addPolyline(provider: string, id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapGlBase._require(provider, id);
             BitMapGlBase._removeVector(s, layerId);
             const sourceId = `bm-src-${id}-${layerId}`;
@@ -455,6 +473,7 @@ namespace BitBlazorUI {
         }
 
         public static addPolygon(provider: string, id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapGlBase._require(provider, id);
             BitMapGlBase._removeVector(s, layerId);
             const ring = latlngs.map(p => [p.lng, p.lat] as [number, number]);
@@ -466,6 +485,7 @@ namespace BitBlazorUI {
         }
 
         public static addCircle(provider: string, id: string, layerId: string, lat: number, lng: number, radiusMeters: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapGlBase._require(provider, id);
             BitMapGlBase._removeVector(s, layerId);
             const ring = BitMapHelpers.circleRingLngLat(lat, lng, radiusMeters);
@@ -473,6 +493,7 @@ namespace BitBlazorUI {
         }
 
         public static addRectangle(provider: string, id: string, layerId: string, swLat: number, swLng: number, neLat: number, neLng: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapGlBase._require(provider, id);
             BitMapGlBase._removeVector(s, layerId);
             const ring: [number, number][] = [
@@ -482,6 +503,7 @@ namespace BitBlazorUI {
         }
 
         public static addGeoJson(provider: string, id: string, layerId: string, geoJsonString: string, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             let gj: any;
             try { gj = JSON.parse(geoJsonString); } catch { throw new Error('Invalid GeoJSON string'); }
             const s = BitMapGlBase._require(provider, id);
@@ -592,15 +614,20 @@ namespace BitBlazorUI {
             if (!html && !text) return undefined;
 
             const gl = s.gl;
-            const direction = opts.tooltipDirection;
+            // A GL anchor names the side of the popup that touches the point, the opposite of the side of the
+            // marker BitMapTooltipDirection names: a tooltip above the marker is one anchored at its bottom.
+            const anchors: { [direction: string]: string } = { top: 'bottom', bottom: 'top', left: 'right', right: 'left', center: 'center' };
+            const direction = anchors[opts.tooltipDirection];
             const tooltip = new gl.Popup({
                 closeButton: false,
                 closeOnClick: false,
                 focusAfterOpen: false,
-                offset: 14,
+                // Clear of the icon on whichever side the tooltip opens, not a fixed radius around the
+                // coordinate - which is a pin's tip, so the tooltip would cover the pin.
+                offset: BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32),
                 className: 'bit-map-gl-tooltip',
                 // 'auto' is spelled as "let the library decide", which is the absent option.
-                anchor: direction && direction !== 'auto' ? direction : undefined,
+                anchor: direction,
             });
             if (html) tooltip.setHTML(String(html));
             else tooltip.setText(String(text));

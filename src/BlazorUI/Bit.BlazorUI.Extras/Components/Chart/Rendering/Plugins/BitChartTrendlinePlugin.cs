@@ -27,16 +27,28 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         foreach (var t in Trendlines.Where(t => !t.DrawBehindDatasets)) Draw(ctx, t, behind: false);
     }
 
-    private static void Draw(BitChartPluginContext ctx, BitChartTrendline trend, bool behind)
+    /// <summary>
+    /// Names every labeled trend line with the series it is fitted to; an unlabeled one is left out, and so is one
+    /// that is not drawn - on a chart that is not cartesian, or fitted to a dataset that is missing, hidden or has too
+    /// few values to fit.
+    /// </summary>
+    public IEnumerable<string> Describe(BitChartPluginContext ctx)
     {
-        if (!ctx.IsCartesian || ctx.Plot is not { } plot) return;
-
+        if (!ctx.IsCartesian || ctx.Plot is null) yield break;
         var datasets = ctx.Config.Data.Datasets;
-        if (trend.DatasetIndex < 0 || trend.DatasetIndex >= datasets.Count) return;
-        var ds = datasets[trend.DatasetIndex];
-        if (!ctx.IsDatasetVisible(trend.DatasetIndex)) return;
+        foreach (var t in Trendlines)
+        {
+            if (string.IsNullOrWhiteSpace(t.Label)) continue;
+            if (!ctx.IsDatasetVisible(t.DatasetIndex)) continue;
+            var ds = datasets[t.DatasetIndex];
+            if (Samples(ds).Count < 2) continue;
+            yield return ds.Label is { Length: > 0 } series ? $"{t.Label} ({series})" : t.Label!;
+        }
+    }
 
-        // (x, y) in data coordinates: an index for a category axis, the point's own x otherwise.
+    /// <summary>The (x, y) pairs a trend is fitted through, in data coordinates: an index for a category axis, the point's own x otherwise.</summary>
+    private static List<(double X, double Y)> Samples(BitChartDataset ds)
+    {
         var samples = new List<(double X, double Y)>();
         if (ds.Points is { } points)
         {
@@ -47,6 +59,19 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
             for (int i = 0; i < ds.Data.Count; i++)
                 if (ds.Data[i] is { } v) samples.Add((i, v));
         }
+        return samples;
+    }
+
+    private static void Draw(BitChartPluginContext ctx, BitChartTrendline trend, bool behind)
+    {
+        if (!ctx.IsCartesian || ctx.Plot is not { } plot) return;
+
+        var datasets = ctx.Config.Data.Datasets;
+        if (trend.DatasetIndex < 0 || trend.DatasetIndex >= datasets.Count) return;
+        var ds = datasets[trend.DatasetIndex];
+        if (!ctx.IsDatasetVisible(trend.DatasetIndex)) return;
+
+        var samples = Samples(ds);
         if (samples.Count < 2) return;
 
         bool byIndex = ds.Points is null && ctx.IndexIsCategory;
@@ -61,8 +86,8 @@ public sealed class BitChartTrendlinePlugin : IBitChartPlugin
         };
         if (fitted.Count < 2) return;
 
-        string color = trend.Color ?? BitChartColorUtil.WithAlpha(
-            ds.BorderColor ?? ds.BackgroundColor ?? BitChartColorUtil.Palette(trend.DatasetIndex), 0.85);
+        string color = trend.Color ?? BitChartColorUtil.Translucent(
+            ds.BorderColor ?? ds.BackgroundColor ?? BitChartColorUtil.SeriesColor(trend.DatasetIndex), 0.85);
 
         var d = new StringBuilder();
         for (int i = 0; i < fitted.Count; i++)

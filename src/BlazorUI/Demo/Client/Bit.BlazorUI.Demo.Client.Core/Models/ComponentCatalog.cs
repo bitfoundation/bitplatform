@@ -1,4 +1,4 @@
-using Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿using Bit.BlazorUI.Demo.Client.Core.Shared;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
@@ -379,7 +379,7 @@ public static class ComponentCatalog
         ["Button"] = "The primary way to trigger an action, in fill, outline and text variants, floating if needed.",
         ["ButtonGroup"] = "Joins related buttons into one unit, optionally single- or multi-select.",
         ["MenuButton"] = "A button that opens a menu of related actions, with submenus, check and choice items.",
-        ["ToggleButton"] = "A button that stays pressed and reports its state through aria-pressed.",
+        ["ToggleButton"] = "A button that stays pressed and reports its state through aria-pressed or the ARIA mode it is given.",
 
         // Inputs
         ["Calendar"] = "A full inline calendar for browsing and picking a date, with optional time.",
@@ -458,13 +458,13 @@ public static class ComponentCatalog
         ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",
         ["Link"] = "Navigates elsewhere, inside the app or out of it.",
-        ["MediaQuery"] = "Reports the library's breakpoints to your component as a parameter.",
+        ["MediaQuery"] = "Renders content, or reports a state, by what a media query matches.",
         ["Overlay"] = "Covers the page or a container, catching its clicks to put the emphasis on what it hosts.",
         ["Params"] = "Cascades shared parameter objects so components inherit common defaults.",
         ["PullToRefresh"] = "Adds pull-down-to-refresh to a page or a scrolling element.",
         ["Separator"] = "Visually divides content into groups, with an optional label.",
         ["Sticky"] = "Pins an element in place while the rest of the page scrolls past.",
-        ["SwipeTrap"] = "Traps swipe gestures on an element and reports them as events.",
+        ["SwipeTrap"] = "Traps swipe gestures - touch, mouse, pen or the arrow keys - and reports them as events.",
         ["Text"] = "Applies the theme's typography ramp to a run of text.",
 
         // Extras

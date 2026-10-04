@@ -1,13 +1,79 @@
-.map-container{
+.map-container {
     height: 360px;
-    isolation: isolate;
+}
+
+.map-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .map-container {
+        flex: 1 1 280px;
+        height: 280px;
+    }
+}
+
+.map-resizable {
+    max-width: 100%;
+    resize: both;
+    overflow: auto;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.map-actions {
+    display: flex;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.map-log {
+    margin: 0.5rem 0 0;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    background: transparent;
+}
+
+.map-popup {
+    display: flex;
+    flex-flow: column;
+    gap: 0.5rem;
+}
+
+.map-loading {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.map-toolbar {
+    display: flex;
+    flex-flow: column;
+    gap: 0.25rem;
+    margin: 0.75rem;
+    margin-inline-start: auto;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    background: var(--bit-clr-bg-pri);
+    box-shadow: var(--bit-shd-popup);
+}
+
+.map-badge {
+    margin: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--bit-clr-bg-pri);
 }
 
 ::deep {
     .custom-map {
-        height: 260px;
-        border: 2px dashed tomato;
+        border: 2px dashed var(--bit-clr-err);
         border-radius: 0.5rem;
-        filter: saturate(0.4);
+    }
+
+    .custom-map-canvas {
+        --bit-Map-tile-filter: saturate(0.3);
     }
 }

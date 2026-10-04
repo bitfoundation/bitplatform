@@ -12,7 +12,7 @@
 {
     @* A tab strip is a single tab stop the arrow keys move within, per the ARIA tabs pattern:
        without the roving tabindex every view would take its own place in the tab order. *@
-    <div class="bit-bfc-view-tabs" role="tablist" aria-orientation="horizontal">
+    <div class="bit-bfc-view-tabs" role="tablist" aria-label="@Texts.ViewTabsAriaLabel">
         @foreach (var view in views)
         {
             var v = view;
@@ -21,6 +21,7 @@
                     role="tab"
                     id="@TabId(v)"
                     aria-selected="@(State.View == v ? "true" : "false")"
+                    aria-controls="@Parts.BodyId"
                     tabindex="@(State.View == v ? "0" : "-1")"
                     @onkeydown="e => OnKeyDown(e, v)"
                     @onclick="() => State.SetView(v)">

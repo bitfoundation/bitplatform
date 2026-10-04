@@ -453,7 +453,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendElevatedAccessToken(CancellationToken cancellationToken)
+    public async Task<ElevatedAccessTokenSentDto> SendElevatedAccessToken(CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -480,38 +480,51 @@ public partial class UserController : AppControllerBase, IUserController
 
         var message = Localizer[nameof(AppStrings.ElevatedAccessTokenShortText), token].ToString();
 
+        // So the prompt names the channels this reached and no others.
+        var sentTo = new ElevatedAccessTokenSentDto();
+
         if (await userManager.IsEmailConfirmedAsync(user))
         {
             sendMessagesTasks.Add(emailService.SendElevatedAccessToken(user, token, cancellationToken));
+            sentTo.SentToEmail = true;
         }
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
             var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!));
+            sentTo.SentToPhoneNumber = true;
         }
 
-        if (user.TwoFactorEnabled || (user.EmailConfirmed is false && user.PhoneNumberConfirmed is false /* Users signed-in through external sign-in */))
+        //#if (signalR == true)
+        // Check out AppHub's comments for more info.
+        var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
+            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.Id != currentUserSessionId && us.Trusted && us.SignalRConnectionId != null)
+            .Select(us => us.SignalRConnectionId!)
+            .ToArrayAsync(cancellationToken);
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken));
+
+        sentTo.SentToOtherDevices = userSessionIdsExceptCurrentUserSessionId.Length > 0;
+        //#endif
+
+        //#if (notification == true)
+        var pushTask = pushNotificationService.RequestPush(new()
         {
-            //#if (signalR == true)
-            // Check out AppHub's comments for more info.
-            var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
-                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
-                .Select(us => us.SignalRConnectionId!)
-                .ToArrayAsync(cancellationToken);
-            sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken));
-            //#endif
-
-            //#if (notification == true)
-            sendMessagesTasks.Add(pushNotificationService.RequestPush(new()
-            {
-                Message = message,
-                UserRelatedPush = true
-            }, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
-            //#endif
-        }
+            Message = message,
+            UserRelatedPush = true
+        }, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId && us.UserSession.Trusted, cancellationToken: cancellationToken);
+        sendMessagesTasks.Add(pushTask);
+        //#endif
 
         await Task.WhenAll(sendMessagesTasks);
+
+        //#if (notification == true)
+        // Only what each channel really reached: a trusted session that is offline gets no SignalR message, and one
+        // with no live subscription gets no push - naming it anyway sends the user to a device that never rings.
+        sentTo.SentToOtherDevices = sentTo.SentToOtherDevices || (await pushTask) > 0;
+        //#endif
+
+        return sentTo;
     }
 
     //#if (signalR == true || notification == true)

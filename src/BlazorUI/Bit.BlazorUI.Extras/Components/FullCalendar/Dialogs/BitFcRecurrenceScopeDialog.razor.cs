@@ -13,6 +13,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     /// <summary>The question being asked, such as "Delete recurring event".</summary>
     [Parameter] public string Title { get; set; } = string.Empty;

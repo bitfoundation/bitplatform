@@ -30,7 +30,10 @@
 
     @*  The low quality placeholder, which stands in the frame while the real image is still on its
         way. It is decorative by definition - the image it stands for carries the meaning - so it is
-        hidden from assistive technologies rather than given an alt of its own. *@
+        hidden from assistive technologies rather than given an alt of its own. Under a FadeIn it outlives
+        the load by the length of the fade, fading out as the image fades in, and is removed once that fade
+        has ended. Blazor has no directive for animationend, so the handler is the attribute's value itself,
+        which the renderer wires up as a listener for the event the attribute is named after. *@
     @if (_placeholderSrc.HasValue())
     {
         <img alt=""
@@ -38,7 +41,8 @@
              src="@_placeholderSrc"
              draggable="false"
              style="@GetPlaceholderStyles()"
-             class="bit-img-plc@(Classes?.Placeholder.HasValue() is true ? $" {Classes!.Placeholder}" : null)" />
+             class="@GetPlaceholderClasses()"
+             onanimationend="@EventCallback.Factory.Create(this, HandleOnPlaceholderAnimationEnd)" />
     }
 
     @if (_hasSources)
@@ -66,14 +70,21 @@
         @image
     }
 
-    @if (_loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null)
+    @*  The text alternative of an image that is not on screen, which leaves the accessibility tree
+        with the image it belongs to - see the .bit-img-alt rule. *@
+    @if (_hiddenImageName is not null)
+    {
+        <span role="img" aria-label="@_hiddenImageName" class="bit-img-alt"></span>
+    }
+
+    @if (_isLoadingTemplateShown)
     {
         <div style="@Styles?.LoadingTemplate"
              class="bit-img-tpl@(Classes?.LoadingTemplate.HasValue() is true ? $" {Classes!.LoadingTemplate}" : null)">
             @LoadingTemplate
         </div>
     }
-    else if (_loadingState is BitImageState.Error && ErrorTemplate is not null)
+    else if (_isErrorTemplateShown)
     {
         <div style="@Styles?.ErrorTemplate"
              class="bit-img-tpl@(Classes?.ErrorTemplate.HasValue() is true ? $" {Classes!.ErrorTemplate}" : null)">

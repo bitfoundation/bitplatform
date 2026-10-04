@@ -17,7 +17,7 @@ public partial class BitFcDraggableEvent
     {
         // role="button" must be keyboard-activatable: mirror native button behavior by invoking the
         // click callback on Enter/Space. Ignore auto-repeat keydown events (matching
-        // BitFcCalendarDayView.OnHourKeyDownAsync) so holding the key can't fire OnClick repeatedly.
+        // BitFcDayView.OnHourKeyDownAsync) so holding the key can't fire OnClick repeatedly.
         if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
             await OnClick.InvokeAsync();
     }

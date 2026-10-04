@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -9,6 +10,7 @@ public partial class BitSplitter : BitComponentBase
 {
     private bool _isDragging;
     private bool _isCollapsing;
+    private bool _cascadeChanged;
     private string? _controllerId;
     private double? _percentBeforeCollapse;
     private ElementReference _gutterRef;
@@ -24,6 +26,19 @@ public partial class BitSplitter : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the splitter component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple splitter components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSplitterParams.ParamName)]
+    public BitSplitterParams? CascadingParameters { get; set; }
 
 
 
@@ -58,6 +73,9 @@ public partial class BitSplitter : BitComponentBase
     /// A collapsed panel keeps its content in the DOM and is folded down to <see cref="CollapsedSize"/>,
     /// ignoring the minimum size it would otherwise hold, while the panel left standing takes the whole
     /// splitter. Expanding it puts the split back where it was.
+    /// A panel folded down to nothing is made <c>inert</c>, so its content leaves the tab order and the
+    /// accessibility tree until it is expanded again; one held at a <see cref="CollapsedSize"/> of its own
+    /// stays usable.
     /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound, CallOnSet(nameof(OnSetCollapsed))]
     public bool Collapsed { get; set; }
@@ -93,6 +111,18 @@ public partial class BitSplitter : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool CollapseSecondPanel { get; set; }
+
+    /// <summary>
+    /// The share of the splitter, as a percentage between 0 and 100, the first panel starts at.
+    /// </summary>
+    /// <remarks>
+    /// It is <see cref="FirstPanelSize"/> as a share rather than a length: where the split starts and where
+    /// <see cref="ResetSize"/> and a double-click put it back, while the reader stays free to move it - unlike a
+    /// one-way <see cref="Percent"/>, which the page owns. It takes precedence over <see cref="FirstPanelSize"/>
+    /// and <see cref="SecondPanelSize"/>, and <see cref="Percent"/> takes precedence over it.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public double? DefaultPercent { get; set; }
 
     /// <summary>
     /// The grid, in pixels, a drag of the gutter moves the split along: the first panel comes to rest on a
@@ -451,6 +481,8 @@ public partial class BitSplitter : BitComponentBase
     /// </summary>
     public async Task SetPercent(double percent)
     {
+        if (double.IsNaN(percent)) return;
+
         if (await AssignPercent(Math.Clamp(percent, 0, 100)) is false) return;
 
         await InvokeAsync(StateHasChanged);
@@ -479,8 +511,8 @@ public partial class BitSplitter : BitComponentBase
     }
 
     /// <summary>
-    /// Clears <see cref="Percent"/> and hands the layout back to <see cref="FirstPanelSize"/> and
-    /// <see cref="SecondPanelSize"/> - which is what a double-click on the gutter does.
+    /// Clears <see cref="Percent"/> and hands the layout back to <see cref="DefaultPercent"/>,
+    /// <see cref="FirstPanelSize"/> and <see cref="SecondPanelSize"/> - which is what a double-click on the gutter does.
     /// </summary>
     /// <remarks>
     /// A splitter whose <see cref="Percent"/> the page owns one way is not reset: the position is the
@@ -595,9 +627,10 @@ public partial class BitSplitter : BitComponentBase
 
     // The chevron points at what the press is about to do: at the panel while it is there to be folded away,
     // and at the room it is about to come back into once it is gone. Which way that is on the screen is the
-    // orientation of the splitter, which of the two panels folds, and - across a row - the writing direction
-    // of the page: the same turn the drag itself makes, so the two of them cannot end up pointing opposite
-    // ways.
+    // orientation of the splitter, which of the two panels folds, and - across a row - the writing direction.
+    // A splitter given its direction by the Dir parameter is turned here, which every browser draws; one that is
+    // right to left only by inheriting it - from the html element, say - is left to the stylesheet (see
+    // .bit-spl-cbd), which reads the direction the element is actually laid out in wherever :dir() is supported.
     private string _DefaultCollapseIconName
     {
         get
@@ -610,6 +643,36 @@ public partial class BitSplitter : BitComponentBase
         }
     }
 
+    // A share the page works out for itself can come out as NaN - a division by a container with no room in it -
+    // which is no position at all, and one the interop serializer refuses outright, taking the render that sends
+    // it down with it. It is read as no value; anything else is held to the range the stylesheet can use.
+    private double? _Percent => Sanitize(Percent);
+
+    // The share the first panel is laid out at: the position the page holds or, until it holds one, the one the
+    // split starts from. Either of them takes precedence over the lengths the panels declare.
+    private double? _SplitPercent => _Percent ?? Sanitize(DefaultPercent);
+
+    // The flex basis of each panel as the parameters declare it, or null where they leave it to the equal split.
+    // The style attribute is built from these, and so is what a sync hands the JavaScript side to put back once
+    // the position a drag wrote over them is cleared - so the two cannot describe different layouts.
+    private string? _FirstPanelBasis => _SplitPercent is double split
+                                      ? $"{Css(Round(split))}%"
+                                      : FirstPanelSize.HasValue ? $"{Math.Max(0, FirstPanelSize.Value)}px" : null;
+
+    // A splitter driven by the share of its first panel has nothing left to pin the second one with: the second
+    // panel takes whatever is left over, which is what keeps the two of them adding up to the splitter however
+    // wide it is. The same goes for a splitter that has already pinned its first panel to a length - the second
+    // one is where the room the two of them do not account for has to go, or a container wider than both sizes
+    // together would be left showing a gap at its end.
+    private string? _SecondPanelBasis => _SplitPercent.HasValue is false && SecondPanelSize.HasValue
+                                       ? $"{Math.Max(0, SecondPanelSize.Value)}px"
+                                       : null;
+
+    private string _SecondPanelGrow => FirstPanelSize.HasValue ? "1" : "0";
+
+    // Folded down to nothing: there is nothing left on the screen to reach, so the panel is made inert.
+    private bool _IsFoldedAway => Collapsed && CollapsedSize <= 0;
+
     // A gutter nobody can move is not a control any more, so it leaves the tab order and reports itself as
     // disabled rather than standing there as a stop that answers to nothing.
     private bool _IsInteractive => IsEnabled && ReadOnly is false;
@@ -618,8 +681,8 @@ public partial class BitSplitter : BitComponentBase
     // before that the setup call measures the panels and writes it onto the element itself, so a splitter
     // that has never been sized is not left claiming a position it does not have. A folded panel is not at
     // that position either - it is at its collapsed size - so the measurement is left to speak for it.
-    private double? _ValueNow => Percent.HasValue && Collapsed is false
-                               ? Math.Round(Math.Clamp(Percent.Value, 0, 100), 2)
+    private double? _ValueNow => _Percent.HasValue && Collapsed is false
+                               ? Math.Round(_Percent.Value, 2)
                                : null;
 
 
@@ -649,38 +712,35 @@ public partial class BitSplitter : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => GutterSize.HasValue ? $"--gutter-size:{Math.Max(0, GutterSize.Value)}px" : string.Empty);
+        StyleBuilder.Register(() => GutterSize.HasValue ? $"--bit-spl-gtr-size:{Math.Max(0, GutterSize.Value)}px" : string.Empty);
 
         // The strip that answers a press is the wider of what is drawn and what a pointer can be expected to
         // hit; the stylesheet works out the difference, so all it is handed is the floor.
-        StyleBuilder.Register(() => GutterHitSize.HasValue ? $"--gutter-hit-size:{Math.Max(0, GutterHitSize.Value)}px" : string.Empty);
+        StyleBuilder.Register(() => GutterHitSize.HasValue ? $"--bit-spl-hit-size:{Math.Max(0, GutterHitSize.Value)}px" : string.Empty);
 
         // The size of the first panel is the flex basis of a flex item, so one variable carries the width of
         // a splitter laid out in a row and the height of one laid out in a column, and a share given as a
         // percentage keeps its proportions while the container is resized. The matching -grow variable is
         // what takes the panel off the equal split it starts at.
-        StyleBuilder.Register(() => Percent.HasValue
-                                  ? $"--first-panel:{Css(Round(Math.Clamp(Percent.Value, 0, 100)))}%;--first-panel-grow:0"
-                                  : FirstPanelSize.HasValue
-                                      ? $"--first-panel:{Math.Max(0, FirstPanelSize.Value)}px;--first-panel-grow:0"
-                                      : string.Empty);
-        StyleBuilder.Register(() => FirstPanelMaxSize.HasValue ? $"--first-panel-max:{Math.Max(0, FirstPanelMaxSize.Value)}px" : string.Empty);
-        StyleBuilder.Register(() => FirstPanelMinSize.HasValue ? $"--first-panel-min:{Math.Max(0, FirstPanelMinSize.Value)}px" : string.Empty);
+        StyleBuilder.Register(() => _FirstPanelBasis is { } basis ? $"--bit-spl-fpn-size:{basis};--bit-spl-fpn-grow:0" : string.Empty);
+        StyleBuilder.Register(() => FirstPanelMaxSize.HasValue ? $"--bit-spl-fpn-max:{Math.Max(0, FirstPanelMaxSize.Value)}px" : string.Empty);
+        StyleBuilder.Register(() => FirstPanelMinSize.HasValue ? $"--bit-spl-fpn-min:{Math.Max(0, FirstPanelMinSize.Value)}px" : string.Empty);
 
-        // A splitter driven by the share of its first panel has nothing left to pin the second one with: the
-        // second panel takes whatever is left over, which is what keeps the two of them adding up to the
-        // splitter however wide it is. The same goes for a splitter that has already pinned its first panel
-        // to a length - the second one is where the room the two of them do not account for has to go, or a
-        // container wider than both sizes together would be left showing a gap at its end.
-        StyleBuilder.Register(() => Percent.HasValue is false && SecondPanelSize.HasValue
-                                  ? $"--second-panel:{Math.Max(0, SecondPanelSize.Value)}px;--second-panel-grow:{(FirstPanelSize.HasValue ? 1 : 0)}"
-                                  : string.Empty);
-        StyleBuilder.Register(() => SecondPanelMaxSize.HasValue ? $"--second-panel-max:{Math.Max(0, SecondPanelMaxSize.Value)}px" : string.Empty);
-        StyleBuilder.Register(() => SecondPanelMinSize.HasValue ? $"--second-panel-min:{Math.Max(0, SecondPanelMinSize.Value)}px" : string.Empty);
+        StyleBuilder.Register(() => _SecondPanelBasis is { } basis ? $"--bit-spl-spn-size:{basis};--bit-spl-spn-grow:{_SecondPanelGrow}" : string.Empty);
+        StyleBuilder.Register(() => SecondPanelMaxSize.HasValue ? $"--bit-spl-spn-max:{Math.Max(0, SecondPanelMaxSize.Value)}px" : string.Empty);
+        StyleBuilder.Register(() => SecondPanelMinSize.HasValue ? $"--bit-spl-spn-min:{Math.Max(0, SecondPanelMinSize.Value)}px" : string.Empty);
 
-        StyleBuilder.Register(() => CollapsedSize > 0 ? $"--collapsed-size:{Math.Max(0, CollapsedSize)}px" : string.Empty);
+        StyleBuilder.Register(() => CollapsedSize > 0 ? $"--bit-spl-col-size:{Math.Max(0, CollapsedSize)}px" : string.Empty);
 
         StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSplitterParams))]
+    protected override void OnParametersSet()
+    {
+        ApplyCascade();
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -777,6 +837,50 @@ public partial class BitSplitter : BitComponentBase
 
 
 
+    /// <summary>
+    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
+    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
+    /// </summary>
+    internal void TakeFromCascade<T>(string name, T value, Func<BitSplitter, T> get, Action<BitSplitter, T> set)
+    {
+        if (IsSetByMarkup(name)) return;
+
+        // A value the cascade supplies again unchanged is no change: the class and style strings built from it the
+        // last time still hold, so they are only rebuilt when something the cascade gives actually moves.
+        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
+
+        set(this, value);
+
+        _cascadeChanged = true;
+    }
+
+    /// <summary>
+    /// Whether the markup sizes the panels itself, through any of <see cref="DefaultPercent"/>,
+    /// <see cref="FirstPanelSize"/> and <see cref="SecondPanelSize"/>.
+    /// </summary>
+    /// <remarks>
+    /// The three are one decision - where the split starts - and the first two outrank the third, so a cascaded
+    /// size taken beside one the splitter set itself would override it rather than fill a gap. A splitter that
+    /// sizes its panels at all takes none of them from the cascade.
+    /// </remarks>
+    internal bool SizesItsOwnPanels => IsSetByMarkup(nameof(DefaultPercent))
+                                    || IsSetByMarkup(nameof(FirstPanelSize))
+                                    || IsSetByMarkup(nameof(SecondPanelSize));
+
+    private void ApplyCascade()
+    {
+        if (CascadingParameters is null) return;
+
+        _cascadeChanged = false;
+
+        CascadingParameters.UpdateParameters(this);
+
+        if (_cascadeChanged is false) return;
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+    }
+
     private BitSplitterJsOptions CurrentJsOptions()
         => new(Vertical,
                _IsInteractive is false,
@@ -791,7 +895,7 @@ public partial class BitSplitter : BitComponentBase
                NoResetOnDoubleClick is false,
                OnResize.HasDelegate,
                OnGutterDoubleClick.HasDelegate,
-               Percent,
+               _Percent,
                PersistKey,
                PersistInSessionStorage);
 
@@ -865,18 +969,35 @@ public partial class BitSplitter : BitComponentBase
 
     // The inline properties a drag wrote onto the root are the JavaScript side's own copy of the layout, and
     // a render whose style attribute does not change leaves them standing - so whenever the component has
-    // settled on something other than what was dragged, it says so.
+    // settled on something other than what was dragged, it says so. Without a position of its own, what it
+    // hands over is the layout the parameters declare: the properties the drag overwrote are the very ones the
+    // style attribute carries, and a render that produces the same attribute again does not put them back.
     private async Task SyncJsSize()
     {
         if (_controllerId.HasNoValue()) return;
 
+        var declared = _Percent.HasValue ? null : DeclaredSizes();
+
         try
         {
-            await _js.BitSplitterSync(_controllerId, Percent);
+            await _js.BitSplitterSync(_controllerId, _Percent, declared);
         }
         catch (JSException) { }
         catch (JSDisconnectedException) { }
     }
+
+    // In the order the JavaScript side lists the size properties (SIZE_PROPERTIES), with null for one the
+    // parameters leave undeclared.
+    private string?[] DeclaredSizes()
+    {
+        var first = _FirstPanelBasis;
+        var second = _SecondPanelBasis;
+
+        return [first, first is null ? null : "0", second, second is null ? null : _SecondPanelGrow];
+    }
+
+    private static double? Sanitize(double? percent)
+        => percent is double value && double.IsNaN(value) is false ? Math.Clamp(value, 0, 100) : null;
 
     private static string Css(double value) => value.ToString(CultureInfo.InvariantCulture);
 

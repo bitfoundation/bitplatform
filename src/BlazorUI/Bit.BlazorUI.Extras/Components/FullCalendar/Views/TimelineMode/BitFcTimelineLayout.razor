@@ -45,10 +45,17 @@
 
                     <div class="bit-bfc-tl-body-row" style="height:@(rowHeight)px;width:@(totalGridWidth)px;">
                         <div class="bit-bfc-tl-resource-cell" style="width:@(ResourceColumnWidthPx)px;height:@(rowHeight)px;">
-                            <div class="bit-bfc-tl-resource-title">@res.Title</div>
-                            @if (!string.IsNullOrWhiteSpace(res.Subtitle))
+                            @if (Parts.ResourceTemplate is { } resourceTemplate)
                             {
-                                <div class="bit-bfc-tl-resource-subtitle">@res.Subtitle</div>
+                                @resourceTemplate(res)
+                            }
+                            else
+                            {
+                                <div class="bit-bfc-tl-resource-title">@res.Title</div>
+                                @if (!string.IsNullOrWhiteSpace(res.Subtitle))
+                                {
+                                    <div class="bit-bfc-tl-resource-subtitle">@res.Subtitle</div>
+                                }
                             }
                         </div>
                         <div class="bit-bfc-tl-row" style="height:@(rowHeight)px;width:@(totalContentWidth)px;">

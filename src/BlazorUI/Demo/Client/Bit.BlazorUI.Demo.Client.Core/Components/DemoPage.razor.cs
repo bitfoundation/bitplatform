@@ -569,7 +569,7 @@ public partial class DemoPage
 
     private readonly List<string> _inputComponents = [
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
-        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput"
+        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput", "MarkdownEditor"
     ];
 
     private readonly List<ComponentParameter> _inputBaseParameters =
@@ -709,6 +709,6 @@ public partial class DemoPage
 
 
     private readonly List<string> _notInheritedComponents = [
-        "CascadingValueProvider", "Chart", "ChartLegacy", "DataGrid", "DataGridLegacy", "ModalService", "Params"
+        "CascadingValueProvider", "ChartLegacy", "DataGridLegacy", "ModalService", "Params"
     ];
 }

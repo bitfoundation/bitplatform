@@ -4,363 +4,1083 @@ public partial class BitMapDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
-         new()
-         {
-            Name = "TMapProvider",
-            Type = "Type (generic)",
-            DefaultValue = "",
-            Description = "The map provider type. One of: BitLeafletMapProvider, BitMapLibreMapProvider, BitMapboxMapProvider, BitOpenLayersMapProvider, BitArcGisMapProvider, BitAzureMapsMapProvider, BitCesiumMapProvider.",
-         },
-         new()
-         {
-            Name = "Provider",
-            Type = "TMapProvider?",
-            DefaultValue = "null",
-            Description = "Provider configuration instance (center, zoom, tokens, etc.). When null a default instance is created.",
-         },
-         new()
-         {
-            Name = "Center",
-            Type = "BitMapLatLng?",
-            DefaultValue = "null",
-            Description = "Two-way bindable centre. Assigning it moves the map, and panning the map writes the new centre back. Leave it unset to let the provider's Center own the camera.",
-         },
-         new()
-         {
-            Name = "Zoom",
-            Type = "double?",
-            DefaultValue = "null",
-            Description = "Two-way bindable zoom level. Behaves like Center: assigning it zooms the map, and zooming the map writes the new level back.",
-         },
-         new()
-         {
-            Name = "Markers",
-            Type = "IEnumerable<BitMapMarker>?",
-            DefaultValue = "null",
-            Description = "The markers the map should show, as a collection instead of imperative calls. Markers compare by value, so only the ones that actually changed are sent; a wholesale change is replaced in one batched call. This parameter owns the marker set - mixing it with AddMarker/RemoveMarker means the next collection change reconciles those away.",
-         },
-         new()
-         {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Optional content rendered above the map canvas.",
-         },
-         new()
-         {
-            Name = "Clustering",
-            Type = "BitMapClustering?",
-            DefaultValue = "null",
-            Description = "Groups nearby markers into a bubble showing how many they stand for, and expands it on click. The grouping runs inside BitMap in screen space, so it behaves identically on all seven backends. While it is on, the markers you add are the source set and BitMap decides what the provider actually draws.",
-         },
-         new()
-         {
-            Name = "OnClusterClick",
-            Type = "EventCallback<BitMapClusterClickArgs>",
-            DefaultValue = "",
-            Description = "Fires when the user clicks a cluster bubble, instead of OnMarkerClick - a cluster is not one of your markers.",
-         },
-         new()
-         {
-            Name = "MarkerPopupTemplate",
-            Type = "RenderFragment<BitMapMarker>?",
-            DefaultValue = "null",
-            Description = "Content of the popup that opens when a marker is clicked, as live Blazor markup rather than an HTML string - so it is escaped automatically, and components, event handlers and bindings work inside it. Rendered by BitMap and pinned to its marker, so it behaves the same on all seven backends.",
-         },
-         new()
-         {
-            Name = "PopupLabel",
-            Type = "string",
-            DefaultValue = "Marker details",
-            Description = "Accessible name of the popup when its marker has neither an Alt nor a Title.",
-         },
-         new()
-         {
-            Name = "PopupCloseLabel",
-            Type = "string",
-            DefaultValue = "Close",
-            Description = "Accessible name of the popup's close button.",
-         },
-         new()
-         {
-            Name = "OnPopupOpened",
-            Type = "EventCallback<BitMapMarker>",
-            DefaultValue = "",
-            Description = "Fires when a MarkerPopupTemplate popup opens, with the marker it belongs to.",
-         },
-         new()
-         {
-            Name = "OnPopupClosed",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Fires when a MarkerPopupTemplate popup closes.",
-         },
-         new()
-         {
-            Name = "MarkerListMode",
-            Type = "BitMapMarkerListMode",
-            DefaultValue = "BitMapMarkerListMode.None",
-            Description = "Renders a text alternative to the markers - a table of names and coordinates whose rows bring their marker into view. A map is a picture, so its markers are unreachable to a screen reader no matter how well the canvas is labelled; ScreenReaderOnly leaves the map looking unchanged while making the same data reachable.",
-         },
-         new()
-         {
-            Name = "MarkerListTemplate",
-            Type = "RenderFragment<IReadOnlyList<BitMapMarker>>?",
-            DefaultValue = "null",
-            Description = "Replaces the built-in marker table. Receives the markers in no guaranteed order.",
-         },
-         new()
-         {
-            Name = "MarkerListCaption",
-            Type = "string",
-            DefaultValue = "Map markers",
-            Description = "Caption of the built-in marker table. Say what the markers are, not that they are markers.",
-         },
-         new()
-         {
-            Name = "MarkerListZoom",
-            Type = "double?",
-            DefaultValue = "15",
-            Description = "Zoom applied when a marker-list row brings its marker into view. Null keeps the current zoom.",
-         },
-         new()
-         {
-            Name = "ReplayStateOnProviderSwap",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "When true, imperatively-added markers, vector layers, and tile overlays are replayed after a destructive provider swap (different JsObjectName).",
-         },
-         new()
-         {
-            Name = "OnReady",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Fires after the map is ready for imperative calls. Fires once on initial mount, and fires again after a destructive provider swap each time the new provider becomes ready.",
-         },
-         new()
-         {
-            Name = "OnClick",
-            Type = "EventCallback<BitMapLatLng>",
-            DefaultValue = "",
-            Description = "Fires when the user clicks the map canvas.",
-         },
-         new()
-         {
-            Name = "OnDoubleClick",
-            Type = "EventCallback<BitMapLatLng>",
-            DefaultValue = "",
-            Description = "Fires when the user double-clicks the map.",
-         },
-         new()
-         {
-            Name = "OnContextMenu",
-            Type = "EventCallback<BitMapLatLng>",
-            DefaultValue = "",
-            Description = "Fires when the user right-clicks (or long-presses on touch) the map, with the coordinate under the pointer. The browser's own menu still opens unless the provider sets SuppressBrowserContextMenu.",
-         },
-         new()
-         {
-            Name = "OnViewChanged",
-            Type = "EventCallback<BitMapViewState>",
-            DefaultValue = "",
-            Description = "Fires whenever the map view changes.",
-         },
-         new()
-         {
-            Name = "OnMarkerClick",
-            Type = "EventCallback<string>",
-            DefaultValue = "",
-            Description = "Fires when the user clicks a marker (argument is the marker id).",
-         },
-         new()
-         {
-            Name = "OnMarkerDragEnd",
-            Type = "EventCallback<BitMapMarkerDragEndArgs>",
-            DefaultValue = "",
-            Description = "Fires when a draggable marker is dropped.",
-         },
-         new()
-         {
-            Name = "OnVectorClick",
-            Type = "EventCallback<BitMapVectorClickArgs>",
-            DefaultValue = "",
-            Description = "Fires when the user clicks a vector layer.",
-         },
-         new()
-         {
-            Name = "OnGeoJsonFeatureClick",
-            Type = "EventCallback<BitMapGeoJsonFeatureClickArgs>",
-            DefaultValue = "",
-            Description = "Fires when the user clicks a GeoJSON feature.",
-         },
-         new()
-         {
-            Name = "AutoResize",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Keeps the map sized to its container through a ResizeObserver. Also recovers the classic case of a map created inside a hidden tab, which would otherwise stay grey after the tab is shown.",
-         },
-         new()
-         {
-            Name = "LazyLoad",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Defers creating the map until its container scrolls into view, so a map below the fold doesn't compete with the page's first paint. LoadState stays Idle while it waits.",
-         },
-         new()
-         {
-            Name = "LazyLoadRootMargin",
-            Type = "string",
-            DefaultValue = "200px",
-            Description = "How far outside the viewport the container may be and still count as visible for LazyLoad. Any margin syntax IntersectionObserver accepts.",
-         },
-         new()
-         {
-            Name = "CooperativeGestures",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Requires ctrl/⌘ + wheel to zoom and two fingers to pan, so an embedded map doesn't swallow the page scroll. A blocked gesture shows a short hint instead.",
-         },
-         new()
-         {
-            Name = "CooperativeGesturesWheelHint",
-            Type = "string",
-            DefaultValue = "Use ctrl + scroll to zoom the map",
-            Description = "Hint shown when a bare wheel gesture is blocked by CooperativeGestures.",
-         },
-         new()
-         {
-            Name = "CooperativeGesturesTouchHint",
-            Type = "string",
-            DefaultValue = "Use two fingers to move the map",
-            Description = "Hint shown when a one-finger drag is blocked by CooperativeGestures.",
-         },
-         new()
-         {
-            Name = "EscapeToExit",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Moves focus out of the map canvas on Escape. A focused map consumes the arrow keys, so without a way out it is a keyboard trap (WCAG 2.1.2).",
-         },
-         new()
-         {
-            Name = "KeyboardInstructions",
-            Type = "string",
-            DefaultValue = "Use the arrow keys to pan the map, plus and minus to zoom, and Escape to leave the map.",
-            Description = "Description of the keyboard model. Associated with the canvas via aria-describedby, and shown on screen while the map has keyboard focus.",
-         },
-         new()
-         {
+        new()
+        {
             Name = "AnnounceViewChanges",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Announces the new centre and zoom through a polite live region after a pan or zoom, throttled by ViewAnnouncementThrottle.",
-         },
-         new()
-         {
-            Name = "ViewAnnouncementFormatter",
-            Type = "Func<BitMapViewState, string>?",
+            Description = "Announces the new centre and zoom through a polite live region after the user pans or zooms, throttled by ViewAnnouncementThrottle.",
+        },
+        new()
+        {
+            Name = "AutoResize",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Keeps the map sized to its container, which also recovers a map created inside a hidden tab.",
+        },
+        new()
+        {
+            Name = "Center",
+            Type = "BitMapLatLng?",
             DefaultValue = "null",
-            Description = "Builds the announcement text. Supply one to announce a place name instead of coordinates - far more useful than a pair of decimals.",
-         },
-         new()
-         {
-            Name = "ViewAnnouncementThrottle",
-            Type = "TimeSpan",
-            DefaultValue = "00:00:02",
-            Description = "Minimum interval between two view announcements, so a drag can't flood the screen reader.",
-         },
-         new()
-         {
-            Name = "RespectReducedMotion",
+            Description = "Two-way bindable centre: assigning it moves the map, panning writes it back. Unset, the provider's Center owns the camera.",
+        },
+        new()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Content floated above the map, such as custom controls. Only its children take the pointer, each sized to its content from the top-start corner.",
+        },
+        new()
+        {
+            Name = "Classes",
+            Type = "BitMapClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the map.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Clustering",
+            Type = "BitMapClustering?",
+            DefaultValue = "null",
+            Description = "Groups nearby markers into a bubble showing their count, the same way on every provider. Null draws every marker.",
+            LinkType = LinkType.Link,
+            Href = "#clustering",
+        },
+        new()
+        {
+            Name = "CooperativeGestures",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Requires ctrl/⌘ + wheel to zoom and two fingers to pan, so a bare gesture scrolls the page instead and shows a hint.",
+        },
+        new()
+        {
+            Name = "CooperativeGesturesTouchHint",
+            Type = "string",
+            DefaultValue = "Use two fingers to move the map",
+            Description = "The hint shown when a one-finger drag is blocked.",
+        },
+        new()
+        {
+            Name = "CooperativeGesturesWheelHint",
+            Type = "string",
+            DefaultValue = "Use ctrl + scroll to zoom the map",
+            Description = "The hint shown when a bare wheel gesture is blocked.",
+        },
+        new()
+        {
+            Name = "ErrorLabel",
+            Type = "string",
+            DefaultValue = "The map could not be loaded.",
+            Description = "The text of the built-in failure message.",
+        },
+        new()
+        {
+            Name = "ErrorTemplate",
+            Type = "RenderFragment<Exception?>?",
+            DefaultValue = "null",
+            Description = "Replaces the built-in failure message, receiving the exception when there is one.",
+        },
+        new()
+        {
+            Name = "EscapeToExit",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Turns FlyTo and an animated SetView into an instant jump when the visitor prefers reduced motion. Both methods take an essential argument to opt a specific move back into animating.",
-         },
-         new()
-         {
-            Name = "ShowLoading",
+            Description = "Moves the focus out of the canvas on Escape, so a focused map is never a keyboard trap. An open marker popup is closed first.",
+        },
+        new()
+        {
+            Name = "KeyboardInstructions",
+            Type = "string",
+            DefaultValue = "Use the arrow keys to pan the map, plus and minus to zoom, and Escape to leave the map.",
+            Description = "The keyboard model, read by assistive technologies and shown while the canvas has keyboard focus.",
+        },
+        new()
+        {
+            Name = "LazyLoad",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows the built-in loading indicator while the provider's assets and map instance are being created.",
-         },
-         new()
-         {
+            DefaultValue = "false",
+            Description = "Defers creating the map until its container is near the viewport. LoadState stays Idle until then.",
+        },
+        new()
+        {
+            Name = "LazyLoadRootMargin",
+            Type = "string",
+            DefaultValue = "200px",
+            Description = "How far outside the viewport the container still counts as visible for LazyLoad.",
+        },
+        new()
+        {
+            Name = "LoadingLabel",
+            Type = "string",
+            DefaultValue = "Loading map…",
+            Description = "The text of the built-in loading indicator.",
+        },
+        new()
+        {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Replaces the built-in loading indicator.",
-         },
-         new()
-         {
-            Name = "ErrorTemplate",
-            Type = "RenderFragment<Exception?>?",
+        },
+        new()
+        {
+            Name = "MarkerListActionHeader",
+            Type = "string",
+            DefaultValue = "Show on map",
+            Description = "The label of the button bringing a marker into view, also the hidden column heading.",
+        },
+        new()
+        {
+            Name = "MarkerListCaption",
+            Type = "string",
+            DefaultValue = "Map markers",
+            Description = "The caption of the marker table. Say what the markers are.",
+        },
+        new()
+        {
+            Name = "MarkerListLatitudeHeader",
+            Type = "string",
+            DefaultValue = "Latitude",
+            Description = "The heading of the latitude column.",
+        },
+        new()
+        {
+            Name = "MarkerListLongitudeHeader",
+            Type = "string",
+            DefaultValue = "Longitude",
+            Description = "The heading of the longitude column.",
+        },
+        new()
+        {
+            Name = "MarkerListMode",
+            Type = "BitMapMarkerListMode",
+            DefaultValue = "BitMapMarkerListMode.None",
+            Description = "Renders the markers as a table of names and coordinates whose rows bring their marker into view - the text alternative a screen reader needs.",
+            LinkType = LinkType.Link,
+            Href = "#marker-list-mode-enum",
+        },
+        new()
+        {
+            Name = "MarkerListNameHeader",
+            Type = "string",
+            DefaultValue = "Name",
+            Description = "The heading of the name column.",
+        },
+        new()
+        {
+            Name = "MarkerListTemplate",
+            Type = "RenderFragment<IReadOnlyList<BitMapMarker>>?",
             DefaultValue = "null",
-            Description = "Replaces the built-in failure message. Receives the exception behind the failure, when one was captured.",
-         },
-         new()
-         {
-            Name = "UnsupportedTemplate",
-            Type = "RenderFragment?",
+            Description = "Replaces the built-in marker table.",
+        },
+        new()
+        {
+            Name = "MarkerListZoom",
+            Type = "double?",
+            DefaultValue = "15",
+            Description = "The zoom a marker-list row brings its marker into view at. Null keeps the current zoom.",
+        },
+        new()
+        {
+            Name = "MarkerPopupTemplate",
+            Type = "RenderFragment<BitMapMarker>?",
             DefaultValue = "null",
-            Description = "Replaces the built-in message shown when the browser cannot give a WebGL-backed provider a context.",
-         },
-         new()
-         {
-            Name = "LoadingLabel",
-            Type = "string",
-            DefaultValue = "Loading map…",
-            Description = "Text of the built-in loading indicator.",
-         },
-         new()
-         {
-            Name = "ErrorLabel",
-            Type = "string",
-            DefaultValue = "The map could not be loaded.",
-            Description = "Text of the built-in failure message.",
-         },
-         new()
-         {
-            Name = "UnsupportedLabel",
-            Type = "string",
-            DefaultValue = "This browser cannot display the map (WebGL is unavailable).",
-            Description = "Text of the built-in unsupported-browser message.",
-         },
-         new()
-         {
+            Description = "The content of the popup a marker click opens, as live Blazor markup - escaped, and able to hold components and handlers.",
+        },
+        new()
+        {
+            Name = "Markers",
+            Type = "IEnumerable<BitMapMarker>?",
+            DefaultValue = "null",
+            Description = "The markers as a collection. They compare by value, so only the changed ones are sent. It owns the set: imperative additions are reconciled away on its next change.",
+            LinkType = LinkType.Link,
+            Href = "#marker",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<BitMapLatLng>",
+            DefaultValue = "",
+            Description = "Fires when the map is clicked away from a marker or a vector layer.",
+        },
+        new()
+        {
+            Name = "OnClusterClick",
+            Type = "EventCallback<BitMapClusterClickArgs>",
+            DefaultValue = "",
+            Description = "Fires when a cluster bubble is clicked, instead of OnMarkerClick.",
+        },
+        new()
+        {
+            Name = "OnContextMenu",
+            Type = "EventCallback<BitMapLatLng>",
+            DefaultValue = "",
+            Description = "Fires on a right-click or a long press, with the coordinate under the pointer.",
+        },
+        new()
+        {
+            Name = "OnDoubleClick",
+            Type = "EventCallback<BitMapLatLng>",
+            DefaultValue = "",
+            Description = "Fires when the map is double-clicked.",
+        },
+        new()
+        {
+            Name = "OnFullscreenChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "Fires when the map enters or leaves fullscreen, however it did.",
+        },
+        new()
+        {
+            Name = "OnGeoJsonFeatureClick",
+            Type = "EventCallback<BitMapGeoJsonFeatureClickArgs>",
+            DefaultValue = "",
+            Description = "Fires when a feature of a GeoJSON layer is clicked, with its properties.",
+        },
+        new()
+        {
+            Name = "OnInteropError",
+            Type = "EventCallback<BitMapInteropErrorArgs>",
+            DefaultValue = "",
+            Description = "Fires when a call into the provider fails. The component swallows these failures, so this is where to log them.",
+        },
+        new()
+        {
             Name = "OnLoadStateChanged",
             Type = "EventCallback<BitMapLoadState>",
             DefaultValue = "",
-            Description = "Fires on every LoadState transition (Idle, Loading, Ready, Failed, Unsupported).",
-         },
-         new()
-         {
+            Description = "Fires whenever LoadState changes.",
+        },
+        new()
+        {
+            Name = "OnMarkerClick",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "Fires when a marker is clicked, with its id.",
+        },
+        new()
+        {
+            Name = "OnMarkerDragEnd",
+            Type = "EventCallback<BitMapMarkerDragEndArgs>",
+            DefaultValue = "",
+            Description = "Fires when a draggable marker is dropped.",
+        },
+        new()
+        {
+            Name = "OnPopupClosed",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Fires when the MarkerPopupTemplate popup closes.",
+        },
+        new()
+        {
+            Name = "OnPopupOpened",
+            Type = "EventCallback<BitMapMarker>",
+            DefaultValue = "",
+            Description = "Fires when the MarkerPopupTemplate popup opens, with its marker.",
+        },
+        new()
+        {
+            Name = "OnReady",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Fires once the map can take imperative calls, and again after a swap to a provider with another backend.",
+        },
+        new()
+        {
             Name = "OnRenderContextLost",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "Fires when the browser drops the WebGL context the map renders into. Browsers cap how many contexts may be live at once, and the oldest is dropped silently - without this the map just turns black.",
-         },
-         new()
-         {
+            Description = "Fires when the browser drops the WebGL context the map renders into.",
+        },
+        new()
+        {
             Name = "OnRenderContextRestored",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Fires when a lost WebGL context is restored.",
-         },
-         new()
-         {
-            Name = "OnFullscreenChanged",
-            Type = "EventCallback<bool>",
+        },
+        new()
+        {
+            Name = "OnVectorClick",
+            Type = "EventCallback<BitMapVectorClickArgs>",
             DefaultValue = "",
-            Description = "Fires when the map enters or leaves fullscreen, including when the user leaves it with Escape or the browser's own control.",
-         },
-         new()
-         {
-            Name = "OnInteropError",
-            Type = "EventCallback<BitMapInteropErrorArgs>",
+            Description = "Fires when a vector layer is clicked.",
+        },
+        new()
+        {
+            Name = "OnViewChanged",
+            Type = "EventCallback<BitMapViewState>",
             DefaultValue = "",
-            Description = "Fires when an interop call into the underlying provider fails. Lets consumers surface errors that the component would otherwise swallow to prevent circuit-breaking exceptions.",
-         },
+            Description = "Fires once a pan or zoom settles.",
+        },
+        new()
+        {
+            Name = "PopupAutoPan",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Pans the map as the MarkerPopupTemplate popup opens, just enough to bring the whole popup into view.",
+        },
+        new()
+        {
+            Name = "PopupCloseLabel",
+            Type = "string",
+            DefaultValue = "Close",
+            Description = "The accessible name of the popup's close button.",
+        },
+        new()
+        {
+            Name = "PopupLabel",
+            Type = "string",
+            DefaultValue = "Marker details",
+            Description = "The accessible name of the popup when its marker has neither an Alt nor a Title.",
+        },
+        new()
+        {
+            Name = "Provider",
+            Type = "TMapProvider?",
+            DefaultValue = "null",
+            Description = "The provider's configuration: centre, zoom, tiles, tokens and interaction toggles. Compared by reference - assign a new instance to apply changes.",
+            LinkType = LinkType.Link,
+            Href = "#provider",
+        },
+        new()
+        {
+            Name = "ReplayStateOnProviderSwap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Replays the imperatively added markers, layers and overlays after a swap to a provider with another backend.",
+        },
+        new()
+        {
+            Name = "RespectReducedMotion",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Makes every camera move - FlyTo, SetView, FitBounds, a cluster's zoom, the keyboard - jump under a reduced-motion preference, unless the move is essential or ForceAnimation is set.",
+        },
+        new()
+        {
+            Name = "RoleDescription",
+            Type = "string",
+            DefaultValue = "interactive map",
+            Description = "What a screen reader calls the map canvas in place of \"region\". The canvas is named by AriaLabel.",
+        },
+        new()
+        {
+            Name = "ShowLoading",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Shows the built-in loading indicator while the map is being created.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitMapClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the map.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "TMapProvider",
+            Type = "generic type",
+            DefaultValue = "",
+            Description = "The provider type: BitLeafletMapProvider, BitMapLibreMapProvider, BitMapboxMapProvider, BitOpenLayersMapProvider, BitArcGisMapProvider, BitAzureMapsMapProvider or BitCesiumMapProvider.",
+        },
+        new()
+        {
+            Name = "UnsupportedLabel",
+            Type = "string",
+            DefaultValue = "This browser cannot display the map (WebGL is unavailable).",
+            Description = "The text of the built-in unsupported-browser message.",
+        },
+        new()
+        {
+            Name = "UnsupportedTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Replaces the built-in unsupported-browser message.",
+        },
+        new()
+        {
+            Name = "ViewAnnouncementFormatter",
+            Type = "Func<BitMapViewState, string>?",
+            DefaultValue = "null",
+            Description = "Builds the announced text - a place name beats a pair of coordinates.",
+        },
+        new()
+        {
+            Name = "ViewAnnouncementThrottle",
+            Type = "TimeSpan",
+            DefaultValue = "2 seconds",
+            Description = "The minimum interval between two view announcements.",
+        },
+        new()
+        {
+            Name = "Zoom",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "Two-way bindable zoom level: assigning it zooms the map, zooming writes it back.",
+        },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitMapClassStyles",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitMap.",
+                },
+                new()
+                {
+                    Name = "Canvas",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the focusable canvas the provider draws the map into.",
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the layer holding the ChildContent above the map.",
+                },
+                new()
+                {
+                    Name = "Instructions",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the keyboard instructions shown while the canvas has keyboard focus.",
+                },
+                new()
+                {
+                    Name = "GestureHint",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hint shown while a gesture is blocked by the cooperative gestures.",
+                },
+                new()
+                {
+                    Name = "Status",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the cover shown while the map is loading, has failed, or is unsupported.",
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner of the built-in loading indicator.",
+                },
+                new()
+                {
+                    Name = "Popup",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the popup the MarkerPopupTemplate is rendered in.",
+                },
+                new()
+                {
+                    Name = "PopupCloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the popup.",
+                },
+                new()
+                {
+                    Name = "PopupBody",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the body of the popup, holding the MarkerPopupTemplate content.",
+                },
+                new()
+                {
+                    Name = "MarkerList",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the marker list rendered next to the map.",
+                },
+                new()
+                {
+                    Name = "MarkerListButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each \"Show on map\" button of the built-in marker table.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "marker",
+            Title = "BitMapMarker",
+            Description = "A record, compared by value. Each property is honoured by every provider unless it says otherwise.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Id",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "Unique identifier of the marker within the map. Required.",
+                },
+                new()
+                {
+                    Name = "Position",
+                    Type = "BitMapLatLng",
+                    DefaultValue = "",
+                    Description = "The coordinate of the marker. Required.",
+                },
+                new()
+                {
+                    Name = "Alt",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The accessible name of the marker, and its name in the marker table.",
+                },
+                new()
+                {
+                    Name = "Title",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The native tooltip of the marker, and its accessible name when Alt is not set.",
+                },
+                new()
+                {
+                    Name = "PopupText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Plain text shown in the provider's popup on click. Escaped - safe for user data.",
+                },
+                new()
+                {
+                    Name = "PopupHtml",
+                    Type = "MarkupString?",
+                    DefaultValue = "null",
+                    Description = "Raw HTML shown in the provider's popup on click. Not escaped - never pass user data.",
+                },
+                new()
+                {
+                    Name = "TooltipText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Plain text shown on hover and on keyboard focus (not on ArcGIS and Cesium).",
+                },
+                new()
+                {
+                    Name = "TooltipHtml",
+                    Type = "MarkupString?",
+                    DefaultValue = "null",
+                    Description = "Raw HTML shown on hover and on keyboard focus. Not escaped.",
+                },
+                new()
+                {
+                    Name = "TooltipPermanent",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Keeps the tooltip open instead of only on hover and focus.",
+                },
+                new()
+                {
+                    Name = "TooltipDirection",
+                    Type = "BitMapTooltipDirection",
+                    DefaultValue = "BitMapTooltipDirection.Auto",
+                    Description = "Where the tooltip opens against the marker.",
+                    LinkType = LinkType.Link,
+                    Href = "#tooltip-direction-enum",
+                },
+                new()
+                {
+                    Name = "Focusable",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Makes the marker a tab stop that Enter or Space opens. Turn off for decorative pins.",
+                },
+                new()
+                {
+                    Name = "Draggable",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Lets the user move the marker, reported by OnMarkerDragEnd.",
+                },
+                new()
+                {
+                    Name = "Color",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The color of the default pin - any CSS color, a theme variable included. Null takes --bit-Map-marker-color.",
+                },
+                new()
+                {
+                    Name = "IconUrl",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The image drawn instead of the default pin.",
+                },
+                new()
+                {
+                    Name = "IconWidth",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The width of the icon in pixels. Null takes 25 for the pin, 32 for an IconUrl.",
+                },
+                new()
+                {
+                    Name = "IconHeight",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The height of the icon in pixels. Null takes 41 for the pin, 32 for an IconUrl.",
+                },
+                new()
+                {
+                    Name = "IconAnchorX",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The pixel of the icon, from its left, that sits on the coordinate. Null is the horizontal centre.",
+                },
+                new()
+                {
+                    Name = "IconAnchorY",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The pixel of the icon, from its top, that sits on the coordinate. Null is the bottom edge.",
+                },
+                new()
+                {
+                    Name = "Opacity",
+                    Type = "double",
+                    DefaultValue = "1",
+                    Description = "The opacity of the marker, 0 to 1.",
+                },
+                new()
+                {
+                    Name = "RiseOnHover",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Brings the marker above the others under the pointer (Leaflet).",
+                },
+                new()
+                {
+                    Name = "ZIndexOffset",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Stacks the marker above or below the others (Leaflet).",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "clustering",
+            Title = "BitMapClustering",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "RadiusPixels",
+                    Type = "int",
+                    DefaultValue = "60",
+                    Description = "How close, in screen pixels, markers have to be to join one bubble: a larger radius gives fewer, denser bubbles.",
+                },
+                new()
+                {
+                    Name = "MaxZoom",
+                    Type = "double",
+                    DefaultValue = "16",
+                    Description = "The zoom at and above which every marker is drawn individually.",
+                },
+                new()
+                {
+                    Name = "MinPoints",
+                    Type = "int",
+                    DefaultValue = "2",
+                    Description = "The fewest markers a bubble stands for.",
+                },
+                new()
+                {
+                    Name = "Color",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The fill of the bubbles. Null takes --bit-Map-cluster-background, which falls back to the primary color.",
+                },
+                new()
+                {
+                    Name = "TextColor",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The color of the count. Null takes --bit-Map-cluster-color, which falls back to the text color of the primary color.",
+                },
+                new()
+                {
+                    Name = "CullOffscreen",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Keeps the markers outside the viewport off the map - most of the performance win.",
+                },
+                new()
+                {
+                    Name = "MaxRenderedMarkers",
+                    Type = "int",
+                    DefaultValue = "2000",
+                    Description = "The most individual markers drawn at once past MaxZoom.",
+                },
+                new()
+                {
+                    Name = "ExpandPaddingPixels",
+                    Type = "int",
+                    DefaultValue = "48",
+                    Description = "The padding of the zoom a bubble click makes to fit its markers.",
+                },
+                new()
+                {
+                    Name = "AriaLabelFormat",
+                    Type = "string",
+                    DefaultValue = "Cluster of {0} markers",
+                    Description = "The accessible name of a bubble; {0} is its count.",
+                },
+                new()
+                {
+                    Name = "ZoomOnClick",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Zooms to fit a bubble's markers on click. Turn off to handle OnClusterClick yourself.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "vector-path-style",
+            Title = "BitMapVectorPathStyle",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Color",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The stroke color - any CSS color, a theme variable included. Null takes --bit-Map-vector-color.",
+                },
+                new()
+                {
+                    Name = "Weight",
+                    Type = "double",
+                    DefaultValue = "3",
+                    Description = "The stroke width in pixels.",
+                },
+                new()
+                {
+                    Name = "Opacity",
+                    Type = "double",
+                    DefaultValue = "1",
+                    Description = "The stroke opacity, 0 to 1.",
+                },
+                new()
+                {
+                    Name = "Fill",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Whether a closed shape is filled. Unlike a zero FillOpacity, no fill also takes no clicks.",
+                },
+                new()
+                {
+                    Name = "FillColor",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The fill color. Null takes Color.",
+                },
+                new()
+                {
+                    Name = "FillOpacity",
+                    Type = "double",
+                    DefaultValue = "0.2",
+                    Description = "The fill opacity, 0 to 1.",
+                },
+                new()
+                {
+                    Name = "DashArray",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The dash pattern of the stroke, such as \"6 4\".",
+                },
+                new()
+                {
+                    Name = "DashOffset",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Where the dash pattern starts.",
+                },
+                new()
+                {
+                    Name = "LineCap",
+                    Type = "BitMapLineCap",
+                    DefaultValue = "BitMapLineCap.Round",
+                    Description = "The shape of the stroke's ends: Round, Butt or Square.",
+                },
+                new()
+                {
+                    Name = "LineJoin",
+                    Type = "BitMapLineJoin",
+                    DefaultValue = "BitMapLineJoin.Round",
+                    Description = "The shape of the stroke's corners: Round, Bevel or Miter.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "tile-overlay",
+            Title = "BitMapTileOverlay",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Id",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "Unique identifier of the overlay within the map. Required.",
+                },
+                new()
+                {
+                    Name = "UrlTemplate",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The XYZ template with {z}, {x}, {y} and optional {s} placeholders. Required.",
+                },
+                new()
+                {
+                    Name = "Attribution",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The credit the tile source requires, shown in the attribution control.",
+                },
+                new()
+                {
+                    Name = "Opacity",
+                    Type = "double",
+                    DefaultValue = "1",
+                    Description = "The opacity of the overlay, 0 to 1.",
+                },
+                new()
+                {
+                    Name = "ZIndex",
+                    Type = "int",
+                    DefaultValue = "100",
+                    Description = "The stacking order of the overlay.",
+                },
+                new()
+                {
+                    Name = "MinZoom",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The lowest zoom the source publishes tiles for.",
+                },
+                new()
+                {
+                    Name = "MaxZoom",
+                    Type = "int",
+                    DefaultValue = "19",
+                    Description = "The highest zoom the source publishes tiles for.",
+                },
+                new()
+                {
+                    Name = "Subdomains",
+                    Type = "string",
+                    DefaultValue = "abc",
+                    Description = "The values {s} takes, for sources that shard their tiles across hostnames.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "provider",
+            Title = "BitMapProviderBase",
+            Description = "What every provider shares. Each one adds its own options - tiles, style URLs, tokens - documented on its type.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Center",
+                    Type = "BitMapLatLng",
+                    DefaultValue = "51.505, -0.09",
+                    Description = "The initial centre.",
+                },
+                new()
+                {
+                    Name = "Zoom",
+                    Type = "double",
+                    DefaultValue = "13",
+                    Description = "The initial zoom.",
+                },
+                new()
+                {
+                    Name = "MinZoom",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The lowest zoom the user can reach.",
+                },
+                new()
+                {
+                    Name = "MaxZoom",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "The highest zoom the user can reach.",
+                },
+                new()
+                {
+                    Name = "ZoomControl",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Shows the provider's +/- buttons.",
+                },
+                new()
+                {
+                    Name = "AttributionControl",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Shows the attribution - often a licence term of the tiles.",
+                },
+                new()
+                {
+                    Name = "ScrollWheelZoom",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Zooms with the mouse wheel.",
+                },
+                new()
+                {
+                    Name = "DoubleClickZoom",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Zooms on a double click.",
+                },
+                new()
+                {
+                    Name = "BoxZoom",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Zooms to a shift-dragged box (Leaflet, OpenLayers, MapLibre, Mapbox).",
+                },
+                new()
+                {
+                    Name = "Dragging",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Pans by dragging.",
+                },
+                new()
+                {
+                    Name = "KeyboardNavigation",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Pans and zooms with the keyboard while the canvas has focus.",
+                },
+                new()
+                {
+                    Name = "SuppressBrowserContextMenu",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Keeps the browser's own menu from opening on a right-click. Only with a menu of your own in its place.",
+                },
+                new()
+                {
+                    Name = "MaxBounds",
+                    Type = "BitMapLatLngBounds?",
+                    DefaultValue = "null",
+                    Description = "Keeps the view inside a rectangle (Leaflet, MapLibre, Mapbox).",
+                },
+                new()
+                {
+                    Name = "AdditionalOptions",
+                    Type = "Dictionary<string, object?>",
+                    DefaultValue = "",
+                    Description = "Passed straight to the library's map constructor (Leaflet, MapLibre, Mapbox).",
+                },
+            ]
+        },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "marker-list-mode-enum",
+            Name = "BitMapMarkerListMode",
+            Description = "How the text alternative to the markers is rendered.",
+            Items =
+            [
+                new() { Name = "None", Value = "0", Description = "No list is rendered." },
+                new() { Name = "ScreenReaderOnly", Value = "1", Description = "The list is hidden visually but reachable by assistive technologies, and printed." },
+                new() { Name = "Visible", Value = "2", Description = "The list is rendered below the map for everyone." },
+            ]
+        },
+        new()
+        {
+            Id = "load-state-enum",
+            Name = "BitMapLoadState",
+            Description = "Where the map is in its lifecycle.",
+            Items =
+            [
+                new() { Name = "Idle", Value = "0", Description = "Not started yet: prerendering, or waiting to scroll into view under LazyLoad." },
+                new() { Name = "Loading", Value = "1", Description = "The provider's assets are loading or the map is being created." },
+                new() { Name = "Ready", Value = "2", Description = "The map is live and every method can be called." },
+                new() { Name = "Failed", Value = "3", Description = "Creating the map failed; LoadError holds the exception." },
+                new() { Name = "Unsupported", Value = "4", Description = "The browser cannot run this provider - no WebGL for a GL-backed one." },
+            ]
+        },
+        new()
+        {
+            Id = "tooltip-direction-enum",
+            Name = "BitMapTooltipDirection",
+            Description = "Where a marker's tooltip opens.",
+            Items =
+            [
+                new() { Name = "Auto", Value = "0", Description = "The provider picks." },
+                new() { Name = "Top", Value = "1", Description = "Above the marker." },
+                new() { Name = "Bottom", Value = "2", Description = "Below the marker." },
+                new() { Name = "Left", Value = "3", Description = "To the left of the marker." },
+                new() { Name = "Right", Value = "4", Description = "To the right of the marker." },
+                new() { Name = "Center", Value = "5", Description = "Centred on the marker." },
+            ]
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-Map-height", DefaultValue = "100%", Description = "Height of the map. A percentage needs a container with a height of its own." },
+        new() { Name = "--bit-Map-background", DefaultValue = "--bit-clr-bg-sec", Description = "What shows where no tile is drawn: before the tiles load, behind the loading cover and around a fullscreen map." },
+        new() { Name = "--bit-Map-tile-filter", DefaultValue = "none", Description = "CSS filter on the raster tiles of Leaflet and OpenLayers - never the vectors and markers on them. invert(1) hue-rotate(180deg) is a dark basemap." },
+        new() { Name = "--bit-Map-border", DefaultValue = "none", Description = "Border of the map." },
+        new() { Name = "--bit-Map-radius", DefaultValue = "--bit-shp-radius-none", Description = "Corner radius of the map, which clips the tiles too." },
+        new() { Name = "--bit-Map-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focus outline of the map canvas." },
+        new() { Name = "--bit-Map-disabled-opacity", DefaultValue = "--bit-opa-dis", Description = "Opacity of the canvas of a disabled map." },
+        new() { Name = "--bit-Map-popup-background", DefaultValue = "--bit-clr-bg-pri", Description = "Background of the popups (the providers' included) and the keyboard instructions." },
+        new() { Name = "--bit-Map-popup-color", DefaultValue = "--bit-clr-fg-pri", Description = "Text color of the popups and the keyboard instructions." },
+        new() { Name = "--bit-Map-popup-radius", DefaultValue = "--bit-shp-radius-popup", Description = "Corner radius of the popups, the tooltips and the keyboard instructions." },
+        new() { Name = "--bit-Map-popup-shadow", DefaultValue = "--bit-shd-popup", Description = "Elevation of the popups and the keyboard instructions." },
+        new() { Name = "--bit-Map-popup-padding", DefaultValue = "spacing(1) spacing(1.25)", Description = "Padding of the MarkerPopupTemplate popup." },
+        new() { Name = "--bit-Map-popup-max-width", DefaultValue = "18rem", Description = "Widest the MarkerPopupTemplate popup gets before wrapping." },
+        new() { Name = "--bit-Map-tooltip-background", DefaultValue = "--bit-clr-tooltip-bg", Description = "Background of the marker tooltips." },
+        new() { Name = "--bit-Map-tooltip-color", DefaultValue = "--bit-clr-tooltip-fg", Description = "Text color of the marker tooltips." },
+        new() { Name = "--bit-Map-hint-background", DefaultValue = "--bit-clr-bg-overlay", Description = "Backdrop of the cooperative-gestures hint." },
+        new() { Name = "--bit-Map-hint-color", DefaultValue = "--bit-clr-ntr-white", Description = "Text color of the cooperative-gestures hint." },
+        new() { Name = "--bit-Map-marker-color", DefaultValue = "--bit-clr-pri", Description = "The default pin, on every provider, unless BitMapMarker.Color is set." },
+        new() { Name = "--bit-Map-vector-color", DefaultValue = "--bit-clr-pri", Description = "Stroke and fill of the shapes, on every provider, unless BitMapVectorPathStyle.Color is set." },
+        new() { Name = "--bit-Map-cluster-background", DefaultValue = "--bit-clr-pri", Description = "Fill of the cluster bubbles, unless BitMapClustering.Color is set." },
+        new() { Name = "--bit-Map-cluster-color", DefaultValue = "--bit-clr-pri-text", Description = "Count inside the cluster bubbles, unless BitMapClustering.TextColor is set." },
+        new() { Name = "--bit-Map-cluster-border-color", DefaultValue = "--bit-clr-ntr-white", Description = "Ring around the cluster bubbles." },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -410,9 +1130,9 @@ public partial class BitMapDemo
          new()
          {
             Name = "ClosePopup",
-            Type = "Func<ValueTask>",
+            Type = "Func<bool, ValueTask>",
             DefaultValue = "",
-            Description = "Closes the MarkerPopupTemplate popup, if one is open.",
+            Description = "Closes the MarkerPopupTemplate popup, if one is open. Pass true to return the focus to the map.",
          },
          new()
          {
@@ -515,16 +1235,16 @@ public partial class BitMapDemo
          new()
          {
             Name = "FitBounds",
-            Type = "Func<BitMapLatLngBounds, int, double, ValueTask>",
+            Type = "Func<BitMapLatLngBounds, int, double, bool, bool, ValueTask>",
             DefaultValue = "",
-            Description = "Fit the view to the given bounding box, with a pixel padding and a maxZoom ceiling (default 18) so framing a box around a single place does not drop to street level.",
+            Description = "Fit the view to the given bounding box (bounds, padding, maxZoom, animate, essential); the maxZoom ceiling (default 18) keeps a box around a single place from dropping to street level.",
          },
          new()
          {
             Name = "FitBoundsToMarkers",
-            Type = "Func<int, double, ValueTask>",
+            Type = "Func<int, double, bool, bool, ValueTask>",
             DefaultValue = "",
-            Description = "Fit the view to include every marker currently drawn, with the same padding and maxZoom ceiling as FitBounds.",
+            Description = "Fit the view to include every marker currently drawn, with the same arguments as FitBounds.",
          },
          new()
          {
@@ -567,6 +1287,13 @@ public partial class BitMapDemo
             Type = "Func<string, ValueTask>",
             DefaultValue = "",
             Description = "Open a marker's popup.",
+         },
+         new()
+         {
+            Name = "CloseMarkerPopup",
+            Type = "Func<ValueTask<bool>>",
+            DefaultValue = "",
+            Description = "Close the provider's open marker popup; true when one was open. ClosePopup closes the MarkerPopupTemplate one.",
          },
          new()
          {
@@ -718,425 +1445,62 @@ public partial class BitMapDemo
     ];
 
 
-    // ── Provider instances ────────────────────────────────────────────────────
 
-    private readonly BitMapLibreMapProvider maplibreProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
-    private readonly BitOpenLayersMapProvider olProvider = new() { Center = new(35.6762, 139.6503), Zoom = 4 };
-    private readonly BitArcGisMapProvider arcGisProvider = new() { Center = new(40, 0), Zoom = 2, BasemapId = "osm" };
-    private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = "scene3d" };
-
-    // ── Example 2 – Markers ───────────────────────────────────────────────────
+    // ── Markers ───────────────────────────────────────────────────────────────
 
     private BitMap<BitLeafletMapProvider> markersMapRef = default!;
     private readonly BitLeafletMapProvider markersProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
-    private string markersLog = "Seed markers are added on OnReady. Try the buttons.";
-    private int _markerCounter;
+    private string markersLog = "Click, hover or drag a marker.";
+    private int markerCounter;
 
     private async Task OnMarkersReady()
     {
-        await markersMapRef.AddMarker(new BitMapMarker
-        {
-            Id = "paris", Position = new(48.8566, 2.3522),
-            Title = "Paris", PopupHtml = (MarkupString)"<b>Paris</b><br/>Click to open popup.",
-        });
-        await markersMapRef.AddMarker(new BitMapMarker
-        {
-            Id = "london", Position = new(51.5074, -0.1278),
-            Title = "London", PopupHtml = (MarkupString)"<b>London</b><br/>Draggable marker.",
-            Draggable = true,
-            TooltipHtml = (MarkupString)"Drag me!",
-        });
+        await markersMapRef.SyncMarkers(
+        [
+            new() { Id = "paris", Position = new(48.8566, 2.3522), Alt = "Paris", PopupText = "Paris - click a marker to open its popup.", TooltipText = "Paris" },
+            new() { Id = "london", Position = new(51.5074, -0.1278), Alt = "London", PopupText = "London - drag me.", TooltipText = "Drag me", Draggable = true },
+        ]);
         await markersMapRef.FitBoundsToMarkers();
     }
 
     private async Task AddRandomMarker()
     {
-        _markerCounter++;
-        var id = $"m{_markerCounter}";
-
-        // Scatter inside the current viewport so new markers are always visible
-        // wherever the user has panned/zoomed to. We inset the bounds slightly so
-        // markers don't land right on the edge.
+        // Somewhere inside the current view, so the new marker is always visible.
         var view = await markersMapRef.GetView();
-        var sw = view.Bounds.SouthWest;
-        var ne = view.Bounds.NorthEast;
+        var bounds = view.Bounds;
+        var lat = bounds.SouthWest.Latitude + (0.1 + Random.Shared.NextDouble() * 0.8) * bounds.LatitudeSpan;
+        var lng = bounds.SouthWest.Longitude + (0.1 + Random.Shared.NextDouble() * 0.8) * bounds.LongitudeSpan;
+        var position = new BitMapLatLng(lat, lng > 180 ? lng - 360 : lng); // a view across the antimeridian
 
-        var latSpan = ne.Latitude - sw.Latitude;
-        // Handle the antimeridian: when crossing it, NE.lng < SW.lng, so add 360°.
-        var lngSpan = ne.Longitude - sw.Longitude;
-        if (lngSpan < 0) lngSpan += 360;
-
-        const double inset = 0.1; // keep markers ~10% inside each edge
-        var lat = sw.Latitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * latSpan;
-        var lng = sw.Longitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * lngSpan;
-        lat = Math.Clamp(lat, -85, 85);
-        if (lng > 180) lng -= 360;
-        else if (lng < -180) lng += 360;
-
-        // Randomly make some markers draggable so the demo shows OnMarkerDragEnd in action.
-        var draggable = Random.Shared.Next(2) == 0;
-
+        var id = $"marker-{++markerCounter}";
         await markersMapRef.AddMarker(new BitMapMarker
         {
-            Id = id, Position = new(lat, lng),
-            Title = $"Marker {id}{(draggable ? " (draggable)" : "")}",
-            PopupHtml = (MarkupString)($"Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}" +
-                        (draggable ? "<br/><i>Drag me!</i>" : "")),
-            Draggable = draggable,
-            TooltipHtml = draggable ? (MarkupString?)(MarkupString)"Drag me!" : null,
+            Id = id,
+            Position = position,
+            Alt = $"Marker {markerCounter}",
+            PopupText = $"Marker {markerCounter} at {position.Latitude:F4}, {position.Longitude:F4}",
+            TooltipText = $"Marker {markerCounter}",
         });
-        markersLog = $"Added {id}{(draggable ? " (draggable)" : "")} at {lat:F4}, {lng:F4}";
+        markersLog = $"Added {id}.";
     }
+
+    private async Task OpenLondonPopup() => await markersMapRef.OpenMarkerPopup("london");
+
+    private async Task ClosePopup() => markersLog = await markersMapRef.CloseMarkerPopup() ? "Popup closed." : "No popup was open.";
+
+    private async Task FitToMarkers() => await markersMapRef.FitBoundsToMarkers();
 
     private async Task ClearMarkers()
     {
         await markersMapRef.ClearMarkers();
-        markersLog = "All markers cleared.";
+        markersLog = "All markers removed.";
     }
 
-    private async Task OpenLondonPopup()
-    {
-        await markersMapRef.OpenMarkerPopup("london");
-        markersLog = "Opened London popup.";
-    }
+    private void OnMarkerClick(string id) => markersLog = $"Clicked {id}.";
 
-    private async Task FitToMarkers()
-    {
-        await markersMapRef.FitBoundsToMarkers();
-        markersLog = "Fitted view to all markers.";
-    }
+    private void OnMarkerDragEnd(BitMapMarkerDragEndArgs e) => markersLog = $"Dropped {e.Id} at {e.Position.Latitude:F4}, {e.Position.Longitude:F4}.";
 
-    private Task OnMarkerClick(string id) { markersLog = $"Marker click: {id}"; return Task.CompletedTask; }
-    private Task OnMarkerDragEnd(BitMapMarkerDragEndArgs e) { markersLog = $"Drag end {e.Id} → {e.Position.Latitude:F5}, {e.Position.Longitude:F5}"; return Task.CompletedTask; }
-
-    // ── Example 3 – Vectors ───────────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> vectorsMapRef = default!;
-    private readonly BitLeafletMapProvider vectorsProvider = new() { Center = new(37.7749, -122.4194), Zoom = 12 };
-    private string vectorsLog = "Click Redraw to draw shapes, then click a shape.";
-
-    private async Task OnVectorsReady() => await DrawVectors();
-
-    private async Task RedrawVectors()
-    {
-        await vectorsMapRef.ClearVectorLayers();
-        await DrawVectors();
-        vectorsLog = "Vectors redrawn.";
-    }
-
-    private async Task DrawVectors()
-    {
-        await vectorsMapRef.AddPolyline("route",
-        [
-            new(37.80, -122.42), new(37.79, -122.41),
-            new(37.78, -122.40), new(37.77, -122.395),
-        ], new BitMapVectorPathStyle { Color = "#f85149", Weight = 5, Opacity = 0.9 });
-
-        await vectorsMapRef.AddPolygon("park",
-        [
-            new(37.769, -122.486), new(37.771, -122.475),
-            new(37.765, -122.472), new(37.762, -122.482),
-        ], new BitMapVectorPathStyle { Color = "#3fb950", FillOpacity = 0.35, Weight = 2 });
-
-        await vectorsMapRef.AddCircle("radius", new(37.7849, -122.4094), 900,
-            new BitMapVectorPathStyle { Color = "#58a6ff", FillOpacity = 0.15, Weight = 2 });
-
-        await vectorsMapRef.AddRectangle("box",
-            new BitMapLatLngBounds(new(37.748, -122.44), new(37.756, -122.42)),
-            new BitMapVectorPathStyle { Color = "#d29922", FillOpacity = 0.12, Weight = 2, DashArray = "6,4" });
-
-        await vectorsMapRef.FitBounds(
-            new BitMapLatLngBounds(new(37.755, -122.49), new(37.805, -122.38)));
-    }
-
-    private async Task ClearVectors()
-    {
-        await vectorsMapRef.ClearVectorLayers();
-        vectorsLog = "All vector layers cleared.";
-    }
-
-    private Task OnVectorClick(BitMapVectorClickArgs e)
-    {
-        vectorsLog = $"{e.Kind} \"{e.LayerId}\" @ {e.Position.Latitude:F5}, {e.Position.Longitude:F5}";
-        return Task.CompletedTask;
-    }
-
-    // ── Example 4 – GeoJSON ───────────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> geoJsonMapRef = default!;
-    private readonly BitLeafletMapProvider geoJsonProvider = new() { Center = new(40.7128, -74.0060), Zoom = 11 };
-    private string geoJsonLog = "Click 'Load GeoJSON', then click a feature.";
-
-    private async Task LoadGeoJson()
-    {
-        await geoJsonMapRef.RemoveLayer("demo");
-        await geoJsonMapRef.AddGeoJson("demo", SampleGeoJson,
-            new BitMapVectorPathStyle { Color = "#a371f7", Weight = 3, FillOpacity = 0.25 });
-        await geoJsonMapRef.FitBounds(new BitMapLatLngBounds(new(40.71, -74.03), new(40.83, -73.96)));
-        geoJsonLog = "GeoJSON loaded. Click a feature.";
-    }
-
-    private async Task RemoveGeoJson()
-    {
-        await geoJsonMapRef.RemoveLayer("demo");
-        geoJsonLog = "Layer \"demo\" removed.";
-    }
-
-    private Task OnGeoJsonFeatureClick(BitMapGeoJsonFeatureClickArgs e)
-    {
-        var name = "(no name)";
-        if (e.Properties.ValueKind == System.Text.Json.JsonValueKind.Object
-            && e.Properties.TryGetProperty("name", out var n))
-        {
-            name = n.ValueKind == System.Text.Json.JsonValueKind.String ? n.GetString() : n.ToString();
-        }
-        geoJsonLog = $"Layer {e.LayerId} - properties.name = {name}";
-        return Task.CompletedTask;
-    }
-
-    // Minimal GeoJSON FeatureCollection for the demo
-    private const string SampleGeoJson = """
-        {
-          "type": "FeatureCollection",
-          "features": [
-            {
-              "type": "Feature",
-              "properties": { "name": "Central Park" },
-              "geometry": {
-                "type": "Polygon",
-                "coordinates": [[
-                  [-73.981, 40.768], [-73.958, 40.768],
-                  [-73.958, 40.800], [-73.981, 40.800],
-                  [-73.981, 40.768]
-                ]]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": { "name": "Brooklyn Bridge" },
-              "geometry": {
-                "type": "LineString",
-                "coordinates": [[-73.9969, 40.7061], [-73.9875, 40.7026]]
-              }
-            }
-          ]
-        }
-        """;
-
-    // ── Example 5 – Custom tiles ──────────────────────────────────────────────
-
-    private string tileProvider = "osm";
-
-    private BitLeafletMapProvider currentTileLeafletProvider = new()
-    {
-        Center = new(51.505, -0.09), Zoom = 13,
-    };
-
-    private void SetTileProvider(string p)
-    {
-        tileProvider = p;
-        currentTileLeafletProvider = p switch
-        {
-            "carto" => new BitLeafletMapProvider
-            {
-                Center = new(20, 0), Zoom = 2,
-                TileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-                TileAttribution = "&copy; OpenStreetMap contributors &copy; <a href=\"https://carto.com/attributions\">CARTO</a>",
-            },
-            "topo" => new BitLeafletMapProvider
-            {
-                Center = new(46.5, 11.3), Zoom = 10,
-                TileUrl = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-                TileAttribution = "Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap",
-                TileMaxZoom = 17,
-            },
-            _ => new BitLeafletMapProvider { Center = new(51.505, -0.09), Zoom = 13 },
-        };
-    }
-
-    // ── Example 6 – Events ────────────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> eventsMapRef = default!;
-    private readonly BitLeafletMapProvider eventsProvider = new() { Center = new(35.6762, 139.6503), Zoom = 11 };
-    private string eventsLog = "Pan/zoom or click the map.";
-
-    private Task OnMapClick(BitMapLatLng p) { eventsLog = $"Click → {p.Latitude:F5}, {p.Longitude:F5}"; return Task.CompletedTask; }
-    private Task OnMapDoubleClick(BitMapLatLng p) { eventsLog = $"Double-click → {p.Latitude:F5}, {p.Longitude:F5}"; return Task.CompletedTask; }
-    private Task OnMapContextMenu(BitMapLatLng p) { eventsLog = $"Right-click → {p.Latitude:F5}, {p.Longitude:F5}"; return Task.CompletedTask; }
-    private Task OnViewChanged(BitMapViewState v)
-    {
-        eventsLog = $"View: zoom {v.Zoom:F1}, center {v.Center.Latitude:F4},{v.Center.Longitude:F4}";
-        return Task.CompletedTask;
-    }
-
-    private async Task FlyToTokyo()
-    {
-        await eventsMapRef.FlyTo(new(35.6762, 139.6503), 12);
-        eventsLog = "Flying to Tokyo…";
-    }
-
-    private async Task ReadView()
-    {
-        var v = await eventsMapRef.GetView();
-        eventsLog = $"GetView → zoom {v.Zoom:F2}, center {v.Center.Latitude:F4},{v.Center.Longitude:F4}, " +
-                    $"NE {v.Bounds.NorthEast.Latitude:F4},{v.Bounds.NorthEast.Longitude:F4}";
-    }
-
-    // ── Example 7 – Advanced ──────────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> advMapRef = default!;
-    private bool advScrollWheel = true;
-    private bool advDragging = true;
-    private bool advScaleBar = true;
-    private bool advMaxBounds;
-    private bool advOverlayOn;
-    private string advLog = "Toggle options or use the buttons.";
-
-    private BitLeafletMapProvider advProvider = new()
-    {
-        Center = new(51.5074, -0.1278), Zoom = 11,
-        ScrollWheelZoom = true,
-        Dragging = true,
-        ShowScaleControl = true,
-        MaxBounds = null,
-    };
-
-    private BitLeafletMapProvider BuildAdvancedProvider()
-    {
-        advProvider = new()
-        {
-            Center = new(51.5074, -0.1278), Zoom = 11,
-            ScrollWheelZoom = advScrollWheel,
-            Dragging = advDragging,
-            ShowScaleControl = advScaleBar,
-            MaxBounds = advMaxBounds
-                ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
-                : null,
-        };
-        // Rebuilding the provider replaces the underlying Leaflet map instance,
-        // so any previously-added overlays no longer exist on the new map.
-        // Reset the toggle state so the UI label/branch reflects that.
-        advOverlayOn = false;
-        return advProvider;
-    }
-
-    private async Task OnAdvancedReady()
-    {
-        await AddTooltipMarkers();
-    }
-
-    private async Task AddTooltipMarkers()
-    {
-        await advMapRef.ClearMarkers();
-        await advMapRef.AddMarker(new BitMapMarker { Id = "a", Position = new(51.52, -0.10), TooltipHtml = (MarkupString)"<b>West End</b>", PopupHtml = (MarkupString)"Popup A", ZIndexOffset = 10 });
-        await advMapRef.AddMarker(new BitMapMarker { Id = "b", Position = new(51.50, -0.08), TooltipHtml = (MarkupString)"City", PopupHtml = (MarkupString)"Popup B" });
-        await advMapRef.AddMarker(new BitMapMarker { Id = "c", Position = new(51.48, -0.06), TooltipHtml = (MarkupString)"South Bank", PopupHtml = (MarkupString)"Popup C" });
-        await advMapRef.FitBoundsToMarkers(56);
-        advLog = "Three tooltip markers added; view fitted.";
-    }
-
-    private async Task ToggleTileOverlay()
-    {
-        if (advOverlayOn)
-        {
-            await advMapRef.RemoveTileOverlay("labels");
-            advOverlayOn = false;
-            advLog = "Tile overlay removed.";
-        }
-        else
-        {
-            await advMapRef.AddTileOverlay(new BitMapTileOverlay
-            {
-                Id = "labels",
-                UrlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png",
-                Attribution = "Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap.",
-                Opacity = 0.85,
-                ZIndex = 400,
-                MaxZoom = 20,
-            });
-            advOverlayOn = true;
-            advLog = "Tile overlay added (may fail if the tile host blocks your origin).";
-        }
-    }
-
-    private async Task ReadAdvancedView()
-    {
-        var v = await advMapRef.GetView();
-        advLog = $"GetView → zoom {v.Zoom:F2}, center {v.Center.Latitude:F4},{v.Center.Longitude:F4}, " +
-                 $"NE {v.Bounds.NorthEast.Latitude:F4},{v.Bounds.NorthEast.Longitude:F4}";
-    }
-
-    private Task OnAdvancedDoubleClick(BitMapLatLng p) { advLog = $"Double-click at {p.Latitude:F4}, {p.Longitude:F4}"; return Task.CompletedTask; }
-
-    // ── Example 8 – Navigation ────────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> navMapRef = default!;
-    private readonly BitLeafletMapProvider navProvider = new() { Center = new(41.9028, 12.4964), Zoom = 5 };
-    private string navLog = "Use the buttons to drive the camera from code.";
-
-    private async Task NavZoomIn() => await navMapRef.ZoomIn();
-
-    private async Task NavZoomOut() => await navMapRef.ZoomOut();
-
-    private async Task NavSetZoom() => await navMapRef.SetZoom(6);
-
-    private async Task NavPan(double dx, double dy)
-    {
-        await navMapRef.PanBy(dx, dy);
-        navLog = $"Panned by {dx}, {dy} pixels.";
-    }
-
-    private async Task FlyToRome()
-    {
-        await navMapRef.FlyTo(new(41.9028, 12.4964), 11);
-        navLog = "Flew to Rome. Under a reduced-motion preference this jumps instead of animating.";
-    }
-
-    private async Task LocateMe()
-    {
-        var result = await navMapRef.Locate(new() { Zoom = 13 });
-        navLog = result is null
-            ? "Location unavailable - the browser denied the request or timed out."
-            : $"Located at {result.Position.Latitude:F4}, {result.Position.Longitude:F4} (±{result.AccuracyMeters:F0} m)";
-    }
-
-    // ── Example 9 – Accessibility ─────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> a11yMapRef = default!;
-    private bool a11yCooperative = true;
-    private bool a11yAnnounce = true;
-    private bool a11yShowList = true;
-    private readonly BitLeafletMapProvider a11yProvider = new() { Center = new(52.5200, 13.4050), Zoom = 12 };
-
-    // Every marker carries an Alt: it is the accessible name, and it is what the marker table
-    // lists. Without one both would fall back to the id.
-    private readonly List<BitMapMarker> a11yMarkers =
-    [
-        new() { Id = "gate", Position = new(52.5163, 13.3777), Alt = "Brandenburg Gate", PopupText = "Brandenburg Gate" },
-        new() { Id = "island", Position = new(52.5169, 13.4019), Alt = "Museum Island", PopupText = "Museum Island" },
-        new() { Id = "tower", Position = new(52.5208, 13.4094), Alt = "TV Tower", PopupText = "TV Tower" },
-    ];
-
-    private async Task OnAccessibilityReady()
-    {
-        foreach (var marker in a11yMarkers)
-        {
-            await a11yMapRef.AddMarker(marker);
-        }
-        await a11yMapRef.FitBoundsToMarkers();
-    }
-
-    // Announcing a place beats announcing coordinates: "zoom level 12" tells a screen-reader
-    // user nothing about where they are. A real app would reverse-geocode here.
-    private string FormatAnnouncement(BitMapViewState view)
-        => $"Map showing Berlin at zoom {view.Zoom:F0}, centred near {view.Center.Latitude:F2}, {view.Center.Longitude:F2}.";
-
-    // ── Example 10 – Loading and lifecycle ────────────────────────────────────
-
-    private BitMapLoadState lifecycleState = BitMapLoadState.Idle;
-    private readonly BitLeafletMapProvider lifecycleProvider = new() { Center = new(59.9139, 10.7522), Zoom = 10 };
-
-    // ── Example 11 – Data binding ─────────────────────────────────────────────
+    // ── Data binding ──────────────────────────────────────────────────────────
 
     private BitMapLatLng? boundCenter = new(41.9028, 12.4964);
     private double? boundZoom = 5;
@@ -1149,167 +1513,64 @@ public partial class BitMapDemo
 
     private void AddBoundMarker()
     {
-        boundMarkerCounter++;
-        var id = $"m{boundMarkerCounter}";
-        // A new list instance: the parameter is compared by reference, and the markers inside it
-        // by value, so only this one addition reaches the map.
+        var id = $"marker-{++boundMarkerCounter}";
+        // A new list: the parameter is compared by reference, the markers in it by value.
         boundMarkers = [.. boundMarkers, new BitMapMarker
         {
             Id = id,
-            Position = new(boundCenter?.Latitude ?? 0, boundCenter?.Longitude ?? 0),
-            Alt = $"Marker {id}",
-            PopupText = $"Marker {id}",
+            Position = boundCenter ?? new(0, 0),
+            Alt = $"Marker {boundMarkerCounter}",
+            PopupText = $"Marker {boundMarkerCounter}",
         }];
     }
 
     private void MoveFirstBoundMarker()
     {
         if (boundMarkers.Count == 0) return;
+
         var first = boundMarkers[0];
-        boundMarkers = [first with { Position = new(first.Position.Latitude + 1, first.Position.Longitude + 1) },
-                        .. boundMarkers.Skip(1)];
+        boundMarkers = [first with { Position = first.Position.Offset(100_000, 45) }, .. boundMarkers.Skip(1)];
     }
 
-    // ── Example 12 – Clustering ───────────────────────────────────────────────
+    // ── Marker icons ──────────────────────────────────────────────────────────
 
-    private readonly BitLeafletMapProvider clusterProvider = new() { Center = new(51.5074, -0.1278), Zoom = 5 };
-    private bool clusterEnabled = true;
-    private BitMapClustering? clusterOptions = new() { RadiusPixels = 60, MaxZoom = 14 };
-    private List<BitMapMarker> clusterMarkers = BuildScatteredMarkers();
-    private string clusterLog = "Click a bubble to zoom into it, or a single pin for its own click event.";
+    private BitMap<BitLeafletMapProvider> iconsMapRef = default!;
+    private readonly BitLeafletMapProvider iconsProvider = new() { Center = new(51.5045, -0.0865), Zoom = 15 };
+    private bool iconCentreAnchor = true;
+    private List<BitMapMarker> iconMarkers = BuildIconMarkers(true);
 
-    private void ToggleClustering(bool enabled)
+    // The coordinate the disc stands for, marked by a ring so the anchoring can be seen.
+    private static readonly BitMapLatLng iconProbe = new(51.5045, -0.0865);
+
+    private static string DiscIcon(string fill) => "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
+        $"""<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="{fill}" stroke="#fff" stroke-width="3"/></svg>""");
+
+    private async Task OnIconsReady()
     {
-        clusterEnabled = enabled;
-        // Null turns clustering off and hands every marker straight back to the provider.
-        clusterOptions = enabled ? new BitMapClustering { RadiusPixels = 60, MaxZoom = 14 } : null;
+        await iconsMapRef.AddCircle("probe", iconProbe, 12, new() { Color = "#111", Weight = 2, Fill = false });
     }
 
-    private void RegenerateClusterMarkers()
+    private void ToggleIconAnchor(bool centred)
     {
-        clusterMarkers = BuildScatteredMarkers();
-        clusterLog = $"Scattered {clusterMarkers.Count} markers again.";
+        iconCentreAnchor = centred;
+        iconMarkers = BuildIconMarkers(centred);
     }
 
-    /// <summary>Scatters markers around a handful of European cities so the clusters are uneven.</summary>
-    private static List<BitMapMarker> BuildScatteredMarkers()
-    {
-        (string Name, double Lat, double Lng, int Count)[] cities =
-        [
-            ("London", 51.5074, -0.1278, 160),
-            ("Paris", 48.8566, 2.3522, 120),
-            ("Berlin", 52.5200, 13.4050, 90),
-            ("Madrid", 40.4168, -3.7038, 70),
-            ("Rome", 41.9028, 12.4964, 60),
-        ];
-
-        var markers = new List<BitMapMarker>();
-        foreach (var (name, lat, lng, count) in cities)
-        {
-            for (var i = 0; i < count; i++)
-            {
-                markers.Add(new BitMapMarker
-                {
-                    Id = $"{name}-{i}",
-                    Position = new(
-                        Math.Clamp(lat + (Random.Shared.NextDouble() - 0.5) * 2.5, -85, 85),
-                        Math.Clamp(lng + (Random.Shared.NextDouble() - 0.5) * 2.5, -180, 180)),
-                    Alt = $"{name} location {i + 1}",
-                    PopupText = $"{name} #{i + 1}",
-                });
-            }
-        }
-        return markers;
-    }
-
-    private Task OnClusterClick(BitMapClusterClickArgs e)
-    {
-        clusterLog = $"Cluster of {e.Count} markers - zoomed to fit them.";
-        return Task.CompletedTask;
-    }
-
-    private Task OnClusterMarkerClick(string id)
-    {
-        clusterLog = $"Marker click: {id}";
-        return Task.CompletedTask;
-    }
-
-    // ── Example 13 – Layer control ────────────────────────────────────────────
-
-    private BitMap<BitLeafletMapProvider> layersMapRef = default!;
-    private readonly BitLeafletMapProvider layersProvider = new() { Center = new(51.5074, -0.1278), Zoom = 11 };
-    private bool layerVisible = true;
-    private bool overlayVisible = true;
-    private int layerStyleIndex;
-    private string layersLog = "Toggle the area and the overlay, or restyle the area in place.";
-
-    private static readonly BitMapVectorPathStyle[] LayerStyles =
+    private static List<BitMapMarker> BuildIconMarkers(bool centred) =>
     [
-        new() { Color = "#3388ff", FillColor = "#3388ff", FillOpacity = 0.2, Weight = 3 },
-        new() { Color = "#e53935", FillColor = "#e53935", FillOpacity = 0.3, Weight = 5, DashArray = "6 4" },
-        new() { Color = "#2e7d32", Fill = false, Weight = 4 },
+        // The default pin, in the theme's primary color - or any other, a theme variable included.
+        new() { Id = "pin", Position = iconProbe.Offset(110, 300), Alt = "Pin in the primary color" },
+        new() { Id = "pin-sec", Position = iconProbe.Offset(110, 240), Alt = "Pin in the secondary color", Color = "var(--bit-clr-sec)" },
+        // A disc stands for the coordinate at its centre, so it has to say so.
+        new()
+        {
+            Id = "disc", Position = iconProbe, Alt = centred ? "Disc, anchored at its centre" : "Disc, on the default anchor",
+            IconUrl = DiscIcon(centred ? "#107c10" : "#8a8886"), IconWidth = 28, IconHeight = 28,
+            IconAnchorX = centred ? 14 : null, IconAnchorY = centred ? 14 : null,
+        },
     ];
 
-    private async Task OnLayersReady()
-    {
-        await layersMapRef.AddCircle("area", new(51.5074, -0.1278), 6000, LayerStyles[0]);
-        await layersMapRef.AddTileOverlay(new BitMapTileOverlay
-        {
-            Id = "labels",
-            UrlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png",
-            Attribution = "Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap.",
-            Opacity = 0.35,
-            MinZoom = 3,
-            MaxZoom = 19,
-        });
-    }
-
-    private async Task ToggleLayerVisibility()
-    {
-        layerVisible = !layerVisible;
-        await layersMapRef.SetLayerVisible("area", layerVisible);
-        layersLog = layerVisible
-            ? "The area is back - its definition was kept while it was hidden."
-            : "The area is hidden. It no longer draws, and no longer swallows clicks.";
-    }
-
-    private async Task CycleLayerStyle()
-    {
-        layerStyleIndex = (layerStyleIndex + 1) % LayerStyles.Length;
-        await layersMapRef.SetLayerStyle("area", LayerStyles[layerStyleIndex]);
-        layersLog = $"Restyled the area (style {layerStyleIndex + 1} of {LayerStyles.Length}) without restating its geometry.";
-    }
-
-    private async Task ToggleOverlayVisibility()
-    {
-        overlayVisible = !overlayVisible;
-        await layersMapRef.SetTileOverlayVisible("labels", overlayVisible);
-        layersLog = overlayVisible ? "Overlay shown." : "Overlay hidden.";
-    }
-
-    private async Task DimOverlay()
-    {
-        await layersMapRef.SetTileOverlayOpacity("labels", 0.15);
-        layersLog = "Overlay dimmed to 0.15 opacity.";
-    }
-
-    private async Task GoFullscreen()
-    {
-        // Must run from a real click: the browser only honours a fullscreen request inside the
-        // short activation window a gesture opens.
-        if (await layersMapRef.RequestFullscreen() is false)
-        {
-            layersLog = "The browser refused the fullscreen request.";
-        }
-    }
-
-    private Task OnLayersFullscreenChanged(bool isFullscreen)
-    {
-        layersLog = isFullscreen ? "Fullscreen - press Escape to leave." : "Left fullscreen.";
-        return Task.CompletedTask;
-    }
-
-    // ── Example 14 – Popup content ────────────────────────────────────────────
+    // ── Popup content ─────────────────────────────────────────────────────────
 
     private readonly BitLeafletMapProvider popupProvider = new() { Center = new(48.2082, 16.3738), Zoom = 12 };
     private readonly List<BitMapMarker> popupMarkers =
@@ -1319,1232 +1580,372 @@ public partial class BitMapDemo
         new() { Id = "belvedere", Position = new(48.1915, 16.3809), Alt = "Belvedere" },
     ];
     private readonly Dictionary<string, int> popupVisits = [];
-    private string popupLog = "Click a marker, then use the button inside its popup.";
+    private string popupLog = "Click a marker, then the button in its popup.";
 
     private int GetVisitorCount(string markerId) => popupVisits.GetValueOrDefault(markerId);
 
-    // An event handler inside the popup - the thing an HTML-string popup cannot do at all.
+    // An event handler inside the popup - which an HTML-string popup cannot have.
     private void RecordVisit(string markerId)
     {
         popupVisits[markerId] = GetVisitorCount(markerId) + 1;
-        popupLog = $"Recorded a visit to {markerId}. The popup re-rendered in place.";
+        popupLog = $"Recorded a visit to {markerId}.";
     }
 
-    private Task OnPopupOpened(BitMapMarker marker)
+    private void OnPopupOpened(BitMapMarker marker) => popupLog = $"Opened the popup of {marker.Alt}.";
+
+    // ── Clustering ────────────────────────────────────────────────────────────
+
+    private readonly BitLeafletMapProvider clusterProvider = new() { Center = new(48.5, 5), Zoom = 4 };
+    private bool clusterEnabled = true;
+    private BitMapClustering? clusterOptions = new() { RadiusPixels = 60, MaxZoom = 14 };
+    private List<BitMapMarker> clusterMarkers = ScatterMarkers();
+    private string clusterLog = "Click a bubble to zoom into it.";
+
+    private void ToggleClustering(bool enabled)
     {
-        popupLog = $"Popup opened for {marker.Alt}.";
-        return Task.CompletedTask;
+        clusterEnabled = enabled;
+        // Null turns clustering off and hands every marker back to the provider.
+        clusterOptions = enabled ? new() { RadiusPixels = 60, MaxZoom = 14 } : null;
     }
 
-    // ── Example 21 – Style & Class ────────────────────────────────────────────
+    private void RegenerateClusterMarkers() => clusterMarkers = ScatterMarkers();
 
-    private BitMap<BitLeafletMapProvider> iconsMapRef = default!;
-    private readonly BitLeafletMapProvider iconsProvider = new() { Center = new(51.5045, -0.0865), Zoom = 15 };
-    private bool iconCentreAnchor = true;
-    private List<BitMapMarker> iconMarkers = [];
-
-    /// <summary>The coordinate every icon in the sample points at, so the anchoring is comparable.</summary>
-    private static readonly BitMapLatLng IconAnchorProbe = new(51.5045, -0.0865);
-
-    private static string DiscIcon(string fill) =>
-        "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
-            $"""<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="{fill}" stroke="#fff" stroke-width="3"/></svg>""");
-
-    private static string PinIcon(string fill) =>
-        "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
-            $"""<svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox="0 0 24 36"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z" fill="{fill}" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>""");
-
-    private async Task OnIconsReady()
+    private static List<BitMapMarker> ScatterMarkers()
     {
-        BuildIconMarkers();
-        // A thin ring drawn at the exact coordinate, so the anchoring is visible rather than
-        // something you have to take on trust.
-        await iconsMapRef.AddCircle("probe", IconAnchorProbe, 12, new BitMapVectorPathStyle
-        {
-            Color = "#111",
-            Weight = 2,
-            Fill = false,
-        });
-        StateHasChanged();
-    }
-
-    private void ToggleIconAnchor(bool centred)
-    {
-        iconCentreAnchor = centred;
-        BuildIconMarkers();
-    }
-
-    private void BuildIconMarkers()
-    {
-        iconMarkers =
+        (string Name, double Lat, double Lng, int Count)[] cities =
         [
-            // A pin: its tip is at the bottom, which is exactly what the default anchor assumes.
-            new()
-            {
-                Id = "pin",
-                Position = IconAnchorProbe.Offset(90, 270),
-                Alt = "Pin icon, anchored at its tip",
-                IconUrl = PinIcon("#d13438"),
-                IconWidth = 24,
-                IconHeight = 36,
-            },
-            // A disc: the coordinate it stands for is at its centre, so it has to say so.
-            new()
-            {
-                Id = "disc",
-                Position = IconAnchorProbe,
-                Alt = iconCentreAnchor ? "Disc icon, anchored at its centre" : "Disc icon, left on the default anchor",
-                IconUrl = DiscIcon(iconCentreAnchor ? "#107c10" : "#8a8886"),
-                IconWidth = 28,
-                IconHeight = 28,
-                IconAnchorX = iconCentreAnchor ? 14 : null,
-                IconAnchorY = iconCentreAnchor ? 14 : null,
-            },
+            ("London", 51.5074, -0.1278, 160), ("Paris", 48.8566, 2.3522, 120), ("Berlin", 52.5200, 13.4050, 90),
+            ("Madrid", 40.4168, -3.7038, 70), ("Rome", 41.9028, 12.4964, 60),
         ];
+
+        return [.. cities.SelectMany(c => Enumerable.Range(1, c.Count).Select(i => new BitMapMarker
+        {
+            Id = $"{c.Name}-{i}",
+            Position = new(c.Lat + (Random.Shared.NextDouble() - 0.5) * 2.5, c.Lng + (Random.Shared.NextDouble() - 0.5) * 2.5),
+            Alt = $"{c.Name} location {i}",
+            PopupText = $"{c.Name} #{i}",
+        }))];
     }
 
+    private void OnClusterClick(BitMapClusterClickArgs e) => clusterLog = $"A bubble of {e.Count} markers - zoomed to fit them.";
 
+    private void OnClusterMarkerClick(string id) => clusterLog = $"Clicked {id}.";
+
+    // ── Vector layers ─────────────────────────────────────────────────────────
+
+    private BitMap<BitLeafletMapProvider> vectorsMapRef = default!;
+    private readonly BitLeafletMapProvider vectorsProvider = new() { Center = new(37.7749, -122.4194), Zoom = 12 };
+    private string vectorsLog = "Click a shape.";
+
+    private async Task DrawVectors()
+    {
+        await vectorsMapRef.ClearVectorLayers();
+
+        await vectorsMapRef.AddPolyline("route", [new(37.80, -122.42), new(37.79, -122.41), new(37.78, -122.40), new(37.77, -122.395)],
+            new() { Color = "#d13438", Weight = 5 });
+        await vectorsMapRef.AddPolygon("park", [new(37.769, -122.486), new(37.771, -122.475), new(37.765, -122.472), new(37.762, -122.482)],
+            new() { Color = "#107c10", FillOpacity = 0.35, Weight = 2 });
+        await vectorsMapRef.AddCircle("radius", new(37.7849, -122.4094), 900,
+            new() { Color = "#0065ef", FillOpacity = 0.15, Weight = 2 });
+        await vectorsMapRef.AddRectangle("box", new(new(37.748, -122.44), new(37.756, -122.42)),
+            new() { Color = "#c19c00", FillOpacity = 0.12, Weight = 2, DashArray = "6 4" });
+
+        await vectorsMapRef.FitBounds(new(new(37.755, -122.49), new(37.805, -122.38)));
+        vectorsLog = "Four shapes drawn. Click one.";
+    }
+
+    private async Task LoadGeoJson()
+    {
+        await vectorsMapRef.ClearVectorLayers();
+        await vectorsMapRef.AddGeoJson("nyc", sampleGeoJson, new() { Color = "#8764b8", Weight = 3, FillOpacity = 0.25 });
+        await vectorsMapRef.FitBounds(new(new(40.70, -74.01), new(40.81, -73.95)));
+        vectorsLog = "GeoJSON loaded. Click a feature.";
+    }
+
+    private async Task ClearVectors()
+    {
+        await vectorsMapRef.ClearVectorLayers();
+        vectorsLog = "All vector layers removed.";
+    }
+
+    private void OnVectorClick(BitMapVectorClickArgs e) => vectorsLog = $"Clicked the {e.Kind} \"{e.LayerId}\".";
+
+    private void OnGeoJsonFeatureClick(BitMapGeoJsonFeatureClickArgs e)
+    {
+        // The properties are whatever the document carries - read them as data, never render them as HTML.
+        var name = e.Properties.TryGetProperty("name", out var value) ? value.ToString() : "(unnamed)";
+        vectorsLog = $"Clicked the feature \"{name}\" of the layer \"{e.LayerId}\".";
+    }
+
+    private const string sampleGeoJson = """
+        {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": { "name": "Central Park" },
+              "geometry": { "type": "Polygon", "coordinates": [[[-73.981, 40.768], [-73.958, 40.768], [-73.958, 40.800], [-73.981, 40.800], [-73.981, 40.768]]] }
+            },
+            {
+              "type": "Feature",
+              "properties": { "name": "Brooklyn Bridge" },
+              "geometry": { "type": "LineString", "coordinates": [[-73.9969, 40.7061], [-73.9875, 40.7026]] }
+            }
+          ]
+        }
+        """;
+
+    // ── Layers ────────────────────────────────────────────────────────────────
+
+    private BitMap<BitLeafletMapProvider> layersMapRef = default!;
+    private string basemap = "osm";
+    private BitLeafletMapProvider layersProvider = new() { Center = new(51.5074, -0.1278), Zoom = 11 };
+    private bool layerVisible = true;
+    private bool overlayVisible = true;
+    private bool overlayDimmed;
+    private int layerStyleIndex;
+    private string layersLog = "Switch the basemap, or change the area and the labels.";
+
+    private static readonly BitMapVectorPathStyle[] layerStyles =
+    [
+        new() { Color = "#0065ef", FillOpacity = 0.2, Weight = 3 },
+        new() { Color = "#d13438", FillOpacity = 0.3, Weight = 5, DashArray = "6 4" },
+        new() { Color = "#107c10", Fill = false, Weight = 4 },
+    ];
+
+    private void SetBasemap(string name)
+    {
+        basemap = name;
+        // A new instance is what pushes the change: the provider is compared by reference.
+        layersProvider = name switch
+        {
+            "carto" => new()
+            {
+                Center = new(51.5074, -0.1278), Zoom = 11,
+                TileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+                TileAttribution = "&copy; OpenStreetMap contributors &copy; <a href=\"https://carto.com/attributions\">CARTO</a>",
+            },
+            "topo" => new()
+            {
+                Center = new(51.5074, -0.1278), Zoom = 11, TileMaxZoom = 17,
+                TileUrl = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+                TileAttribution = "Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap",
+            },
+            _ => new() { Center = new(51.5074, -0.1278), Zoom = 11 },
+        };
+    }
+
+    private async Task OnLayersReady()
+    {
+        await layersMapRef.AddCircle("area", new(51.5074, -0.1278), 6000, layerStyles[0]);
+        await layersMapRef.AddTileOverlay(new()
+        {
+            Id = "labels",
+            UrlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png",
+            Attribution = "Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap.",
+            Opacity = 0.8,
+            MinZoom = 3,
+        });
+    }
+
+    private async Task ToggleLayerVisibility()
+    {
+        layerVisible = !layerVisible;
+        await layersMapRef.SetLayerVisible("area", layerVisible);
+        layersLog = layerVisible ? "The area is back, as it was defined." : "The area is hidden - and takes no clicks.";
+    }
+
+    private async Task CycleLayerStyle()
+    {
+        layerStyleIndex = (layerStyleIndex + 1) % layerStyles.Length;
+        await layersMapRef.SetLayerStyle("area", layerStyles[layerStyleIndex]);
+        layersLog = $"Restyled the area (style {layerStyleIndex + 1} of {layerStyles.Length}).";
+    }
+
+    private async Task ToggleOverlayVisibility()
+    {
+        overlayVisible = !overlayVisible;
+        await layersMapRef.SetTileOverlayVisible("labels", overlayVisible);
+        layersLog = overlayVisible ? "The labels are shown." : "The labels are hidden.";
+    }
+
+    private async Task ToggleOverlayOpacity()
+    {
+        overlayDimmed = !overlayDimmed;
+        await layersMapRef.SetTileOverlayOpacity("labels", overlayDimmed ? 0.25 : 0.8);
+        layersLog = overlayDimmed ? "The labels are dimmed." : "The labels are bright again.";
+    }
+
+    // ── Camera & events ───────────────────────────────────────────────────────
+
+    private BitMap<BitLeafletMapProvider> eventsMapRef = default!;
+    private readonly BitLeafletMapProvider eventsProvider = new() { Center = new(41.9028, 12.4964), Zoom = 5 };
+    private string eventsLog = "Click, double-click or right-click the map, or pan it.";
+
+    private void OnMapClick(BitMapLatLng p) => eventsLog = $"Click at {p.Latitude:F4}, {p.Longitude:F4}";
+
+    private void OnMapDoubleClick(BitMapLatLng p) => eventsLog = $"Double-click at {p.Latitude:F4}, {p.Longitude:F4}";
+
+    private void OnMapContextMenu(BitMapLatLng p) => eventsLog = $"Right-click at {p.Latitude:F4}, {p.Longitude:F4}";
+
+    private void OnViewChanged(BitMapViewState v) => eventsLog = $"View settled: zoom {v.Zoom:F1}, centre {v.Center.Latitude:F4}, {v.Center.Longitude:F4}";
+
+    private async Task FlyToTokyo() => await eventsMapRef.FlyTo(new(35.6762, 139.6503), 11);
+
+    private async Task ZoomToSix() => await eventsMapRef.SetZoom(6);
+
+    private async Task LocateMe()
+    {
+        var result = await eventsMapRef.Locate(new() { Zoom = 13 });
+        eventsLog = result is null
+            ? "The browser refused the location request, or it timed out."
+            : $"Located at {result.Position.Latitude:F4}, {result.Position.Longitude:F4} (±{result.AccuracyMeters:F0} m)";
+    }
+
+    private async Task ReadView()
+    {
+        var v = await eventsMapRef.GetView();
+        eventsLog = $"Zoom {v.Zoom:F2}, centre {v.Center.Latitude:F4}, {v.Center.Longitude:F4}, " +
+                    $"bounds {v.Bounds.SouthWest.Latitude:F2}, {v.Bounds.SouthWest.Longitude:F2} - {v.Bounds.NorthEast.Latitude:F2}, {v.Bounds.NorthEast.Longitude:F2}";
+    }
+
+    // ── Interaction ───────────────────────────────────────────────────────────
+
+    private bool interScrollWheel = true;
+    private bool interDragging = true;
+    private bool interScaleBar = true;
+    private bool interMaxBounds;
+    private bool interEnabled = true;
+    private BitLeafletMapProvider interProvider = new() { Center = new(51.5074, -0.1278), Zoom = 10, ShowScaleControl = true };
+
+    private void BuildInteractionProvider()
+    {
+        interProvider = new()
+        {
+            Center = new(51.5074, -0.1278), Zoom = 10,
+            ScrollWheelZoom = interScrollWheel,
+            Dragging = interDragging,
+            ShowScaleControl = interScaleBar,
+            MaxBounds = interMaxBounds ? new(new(51.25, -0.55), new(51.75, 0.35)) : null,
+        };
+    }
+
+    // ── Custom controls ───────────────────────────────────────────────────────
+
+    private BitMap<BitLeafletMapProvider> controlsMapRef = default!;
+    private readonly BitLeafletMapProvider controlsProvider = new() { Center = new(40.4168, -3.7038), Zoom = 11, ZoomControl = false };
+    private bool isFullscreen;
+
+    // ── Geographic helpers ────────────────────────────────────────────────────
 
     private BitMap<BitLeafletMapProvider> geoMapRef = default!;
-    private readonly BitLeafletMapProvider geoProvider = new() { Center = new(51.5045, -0.0865), Zoom = 11 };
+    private readonly BitLeafletMapProvider geoProvider = new() { Center = new(51.5045, -0.0865), Zoom = 12 };
     private string geoLog = "Click the map to drop a probe.";
 
-    /// <summary>Big Ben - the fixed point every measurement in this sample is taken from.</summary>
-    private static readonly BitMapLatLng GeoOrigin = new(51.5007, -0.1246);
+    private static readonly BitMapLatLng bigBen = new(51.5007, -0.1246);
 
     private readonly List<BitMapMarker> geoMarkers =
     [
-        new() { Id = "bigben", Position = GeoOrigin, Alt = "Big Ben", TooltipText = "Big Ben" },
+        new() { Id = "bigben", Position = bigBen, Alt = "Big Ben", TooltipText = "Big Ben" },
         new() { Id = "tower", Position = new(51.5055, -0.0754), Alt = "Tower Bridge", TooltipText = "Tower Bridge" },
         new() { Id = "eye", Position = new(51.5033, -0.1196), Alt = "London Eye", TooltipText = "London Eye" },
     ];
 
-    private Task OnGeoMapClick(BitMapLatLng point)
+    private void OnGeoMapClick(BitMapLatLng point)
     {
-        var km = GeoOrigin.DistanceTo(point) / 1000;
         var box = BitMapLatLngBounds.FromMarkers(geoMarkers);
-        var inside = box.Contains(point) ? "inside" : "outside";
-        geoLog = $"""
-            Probe {point.Latitude:F5}, {point.Longitude:F5}
-            {km:F2} km from Big Ben, {inside} the markers' bounding box
-            Box centre {box.Center.Latitude:F5}, {box.Center.Longitude:F5} — {box.LatitudeSpan:F4}° x {box.LongitudeSpan:F4}°
-            """;
-        return Task.CompletedTask;
+        geoLog = $"{bigBen.DistanceTo(point) / 1000:F2} km from Big Ben, {(box.Contains(point) ? "inside" : "outside")} the markers' box.";
     }
 
     private async Task FitGeoMarkers()
     {
-        // Padded in map units so the outermost pins are never flush against the edge, then framed
-        // with a zoom ceiling so three markers a few hundred metres apart do not slam to street level.
-        var box = BitMapLatLngBounds.FromMarkers(geoMarkers).Pad(0.15);
-        await geoMapRef.FitBounds(box, paddingPixels: 24, maxZoom: 15);
-        geoLog = $"Fitted {box.LatitudeSpan:F4}° x {box.LongitudeSpan:F4}° around {geoMarkers.Count} markers.";
+        // Padded in map units, and capped so three nearby markers do not zoom to street level.
+        await geoMapRef.FitBounds(BitMapLatLngBounds.FromMarkers(geoMarkers).Pad(0.15), paddingPixels: 24, maxZoom: 15);
+        geoLog = "Fitted the view to the markers.";
     }
 
     private async Task FitGeoRadius()
     {
-        await geoMapRef.FitBounds(GeoOrigin.ToBounds(5_000), maxZoom: 16);
-        geoLog = "Framed the box that holds everything within 5 km of Big Ben.";
-    }
-
-    private async Task PanToGeoOrigin()
-    {
-        await geoMapRef.PanTo(GeoOrigin);
-        geoLog = "Panned to Big Ben, keeping the zoom that was already set.";
+        await geoMapRef.FitBounds(bigBen.ToBounds(5_000), maxZoom: 16);
+        geoLog = "Framed everything within 5 km of Big Ben.";
     }
 
     private async Task ProjectGeoOrigin()
     {
-        var point = await geoMapRef.Project(GeoOrigin);
-        geoLog = point is null
-            ? "Big Ben is off screen, so it has no pixel position right now."
-            : $"Big Ben is at {point.Value.X:F0}, {point.Value.Y:F0} pixels inside the map container.";
+        var point = await geoMapRef.Project(bigBen);
+        geoLog = point is null ? "Big Ben is off screen." : $"Big Ben is at {point.Value.X:F0}, {point.Value.Y:F0} px inside the map.";
     }
 
+    // ── Accessibility ─────────────────────────────────────────────────────────
 
-    private readonly BitLeafletMapProvider styleProvider = new() { Center = new(45.4642, 9.1900), Zoom = 11 };
-    private readonly BitLeafletMapProvider classProvider = new() { Center = new(41.3874, 2.1686), Zoom = 11 };
+    private bool a11yCooperative = true;
+    private bool a11yAnnounce = true;
+    private bool a11yShowList = true;
+    private readonly BitLeafletMapProvider a11yProvider = new() { Center = new(52.5180, 13.3950), Zoom = 13 };
 
-    // ── Example 22 – RTL ──────────────────────────────────────────────────────
+    // Every marker has an Alt: it is the marker's accessible name and its name in the table.
+    private readonly List<BitMapMarker> a11yMarkers =
+    [
+        new() { Id = "gate", Position = new(52.5163, 13.3777), Alt = "Brandenburg Gate", PopupText = "Brandenburg Gate" },
+        new() { Id = "island", Position = new(52.5169, 13.4019), Alt = "Museum Island", PopupText = "Museum Island" },
+        new() { Id = "tower", Position = new(52.5208, 13.4094), Alt = "TV Tower", PopupText = "TV Tower" },
+    ];
+
+    // A real app would reverse-geocode the centre into a place name here.
+    private static string FormatAnnouncement(BitMapViewState view) => $"Central Berlin at zoom {view.Zoom:F0}.";
+
+    // ── Loading and lifecycle ─────────────────────────────────────────────────
+
+    private BitMapLoadState lifecycleState = BitMapLoadState.Idle;
+    private readonly BitLeafletMapProvider lifecycleProvider = new() { Center = new(59.9139, 10.7522), Zoom = 10 };
+
+    // ── Providers ─────────────────────────────────────────────────────────────
+
+    private string providerName = "leaflet";
+    private readonly List<BitChoiceGroupItem<string>> providerItems =
+    [
+        new() { Text = "Leaflet", Value = "leaflet" },
+        new() { Text = "MapLibre GL", Value = "maplibre" },
+        new() { Text = "OpenLayers", Value = "openlayers" },
+        new() { Text = "ArcGIS", Value = "arcgis" },
+        new() { Text = "CesiumJS", Value = "cesium" },
+    ];
+    private readonly BitLeafletMapProvider leafletProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
+    private readonly BitMapLibreMapProvider maplibreProvider = new() { Center = new(48.8566, 2.3522), Zoom = 3 };
+    private readonly BitOpenLayersMapProvider olProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
+    private readonly BitArcGisMapProvider arcGisProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5, BasemapId = "osm" };
+    private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(48.8566, 2.3522), Zoom = 3, SceneMode = "scene3d" };
+
+    // ── Cascading parameters ──────────────────────────────────────────────────
+
+    private readonly BitLeafletMapProvider paramsProvider1 = new() { Center = new(52.3676, 4.9041), Zoom = 12 };
+    private readonly BitLeafletMapProvider paramsProvider2 = new() { Center = new(38.7223, -9.1393), Zoom = 12 };
+
+    private readonly BitMapParams[] mapParams =
+    [
+        new()
+        {
+            CooperativeGestures = true,
+            CooperativeGesturesWheelHint = "Hold ctrl while scrolling to zoom",
+            KeyboardInstructions = "Arrows pan, plus and minus zoom, Escape leaves.",
+            Style = "--bit-Map-radius: 0.75rem; --bit-Map-border: 1px solid var(--bit-clr-brd-sec)",
+        }
+    ];
+
+    // ── Style & Class ─────────────────────────────────────────────────────────
+
+    private readonly BitLeafletMapProvider styleProvider = new() { Center = new(45.4642, 9.1900), Zoom = 12 };
+    private readonly BitLeafletMapProvider classProvider = new() { Center = new(45.4642, 9.1900), Zoom = 12 };
+    private readonly List<BitMapMarker> styleMarkers =
+    [
+        new() { Id = "duomo", Position = new(45.4642, 9.1916), Alt = "Duomo", PopupText = "Duomo di Milano", TooltipText = "Duomo" },
+        new() { Id = "scala", Position = new(45.4674, 9.1895), Alt = "La Scala", PopupText = "Teatro alla Scala", TooltipText = "La Scala" },
+        new() { Id = "galleria", Position = new(45.4659, 9.1900), Alt = "Galleria", PopupText = "Galleria Vittorio Emanuele II", TooltipText = "Galleria" },
+        new() { Id = "castello", Position = new(45.4705, 9.1793), Alt = "Castello", PopupText = "Castello Sforzesco", TooltipText = "Castello" },
+        new() { Id = "brera", Position = new(45.4719, 9.1879), Alt = "Brera", PopupText = "Pinacoteca di Brera", TooltipText = "Brera" },
+    ];
+
+    // ── RTL ───────────────────────────────────────────────────────────────────
 
     private readonly BitLeafletMapProvider rtlProvider = new() { Center = new(35.6892, 51.3890), Zoom = 11 };
-
-    // ── Code strings ──────────────────────────────────────────────────────────
-
-    private readonly string example1RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider"" />
-</div>";
-
-    private readonly string example2RazorCode = @"
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""markersMapRef""
-            Provider=""@markersProvider""
-            OnReady=""OnMarkersReady""
-            OnMarkerClick=""OnMarkerClick""
-            OnMarkerDragEnd=""OnMarkerDragEnd"" />
-</div>
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center"">
-    <BitButton OnClick=""AddRandomMarker"">Add random marker</BitButton>
-    <BitButton OnClick=""ClearMarkers"" Variant=""BitVariant.Outline"">Clear all</BitButton>
-    <BitButton OnClick=""OpenLondonPopup"" Variant=""BitVariant.Outline"">Open London popup</BitButton>
-    <BitButton OnClick=""FitToMarkers"" Variant=""BitVariant.Outline"">Fit to markers</BitButton>
-</div>
-<pre>@markersLog</pre>";
-    private readonly string example2CsharpCode = @"
-private BitMap<BitLeafletMapProvider> markersMapRef = default!;
-private readonly BitLeafletMapProvider markersProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
-private string markersLog = ""Seed markers are added on OnReady. Try the buttons."";
-private int _markerCounter;
-
-private async Task OnMarkersReady()
-{
-    await markersMapRef.AddMarker(new BitMapMarker
-    {
-        Id = ""paris"", Position = new(48.8566, 2.3522),
-        Title = ""Paris"", PopupHtml = (MarkupString)""<b>Paris</b><br/>Click to open popup."",
-    });
-    await markersMapRef.AddMarker(new BitMapMarker
-    {
-        Id = ""london"", Position = new(51.5074, -0.1278),
-        Title = ""London"", PopupHtml = (MarkupString)""<b>London</b><br/>Draggable marker."",
-        Draggable = true,
-        TooltipHtml = (MarkupString)""Drag me!"",
-    });
-    await markersMapRef.FitBoundsToMarkers();
-}
-
-private async Task AddRandomMarker()
-{
-    _markerCounter++;
-    var id = $""m{_markerCounter}"";
-
-    // Scatter inside the current viewport so new markers are always visible.
-    var view = await markersMapRef.GetView();
-    var sw = view.Bounds.SouthWest;
-    var ne = view.Bounds.NorthEast;
-
-    var latSpan = ne.Latitude - sw.Latitude;
-    var lngSpan = ne.Longitude - sw.Longitude;
-    if (lngSpan < 0) lngSpan += 360; // antimeridian
-
-    const double inset = 0.1;
-    var lat = sw.Latitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * latSpan;
-    var lng = sw.Longitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * lngSpan;
-    lat = Math.Clamp(lat, -85, 85);
-    if (lng > 180) lng -= 360;
-    else if (lng < -180) lng += 360;
-
-    // Roll a coin so some markers come in draggable.
-    var draggable = Random.Shared.Next(2) == 0;
-
-    await markersMapRef.AddMarker(new BitMapMarker
-    {
-        Id = id, Position = new(lat, lng),
-        Title = $""Marker {id}{(draggable ? "" (draggable)"" : """")}"",
-        PopupHtml = (MarkupString)($""Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}"" +
-                    (draggable ? ""<br/><i>Drag me!</i>"" : """")),
-        Draggable = draggable,
-        TooltipHtml = draggable ? (MarkupString?)(MarkupString)""Drag me!"" : null,
-    });
-    markersLog = $""Added {id}{(draggable ? "" (draggable)"" : """")} at {lat:F4}, {lng:F4}"";
-}
-
-private async Task ClearMarkers()
-{
-    await markersMapRef.ClearMarkers();
-    markersLog = ""All markers cleared."";
-}
-
-private async Task OpenLondonPopup()
-{
-    await markersMapRef.OpenMarkerPopup(""london"");
-    markersLog = ""Opened London popup."";
-}
-
-private async Task FitToMarkers()
-{
-    await markersMapRef.FitBoundsToMarkers();
-    markersLog = ""Fitted view to all markers."";
-}
-
-private Task OnMarkerClick(string id)
-{
-    markersLog = $""Marker click: {id}"";
-    return Task.CompletedTask;
-}
-
-private Task OnMarkerDragEnd(BitMapMarkerDragEndArgs e)
-{
-    markersLog = $""Drag end {e.Id} → {e.Position.Latitude:F5}, {e.Position.Longitude:F5}"";
-    return Task.CompletedTask;
-}";
-
-    private readonly string example3RazorCode = @"
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""vectorsMapRef""
-            Provider=""@vectorsProvider""
-            OnReady=""OnVectorsReady""
-            OnVectorClick=""OnVectorClick"" />
-</div>
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap"">
-    <BitButton OnClick=""RedrawVectors"">Redraw</BitButton>
-    <BitButton OnClick=""ClearVectors"" Variant=""BitVariant.Outline"">Clear vectors</BitButton>
-</div>
-<pre>@vectorsLog</pre>";
-    private readonly string example3CsharpCode = @"
-private BitMap<BitLeafletMapProvider> vectorsMapRef = default!;
-private readonly BitLeafletMapProvider vectorsProvider = new() { Center = new(37.7749, -122.4194), Zoom = 12 };
-private string vectorsLog = ""Click Redraw to draw shapes, then click a shape."";
-
-private async Task OnVectorsReady() => await DrawVectors();
-
-private async Task DrawVectors()
-{
-    await vectorsMapRef.AddPolyline(""route"",
-    [
-        new(37.80, -122.42), new(37.79, -122.41),
-        new(37.78, -122.40), new(37.77, -122.395),
-    ], new BitMapVectorPathStyle { Color = ""#f85149"", Weight = 5, Opacity = 0.9 });
-
-    await vectorsMapRef.AddPolygon(""park"",
-    [
-        new(37.769, -122.486), new(37.771, -122.475),
-        new(37.765, -122.472), new(37.762, -122.482),
-    ], new BitMapVectorPathStyle { Color = ""#3fb950"", FillOpacity = 0.35, Weight = 2 });
-
-    await vectorsMapRef.AddCircle(""radius"", new(37.7849, -122.4094), 900,
-        new BitMapVectorPathStyle { Color = ""#58a6ff"", FillOpacity = 0.15, Weight = 2 });
-
-    await vectorsMapRef.AddRectangle(""box"",
-        new BitMapLatLngBounds(new(37.748, -122.44), new(37.756, -122.42)),
-        new BitMapVectorPathStyle { Color = ""#d29922"", FillOpacity = 0.12, Weight = 2, DashArray = ""6,4"" });
-
-    await vectorsMapRef.FitBounds(
-        new BitMapLatLngBounds(new(37.755, -122.49), new(37.805, -122.38)));
-}
-
-private async Task RedrawVectors()
-{
-    await vectorsMapRef.ClearVectorLayers();
-    await DrawVectors();
-    vectorsLog = ""Vectors redrawn."";
-}
-
-private async Task ClearVectors()
-{
-    await vectorsMapRef.ClearVectorLayers();
-    vectorsLog = ""All vector layers cleared."";
-}
-
-private Task OnVectorClick(BitMapVectorClickArgs e)
-{
-    // e.Kind = ""polyline"" | ""polygon"" | ""circle"" | ""rectangle""
-    // e.LayerId = the id you passed to AddPolyline/AddPolygon/…
-    vectorsLog = $""{e.Kind} \""{e.LayerId}\"" @ {e.Position.Latitude:F5}, {e.Position.Longitude:F5}"";
-    return Task.CompletedTask;
-}";
-
-    private readonly string example4RazorCode = @"
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""geoJsonMapRef""
-            Provider=""@geoJsonProvider""
-            OnGeoJsonFeatureClick=""OnGeoJsonFeatureClick"" />
-</div>
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap"">
-    <BitButton OnClick=""LoadGeoJson"">Load GeoJSON</BitButton>
-    <BitButton OnClick=""RemoveGeoJson"" Variant=""BitVariant.Outline"">Remove layer</BitButton>
-</div>
-<pre>@geoJsonLog</pre>";
-    private readonly string example4CsharpCode = @"
-private BitMap<BitLeafletMapProvider> geoJsonMapRef = default!;
-private readonly BitLeafletMapProvider geoJsonProvider = new() { Center = new(40.7128, -74.0060), Zoom = 11 };
-private string geoJsonLog = ""Click 'Load GeoJSON', then click a feature."";
-
-private async Task LoadGeoJson()
-{
-    await geoJsonMapRef.RemoveLayer(""demo"");
-    await geoJsonMapRef.AddGeoJson(""demo"", SampleGeoJson,
-        new BitMapVectorPathStyle { Color = ""#a371f7"", Weight = 3, FillOpacity = 0.25 });
-    await geoJsonMapRef.FitBounds(new BitMapLatLngBounds(new(40.71, -74.03), new(40.83, -73.96)));
-    geoJsonLog = ""GeoJSON loaded. Click a feature."";
-}
-
-private async Task RemoveGeoJson()
-{
-    await geoJsonMapRef.RemoveLayer(""demo"");
-    geoJsonLog = ""Layer \""demo\"" removed."";
-}
-
-private Task OnGeoJsonFeatureClick(BitMapGeoJsonFeatureClickArgs e)
-{
-    // e.LayerId = ""demo""
-    // e.Properties = JsonElement of feature.properties
-    var name = ""(no name)"";
-    if (e.Properties.ValueKind == System.Text.Json.JsonValueKind.Object
-        && e.Properties.TryGetProperty(""name"", out var n))
-    {
-        name = n.ValueKind == System.Text.Json.JsonValueKind.String ? n.GetString() : n.ToString();
-    }
-    geoJsonLog = $""Layer {e.LayerId} - properties.name = {name}"";
-    return Task.CompletedTask;
-}
-
-// Minimal GeoJSON FeatureCollection used by LoadGeoJson above.
-private const string SampleGeoJson = """"""
-    {
-      ""type"": ""FeatureCollection"",
-      ""features"": [
-        {
-          ""type"": ""Feature"",
-          ""properties"": { ""name"": ""Central Park"" },
-          ""geometry"": {
-            ""type"": ""Polygon"",
-            ""coordinates"": [[
-              [-73.981, 40.768], [-73.958, 40.768],
-              [-73.958, 40.800], [-73.981, 40.800],
-              [-73.981, 40.768]
-            ]]
-          }
-        },
-        {
-          ""type"": ""Feature"",
-          ""properties"": { ""name"": ""Brooklyn Bridge"" },
-          ""geometry"": {
-            ""type"": ""LineString"",
-            ""coordinates"": [[-73.9969, 40.7061], [-73.9875, 40.7026]]
-          }
-        }
-      ]
-    }
-    """""";";
-
-    private readonly string example5RazorCode = @"
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem"">
-    <BitButton OnClick='() => SetTileProvider(""osm"")'
-               Variant=""@(tileProvider == ""osm"" ? BitVariant.Fill : BitVariant.Outline)"">OSM default</BitButton>
-    <BitButton OnClick='() => SetTileProvider(""carto"")'
-               Variant=""@(tileProvider == ""carto"" ? BitVariant.Fill : BitVariant.Outline)"">Carto Voyager</BitButton>
-    <BitButton OnClick='() => SetTileProvider(""topo"")'
-               Variant=""@(tileProvider == ""topo"" ? BitVariant.Fill : BitVariant.Outline)"">OpenTopoMap</BitButton>
-</div>
-
-@* @key forces a new map instance when the provider changes *@
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider"" @key=""tileProvider"" Provider=""@currentTileLeafletProvider"" />
-</div>";
-    private readonly string example5CsharpCode = @"
-private string tileProvider = ""osm"";
-private BitLeafletMapProvider currentTileLeafletProvider = new() { Center = new(51.505, -0.09), Zoom = 13 };
-
-private void SetTileProvider(string p)
-{
-    tileProvider = p;
-    currentTileLeafletProvider = p switch
-    {
-        ""carto"" => new BitLeafletMapProvider
-        {
-            Center = new(20, 0), Zoom = 2,
-            TileUrl = ""https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"",
-            TileAttribution = ""&copy; OpenStreetMap contributors &copy; <a href=\""https://carto.com/attributions\"">CARTO</a>"",
-        },
-        ""topo"" => new BitLeafletMapProvider
-        {
-            Center = new(46.5, 11.3), Zoom = 10,
-            TileUrl = ""https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"",
-            TileAttribution = ""Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap"",
-            TileMaxZoom = 17,
-        },
-        _ => new BitLeafletMapProvider { Center = new(51.505, -0.09), Zoom = 13 },
-    };
-}";
-
-    private readonly string example6RazorCode = @"
-<div style=""height:320px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""eventsMapRef""
-            Provider=""@eventsProvider""
-            OnClick=""OnMapClick""
-            OnDoubleClick=""OnMapDoubleClick""
-            OnContextMenu=""OnMapContextMenu""
-            OnViewChanged=""OnViewChanged"" />
-</div>
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap"">
-    <BitButton OnClick=""FlyToTokyo"">Fly to Tokyo</BitButton>
-    <BitButton OnClick=""ReadView"" Variant=""BitVariant.Outline"">Log viewport</BitButton>
-</div>
-<pre>@eventsLog</pre>";
-    private readonly string example6CsharpCode = @"
-private BitMap<BitLeafletMapProvider> eventsMapRef = default!;
-private readonly BitLeafletMapProvider eventsProvider = new() { Center = new(35.6762, 139.6503), Zoom = 11 };
-private string eventsLog = ""Pan/zoom or click the map."";
-
-private Task OnMapClick(BitMapLatLng p)
-{
-    eventsLog = $""Click → {p.Latitude:F5}, {p.Longitude:F5}"";
-    return Task.CompletedTask;
-}
-
-private Task OnMapDoubleClick(BitMapLatLng p)
-{
-    eventsLog = $""Double-click → {p.Latitude:F5}, {p.Longitude:F5}"";
-    return Task.CompletedTask;
-}
-
-// The browser menu still opens unless the provider sets SuppressBrowserContextMenu.
-private Task OnMapContextMenu(BitMapLatLng p)
-{
-    eventsLog = $""Right-click → {p.Latitude:F5}, {p.Longitude:F5}"";
-    return Task.CompletedTask;
-}
-
-private Task OnViewChanged(BitMapViewState v)
-{
-    eventsLog = $""View: zoom {v.Zoom:F1}, center {v.Center.Latitude:F4},{v.Center.Longitude:F4}"";
-    return Task.CompletedTask;
-}
-
-private async Task FlyToTokyo()
-{
-    await eventsMapRef.FlyTo(new(35.6762, 139.6503), 12);
-    eventsLog = ""Flying to Tokyo…"";
-}
-
-private async Task ReadView()
-{
-    var v = await eventsMapRef.GetView();
-    eventsLog = $""GetView → zoom {v.Zoom:F2}, center {v.Center.Latitude:F4},{v.Center.Longitude:F4}, "" +
-                $""NE {v.Bounds.NorthEast.Latitude:F4},{v.Bounds.NorthEast.Longitude:F4}"";
-}";
-
-    private readonly string example7RazorCode = @"
-<div style=""display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem"">
-    <BitToggle Value=""advScrollWheel""
-               ValueChanged=""v => { advScrollWheel = v; BuildAdvancedProvider(); }""
-               Text=""Scroll wheel zoom"" />
-    <BitToggle Value=""advDragging""
-               ValueChanged=""v => { advDragging = v; BuildAdvancedProvider(); }""
-               Text=""Dragging"" />
-    <BitToggle Value=""advScaleBar""
-               ValueChanged=""v => { advScaleBar = v; BuildAdvancedProvider(); }""
-               Text=""Scale bar"" />
-    <BitToggle Value=""advMaxBounds""
-               ValueChanged=""v => { advMaxBounds = v; BuildAdvancedProvider(); }""
-               Text=""Limit pan (London)"" />
-</div>
-
-@* Bind a stable field, not a method call: a method call reallocates the provider on every render. *@
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""advMapRef""
-            Provider=""@advProvider""
-            OnReady=""OnAdvancedReady""
-            OnDoubleClick=""OnAdvancedDoubleClick"" />
-</div>
-
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap"">
-    <BitButton OnClick=""AddTooltipMarkers"">Add tooltip markers + fit</BitButton>
-    <BitButton OnClick=""ToggleTileOverlay""
-               Variant=""BitVariant.Outline"">@(advOverlayOn ? ""Remove overlay"" : ""Add tile overlay"")</BitButton>
-    <BitButton OnClick=""ReadAdvancedView"" Variant=""BitVariant.Outline"">Log viewport</BitButton>
-</div>
-<pre>@advLog</pre>";
-    private readonly string example7CsharpCode = @"
-private BitMap<BitLeafletMapProvider> advMapRef = default!;
-private bool advScrollWheel = true;
-private bool advDragging = true;
-private bool advScaleBar = true;
-private bool advMaxBounds;
-private bool advOverlayOn;
-private string advLog = ""Toggle options or use the buttons."";
-
-private BitLeafletMapProvider advProvider = new()
-{
-    Center = new(51.5074, -0.1278), Zoom = 11,
-    ScrollWheelZoom = true,
-    Dragging = true,
-    ShowScaleControl = true,
-    MaxBounds = null,
-};
-
-// Mutate the stable field only when an option actually changes - not on every render.
-private BitLeafletMapProvider BuildAdvancedProvider()
-{
-    advProvider = new BitLeafletMapProvider
-    {
-        Center = new(51.5074, -0.1278), Zoom = 11,
-        ScrollWheelZoom = advScrollWheel,
-        Dragging = advDragging,
-        ShowScaleControl = advScaleBar,
-        MaxBounds = advMaxBounds
-            ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
-            : null,
-    };
-    // Rebuilding the provider replaces the underlying Leaflet map instance,
-    // so any previously-added overlays no longer exist on the new map.
-    // Reset the toggle state so the UI label/branch reflects that.
-    advOverlayOn = false;
-    return advProvider;
-}
-
-private async Task OnAdvancedReady() => await AddTooltipMarkers();
-
-private async Task AddTooltipMarkers()
-{
-    await advMapRef.ClearMarkers();
-    await advMapRef.AddMarker(new BitMapMarker { Id = ""a"", Position = new(51.52, -0.10), TooltipHtml = (MarkupString)""<b>West End</b>"", PopupHtml = (MarkupString)""Popup A"", ZIndexOffset = 10 });
-    await advMapRef.AddMarker(new BitMapMarker { Id = ""b"", Position = new(51.50, -0.08), TooltipHtml = (MarkupString)""City"", PopupHtml = (MarkupString)""Popup B"" });
-    await advMapRef.AddMarker(new BitMapMarker { Id = ""c"", Position = new(51.48, -0.06), TooltipHtml = (MarkupString)""South Bank"", PopupHtml = (MarkupString)""Popup C"" });
-    await advMapRef.FitBoundsToMarkers(56);
-    advLog = ""Three tooltip markers added; view fitted."";
-}
-
-private async Task ToggleTileOverlay()
-{
-    if (advOverlayOn)
-    {
-        await advMapRef.RemoveTileOverlay(""labels"");
-        advOverlayOn = false;
-        advLog = ""Tile overlay removed."";
-    }
-    else
-    {
-        await advMapRef.AddTileOverlay(new BitMapTileOverlay
-        {
-            Id = ""labels"",
-            UrlTemplate = ""https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png"",
-            Attribution = ""Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap."",
-            Opacity = 0.85,
-            ZIndex = 400,
-            MaxZoom = 20,
-        });
-        advOverlayOn = true;
-        advLog = ""Tile overlay added (may fail if the tile host blocks your origin)."";
-    }
-}
-
-private async Task ReadAdvancedView()
-{
-    var v = await advMapRef.GetView();
-    advLog = $""GetView → zoom {v.Zoom:F2}, center {v.Center.Latitude:F4},{v.Center.Longitude:F4}, "" +
-             $""NE {v.Bounds.NorthEast.Latitude:F4},{v.Bounds.NorthEast.Longitude:F4}"";
-}
-
-private Task OnAdvancedDoubleClick(BitMapLatLng p)
-{
-    advLog = $""Double-click at {p.Latitude:F4}, {p.Longitude:F4}"";
-    return Task.CompletedTask;
-}";
-
-    private readonly string example8RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider"" @ref=""navMapRef"" Provider=""@navProvider"" />
-</div>
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center"">
-    <BitButton OnClick=""NavZoomIn"">Zoom in</BitButton>
-    <BitButton OnClick=""NavZoomOut"" Variant=""BitVariant.Outline"">Zoom out</BitButton>
-    <BitButton OnClick=""NavSetZoom"" Variant=""BitVariant.Outline"">Zoom 6</BitButton>
-    <BitButton OnClick=""() => NavPan(-120, 0)"" Variant=""BitVariant.Outline"" AriaLabel=""Pan west"">West</BitButton>
-    <BitButton OnClick=""() => NavPan(120, 0)"" Variant=""BitVariant.Outline"" AriaLabel=""Pan east"">East</BitButton>
-    <BitButton OnClick=""() => NavPan(0, -120)"" Variant=""BitVariant.Outline"" AriaLabel=""Pan north"">North</BitButton>
-    <BitButton OnClick=""() => NavPan(0, 120)"" Variant=""BitVariant.Outline"" AriaLabel=""Pan south"">South</BitButton>
-    <BitButton OnClick=""FlyToRome"">Fly to Rome</BitButton>
-    <BitButton OnClick=""LocateMe"" Variant=""BitVariant.Outline"">Locate me</BitButton>
-</div>
-<pre>@navLog</pre>";
-    private readonly string example8CsharpCode = @"
-private BitMap<BitLeafletMapProvider> navMapRef = default!;
-private readonly BitLeafletMapProvider navProvider = new() { Center = new(41.9028, 12.4964), Zoom = 5 };
-private string navLog = ""Use the buttons to drive the camera from code."";
-
-private async Task NavZoomIn() => await navMapRef.ZoomIn();
-
-private async Task NavZoomOut() => await navMapRef.ZoomOut();
-
-private async Task NavSetZoom() => await navMapRef.SetZoom(6);
-
-// Pixel-space panning. Wire it to four arrow buttons and the map stops depending on
-// dragging, which is what WCAG 2.2 SC 2.5.7 asks for.
-private async Task NavPan(double dx, double dy)
-{
-    await navMapRef.PanBy(dx, dy);
-    navLog = $""Panned by {dx}, {dy} pixels."";
-}
-
-private async Task FlyToRome()
-{
-    // Animated by default; becomes an instant jump when the visitor prefers reduced motion.
-    // Pass essential: true to keep the animation regardless.
-    await navMapRef.FlyTo(new(41.9028, 12.4964), 11);
-    navLog = ""Flew to Rome."";
-}
-
-private async Task LocateMe()
-{
-    // Returns null when the browser denies the permission prompt or times out.
-    var result = await navMapRef.Locate(new() { Zoom = 13 });
-    navLog = result is null
-        ? ""Location unavailable.""
-        : $""Located at {result.Position.Latitude:F4}, {result.Position.Longitude:F4} (±{result.AccuracyMeters:F0} m)"";
-}";
-
-    private readonly string example9RazorCode = @"
-<div style=""display:flex;gap:1rem;flex-wrap:wrap"">
-    <BitToggle @bind-Value=""a11yCooperative"" Text=""Cooperative gestures"" />
-    <BitToggle @bind-Value=""a11yAnnounce"" Text=""Announce view changes"" />
-    <BitToggle @bind-Value=""a11yShowList"" Text=""Show the marker table"" />
-</div>
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""a11yMapRef""
-            Provider=""@a11yProvider""
-            AriaLabel=""Map of central Berlin""
-            KeyboardInstructions=""Arrow keys pan the map, plus and minus zoom, Escape leaves the map.""
-            CooperativeGestures=""@a11yCooperative""
-            AnnounceViewChanges=""@a11yAnnounce""
-            ViewAnnouncementFormatter=""@FormatAnnouncement""
-            MarkerListMode=""@(a11yShowList ? BitMapMarkerListMode.Visible : BitMapMarkerListMode.ScreenReaderOnly)""
-            MarkerListCaption=""Berlin landmarks""
-            OnReady=""OnAccessibilityReady"" />
-</div>";
-    private readonly string example9CsharpCode = @"
-private BitMap<BitLeafletMapProvider> a11yMapRef = default!;
-private bool a11yCooperative = true;
-private bool a11yAnnounce = true;
-private bool a11yShowList = true;
-private readonly BitLeafletMapProvider a11yProvider = new() { Center = new(52.5200, 13.4050), Zoom = 12 };
-
-// Every marker carries an Alt: it is the accessible name, and it is what the marker table
-// lists. Without one both would fall back to the id.
-private readonly List<BitMapMarker> a11yMarkers =
-[
-    new() { Id = ""gate"", Position = new(52.5163, 13.3777), Alt = ""Brandenburg Gate"", PopupText = ""Brandenburg Gate"" },
-    new() { Id = ""island"", Position = new(52.5169, 13.4019), Alt = ""Museum Island"", PopupText = ""Museum Island"" },
-    new() { Id = ""tower"", Position = new(52.5208, 13.4094), Alt = ""TV Tower"", PopupText = ""TV Tower"" },
-];
-
-private async Task OnAccessibilityReady()
-{
-    foreach (var marker in a11yMarkers)
-    {
-        await a11yMapRef.AddMarker(marker);
-    }
-    await a11yMapRef.FitBoundsToMarkers();
-}
-
-// Announcing a place beats announcing coordinates: ""zoom level 12"" tells a screen-reader
-// user nothing about where they are. A real app would reverse-geocode here.
-private string FormatAnnouncement(BitMapViewState view)
-    => $""Map showing Berlin at zoom {view.Zoom:F0}, centred near {view.Center.Latitude:F2}, {view.Center.Longitude:F2}."";";
-
-    private readonly string example10RazorCode = @"
-<div>State: <b>@lifecycleState</b></div>
-<div style=""height:320px;resize:both;overflow:auto"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            Provider=""@lifecycleProvider""
-            LazyLoad
-            LoadingLabel=""Fetching the basemap…""
-            OnLoadStateChanged=""@(s => { lifecycleState = s; StateHasChanged(); })"" />
-</div>";
-    private readonly string example10CsharpCode = @"
-private BitMapLoadState lifecycleState = BitMapLoadState.Idle;
-private readonly BitLeafletMapProvider lifecycleProvider = new() { Center = new(59.9139, 10.7522), Zoom = 10 };";
-
-    private readonly string example11RazorCode = @"
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center"">
-    <BitButton OnClick=""() => boundCenter = new(41.9028, 12.4964)"">Rome</BitButton>
-    <BitButton OnClick=""() => boundCenter = new(48.8566, 2.3522)"" Variant=""BitVariant.Outline"">Paris</BitButton>
-    <BitButton OnClick=""AddBoundMarker"" Variant=""BitVariant.Outline"">Add a marker</BitButton>
-    <BitButton OnClick=""MoveFirstBoundMarker"" Variant=""BitVariant.Outline"">Move the first marker</BitButton>
-</div>
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @bind-Center=""boundCenter""
-            @bind-Zoom=""boundZoom""
-            Markers=""boundMarkers"" />
-</div>
-<div>
-    Centre @boundCenter?.Latitude.ToString(""F4""), @boundCenter?.Longitude.ToString(""F4"") —
-    zoom @boundZoom?.ToString(""F1"") — @boundMarkers.Count marker(s)
-</div>";
-    private readonly string example11CsharpCode = @"
-private BitMapLatLng? boundCenter = new(41.9028, 12.4964);
-private double? boundZoom = 5;
-private List<BitMapMarker> boundMarkers =
-[
-    new() { Id = ""rome"", Position = new(41.9028, 12.4964), Alt = ""Rome"", PopupText = ""Rome"" },
-    new() { Id = ""paris"", Position = new(48.8566, 2.3522), Alt = ""Paris"", PopupText = ""Paris"" },
-];
-private int boundMarkerCounter;
-
-private void AddBoundMarker()
-{
-    boundMarkerCounter++;
-    var id = $""m{boundMarkerCounter}"";
-    // A new list instance: the parameter is compared by reference, and the markers inside it
-    // by value, so only this one addition reaches the map.
-    boundMarkers = [.. boundMarkers, new BitMapMarker
-    {
-        Id = id,
-        Position = new(boundCenter?.Latitude ?? 0, boundCenter?.Longitude ?? 0),
-        Alt = $""Marker {id}"",
-        PopupText = $""Marker {id}"",
-    }];
-}
-
-private void MoveFirstBoundMarker()
-{
-    if (boundMarkers.Count == 0) return;
-    // BitMapMarker is a record, so `with` produces a changed copy - and the component sees
-    // exactly one marker differ rather than a whole new collection.
-    var first = boundMarkers[0];
-    boundMarkers = [first with { Position = new(first.Position.Latitude + 1, first.Position.Longitude + 1) },
-                    .. boundMarkers.Skip(1)];
-}";
-
-    private readonly string example12RazorCode = @"
-<div style=""display:flex;gap:1rem;flex-wrap:wrap;align-items:center"">
-    <BitToggle Value=""clusterEnabled"" ValueChanged=""ToggleClustering"" Text=""Cluster markers"" />
-    <BitButton OnClick=""RegenerateClusterMarkers"" Variant=""BitVariant.Outline"">Scatter again</BitButton>
-</div>
-<div style=""height:420px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            Provider=""@clusterProvider""
-            Markers=""clusterMarkers""
-            Clustering=""@clusterOptions""
-            OnClusterClick=""OnClusterClick""
-            OnMarkerClick=""OnClusterMarkerClick"" />
-</div>
-<pre>@clusterLog</pre>";
-    private readonly string example12CsharpCode = @"
-private readonly BitLeafletMapProvider clusterProvider = new() { Center = new(51.5074, -0.1278), Zoom = 5 };
-private bool clusterEnabled = true;
-private BitMapClustering? clusterOptions = new() { RadiusPixels = 60, MaxZoom = 14 };
-private List<BitMapMarker> clusterMarkers = BuildScatteredMarkers();
-private string clusterLog = ""Click a bubble to zoom into it."";
-
-private void ToggleClustering(bool enabled)
-{
-    clusterEnabled = enabled;
-    // Null turns clustering off and hands every marker straight back to the provider.
-    clusterOptions = enabled ? new BitMapClustering { RadiusPixels = 60, MaxZoom = 14 } : null;
-}
-
-private void RegenerateClusterMarkers()
-{
-    clusterMarkers = BuildScatteredMarkers();
-}
-
-// Scatters markers around a handful of European cities so the clusters are uneven.
-private static List<BitMapMarker> BuildScatteredMarkers()
-{
-    (string Name, double Lat, double Lng, int Count)[] cities =
-    [
-        (""London"", 51.5074, -0.1278, 160),
-        (""Paris"", 48.8566, 2.3522, 120),
-        (""Berlin"", 52.5200, 13.4050, 90),
-        (""Madrid"", 40.4168, -3.7038, 70),
-        (""Rome"", 41.9028, 12.4964, 60),
-    ];
-
-    var markers = new List<BitMapMarker>();
-    foreach (var (name, lat, lng, count) in cities)
-    {
-        for (var i = 0; i < count; i++)
-        {
-            markers.Add(new BitMapMarker
-            {
-                Id = $""{name}-{i}"",
-                Position = new(
-                    Math.Clamp(lat + (Random.Shared.NextDouble() - 0.5) * 2.5, -85, 85),
-                    Math.Clamp(lng + (Random.Shared.NextDouble() - 0.5) * 2.5, -180, 180)),
-                Alt = $""{name} location {i + 1}"",
-                PopupText = $""{name} #{i + 1}"",
-            });
-        }
-    }
-    return markers;
-}
-
-// A bubble is not one of your markers, so it reports here rather than through OnMarkerClick.
-private Task OnClusterClick(BitMapClusterClickArgs e)
-{
-    clusterLog = $""Cluster of {e.Count} markers - zoomed to fit them."";
-    return Task.CompletedTask;
-}
-
-private Task OnClusterMarkerClick(string id)
-{
-    clusterLog = $""Marker click: {id}"";
-    return Task.CompletedTask;
-}";
-
-    private readonly string example13RazorCode = @"
-<div style=""display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center"">
-    <BitButton OnClick=""ToggleLayerVisibility"" Variant=""BitVariant.Outline"">
-        @(layerVisible ? ""Hide the area"" : ""Show the area"")
-    </BitButton>
-    <BitButton OnClick=""CycleLayerStyle"" Variant=""BitVariant.Outline"">Restyle the area</BitButton>
-    <BitButton OnClick=""ToggleOverlayVisibility"" Variant=""BitVariant.Outline"">
-        @(overlayVisible ? ""Hide the overlay"" : ""Show the overlay"")
-    </BitButton>
-    <BitButton OnClick=""DimOverlay"" Variant=""BitVariant.Outline"">Dim the overlay</BitButton>
-    <BitButton OnClick=""GoFullscreen"">Fullscreen</BitButton>
-</div>
-<div style=""height:400px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""layersMapRef""
-            Provider=""@layersProvider""
-            OnReady=""OnLayersReady""
-            OnFullscreenChanged=""OnLayersFullscreenChanged"" />
-</div>
-<pre>@layersLog</pre>";
-    private readonly string example13CsharpCode = @"
-private BitMap<BitLeafletMapProvider> layersMapRef = default!;
-private readonly BitLeafletMapProvider layersProvider = new() { Center = new(51.5074, -0.1278), Zoom = 11 };
-private bool layerVisible = true;
-private bool overlayVisible = true;
-private int layerStyleIndex;
-
-private static readonly BitMapVectorPathStyle[] LayerStyles =
-[
-    new() { Color = ""#3388ff"", FillColor = ""#3388ff"", FillOpacity = 0.2, Weight = 3 },
-    new() { Color = ""#e53935"", FillColor = ""#e53935"", FillOpacity = 0.3, Weight = 5, DashArray = ""6 4"" },
-    new() { Color = ""#2e7d32"", Fill = false, Weight = 4 },
-];
-
-private async Task OnLayersReady()
-{
-    await layersMapRef.AddCircle(""area"", new(51.5074, -0.1278), 6000, LayerStyles[0]);
-    await layersMapRef.AddTileOverlay(new BitMapTileOverlay
-    {
-        Id = ""labels"",
-        UrlTemplate = ""https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png"",
-        Attribution = ""Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap."",
-        Opacity = 0.35,
-        MinZoom = 3,
-        MaxZoom = 19,
-    });
-}
-
-// Hiding keeps the definition, so showing again needs no re-declaration.
-private async Task ToggleLayerVisibility()
-{
-    layerVisible = !layerVisible;
-    await layersMapRef.SetLayerVisible(""area"", layerVisible);
-}
-
-// Restyles in place - the geometry is not restated.
-private async Task CycleLayerStyle()
-{
-    layerStyleIndex = (layerStyleIndex + 1) % LayerStyles.Length;
-    await layersMapRef.SetLayerStyle(""area"", LayerStyles[layerStyleIndex]);
-}
-
-private async Task ToggleOverlayVisibility()
-{
-    overlayVisible = !overlayVisible;
-    await layersMapRef.SetTileOverlayVisible(""labels"", overlayVisible);
-}
-
-private async Task DimOverlay() => await layersMapRef.SetTileOverlayOpacity(""labels"", 0.15);
-
-private async Task GoFullscreen()
-{
-    // Must run from a real click: the browser only honours a fullscreen request inside the
-    // short activation window a gesture opens.
-    await layersMapRef.RequestFullscreen();
-}
-
-private Task OnLayersFullscreenChanged(bool isFullscreen)
-{
-    // Also fires when the user leaves fullscreen with Escape.
-    return Task.CompletedTask;
-}";
-
-    private readonly string example14RazorCode = @"
-<div style=""height:400px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            Provider=""@popupProvider""
-            Markers=""popupMarkers""
-            OnPopupOpened=""OnPopupOpened"">
-        <MarkerPopupTemplate Context=""marker"">
-            <div style=""display:flex;flex-flow:column;gap:0.5rem"">
-                <b>@marker.Alt</b>
-                <div>Visitors this month: <b>@GetVisitorCount(marker.Id)</b></div>
-                <BitButton Size=""BitSize.Small"" OnClick=""() => RecordVisit(marker.Id)"">Record a visit</BitButton>
-            </div>
-        </MarkerPopupTemplate>
-    </BitMap>
-</div>
-<pre>@popupLog</pre>";
-    private readonly string example14CsharpCode = @"
-private readonly BitLeafletMapProvider popupProvider = new() { Center = new(48.2082, 16.3738), Zoom = 12 };
-private readonly List<BitMapMarker> popupMarkers =
-[
-    new() { Id = ""opera"", Position = new(48.2029, 16.3690), Alt = ""Vienna State Opera"" },
-    new() { Id = ""prater"", Position = new(48.2166, 16.3960), Alt = ""Prater"" },
-    new() { Id = ""belvedere"", Position = new(48.1915, 16.3809), Alt = ""Belvedere"" },
-];
-private readonly Dictionary<string, int> popupVisits = [];
-
-private int GetVisitorCount(string markerId) => popupVisits.GetValueOrDefault(markerId);
-
-// An event handler inside the popup - the thing an HTML-string popup cannot do at all.
-private void RecordVisit(string markerId)
-{
-    popupVisits[markerId] = GetVisitorCount(markerId) + 1;
-}
-
-private Task OnPopupOpened(BitMapMarker marker)
-{
-    popupLog = $""Popup opened for {marker.Alt}."";
-    return Task.CompletedTask;
-}";
-
-    private readonly string example15RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitMapLibreMapProvider"" Provider=""@maplibreProvider"" />
-</div>";
-    private readonly string example15CsharpCode = @"
-// Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitMapLibreMapProvider maplibreProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };";
-
-    private readonly string example16RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitOpenLayersMapProvider"" Provider=""@olProvider"" />
-</div>";
-    private readonly string example16CsharpCode = @"
-// Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitOpenLayersMapProvider olProvider = new() { Center = new(35.6762, 139.6503), Zoom = 4 };";
-
-    private readonly string example17RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitMapboxMapProvider"" Provider=""@mapboxProvider"" />
-</div>";
-    private readonly string example17CsharpCode = @"
-// Get your token from https://account.mapbox.com/access-tokens/
-// and pass it via the AccessToken property on BitMapboxMapProvider.
-// Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitMapboxMapProvider mapboxProvider = new()
-{
-    AccessToken = ""YOUR_MAPBOX_TOKEN"",
-    Center = new(40, 0),
-    Zoom = 2,
-};";
-
-    private readonly string example18RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitArcGisMapProvider"" Provider=""@arcGisProvider"" />
-</div>";
-    private readonly string example18CsharpCode = @"
-// Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitArcGisMapProvider arcGisProvider = new() { Center = new(40, 0), Zoom = 2, BasemapId = ""osm"" };";
-
-    private readonly string example19RazorCode = @"
-<div style=""height:360px"">
-    <BitMap TMapProvider=""BitAzureMapsMapProvider"" Provider=""@azureMapsProvider"" />
-</div>";
-    private readonly string example19CsharpCode = @"
-// Get your key from Azure Portal > Maps account > Authentication > Shared Key
-// and pass it via the SubscriptionKey property on BitAzureMapsMapProvider.
-// Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitAzureMapsMapProvider azureMapsProvider = new()
-{
-    SubscriptionKey = ""YOUR_AZURE_MAPS_KEY"",
-    Center = new(40, 0),
-    Zoom = 2,
-};";
-
-    private readonly string example20RazorCode = @"
-<div style=""height:420px"">
-    <BitMap TMapProvider=""BitCesiumMapProvider"" Provider=""@cesiumProvider"" />
-</div>";
-    private readonly string example20CsharpCode = @"
-// Bind a stable field so the provider isn't reallocated on every render.
-private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = ""scene3d"" };";
-
-    private readonly string example21RazorCode = @"
-<BitToggle Value=""iconCentreAnchor"" ValueChanged=""ToggleIconAnchor"" Text=""Anchor the disc at its centre"" />
-
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""iconsMapRef""
-            Provider=""@iconsProvider""
-            Markers=""iconMarkers""
-            OnReady=""OnIconsReady"" />
-</div>";
-    private readonly string example21CsharpCode = @"
-private BitMap<BitLeafletMapProvider> iconsMapRef = default!;
-private readonly BitLeafletMapProvider iconsProvider = new() { Center = new(51.5045, -0.0865), Zoom = 15 };
-private bool iconCentreAnchor = true;
-private List<BitMapMarker> iconMarkers = [];
-
-// The coordinate every icon points at, so the anchoring is comparable.
-private static readonly BitMapLatLng IconAnchorProbe = new(51.5045, -0.0865);
-
-private static string DiscIcon(string fill) =>
-    ""data:image/svg+xml;charset=utf-8,"" + Uri.EscapeDataString(
-        $@""<svg xmlns=""""http://www.w3.org/2000/svg"""" width=""""28"""" height=""""28"""" viewBox=""""0 0 28 28""""><circle cx=""""14"""" cy=""""14"""" r=""""11"""" fill=""""{fill}"""" stroke=""""#fff"""" stroke-width=""""3""""/></svg>"");
-
-private static string PinIcon(string fill) =>
-    ""data:image/svg+xml;charset=utf-8,"" + Uri.EscapeDataString(
-        $@""<svg xmlns=""""http://www.w3.org/2000/svg"""" width=""""24"""" height=""""36"""" viewBox=""""0 0 24 36""""><path d=""""M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"""" fill=""""{fill}"""" stroke=""""#fff"""" stroke-width=""""2""""/><circle cx=""""12"""" cy=""""12"""" r=""""4.5"""" fill=""""#fff""""/></svg>"");
-
-private async Task OnIconsReady()
-{
-    BuildIconMarkers();
-    // A thin ring at the exact coordinate, so the anchoring is visible rather than
-    // something you have to take on trust.
-    await iconsMapRef.AddCircle(""probe"", IconAnchorProbe, 12, new BitMapVectorPathStyle
-    {
-        Color = ""#111"",
-        Weight = 2,
-        Fill = false,
-    });
-    StateHasChanged();
-}
-
-private void ToggleIconAnchor(bool centred)
-{
-    iconCentreAnchor = centred;
-    BuildIconMarkers();
-}
-
-private void BuildIconMarkers()
-{
-    iconMarkers =
-    [
-        // A pin: its tip is at the bottom, which is what the default anchor assumes.
-        new()
-        {
-            Id = ""pin"",
-            Position = IconAnchorProbe.Offset(90, 270),
-            Alt = ""Pin icon, anchored at its tip"",
-            IconUrl = PinIcon(""#d13438""),
-            IconWidth = 24,
-            IconHeight = 36,
-        },
-        // A disc: the coordinate it stands for is at its centre, so it has to say so.
-        new()
-        {
-            Id = ""disc"",
-            Position = IconAnchorProbe,
-            Alt = iconCentreAnchor ? ""Disc icon, anchored at its centre"" : ""Disc icon, left on the default anchor"",
-            IconUrl = DiscIcon(iconCentreAnchor ? ""#107c10"" : ""#8a8886""),
-            IconWidth = 28,
-            IconHeight = 28,
-            IconAnchorX = iconCentreAnchor ? 14 : null,
-            IconAnchorY = iconCentreAnchor ? 14 : null,
-        },
-    ];
-}";
-
-    private readonly string example22RazorCode = @"
-<div style=""height:380px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            @ref=""geoMapRef""
-            Provider=""@geoProvider""
-            Markers=""geoMarkers""
-            OnClick=""OnGeoMapClick"" />
-</div>
-
-<BitButton OnClick=""FitGeoMarkers"">Fit to the markers</BitButton>
-<BitButton OnClick=""FitGeoRadius"" Variant=""BitVariant.Outline"">Frame 5 km around Big Ben</BitButton>
-<BitButton OnClick=""PanToGeoOrigin"" Variant=""BitVariant.Outline"">Pan to Big Ben</BitButton>
-<BitButton OnClick=""ProjectGeoOrigin"" Variant=""BitVariant.Outline"">Where is it on screen?</BitButton>
-
-<pre>@geoLog</pre>";
-    private readonly string example22CsharpCode = @"
-private BitMap<BitLeafletMapProvider> geoMapRef = default!;
-private readonly BitLeafletMapProvider geoProvider = new() { Center = new(51.5045, -0.0865), Zoom = 11 };
-private string geoLog = ""Click the map to drop a probe."";
-
-// Big Ben - the fixed point every measurement here is taken from.
-private static readonly BitMapLatLng GeoOrigin = new(51.5007, -0.1246);
-
-private readonly List<BitMapMarker> geoMarkers =
-[
-    new() { Id = ""bigben"", Position = GeoOrigin, Alt = ""Big Ben"", TooltipText = ""Big Ben"" },
-    new() { Id = ""tower"", Position = new(51.5055, -0.0754), Alt = ""Tower Bridge"", TooltipText = ""Tower Bridge"" },
-    new() { Id = ""eye"", Position = new(51.5033, -0.1196), Alt = ""London Eye"", TooltipText = ""London Eye"" },
-];
-
-private Task OnGeoMapClick(BitMapLatLng point)
-{
-    var km = GeoOrigin.DistanceTo(point) / 1000;
-    var box = BitMapLatLngBounds.FromMarkers(geoMarkers);
-    var inside = box.Contains(point) ? ""inside"" : ""outside"";
-    geoLog = $""Probe {point.Latitude:F5}, {point.Longitude:F5} - {km:F2} km from Big Ben, {inside} the markers' box."";
-    return Task.CompletedTask;
-}
-
-private async Task FitGeoMarkers()
-{
-    // Padded in map units so the outermost pins are never flush against the edge, then framed
-    // with a zoom ceiling so three markers a few hundred metres apart do not slam to street level.
-    var box = BitMapLatLngBounds.FromMarkers(geoMarkers).Pad(0.15);
-    await geoMapRef.FitBounds(box, paddingPixels: 24, maxZoom: 15);
-}
-
-private async Task FitGeoRadius()
-{
-    // ToBounds turns a radius into the box that frames it.
-    await geoMapRef.FitBounds(GeoOrigin.ToBounds(5_000), maxZoom: 16);
-}
-
-private async Task PanToGeoOrigin()
-{
-    // PanTo moves the centre and leaves the zoom where the user put it.
-    await geoMapRef.PanTo(GeoOrigin);
-}
-
-private async Task ProjectGeoOrigin()
-{
-    // Null when the coordinate is not on screen - which is an answer, not a failure.
-    var point = await geoMapRef.Project(GeoOrigin);
-    geoLog = point is null
-        ? ""Big Ben is off screen, so it has no pixel position right now.""
-        : $""Big Ben is at {point.Value.X:F0}, {point.Value.Y:F0} pixels inside the map container."";
-}";
-
-    private const string example23ScssCode = @"::deep {
-    .custom-map {
-        height: 260px;
-        border: 2px dashed tomato;
-        border-radius: 0.5rem;
-        filter: saturate(0.4);
-    }
-}";
-    private readonly string example23RazorCode = @"
-<div style=""display:flex;gap:1rem;flex-wrap:wrap"">
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            Provider=""@styleProvider""
-            Style=""height:260px;flex:1 1 260px;border-radius:1rem;box-shadow:0 0 1rem #6664"" />
-    <BitMap TMapProvider=""BitLeafletMapProvider""
-            Provider=""@classProvider""
-            Class=""custom-map""
-            Style=""flex:1 1 260px"" />
-</div>";
-    private readonly string example23CsharpCode = @"
-private readonly BitLeafletMapProvider styleProvider = new() { Center = new(45.4642, 9.1900), Zoom = 11 };
-private readonly BitLeafletMapProvider classProvider = new() { Center = new(41.3874, 2.1686), Zoom = 11 };";
-    private readonly DemoCodeFile[] example23CodeFiles =
-    [
-        new("BitMapDemo.razor.scss", example23ScssCode),
-    ];
-
-    private readonly string example24RazorCode = @"
-<div style=""height:320px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider"" Dir=""BitDir.Rtl"" Provider=""@rtlProvider"" AriaLabel=""نقشه تهران"">
-        <div style=""position:absolute;inset-inline-start:0.75rem;inset-block-start:0.75rem;padding:0.5rem 0.75rem"">
-            تهران
-        </div>
-    </BitMap>
-</div>";
-    private readonly string example24CsharpCode = @"
-private readonly BitLeafletMapProvider rtlProvider = new() { Center = new(35.6892, 51.3890), Zoom = 11 };";
 }

@@ -355,7 +355,7 @@
     cursor: pointer;
     color: var(--bit-Toggle-label-color, #{$clr-fg-pri});
     font-size: var(--bit-Toggle-label-font-size, var(--bit-tgl-lbl-fontsize));
-    font-weight: var(--bit-Toggle-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-Toggle-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 .bit-tgl-cnt {

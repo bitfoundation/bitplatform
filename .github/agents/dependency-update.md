@@ -8,13 +8,36 @@ description: Sweep every version-pinned surface in the bitplatform repo (NuGet, 
 Update every version pin in the repo in one pass, then hand back a report the maintainer can review
 without opening the diff.
 
+## First, check the checkout is up to date
+
+The sweep reads its pins from the working tree, so a checkout that is behind `develop` sweeps stale
+pins: it proposes bumps that already landed upstream and misses packages added since the last pull.
+Before reading a single pin, fetch and count:
+
+```bash
+up=$(git remote -v | awk '$2 ~ /bitfoundation\/bitplatform(\.git)?$/ && $3 == "(fetch)" { print $1; exit }')
+git fetch "$up" "+refs/heads/develop:refs/remotes/$up/develop"
+git rev-list --count HEAD.."$up"/develop   # commits the checkout is missing
+```
+
+`$up` is the remote that points at `bitfoundation/bitplatform`: `upstream` when `origin` is your
+fork, `origin` in a plain clone. If the count is not 0:
+
+- On `develop` with a clean tree, fast-forward it: `git merge --ff-only "$up"/develop`.
+- Anywhere else (another branch, local changes, commits of its own), leave the checkout alone and run
+  the whole sweep, scan included, in a worktree on the latest `develop`
+  (`git worktree add --detach ../bitplatform-sweep "$up"/develop`). Once the issue exists, name the
+  branch there with `git switch -c <n>` instead of adding the worktree in Ship it step 2.
+
+Open the report with the commit the sweep read.
+
 ## Ordering
 
 Work the surfaces in this order. Each is independent; batch the network lookups.
 
 1. NuGet (`*.csproj`, `Directory.Packages.props`)
 2. npm (`package.json`, then `npm install` to refresh `package-lock.json`)
-3. GitHub Actions (`.github/workflows/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`, `src/Butil/tests/Bit.Butil.Tests.E2E/ci/`)
+3. GitHub Actions (`.github/workflows/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`)
 4. Azure DevOps tasks (`src/Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/`)
 5. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
 6. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
@@ -57,7 +80,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.6.1`. Never read
+**`Bit.*` self-references track the in-development version**, currently `10.6.2`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -95,6 +118,11 @@ graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
 
+**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
+`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
+10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
+raises the limit to 25.0.99; move the runners together with the .NET 11 move.
+
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
 
@@ -121,8 +149,8 @@ versions ascending):
 - latest stable = last entry with no `-`
 - target = latest stable, **except** a package whose newest release is a prerelease with no stable
   above it, which takes the prerelease. That is the whole `OpenTelemetry.*` 1.18.0-beta.1 family,
-  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace`,
-  `Aspire.Hosting.Keycloak` and `Aspire.Hosting.Maui`.
+  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace` and
+  `Aspire.Hosting.Keycloak`.
 
 Run the lookups with `xargs -P 12`; ~210 packages otherwise takes minutes.
 
@@ -167,9 +195,11 @@ Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major i
 `<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
 A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
 
-`AzureRmWebAppDeployment` is on @4 while @5 exists. For `webAppLinux` @5 defaults to `oneDeploy` with
-`CleanDeploymentFlag: true`, which deletes wwwroot files missing from the package — a deploy-behaviour
-decision for the maintainer, not a routine bump.
+`AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
+defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
+carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
+`zipDeploy` keeps them, as @4 did. Keep that input on any later major. The GitHub CD's
+`azure/webapps-deploy` steps pass `clean: false` for the same reason: that action always uses OneDeploy.
 
 ### devcontainers
 
@@ -192,7 +222,10 @@ There are no `.config/dotnet-tools.json` manifests any more: every tool is run w
 <package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
 .*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
 requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version.
+EF Core package version. Likewise the `npx playwright@<version>` command in the Boilerplate's two
+`.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
+`Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
+every test that runs on it fails at connect.
 
 `src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
 `global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a

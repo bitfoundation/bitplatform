@@ -156,6 +156,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (signInResult.Succeeded is false)
             throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]).WithData(new() { { "UserId", user.Id }, { "Identifier", request } });
 
+        userSession.AuthenticationMethod = firstStepAuthenticationMethod;
+        // Success with two-factor on means the second step just passed - SignInOrTwoFactorAsync allows no other way.
+        userSession.Trusted = user.TwoFactorEnabled || firstStepAuthenticationMethod is "External" or "WebAuthn";
+
         await DbContext.UserSessions.AddAsync(userSession, cancellationToken);
         user.TwoFactorTokenRequestedOn = null;
         await DbContext.SaveChangesAsync(cancellationToken);
@@ -349,6 +353,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                     await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
                     elevatedSessionExpiresOn = NewElevatedSessionExpiresOn();
                 }
+            }
+
+            if (request.WebAuthnClientResponse is not null)
+            {
+                elevatedSessionExpiresOn = await ElevateByWebAuthn(user, request.WebAuthnClientResponse.Value, cancellationToken);
             }
 
             //#if (multitenant == true)
@@ -548,7 +557,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             //#if (signalR == true)
             var userConnectionIds = await DbContext.UserSessions
-                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.SignalRConnectionId != null)
+                .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.Trusted && us.SignalRConnectionId != null)
                 .Select(us => us.SignalRConnectionId!)
                 .ToArrayAsync(cancellationToken);
             sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken));
@@ -558,7 +567,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             {
                 Message = message,
                 UserRelatedPush = true
-            }, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+            }, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id && s.UserSession.Trusted, cancellationToken: cancellationToken));
             //#endif
         }
 
