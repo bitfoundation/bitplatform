@@ -422,11 +422,11 @@ private void EditorFocused() => focusStatus = ""The editor has the keyboard focu
 
 private void EditorBlurred() => focusStatus = ""The editor lost the keyboard focus."";
 
-private void SubmitFromEditor(string? value)
+private async Task SubmitFromEditor(string? value)
 {
     formModel.ReleaseNotes = value;
 
-    if (formEditContext.Validate()) HandleValidSubmit();
+    if (await formEditContext.ValidateAsync()) HandleValidSubmit();
 }
 
 private void HandleValidSubmit() => submittedStatus = $""Published {formModel.ReleaseNotes?.Length ?? 0} characters."";";

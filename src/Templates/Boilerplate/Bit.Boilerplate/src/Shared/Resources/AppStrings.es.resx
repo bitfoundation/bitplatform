@@ -2084,4 +2084,13 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Cargar tal cual</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Modo quiosco</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Esta aplicación está bloqueada en la pantalla: la tecla Windows, Alt+Tab, el Administrador de tareas y el cierre de la ventana están bloqueados. Usa el botón para salir.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Salir de la aplicación</value>
+  </data>
 </root>

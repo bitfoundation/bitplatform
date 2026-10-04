@@ -45,17 +45,22 @@ public class ClientSettingsValidationTests
     /// come from the settings validation itself.
     /// </summary>
     [TestMethod]
-    public void AnInvalidSetting_Should_FailTheHostsThatRunNoStartupValidator()
+    public async Task AnInvalidSetting_Should_FailTheHostsThatRunNoStartupValidator()
     {
         using var serviceProvider = BuildClientServiceProvider(new() { ["ServerAddress"] = "   " });
 
-        var startupValidator = serviceProvider.GetService<IStartupValidator>();
+        var startupValidators = serviceProvider.GetServices<IAsyncStartupValidator>().ToArray();
 
-        Assert.IsNotNull(startupValidator,
-            "No IStartupValidator is registered, so the explicit Validate() call the non-IHost client hosts make would silently do nothing.");
+        Assert.IsNotEmpty(startupValidators,
+            "No IAsyncStartupValidator is registered, so the explicit ValidateAsync() calls the non-IHost client hosts make would silently do nothing.");
 
-        Assert.ThrowsExactly<OptionsValidationException>(() => startupValidator.Validate(),
-            "Settings validation passed for a ClientCoreSettings whose [Required] ServerAddress is whitespace.");
+        await Assert.ThrowsExactlyAsync<OptionsValidationException>(async () =>
+        {
+            foreach (var startupValidator in startupValidators)
+            {
+                await startupValidator.ValidateAsync();
+            }
+        }, "Settings validation passed for a ClientCoreSettings whose [Required] ServerAddress is whitespace.");
 
         Assert.ThrowsExactly<OptionsValidationException>(() => serviceProvider.GetRequiredService<ClientCoreSettings>(),
             "Resolving the settings returned an invalid instance instead of failing, which is what happens when the injected copy bypasses the options pipeline.");
