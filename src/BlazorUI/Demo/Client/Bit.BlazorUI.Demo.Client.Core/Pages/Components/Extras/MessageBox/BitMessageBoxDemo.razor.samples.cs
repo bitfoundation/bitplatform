@@ -150,7 +150,7 @@ private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
     if (args.Result is not BitMessageBoxResult.Yes) return;
 
     // The work the answer starts, which AutoLoading spins the pressed button through.
-    await Task.Delay(1000);
+    await Task.Delay(1000, args.CancellationToken);
 
     if (guardConfirmed) return;
 
@@ -312,18 +312,18 @@ private async Task ShowValidatedPrompt()
         MaxLength = 40,
         Required = true,
         RequiredMessage = ""Give the folder a name."",
-        Validator = v => v!.IndexOfAny(['/', '\\']) >= 0 ? ""A name cannot hold a slash."" : null,
+        Validator = v => v.IndexOfAny(['/', '\\']) >= 0 ? ""A name cannot hold a slash."" : null,
         AsyncValidator = IsFolderNameTaken,
         OkText = ""Create""
     });
 }
 
 // Stands in for a call to the server, which is the only one that knows the folders already there.
-private static async Task<string?> IsFolderNameTaken(string? name)
+private static async Task<string?> IsFolderNameTaken(string name, CancellationToken cancellationToken)
 {
-    await Task.Delay(800);
+    await Task.Delay(800, cancellationToken);
 
-    return string.Equals(name?.Trim(), ""Projects"", StringComparison.OrdinalIgnoreCase) ? ""A folder with this name already exists."" : null;
+    return string.Equals(name.Trim(), ""Projects"", StringComparison.OrdinalIgnoreCase) ? ""A folder with this name already exists."" : null;
 }
 
 private async Task ShowPasswordPrompt()

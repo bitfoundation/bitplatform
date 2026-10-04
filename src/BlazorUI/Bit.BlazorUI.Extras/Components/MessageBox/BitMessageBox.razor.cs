@@ -12,7 +12,8 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitMessageBox : BitComponentBase
 {
-    private bool _answering;
+    private bool _pendingRevocable;
+    private CancellationTokenSource? _pendingAnswer;
     private BitButton? _closeButtonRef;
     private readonly Dictionary<BitMessageBoxResult, BitButton> _buttonRefs = [];
     private readonly RenderFragment _renderTitle;
@@ -215,7 +216,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <see cref="BitModalParameters.CanClose"/> is the guard for.
     /// <br/>
     /// Turn <see cref="AutoLoading"/> on beside it to keep the pressed button spinning while the guard
-    /// works out its answer.
+    /// works out its answer. The close button and the Cancel button stay pressable meanwhile, and take the
+    /// answer back: <see cref="BitMessageBoxBeforeResultArgs.CancellationToken"/> is cancelled, and the answer
+    /// is not handed over whatever the guard goes on to decide.
     /// </remarks>
     [Parameter] public EventCallback<BitMessageBoxBeforeResultArgs> OnBeforeResult { get; set; }
 
@@ -317,7 +320,9 @@ public partial class BitMessageBox : BitComponentBase
     /// can refuse it, the callback of that answer is raised, then <see cref="OnResult"/> and
     /// <see cref="OnClose"/> - so a message box shown through the <see cref="BitMessageBoxService"/> closes
     /// and hands the answer back to whoever was waiting for it. A disabled message box answers nothing, and
-    /// neither does one that is still working out an answer it was already given.
+    /// neither does one that is still working out an answer it was already given - unless the new answer is a
+    /// dismissal (<see cref="BitMessageBoxResult.None"/> or <see cref="BitMessageBoxResult.Cancel"/>), which takes
+    /// that one back through <see cref="BitMessageBoxBeforeResultArgs.CancellationToken"/>.
     /// <br/>
     /// The result need not be one of the buttons the current <see cref="Buttons"/> set renders.
     /// </remarks>
@@ -568,22 +573,45 @@ public partial class BitMessageBox : BitComponentBase
 
         // Only one answer is given per showing: a slow callback leaves every other button pressable, and
         // a message box answered Ok and then Cancel while the first answer is still being worked out is
-        // one whose caller is told two different things.
-        if (_answering) return;
+        // one whose caller is told two different things. A dismissal is the exception, since a guard waiting
+        // on a server the user has given up on must not hold the box open: it takes the pending answer back,
+        // which is then never handed over, and goes through in its place.
+        if (_pendingAnswer is not null)
+        {
+            if (IsDismissal(result) is false || _pendingRevocable is false) return;
 
-        _answering = true;
+            _pendingAnswer.Cancel();
+        }
+
+        using var answer = new CancellationTokenSource();
+
+        _pendingAnswer = answer;
+
+        // Only an answer still in its guard can be taken back - one past it is already being handed over - and
+        // a dismissal is not taken back by another.
+        _pendingRevocable = IsDismissal(result) is false && OnBeforeResult.HasDelegate;
 
         try
         {
             if (OnBeforeResult.HasDelegate)
             {
-                var args = new BitMessageBoxBeforeResultArgs { Result = result };
+                var args = new BitMessageBoxBeforeResultArgs { Result = result, CancellationToken = answer.Token };
 
-                await OnBeforeResult.InvokeAsync(args);
+                try
+                {
+                    await OnBeforeResult.InvokeAsync(args);
+                }
+                catch (OperationCanceledException) when (answer.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 // A refused answer leaves the message box exactly as it was: nothing is reported, nothing
-                // is closed, and Result still holds whatever the last answer that went through was.
-                if (args.Cancel) return;
+                // is closed, and Result still holds whatever the last answer that went through was. One that
+                // was taken back while its guard ran is the dismissal's to finish.
+                if (args.Cancel || answer.IsCancellationRequested) return;
+
+                _pendingRevocable = false;
             }
 
             Result = result;
@@ -612,7 +640,13 @@ public partial class BitMessageBox : BitComponentBase
         }
         finally
         {
-            _answering = false;
+            // A dismissal that took this answer back is pending in its place, and stays so.
+            if (_pendingAnswer == answer)
+            {
+                _pendingAnswer = null;
+            }
         }
     }
+
+    private static bool IsDismissal(BitMessageBoxResult result) => result is BitMessageBoxResult.None or BitMessageBoxResult.Cancel;
 }

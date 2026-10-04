@@ -171,8 +171,7 @@
             <div>
                 <b>BodyTemplate</b> (or child content), <b>HeaderTemplate</b> (replaces icon, title and close button) and
                 <b>FooterTemplate</b> (replaces the buttons) take markup. Controls in a custom footer answer through
-                <b>AnswerAsync</b>, which takes the same path as a pressed button; a component of your own gets the box as a
-                <b>[CascadingParameter] BitMessageBox</b>, which is how a footer of a service box answers.
+                <b>AnswerAsync</b>, which takes the same path as a pressed button.
             </div>
             <br />
             <div class="example-grid">
@@ -213,7 +212,8 @@
             <div>
                 Set <b>Cancel</b> in <b>OnBeforeResult</b> to refuse an answer: nothing is reported and the box stays open.
                 It guards every button of the box, the close button included (a modal's Escape and overlay are guarded by
-                <b>BitModalParameters.CanClose</b>). <b>AutoLoading</b> spins the pressed button while it runs.
+                <b>BitModalParameters.CanClose</b>). <b>AutoLoading</b> spins the pressed button while it runs, and the close
+                button takes the answer back meanwhile, cancelling the args' <b>CancellationToken</b>.
             </div>
             <br />
             <div class="example-grid">
@@ -277,7 +277,9 @@
                 One call shows the box in a modal, focuses it, names and describes the dialog, and returns the
                 <b>BitMessageBoxResult</b>. <b>ShowInfo</b> ... <b>ShowError</b> preset the severity. Questions and
                 the Warning, SevereWarning and Error severities are <b>alertdialog</b>s. A <b>CancellationToken</b>
-                closes the box from code (answer <b>None</b>). Needs a <b>BitModalContainer</b> in the layout.
+                closes the box from code (answer <b>None</b>). Needs a <b>BitModalContainer</b> in the layout. A
+                <b>FooterTemplate</b> of a service box answers through <b>AnswerAsync</b> too: a component of your own in it
+                gets the box as a <b>[CascadingParameter] BitMessageBox</b>.
             </div>
             <br />
             <div class="example-buttons">
@@ -312,7 +314,8 @@
             <div>
                 <b>Prompt</b> asks for text and returns it, or <b>null</b> when dismissed. The field takes the focus and Enter
                 answers (Ctrl+Enter when <b>Multiline</b>). <b>Required</b>, <b>Validator</b> and <b>AsyncValidator</b> (a server
-                check, run on answering while the field shows it is busy) refuse a value with a message under the field;
+                check, run on answering while the field shows it is busy, and given up on by Cancel) refuse a value with a
+                message under the field;
                 <b>Label</b>, <b>Description</b>, <b>Placeholder</b>, <b>InputType</b>, <b>AutoComplete</b> and <b>MaxLength</b>
                 shape it. Try naming the new folder "Projects".
             </div>

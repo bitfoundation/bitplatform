@@ -141,6 +141,10 @@ public class BitMessageBoxService(BitModalService modalService)
     /// <see cref="BitMessageBoxPromptParameters.Required"/> and <see cref="BitMessageBoxPromptParameters.Validator"/> have
     /// accepted it - then <see cref="BitMessageBoxPromptParameters.AsyncValidator"/>, if there is one: a refused value stays in
     /// the field with the reason under it, and the box stays open. Enter in the field answers the way the affirmative button does.
+    /// <br/>
+    /// A validator that throws closes the box, and the exception is rethrown out of this call - where the code that wrote
+    /// the validator is waiting - rather than out of the click or the key that was being handled. A check still running when
+    /// the box closes, however it closes, has its token cancelled.
     /// </remarks>
     public async Task<string?> Prompt(BitMessageBoxPromptParameters parameters, CancellationToken cancellationToken)
     {
@@ -154,7 +158,16 @@ public class BitMessageBoxService(BitModalService modalService)
         var id = parameters.Id ?? NewId();
         var prompt = new BitMessageBoxPromptState(parameters, id, affirmative);
 
-        var result = await Show(parameters, id, BitMessageBoxButtons.OkCancel, isQuestion: false, prompt, cancellationToken);
+        BitMessageBoxResult result;
+
+        try
+        {
+            result = await Show(parameters, id, BitMessageBoxButtons.OkCancel, isQuestion: false, prompt, cancellationToken);
+        }
+        finally
+        {
+            prompt.Close();
+        }
 
         return result == affirmative ? prompt.AcceptedValue ?? string.Empty : null;
     }
@@ -197,14 +210,17 @@ public class BitMessageBoxService(BitModalService modalService)
 
         var buttons = parameters.Buttons ?? fallbackButtons ?? BitMessageBoxButtons.Ok;
 
-        // A prompt is a form rather than an interruption, so it stays a plain dialog whatever its buttons are.
-        var asksAQuestion = prompt is null && (isQuestion || buttons is not (BitMessageBoxButtons.Ok or BitMessageBoxButtons.None));
+        // A prompt is a form rather than an interruption, so it stays a plain dialog whatever its buttons and its color are.
+        var isAlert = prompt is null &&
+                      (isQuestion ||
+                       buttons is not (BitMessageBoxButtons.Ok or BitMessageBoxButtons.None) ||
+                       parameters.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error);
 
         // The parameters are built from the modal reference the service hands back, so the callbacks close
         // this very modal without a window where the reference isn't assigned yet.
         var modalRef = await modalService.Show<BitMessageBox>(
             mr => BuildParameters(parameters, id, mr, fallbackButtons, prompt),
-            BuildModalParameters(parameters, id, asksAQuestion, prompt),
+            BuildModalParameters(parameters, id, isAlert, prompt),
             parameters.Persistent ?? false);
 
         // The token only signals: the close itself is awaited below, so a close handler that fails (Close rethrows
@@ -214,10 +230,21 @@ public class BitMessageBoxService(BitModalService modalService)
 
         var answer = WaitForAnswer(modalRef);
 
-        if (await Task.WhenAny(answer, cancelled.Task) != answer)
+        // A prompt whose validator throws is closed too, and what it threw is handed to the caller rather than left to
+        // escape into the event that was being handled.
+        var failed = prompt?.Failed ?? cancelled.Task;
+
+        var ended = await Task.WhenAny(answer, cancelled.Task, failed);
+
+        if (ended != answer)
         {
             // Close rather than Dismiss: this is the page taking the box back, which a CanClose guard has no say over.
             await modalRef.Close();
+        }
+
+        if (ended == prompt?.Failed)
+        {
+            await ended;
         }
 
         return await answer;
@@ -234,7 +261,7 @@ public class BitMessageBoxService(BitModalService modalService)
 
 
 
-    private static BitModalParameters BuildModalParameters(BitMessageBoxParameters parameters, string id, bool asksAQuestion, BitMessageBoxPromptState? prompt)
+    private static BitModalParameters BuildModalParameters(BitMessageBoxParameters parameters, string id, bool isAlert, BitMessageBoxPromptState? prompt)
     {
         // A HeaderTemplate takes the title off the message box, so an aria-labelledby pointing at it would
         // name the dialog after an element that was never rendered - the words themselves stand in for it.
@@ -262,7 +289,7 @@ public class BitMessageBoxService(BitModalService modalService)
             // The alertdialog role is for a dialog that interrupts to get a response - a question, which is what
             // the WAI-ARIA pattern's own example (a confirmation) is - and for the colors that carry urgency.
             // A notice that is only acknowledged is left to the Modal's own decision.
-            IsAlert = asksAQuestion || parameters.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error ? true : null,
+            IsAlert = isAlert ? true : null,
         };
 
         // Precedence to what the caller asked for: these are only the values the service works out on its own.
@@ -358,7 +385,7 @@ public class BitMessageBoxService(BitModalService modalService)
             });
             result[nameof(BitMessageBox.OnBeforeResult)] = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(this, async args =>
             {
-                if (args.Result == state.Affirmative && await state.TryAcceptAsync() is false)
+                if (args.Result == state.Affirmative && await state.TryAcceptAsync(args.CancellationToken) is false)
                 {
                     args.Cancel = true;
                     return;

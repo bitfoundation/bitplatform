@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -134,7 +136,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "Rename",
             Body = "The new name of the file:",
             Value = "a/b",
-            Validator = v => v?.Contains('/') is true ? "A name cannot hold a slash." : null
+            Validator = v => v.Contains('/') ? "A name cannot hold a slash." : null
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
@@ -161,7 +163,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "Rename",
             Body = "The new name of the file:",
             Value = "a/b",
-            Validator = v => v?.Contains('/') is true ? "A name cannot hold a slash." : null
+            Validator = v => v.Contains('/') ? "A name cannot hold a slash." : null
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
@@ -403,7 +405,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "New folder",
             Body = "The name of the folder:",
             Value = "Projects",
-            AsyncValidator = v => { checkedValues.Add(v); return check.Task; }
+            AsyncValidator = (v, _) => { checkedValues.Add(v); return check.Task; }
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
@@ -447,7 +449,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "New folder",
             Body = "The name of the folder:",
             Required = true,
-            AsyncValidator = _ => { asyncRuns++; return Task.FromResult<string?>(null); }
+            AsyncValidator = (_, _) => { asyncRuns++; return Task.FromResult<string?>(null); }
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
@@ -475,7 +477,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "New folder",
             Body = "The name of the folder:",
             Value = "Projects",
-            AsyncValidator = _ => check.Task
+            AsyncValidator = (_, _) => check.Task
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
@@ -508,7 +510,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
             Title = "New folder",
             Body = "The name of the folder:",
             Value = "Reports",
-            AsyncValidator = _ => check.Task
+            AsyncValidator = (_, _) => check.Task
         });
 
         container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
@@ -528,7 +530,7 @@ public class BitMessageBoxPromptTests : BunitTestContext
     public async Task PromptShouldReturnNullWhenTheTokenIsCancelled()
     {
         var container = RenderComponent<BitModalContainer>();
-        using var cts = new System.Threading.CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
 
         var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters { Title = "Rename", Body = "The new name:", Value = "a" }, cts.Token);
 
@@ -538,6 +540,170 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         Assert.IsNull(await prompting);
         container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+    }
+
+    [TestMethod]
+    public async Task PromptShouldCloseAndRethrowWhatTheAsyncValidatorThrew()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Value = "Reports",
+            AsyncValidator = (_, _) => Task.FromException<string?>(new InvalidOperationException("The server is down."))
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        // The click that ran the check is not where the failure goes: it reaches the code waiting on the prompt.
+        await container.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
+
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => prompting);
+        Assert.AreEqual("The server is down.", error.Message);
+
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+    }
+
+    [TestMethod]
+    public async Task PromptShouldCloseAndRethrowWhatTheValidatorThrew()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "Rename",
+            Body = "The new name of the file:",
+            Validator = _ => throw new InvalidOperationException("Broken check.")
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        await container.Find(".bit-msb .bit-tfl-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => prompting);
+
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+    }
+
+    [TestMethod]
+    public async Task PromptShouldBeCancellableWhileTheAsyncValidatorRuns()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        var check = new TaskCompletionSource<string?>();
+        var token = CancellationToken.None;
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Value = "Reports",
+            AsyncValidator = (_, ct) => { token = ct; return check.Task; }
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+
+        // The check never answers, and Cancel is not kept waiting on it: it ends the prompt and gives the check up.
+        container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        Assert.IsNull(await prompting);
+        Assert.IsTrue(token.IsCancellationRequested);
+    }
+
+    [TestMethod]
+    public async Task PromptShouldGiveTheAsyncValidatorUpWhenTheShowingIsCancelled()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        using var cts = new CancellationTokenSource();
+        var token = CancellationToken.None;
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Value = "Reports",
+            AsyncValidator = (_, ct) => { token = ct; return new TaskCompletionSource<string?>().Task; }
+        }, cts.Token);
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+
+        await cts.CancelAsync();
+
+        Assert.IsNull(await prompting);
+        Assert.IsTrue(token.IsCancellationRequested);
+    }
+
+    [TestMethod]
+    public async Task PromptShouldCheckAnEmptyFieldAsAnEmptyString()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        var seen = new List<string?>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "Note",
+            Body = "Anything to add?",
+            Validator = v => { seen.Add(v); return null; },
+            AsyncValidator = (v, _) => { seen.Add(v); return Task.FromResult<string?>(null); }
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+
+        // What is checked is what is handed back.
+        Assert.AreEqual(string.Empty, await prompting);
+        CollectionAssert.AreEqual(new[] { string.Empty, string.Empty }, seen);
+    }
+
+    [TestMethod]
+    public async Task PromptShouldStayAPlainDialogWhateverItsColor()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "Delete the account?",
+            Body = "Enter your password to confirm.",
+            Color = BitColor.Error
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        Assert.AreEqual(1, container.FindAll("[role='dialog']").Count);
+        Assert.AreEqual(0, container.FindAll("[role='alertdialog']").Count);
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        await prompting;
+    }
+
+    [TestMethod]
+    public async Task PromptShouldSizeTheFieldLikeTheBoxACascadeSized()
+    {
+        var host = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitMessageBoxParams { Size = BitSize.Small } });
+            parameters.AddChildContent<BitModalContainer>();
+        });
+
+        var prompting = MessageBoxService.Prompt("Rename", "The new name of the file:");
+
+        host.WaitForAssertion(() => Assert.AreEqual(1, host.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        Assert.IsTrue(host.Find(".bit-msb").ClassList.Contains("bit-msb-sm"));
+        Assert.IsTrue(host.Find(".bit-msb .bit-tfl").ClassList.Contains("bit-tfl-sm"));
+
+        host.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        await prompting;
     }
 
     [TestMethod]

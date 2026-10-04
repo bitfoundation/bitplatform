@@ -20,8 +20,13 @@ public class BitMessageBoxPromptParameters : BitMessageBoxParameters
     /// It runs only when the box is answered (the affirmative button, or Enter in the field), with the field showing that it
     /// is busy, and the value it accepted is the one handed back - an edit made while it runs is not. An edit after it refused
     /// a value takes its message away, since the message is about a value that is no longer there.
+    /// <br/>
+    /// The value is never <c>null</c>: an empty field is checked as the empty string it is handed back as. The token is
+    /// cancelled when the check is given up on - the Cancel or the close button pressed while it runs, the Escape key, the
+    /// token of the showing - so a server call made with it stops with the box. An exception it throws (other than the
+    /// cancellation of that token) closes the box and is rethrown to the caller of the Prompt.
     /// </remarks>
-    public Func<string?, Task<string?>>? AsyncValidator { get; set; }
+    public Func<string, CancellationToken, Task<string?>>? AsyncValidator { get; set; }
 
     /// <summary>
     /// The value of the autocomplete attribute of the text field, such as <c>off</c>, <c>username</c> or
@@ -82,8 +87,10 @@ public class BitMessageBoxPromptParameters : BitMessageBoxParameters
     /// <remarks>
     /// It runs when the affirmative button is pressed (or Enter in the field), and - once an answer has been refused - on
     /// every edit after that, so the message goes away as soon as the value is fixed. Dismissing the box is never refused.
+    /// The value is never <c>null</c>: an empty field is checked as the empty string it is handed back as. An exception it
+    /// throws closes the box and is rethrown to the caller of the Prompt.
     /// </remarks>
-    public Func<string?, string?>? Validator { get; set; }
+    public Func<string, string?>? Validator { get; set; }
 
     /// <summary>
     /// The initial value of the text field.

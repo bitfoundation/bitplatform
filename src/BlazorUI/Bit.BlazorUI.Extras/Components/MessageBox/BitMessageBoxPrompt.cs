@@ -41,8 +41,19 @@ internal sealed class BitMessageBoxPromptState(BitMessageBoxPromptParameters par
     /// </summary>
     public string? AcceptedValue { get; private set; }
 
+    /// <summary>
+    /// Faults with what a validator threw, which the service closes the box on and rethrows to the caller of the prompt -
+    /// rather than letting it escape into the click or the key that was being handled, where nothing is waiting for it.
+    /// </summary>
+    public Task Failed => _failure.Task;
+
     // Set by the first refused answer: from then on every edit re-checks the value.
     private bool _refused;
+
+    // Cancelled once the showing is over, however it ended, so a check still running is told it is no longer wanted.
+    private readonly CancellationTokenSource _closed = new();
+
+    private readonly TaskCompletionSource _failure = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     /// <summary>
     /// Raised when <see cref="Error"/> changes outside the field's own events, with whether the field should take the focus.
@@ -50,40 +61,64 @@ internal sealed class BitMessageBoxPromptState(BitMessageBoxPromptParameters par
     public event Action<bool>? Changed;
 
     /// <summary>
-    /// Checks the value before the box is answered with it, and moves the focus back onto the field when it is refused -
-    /// which is where the error that explains why is read out.
+    /// Gives up on a check that is still running, once the box is no longer on the screen.
     /// </summary>
-    public async Task<bool> TryAcceptAsync()
-    {
-        var value = Value;
+    public void Close() => _closed.Cancel();
 
-        Error = Validate();
+    /// <summary>
+    /// Checks the value before the box is answered with it, and moves the focus back onto the field when it is refused -
+    /// which is where the error that explains why is read out. A check that throws is reported through <see cref="Failed"/>
+    /// and refuses the answer, and one given up on through the <paramref name="cancellationToken"/> refuses it quietly.
+    /// </summary>
+    public async Task<bool> TryAcceptAsync(CancellationToken cancellationToken)
+    {
+        var value = Value ?? string.Empty;
+
+        if (TryValidate(out var error) is false) return false;
+
+        Error = error;
 
         if (Error is null && Parameters.AsyncValidator is not null)
         {
             Validating = true;
             Changed?.Invoke(false);
 
+            using var abandoned = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _closed.Token);
+
             try
             {
-                Error = await Parameters.AsyncValidator(value);
+                error = await Parameters.AsyncValidator(value, abandoned.Token);
             }
-            catch
+            catch (Exception ex)
             {
                 // A validator that throws does not leave the field busy behind the failure it reports.
                 Validating = false;
                 Changed?.Invoke(false);
-                throw;
+
+                if (ex is OperationCanceledException && abandoned.IsCancellationRequested) return false;
+
+                _failure.TrySetException(ex);
+                return false;
             }
 
             Validating = false;
 
+            // An answer taken back while it was checked is neither accepted nor refused, whatever the check said.
+            if (abandoned.IsCancellationRequested)
+            {
+                Changed?.Invoke(false);
+                return false;
+            }
+
+            Error = error;
+
             // A refusal of a value that was edited while the check ran is about a value that is no longer there: the
             // answer is still refused, but what the field shows is what the synchronous checks say about its current value.
-            if (Error is not null && Value != value)
+            if (Error is not null && (Value ?? string.Empty) != value)
             {
                 _refused = true;
-                Error = Validate();
+                if (TryValidate(out error) is false) return false;
+                Error = error;
                 Changed?.Invoke(false);
                 return false;
             }
@@ -110,21 +145,40 @@ internal sealed class BitMessageBoxPromptState(BitMessageBoxPromptParameters par
     {
         if (_refused is false) return false;
 
-        var error = Error;
+        var previous = Error;
 
-        Error = Validate();
+        if (TryValidate(out var error) is false) return false;
 
-        return error != Error;
+        Error = error;
+
+        return previous != Error;
     }
 
-    private string? Validate()
+    // The synchronous checks. A Validator that throws is reported through Failed, and false is returned.
+    private bool TryValidate(out string? error)
     {
-        if (Parameters.Required is true && string.IsNullOrWhiteSpace(Value))
+        error = null;
+
+        var value = Value ?? string.Empty;
+
+        if (Parameters.Required is true && string.IsNullOrWhiteSpace(value))
         {
-            return Parameters.RequiredMessage ?? "A value is required.";
+            error = Parameters.RequiredMessage ?? "A value is required.";
+            return true;
         }
 
-        return Parameters.Validator?.Invoke(Value);
+        if (Parameters.Validator is null) return true;
+
+        try
+        {
+            error = Parameters.Validator(value);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _failure.TrySetException(ex);
+            return false;
+        }
     }
 }
 
@@ -136,6 +190,7 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
     private bool _focusPending;
     private BitTextField? _field;
     private readonly EventCallback<string?> _valueChanged;
+    private readonly EventCallback<KeyboardEventArgs> _keyDown;
 
 
 
@@ -145,6 +200,7 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
         // the error under the field changes. A render of the prompt for every keystroke hands the field back a value
         // the user has already typed past, which costs characters when typing fast.
         _valueChanged = new EventCallback<string?>(null, (Action<string?>)HandleValueChanged);
+        _keyDown = new EventCallback<KeyboardEventArgs>(null, (Func<KeyboardEventArgs, Task>)HandleKeyDown);
     }
 
 
@@ -222,8 +278,9 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
             // Enter answers a single-line prompt, so an on-screen keyboard labels its return key as the end of the task.
             builder.AddComponentParameter(25, nameof(BitTextField.EnterKeyHint), "done");
         }
-        if (parameters.Size.HasValue) builder.AddComponentParameter(26, nameof(BitTextField.Size), parameters.Size);
-        builder.AddComponentParameter(27, nameof(BitTextField.OnKeyDown), EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleKeyDown));
+        // The field is the size of the box it is in, which a BitMessageBoxParams around the container may be what set.
+        if ((MessageBox?.Size ?? parameters.Size) is { } size) builder.AddComponentParameter(26, nameof(BitTextField.Size), size);
+        builder.AddComponentParameter(27, nameof(BitTextField.OnKeyDown), _keyDown);
         if (parameters.Dir.HasValue) builder.AddComponentParameter(28, nameof(BitTextField.Dir), parameters.Dir);
         builder.AddComponentParameter(29, nameof(BitTextField.Class), "bit-msb-pfl");
 
@@ -262,13 +319,16 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
 
     // Enter answers the box the way its affirmative button does - the answer still goes through the check of the value
     // and the OnBeforeResult of the caller. A multi-line field keeps Enter for its new lines and answers on Ctrl+Enter,
-    // and a key pressed to compose a character with an IME is not an answer at all.
+    // and a key pressed to compose a character with an IME is not an answer at all. On every target that last one is the
+    // field's to see to: Immediate turns its composition guard on, which stops the Enter that commits a candidate (flagged
+    // by isComposing, by the legacy 229 key code, or arriving between compositionstart and compositionend) before Blazor
+    // sees it - so no keydown of a composition reaches this handler on .NET 8, whose event does not carry the state.
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key != "Enter" || MessageBox is null) return;
 
 #if NET9_0_OR_GREATER
-        // The event only carries the composition state from .NET 9 on.
+        // A second line of defence where the event carries the composition state.
         if (e.IsComposing) return;
 #endif
 

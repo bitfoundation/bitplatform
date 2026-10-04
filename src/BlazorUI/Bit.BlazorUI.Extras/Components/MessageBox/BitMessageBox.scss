@@ -8,7 +8,7 @@
 //   --bit-MessageBox-padding            inset of the message box                       (default: per size, $spa-dialog for medium)
 //   --bit-MessageBox-gap                room between the header, body and footer       (default: spacing(2))
 //   --bit-MessageBox-min-width          width the message box does not shrink below    (default: per size, never past the max width)
-//   --bit-MessageBox-max-width          width the message box stops growing at         (default: $siz-dialog-max-width; 100% to fill its container)
+//   --bit-MessageBox-max-width          width the message box stops growing at         (default: $siz-dialog-max-width in a modal, 100% inline)
 //   --bit-MessageBox-max-height         height past which the body scrolls             (default: the height of the screen a modal leaves it)
 //   --bit-MessageBox-text-align         alignment of the title and the body            (default: $layout-dialog-text-align)
 //   --bit-MessageBox-icon-color         color of the leading icon                      (default: the main color of Color, else the text color)
@@ -36,7 +36,9 @@ $msb-ttl-line-height: 1.4;
     // Resolved once here so the title, the glyph beside it and the body all read the same value.
     --bit-msb-ttl-size: var(--bit-MessageBox-title-font-size, var(--bit-msb-ttl-fontsize));
     --bit-msb-text-align: var(--bit-MessageBox-text-align, #{$layout-dialog-text-align});
-    --bit-msb-max-width: var(--bit-MessageBox-max-width, #{$siz-dialog-max-width});
+    // Inline, a message box fills the container it was written into, as it always has; the ceiling of a dialog is
+    // only its default where it is one - the content of a modal, below.
+    --bit-msb-max-width: var(--bit-MessageBox-max-width, 100%);
     // The room a BitModal - the usual host - leaves its content: the screen, less the accent border it wears on its
     // top edge and the offset it keeps from the edges. Without them the box would be that much taller than the
     // modal, which then scrolls the whole box by those few pixels on top of the body scrolling inside it.
@@ -56,6 +58,11 @@ $msb-ttl-line-height: 1.4;
     @include lt-md {
         min-width: unset;
     }
+}
+
+// The content of a modal - the service's, or one written by hand - is a dialog, and is as wide as the theme's dialogs.
+.bit-mdl-ctn > .bit-msb {
+    --bit-msb-max-width: var(--bit-MessageBox-max-width, #{$siz-dialog-max-width});
 }
 
 .bit-msb-con {

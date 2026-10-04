@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -1019,6 +1020,72 @@ public class BitMessageBoxTests : BunitTestContext
         component.Find(".bit-msb-ftr .bit-btn").Click();
 
         CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Ok }, results);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldLetTheCloseButtonTakeBackAnAnswerItsGuardIsStillWorkingOut()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var token = CancellationToken.None;
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is not BitMessageBoxResult.Ok) return;
+
+                token = args.CancellationToken;
+                await gate.Task;
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var answering = component.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
+
+        // A guard waiting on a server the user has given up on does not hold the box open.
+        await component.Find(".bit-msb-hdr .bit-btn").ClickAsync(new MouseEventArgs());
+
+        Assert.IsTrue(token.IsCancellationRequested);
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+
+        // The answer taken back is never handed over, whatever its guard goes on to decide.
+        gate.SetResult();
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldNotLetAnotherAnswerTakeBackOneItsGuardIsStillWorkingOut()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNo);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is BitMessageBoxResult.Yes) await gate.Task;
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        var answering = buttons[0].ClickAsync(new MouseEventArgs());
+
+        // No is an answer rather than a dismissal, so it waits its turn like any other.
+        await buttons[1].ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual(0, results.Count);
+
+        gate.SetResult();
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Yes }, results);
     }
 
     [TestMethod]

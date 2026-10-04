@@ -60,7 +60,10 @@ public partial class BitMessageBoxStylesheetTests
         StringAssert.Contains(root, "--bit-msb-pad: #{$spa-dialog};");
         StringAssert.Contains(root, "--bit-msb-ttl-fontsize: #{$tg-dialog-title-font-size};");
         StringAssert.Contains(root, "var(--bit-MessageBox-text-align, #{$layout-dialog-text-align})");
-        StringAssert.Contains(root, "var(--bit-MessageBox-max-width, #{$siz-dialog-max-width})");
+
+        // The dialog's ceiling is the default only in a modal; inline, the box fills its container as it always has.
+        StringAssert.Contains(root, "var(--bit-MessageBox-max-width, 100%)");
+        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-mdl-ctn > .bit-msb {"), "var(--bit-MessageBox-max-width, #{$siz-dialog-max-width})");
 
         // The floor never passes the ceiling, which a narrow preset (Cupertino's 270px alert) would otherwise do.
         StringAssert.Contains(root, "min-width: min(");

@@ -324,7 +324,7 @@ public partial class BitMessageBoxDemo
         new() { Name = "--bit-MessageBox-padding", DefaultValue = "var(--bit-spa-dialog)", Description = "Inset of the message box (scaled by Size)." },
         new() { Name = "--bit-MessageBox-gap", DefaultValue = "spacing(2)", Description = "Room between the header, the body and the footer." },
         new() { Name = "--bit-MessageBox-min-width", DefaultValue = "spacing(40)", Description = "Width the message box does not shrink below (scaled by Size, never past the max width, unset on small screens)." },
-        new() { Name = "--bit-MessageBox-max-width", DefaultValue = "var(--bit-siz-dialog-max-width)", Description = "Width the message box stops growing at; 100% lets it fill its container." },
+        new() { Name = "--bit-MessageBox-max-width", DefaultValue = "var(--bit-siz-dialog-max-width) in a modal, 100% inline", Description = "Width the message box stops growing at: the theme's dialog width where it is the content of a modal, its container's width where it is rendered inline." },
         new() { Name = "--bit-MessageBox-max-height", DefaultValue = "the screen height a modal leaves", Description = "Height past which the body scrolls (header and footer stay put)." },
         new() { Name = "--bit-MessageBox-text-align", DefaultValue = "var(--bit-layout-dialog-text-align)", Description = "Alignment of the title and the body." },
         new() { Name = "--bit-MessageBox-icon-color", DefaultValue = "the main color of Color", Description = "Color of the leading icon." },
@@ -487,6 +487,13 @@ public partial class BitMessageBoxDemo
                     Type = "bool",
                     DefaultValue = "false",
                     Description = "Set to true to keep the message box open and hand over no answer."
+                },
+                new()
+                {
+                    Name = "CancellationToken",
+                    Type = "CancellationToken",
+                    DefaultValue = "",
+                    Description = "Cancelled when the close or the Cancel button takes the answer back while the guard is still working it out. Hand it to the guard's slow work; an answer taken back is never handed over."
                 }
             ]
         },
@@ -768,9 +775,9 @@ public partial class BitMessageBoxDemo
                 new()
                 {
                     Name = "AsyncValidator",
-                    Type = "Func<string?, Task<string?>>?",
+                    Type = "Func<string, CancellationToken, Task<string?>>?",
                     DefaultValue = "null",
-                    Description = "An asynchronous check (a server call) run on answering, after Required and Validator accept the value: return an error message to refuse it, or null to accept it. The field shows it is busy meanwhile, and an edit takes its message away."
+                    Description = "An asynchronous check (a server call) run on answering, after Required and Validator accept the value: return an error message to refuse it, or null to accept it. The field shows it is busy meanwhile, and an edit takes its message away. The token is cancelled when the check is given up on (Cancel, the close button, Escape, the token of the showing); an exception it throws closes the box and is rethrown out of Prompt."
                 },
                 new()
                 {
@@ -845,9 +852,9 @@ public partial class BitMessageBoxDemo
                 new()
                 {
                     Name = "Validator",
-                    Type = "Func<string?, string?>?",
+                    Type = "Func<string, string?>?",
                     DefaultValue = "null",
-                    Description = "Checks the answer before it is accepted: return an error message to refuse it (shown under the field), or null to accept it. Re-runs on every edit once a value has been refused."
+                    Description = "Checks the answer before it is accepted: return an error message to refuse it (shown under the field), or null to accept it. Re-runs on every edit once a value has been refused. An empty field is checked as an empty string, never null."
                 },
                 new()
                 {
@@ -946,7 +953,7 @@ public partial class BitMessageBoxDemo
         if (args.Result is not BitMessageBoxResult.Yes) return;
 
         // The work the answer starts, which AutoLoading spins the pressed button through.
-        await Task.Delay(1000);
+        await Task.Delay(1000, args.CancellationToken);
 
         if (guardConfirmed) return;
 
@@ -1050,18 +1057,18 @@ public partial class BitMessageBoxDemo
             MaxLength = 40,
             Required = true,
             RequiredMessage = "Give the folder a name.",
-            Validator = v => v!.IndexOfAny(['/', '\\']) >= 0 ? "A name cannot hold a slash." : null,
+            Validator = v => v.IndexOfAny(['/', '\\']) >= 0 ? "A name cannot hold a slash." : null,
             AsyncValidator = IsFolderNameTaken,
             OkText = "Create"
         });
     }
 
     // Stands in for a call to the server, which is the only one that knows the folders already there.
-    private static async Task<string?> IsFolderNameTaken(string? name)
+    private static async Task<string?> IsFolderNameTaken(string name, CancellationToken cancellationToken)
     {
-        await Task.Delay(800);
+        await Task.Delay(800, cancellationToken);
 
-        return string.Equals(name?.Trim(), "Projects", StringComparison.OrdinalIgnoreCase) ? "A folder with this name already exists." : null;
+        return string.Equals(name.Trim(), "Projects", StringComparison.OrdinalIgnoreCase) ? "A folder with this name already exists." : null;
     }
 
     private async Task ShowPasswordPrompt()
