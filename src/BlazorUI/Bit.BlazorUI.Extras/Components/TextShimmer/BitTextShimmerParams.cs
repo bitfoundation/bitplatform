@@ -63,7 +63,7 @@ public class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
     public string? Element { get; set; }
 
     /// <summary>
-    /// The bright highlight color that sweeps across the text.
+    /// The bright highlight color that sweeps across the text. A Color set on the shimmer itself wins over it.
     /// </summary>
     public string? GradientColor { get; set; }
 
@@ -99,6 +99,7 @@ public class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// An explicit CSS length for the spread of the band, which replaces the one computed from Spread and the character count.
+    /// A Spread set on the shimmer itself wins over it.
     /// </summary>
     public string? SpreadLength { get; set; }
 
@@ -137,7 +138,9 @@ public class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitTextShimmer.ClassBuilder.Reset();
         }
 
-        if (Angle.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Angle)) && bitTextShimmer.Angle != Angle)
+        // Nullable.Equals rather than != for the two doubles, since a NaN is never != to itself and would reset the
+        // builder on every render.
+        if (Angle.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Angle)) && Nullable.Equals(bitTextShimmer.Angle, Angle) is false)
         {
             bitTextShimmer.Angle = Angle.Value;
 
@@ -219,9 +222,9 @@ public class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitTextShimmer.ClassBuilder.Reset();
         }
 
-        if (Spread.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Spread)) && bitTextShimmer.Spread != Spread.Value)
+        if (Spread.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Spread)) && Nullable.Equals(bitTextShimmer.Spread, Spread) is false)
         {
-            bitTextShimmer.Spread = Spread.Value;
+            bitTextShimmer.Spread = Spread;
 
             bitTextShimmer.StyleBuilder.Reset();
         }
