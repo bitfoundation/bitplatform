@@ -305,8 +305,10 @@
 
         <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                The canvas is focusable, named by <b>AriaLabel</b> and described by <b>KeyboardInstructions</b>, shown while
-                it has keyboard focus; Escape leaves it (<b>EscapeToExit</b>). <b>AnnounceViewChanges</b> reads the new view
+                The canvas is one tab stop on every provider: a region named by <b>AriaLabel</b> (<b>RoleDescription</b>
+                replaces "region") and described by <b>KeyboardInstructions</b>, shown while it has keyboard focus. Arrow
+                keys pan, plus and minus zoom - on all seven backends - and Escape leaves it (<b>EscapeToExit</b>).
+                <b>AnnounceViewChanges</b> reads the new view
                 out, worded by <b>ViewAnnouncementFormatter</b>. <b>CooperativeGestures</b> lets the page scroll past the map.
                 <b>MarkerListMode</b> renders the markers as a table - the only way a screen reader reaches them.
             </div>

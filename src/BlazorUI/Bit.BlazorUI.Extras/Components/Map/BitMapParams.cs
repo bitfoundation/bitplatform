@@ -164,6 +164,11 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
     public bool? RespectReducedMotion { get; set; }
 
     /// <summary>
+    /// What a screen reader calls the map canvas in place of "region".
+    /// </summary>
+    public string? RoleDescription { get; set; }
+
+    /// <summary>
     /// Shows the built-in loading indicator while the map is being created.
     /// </summary>
     public bool? ShowLoading { get; set; }
@@ -343,6 +348,11 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
         if (RespectReducedMotion.HasValue && bitMap.HasNotBeenSet(nameof(RespectReducedMotion)))
         {
             bitMap.RespectReducedMotion = RespectReducedMotion.Value;
+        }
+
+        if (RoleDescription.HasValue() && bitMap.HasNotBeenSet(nameof(RoleDescription)))
+        {
+            bitMap.RoleDescription = RoleDescription!;
         }
 
         if (ShowLoading.HasValue && bitMap.HasNotBeenSet(nameof(ShowLoading)))

@@ -42,6 +42,13 @@ namespace BitBlazorUI {
     }
 
     export class BitMapLeaflet {
+        /**
+         * Leaflet pans and zooms from the keyboard while its container - the canvas - has the focus, so
+         * BitMapChrome leaves the keys to it. Its handler listens on the document and does not check
+         * whether a key was already handled, so the chrome's own would make every press count twice.
+         */
+        public static readonly handlesCanvasKeyboard = true;
+
         private static _maps: { [id: string]: LeafletState } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {

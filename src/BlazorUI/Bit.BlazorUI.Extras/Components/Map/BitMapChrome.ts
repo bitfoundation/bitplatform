@@ -17,6 +17,10 @@
         touchHint: string | null;
         /** Move focus out of the map canvas when Escape is pressed (WCAG 2.1.2). */
         escapeToExit: boolean;
+        /** Pan with the arrow keys and zoom with plus/minus while the canvas has focus. */
+        keyboardNavigation: boolean;
+        /** Make a keyboard pan or zoom jump instead of animating under a reduced-motion preference. */
+        respectReducedMotion: boolean;
     };
 
     type ChromeState = {
@@ -203,8 +207,10 @@
             };
             BitMapChrome._instances[id] = state;
 
+            BitMapChrome._demoteProviderFocusTargets(state);
             BitMapChrome._applyAutoResize(id, state);
             BitMapChrome._applyCooperativeGestures(state);
+            BitMapChrome._applyKeyboardNavigation(id, state);
             BitMapChrome._applyEscapeToExit(state);
             BitMapChrome._applyContextLossReporting(state);
             BitMapChrome._applyFullscreenReporting(id, state);
@@ -427,6 +433,64 @@
         }
 
         /**
+         * The focusable surfaces some libraries put inside the container of their own: MapLibre's and
+         * Mapbox's canvas (a second region called "Map"), ArcGIS' view surface (role="application"),
+         * Azure Maps' canvas. Each is a second tab stop nested in the canvas, which is already the
+         * labelled, focusable map - so they lose the tab stop and the duplicate semantics, and the
+         * keyboard handler below does their job on the canvas instead. Without a tabindex a click no
+         * longer focuses them either, so the focus always lands on the canvas, wherever it came from.
+         */
+        private static _demoteProviderFocusTargets(s: ChromeState) {
+            const surfaces = s.canvas.querySelectorAll('.maplibregl-canvas, .mapboxgl-canvas, .esri-view-surface, .atlas-map-canvas');
+            surfaces.forEach(el => {
+                el.removeAttribute('tabindex');
+                el.removeAttribute('role');
+                el.removeAttribute('aria-label');
+            });
+        }
+
+        /**
+         * Arrow keys pan and plus/minus zoom while the canvas itself has the focus - on every backend.
+         * Leaflet does it itself (handlesCanvasKeyboard). OpenLayers listens on the canvas too and marks
+         * the keys it handles, so a key whose default is prevented is left alone - this is registered
+         * after it, so on the same element it runs second - and the keys it does not handle (Shift and
+         * an arrow, '=') still work. The others listen on an inner surface the focus never reaches (see
+         * _demoteProviderFocusTargets) or, like Cesium, have no keyboard at all.
+         */
+        private static _applyKeyboardNavigation(id: string, s: ChromeState) {
+            if (!s.options.keyboardNavigation) return;
+            if ((globalThis as any).BitBlazorUI?.[s.options.jsObjectName]?.handlesCanvasKeyboard === true) return;
+            const keydown = (e: KeyboardEvent) => {
+                if (e.defaultPrevented || e.target !== s.canvas) return;
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+                // The same steps the libraries use: 100px a press, and Shift for three times as far.
+                const factor = e.shiftKey ? 3 : 1;
+                const step = 100 * factor;
+                let dx = 0, dy = 0, zoom = 0;
+                switch (e.key) {
+                    case 'ArrowLeft': case 'Left': dx = -step; break;
+                    case 'ArrowRight': case 'Right': dx = step; break;
+                    case 'ArrowUp': case 'Up': dy = -step; break;
+                    case 'ArrowDown': case 'Down': dy = step; break;
+                    case '+': case '=': case 'Add': zoom = factor; break;
+                    case '-': case '_': case 'Subtract': zoom = -factor; break;
+                    default: return;
+                }
+                // Keeps the page from scrolling, and tells anything listening after this that the key is spent.
+                e.preventDefault();
+
+                const animate = !(s.options.respectReducedMotion && BitMapChrome.prefersReducedMotion());
+                const provider = (globalThis as any).BitBlazorUI?.[s.options.jsObjectName];
+                try {
+                    if (zoom !== 0) provider?.zoomBy?.(id, zoom, animate);
+                    else provider?.panBy?.(id, dx, dy, animate);
+                } catch { /* ignore */ }
+            };
+            BitMapChrome._listen(s, s.canvas, 'keydown', keydown);
+        }
+
+        /**
          * WCAG 2.1.2 (No Keyboard Trap): a focused map consumes the arrow keys, so there
          * has to be a documented way out that is not "keep pressing Tab past every marker".
          * Escape returns focus to the document flow.
@@ -458,12 +522,6 @@
         }
 
         /**
-         * Browsers cap the number of simultaneous WebGL contexts (roughly 8-16), and the
-         * least-recently-used one is dropped silently when the cap is hit - a map simply
-         * goes black with no error. Reporting the loss lets the component show its error
-         * state, and the restore lets it recover instead of staying blank.
-         */
-        /**
          * Reports entering and leaving fullscreen, including the routes that never go through our
          * own API - the Escape key, the browser's own control, or another element taking over.
          */
@@ -480,6 +538,12 @@
             BitMapChrome._listen(s, document, 'fullscreenchange', onChange);
         }
 
+        /**
+         * Browsers cap the number of simultaneous WebGL contexts (roughly 8-16), and the
+         * least-recently-used one is dropped silently when the cap is hit - a map simply
+         * goes black with no error. Reporting the loss lets the component show its error
+         * state, and the restore lets it recover instead of staying blank.
+         */
         private static _applyContextLossReporting(s: ChromeState) {
             const lost = (e: Event) => {
                 // Calling preventDefault is what makes a restore possible at all.

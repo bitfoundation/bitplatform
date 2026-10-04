@@ -156,6 +156,16 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
         border-radius: $map-popup-radius;
     }
 
+    // The DOM markers are tab stops, so they take the theme's focus ring rather than whatever the browser
+    // draws around an image - the same ring every other control on the page shows.
+    .leaflet-marker-icon,
+    .maplibregl-marker,
+    .mapboxgl-marker {
+        &:focus-visible {
+            @include focus-ring;
+        }
+    }
+
     .leaflet-popup-close-button,
     .maplibregl-popup-close-button,
     .mapboxgl-popup-close-button {

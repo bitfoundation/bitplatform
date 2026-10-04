@@ -38,7 +38,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     // Snapshot of the options the chrome was last attached with, so a re-render that changed
     // none of them doesn't pay an interop round-trip.
-    private (string?, bool, bool, string, string, bool)? _chromeSignature;
+    private (string?, bool, bool, string, string, bool, bool, bool)? _chromeSignature;
 
     // Last viewport the map reported. Two-way camera binding is diffed against it, which is what
     // stops the parameter -> map -> callback -> parameter round trip from looping forever.
@@ -275,6 +275,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         "Use the arrow keys to pan the map, plus and minus to zoom, and Escape to leave the map.";
 
     /// <summary>
+    /// What a screen reader calls the map canvas in place of "region", through <c>aria-roledescription</c>.
+    /// Translate it with the rest of the texts; the canvas is named by <see cref="BitComponentBase.AriaLabel"/>.
+    /// </summary>
+    [Parameter] public string RoleDescription { get; set; } = "interactive map";
+
+    /// <summary>
     /// Announce the new centre and zoom through a polite live region after the user pans or
     /// zooms. Announcements are throttled (see <see cref="ViewAnnouncementThrottle"/>) so a drag
     /// cannot flood the screen reader.
@@ -292,8 +298,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public TimeSpan ViewAnnouncementThrottle { get; set; } = TimeSpan.FromSeconds(2);
 
     /// <summary>
-    /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/> and an
-    /// animated <see cref="SetView"/> jump straight to the destination instead of animating.
+    /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/>, an animated
+    /// <see cref="SetView"/> and the keyboard's pan and zoom jump straight to the destination instead
+    /// of animating.
     /// <para>
     /// Both methods take an <c>essential</c> argument to opt a specific move back into animating
     /// (a "locate me" recentre, say, where the motion carries the meaning), and
@@ -2172,7 +2179,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Installs (or re-installs) the provider-agnostic chrome: container resize observation,
-    /// cooperative gestures, keyboard escape, and WebGL context-loss reporting. Kept out of the
+    /// cooperative gestures, keyboard pan/zoom and escape, and WebGL context-loss reporting. Kept out of the
     /// provider implementations so all seven backends behave identically.
     /// </summary>
     private async ValueTask AttachChromeAsync()
@@ -2193,6 +2200,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 ["wheelHint"] = CooperativeGesturesWheelHint,
                 ["touchHint"] = CooperativeGesturesTouchHint,
                 ["escapeToExit"] = EscapeToExit,
+                ["keyboardNavigation"] = ProviderKeyboardNavigation,
+                ["respectReducedMotion"] = RespectReducedMotion && ForceAnimation is false,
             });
         }
         catch (Exception ex)
@@ -2206,13 +2215,21 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Everything the chrome is configured from, as one comparable value. Used to skip a
     /// re-attach when a re-render did not actually change any of it.
     /// </summary>
-    private (string?, bool, bool, string, string, bool) BuildChromeSignature() => (
+    private (string?, bool, bool, string, string, bool, bool, bool) BuildChromeSignature() => (
         _activeProvider?.JsObjectName,
         AutoResize,
         CooperativeGestures,
         CooperativeGesturesWheelHint,
         CooperativeGesturesTouchHint,
-        EscapeToExit);
+        EscapeToExit,
+        ProviderKeyboardNavigation,
+        RespectReducedMotion && ForceAnimation is false);
+
+    /// <summary>
+    /// Whether the active provider lets the keyboard pan and zoom. A provider that is not built on
+    /// <see cref="BitMapProviderBase"/> has no such switch, so it gets the keyboard.
+    /// </summary>
+    private bool ProviderKeyboardNavigation => _activeProvider is not BitMapProviderBase provider || provider.KeyboardNavigation;
 
     private async ValueTask<bool> HasWebGlSupport(BitMapWebGlRequirement requirement)
     {

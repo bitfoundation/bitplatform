@@ -24,6 +24,7 @@ public class BitMapParamsTests : BunitTestContext
 
         var canvas = first.QuerySelector(".bit-map-canvas")!;
         Assert.IsTrue(canvas.ClassList.Contains("cascaded-canvas"));
+        Assert.AreEqual("cascaded map", canvas.GetAttribute("aria-roledescription"));
         StringAssert.Contains(canvas.GetAttribute("style"), "--cascaded-canvas: 1");
 
         // The marker list is a sibling of the map, so it is found by its own caption.

@@ -588,6 +588,45 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMapShouldHandTheKeyboardSettingsToTheChrome()
+    {
+        // The chrome pans and zooms from the keyboard on the backends whose own handler never sees the focused
+        // canvas, so it has to honour the provider's KeyboardNavigation and the map's reduced-motion settings.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH).Arguments[4]!;
+        Assert.AreEqual(true, options["keyboardNavigation"]);
+        Assert.AreEqual(true, options["respectReducedMotion"]);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Provider, new BitLeafletMapProvider { KeyboardNavigation = false });
+            parameters.Add(p => p.ForceAnimation, true);
+        });
+
+        var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
+        Assert.AreEqual(2, attaches.Count, "A change to either setting re-attaches the chrome");
+        options = (Dictionary<string, object?>)attaches[1].Arguments[4]!;
+        Assert.AreEqual(false, options["keyboardNavigation"]);
+        Assert.AreEqual(false, options["respectReducedMotion"], "ForceAnimation opts the keyboard moves back into animating");
+    }
+
+    [TestMethod]
+    public void BitMapShouldTranslateTheRoleDescription()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.RoleDescription, "نقشه تعاملی");
+        });
+
+        Assert.AreEqual("نقشه تعاملی", component.Find(".bit-map-canvas").GetAttribute("aria-roledescription"));
+    }
+
+    [TestMethod]
     public async Task BitMapShouldDetachChromeOnDisposal()
     {
         // The chrome owns observers and DOM listeners of its own. They have to come off before
@@ -676,12 +715,16 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.KeyboardInstructions, "Arrows pan, plus/minus zoom, Escape leaves.");
         });
 
+        // One named region, and it is the focusable canvas: a second one wrapped around it would be a
+        // duplicate landmark, and a name on the plain root div is one ARIA prohibits.
         var root = component.Find(".bit-map");
-        Assert.AreEqual("region", root.GetAttribute("role"));
-        Assert.AreEqual("interactive map", root.GetAttribute("aria-roledescription"));
-        Assert.AreEqual("Map of Berlin", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-roledescription"));
 
         var canvas = component.Find(".bit-map-canvas");
+        Assert.AreEqual("region", canvas.GetAttribute("role"));
+        Assert.AreEqual("interactive map", canvas.GetAttribute("aria-roledescription"));
         Assert.AreEqual("0", canvas.GetAttribute("tabindex"));
         Assert.AreEqual("Map of Berlin", canvas.GetAttribute("aria-label"));
 
@@ -3245,7 +3288,6 @@ public class BitMapTests : BunitTestContext
 
         var root = component.Find(".bit-map");
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
         Assert.IsTrue(component.Find(".bit-map-canvas").HasAttribute("inert"));
 
         var button = component.Find(".bit-map-marker-table-action");
@@ -3253,7 +3295,7 @@ public class BitMapTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
 
-        Assert.IsNull(component.Find(".bit-map").GetAttribute("aria-disabled"));
+        Assert.IsFalse(component.Find(".bit-map").ClassList.Contains("bit-dis"));
         Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("inert"));
         Assert.IsFalse(component.Find(".bit-map-marker-table-action").HasAttribute("disabled"));
     }

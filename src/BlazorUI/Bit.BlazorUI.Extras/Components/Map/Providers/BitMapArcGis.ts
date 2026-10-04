@@ -39,11 +39,11 @@ namespace BitBlazorUI {
                 },
             });
 
-            // ArcGIS MapView has no first-class actionMap entries for double-click zoom
-            // or keyboard navigation, so honor those public options via best-effort
-            // event interception instead of silently ignoring them. Without this
-            // BitMapProviderBase.DoubleClickZoom / KeyboardNavigation = false would
-            // be a no-op only on the ArcGIS provider.
+            // ArcGIS MapView has no first-class actionMap entry for double-click zoom, so
+            // honor that public option via best-effort event interception instead of
+            // silently ignoring it. Keyboard navigation needs nothing here: BitMapChrome
+            // pans and zooms from the keyboard on the canvas, and takes the view surface
+            // whose handlers ArcGIS would otherwise use out of the tab order.
             BitMapArcGis._applyInteractivity(view, element, o);
 
             const markerLayer = new esri.GraphicsLayer({ listMode: 'hide' });
@@ -74,22 +74,7 @@ namespace BitBlazorUI {
                 try { if (state.scaleBar) state.scaleBar.destroy(); } catch { /* ignore */ }
                 if (element) {
                     const dblHandler = (view as any).__bmDblClickHandler;
-                    const keyHandler = (view as any).__bmKeyHandler;
                     if (dblHandler) try { element.removeEventListener('dblclick', dblHandler, true); } catch { /* ignore */ }
-                    if (keyHandler) try { element.removeEventListener('keydown', keyHandler, true); } catch { /* ignore */ }
-                    // _applyInteractivity may have stashed the original tabindex and
-                    // forced the container to '-1' so ArcGIS' built-in keyboard nav
-                    // couldn't fire. Restore the prior value (or remove the attribute
-                    // entirely when it was originally absent) so a failed init doesn't
-                    // leave the user's element in a non-focusable state.
-                    const prevTab = (view as any).__bmPrevTabIndex;
-                    if (prevTab !== undefined) {
-                        try {
-                            if (prevTab === null) element.removeAttribute('tabindex');
-                            else element.setAttribute('tabindex', prevTab);
-                        } catch { /* ignore */ }
-                        (view as any).__bmPrevTabIndex = undefined;
-                    }
                 }
                 // The contextmenu listener goes on the view's container rather than the element
                 // above, so it needs the same removal dispose() does - otherwise a failed init
@@ -138,10 +123,9 @@ namespace BitBlazorUI {
                 }
             }
 
-            // doubleClickZoom and keyboardNavigation aren't part of actionMap, so
-            // re-apply them via the same best-effort path used during init().
-            if (Object.prototype.hasOwnProperty.call(o, 'doubleClickZoom')
-                || Object.prototype.hasOwnProperty.call(o, 'keyboardNavigation')) {
+            // doubleClickZoom isn't part of actionMap, so re-apply it via the same
+            // best-effort path used during init().
+            if (Object.prototype.hasOwnProperty.call(o, 'doubleClickZoom')) {
                 const container = s.view.container as HTMLElement | null | undefined;
                 if (container) BitMapArcGis._applyInteractivity(s.view, container, o);
             }
@@ -153,7 +137,7 @@ namespace BitBlazorUI {
 
             // Remove DOM listeners that _applyInteractivity attached to the
             // container BEFORE destroying the view (which may null out
-            // s.view.container), so dblclick/keydown handlers don't outlive
+            // s.view.container), so dblclick handlers don't outlive
             // the map and stay attached to the user's element.
             const container = s.view?.container as HTMLElement | null | undefined;
             if (container) {
@@ -162,24 +146,9 @@ namespace BitBlazorUI {
                     try { container.removeEventListener('dblclick', view.__bmDblClickHandler, true); } catch { /* ignore */ }
                     view.__bmDblClickHandler = null;
                 }
-                if (view.__bmKeyHandler) {
-                    try { container.removeEventListener('keydown', view.__bmKeyHandler, true); } catch { /* ignore */ }
-                    view.__bmKeyHandler = null;
-                }
                 if (view.__bmContextMenuHandler) {
                     try { container.removeEventListener('contextmenu', view.__bmContextMenuHandler); } catch { /* ignore */ }
                     view.__bmContextMenuHandler = null;
-                }
-                // Restore the original tabindex captured by _applyInteractivity. Without
-                // this the container is left pinned at tabindex="-1" (or absent when it
-                // was originally absent and we forced a value) after dispose, leaving
-                // the user's element non-focusable for whatever replaces the map.
-                if (view.__bmPrevTabIndex !== undefined) {
-                    try {
-                        if (view.__bmPrevTabIndex === null) container.removeAttribute('tabindex');
-                        else container.setAttribute('tabindex', view.__bmPrevTabIndex);
-                    } catch { /* ignore */ }
-                    view.__bmPrevTabIndex = undefined;
                 }
             }
 
@@ -620,11 +589,14 @@ namespace BitBlazorUI {
 
         /**
          * ArcGIS MapView's actionMap exposes mouseWheel/dragPrimary/etc. but has no
-         * first-class entry for double-click zoom or keyboard navigation, so honor
-         * BitMapProviderBase.DoubleClickZoom / KeyboardNavigation via best-effort
-         * event interception. Only the keys the caller explicitly supplied are
-         * applied, and previous overrides are torn down before new ones are wired
-         * so partial sync()s don't leak listeners or pin tabIndex permanently.
+         * first-class entry for double-click zoom, so honor
+         * BitMapProviderBase.DoubleClickZoom via best-effort event interception. Only
+         * applied when the caller supplied it, and a previous override is torn down
+         * before a new one is wired so partial sync()s don't leak listeners.
+         *
+         * KeyboardNavigation used to be handled here too, by pinning the container -
+         * BitMap's own canvas - at tabindex -1 and swallowing every key inside it,
+         * Tab included. BitMapChrome owns the keyboard now and honours the option.
          */
         private static _applyInteractivity(view: any, container: HTMLElement, o: any) {
             const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
@@ -638,33 +610,6 @@ namespace BitBlazorUI {
                     const handler = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
                     container.addEventListener('dblclick', handler, true);
                     view.__bmDblClickHandler = handler;
-                }
-            }
-
-            if (has('keyboardNavigation')) {
-                // ArcGIS' keyboard navigation requires a focusable container with a
-                // tabIndex; if the caller opts out, also drop tabIndex so the view
-                // can't receive focus and the SDK's key handlers can't fire.
-                if (o.keyboardNavigation === false) {
-                    if (view.__bmPrevTabIndex === undefined) {
-                        view.__bmPrevTabIndex = container.getAttribute('tabindex');
-                    }
-                    container.setAttribute('tabindex', '-1');
-                    if (!view.__bmKeyHandler) {
-                        const handler = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
-                        container.addEventListener('keydown', handler, true);
-                        view.__bmKeyHandler = handler;
-                    }
-                } else {
-                    if (view.__bmKeyHandler) {
-                        container.removeEventListener('keydown', view.__bmKeyHandler, true);
-                        view.__bmKeyHandler = null;
-                    }
-                    if (view.__bmPrevTabIndex !== undefined) {
-                        if (view.__bmPrevTabIndex === null) container.removeAttribute('tabindex');
-                        else container.setAttribute('tabindex', view.__bmPrevTabIndex);
-                        view.__bmPrevTabIndex = undefined;
-                    }
                 }
             }
         }

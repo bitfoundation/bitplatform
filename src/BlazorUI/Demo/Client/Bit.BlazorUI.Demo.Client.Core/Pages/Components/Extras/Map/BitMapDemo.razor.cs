@@ -362,7 +362,14 @@ public partial class BitMapDemo
             Name = "RespectReducedMotion",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Makes FlyTo and an animated SetView jump under a reduced-motion preference, unless the move is essential or ForceAnimation is set.",
+            Description = "Makes FlyTo, an animated SetView and the keyboard's pan and zoom jump under a reduced-motion preference, unless the move is essential or ForceAnimation is set.",
+        },
+        new()
+        {
+            Name = "RoleDescription",
+            Type = "string",
+            DefaultValue = "interactive map",
+            Description = "What a screen reader calls the map canvas in place of \"region\". The canvas is named by AriaLabel.",
         },
         new()
         {

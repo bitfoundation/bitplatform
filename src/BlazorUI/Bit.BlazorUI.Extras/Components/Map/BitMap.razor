@@ -2,29 +2,28 @@
 @inherits BitComponentBase
 @typeparam TMapProvider where TMapProvider : class, IBitMapProvider, new()
 
-@* role and aria-roledescription are written BEFORE the attribute splat so a consumer can
-   override them through HtmlAttributes; id/style/class come after so they always win. *@
 <div @ref="RootElement"
-     role="region"
-     aria-roledescription="interactive map"
      @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLowerInvariant()"
-     aria-label="@(AriaLabel ?? "Map")"
-     aria-disabled="@(IsEnabled ? null : "true")">
-    @* The canvas is the focusable surface. It deliberately carries no role="application":
-       that would drop screen readers out of browse mode and swallow their own quick-nav
-       keys. A labelled, focusable region plus the instructions below reads correctly in
-       both modes. *@
-    @* A disabled map is inert rather than merely dimmed: the provider's markers and controls live
+     dir="@Dir?.ToString().ToLowerInvariant()">
+    @* The canvas is the focusable surface, and the one element that is named: a labelled region, the
+       pattern Google Maps and MapLibre use, rather than a second region wrapped around it - two
+       regions both called "Map" are one landmark too many, and a name on a plain div is one ARIA
+       prohibits. It deliberately carries no role="application": that would drop screen readers out
+       of browse mode and swallow their own quick-nav keys. The chrome also takes the provider's own
+       focusable surface (MapLibre's canvas, ArcGIS' view surface) out of the tab order, so the map is
+       one tab stop on every backend.
+       A disabled map is inert rather than merely dimmed: the provider's markers and controls live
        inside the canvas, and inert is what takes every one of them out of the tab order and away
        from the pointer at once. *@
     <div id="@_canvasId"
          @ref="_mapElement"
          class="bit-map-canvas @Classes?.Canvas"
          style="@Styles?.Canvas"
+         role="region"
+         aria-roledescription="@RoleDescription"
          tabindex="@(TabIndex ?? "0")"
          inert="@(IsEnabled is false)"
          aria-label="@(AriaLabel ?? "Map")"
