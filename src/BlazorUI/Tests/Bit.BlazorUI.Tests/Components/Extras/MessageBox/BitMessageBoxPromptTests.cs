@@ -226,9 +226,12 @@ public class BitMessageBoxPromptTests : BunitTestContext
 
         container.Find(".bit-msb .bit-tfl-inp").Input("final.txt");
 
-        // A key that composes a character with an IME is not an answer.
+#if NET9_0_OR_GREATER
+        // A key that composes a character with an IME is not an answer. Only net9.0 on carries the composition state
+        // on the event; on net8.0 the field's own composition guard stops that keydown before Blazor sees it.
         container.Find(".bit-msb .bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Enter", IsComposing = true });
         Assert.IsFalse(prompting.IsCompleted);
+#endif
 
         container.Find(".bit-msb .bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
