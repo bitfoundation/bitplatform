@@ -2,8 +2,7 @@
 
 public partial class BitNavPanelDemo
 {
-    private const string basicNavItemsCsharpCode = @"
-private List<BitNavItem> basicNavItems =
+    private const string basicNavItemsBodyCsharpCode = @"
 [
     new()
     {
@@ -56,6 +55,12 @@ private List<BitNavItem> basicNavItems =
         Url = ""TermsPage"",
     }
 ];";
+
+    private const string basicNavItemsCsharpCode = @"
+private List<BitNavItem> basicNavItems =" + basicNavItemsBodyCsharpCode;
+
+    private const string createBasicNavItemsCsharpCode = @"
+private static List<BitNavItem> CreateBasicNavItems() =>" + basicNavItemsBodyCsharpCode;
 
     private const string expansionNavItemsBodyCsharpCode = @"
 [
@@ -114,49 +119,58 @@ private bool basicIsOpen;
 <div>
     <div>FitWidth</div>
     <BitToggleButton @bind-IsChecked=""fitWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
-    <BitNavPanel @bind-IsOpen=""fitWidthIsOpen"" Items=""basicNavItems"" FitWidth />
+    <BitNavPanel @bind-IsOpen=""fitWidthIsOpen"" Items=""fitWidthNavItems"" FitWidth />
 </div>
 
 <div style=""width:260px"">
     <div>FullWidth</div>
     <BitToggleButton @bind-IsChecked=""fullWidthIsOpen"" OnText=""Close"" OffText=""Open"" />
-    <BitNavPanel @bind-IsOpen=""fullWidthIsOpen"" Items=""basicNavItems"" FullWidth />
+    <BitNavPanel @bind-IsOpen=""fullWidthIsOpen"" Items=""fullWidthNavItems"" FullWidth />
 </div>
 
 <div>
     <div>Width / ToggledWidth</div>
     <BitToggleButton @bind-IsChecked=""widthIsOpen"" OnText=""Close"" OffText=""Open"" />
-    <BitNavPanel @bind-IsOpen=""widthIsOpen"" Items=""basicNavItems"" Width=""200"" ToggledWidth=""72"" />
+    <BitNavPanel @bind-IsOpen=""widthIsOpen"" Items=""widthNavItems"" Width=""200"" ToggledWidth=""72"" />
 </div>";
     private readonly string example2CsharpCode = @"
 private bool fitWidthIsOpen;
 private bool fullWidthIsOpen;
 private bool widthIsOpen;
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> fitWidthNavItems = CreateBasicNavItems();
+private List<BitNavItem> fullWidthNavItems = CreateBasicNavItems();
+private List<BitNavItem> widthNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example3RazorCode = @"
 <div style=""width:222px"">
     <div>ExpandOnHover</div>
     <BitToggleButton @bind-IsChecked=""expandOnHoverIsOpen"" OnText=""Close"" OffText=""Open"" />
-    <BitNavPanel @bind-IsOpen=""expandOnHoverIsOpen"" Items=""basicNavItems"" ExpandOnHover />
+    <BitNavPanel @bind-IsOpen=""expandOnHoverIsOpen"" Items=""expandOnHoverNavItems"" ExpandOnHover />
 </div>
 
 <div style=""width:222px"">
     <div>NoToggle</div>
     <BitToggleButton @bind-IsChecked=""noToggleIsOpen"" OnText=""Close"" OffText=""Open"" />
-    <BitNavPanel @bind-IsOpen=""noToggleIsOpen"" Items=""basicNavItems"" NoToggle />
+    <BitNavPanel @bind-IsOpen=""noToggleIsOpen"" Items=""noToggleNavItems"" NoToggle />
 </div>";
     private readonly string example3CsharpCode = @"
 private bool expandOnHoverIsOpen;
 private bool noToggleIsOpen;
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> expandOnHoverNavItems = CreateBasicNavItems();
+private List<BitNavItem> noToggleNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example4RazorCode = @"
 <div style=""width:222px"">
     <div>Logo</div>
     <BitToggleButton @bind-IsChecked=""iconUrlIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""iconUrlIsOpen""
-                 Items=""basicNavItems""
+                 Items=""iconUrlNavItems""
                  IconUrl=""/images/icon.png""
                  IconNavUrl=""https://bitplatform.dev""
                  IconAriaLabel=""bit platform home"" />
@@ -166,7 +180,7 @@ private bool noToggleIsOpen;
     <div>Logo and title</div>
     <BitToggleButton @bind-IsChecked=""headerTextIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""headerTextIsOpen""
-                 Items=""basicNavItems""
+                 Items=""headerTextNavItems""
                  IconUrl=""/images/icon.png""
                  IconNavUrl=""https://bitplatform.dev""
                  HeaderText=""BlazorUI"" />
@@ -174,7 +188,11 @@ private bool noToggleIsOpen;
     private readonly string example4CsharpCode = @"
 private bool iconUrlIsOpen;
 private bool headerTextIsOpen;
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> iconUrlNavItems = CreateBasicNavItems();
+private List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example5RazorCode = @"
 <BitToggleButton @bind-IsChecked=""searchIsOpen"" OnText=""Close"" OffText=""Open"" />
@@ -319,7 +337,7 @@ private readonly List<CustomNavItem> customNavItems =
     <div>Modal, at the end edge</div>
     <BitToggleButton @bind-IsChecked=""drawerIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""drawerIsOpen""
-                 Items=""basicNavItems""
+                 Items=""drawerNavItems""
                  AutoFocus
                  ShowCloseButton
                  Position=""BitNavPanelPosition.End"" />
@@ -328,14 +346,14 @@ private readonly List<CustomNavItem> customNavItems =
 <div style=""width:222px"">
     <div>Non-modal</div>
     <BitToggleButton @bind-IsChecked=""behaviorIsOpen"" OnText=""Close"" OffText=""Open"" />
-    <BitNavPanel @bind-IsOpen=""behaviorIsOpen"" Items=""basicNavItems"" NoOverlay NoAutoClose NoSwipe />
+    <BitNavPanel @bind-IsOpen=""behaviorIsOpen"" Items=""behaviorNavItems"" NoOverlay NoAutoClose NoSwipe />
 </div>
 
 <div style=""width:222px"">
     <div>A drawer on every screen</div>
     <BitToggleButton @bind-IsChecked=""alwaysDrawerIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""alwaysDrawerIsOpen""
-                 Items=""basicNavItems""
+                 Items=""alwaysDrawerNavItems""
                  ShowCloseButton
                  DrawerBreakpoint=""BitNavPanelBreakpoint.Always"" />
 </div>";
@@ -343,7 +361,12 @@ private readonly List<CustomNavItem> customNavItems =
 private bool drawerIsOpen;
 private bool behaviorIsOpen;
 private bool alwaysDrawerIsOpen;
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> drawerNavItems = CreateBasicNavItems();
+private List<BitNavItem> behaviorNavItems = CreateBasicNavItems();
+private List<BitNavItem> alwaysDrawerNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example10RazorCode = @"
 <BitToggleButton @bind-IsChecked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
@@ -489,13 +512,13 @@ private List<BitNavItem> stickyNavItems =" + expansionNavItemsBodyCsharpCode;
     <div style=""width:222px"">
         <div>Cascaded</div>
         <BitToggleButton @bind-IsChecked=""cascadeIsOpen"" OnText=""Close"" OffText=""Open"" />
-        <BitNavPanel @bind-IsOpen=""cascadeIsOpen"" Items=""basicNavItems"" />
+        <BitNavPanel @bind-IsOpen=""cascadeIsOpen"" Items=""cascadeNavItems"" />
     </div>
 
     <div style=""width:222px"">
         <div>Own placeholder, cascaded rest</div>
         <BitToggleButton @bind-IsChecked=""cascadeOwnIsOpen"" OnText=""Close"" OffText=""Open"" />
-        <BitNavPanel @bind-IsOpen=""cascadeOwnIsOpen"" Items=""basicNavItems"" SearchBoxPlaceholder=""Its own placeholder"" />
+        <BitNavPanel @bind-IsOpen=""cascadeOwnIsOpen"" Items=""cascadeOwnNavItems"" SearchBoxPlaceholder=""Its own placeholder"" />
     </div>
 </BitParams>";
     private readonly string example15CsharpCode = @"
@@ -513,7 +536,11 @@ private readonly BitNavPanelParams[] navPanelParams =
         SearchAnnouncementProvider = count => count == 1 ? ""One page matches."" : $""{count} pages match."",
     }
 ];
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> cascadeNavItems = CreateBasicNavItems();
+private List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example16RazorCode = @"
 <BitToggleButton @bind-IsChecked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
@@ -570,19 +597,24 @@ private readonly List<BitNavItem> externalIconNavItems =
 
 <div style=""width:180px"">
     <div>Small</div>
-    <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""basicNavItems"" Size=""BitSize.Small"" NoSearchBox NoToggle />
+    <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""sizeSmallNavItems"" Size=""BitSize.Small"" NoSearchBox NoToggle />
 </div>
 <div style=""width:180px"">
     <div>Medium</div>
-    <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""basicNavItems"" Size=""BitSize.Medium"" NoSearchBox NoToggle />
+    <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""sizeMediumNavItems"" Size=""BitSize.Medium"" NoSearchBox NoToggle />
 </div>
 <div style=""width:180px"">
     <div>Large</div>
-    <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""basicNavItems"" Size=""BitSize.Large"" NoSearchBox NoToggle />
+    <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""sizeLargeNavItems"" Size=""BitSize.Large"" NoSearchBox NoToggle />
 </div>";
     private readonly string example18CsharpCode = @"
 private bool sizeIsOpen;
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> sizeSmallNavItems = CreateBasicNavItems();
+private List<BitNavItem> sizeMediumNavItems = CreateBasicNavItems();
+private List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example19RazorCode = @"
 <style>
@@ -636,7 +668,7 @@ private bool sizeIsOpen;
     <div>Styles &amp; Classes</div>
     <BitToggleButton @bind-IsChecked=""classStyleIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""classStyleIsOpen""
-                 Items=""basicNavItems""
+                 Items=""classStyleNavItems""
                  Styles=""@(new() { Container = ""background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);"" })""
                  NavClasses=""@(new() { ItemContainer = ""custom-nav-item"", ItemIcon = ""custom-nav-item-ico"", ItemText = ""custom-nav-item-txt"" })""
                  SearchBoxClasses=""@(new() { Icon = ""custom-icon-searchbox"",
@@ -650,7 +682,7 @@ private bool sizeIsOpen;
     <div>CSS variables</div>
     <BitToggleButton @bind-IsChecked=""cssVariablesIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""cssVariablesIsOpen""
-                 Items=""basicNavItems""
+                 Items=""cssVariablesNavItems""
                  Style=""--bit-NavPanel-background: var(--bit-clr-bg-sec);
                         --bit-NavPanel-border-width: 1px;
                         --bit-NavPanel-radius: 1rem;
@@ -662,7 +694,11 @@ private bool sizeIsOpen;
     private readonly string example19CsharpCode = @"
 private bool classStyleIsOpen;
 private bool cssVariablesIsOpen;
-" + basicNavItemsCsharpCode;
+
+// one tree per panel: the expanded state of an item lives on the item itself
+private List<BitNavItem> classStyleNavItems = CreateBasicNavItems();
+private List<BitNavItem> cssVariablesNavItems = CreateBasicNavItems();
+" + createBasicNavItemsCsharpCode;
 
     private readonly string example20RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />

@@ -63,21 +63,21 @@
                     <div class="open-btn">
                         <BitToggleButton @bind-IsChecked="fitWidthIsOpen" OnText="Close" OffText="Open" />
                     </div>
-                    <BitNavPanel @bind-IsOpen="fitWidthIsOpen" Items="basicNavItems" FitWidth />
+                    <BitNavPanel @bind-IsOpen="fitWidthIsOpen" Items="fitWidthNavItems" FitWidth />
                 </div>
                 <div style="width:260px">
                     <div>FullWidth</div>
                     <div class="open-btn">
                         <BitToggleButton @bind-IsChecked="fullWidthIsOpen" OnText="Close" OffText="Open" />
                     </div>
-                    <BitNavPanel @bind-IsOpen="fullWidthIsOpen" Items="basicNavItems" FullWidth />
+                    <BitNavPanel @bind-IsOpen="fullWidthIsOpen" Items="fullWidthNavItems" FullWidth />
                 </div>
                 <div>
                     <div>Width / ToggledWidth</div>
                     <div class="open-btn">
                         <BitToggleButton @bind-IsChecked="widthIsOpen" OnText="Close" OffText="Open" />
                     </div>
-                    <BitNavPanel @bind-IsOpen="widthIsOpen" Items="basicNavItems" Width="200" ToggledWidth="72" />
+                    <BitNavPanel @bind-IsOpen="widthIsOpen" Items="widthNavItems" Width="200" ToggledWidth="72" />
                 </div>
             </div>
         </DemoExample>
@@ -96,14 +96,14 @@
                     <div class="open-btn">
                         <BitToggleButton @bind-IsChecked="expandOnHoverIsOpen" OnText="Close" OffText="Open" />
                     </div>
-                    <BitNavPanel @bind-IsOpen="expandOnHoverIsOpen" Items="basicNavItems" ExpandOnHover />
+                    <BitNavPanel @bind-IsOpen="expandOnHoverIsOpen" Items="expandOnHoverNavItems" ExpandOnHover />
                 </div>
                 <div style="width:222px">
                     <div>NoToggle</div>
                     <div class="open-btn">
                         <BitToggleButton @bind-IsChecked="noToggleIsOpen" OnText="Close" OffText="Open" />
                     </div>
-                    <BitNavPanel @bind-IsOpen="noToggleIsOpen" Items="basicNavItems" NoToggle />
+                    <BitNavPanel @bind-IsOpen="noToggleIsOpen" Items="noToggleNavItems" NoToggle />
                 </div>
             </div>
         </DemoExample>
@@ -123,7 +123,7 @@
                         <BitToggleButton @bind-IsChecked="iconUrlIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="iconUrlIsOpen"
-                                 Items="basicNavItems"
+                                 Items="iconUrlNavItems"
                                  IconUrl="/images/icon.png"
                                  IconNavUrl="https://bitplatform.dev"
                                  IconAriaLabel="bit platform home" />
@@ -134,7 +134,7 @@
                         <BitToggleButton @bind-IsChecked="headerTextIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="headerTextIsOpen"
-                                 Items="basicNavItems"
+                                 Items="headerTextNavItems"
                                  IconUrl="/images/icon.png"
                                  IconNavUrl="https://bitplatform.dev"
                                  HeaderText="BlazorUI" />
@@ -246,7 +246,7 @@
                         <BitToggleButton @bind-IsChecked="drawerIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="drawerIsOpen"
-                                 Items="basicNavItems"
+                                 Items="drawerNavItems"
                                  AutoFocus
                                  ShowCloseButton
                                  Position="BitNavPanelPosition.End" />
@@ -256,13 +256,13 @@
                     <div class="open-btn">
                         <BitToggleButton @bind-IsChecked="behaviorIsOpen" OnText="Close" OffText="Open" />
                     </div>
-                    <BitNavPanel @bind-IsOpen="behaviorIsOpen" Items="basicNavItems" NoOverlay NoAutoClose NoSwipe />
+                    <BitNavPanel @bind-IsOpen="behaviorIsOpen" Items="behaviorNavItems" NoOverlay NoAutoClose NoSwipe />
                 </div>
                 <div style="width:222px">
                     <div>A drawer on every screen</div>
                     <BitToggleButton @bind-IsChecked="alwaysDrawerIsOpen" OnText="Close" OffText="Open" />
                     <BitNavPanel @bind-IsOpen="alwaysDrawerIsOpen"
-                                 Items="basicNavItems"
+                                 Items="alwaysDrawerNavItems"
                                  ShowCloseButton
                                  DrawerBreakpoint="BitNavPanelBreakpoint.Always" />
                 </div>
@@ -401,14 +401,14 @@
                         <div class="open-btn">
                             <BitToggleButton @bind-IsChecked="cascadeIsOpen" OnText="Close" OffText="Open" />
                         </div>
-                        <BitNavPanel @bind-IsOpen="cascadeIsOpen" Items="basicNavItems" />
+                        <BitNavPanel @bind-IsOpen="cascadeIsOpen" Items="cascadeNavItems" />
                     </div>
                     <div style="width:222px">
                         <div>Own placeholder, cascaded rest</div>
                         <div class="open-btn">
                             <BitToggleButton @bind-IsChecked="cascadeOwnIsOpen" OnText="Close" OffText="Open" />
                         </div>
-                        <BitNavPanel @bind-IsOpen="cascadeOwnIsOpen" Items="basicNavItems" SearchBoxPlaceholder="Its own placeholder" />
+                        <BitNavPanel @bind-IsOpen="cascadeOwnIsOpen" Items="cascadeOwnNavItems" SearchBoxPlaceholder="Its own placeholder" />
                     </div>
                 </div>
             </BitParams>
@@ -458,15 +458,15 @@
             <div class="example-content">
                 <div style="width:180px">
                     <div>Small</div>
-                    <BitNavPanel @bind-IsOpen="sizeIsOpen" Items="basicNavItems" Size="BitSize.Small" NoSearchBox NoToggle />
+                    <BitNavPanel @bind-IsOpen="sizeIsOpen" Items="sizeSmallNavItems" Size="BitSize.Small" NoSearchBox NoToggle />
                 </div>
                 <div style="width:180px">
                     <div>Medium</div>
-                    <BitNavPanel @bind-IsOpen="sizeIsOpen" Items="basicNavItems" Size="BitSize.Medium" NoSearchBox NoToggle />
+                    <BitNavPanel @bind-IsOpen="sizeIsOpen" Items="sizeMediumNavItems" Size="BitSize.Medium" NoSearchBox NoToggle />
                 </div>
                 <div style="width:180px">
                     <div>Large</div>
-                    <BitNavPanel @bind-IsOpen="sizeIsOpen" Items="basicNavItems" Size="BitSize.Large" NoSearchBox NoToggle />
+                    <BitNavPanel @bind-IsOpen="sizeIsOpen" Items="sizeLargeNavItems" Size="BitSize.Large" NoSearchBox NoToggle />
                 </div>
             </div>
         </DemoExample>
@@ -487,7 +487,7 @@
                         <BitToggleButton @bind-IsChecked="classStyleIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="classStyleIsOpen"
-                                 Items="basicNavItems"
+                                 Items="classStyleNavItems"
                                  Styles="@(new() { Container = "background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);" })"
                                  NavClasses="@(new() { ItemContainer = "custom-nav-item",
                                                        ItemIcon = "custom-nav-item-ico",
@@ -504,7 +504,7 @@
                         <BitToggleButton @bind-IsChecked="cssVariablesIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="cssVariablesIsOpen"
-                                 Items="basicNavItems"
+                                 Items="cssVariablesNavItems"
                                  Style="--bit-NavPanel-background: var(--bit-clr-bg-sec);
                                         --bit-NavPanel-border-width: 1px;
                                         --bit-NavPanel-radius: 1rem;

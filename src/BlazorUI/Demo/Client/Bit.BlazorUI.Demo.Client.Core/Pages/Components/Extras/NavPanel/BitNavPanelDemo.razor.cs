@@ -1765,6 +1765,23 @@ public partial class BitNavPanelDemo
     // group gets a tree of its own: one list shared between two of them would carry what was opened here
     // into the other - and the AllExpanded of the StickyEnds panel would open the groups of both.
     private readonly List<BitNavItem> basicNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> fitWidthNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> fullWidthNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> widthNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> expandOnHoverNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> noToggleNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> iconUrlNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> drawerNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> behaviorNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> alwaysDrawerNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> cascadeNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> sizeSmallNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> sizeMediumNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> classStyleNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> cssVariablesNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> publicApiNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> singleExpandNavItems = CreateExpansionNavItems();
     private readonly List<BitNavItem> groupedNavItems = CreateExpansionNavItems();
