@@ -699,7 +699,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Zu heute gehen</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Erstellen Sie Ihre Multi-Mode (WASM, Server, Hybrid, Pre-Rendering) Blazor-App in kürzester Zeit mühelos!</value>
+    <value>Alles, was Sie hier sehen, funktioniert bereits - im Web, auf Android, iOS, Windows und macOS. Machen Sie es zu Ihrem und veröffentlichen Sie es.</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Startseite</value>
@@ -717,13 +717,13 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Mehr erfahren</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Ein Satz von Tools für .NET-Entwickler auf mehreren Plattformen</value>
+    <value>Eine voll ausgestattete App auf jeder Plattform - ab Tag eins</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>Ein Satz performanter, leicht anpassbarer und schöner Blazor-Komponenten</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>Eine funktionsreiche .NET-Projektvorlage, die nahtlos überall funktioniert</value>
+    <value>Der Ausgangspunkt hinter dieser App: alles fertig verdrahtet, und der Quellcode gehört ganz Ihnen.</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>Das Boilerplate ist mit ASP.NET Core, Identity, Web API, EF Core und Blazor aufgebaut.</value>
@@ -1030,9 +1030,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>Der 2FA-Token wurde generiert und an Sie gesendet.</value>
-  </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Bitte geben Sie den gerade gesendeten erhöhten Zugriffstoken oder den Code Ihrer Authentifizierungs-App ein, um fortzufahren.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} ist Ihr Code in Boilerplate.</value>
@@ -2156,4 +2153,61 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Den Assistenten dieser App in Ihrem Namen nutzen.</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>Bestätigen Sie, dass Sie es sind</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>Diese Änderung betrifft die Sicherheit Ihres Kontos.</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>Fingerabdruck oder Face ID verwenden</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>Kein Warten auf einen Code.</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>Geben Sie Ihren 6-stelligen Code ein</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>Dieser Code hat nicht funktioniert. Prüfen Sie ihn und versuchen Sie es erneut.</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>Öffnen Sie Ihre Authenticator-App und geben Sie den Code ein, den sie für dieses Konto anzeigt.</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>Bestätigen Sie oben, oder fordern Sie stattdessen einen Code an.</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>Code senden</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>Code erneut senden</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>Erneut senden in {0:m\:ss}</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>Ein Code ist bereits unterwegs. Verwenden Sie diesen, oder fordern Sie nach Ablauf einen neuen an.</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>Ihre E-Mail-Adresse</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>Ihr Telefon</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>Ihre anderen angemeldeten Geräte</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>Für dieses Konto ist keine bestätigte E-Mail-Adresse und keine bestätigte Telefonnummer hinterlegt, an die ein Code gesendet werden könnte.</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>Wir haben einen Code an {0} gesendet.</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>Wir haben einen Code an {0} und {1} gesendet.</value>
+  </data>
 </root>

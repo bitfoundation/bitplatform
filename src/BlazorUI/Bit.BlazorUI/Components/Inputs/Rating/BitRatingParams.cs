@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitRating"/> component.
 /// </summary>
-public class BitRatingParams : BitInputBaseParams, IBitComponentParams
+public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitRating"/> cascading parameters within <see cref="BitParams"/>.
@@ -195,7 +195,7 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
     {
         if (bitRating is null) return;
 
-        UpdateInputParameters(bitRating);
+        UpdateInputBaseParameters(bitRating);
 
         if (AllowClear.HasValue && bitRating.HasNotBeenSet(nameof(AllowClear)))
         {

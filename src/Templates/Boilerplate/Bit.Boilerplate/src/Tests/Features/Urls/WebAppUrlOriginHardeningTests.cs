@@ -38,11 +38,10 @@ public class WebAppUrlOriginHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>()
             .WithQueryIf(origin is not null, "origin", origin);
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
@@ -64,11 +63,10 @@ public class WebAppUrlOriginHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>()
             .WithQuery("origin", "https://evil.example");
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()
@@ -93,11 +91,10 @@ public class WebAppUrlOriginHardeningTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>()
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>()
             .WithQuery("origin", origin);
 
         var exception = await Assert.ThrowsAsync<Exception>(async ()

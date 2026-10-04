@@ -2012,7 +2012,7 @@ public class BitRatingTests : BunitTestContext
         var @params = new BitRatingParams();
 
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.IsInstanceOfType<BitInputBaseParams>(@params);
+        Assert.IsInstanceOfType<BitInputBaseParams<double>>(@params);
         Assert.AreEqual(BitRatingParams.ParamName, @params.Name);
     }
 

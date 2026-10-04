@@ -45,8 +45,9 @@ public class BitAccordionListToggleArgs<TItem> where TItem : class
     public bool IsExpanding { get; }
 
     /// <summary>
-    /// What made the item expand or collapse: a click on its header, or a call to one of the
-    /// Expand, Collapse, Toggle, ExpandAll and CollapseAll methods of the AccordionList.
+    /// What made the item expand or collapse: a click on its header, a call to one of the
+    /// Expand, Collapse, Toggle, ExpandAll and CollapseAll methods of the AccordionList, or a find-in-page
+    /// reveal of a HiddenUntilFound panel.
     /// </summary>
     public BitAccordionToggleReason Reason { get; }
 

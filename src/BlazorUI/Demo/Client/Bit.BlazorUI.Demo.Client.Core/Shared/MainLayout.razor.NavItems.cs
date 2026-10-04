@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
@@ -37,7 +37,7 @@ public partial class MainLayout
                 new() { Text = "FileInput", Url = "/components/fileinput", AdditionalUrls = ["/components/file-input"] },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field", "/components/spinbutton", "/components/spin-button"], Description = "NumberInput" },
-                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"] },
+                new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"], Description = "PinInput, VerificationCode, OneTimePassword" },
                 new() { Text = "Rating", Url = "/components/rating", Description = "Rate, Stars", Data = "Review, Score, Feedback" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
@@ -50,7 +50,7 @@ public partial class MainLayout
                     ChildItems =
                     [
                         new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = ["/components/circular-time-picker"] },
-                        new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"] },
+                        new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"], Description = "ColorPalette, Swatch", Data = "Hex, RGB, HSL, HSV, Alpha, Transparency, Eyedropper, Contrast" },
                         new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"] },
                         new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"] },
                         new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = ["/components/time-picker"] },
@@ -146,13 +146,13 @@ public partial class MainLayout
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
-                new() { Text = "MediaQuery", Url = "/components/mediaquery" },
+                new() { Text = "MediaQuery", Url = "/components/mediaquery", Description = "Breakpoint, Responsive", Data = "matchMedia, Hidden, Show, Hide, useMediaQuery" },
                 new() { Text = "Overlay", Url = "/components/overlay", Description = "Backdrop, Scrim", Data = "Mask, Dim, BlockUI, ClickCatcher" },
                 new() { Text = "Params", Url = "/components/params" },
-                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
+                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh", Description = "RefreshView, Refresher" },
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
-                new() { Text = "Sticky", Url = "/components/sticky" },
-                new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
+                new() { Text = "Sticky", Url = "/components/sticky", Description = "Affix", Data = "Pin, Pinned, Sticky header, Frozen header, Frozen column, position sticky, Stuck, Scroll padding" },
+                new() { Text = "SwipeTrap", Url = "/components/swipetrap", Description = "Gesture, Swipeable", Data = "Swipe, Drag, Pan, Flick, Touch, Pointer, SwipeArea, Hammer" },
                 new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
             ],
         },
@@ -163,7 +163,7 @@ public partial class MainLayout
             [
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell" },
-                new() { Text = "Chart", Url = "/components/chart" },
+                new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },

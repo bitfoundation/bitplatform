@@ -13,7 +13,7 @@
     "short_name": "bit platform",
     "prefer_related_applications": false,
     "display_override": [ "window-controls-overlay" ],
-    "description": "A set of tools for .NET developers across multiple platforms",
+    "description": "Start from a full-featured app, customize it with AI, and publish to every platform",
     "features": [
         "Cross Platform",
         "fast",

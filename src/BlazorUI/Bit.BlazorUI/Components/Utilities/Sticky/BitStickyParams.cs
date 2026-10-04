@@ -38,6 +38,11 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
     public string? Element { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the element takes a surface and a theme shadow while it is stuck.
+    /// </summary>
+    public bool? ElevateOnStuck { get; set; }
+
+    /// <summary>
     /// Gets or sets the horizontal offset the element pins at from the left edge.
     /// </summary>
     public string? Left { get; set; }
@@ -51,6 +56,11 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
     /// Gets or sets the horizontal offset the element pins at from the right edge.
     /// </summary>
     public string? Right { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the element reserves the room it covers as the scroll padding of its scrolling container.
+    /// </summary>
+    public bool? ScrollPadding { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS class applied to the root element only while the component is stuck.
@@ -100,6 +110,13 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.Element = Element;
         }
 
+        if (ElevateOnStuck.HasValue && bitSticky.HasNotBeenSet(nameof(ElevateOnStuck)))
+        {
+            bitSticky.ElevateOnStuck = ElevateOnStuck.Value;
+
+            bitSticky.ClassBuilder.Reset();
+        }
+
         if (Left.HasValue() && bitSticky.HasNotBeenSet(nameof(Left)))
         {
             bitSticky.Left = Left;
@@ -121,6 +138,11 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
 
             bitSticky.ClassBuilder.Reset();
             bitSticky.StyleBuilder.Reset();
+        }
+
+        if (ScrollPadding.HasValue && bitSticky.HasNotBeenSet(nameof(ScrollPadding)))
+        {
+            bitSticky.ScrollPadding = ScrollPadding.Value;
         }
 
         if (StuckClass.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckClass)))

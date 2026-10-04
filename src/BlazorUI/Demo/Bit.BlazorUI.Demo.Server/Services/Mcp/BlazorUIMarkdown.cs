@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
@@ -89,6 +90,14 @@ public static class BlazorUIMarkdown
 
         builder.AppendLine(component.Description ?? component.Summary).AppendLine();
 
+        // A family documented on one page answers with its abstract base, which is not a tag anyone can write:
+        // the tags are the concrete components deriving from it, read off the assembly when the catalog is built.
+        if (component.FamilyMembers.Count > 0)
+        {
+            builder.AppendLine($"A family of {component.FamilyMembers.Count} components sharing the API below - write one of them as the tag: {string.Join(", ", component.FamilyMembers.Select(m => $"`{m}`"))}.")
+                   .AppendLine();
+        }
+
         // The note nearly every Extras component carries says to install the package, which the
         // block below says with the package name, the registration call and the tags. Two sentences
         // about the same thing, one of them vague, is the redundancy this server exists to avoid.
@@ -141,7 +150,7 @@ public static class BlazorUIMarkdown
             // A multi-API component is three views of one feature set, so its tabs carry the same
             // sections by design. Printing that list once and naming the tabs beside it says the
             // same thing as printing it three times, and says the part that differs out loud.
-            var identical = tabs.Length > 1 && tabs.Skip(1).All(t => t.Select(e => e.Title).SequenceEqual(tabs[0].Select(e => e.Title)));
+            var identical = IsMultiApi(component.Examples);
 
             if (identical)
             {
@@ -166,17 +175,20 @@ public static class BlazorUIMarkdown
     public static string Examples(BlazorUIComponent component, string? filter)
     {
         var tabs = component.Examples.Select(e => e.Tab).Where(t => t is not null).Distinct().ToArray();
+        var multiApi = IsMultiApi(component.Examples);
 
         // A filter that names a tab exactly means that tab and not the sections whose titles happen
         // to contain the word: "Option" is one of BitDropdown's three APIs and also a word in
         // "Search options", and the tab is what a caller who typed a tab name asked for.
         //
-        // With no filter and more than one tab, only the first is answered. The tabs of a multi-API
-        // component carry the same sections in a different API by design, so returning all of them
-        // is the same code three times over - and three times over is more than one answer holds,
-        // so the caller would get one tab and a truncation notice anyway.
+        // With no filter, a multi-API component answers with its first tab only. Its tabs carry the
+        // same sections in a different API by design, so returning all of them is the same code
+        // three times over - and three times over is more than one answer holds, so the caller would
+        // get one tab and a truncation notice anyway. Tabs that are different features (BitChart's
+        // Line, Bar, Legend, ...) are each something the first one does not show, so they are all
+        // answered, in page order, up to the cap.
         IReadOnlyList<DemoExampleSource> matches = string.IsNullOrWhiteSpace(filter)
-            ? tabs.Length > 1
+            ? multiApi
                 ? [.. component.Examples.Where(e => e.Tab == tabs[0])]
                 : component.Examples
             : component.Examples.Any(e => string.Equals(e.Tab, filter, StringComparison.OrdinalIgnoreCase))
@@ -200,7 +212,7 @@ public static class BlazorUIMarkdown
 
         builder.AppendLine($"# {component.Name} examples").AppendLine();
 
-        if (string.IsNullOrWhiteSpace(filter) && tabs.Length > 1)
+        if (string.IsNullOrWhiteSpace(filter) && multiApi)
         {
             builder.AppendLine($"{component.Name} is a multi-API component: the same sections appear under each of its {tabs.Length} tabs - {string.Join(", ", tabs)} - differing only in how the items are supplied. This is the **{tabs[0]}** tab; pass another tab name as `example` for its version of the same code.").AppendLine();
         }
@@ -221,13 +233,17 @@ public static class BlazorUIMarkdown
             AppendFence(section, owned.Code, example.CsharpField, "csharp");
             AppendCodeFiles(section, owned.Files, example.CodeFilesField);
 
-            // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
-            // answer, it is a wrong one. What is left is named with the call that returns it.
-            if (builder.Length + section.Length > MaxLength && written > 0)
-            {
-                var remaining = matches.Skip(written).Select(e => e.Tab is null ? e.Title : $"{e.Tab} · {e.Title}").Distinct();
+            var remaining = matches.Skip(written).Select(e => e.Tab is null ? e.Title : $"{e.Tab} · {e.Title}").Distinct();
 
-                builder.AppendLine($"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.");
+            var notice = $"Stopped here to stay within one answer. Also available, one at a time via `GetBitBlazorUIComponentExamples(name: \"{component.Name}\", example: \"...\")`: {string.Join(", ", remaining)}.";
+
+            // Stopped at the cap rather than cut mid-sample: half a code block is not a smaller
+            // answer, it is a wrong one. The notice is counted in the cap it keeps the answer under
+            // - a page with enough sections to need it has enough of them to make it long, and a
+            // notice cut in half names neither what was left out nor the call that returns it.
+            if (builder.Length + section.Length + notice.Length > MaxLength && written > 0)
+            {
+                builder.AppendLine(notice);
 
                 return Truncate(builder.ToString());
             }
@@ -314,6 +330,17 @@ public static class BlazorUIMarkdown
         BlazorUIReflection.AppendMembers(builder, clr, type.Name);
 
         return Truncate(builder.ToString());
+    }
+
+    /// <summary>
+    /// Whether a page's tabs are views of one feature set - a multi-API component, whose every tab carries the same
+    /// sections - rather than a page split into a tab per feature, whose tabs each hold something the others do not.
+    /// </summary>
+    private static bool IsMultiApi(IReadOnlyList<DemoExampleSource> examples)
+    {
+        var tabs = examples.GroupBy(e => e.Tab).ToArray();
+
+        return tabs.Length > 1 && tabs.Skip(1).All(t => t.Select(e => e.Title).SequenceEqual(tabs[0].Select(e => e.Title)));
     }
 
     /// <summary>
@@ -441,14 +468,55 @@ public static class BlazorUIMarkdown
     {
         if (component.CascadingParams is null) return;
 
-        var name = component.CascadingParams.Name;
+        // Written the way it is written in Razor rather than as reflection names it: a params
+        // class of a generic component is generic too, and `BitDropdownParams`2` neither compiles
+        // in the snippet below nor resolves as the typeName the same line tells the caller to pass.
+        var name = BlazorUITypeNames.Of(component.CascadingParams);
 
-        var count = component.CascadingParams
+        var carried = component.CascadingParams
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Count(p => p.CanWrite);
+            .Where(p => p.CanWrite)
+            .Select(p => p.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var baseName = component.CascadingParams.BaseType is { } baseType && baseType != typeof(object)
+            ? BlazorUITypeNames.Of(baseType)
+            : null;
+
+        // Read off the compiled component rather than off its table: the parameters a params object
+        // leaves out are the ones a reader would otherwise assume are there, and the type is what
+        // has the last word on which exist. Inherited ones are included - they are exactly the set
+        // in question, since a params object derives from BitComponentBaseParams and so carries the
+        // BitComponentBase half of them and nothing of what an input base adds.
+        var missing = component.ComponentType is null ? [] : component.ComponentType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.IsDefined(typeof(ParameterAttribute)) && p.IsDefined(typeof(ObsoleteAttribute)) is false && carried.Contains(p.Name) is false)
+            .Select(p => p.Name)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        var inherits = baseName is null ? string.Empty : $" - its own and the `{baseName}` ones alike";
 
         builder.AppendLine("## Cascading parameters").AppendLine();
-        builder.AppendLine($"`{name}` carries {count} of this component's parameters again as nullables - its own and the inherited ones alike - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+
+        // A service has no markup of its own to put a BitParams around: the component it shows is what takes the
+        // cascade, from around the container that renders it - and what one showing is given beats it.
+        if (component.ShownComponentType is { } shown)
+        {
+            var shownName = BlazorUITypeNames.Of(shown);
+
+            builder.AppendLine($"Every `{shownName}` this service shows takes the defaults of `{name}` from a `BitParams` around the container that renders it: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">` wrapping the container in the layout. They are defaults rather than overrides: what the container's own parameters and what one showing is given win over them, parameter by parameter - and the same `BitParams` reaches every `{shownName}` written in markup below it too. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+
+            return;
+        }
+
+        builder.AppendLine($"`{name}` carries {carried.Count} of this component's parameters again as nullables{inherits} - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else, and a nested `BitParams` likewise replaces only the parameters its own `{name}` sets. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+
+        if (missing.Length > 0)
+        {
+            builder.AppendLine($"Not on it, so they are written on the instance itself: {string.Join(", ", missing.Select(n => $"`{n}`"))}.").AppendLine();
+        }
     }
 
     /// <summary>
@@ -461,7 +529,8 @@ public static class BlazorUIMarkdown
     {
         if (type.IsEnum) return "enum";
 
-        return BlazorUITypeCatalog.Find(type.Name)?.Kind == "component" ? "component" : "class";
+        // An interface reads as a class it could construct too, so it is named for what it is.
+        return BlazorUITypeCatalog.Find(type.Name)?.Kind is { } kind and ("component" or "interface") ? kind : "class";
     }
 
     /// <summary>A table of parameters or members, or nothing at all when there are none.</summary>
@@ -481,6 +550,18 @@ public static class BlazorUIMarkdown
     /// </summary>
     private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
     {
+        // A service has no root of its own: the variables are those of the component it shows, pointed at rather
+        // than tabulated a second time - with where a service's modals take a Style from, which that page cannot say.
+        if (component.CssVariables.Count == 0 &&
+            component.ShownComponentType is { } shown &&
+            BlazorUIComponentCatalog.Find(shown.Name) is { CssVariables.Count: > 0 } shownComponent)
+        {
+            builder.AppendLine("## CSS variables").AppendLine();
+            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
+
+            return;
+        }
+
         if (component.CssVariables.Count == 0) return;
 
         builder.AppendLine("## CSS variables").AppendLine();

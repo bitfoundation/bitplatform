@@ -699,7 +699,7 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Ga naar vandaag</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Maak uw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app eenvoudig in de kortst mogelijke tijd!</value>
+    <value>Alles wat u ziet werkt al, op web, Android, iOS, Windows en macOS. Maak het van uzelf en publiceer het.</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Home</value>
@@ -717,13 +717,13 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Meer informatie</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Een set tools voor .NET-ontwikkelaars op meerdere platforms</value>
+    <value>Een volledig uitgeruste app op elk platform, vanaf dag één</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>Een set prestatieve, eenvoudig aan te passen en mooie Blazor-componenten</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>Een rijkelijk uitgeruste .NET-projecttemplate die overal naadloos werkt</value>
+    <value>Het startpunt achter deze app: alles is al aangesloten en de broncode is volledig van u.</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>De Boilerplate is gebouwd met ASP.NET Core, Identity, Web API, EF Core en Blazor.</value>
@@ -1030,9 +1030,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>De 2FA-token is gegenereerd en naar u verzonden.</value>
-  </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Voer de verhoogde toegangs-token die we zojuist naar u hebben verzonden of uw authenticator-app-code in om door te gaan.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} is uw code in Boilerplate.</value>
@@ -2156,4 +2153,61 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>De assistent van deze app namens u gebruiken.</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>Verifiëren</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>Bevestig dat jij het bent</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>Deze wijziging raakt de beveiliging van je account.</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>Vingerafdruk of Face ID gebruiken</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>Geen code om op te wachten.</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>Voer je 6-cijferige code in</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>Die code werkte niet. Controleer hem en probeer het opnieuw.</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>Open je authenticator-app en voer de code in die deze voor dit account toont.</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>Verifieer hierboven, of vraag in plaats daarvan een code aan.</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>Stuur me een code</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>Code opnieuw versturen</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>Opnieuw versturen over {0:m\:ss}</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>Er is al een code onderweg. Gebruik die, of vraag een nieuwe aan zodra hij verlopen is.</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>je e-mailadres</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>je telefoon</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>je andere aangemelde apparaten</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>Aan dit account is geen bevestigd e-mailadres of telefoonnummer gekoppeld om een code naartoe te sturen.</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>We hebben een code naar {0} gestuurd.</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>We hebben een code naar {0} en {1} gestuurd.</value>
+  </data>
 </root>

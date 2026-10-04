@@ -45,6 +45,10 @@ public class BitDateRangePickerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the callout of the BitDateRangePicker.
     /// </summary>
+    /// <remarks>
+    /// The callout is rendered outside the root element, so the --bit-DateRangePicker-* variables written in
+    /// Style and Styles.Root are copied onto it; a style given here is applied after that copy and wins over it.
+    /// </remarks>
     public string? Callout { get; set; }
 
     /// <summary>
@@ -531,6 +535,22 @@ public class BitDateRangePickerClassStyles
     /// Custom CSS classes/styles for each year button of the BitDateRangePicker.
     /// </summary>
     public string? YearButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the actions row the Apply and Cancel buttons of a picker that does
+    /// not AutoApply are laid out in.
+    /// </summary>
+    public string? ActionsContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Apply button of a picker that does not AutoApply.
+    /// </summary>
+    public string? ApplyButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the Cancel button of a picker that does not AutoApply.
+    /// </summary>
+    public string? CancelButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the BitDateRangePicker's clear button.

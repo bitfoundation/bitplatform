@@ -91,8 +91,6 @@ public class Middlewares
             {
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
-
-            app.MapHealthChecksUI();
         }
 
         UseSiteMap(app);

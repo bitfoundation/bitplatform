@@ -27,13 +27,13 @@ public class GoogleRecaptchaHealthCheckTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-            services.AddHttpClient<GoogleRecaptchaService>().ConfigurePrimaryHttpMessageHandler(() => handler);
-        }).Start(TestContext.CancellationToken);
+        await server.Build(
+            configureTestServices: services =>
+            {
+                services.AddHttpClient<GoogleRecaptchaService>().ConfigurePrimaryHttpMessageHandler(() => handler);
+            }).Start(TestContext.CancellationToken);
 
-        var report = await server.WebApp.Services.GetRequiredService<HealthCheckService>()
+        var report = await server.ApiApp.Services.GetRequiredService<HealthCheckService>()
             .CheckHealthAsync(r => r.Name is "reCaptcha", TestContext.CancellationToken);
 
         Assert.AreEqual(expected, report.Entries["reCaptcha"].Status, report.Entries["reCaptcha"].Exception?.Message);

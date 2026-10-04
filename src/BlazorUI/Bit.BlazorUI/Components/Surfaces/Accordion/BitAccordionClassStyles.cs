@@ -63,6 +63,11 @@ public class BitAccordionClassStyles
     public string? ExpandedIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the spinner that stands in the expander's slot while the BitAccordion is busy.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the actions of the BitAccordion, rendered beside the header.
     /// </summary>
     public string? Actions { get; set; }

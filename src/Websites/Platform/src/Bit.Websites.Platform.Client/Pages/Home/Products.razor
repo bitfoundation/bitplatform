@@ -35,13 +35,13 @@
     [
         new()
         {
-            Title = "Boilerplate",
-            Subtitle = "Feature-rich .NET project template",
+            Title = "Your app starts finished",
+            Subtitle = "bit Boilerplate · feature-rich project template",
             LinkUrl = Urls.Templates,
             IsExpanded = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Boilerplate is a Visual Studio and .NET project template that enables high-quality, speedy cross-platform development
+                    bit Boilerplate hands you a real app on day one - sign-in, admin panel, payments, SEO, offline and monitoring already working -
                     for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
                 </BitText>
                 <div class="template-terminal">
@@ -58,13 +58,34 @@
         },
         new()
         {
-            Title = "Butil",
-            Subtitle = "Blazor utilities to use browser JS APIs in C#",
+            Title = "100+ ready-made UI components",
+            Subtitle = "bit BlazorUI · native components with dark/light theming",
+            LinkUrl = Urls.BlazorUI,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering),
+                    saving you time and making development enjoyable.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="comboValues"
+             Label="Multi select combo box"
+             Placeholder="Select options"
+             Items="comboBoxItems"
+             Combo Chips Dynamic Responsive
+             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Camera, location, bluetooth, storage",
+            Subtitle = "bit Butil · browser APIs in C#, without JavaScript",
             LinkUrl = Urls.Butil,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Butil helps C# developers to access the browser APIs that are only accessible through JavaScript in C#.
+                    bit Butil brings the browser APIs that normally need JavaScript into your app, ready to use in C#.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>@@inject Bit.Butil.Crypto crypto
@@ -77,13 +98,13 @@
         },
         new()
         {
-            Title = "Bswup",
-            Subtitle = "Blazor PWA on steroids",
+            Title = "Installs like a real app",
+            Subtitle = "bit Bswup · PWA, offline support and background updates",
             LinkUrl = Urls.Bswup,
             External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bswup is a set of tools that assists developers in making the most out of the Service Worker when building apps with Blazor.
+                    bit Bswup makes your app installable, usable offline, and updated in the background - with a visible install progress your users can watch.
                 </BitText>
                 <br />
                 <div style="text-align:center">
@@ -94,8 +115,8 @@
         },
         new()
         {
-            Title = "Besql",
-            Subtitle = "Blazor Entity Framework SQLite",
+            Title = "Works with no connection (Offline)",
+            Subtitle = "bit Besql · Entity Framework and SQLite inside the browser",
             LinkUrl = Urls.Besql,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
@@ -108,8 +129,8 @@
         },
         new()
         {
-            Title = "Brouter",
-            Subtitle = "Modern declarative Blazor router",
+            Title = "Clean URLs and deep links",
+            Subtitle = "bit Brouter · modern declarative Blazor router",
             LinkUrl = Urls.Brouter,
             External = true,
             Body = @<text>
@@ -130,8 +151,8 @@
         },
         new()
         {
-            Title = "Bmotion",
-            Subtitle = "Blazor-native animation library",
+            Title = "Motion that feels native",
+            Subtitle = "bit Bmotion · Blazor-native animation library",
             LinkUrl = Urls.Bmotion,
             External = true,
             Body = @<text>
@@ -142,27 +163,6 @@
                 <div>
                     <CodeBox HideCopyButton>&lt;Bmotion Initial="Bm.To(opacity: 0, y: 20)"
          Animate="Bm.To(opacity: 1, y: 0)"></CodeBox>
-                </div>
-            </text>
-        },
-        new()
-        {
-            Title = "BlazorUI",
-            Subtitle = "Native Blazor UI components",
-            LinkUrl = Urls.BlazorUI,
-            External = true,
-            Body = @<text>
-                <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit BlazorUI components are native, easy-to-customize, and work seamlessly in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering),
-                    saving you time and making development enjoyable.
-                </BitText>
-                <div>
-                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="comboValues"
-             Label="Multi select combo box"
-             Placeholder="Select options"
-             Items="comboBoxItems"
-             Combo Chips Dynamic Responsive
-             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
                 </div>
             </text>
         },

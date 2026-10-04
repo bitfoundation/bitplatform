@@ -12,15 +12,17 @@
 
 // The three steps of the spacing scale of the theme, so a sized spacer follows the spacing unit and the
 // density of the current theme rather than a hardcoded length. The component reads them back through
-// var(--bit-spc-size) on the axis the spacer targets.
+// var(--bit-spc-size) on the axis the spacer targets. Each step is a public custom property read with a
+// fallback and never declared, so it inherits: set on :root, an ancestor or the spacer's own Style, it
+// re-sizes that step for every spacer underneath.
 .bit-spc-sm {
-    --bit-spc-size: #{spacing(1)};
+    --bit-spc-size: var(--bit-Spacer-small-size, #{spacing(1)});
 }
 
 .bit-spc-md {
-    --bit-spc-size: #{spacing(2)};
+    --bit-spc-size: var(--bit-Spacer-medium-size, #{spacing(2)});
 }
 
 .bit-spc-lg {
-    --bit-spc-size: #{spacing(4)};
+    --bit-spc-size: var(--bit-Spacer-large-size, #{spacing(4)});
 }

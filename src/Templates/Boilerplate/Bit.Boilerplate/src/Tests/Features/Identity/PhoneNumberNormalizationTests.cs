@@ -41,11 +41,11 @@ public partial class PhoneNumberNormalizationTests
         CapturingPhoneService.SentMessages.Clear();
 
         await using var server = new AppTestServer();
-        await server.Build(services =>
+        await server.Build(configureTestApiAppServices: services =>
         {
             // Swap the real PhoneService (registered as AddScoped<PhoneService> in Program.Services) for the capturing
             // subclass. IdentityController injects the concrete PhoneService, so the service type stays PhoneService and
-            // only the implementation becomes the fake.
+            // only the implementation becomes the fake. Server.Api's alone: CapturingPhoneService is built from its services.
             services.RemoveAll<PhoneService>();
             services.AddScoped<PhoneService, CapturingPhoneService>();
         }).Start(TestContext.CancellationToken);
@@ -69,8 +69,8 @@ public partial class PhoneNumberNormalizationTests
         // proves the number was normalized (not merely passed through).
         var e164 = new Regex(@"^\+[1-9]\d{6,14}$");
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         foreach (var (Typed, Normalized) in attempts)
         {
@@ -141,7 +141,7 @@ public partial class PhoneNumberNormalizationTests
 /// Test double for <see cref="PhoneService"/> that records every <see cref="SendSms"/> call and delivers nothing.
 /// Only delivery is faked: <c>NormalizePhoneNumber</c> is left to the real base, so the number reaching <c>SendSms</c>
 /// is exactly what the server normalized - which is the behavior under test. Registered per-test via
-/// <c>configureTestServices</c> (RemoveAll&lt;PhoneService&gt; then AddScoped&lt;PhoneService, CapturingPhoneService&gt;).
+/// <c>configureTestApiAppServices</c> (RemoveAll&lt;PhoneService&gt; then AddScoped&lt;PhoneService, CapturingPhoneService&gt;).
 /// </summary>
 public partial class CapturingPhoneService(ServerApiSettings appSettings, IBackgroundJobClient backgroundJobClient, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, IStringLocalizer<AppStrings> localizer, ILogger<PhoneService> phoneLogger, PhoneNumberUtil phoneNumberUtil) :
     PhoneService(appSettings, backgroundJobClient, hostEnvironment, httpContextAccessor, localizer, phoneLogger, phoneNumberUtil)

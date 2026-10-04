@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,13 +11,22 @@ namespace Bit.BlazorUI;
 /// Configure it either via a single <see cref="Config"/> object or the convenience
 /// <see cref="Type"/>/<see cref="Data"/>/<see cref="Options"/> parameters, mirroring Chart.js.
 /// </summary>
-public partial class BitChart : ComponentBase, IAsyncDisposable
+public partial class BitChart : BitComponentBase
 {
-    /// <summary>Accessible label for the chart. When null a summary is generated.</summary>
-    [Parameter] public string? AriaLabel { get; set; }
+    /// <summary>
+    /// The default values of the parameters of the chart, cascaded from a <see cref="BitParams"/> ancestor. A value
+    /// set on the chart itself always wins over the cascaded one.
+    /// </summary>
+    [CascadingParameter(Name = BitChartParams.ParamName)]
+    public BitChartParams? CascadingParameters { get; set; }
 
-    /// <summary>Custom CSS class applied to the root element.</summary>
-    [Parameter] public string? Class { get; set; }
+
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the chart.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitChartClassStyles? Classes { get; set; }
 
     /// <summary>Full configuration (type + data + options). Takes precedence when set.</summary>
     [Parameter] public BitChartConfig? Config { get; set; }
@@ -24,31 +34,32 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// <summary>The chart data: labels and datasets.</summary>
     [Parameter] public BitChartData? Data { get; set; }
 
-    /// <summary>Text direction of the chrome around the plot (title, legend, tooltip, data table).</summary>
-    [Parameter] public BitDir? Dir { get; set; }
-
     /// <summary>
-    /// Plays the entry and update animations even when the user has asked for reduced motion. Like every
-    /// other animated component in the library, the chart honors <c>prefers-reduced-motion: reduce</c> by
-    /// default and draws itself straight in its final state; this renders the library-wide <c>bit-fam</c>
-    /// opt-out class, which an ancestor can carry as well to opt a whole subtree back in.
+    /// A visually hidden summary of what the chart shows - its trend, its outlier, its takeaway - that the plot is
+    /// described by. The accessible name says what the chart is and the data table holds every value; this is the
+    /// long description WCAG asks of a complex image, which neither of them is.
     /// </summary>
-    [Parameter] public bool ForceAnimation { get; set; }
+    [Parameter] public string? Description { get; set; }
 
     /// <summary>Render a visually-hidden data table for screen readers (default true).</summary>
     [Parameter] public bool GenerateTable { get; set; } = true;
 
     /// <summary>Optional CSS height. When null the height follows the aspect ratio.</summary>
-    [Parameter] public string? Height { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
 
     /// <summary>
-    /// Additional HTML attributes applied to the root element, following the same convention as the rest
-    /// of the library: assign the dictionary explicitly rather than relying on unmatched-value capture.
+    /// Shows the loading state over the plot - a spinner and the <see cref="LoadingLabel"/>, or the
+    /// <see cref="LoadingTemplate"/> - marks the chart <c>aria-busy</c>, and holds back the empty state, so a chart
+    /// still waiting for its data does not claim it has none.
     /// </summary>
-    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
+    [Parameter] public bool IsLoading { get; set; }
 
-    /// <summary>Id of the root element.</summary>
-    [Parameter] public string? Id { get; set; }
+    /// <summary>The text shown under the spinner, and announced, while <see cref="IsLoading"/> is set.</summary>
+    [Parameter] public string? LoadingLabel { get; set; } = "Loading";
+
+    /// <summary>Custom content shown in place of the default spinner while <see cref="IsLoading"/> is set.</summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// Upper bound on the columns the screen-reader table renders. A value series is one table row with
@@ -79,6 +90,13 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// <summary>Custom content shown in place of the plot when there is nothing to draw.</summary>
     [Parameter] public RenderFragment? NoDataTemplate { get; set; }
 
+    /// <summary>
+    /// The sentence added to the <see cref="NavigationHint"/> while zoom is enabled, telling a keyboard user that the
+    /// plus and minus keys zoom and 0 resets it - the keyboard's way to everything the wheel, the drag and the pinch
+    /// do. Set it to null or an empty string to leave it out.
+    /// </summary>
+    [Parameter] public string? ZoomHint { get; set; } = "Press plus or minus to zoom, and 0 to reset the zoom.";
+
     /// <summary>Message shown in place of the plot when there is nothing to draw.</summary>
     [Parameter] public string NoDataText { get; set; } = "No data to display";
 
@@ -98,8 +116,19 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// <summary>The chart options: scales, plugins, interaction, animation, culture and zoom.</summary>
     [Parameter] public BitChartOptions? Options { get; set; }
 
-    /// <summary>Custom CSS style applied to the root element.</summary>
-    [Parameter] public string? Style { get; set; }
+    /// <summary>
+    /// Custom CSS styles for different parts of the chart.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitChartClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The texts the chart writes for assistive technologies and into its CSV export: the default accessible name,
+    /// the legend's name, the keyboard announcements, the screen-reader table's headers and captions, and the name
+    /// of an unlabeled dataset. Defaults to English; assign a <see cref="BitChartTexts"/> with the properties you
+    /// want to override to localize them.
+    /// </summary>
+    [Parameter] public BitChartTexts? Texts { get; set; }
 
     /// <summary>Optional custom tooltip template. When set it replaces the default tooltip body.</summary>
     [Parameter] public RenderFragment<BitChartTooltipContext>? TooltipTemplate { get; set; }
@@ -108,7 +137,8 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     [Parameter] public BitChartType Type { get; set; } = BitChartType.Line;
 
     /// <summary>CSS width of the chart container.</summary>
-    [Parameter] public string Width { get; set; } = "100%";
+    [Parameter, ResetStyleBuilder]
+    public string Width { get; set; } = "100%";
 
     private readonly BitChartRenderState _state = new();
     private BitChartConfig _config = new();
@@ -130,6 +160,9 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     private BitChartTooltipInfo? _activeTooltip;
     private BitChartTooltipContext? _tooltipContext;
     private readonly List<BitChartSvgNode> _hoverNodes = new();
+
+    // What the plugins say they drew, for the hidden note the plot is described by.
+    private List<string> _notes = [];
 
     // Keyboard navigation.
     private int _focusIndex = -1;
@@ -161,14 +194,47 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     // Unique id for this instance's SVG defs (clip paths, gradients, patterns) and the a11y table.
     private readonly string _instanceId = "bc" + Guid.NewGuid().ToString("N")[..8];
 
+    protected override string RootElementClass => "bit-cht";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => $"width:{Width}")
+                    .Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty)
+                    .Register(() => Styles?.Root);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         _config = Config ?? new BitChartConfig(Type, Data ?? new BitChartData(), Options ?? new BitChartOptions());
+
+        // A disabled or loading chart takes no input, so whatever was hovered or walked by the keyboard is let go of.
+        if ((IsEnabled is false || IsLoading) && (_hoverAnchor is not null || _focusKey is not null || _legendHighlight is not null))
+        {
+            _focusIndex = -1;
+            _focusKey = null;
+            _liveMessage = null;
+            // A disabled legend button does not reliably fire mouseleave, so the fade is let go of here too.
+            _legendHighlight = null;
+            ClearHover();
+        }
+
         Recompute();
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
+
         // A resize-triggered render suppresses geometry transitions; re-enable for later updates.
         if (_suppressTransition) _suppressTransition = false;
 
@@ -194,7 +260,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         // switching between panning and drag-to-zoom) at runtime tears the old listeners down instead
         // of leaving the chart reacting to gestures it no longer offers.
         var z = _config.Options.Zoom;
-        bool wantZoom = z.Enabled && !_scene.IsRadialOrCircular;
+        bool wantZoom = z.Enabled && IsEnabled && !IsLoading && !_scene.IsRadialOrCircular;
         bool pan = z.Pan && !z.DragZoom;
         string signature = wantZoom ? $"{z.Wheel}|{pan}|{z.DragZoom}" : "";
         if (_zoomSignature == signature) return;
@@ -357,6 +423,20 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     [JSInvokable]
     public void OnResetZoom() => ResetZoom();
+
+    /// <summary>
+    /// Invoked when Escape is pressed anywhere on the page while a tooltip the pointer opened is showing. WCAG 1.4.13
+    /// asks that content appearing on hover can be dismissed without moving the pointer; the keyboard position, when
+    /// the plot has focus, is let go of by the plot's own Escape handler instead.
+    /// </summary>
+    [JSInvokable]
+    public void OnDismissTooltip()
+    {
+        if (_hoverAnchor is null || _focusKey is not null) return;
+        ClearHover();
+        NotifyHover();
+        StateHasChanged();
+    }
 
     /// <summary>Clears every zoom/pan override and returns the chart to the full data range.</summary>
     public void ResetZoom()
@@ -527,7 +607,10 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         else
             _vh = responsive && _measuredHeight is { } mh && mh > 0 ? mh : basis / aspect;
 
-        _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId).Render();
+        _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId, ActiveTexts).Render();
+        _notes = _scene.PluginContext is { } pctx
+            ? _config.Options.Plugins.Custom.SelectMany(p => p.Describe(pctx)).Where(n => n.HasValue()).ToList()
+            : [];
         RestoreInteraction();
 
         // Decide whether to (re)play the entry animation. We key off a signature of the data
@@ -617,6 +700,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private void OnEnter(BitChartDataElement e)
     {
+        if (IsEnabled is false || IsLoading) return;
         BuildHover(e);
         NotifyHover();
     }
@@ -627,7 +711,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// </summary>
     private void OnEnterBand(BitChartHitBand band)
     {
-        if (RepresentativeOf(band) is not { } rep) return;
+        if (IsEnabled is false || IsLoading || RepresentativeOf(band) is not { } rep) return;
         BuildHover(rep, forceIndexGroup: true);
         NotifyHover();
     }
@@ -835,7 +919,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
                 _hoverNodes.Add(hs);
     }
 
-    private const string FocusRingColor = "var(--bit-clr-pri, #0078d4)";
+    private const string FocusRingColor = "var(--bit-Chart-focus-color, var(--bit-clr-pri-focus))";
 
     /// <summary>
     /// Draws the active index in a chip where the crosshair meets the index axis. It reuses the tooltip
@@ -878,7 +962,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private async Task OnClickElement(BitChartDataElement e)
     {
-        if (OnElementClick.HasDelegate)
+        if (IsEnabled && OnElementClick.HasDelegate)
             await OnElementClick.InvokeAsync((e.DatasetIndex, e.DataIndex));
     }
 
@@ -887,7 +971,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
         int n = _scene.Elements.Count;
-        if (n == 0) return;
+        if (n == 0 || IsNavigable is false) return;
         switch (e.Key)
         {
             // Left/right walk the series the reader is on; up/down step between the series at the same
@@ -914,6 +998,19 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
             case " ":
                 if (_focusIndex >= 0) await OnClickElement(_scene.Elements[_focusIndex]);
                 break;
+            // Zoom is otherwise a pointer gesture only, so the keyboard gets its own way in: plus and minus zoom
+            // around the element the reader is on (the middle of the plot before they are on one), 0 resets.
+            // Ctrl/Meta/Alt with these keys is the browser's own page zoom, which is left to the browser alone;
+            // Shift is not checked, since it is how "+" and "_" are typed on most layouts.
+            case "+" or "=" when IsKeyboardZoomable && IsPlainKey(e):
+                ZoomFromKeyboard(zoomIn: true);
+                break;
+            case "-" or "_" when IsKeyboardZoomable && IsPlainKey(e):
+                ZoomFromKeyboard(zoomIn: false);
+                break;
+            case "0" when IsKeyboardZoomable && IsPlainKey(e):
+                ResetZoom();
+                break;
             case "Escape":
                 _focusIndex = -1;
                 _focusKey = null;
@@ -922,6 +1019,22 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
                 NotifyHover();
                 break;
         }
+    }
+
+    private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && IsEnabled && _scene.IsRadialOrCircular is false;
+
+    private static bool IsPlainKey(KeyboardEventArgs e) => e.CtrlKey is false && e.MetaKey is false && e.AltKey is false;
+
+    private void ZoomFromKeyboard(bool zoomIn)
+    {
+        double fx = 0.5, fy = 0.5;
+        if (_focusIndex >= 0 && _focusIndex < _scene.Elements.Count && _vw > 0 && _vh > 0)
+        {
+            var el = _scene.Elements[_focusIndex];
+            fx = el.CenterX / _vw;
+            fy = el.CenterY / _vh;
+        }
+        OnWheelZoom(fx, fy, zoomIn ? -1 : 1);
     }
 
     /// <summary>Steps to the next/previous element of the series the reader is currently on, wrapping
@@ -1011,17 +1124,18 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
         var series = _scene.Elements.Where(x => x.DatasetIndex == el.DatasetIndex).ToList();
         int at = series.IndexOf(el);
-        parts.Add($"{(at < 0 ? 1 : at + 1)} of {series.Count}");
+        parts.Add(BitChartTexts.Format(Culture, ActiveTexts.PositionFormat, at < 0 ? 1 : at + 1, series.Count));
 
         var datasets = _scene.Elements.Select(x => x.DatasetIndex).Distinct().OrderBy(i => i).ToList();
         if (datasets.Count > 1)
-            parts.Add($"series {datasets.IndexOf(el.DatasetIndex) + 1} of {datasets.Count}");
+            parts.Add(BitChartTexts.Format(Culture, ActiveTexts.SeriesPositionFormat, datasets.IndexOf(el.DatasetIndex) + 1, datasets.Count));
 
         return string.Join(", ", parts);
     }
 
     private async Task ToggleLegend(BitChartLegendItemModel item)
     {
+        if (IsEnabled is false) return;
         if (OnLegendItemClick.HasDelegate) await OnLegendItemClick.InvokeAsync(item);
         if (_scene.Legend is null || !_scene.Legend.OnClickToggle) return;
         if (item.IsDataIndex)
@@ -1044,22 +1158,53 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private string HintId => $"{_instanceId}-hint";
 
+    private string DescriptionId => $"{_instanceId}-desc";
+
+    private string NotesId => $"{_instanceId}-notes";
+
+    /// <summary>The hidden sentence naming what the plugins drew: annotations, labeled trend lines, a center text.</summary>
+    private string? NotesText => _notes.Count == 0 ? null : BitChartTexts.Format(Culture, ActiveTexts.NotesFormat, string.Join("; ", _notes));
+
     /// <summary>True when the keyboard hint is worth rendering: there is data to walk and text to say it with.</summary>
-    private bool ShowNavigationHint => !string.IsNullOrWhiteSpace(NavigationHint) && _scene.Elements.Count > 0;
+    private bool ShowNavigationHint => !string.IsNullOrWhiteSpace(NavigationHint) && IsNavigable;
+
+    /// <summary>The navigation hint, with the zoom keys named while zooming is something the keyboard can do.</summary>
+    private string? NavigationHintText => IsKeyboardZoomable && ZoomHint.HasValue() ? $"{NavigationHint} {ZoomHint}" : NavigationHint;
 
     /// <summary>
-    /// What the chart points its <c>aria-describedby</c> at: the how-to-navigate sentence and the data
-    /// table, in that order, and null when it has neither.
+    /// What the chart points its <c>aria-describedby</c> at: the <see cref="Description"/>, what the plugins drew, and
+    /// the how-to-navigate sentence, in that order - what the chart says before how to walk it - and null with none
+    /// of them. The data table is deliberately not part of it - a description is read as one flat string every time
+    /// the chart takes focus, which turns a table of hundreds of cells into minutes of speech - and is instead a real
+    /// table right after the chart, which a screen reader can browse cell by cell, or skip.
     /// </summary>
     private string? DescribedBy
     {
         get
         {
-            if (ShowNavigationHint && GenerateTable) return $"{HintId} {TableId}";
-            if (ShowNavigationHint) return HintId;
-            return GenerateTable ? TableId : null;
+            var ids = new List<string>(3);
+            if (Description.HasValue()) ids.Add(DescriptionId);
+            if (NotesText is not null) ids.Add(NotesId);
+            if (ShowNavigationHint) ids.Add(HintId);
+            return ids.Count == 0 ? null : string.Join(' ', ids);
         }
     }
+
+    /// <summary>
+    /// The plot is an application while the keyboard can walk it: that is what makes a screen reader in browse mode
+    /// hand the arrow keys to the chart instead of keeping them for its own reading cursor. With nothing to walk it
+    /// is the picture it looks like.
+    /// </summary>
+    private string SvgRole => IsNavigable ? "application" : "img";
+
+    /// <summary>Whether the plot is a tab stop the arrow keys can walk: it has data and it takes input.</summary>
+    private bool IsNavigable => _scene.Elements.Count > 0 && IsEnabled && IsLoading is false;
+
+    /// <summary>The texts in use: the ones given, or the English defaults.</summary>
+    private BitChartTexts ActiveTexts => Texts ?? BitChartTexts.Default;
+
+    /// <summary>Whether the empty state is shown: there is nothing to draw and nothing is still on its way.</summary>
+    private bool ShowNoData => _scene.IsEmpty && IsLoading is false;
 
     private string? ClipId => _scene.PlotArea is null ? null : $"{_instanceId}-clip";
     private string? ClipRef => ClipId is null ? null : $"url(#{ClipId})";
@@ -1102,19 +1247,6 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// and only set by the renderer for line/area charts.
     /// </summary>
     private bool ProgressiveDraw => CanAnimate && _scene.ProgressiveDraw;
-
-    private string RootClass
-    {
-        get
-        {
-            string c = "bit-cht";
-            // bit-fam is the library-wide reduced-motion opt-out: without it (here or on an ancestor)
-            // the chart's keyframes are taken out under prefers-reduced-motion.
-            if (ForceAnimation) c += " bit-fam";
-            if (!string.IsNullOrEmpty(Class)) c += " " + Class;
-            return c;
-        }
-    }
 
     private string DataGroupClass
     {
@@ -1168,9 +1300,38 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
                     : "bit-cht-series bit-cht-anim bit-cht-anim-rise"
             : "bit-cht-series";
 
+    /// <summary>
+    /// The legend item the pointer or the keyboard is on, whose series the chart brings forward. Kept as what the item
+    /// stands for rather than the item itself, since a rebuild replaces every legend item object.
+    /// </summary>
+    private (bool IsDataIndex, int Index)? _legendHighlight;
+
+    private void HighlightLegendItem(BitChartLegendItemModel item)
+    {
+        if (IsEnabled is false || IsLoading || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
+        _legendHighlight = (item.IsDataIndex, item.Index);
+    }
+
+    private void ClearLegendHighlight() => _legendHighlight = null;
+
+    /// <summary>
+    /// Whether a part of the drawing is faded behind the highlighted legend item: it belongs to another dataset - or,
+    /// for a legend of slices, to another data index. Nothing fades while the highlighted one is not drawn.
+    /// </summary>
+    private bool IsDimmed(int? datasetIndex, int? dataIndex)
+    {
+        if (_legendHighlight is not { } h) return false;
+        if (h.IsDataIndex)
+            return dataIndex is { } di && di != h.Index && IsDataIndexVisible(h.Index);
+        return datasetIndex is { } ds && ds != h.Index && IsDatasetVisible(h.Index);
+    }
+
+    private string? SeriesNodeClass(BitChartSvgNode node) => IsDimmed(node.DatasetIndex, node.DataIndex) ? "bit-cht-dim" : null;
+
     private string ElementClass(BitChartDataElement el)
     {
         string c = "bit-cht-el";
+        if (IsDimmed(el.DatasetIndex, el.DataIndex)) c += " bit-cht-dim";
         // A state hook only: the active look itself is the precomputed hover shape drawn over the
         // element, so the class carries no rule of its own and is there for consumers to style.
         if (IsActive(el)) c += " bit-cht-active";
@@ -1192,7 +1353,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     private string ElementStyle(int index)
     {
-        string cursor = OnElementClick.HasDelegate ? "cursor:pointer" : "cursor:default";
+        string cursor = IsClickable ? "cursor:pointer" : "cursor:default";
         if (ProgressiveDraw)
         {
             // Reveal each point in time with the stroke as it sweeps left to right. The delay is tied
@@ -1220,8 +1381,25 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         return s;
     }
 
-    private string AnimStyle =>
-        $"--bit-cht-dur:{_config.Options.Animation.Duration}ms;--bit-cht-ease:{_config.Options.Animation.Easing}";
+    private string AnimStyle => _config.Options.Animation.Easing.HasValue()
+        ? $"--bit-cht-dur:{_config.Options.Animation.Duration}ms;--bit-cht-ease:{_config.Options.Animation.Easing}"
+        : $"--bit-cht-dur:{_config.Options.Animation.Duration}ms";
+
+    /// <summary>Whether a click on the data does anything, which is what the pointer cursor promises.</summary>
+    private bool IsClickable => IsEnabled && OnElementClick.HasDelegate;
+
+    /// <summary>
+    /// The tab stop of the plot: present while there is data to walk and the chart takes input, and then
+    /// at the position <see cref="BitComponentBase.TabIndex"/> asks for.
+    /// </summary>
+    private string SvgTabIndex => IsNavigable ? TabIndex ?? "0" : "-1";
+
+    /// <summary>
+    /// Whether the legend items are buttons. They are while clicking one does something - the default
+    /// toggle or a handler of the page's own - and plain labels otherwise, so a reader is not offered a
+    /// control that does nothing.
+    /// </summary>
+    private bool IsLegendInteractive(BitChartLegendModel legend) => legend.OnClickToggle || OnLegendItemClick.HasDelegate;
 
     private bool IsActive(BitChartDataElement e) => _active.Count > 0 && _active.Contains(e);
 
@@ -1279,15 +1457,17 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         return (style, caretStyle);
     }
 
-    private string RootStyle
+    /// <summary>
+    /// The inline style of the default tooltip box: its placement, then what the options set on it. The corner
+    /// radius is only written when the options name one, so the theme's popup radius applies otherwise.
+    /// </summary>
+    private string TooltipBoxStyle(BitChartTooltipOptions t, string placement)
     {
-        get
-        {
-            var s = $"width:{Width};";
-            if (!string.IsNullOrEmpty(Height)) s += $"height:{Height};";
-            if (!string.IsNullOrEmpty(Style)) s += Style;
-            return s;
-        }
+        var style = $"{placement};background:{t.BackgroundColor};";
+        if (t.CornerRadius is { } radius) style += $"border-radius:{BitChartSvg.N(radius)}px;";
+        style += $"padding:{BitChartSvg.N(t.Padding)}px {BitChartSvg.N(t.Padding * 1.5)}px;";
+        if (t.BorderWidth > 0) style += $"border:{BitChartSvg.N(t.BorderWidth)}px solid {t.BorderColor ?? "currentColor"};";
+        return style + Styles?.Tooltip;
     }
 
     private static double Pct(double v, double total) => total <= 0 ? 0 : v / total * 100;
@@ -1298,12 +1478,32 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         {
             if (!string.IsNullOrEmpty(AriaLabel)) return AriaLabel;
             if (_config.Options.Plugins.Title is { Display: true, Text.Length: > 0 } t) return t.Text;
-            int series = _config.Data.Datasets.Count;
-            return $"{_config.Type} chart with {series} data series.";
+            return BitChartTexts.Format(Culture, ActiveTexts.DefaultAriaLabelFormat, ActiveTexts.TypeName(_config.Type), _config.Data.Datasets.Count);
         }
     }
 
     private bool HasPointData => _config.Data.Datasets.Any(d => d.Points is { Count: > 0 });
+
+    /// <summary>Whether any point carries a radius - bubble data, whose third value the table has to show too.</summary>
+    private bool HasRadiusData => _config.Data.Datasets.Any(d => d.Points?.Any(p => p.R is not null) is true);
+
+    /// <summary>The name of a dataset: its label, or the localized "Dataset N" the legend shows for it.</summary>
+    private string DatasetName(BitChartDataset ds, int index) => ds.Label ?? ActiveTexts.DatasetLabel(index, Culture);
+
+    /// <summary>
+    /// The header of a point column: the title of the axis every point dataset is plotted on, which says what the
+    /// values are, or the generic name when that axis shows none - or when the datasets sit on different axes, whose
+    /// titles one header cannot all be.
+    /// </summary>
+    private string PointHeader(bool x, string fallback)
+    {
+        var ids = _config.Data.Datasets.Where(d => d.Points is { Count: > 0 }).Select(d => x ? d.XAxisID : d.YAxisID).Distinct().ToList();
+        return ids.Count == 1
+            && _config.Options.Scales.TryGetValue(ids[0], out var scale)
+            && scale.Title is { Display: true, Text.Length: > 0 } title
+                ? title.Text
+                : fallback;
+    }
 
     /// <summary>Total rows the data table would render without a cap.</summary>
     private int TableRowCount => HasPointData
@@ -1331,9 +1531,9 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         {
             var caption = ChartAriaLabel;
             if (TableTruncated)
-                caption += $" Showing the first {MaxTableRows.ToString("N0", Culture)} of {TableRowCount.ToString("N0", Culture)} rows.";
+                caption += " " + BitChartTexts.Format(Culture, ActiveTexts.RowsTruncatedFormat, MaxTableRows.ToString("N0", Culture), TableRowCount.ToString("N0", Culture));
             if (TableColumnsTruncated)
-                caption += $" Showing the first {MaxTableColumns.ToString("N0", Culture)} of {TableColumnCount.ToString("N0", Culture)} columns.";
+                caption += " " + BitChartTexts.Format(Culture, ActiveTexts.ColumnsTruncatedFormat, MaxTableColumns.ToString("N0", Culture), TableColumnCount.ToString("N0", Culture));
             return caption;
         }
     }
@@ -1357,15 +1557,18 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         _ => "center"
     };
 
+    /// <summary>The logical keywords, so Start is the right-hand side of a right-to-left chart as flex-start already is.</summary>
     private static string TextAlign(BitChartAlign a) => a switch
     {
-        BitChartAlign.Start => "left",
-        BitChartAlign.End => "right",
+        BitChartAlign.Start => "start",
+        BitChartAlign.End => "end",
         _ => "center"
     };
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        if (IsDisposed || disposing is false) return;
+
         try
         {
             if (_sizeHandle is not null) { await _sizeHandle.InvokeVoidAsync("dispose"); await _sizeHandle.DisposeAsync(); }
@@ -1374,6 +1577,7 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (Exception) { }
         _dotRef?.Dispose();
-        GC.SuppressFinalize(this);
+
+        await base.DisposeAsync(disposing);
     }
 }

@@ -2,36 +2,62 @@
 
 @{
     var fileUploadPercent = GetFileUploadPercent(Item);
+
+    // which action buttons this render draws is worked out right here, before any of them is written out,
+    // so the flags the focus management reads are never left over from the render before this one.
+    _hasUploadButton = false;
+    _hasPauseButton = false;
+    _hasCancelButton = false;
+    _hasRemoveButton = false;
 }
 
 @if (Item.Status != BitFileUploadStatus.Removed)
 {
     <div role="listitem"
          style="@FileUpload.Styles?.FileItem"
-         class="bit-upl-itm @GetFileElClass(Item.Status) @FileUpload.Classes?.FileItem">
-        @if (FileUpload.ShowPreview && Item.PreviewUrl is not null)
+         class="bit-upl-itm @GetFileElClass(Item) @FileUpload.Classes?.FileItem">
+        @if (FileUpload.ShowPreview)
         {
-            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
-               the alt is empty on purpose: the thumbnail is decorative and its name is already
-               right next to it, so announcing it again would just repeat the same text. *@
-            <img src="@Item.PreviewUrl"
-                 alt=""
-                 draggable="false"
-                 decoding="async"
-                 style="@FileUpload.Styles?.Preview"
-                 class="bit-upl-prv @FileUpload.Classes?.Preview" />
+            if (Item.PreviewUrl is not null)
+            {
+                @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
+                   the alt is empty on purpose: the thumbnail is decorative and its name is already
+                   right next to it, so announcing it again would just repeat the same text. *@
+                <img src="@Item.PreviewUrl"
+                     alt=""
+                     draggable="false"
+                     decoding="async"
+                     style="@FileUpload.Styles?.Preview"
+                     class="bit-upl-prv @FileUpload.Classes?.Preview" />
+            }
+            else
+            {
+                @* only an image has a thumbnail of its own, and a list of mixed files would otherwise be
+                   ragged - every other kind takes a glyph of its type in a box of exactly the same size.
+                   it says nothing a screen reader has not already been told by the name beside it. *@
+                <div aria-hidden="true"
+                     style="@FileUpload.Styles?.Preview"
+                     class="bit-upl-prv bit-upl-pvi @FileUpload.Classes?.Preview">
+                    <i style="@FileUpload.Styles?.PreviewIcon"
+                       class="bit-icon bit-icon--@GetFileGlyph(Item) @FileUpload.Classes?.PreviewIcon" />
+                </div>
+            }
         }
         <div class="bit-upl-fic">
             <div title="@Item.Name" class="bit-upl-fnc">
                 <div style="@FileUpload.Styles?.FileName" class="bit-upl-fn @FileUpload.Classes?.FileName">@Item.Name</div>
             </div>
             <div class="bit-upl-fsc">
+                @* a file that is already on the server never travels anywhere from here, so it has one size
+                   rather than a count running up to it - "1.2 MB/1.2 MB" reads as a transfer that just ran. *@
                 <span style="@FileUpload.Styles?.FileSize" class="bit-upl-fs @FileUpload.Classes?.FileSize">
-                    @($"{FormatSize(GetFileUploadSize(Item))}/{FormatSize(Item.Size)}")
+                    @(Item.IsPreloaded
+                        ? FormatSize(Item.Size)
+                        : $"{FormatSize(GetFileUploadSize(Item))}/{FormatSize(Item.Size)}")
                 </span>
                 @* a file that was never going to be sent has no progress to report, and a "0%" next to
                    the reason it was turned away only reads as something that failed halfway. *@
-                @if (Item.Status != BitFileUploadStatus.NotAllowed)
+                @if (Item.Status != BitFileUploadStatus.NotAllowed && Item.IsPreloaded is false)
                 {
                     <span style="@FileUpload.Styles?.Percentage" class="bit-upl-pct @FileUpload.Classes?.Percentage">
                         @fileUploadPercent%
@@ -73,7 +99,9 @@
             var uploadTitle = isRetry
                                 ? (FileUpload.RetryButtonTitle ?? FileUpload.UploadButtonTitle ?? "Retry")
                                 : (FileUpload.UploadButtonTitle ?? "Upload");
-            <button @onclick="() => FileUpload.Upload(Item)"
+            _hasUploadButton = true;
+            <button @ref="_uploadButtonRef"
+                    @onclick="() => FileUpload.HandleItemUpload(Item)"
                     type="button"
                     title="@uploadTitle"
                     disabled="@(FileUpload.IsEnabled is false)"
@@ -88,7 +116,9 @@
         {
             var pauseIcon = BitIconInfo.From(FileUpload.PauseIcon, FileUpload.PauseIconName ?? "Pause");
             var pauseTitle = FileUpload.PauseButtonTitle ?? "Pause";
-            <button @onclick="() => FileUpload.PauseUpload(Item)"
+            _hasPauseButton = true;
+            <button @ref="_pauseButtonRef"
+                    @onclick="() => FileUpload.HandleItemPause(Item)"
                     type="button"
                     title="@pauseTitle"
                     disabled="@(FileUpload.IsEnabled is false)"
@@ -105,7 +135,9 @@
         {
             var cancelIcon = BitIconInfo.From(FileUpload.CancelIcon, FileUpload.CancelIconName ?? "Cancel");
             var cancelTitle = FileUpload.CancelButtonTitle ?? "Cancel";
-            <button @onclick="() => FileUpload.CancelUpload(Item)"
+            _hasCancelButton = true;
+            <button @ref="_cancelButtonRef"
+                    @onclick="() => FileUpload.HandleItemCancel(Item)"
                     type="button"
                     title="@cancelTitle"
                     disabled="@(FileUpload.IsEnabled is false)"
@@ -121,15 +153,19 @@
             {
                 @* the spinner carries no text of its own, and the live region of the component already
                    announces the outcome of the removal, so it is left out of the accessibility tree. *@
-                <div class="bit-upl-ldg" aria-hidden="true">
-                    <div class="bit-upl-spn"></div>
+                <div aria-hidden="true"
+                     style="@FileUpload.Styles?.RemoveSpinnerContainer"
+                     class="bit-upl-ldg @FileUpload.Classes?.RemoveSpinnerContainer">
+                    <div style="@FileUpload.Styles?.RemoveSpinner" class="bit-upl-spn @FileUpload.Classes?.RemoveSpinner"></div>
                 </div>
             }
             else
             {
                 var removeIcon = BitIconInfo.From(FileUpload.RemoveIcon, FileUpload.RemoveIconName ?? "Delete");
                 var removeTitle = FileUpload.RemoveButtonTitle ?? "Remove";
-                <button @onclick="() => FileUpload.RemoveFile(Item)"
+                _hasRemoveButton = true;
+                <button @ref="_removeButtonRef"
+                        @onclick="() => FileUpload.HandleItemRemove(Item)"
                         type="button"
                         title="@removeTitle"
                         disabled="@(FileUpload.IsEnabled is false)"

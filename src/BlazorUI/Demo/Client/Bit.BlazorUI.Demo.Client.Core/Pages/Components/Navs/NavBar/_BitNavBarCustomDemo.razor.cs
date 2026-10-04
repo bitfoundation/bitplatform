@@ -58,6 +58,17 @@ public partial class _BitNavBarCustomDemo
         new() { Title = "Me", ImageName = BitIconName.Contact },
     ];
 
+    private static readonly BitNavBarParams[] navBarParams =
+    [
+        new()
+        {
+            Mode = BitNavMode.Manual,
+            Filled = true,
+            Color = BitColor.Info,
+            Indicator = BitNavBarIndicator.Pill,
+        }
+    ];
+
     private static readonly List<MenuItem> badgeNavBarCustoms =
     [
         new() { Title = "Home", ImageName = BitIconName.Home  },
@@ -85,6 +96,16 @@ public partial class _BitNavBarCustomDemo
         new() { Title = "Reports", ImageName = BitIconName.ReportDocument },
         new() { Title = "Settings", ImageName = BitIconName.Settings },
         new() { Title = "Support", ImageName = BitIconName.Help },
+        new() { Title = "Calendar", ImageName = BitIconName.Calendar },
+        new() { Title = "Chat", ImageName = BitIconName.Chat },
+        new() { Title = "People", ImageName = BitIconName.People },
+        new() { Title = "News", ImageName = BitIconName.News },
+        new() { Title = "Photos", ImageName = BitIconName.Photo2 },
+        new() { Title = "Videos", ImageName = BitIconName.Video },
+        new() { Title = "Music", ImageName = BitIconName.MusicNote },
+        new() { Title = "Documents", ImageName = BitIconName.Document },
+        new() { Title = "Cloud", ImageName = BitIconName.Cloud },
+        new() { Title = "Maps", ImageName = BitIconName.MapPin },
         new() { Title = "Profile", ImageName = BitIconName.Contact },
     ];
 
@@ -140,10 +161,10 @@ public partial class _BitNavBarCustomDemo
 
     private void ReverseDynamicCustoms() => dynamicNavBarCustoms.Reverse();
 
-    private int countClick;
-    private bool reselectable = true;
-    private MenuItem selectedItem = basicNavBarCustoms[0];
-    private MenuItem twoWaySelectedItem = basicNavBarCustoms[0];
+    private int clickCount;
+    private int selectCount;
+    private bool reselectable;
+    private MenuItem? twoWaySelectedItem;
     private MenuItem? scrollableSelectedCustom;
     private MenuItem? eventsClickedItem;
     private MenuItem? eventsSelectedItem;

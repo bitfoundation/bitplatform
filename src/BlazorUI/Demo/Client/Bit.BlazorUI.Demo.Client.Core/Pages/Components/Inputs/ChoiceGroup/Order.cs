@@ -7,6 +7,7 @@ public class Order
     public string? Fee { get; set; }
     public string? Summary { get; set; }
     public string? Tooltip { get; set; }
+    public string? ScreenReaderName { get; set; }
     public string? ItemValue { get; set; }
     public string? ImageAddress { get; set; }
     public string? ImageDescription { get; set; }

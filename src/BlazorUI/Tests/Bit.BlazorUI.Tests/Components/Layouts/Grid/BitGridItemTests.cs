@@ -20,6 +20,33 @@ public class BitGridItemTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitGridItemShouldKeepAnAriaLabelWrittenInTheMarkup()
+    {
+        var component = RenderComponent<BitGridAttributesTest>();
+
+        var root = component.Find(".bit-grd-itm");
+
+        Assert.AreEqual("Summary", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldRenderItsParametersOverTheAttributes()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Own");
+            parameters.Add(p => p.TabIndex, "-1");
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        var root = component.Find(".bit-grd-itm");
+
+        Assert.AreEqual("Own", root.GetAttribute("aria-label"));
+        Assert.AreEqual("-1", root.GetAttribute("tabindex"));
+        Assert.AreEqual("ltr", root.GetAttribute("dir"));
+    }
+
+    [TestMethod]
     public void BitGridItemShouldRenderNoLayoutStyleOfItsOwnWhenNothingWasAskedFor()
     {
         // Everything an untouched item needs is inherited from the grid, so its own style stays empty and

@@ -38,6 +38,8 @@
     --bit-shp-radius-surface: 0.75rem; //12px
     --bit-shp-radius-popup: 0.25rem; //4px
     --bit-shp-radius-dialog: 1.75rem; //28px
+    // Modal side sheets and navigation drawers round the corners they turn towards the page.
+    --bit-shp-radius-sheet: 1rem; //16px
     // M3 buttons are full-round pills while the control radius stays 4px for fields and menus - a
     // menu button is a button in M3, and so are the actions of a dialog. BitButtonGroup keeps the
     // control radius: it publishes its own Rounded parameter, and a preset that pilled it
@@ -48,6 +50,9 @@
     --bit-shp-radius-chip: 0.5rem; //8px
     // M3 checkbox: a 2dp corner on the 18dp box.
     --bit-shp-radius-selection: 0.125rem; //2px
+    // M3 primary tab indicator: 3dp corners on the edge facing the label, square on the edge it stands on.
+    --bit-shp-radius-tab-indicator: 0.1875rem; //3px
+    --bit-shp-radius-tab-indicator-base: 0;
     // M3 focus indicator: 3dp ring offset 2dp.
     --bit-shp-focus-ring-width: 0.1875rem; //3px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
@@ -81,6 +86,7 @@
     --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - one-line list item
     --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px
     --bit-siz-tab-indicator: 0.1875rem; //3px
+    --bit-siz-tab-divider: var(--bit-siz-divider); //1px - M3 tabs divider
     --bit-siz-track-sm: 0.25rem; //4px - M3 linear progress
     --bit-siz-track-md: 0.25rem; //4px
     --bit-siz-track-lg: 0.5rem; //8px
@@ -101,17 +107,42 @@
     --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
     --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
     --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    // M3 badge: the 16dp large badge at the medium anchor and the 6dp small badge as its dot.
+    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
+    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.625); //5px
+    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
+    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    // M3 chips: the 32dp assist, filter and input chip at the medium anchor.
+    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
 
     /*---- Opacity ----*/
     // M3 state layers: an element that is disabled but keeps its own colors sits at 38%, the one
     // opacity M3 names for the disabled state, against Fluent's 50%.
     --bit-opa-dis: 0.38;
 
+    /*---- Surface colors ----*/
+    // A plain M3 tooltip is the inverse surface with inverse-on-surface text, which is what lets it sit
+    // at L0 (see --bit-shd-tooltip below): it stands off the page by its contrast rather than by a shadow.
+    --bit-clr-tooltip-bg: var(--bit-clr-fg-pri);
+    --bit-clr-tooltip-fg: var(--bit-clr-bg-pri);
+
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px - M3 dialog inset
+    // M3 cards inset their content 16dp, on the 4dp grid either side of it.
+    --bit-spa-card-sm-steps: 1.5;
+    --bit-spa-card-md-steps: 2;
+    --bit-spa-card-lg-steps: 3;
+    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //12px
+    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //16px
+    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //24px
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
+    --bit-layout-dialog-text-align: start;
     // M3 caps its basic dialog at 560px.
     --bit-siz-dialog-max-width: 35rem; //560px
 
@@ -126,6 +157,12 @@
     // Control labels: M3 label-large tracks at 0.1px; no uppercase in M3.
     --bit-tpg-ctrl-letter-spacing: 0.00625rem;
     --bit-tpg-ctrl-text-transform: none;
+    // M3 titles a dialog in headline-small: 24px regular - the 2xl step of the core ramp it keeps.
+    --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-2xl); //24px
+    --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-regular);
+    // A field is captioned in the body type, regular: the medium weight belongs to the label-* styles
+    // of buttons, chips and tabs.
+    --bit-tpg-field-label-font-weight: var(--bit-tpg-fw-regular);
     // The --bit-tpg-fs-* ramp is deliberately left at the core stylesheet's values rather than
     // retuned. The three steps the size classes read are already M3's own control sizes (sm -> 12px
     // label-medium, md -> 14px label-large, lg -> 16px body-large), and above them the M3 scale has
@@ -219,6 +256,7 @@
     --bit-shd-cal: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); //L2
     --bit-shd-cal2: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15); //L3
     --bit-shd-card: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); //L1
+    --bit-shd-card-hover: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); //L2 - an elevated card's hover state
     --bit-shd-popup: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); //L2
     --bit-shd-dialog: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15); //L3
     --bit-shd-sheet: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); //L1

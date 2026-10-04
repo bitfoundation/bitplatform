@@ -118,7 +118,8 @@ public partial class PushNotificationService
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public async Task RequestPush(PushNotificationRequest request,
+    /// <returns>How many subscriptions this push was queued for, so a caller may report what it actually reached.</returns>
+    public async Task<int> RequestPush(PushNotificationRequest request,
         Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)
     {
@@ -150,9 +151,11 @@ public partial class PushNotificationService
         var pushNotificationSubscriptionIds = await query.Select(pns => pns.Id).ToArrayAsync(cancellationToken);
 
         if (pushNotificationSubscriptionIds.Length is 0)
-            return;
+            return 0;
 
         backgroundJobClient.Enqueue<PushNotificationJobRunner>(runner => runner.RequestPush(pushNotificationSubscriptionIds, request));
+
+        return pushNotificationSubscriptionIds.Length;
     }
 }
 

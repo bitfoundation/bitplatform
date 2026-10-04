@@ -1,0 +1,19 @@
+@using Bit.BlazorUI
+
+@* Covers BitOverlayParams: the cascaded values fill in the parameters an Overlay did not set itself and never overwrite
+   the ones it did. *@
+
+<BitParams Parameters="@(new BitOverlayParams[]
+                         {
+                             new()
+                             {
+                                 ModeFull = true,
+                                 AbsolutePosition = true,
+                                 Position = BitPosition.Center,
+                                 ZIndex = 7,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitOverlay IsOpen>first</BitOverlay>
+    <BitOverlay IsOpen Position="BitPosition.BottomEnd" ZIndex="9" Class="second">second</BitOverlay>
+</BitParams>

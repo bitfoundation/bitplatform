@@ -1,9 +1,11 @@
+//+:cnd:noEmit
 namespace Microsoft.Playwright;
 
 public static class PlaywrightPageExtensions
 {
     extension(IPage page)
     {
+        //#if (advancedTests == true)
         /// <summary>
         /// Navigates inside a running app without reloading the page, by posting its own NAVIGATE_TO message (see
         /// <c>events.ts</c>) - which <c>AppClientCoordinator</c> turns into a <c>NavigationManager.NavigateTo</c>,
@@ -31,6 +33,7 @@ public static class PlaywrightPageExtensions
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
 
+        //#endif
         /// <summary>
         /// Waits until Blazor's interactive renderer has attached to the document.
         /// <para>
@@ -56,8 +59,8 @@ public static class PlaywrightPageExtensions
                 await page.WaitForFunctionAsync(
                     "() => [...document.querySelectorAll('*')].some(e => e.getAttributeNames().some(n => n.startsWith('_bl_')))",
                     null,
-                    // As long as the cold WebAssembly boot GoToInApp allows for: a shorter wait would expire on a
-                    // loaded runner exactly when it is needed most.
+                    // Long enough for a cold WebAssembly boot: a shorter wait would expire on a loaded runner exactly
+                    // when it is needed most.
                     new() { Timeout = (float)TimeSpan.FromMinutes(2).TotalMilliseconds });
             }
             catch (Exception exception) when (exception is TimeoutException or PlaywrightException)
@@ -65,6 +68,7 @@ public static class PlaywrightPageExtensions
             }
         }
     }
+    //#if (advancedTests == true)
 
     // The exact message shape events.ts listens for; it hands anything with this key to App.publishMessage.
     private const string publishNavigateToScript = $$"""
@@ -72,4 +76,5 @@ public static class PlaywrightPageExtensions
             { key: 'PUBLISH_MESSAGE', message: '{{ClientAppMessages.NAVIGATE_TO}}', payload: route },
             window.location.origin)
         """;
+    //#endif
 }

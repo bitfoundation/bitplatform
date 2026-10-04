@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
@@ -21,7 +24,8 @@ public class BitMessageTests : BunitTestContext
     private static readonly PointerEventArgs _touchPointer = new() { PointerType = "touch" };
 
     // The auto-dismiss callback fires off the render loop, so there is no render for WaitForAssertion to
-    // hang its re-check on. The condition is polled from the test thread instead.
+    // hang its re-check on. The condition is polled from the test thread instead - which is only safe for a
+    // flag the test owns: a FindAll polled from here can race bUnit rebuilding the markup and cache a stale DOM.
     private static void WaitUntil(Func<bool> condition, int timeoutMilliseconds = 5000)
     {
         var stopwatch = Stopwatch.StartNew();
@@ -124,6 +128,44 @@ public class BitMessageTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(BitVariant.Outline, true, true),
+        DataRow(BitVariant.Text, true, true),
+        DataRow(BitVariant.Fill, true, false),
+        DataRow(null, true, false),
+        DataRow(BitVariant.Outline, false, false),
+        DataRow(BitVariant.Text, false, false)
+    ]
+    public void BitMessageShouldOnlyTintTheUnfilledVariants(BitVariant? variant, bool tinted, bool expectedTint)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Tinted, tinted);
+        });
+
+        Assert.AreEqual(expectedTint, component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldFollowTinted()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+
+        component.Render(parameters => parameters.Add(p => p.Tinted, true));
+
+        Assert.IsTrue(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
+
+        component.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Fill));
+
+        Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
     }
 
     [TestMethod,
@@ -1364,9 +1406,9 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
         });
 
-        WaitUntil(() => component.FindAll(".bit-msg").Count == 0);
-
-        Assert.IsEmpty(component.FindAll(".bit-msg"));
+        // Not WaitUntil: a FindAll polled from the test thread can land while bUnit rebuilds the markup, parse the
+        // old one and keep it cached for good. The dismissal renders the message, which is what this re-checks on.
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-msg")), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1814,6 +1856,175 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual(0, dismissCount);
 
         component.Instance.ResumeAutoDismiss();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldHoldTheCountdownWhileThePageIsHidden()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.ShowAutoDismissProgress, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        Thread.Sleep(400);
+
+        // A message in a background tab keeps its countdown for when it is looked at, and its bar holds with it.
+        Assert.AreEqual(0, dismissCount);
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-msg-prb").ClassList.Contains("bit-msg-pau")));
+
+        await visibility._VisibilityChanged(false);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldHoldTheCountdownWhileTheWindowIsBlurred()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._WindowFocusChanged(true);
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        await visibility._WindowFocusChanged(false);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldNotHoldTheCountdownForAHiddenPageWithoutBeingAsked()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldLetGoOfThePageHoldOnceItIsTurnedOff()
+    {
+        var visibility = new BitPageVisibility(new TestJsRuntime());
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        await visibility._VisibilityChanged(true);
+
+        Thread.Sleep(400);
+
+        Assert.AreEqual(0, dismissCount);
+
+        // No visibility change is coming to let go of it, so turning the parameter off has to.
+        component.Render(parameters => parameters.Add(p => p.PauseOnPageHidden, false));
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldStartHeldInAPageThatIsAlreadyHidden()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        Thread.Sleep(400);
+
+        // No visibilitychange is coming for a tab that was already in the background when the message was shown.
+        Assert.AreEqual(0, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldCountDownAsUsualWhenThePageVisibilityScriptFails()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Context.Services.AddSingleton(visibility);
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldCountDownAsUsualWithoutThePageVisibilityService()
+    {
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
 
         WaitUntil(() => dismissCount == 1);
 
@@ -2710,4 +2921,276 @@ public class BitMessageTests : BunitTestContext
         Assert.IsEmpty(component.FindAll(".bit-msg-prg"));
     }
 
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowOnlyWhileItCanFold()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+
+        // A multiline message without a cap has nothing folded away, so there is nothing to watch.
+        component.Render(parameters => parameters.Add(p => p.Multiline, true));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotWatchTheOverflowWithoutTruncate()
+    {
+        RenderComponent<BitMessage>(parameters => parameters.AddChildContent(LongText));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldOfferTheExpanderOnlyWhileSomethingIsClipped()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent("Short");
+        });
+
+        // Until the browser has measured, the expander is rendered as it always was.
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepTheExpanderWhileItIsExpanded()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Expanded, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        // An unfolded text is unclipped on purpose; the button that folds it back has to stay.
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        var expander = component.Find(".bit-msg-exb");
+
+        Assert.AreEqual("true", expander.GetAttribute("aria-expanded"));
+        Assert.IsTrue(component.Find(".bit-msg-cnc").ClassList.Contains("bit-msg-cnx"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowAfreshWhenItComesBack()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.Dismissed, false);
+            parameters.Add(p => p.DismissedChanged, _ => { });
+            parameters.AddChildContent(LongText);
+        });
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, true));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+
+        component.Render(parameters => parameters.Add(p => p.Dismissed, false));
+
+        // The message is a new element, measured from scratch: the expander is back until it is.
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.HasCount(1, component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheOverflowUnderItsOwnUniqueId()
+    {
+        var first = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "notice");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+        var second = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "notice");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        // Two messages sharing an Id would otherwise stop each other's observer.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(2, invocations);
+        Assert.AreEqual(first.Instance.UniqueId, invocations[0].Arguments[0]);
+        Assert.AreEqual(second.Instance.UniqueId, invocations[1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldKeepWatchingTheOverflowWhenItsIdChanges()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Id, "first");
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Id, "second"));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldSurviveAnOverflowObserverThatCannotBeStopped()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Message.dispose").SetException(new JSException("BitBlazorUI.Message is not defined"));
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Truncate, false));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Message.dispose"]);
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchAnAutoMultilineMessageForItsReflow()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"].Single();
+
+        Assert.AreEqual(true, invocation.Arguments[3]);
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitMessageShouldNotReflowWhatAlreadyWrapsOrFolds(bool multiline, bool truncate)
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Truncate, truncate);
+            parameters.AddChildContent(LongText);
+        });
+
+        // Truncate is the other answer to a line that does not fit, and wins; a multiline message wraps already.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.IsTrue(invocations.All(i => (bool)i.Arguments[3]! is false));
+        Assert.HasCount(truncate ? 1 : 0, invocations);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldTakeOnTheMultilineLayoutWhileItsLineDoesNotFit()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Title, "Heads up");
+            parameters.Add(p => p.Actions, "<button>Retry</button>");
+            parameters.AddChildContent(LongText);
+        });
+
+        // Until the browser has measured, the message keeps its single line.
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsTrue(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsFalse(component.Find(".bit-msg-cnw").ClassList.Contains("bit-msg-cwi"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-mac"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-exb"));
+
+        // Given the room again, it goes back to one line.
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(false));
+
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-mcn"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-mac"));
+        Assert.HasCount(1, component.FindAll(".bit-msg-act"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotCapAReflowedMessage()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.MaxLines, 1);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.InvokeAsync(() => component.Instance._OnOverflowChange(true));
+
+        // A reflowed message wraps so that nothing is cut off, which a cap without an expander would undo.
+        Assert.IsFalse(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldWatchAgainWhenItGoesFromFoldingToReflowing()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.AutoMultiline, true);
+            parameters.Add(p => p.Truncate, true);
+            parameters.AddChildContent(LongText);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Truncate, false));
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
+
+        Assert.HasCount(2, invocations);
+        Assert.AreEqual(false, invocations[0].Arguments[3]);
+        Assert.AreEqual(true, invocations[1].Arguments[3]);
+    }
+
+
+
+    // Answers the page visibility init call the way the browser would, or fails it the way a missing script does.
+    private sealed class PageStateJsRuntime : IJSRuntime
+    {
+        private readonly string? _json;
+        private readonly Exception? _exception;
+
+        public PageStateJsRuntime(string json) => _json = json;
+
+        public PageStateJsRuntime(Exception exception) => _exception = exception;
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            return InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            if (_exception is not null) return ValueTask.FromException<TValue>(_exception);
+
+            return new ValueTask<TValue>(JsonSerializer.Deserialize<TValue>(_json!, JsonSerializerOptions.Web)!);
+        }
+    }
 }

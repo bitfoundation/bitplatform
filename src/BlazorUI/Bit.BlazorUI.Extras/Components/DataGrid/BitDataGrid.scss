@@ -249,10 +249,6 @@
     z-index: 4;
 }
 
-.bit-dtg-rtl .bit-dtg-sticky {
-    right: auto;
-}
-
 .bit-dtg-cell-detail,
 .bit-dtg-cell-select {
     justify-content: center;
@@ -316,16 +312,11 @@ button.bit-dtg-htext {
 .bit-dtg-resizer {
     position: absolute;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     width: rem2(7px);
     height: 100%;
     cursor: col-resize;
     touch-action: none;
-}
-
-.bit-dtg-rtl .bit-dtg-resizer {
-    right: auto;
-    left: 0;
 }
 
 .bit-dtg-resizer:hover {

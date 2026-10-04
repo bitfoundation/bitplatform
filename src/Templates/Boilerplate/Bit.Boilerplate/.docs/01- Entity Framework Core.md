@@ -319,10 +319,17 @@ If you decide to use migrations, follow these steps:
 
 #### Step 1: Replace EnsureCreatedAsync() with MigrateAsync()
 
+<!--#if (api == "Integrated")-->
 Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 3 files:
 1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
 2. [`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs)
 3. [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)
+<!--#endif-->
+<!--#if (api == "Standalone")-->
+Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 2 files:
+1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
+2. [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)
+<!--#endif-->
 
 **Before:**
 ```csharp

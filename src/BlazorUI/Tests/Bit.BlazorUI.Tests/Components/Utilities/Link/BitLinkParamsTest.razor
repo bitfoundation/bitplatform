@@ -1,9 +1,10 @@
 ﻿@* A BitLink under a BitParams carrying BitLinkParams. What the cascade does depends on which parameters the
    link set for itself, and writing one out in the markup sets it even when the value is null - so the ones
    under test arrive through a splat instead, keyed by their own parameter names, and a test decides one by
-   one which of them the link has been given. *@
+   one which of them the link has been given. The Href is splatted the same way, so a link given none is left
+   to take the one the cascade carries. *@
 <BitParams Parameters="@(new IBitComponentParams[] { Params })">
-    <BitLink Href="@Href" @attributes="Overrides">bit</BitLink>
+    <BitLink @attributes="Attributes">bit</BitLink>
 </BitParams>
 
 @code {
@@ -12,4 +13,8 @@
     [Parameter] public Dictionary<string, object> Overrides { get; set; } = [];
 
     [Parameter] public string? Href { get; set; }
+
+    private Dictionary<string, object> Attributes => Href is null
+        ? Overrides
+        : new(Overrides) { [nameof(BitLink.Href)] = Href };
 }

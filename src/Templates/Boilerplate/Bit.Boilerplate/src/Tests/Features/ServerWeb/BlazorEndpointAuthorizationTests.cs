@@ -51,8 +51,7 @@ public partial class BlazorEndpointAuthorizationTests
     {
         await using var server = new AppTestServer();
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices(),
-            configureTestConfigurations: configuration =>
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:BlazorMode"] = blazorMode;
                 configuration["WebAppRender:PrerenderEnabled"] = prerenderEnabled;

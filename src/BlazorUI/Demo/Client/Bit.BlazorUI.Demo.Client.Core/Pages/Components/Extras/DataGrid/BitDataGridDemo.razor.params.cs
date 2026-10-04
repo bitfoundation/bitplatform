@@ -34,7 +34,7 @@ public partial class BitDataGridDemo
         new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "Accessible name of the grid itself, so screen-reader users can tell it apart from other grids on the page. Falls back to Strings.GridLabel." },
         new() { Name = "RowClass", Type = "Func<TItem, string?>?", DefaultValue = "null", Description = "Per-row CSS class selector, appended after the grid's own row classes - the conditional row styling counterpart of AG Grid's rowClassRules." },
         new() { Name = "RowStyle", Type = "Func<TItem, string?>?", DefaultValue = "null", Description = "Per-row inline style selector, appended after the row's layout style." },
-        new() { Name = "Direction", Type = "BitDir", DefaultValue = "BitDir.Ltr", Description = "Text direction (LTR/RTL).", LinkType = LinkType.Link, Href = "#BitDir" },
+        new() { Name = "Dir", Type = "BitDir?", DefaultValue = "null", Description = "The text direction of the grid. When not set, it follows the BitDir cascaded from an ancestor, and without one it inherits the direction of the page it is placed in.", LinkType = LinkType.Link, Href = "#BitDir" },
         new() { Name = "Sortable", Type = "bool", DefaultValue = "true", Description = "Enables column sorting by clicking headers." },
         new() { Name = "MultiSort", Type = "bool", DefaultValue = "true", Description = "Enables multi-column sorting via Ctrl/⌘+click with priority badges." },
         new() { Name = "AllowUnsorted", Type = "bool", DefaultValue = "true", Description = "Whether a third header click returns the column to its unsorted state (ascending → descending → unsorted). Set false to cycle between ascending and descending only. Overridable per column with AllowUnsorted." },

@@ -699,7 +699,7 @@
     <value>आज पर जाएँ</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>अपना मल्टी-मोड (WASM, सर्वर, हाइब्रिड, पूर्व-रेंडरिंग) Blazor ऐप सबसे कम समय में आसानी से बनाएँ!</value>
+    <value>यहाँ आप जो कुछ भी देख रहे हैं वह पहले से काम कर रहा है - वेब, Android, iOS, Windows और macOS पर। इसे अपना बनाइए और प्रकाशित कीजिए।</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>होम</value>
@@ -717,13 +717,13 @@
     <value>और जानें</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>एकाधिक प्लेटफ़ॉर्म्स पर .NET डेवलपर्स के लिए उपकरणों का सेट</value>
+    <value>हर प्लेटफ़ॉर्म पर पूरी तरह तैयार ऐप, पहले ही दिन से</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>प्रदर्शनकारी, आसानी से अनुकूलित करने योग्य और सुंदर Blazor घटकों का सेट</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>एक सुविधा-समृद्ध .NET प्रोजेक्ट टेम्पलेट जो हर जगह सहजता से काम करता है</value>
+    <value>इस ऐप के पीछे की शुरुआत: सब कुछ पहले से जुड़ा हुआ, और सोर्स कोड पूरी तरह आपका।</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>बॉयलरप्लेट ASP.NET Core, Identity, Web API, EF Core और Blazor के साथ बनाया गया है।</value>
@@ -1030,9 +1030,6 @@
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>2FA टोकन उत्पन्न हो गया है और आपको भेज दिया गया है।</value>
-  </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>कृपया जारी रखने के लिए हमने अभी भेजा उन्नत पहुँच टोकन या अपना ऑथेंटिकेटर ऐप कोड दर्ज करें।</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} आपका Boilerplate में कोड है।</value>
@@ -2156,4 +2153,61 @@
     <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना।</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>सत्यापित करें</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>पुष्टि करें कि यह आप ही हैं</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>यह बदलाव आपके खाते की सुरक्षा को प्रभावित करता है।</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>फ़िंगरप्रिंट या Face ID इस्तेमाल करें</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>किसी कोड का इंतज़ार नहीं।</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>अपना 6 अंकों का कोड डालें</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>यह कोड काम नहीं आया। इसे जाँचें और फिर कोशिश करें।</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>अपना ऑथेंटिकेटर ऐप खोलें और इस खाते के लिए दिखाया गया कोड डालें।</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>ऊपर सत्यापित करें, या इसके बजाय कोड मँगवाएँ।</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>मुझे कोड भेजें</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>कोड दोबारा भेजें</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>{0:m\:ss} में दोबारा भेजें</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>एक कोड पहले से ही रास्ते में है। उसी का इस्तेमाल करें, या उसकी अवधि खत्म होने पर दूसरा मँगवाएँ।</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>आपके ईमेल</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>आपके फ़ोन</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>आपके अन्य साइन-इन डिवाइसों</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>इस खाते पर कोई पुष्ट ईमेल या फ़ोन नंबर नहीं है जिस पर कोड भेजा जा सके।</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>हमने {0} पर कोड भेजा है।</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>हमने {0} और {1} पर कोड भेजा है।</value>
+  </data>
 </root>

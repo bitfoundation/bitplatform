@@ -26,6 +26,25 @@
         --bit-clr-suc: CanvasText;
         --bit-clr-wrn: CanvasText;
 
+        // The role foregrounds follow the mains remapped above. Their default is a color-mix() of the
+        // role and the foreground (family-tokens.scss), and a mix of two system colors is no longer a
+        // system color - LinkText shaded towards CanvasText would be neither - so each is named here.
+        --bit-clr-pri-fg: LinkText;
+        --bit-clr-err-fg: CanvasText;
+        --bit-clr-suc-fg: CanvasText;
+        --bit-clr-wrn-fg: CanvasText;
+
+        // The role tints are a translucent wash of a role, which is no system color, and a forced palette
+        // has no tints at all: a tinted surface of any role is the plain canvas.
+        --bit-clr-pri-tint: Canvas;
+        --bit-clr-sec-tint: Canvas;
+        --bit-clr-ter-tint: Canvas;
+        --bit-clr-inf-tint: Canvas;
+        --bit-clr-suc-tint: Canvas;
+        --bit-clr-wrn-tint: Canvas;
+        --bit-clr-swr-tint: Canvas;
+        --bit-clr-err-tint: Canvas;
+
         // Elevation is meaningless against a two-color system palette, so every shadow token is
         // flattened. The per-family ones have to be named individually rather than left to follow
         // --bit-shd-cal: they are aliases only in the fallback tier (family-tokens.scss) - every
@@ -33,6 +52,7 @@
         --bit-shd-cal: none;
         --bit-shd-cal2: none;
         --bit-shd-card: none;
+        --bit-shd-card-hover: none;
         --bit-shd-popup: none;
         --bit-shd-dialog: none;
         --bit-shd-sheet: none;
@@ -85,8 +105,8 @@
         --bit-shp-brd-width: 0.125rem;
 
         //A stronger focus indicator for the elevated-contrast cohort: 3px instead of the default
-        //2px ring, offset a step further from the element. These flow through --bit-shd-focus-ring
-        //(which reads both tokens) to every focus-ring() call, so the whole library reacts. Focus
+        //2px ring, offset a step further from the element. Both --bit-shd-focus-ring and the ring a
+        //colored focus-ring() call composes itself read these tokens, so the whole library reacts. Focus
         //visibility is unambiguously good to strengthen here - unlike disabled/muted colors, whose
         //meaning depends on staying subdued - so it is safe to promote wholesale.
         --bit-shp-focus-ring-width: 0.1875rem;

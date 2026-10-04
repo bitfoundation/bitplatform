@@ -488,9 +488,8 @@ declare namespace BitBlazorUI {
 // pointed at the secondary surface the site is drawn on.
 BitBlazorUI.Theme.init({
     system: true,
+    // localStorage only, no cookie mirror: the host page is cached by the CDN and served to every
+    // visitor, so the server never paints a visitor's own theme (see App.razor) - the inline head
+    // script restores it from localStorage before first paint instead.
     persist: true,
-    // Mirror every theme change into the bit-theme-preference cookie so the server can paint the
-    // right theme into the prerendered markup (see App.razor). Without it the server would fall back
-    // to following the OS and the app would flash the wrong theme for visitors who picked one.
-    persistCookie: true,
 });

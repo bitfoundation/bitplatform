@@ -6,42 +6,61 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitCalendar is a fully-featured inline calendar for browsing and selecting a single date, or a date and time when the built-in time picker is enabled.
-/// It offers day, month, and year views, day events, flexible day/week rules, any culture and time zone, and complete keyboard accessibility.
+/// It offers day, month and year grids - each of them operated with the arrow keys the way the WAI-ARIA grid pattern prescribes - day events with a details
+/// dialog, flexible day/week rules, header and footer slots, three sizes, and any culture and time zone, including the non-Gregorian ones.
 /// </summary>
 public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 {
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
+    private const int MAX_MONTH_COUNT = 3;
 
 
 
     private int _currentYear;
     private int _currentMonth;
+    private int _monthCount = 1;
     private bool _showYearPicker;
     private bool _showTimePicker;
     private bool _showMonthPicker;
     private bool _showEventModal;
-    private bool _focusAfterRender;
     private DateTime? _focusedDate;
+    private int? _focusedYearCell;
+    private int? _focusedMonthCell;
+    private string? _focusElementIdAfterRender;
+    private bool _focusTimePickerAfterRender;
+    private bool _eventModalFocusTrapped;
+    private bool _eventModalFocusStored;
     private DateOnly _eventModalDate;
     private HashSet<DateTime> _disabledDates = [];
     private HashSet<DateTime> _highlightedDates = [];
     private HashSet<DayOfWeek> _disabledDaysOfWeek = [];
-    private IReadOnlyList<BitCalendarEvent> _eventModalEvents = [];
     private Dictionary<DateOnly, List<BitCalendarEvent>> _eventsByDate = [];
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
-    private string _monthTitle = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
-    private readonly DateTime?[,] _daysOfCurrentMonth = new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+
+    // One grid, one title and one (year, month) pair per rendered month: a calendar showing a quarter at a
+    // time is the same day picker three times over, and everything each of them draws is read out of these
+    // by the index of its pane. The first of them is the month the navigation, the month picker and the
+    // year picker all work on - the rest follow it.
+    private string[] _monthTitles = [string.Empty];
+    private (int Year, int Month)[] _monthsOfView = [default];
+    private DateTime?[][,] _daysOfMonths = [new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK]];
+
+    // The parts of the event dialog that have to name one another: the surface the focus is trapped in and
+    // restored from, and the heading it takes its accessible name from.
+    private string _eventDialogId => $"{_Id}-event-dialog";
+    private string _eventDialogTitleId => $"{_Id}-event-dialog-title";
 
 
 
     private int _hour;
+    private int _hourBeforeInput;
     private int _hourView
     {
         get
@@ -63,17 +82,25 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         }
         set
         {
-            if (value > 23)
+            if (IsEnabled is false || ReadOnly) return;
+
+            _hourBeforeInput = _hour;
+
+            // The field is bound on every keystroke, so what lands here is whatever has been typed so far -
+            // the first digit of a two-digit hour among it. It is only brought into the day here; the
+            // HourStep grid is laid over it once the field is committed (HandleOnTimeInputChange), which is
+            // what lets 12 be typed into a picker whose step is 3.
+            if (TimeFormat == BitTimeFormat.TwelveHours)
             {
-                _hour = 23;
-            }
-            else if (value < 0)
-            {
-                _hour = 0;
+                // A value typed into the hour is an hour of the clock face (1-12), so it lands in the half of
+                // the day the picker is already on: typing 5 into an afternoon time means 17:00, not a silent
+                // flip to the morning - which half the time is in is what the AM/PM pair is there to change.
+                // Both 12 and 0 mean the top of the clock, which is hour zero of the half.
+                _hour = BitTimeSteps.Wrap(value, 12) + (_hour >= 12 ? 12 : 0);
             }
             else
             {
-                _hour = value;
+                _hour = Math.Clamp(value, 0, 23);
             }
 
             UpdateTime();
@@ -81,23 +108,18 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     }
 
     private int _minute;
+    private int _minuteBeforeInput;
     private int _minuteView
     {
         get => _minute;
         set
         {
-            if (value > 59)
-            {
-                _minute = 59;
-            }
-            else if (value < 0)
-            {
-                _minute = 0;
-            }
-            else
-            {
-                _minute = value;
-            }
+            if (IsEnabled is false || ReadOnly) return;
+
+            // Brought into the hour here and held to the MinuteStep grid on commit, for the same reason the
+            // hour above is.
+            _minuteBeforeInput = _minute;
+            _minute = Math.Clamp(value, 0, 59);
 
             UpdateTime();
         }
@@ -108,6 +130,24 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the calendar component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple calendar components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCalendarParams.ParamName)]
+    public BitCalendarParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Whether selecting the already selected day deselects it, clearing the value.
+    /// </summary>
+    [Parameter] public bool AllowDeselect { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitCalendar component.
@@ -151,17 +191,25 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
 
     /// <summary>
-    /// Disables every day after today, exactly as a <see cref="MaxDate"/> of today would.
+    /// Disables every day after today, exactly as a <see cref="MaxDate"/> of now would.
     /// When both are set, the earlier of the two bounds wins.
     /// </summary>
+    /// <remarks>
+    /// Today stays selectable, and a time picker on screen is held to the hours of it up to this very
+    /// minute: the bound is an instant, so a calendar refusing the future refuses the rest of today too.
+    /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool DisableFuture { get; set; }
 
     /// <summary>
-    /// Disables every day before today, exactly as a <see cref="MinDate"/> of today would.
+    /// Disables every day before today, exactly as a <see cref="MinDate"/> of now would.
     /// When both are set, the later of the two bounds wins.
     /// </summary>
+    /// <remarks>
+    /// Today stays selectable, and a time picker on screen is held to the hours of it from this very
+    /// minute on: the bound is an instant, so a calendar refusing the past refuses this morning too.
+    /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool DisablePast { get; set; }
@@ -177,9 +225,21 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public IEnumerable<DayOfWeek>? DisabledDaysOfWeek { get; set; }
 
     /// <summary>
-    /// The list of events to display on calendar days.
+    /// The list of events to display on calendar days. The events of a day are ordered the way an agenda of it
+    /// is: the all-day ones (which carry no start time) first, then the rest by the time they start at.
     /// </summary>
     [Parameter] public IEnumerable<BitCalendarEvent>? Events { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the close button of the event details dialog.
+    /// </summary>
+    [Parameter] public string EventDetailsCloseButtonTitle { get; set; } = "Close";
+
+    /// <summary>
+    /// Used to customize how an event is rendered in the details dialog, in place of its title, its time and
+    /// its body - the place for a link to whatever the event stands for in the application.
+    /// </summary>
+    [Parameter] public RenderFragment<BitCalendarEvent>? EventTemplate { get; set; }
 
     /// <summary>
     /// The text shown before the start time of an event when only a start time is present (e.g. "From 09:00").
@@ -192,6 +252,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string EventTimeUntilText { get; set; } = "Until";
 
     /// <summary>
+    /// Rendered under the pickers, inside the root of the calendar: the place for the actions a calendar is
+    /// often given of its own, such as a Clear button or a summary of the selection.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
     /// Overrides the first day of the week in the day picker. If not set, the first day of the week of the Culture is used.
     /// </summary>
     [Parameter]
@@ -200,7 +266,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     /// <summary>
     /// Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months,
-    /// to keep the calendar height fixed while navigating between months.
+    /// to keep the calendar height fixed while navigating between months. It is always on when <see cref="MonthCount"/>
+    /// renders more than one month, so the months keep an even height next to each other.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
@@ -210,6 +277,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Custom function to provide additional CSS classes for each day button of the calendar.
     /// </summary>
     [Parameter] public Func<DateTimeOffset, string?>? GetDayClass { get; set; }
+
+    /// <summary>
+    /// Rendered above the pickers, inside the root of the calendar: the place for a caption or a legend of
+    /// its own, before the day, month and year grids.
+    /// </summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
     /// The title of the Go to next month button (tooltip).
@@ -305,12 +378,18 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public bool HighlightSelectedMonth { get; set; }
 
     /// <summary>
+    /// Whether the day picker should highlight today's day. It only affects the visual style of the day
+    /// cell; the accessibility attributes still report the day as the current date.
+    /// </summary>
+    [Parameter] public bool HighlightToday { get; set; } = true;
+
+    /// <summary>
     /// The step, in hours, the spin buttons of the time picker move the hour by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 lays a grid over the day that every hour the buttons produce sits on, starting at
-    /// midnight, so a picker that only accepts times on a three-hour grid can say so. A time entered as text is
-    /// not held to it. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the day that every hour the picker produces sits on, starting at
+    /// midnight, so a picker that only accepts times on a three-hour grid can say so. The buttons, the keys and
+    /// what is typed into the hour are all held to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int HourStep { get; set; } = 1;
 
@@ -327,6 +406,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The maximum allowable date of the calendar.
     /// </summary>
+    /// <remarks>
+    /// The days after it are ruled out as a whole, and the day it itself falls on stays selectable. Where a
+    /// time picker is on screen, the time it carries bounds the hours of that day too, so the calendar
+    /// cannot produce an instant past the bound.
+    /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MaxDate { get; set; }
@@ -334,6 +418,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The minimum allowable date of the calendar.
     /// </summary>
+    /// <inheritdoc cref="MaxDate" path="/remarks"/>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MinDate { get; set; }
@@ -342,14 +427,28 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The step, in minutes, the spin buttons of the time picker move the minute by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 lays a grid over the hour that every minute the buttons produce sits on, starting
-    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. A time entered
-    /// as text is not held to it. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, starting
+    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. The buttons,
+    /// the keys and what is typed into the minute are all held to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
-    /// Used to customize how content inside the month cell is rendered. 
+    /// The number of consecutive months rendered side by side in the day picker (1 to 3), which turns the
+    /// calendar into a view of a whole season - the arrow keys, the selection and the events carry on
+    /// across the months of it.
+    /// </summary>
+    /// <remarks>
+    /// More than one month always renders six week rows, so the months keep an even height next to each
+    /// other, and never renders the days of the adjacent months, since each of them is a day of the pane
+    /// beside it. The months stack instead of overflowing when the width they are given cannot fit them.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(OnSetParameters))]
+    public int MonthCount { get; set; } = 1;
+
+    /// <summary>
+    /// Used to customize how content inside the month cell is rendered.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
 
@@ -403,6 +502,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
 
     /// <summary>
+    /// Whether the previous and next navigation buttons move the calendar by all of its rendered months
+    /// instead of one, so consecutive pages of a multi-month calendar never overlap.
+    /// It has no effect when <see cref="MonthCount"/> renders a single month.
+    /// </summary>
+    [Parameter] public bool PagedNavigation { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display in the Go to previous month button using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="PrevMonthNavIconName"/> when both are set.
     /// </summary>
@@ -436,7 +542,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string? PrevYearRangeNavIconName { get; set; }
 
     /// <summary>
-    /// The text of selected date aria-atomic of the calendar.
+    /// The template of the text a screen reader is given when the selection changes, where {0} is the selected
+    /// date written with the <see cref="DateFormat"/>. Nothing is announced while no date is selected.
     /// </summary>
     [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
 
@@ -451,6 +558,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
+    /// Whether clicking a day that carries events opens the dialog listing them.
+    /// The day is selected either way; turning this off leaves the events to the indicator, the tooltip and
+    /// whatever the page itself shows for the selected day.
+    /// </summary>
+    [Parameter] public bool ShowEventDetails { get; set; } = true;
+
+    /// <summary>
     /// Whether the month picker is shown or hidden.
     /// </summary>
     [Parameter]
@@ -460,10 +574,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether the days of the previous and next months should be shown in the day picker.
+    /// It has no effect when <see cref="MonthCount"/> renders more than one month, since those days would
+    /// then show up in two grids at once.
     /// </summary>
     [Parameter] public bool ShowOutsideDays { get; set; } = true;
 
@@ -477,7 +595,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show time picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display in the ShowTimePicker button using custom CSS classes for external icon libraries.
@@ -499,6 +619,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>
+    /// The size of the calendar, which scales its cells and their text.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Specifies the date and time of the calendar when it is showing without any selected value.
@@ -527,6 +653,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Gets or sets the name of the icon to display in the decrease-hour button from the built-in Fluent UI icons.
     /// </summary>
     [Parameter] public string? TimePickerDecreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's decrease-hour button.
+    /// </summary>
+    [Parameter] public string TimePickerDecreaseHourTitle { get; set; } = "Decrease hour";
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's decrease-minute button.
+    /// </summary>
+    [Parameter] public string TimePickerDecreaseMinuteTitle { get; set; } = "Decrease minute";
 
     /// <summary>
     /// Gets or sets the icon to display in the decrease-minute button using custom CSS classes for external icon libraries.
@@ -572,6 +708,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string? TimePickerIncreaseMinuteIconName { get; set; }
 
     /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's increase-hour button.
+    /// </summary>
+    [Parameter] public string TimePickerIncreaseHourTitle { get; set; } = "Increase hour";
+
+    /// <summary>
+    /// The title (tooltip) and the accessible name of the time-picker's increase-minute button.
+    /// </summary>
+    [Parameter] public string TimePickerIncreaseMinuteTitle { get; set; } = "Increase minute";
+
+    /// <summary>
     /// TimeZone for the DatePicker.
     /// </summary>
     [Parameter]
@@ -587,6 +733,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The rule used to calculate the week numbers. Defaults to the FirstFullWeek rule.
     /// </summary>
     [Parameter] public CalendarWeekRule? WeekNumberRule { get; set; }
+
+    /// <summary>
+    /// The accessible name of the empty column header above the week numbers.
+    /// </summary>
+    [Parameter] public string WeekNumbersHeaderTitle { get; set; } = "Week";
 
     /// <summary>
     /// The title of the week number (tooltip).
@@ -618,6 +769,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-cal"));
 
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-cal"));
+
+        // A strip of months is given the width of all of them, so it says it is one: what it is given is not
+        // always what it asks for, and the months then stack instead of overflowing whatever holds them.
+        ClassBuilder.Register(() => Math.Clamp(MonthCount, 1, MAX_MONTH_COUNT) > 1 ? "bit-cal-mcv" : null);
+
         // A culture that writes right to left implies the direction of the calendar as well, so one that was
         // given no explicit Dir still lays itself out the way its culture reads.
         ClassBuilder.Register(() => BitCssClasses.CultureRtl(Dir, _culture));
@@ -639,12 +796,22 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCalendarParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         BuildEventsLookup();
         BuildDatesLookups();
+
+        // The dialog lists the events of its day, so it goes away with the last of them - a page that clears
+        // the events of the visible month is not left with an empty dialog over its calendar.
+        if (_showEventModal && GetEventModalEvents().Count == 0)
+        {
+            CloseEventModal();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -662,16 +829,74 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        if (_focusAfterRender && _focusedDate.HasValue)
+        // The cell the keyboard moved to, which can be in a month - or in a whole picker - that was not on
+        // screen when the key was pressed, so the focus is placed after the render that brought it there.
+        if (_focusElementIdAfterRender.HasValue())
         {
-            _focusAfterRender = false;
+            var elementId = _focusElementIdAfterRender!;
+            _focusElementIdAfterRender = null;
 
             try
             {
-                await _js.BitCalendarsFocusCell(GetDayButtonId(_focusedDate.Value));
+                await _js.BitCalendarsFocusCell(elementId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
+
+        if (_focusTimePickerAfterRender)
+        {
+            _focusTimePickerAfterRender = false;
+
+            try
+            {
+                await _inputTimeHourRef.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        await SyncEventDialogFocus();
+    }
+
+    /// <summary>
+    /// Gives focus to the calendar: the day of the day grid that is in the tab sequence, or the month, the
+    /// year or the hour input when the day grid is not the picker on screen.
+    /// </summary>
+    /// <remarks>
+    /// The calendar renders no input element of its own - what the keyboard operates is a grid of buttons -
+    /// so this overrides the base implementation rather than focusing a field.
+    /// </remarks>
+    public override ValueTask FocusAsync() => FocusAsync(false);
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <param name="preventScroll">Whether the browser should refrain from scrolling the newly focused cell
+    /// into view.</param>
+    public override async ValueTask FocusAsync(bool preventScroll)
+    {
+        MoveFocusToTheVisiblePicker();
+
+        if (_focusElementIdAfterRender.HasValue())
+        {
+            var elementId = _focusElementIdAfterRender!;
+            _focusElementIdAfterRender = null;
+
+            try
+            {
+                await _js.BitCalendarsFocusCell(elementId, preventScroll);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            return;
+        }
+
+        if (_focusTimePickerAfterRender is false) return;
+
+        _focusTimePickerAfterRender = false;
+
+        try
+        {
+            await _inputTimeHourRef.FocusAsync(preventScroll);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -704,38 +929,65 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
 
 
+    // A value the user just picked is not a parameter change: the pickers that are on screen stay on screen.
+    // Recomputing them here would close the time picker overlay on the first press of a spin button, and take
+    // the month overlay away from under a selection made in it.
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        OnSetParameters();
+        OnSetParameters(resetPickers: false);
     }
 
-    private void OnSetParameters()
+    // Internal rather than private so that BitCalendarParams can run the pass again after it has filled in the
+    // parameters the view is built from: the cascade reaches the component after OnInitialized has already run it.
+    internal void OnSetParameters() => OnSetParameters(true);
+
+    private void OnSetParameters(bool resetPickers)
     {
-        _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
-        _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
+        if (resetPickers)
+        {
+            _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
+            _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
+        }
 
         _timeZone = TimeZone ?? TimeZoneInfo.Local;
         _culture = Culture ?? CultureInfo.CurrentUICulture;
+        _monthCount = Math.Clamp(MonthCount, 1, MAX_MONTH_COUNT);
 
-        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(Today ?? DateTimeOffset.Now));
+        var value = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(GetNow()));
 
+        // Everything the calendar shows - the month it opens on, the time in the time picker - belongs to the
+        // TimeZone of the component, not to the offset the value happens to carry.
+        var dateTime = GetDateTime(value);
+
+        // The bounds rule out days rather than instants, the way every other comparison against them does, so
+        // a value falling on the MinDate's or the MaxDate's own day is already in range: comparing the two as
+        // instants would pull today's midnight up to a DisablePast bound of now and overwrite the time of day
+        // with the bound's on every value the user picks.
         var minDate = GetMinDate();
-        var maxDate = GetMaxDate();
-
-        if (minDate.HasValue && minDate > dateTime)
+        if (minDate.HasValue && GetDateTime(minDate.Value).Date > dateTime.Date)
         {
-            dateTime = minDate.Value;
+            dateTime = GetDateTime(minDate.Value);
         }
 
-        if (maxDate.HasValue && maxDate < dateTime)
+        var maxDate = GetMaxDate();
+        if (maxDate.HasValue && GetDateTime(maxDate.Value).Date < dateTime.Date)
         {
-            dateTime = maxDate.Value;
+            dateTime = GetDateTime(maxDate.Value);
         }
 
         _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
         _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
 
-        GenerateCalendarData(dateTime.DateTime);
+        // A value falling inside the months already on screen leaves the view where it is: a calendar
+        // showing a season is not paged by picking a day of its second or its third month.
+        if (_monthCount > 1 && _monthsOfView.Length == _monthCount && IsInDisplayedMonths(dateTime.Date))
+        {
+            GenerateMonthData(_currentYear, _currentMonth);
+        }
+        else
+        {
+            GenerateCalendarData(dateTime);
+        }
     }
 
     private async Task SelectDate(DateTime selectedDate)
@@ -747,19 +999,61 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
 
+        // Selecting the selected day again deselects it (AllowDeselect), leaving the calendar on the month
+        // the user is looking at rather than jumping back onto today the way an emptied value otherwise would.
+        if (AllowDeselect && IsSelectedDate(selectedDate))
+        {
+            // Emptying the value runs the whole of OnSetParameters, which rebuilds the view around today (or
+            // around StartingValue) - the displayed month, the range the year picker offers and the time in
+            // the time picker alike. None of that is what the user asked for by clearing a day, so all of it
+            // is put back: what a deselection changes is the value and nothing else.
+            var hour = _hour;
+            var minute = _minute;
+            var yearPickerEndYear = _yearPickerEndYear;
+            var yearPickerStartYear = _yearPickerStartYear;
+
+            _focusedDate = selectedDate;
+
+            CurrentValue = null;
+
+            _hour = hour;
+            _minute = minute;
+            _currentYear = previousYear;
+            _currentMonth = previousMonth;
+            _yearPickerEndYear = yearPickerEndYear;
+            _yearPickerStartYear = yearPickerStartYear;
+
+            GenerateMonthData(_currentYear, _currentMonth);
+
+            await OnSelectDate.InvokeAsync(CurrentValue);
+
+            return;
+        }
+
         _focusedDate = selectedDate;
+
+        // The time the picker is holding travels onto the day being selected, where a bound carrying a time
+        // of day can allow less of it than the day it came from did - the morning of a calendar bounded at
+        // "now", for one. So it arrives inside what this day allows rather than pushing the value past it.
+        ClampTimeToBounds(selectedDate);
 
         selectedDate = selectedDate.AddHours(_hour);
         selectedDate = selectedDate.AddMinutes(_minute);
 
         CurrentValue = new DateTimeOffset(selectedDate, _timeZone.GetUtcOffset(selectedDate));
 
-        _currentYear = _culture.Calendar.GetYear(selectedDate);
-        _currentMonth = _culture.Calendar.GetMonth(selectedDate);
+        // A day of a month the view already shows leaves the view where it is - which is what keeps a
+        // multi-month calendar still while its second and third months are picked from. Only a day outside
+        // of them, one of the adjacent months filling the grid, scrolls the calendar onto its own month.
+        if (IsInDisplayedMonths(selectedDate.Date) is false)
+        {
+            _currentYear = _culture.Calendar.GetYear(selectedDate);
+            _currentMonth = _culture.Calendar.GetMonth(selectedDate);
+        }
 
         if (_currentYear != previousYear || _currentMonth != previousMonth)
         {
-            _focusAfterRender = true;
+            _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
         }
 
         GenerateMonthData(_currentYear, _currentMonth);
@@ -778,6 +1072,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var previousMonth = _currentMonth;
 
         _currentMonth = month;
+        _focusedMonthCell = month;
 
         GenerateMonthData(_currentYear, _currentMonth);
 
@@ -801,9 +1096,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         ChangeYearRanges(_currentYear - 1);
 
+        ClampCurrentMonthToYear();
+
         GenerateMonthData(_currentYear, _currentMonth);
 
         ToggleBetweenMonthAndYearPicker();
+
+        // The year that was activated goes away with the year grid, so the focus is handed to the month grid
+        // that replaces it - otherwise a keyboard selection drops the focus onto the body.
+        FocusMonthCell(GetFocusableMonth());
 
         await NotifyMonthChange(previousYear, previousMonth);
     }
@@ -813,6 +1114,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return;
 
         _showYearPicker = !_showYearPicker;
+
+        // The grid that comes into view starts its roving tabindex over, on the month or the year the
+        // calendar is actually displaying, rather than on wherever the keyboard left it last time.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
     }
 
     private async Task HandleMonthChange(bool isNext)
@@ -823,29 +1129,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
 
-        if (isNext)
+        // With PagedNavigation the calendar moves a whole page of months at once, but never past the point
+        // where the single-month navigation would have stopped.
+        var steps = PagedNavigation ? _monthCount : 1;
+
+        for (var i = 0; i < steps; i++)
         {
-            if (_currentMonth < 12)
-            {
-                _currentMonth++;
-            }
-            else
-            {
-                _currentYear++;
-                _currentMonth = 1;
-            }
-        }
-        else
-        {
-            if (_currentMonth > 1)
-            {
-                _currentMonth--;
-            }
-            else
-            {
-                _currentYear--;
-                _currentMonth = 12;
-            }
+            if (i > 0 && CanChangeMonth(isNext) is false) break;
+
+            (_currentYear, _currentMonth) = AddCalendarMonths(_currentYear, _currentMonth, isNext ? 1 : -1);
         }
 
         GenerateMonthData(_currentYear, _currentMonth);
@@ -862,6 +1154,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var previousMonth = _currentMonth;
 
         _currentYear += isNext ? +1 : -1;
+
+        ClampCurrentMonthToYear();
 
         GenerateMonthData(_currentYear, _currentMonth);
 
@@ -887,6 +1181,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         GenerateCalendarData(GetToday());
 
+        // The month and the year the roving tabindex was left on are not the ones on screen any more, so the
+        // grids start it over on what they now display.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
+
         await NotifyMonthChange(previousYear, previousMonth);
     }
 
@@ -900,13 +1199,29 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         _hour = now.Hour;
         _minute = now.Minute;
 
+        // "Now" is a time like any other the picker produces, so the bounds have the same say over it.
+        ClampTimeToBounds();
+
         UpdateTime();
     }
 
     private void GenerateCalendarData(DateTime dateTime)
     {
-        _currentMonth = _culture.Calendar.GetMonth(dateTime);
-        _currentYear = _culture.Calendar.GetYear(dateTime);
+        var calendar = _culture.Calendar;
+
+        // A date the culture's calendar does not support has no year or month to be read off it, so the view
+        // opens on the nearest date it does - the Hebrew calendar of .NET, for one, starts in 1583.
+        if (dateTime < calendar.MinSupportedDateTime)
+        {
+            dateTime = calendar.MinSupportedDateTime;
+        }
+        else if (dateTime > calendar.MaxSupportedDateTime)
+        {
+            dateTime = calendar.MaxSupportedDateTime;
+        }
+
+        _currentMonth = calendar.GetMonth(dateTime);
+        _currentYear = calendar.GetYear(dateTime);
 
         _yearPickerStartYear = _currentYear - 1;
         _yearPickerEndYear = _currentYear + 10;
@@ -914,74 +1229,297 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         GenerateMonthData(_currentYear, _currentMonth);
     }
 
+    // Fills the grid of every rendered month, starting from the given one.
     private void GenerateMonthData(int year, int month)
     {
-        _monthTitle = $"{_culture.DateTimeFormat.GetMonthName(month)} {year}";
+        // The last page of a multi-month view is a full one. A start so late that the months following it
+        // are past the end of the calendar would repeat the last of them - two panes of the same month,
+        // down to the ids of its days - so the view is pulled back far enough to hold as many as it shows.
+        if (_monthCount > 1)
+        {
+            var (maxYear, maxMonth) = GetMaxCalendarYearMonth();
+            var (latestStartYear, latestStartMonth) = AddCalendarMonths(maxYear, maxMonth, -(_monthCount - 1));
 
+            if (CompareYearMonth(year, month, latestStartYear, latestStartMonth) > 0)
+            {
+                (year, month) = (latestStartYear, latestStartMonth);
+                (_currentYear, _currentMonth) = (year, month);
+            }
+        }
+
+        if (_daysOfMonths.Length != _monthCount)
+        {
+            _daysOfMonths = new DateTime?[_monthCount][,];
+            for (var i = 0; i < _monthCount; i++)
+            {
+                _daysOfMonths[i] = new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+            }
+
+            _monthTitles = new string[_monthCount];
+            _monthsOfView = new (int, int)[_monthCount];
+        }
+
+        for (var i = 0; i < _monthCount; i++)
+        {
+            var (y, m) = AddCalendarMonths(year, month, i);
+
+            GenerateSingleMonthData(i, y, m);
+        }
+    }
+
+    // Walks the (year, month) pair the given number of months forward or backward, through the months of
+    // the culture's own calendar: a leap year of the Hebrew calendar has thirteen of them, so the count of
+    // each year is asked for rather than assumed. A pair that walks off the supported range comes back
+    // resting on its edge, the way every other move of the calendar does.
+    private (int Year, int Month) AddCalendarMonths(int year, int month, int offset)
+    {
+        var (minYear, minMonth) = GetMinCalendarYearMonth();
+        var (maxYear, maxMonth) = GetMaxCalendarYearMonth();
+
+        for (var i = 0; i < Math.Abs(offset); i++)
+        {
+            if (offset > 0)
+            {
+                if (year > maxYear || (year == maxYear && month >= maxMonth)) return (maxYear, maxMonth);
+
+                if (month < GetMonthsInYear(year))
+                {
+                    month++;
+                }
+                else
+                {
+                    year++;
+                    month = 1;
+                }
+            }
+            else
+            {
+                if (year < minYear || (year == minYear && month <= minMonth)) return (minYear, minMonth);
+
+                if (month > 1)
+                {
+                    month--;
+                }
+                else
+                {
+                    year--;
+                    month = GetMonthsInYear(year);
+                }
+            }
+        }
+
+        return (year, month);
+    }
+
+    private void GenerateSingleMonthData(int monthIndex, int year, int month)
+    {
+        _monthsOfView[monthIndex] = (year, month);
+        _monthTitles[monthIndex] = $"{GetMonthName(year, month)} {year}";
+
+        var days = _daysOfMonths[monthIndex];
         var calendar = _culture.Calendar;
-        var firstDayOfMonth = new DateTime(year, month, 1, calendar);
         int daysInMonth = calendar.GetDaysInMonth(year, month);
-        int dayOfWeek = (int)calendar.GetDayOfWeek(firstDayOfMonth);
         int firstDayOfWeek = (int)GetFirstDayOfWeek();
+        int dayOfWeek;
+
+        var firstDayOfMonth = TryCreateDate(year, month, 1);
+        if (firstDayOfMonth.HasValue)
+        {
+            dayOfWeek = (int)calendar.GetDayOfWeek(firstDayOfMonth.Value);
+        }
+        else
+        {
+            // The first supported month of a calendar does not have to start at its first day (the minimum
+            // of the Hebrew calendar falls in the middle of a month), so the weekday of the unrepresentable
+            // first day is walked back from the first day the calendar does support.
+            var minDate = calendar.MinSupportedDateTime;
+            dayOfWeek = ((int)calendar.GetDayOfWeek(minDate) - (calendar.GetDayOfMonth(minDate) - 1)) % 7;
+            if (dayOfWeek < 0)
+            {
+                dayOfWeek += 7;
+            }
+        }
 
         // Adjust dayOfWeek to match the culture's first day of week
         dayOfWeek = (dayOfWeek - firstDayOfWeek + 7) % 7;
 
-        DateTime previousMonth;
-        if (month == 1)
-        {
-            previousMonth = new(year - 1, 12, 1);
-        }
-        else
-        {
-            previousMonth = new(year, month - 1, 1);
-        }
-        int daysInPreviousMonth = calendar.GetDaysInMonth(previousMonth.Year, previousMonth.Month);
+        // The adjacent months are kept as plain year/month numbers of the culture's own calendar: a DateTime
+        // built out of them would be a Gregorian date of a year that calendar never had, and a thirteenth
+        // month - which a leap year of the Hebrew calendar does have - has no Gregorian counterpart at all.
+        int monthsInYear = calendar.GetMonthsInYear(year);
 
-        DateTime nextMonth;
-        if (month == 12)
+        int previousYear = month == 1 ? year - 1 : year;
+        int previousMonth;
+        int daysInPreviousMonth;
+        if (previousYear < GetMinCalendarYearMonth().Year)
         {
-            nextMonth = new(year + 1, 1, 1);
+            // The year before the calendar's first year cannot be asked anything - every one of its days
+            // comes out as an empty cell anyway, so any day numbers at all do for the counting.
+            previousMonth = 1;
+            daysInPreviousMonth = dayOfWeek;
         }
         else
         {
-            nextMonth = new(year, month + 1, 1);
+            previousMonth = month == 1 ? calendar.GetMonthsInYear(previousYear) : month - 1;
+            daysInPreviousMonth = calendar.GetDaysInMonth(previousYear, previousMonth);
         }
+
+        int nextYear = month == monthsInYear ? year + 1 : year;
+        int nextMonth = month == monthsInYear ? 1 : month + 1;
 
         int day = daysInPreviousMonth - dayOfWeek + 1;
 
-        for (int i = 0; i < 1; i++)
+        for (int j = 0; j < dayOfWeek; j++)
         {
-            for (int j = 0; j < dayOfWeek; j++)
-            {
-                _daysOfCurrentMonth[i, j] = new(previousMonth.Year, previousMonth.Month, day, calendar);
-                day++;
-            }
+            days[0, j] = TryCreateDate(previousYear, previousMonth, day);
+            day++;
         }
 
         day = 1;
         var ended = false;
-        for (int i = 0; i < 6; i++)
+        // Months of unequal height would make a multi-month strip ragged, so the six rows are always laid
+        // out there even when FixedWeeks is off.
+        var fixedWeeks = FixedWeeks || _monthCount > 1;
+        for (int i = 0; i < DEFAULT_WEEK_COUNT; i++)
         {
-            for (int j = 0; j < 7; j++)
+            for (int j = 0; j < DEFAULT_DAY_COUNT_PER_WEEK; j++)
             {
                 if (i == 0 && j < dayOfWeek) continue;
 
                 if (day <= daysInMonth)
                 {
-                    _daysOfCurrentMonth[i, j] = new(year, month, day, calendar);
+                    days[i, j] = TryCreateDate(year, month, day);
                     day++;
                 }
                 else
                 {
-                    if (j == 0 && FixedWeeks is false)
+                    if (j == 0 && fixedWeeks is false)
                     {
                         ended = true;
                     }
-                    _daysOfCurrentMonth[i, j] = ended ? null : new(nextMonth.Year, nextMonth.Month, day - daysInMonth, calendar);
+                    days[i, j] = ended ? null : TryCreateDate(nextYear, nextMonth, day - daysInMonth);
                     day++;
                 }
             }
+        }
+    }
+
+    // A day at the very edge of the calendar - the days around its first and last supported months - cannot
+    // be represented as a DateTime at all, so it becomes an empty cell instead of an exception.
+    private DateTime? TryCreateDate(int year, int month, int day)
+    {
+        try
+        {
+            return new DateTime(year, month, day, _culture.Calendar);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    // The first day of a month at the very edge of the calendar's supported range does not have to be
+    // representable (the range of the Hebrew calendar starts in the middle of a month), so the nearest day
+    // the calendar does support stands in for it.
+    private DateTime GetFirstDayOfMonthOrClamp(int year, int month)
+    {
+        var date = TryCreateDate(year, month, 1);
+        if (date.HasValue) return date.Value;
+
+        var calendar = _culture.Calendar;
+        var (minYear, minMonth) = GetMinCalendarYearMonth();
+
+        return year == minYear && month <= minMonth
+            ? calendar.MinSupportedDateTime.Date
+            : calendar.MaxSupportedDateTime.Date;
+    }
+
+    // DateTime is bounded to the years 1 through 9999 of the Gregorian calendar, and some calendars support
+    // even less, so everything the navigation can reach is bounded by the calendar's own range the same way
+    // MinDate and MaxDate bound it.
+    private (int Year, int Month) GetMinCalendarYearMonth()
+    {
+        var calendar = _culture.Calendar;
+        var minDate = calendar.MinSupportedDateTime;
+
+        return (calendar.GetYear(minDate), calendar.GetMonth(minDate));
+    }
+
+    /// <inheritdoc cref="GetMinCalendarYearMonth"/>
+    private (int Year, int Month) GetMaxCalendarYearMonth()
+    {
+        var calendar = _culture.Calendar;
+        var maxDate = calendar.MaxSupportedDateTime;
+
+        return (calendar.GetYear(maxDate), calendar.GetMonth(maxDate));
+    }
+
+    private int GetMonthsInCurrentYear()
+    {
+        // Not every calendar has twelve months: a leap year of the Hebrew calendar has thirteen.
+        return GetMonthsInYear(_currentYear);
+    }
+
+    /// <inheritdoc cref="GetMonthsInCurrentYear"/>
+    private int GetMonthsInYear(int year)
+    {
+        return _culture.Calendar.GetMonthsInYear(year);
+    }
+
+    // A culture whose month names are the thirteen of a Hebrew leap year names the months of a common year
+    // one place further along that table from the seventh on - the thirteenth name is the second Adar, which
+    // a common year does not have. .NET's own formatter makes the same shift, so a month read off the names
+    // directly would be spelled differently from the very date the calendar is showing.
+    private string GetMonthName(int year, int month) => _culture.DateTimeFormat.GetMonthName(GetMonthNameIndex(year, month));
+
+    /// <inheritdoc cref="GetMonthName"/>
+    private string GetAbbreviatedMonthName(int year, int month) => _culture.DateTimeFormat.GetAbbreviatedMonthName(GetMonthNameIndex(year, month));
+
+    /// <inheritdoc cref="GetMonthName"/>
+    private int GetMonthNameIndex(int year, int month)
+    {
+        if (month < 7) return month;
+
+        // Only a culture whose table really does hold thirteen names shifts: everywhere else the thirteenth
+        // entry is the empty string every DateTimeFormatInfo pads its twelve names with.
+        var monthNames = _culture.DateTimeFormat.MonthNames;
+        if (monthNames.Length < 13 || monthNames[12].HasNoValue()) return month;
+
+        return GetMonthsInYear(year) == 13 ? month : month + 1;
+    }
+
+    private bool IsWeekRowEmpty(int monthIndex, int weekIndex)
+    {
+        for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+        {
+            if (_daysOfMonths[monthIndex][weekIndex, day].HasValue) return false;
+        }
+
+        return true;
+    }
+
+    // Moving to another year of a calendar whose years do not all have the same number of months (the Hebrew
+    // one) can leave the displayed month past the end of the year that is now displayed - and moving to the
+    // first or the last supported year can leave it past the supported part of that year.
+    private void ClampCurrentMonthToYear()
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+
+        if (_currentMonth > monthsInYear)
+        {
+            _currentMonth = monthsInYear;
+        }
+
+        var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
+        if (_currentYear == minCalendarYear && _currentMonth < minCalendarMonth)
+        {
+            _currentMonth = minCalendarMonth;
+        }
+
+        var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
+        if (_currentYear == maxCalendarYear && _currentMonth > maxCalendarMonth)
+        {
+            _currentMonth = maxCalendarMonth;
         }
     }
 
@@ -1031,56 +1569,158 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return (DayOfWeek)dayOfWeek;
     }
 
-    private int GetWeekNumber(int weekIndex)
+    // The single letter each weekday column is headed with, taken off the culture's shortest day name. A
+    // culture is free to leave those empty, which would be an index out of range, and the first character of
+    // one that is written as a surrogate pair is two of them - half of it is not a character at all.
+    private static string GetNarrowDayName(string name)
     {
-        return _culture.Calendar.GetWeekOfYear(_daysOfCurrentMonth[weekIndex, 0]!.Value, WeekNumberRule ?? CalendarWeekRule.FirstFullWeek, GetFirstDayOfWeek());
+        if (name.HasNoValue()) return string.Empty;
+
+        return char.IsHighSurrogate(name[0]) && name.Length > 1 ? name[..2] : name[..1];
+    }
+
+    private int GetWeekNumber(int monthIndex, int weekIndex)
+    {
+        // The first cells of the week can be empty at the very edge of the calendar's supported range, so the
+        // number of the week is read off the first day of it that actually exists.
+        var date = _daysOfMonths[monthIndex][weekIndex, 0];
+        for (var day = 1; date.HasValue is false && day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+        {
+            date = _daysOfMonths[monthIndex][weekIndex, day];
+        }
+
+        return _culture.Calendar.GetWeekOfYear(date!.Value, WeekNumberRule ?? CalendarWeekRule.FirstFullWeek, GetFirstDayOfWeek());
     }
 
     private void ToggleMonthPickerOverlay()
     {
         _showMonthPicker = !_showMonthPicker;
+
+        // Each toggle swaps one whole picker for another, taking the button that was activated out of the DOM
+        // with it, so the focus has to be handed over to the picker that takes its place.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
+
+        MoveFocusToTheVisiblePicker();
     }
 
     private void ToggleTimePickerOverlay()
     {
         _showTimePicker = !_showTimePicker;
+
+        MoveFocusToTheVisiblePicker();
+    }
+
+    // A picker laid over the day grid is a surface the keyboard was sent into, so Escape is what leaves it -
+    // the same way it leaves every other dismissible surface in the library - and the day grid underneath
+    // takes the focus back. A picker that sits beside the day grid is not covering anything and stays put.
+    private void DismissMonthPickerOverlay()
+    {
+        if (ShowMonthPickerAsOverlay is false && (ShowTimePicker && ShowTimePickerAsOverlay is false) is false) return;
+
+        ToggleMonthPickerOverlay();
+    }
+
+    /// <inheritdoc cref="DismissMonthPickerOverlay"/>
+    private void HandleTimePickerKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (e.Key is not "Escape") return;
+        if (ShowTimePickerAsOverlay is false) return;
+
+        ToggleTimePickerOverlay();
+    }
+
+    private void MoveFocusToTheVisiblePicker()
+    {
+        if (DayPickerIsVisible())
+        {
+            _focusedDate = GetFocusableDay();
+            _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
+        }
+        else if (MonthPickerIsVisible() && _showYearPicker is false)
+        {
+            FocusMonthCell(GetFocusableMonth());
+        }
+        else if (MonthPickerIsVisible())
+        {
+            FocusYearCell(GetFocusableYear());
+        }
+        else if (_showTimePicker)
+        {
+            // Nothing but the time picker is left on screen, so its hour input is where the focus goes.
+            _focusTimePickerAfterRender = true;
+        }
     }
 
     private bool CanChangeMonth(bool isNext)
     {
         if (IsEnabled is false) return false;
 
-        var maxDate = GetMaxDate();
-        if (isNext && maxDate.HasValue)
+        if (isNext)
         {
-            var maxDateYear = _culture.Calendar.GetYear(maxDate.Value.DateTime);
-            var maxDateMonth = _culture.Calendar.GetMonth(maxDate.Value.DateTime);
+            // What the next button runs into is the last month of the view rather than the first: a
+            // calendar showing a quarter has already reached the bound once its third pane is on it.
+            var (lastYear, lastMonth) = GetLastDisplayedMonth();
 
-            if (maxDateYear == _currentYear && maxDateMonth == _currentMonth) return false;
+            var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
+            if (CompareYearMonth(lastYear, lastMonth, maxCalendarYear, maxCalendarMonth) >= 0) return false;
+
+            var max = GetMaxDate();
+            if (max.HasValue)
+            {
+                var maxDate = GetDateTime(max.Value);
+                var maxDateYear = _culture.Calendar.GetYear(maxDate);
+                var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
+
+                if (CompareYearMonth(lastYear, lastMonth, maxDateYear, maxDateMonth) >= 0) return false;
+            }
         }
-
-        var minDate = GetMinDate();
-        if (isNext is false && minDate.HasValue)
+        else
         {
-            var minDateYear = _culture.Calendar.GetYear(minDate.Value.DateTime);
-            var minDateMonth = _culture.Calendar.GetMonth(minDate.Value.DateTime);
+            var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
+            if (CompareYearMonth(_currentYear, _currentMonth, minCalendarYear, minCalendarMonth) <= 0) return false;
 
-            if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
+            var min = GetMinDate();
+            if (min.HasValue)
+            {
+                var minDate = GetDateTime(min.Value);
+                var minDateYear = _culture.Calendar.GetYear(minDate);
+                var minDateMonth = _culture.Calendar.GetMonth(minDate);
+
+                if (CompareYearMonth(_currentYear, _currentMonth, minDateYear, minDateMonth) <= 0) return false;
+            }
         }
 
         return true;
+    }
+
+    // The month of the last pane of the day picker, which is the one the next button runs into.
+    private (int Year, int Month) GetLastDisplayedMonth()
+    {
+        return _monthCount == 1 ? (_currentYear, _currentMonth) : AddCalendarMonths(_currentYear, _currentMonth, _monthCount - 1);
+    }
+
+    // Two months of the same calendar in order, so a bound that falls anywhere before or after the view -
+    // not only on the very month it is showing - stops the navigation.
+    private static int CompareYearMonth(int year, int month, int otherYear, int otherMonth)
+    {
+        return year != otherYear ? year.CompareTo(otherYear) : month.CompareTo(otherMonth);
     }
 
     private bool CanChangeYear(bool isNext)
     {
         if (IsEnabled is false) return false;
 
+        if (isNext && _currentYear >= GetMaxCalendarYearMonth().Year) return false;
+        if (isNext is false && _currentYear <= GetMinCalendarYearMonth().Year) return false;
+
         var maxDate = GetMaxDate();
         var minDate = GetMinDate();
 
         return (
-                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(maxDate.Value.DateTime) == _currentYear) ||
-                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(minDate.Value.DateTime) == _currentYear)
+                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) == _currentYear) ||
+                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(GetDateTime(minDate.Value)) == _currentYear)
                ) is false;
     }
 
@@ -1088,12 +1728,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return false;
 
+        if (isNext && GetMaxCalendarYearMonth().Year < _yearPickerStartYear + 12) return false;
+        if (isNext is false && GetMinCalendarYearMonth().Year >= _yearPickerStartYear) return false;
+
         var maxDate = GetMaxDate();
         var minDate = GetMinDate();
 
         return (
-                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(maxDate.Value.DateTime) < _yearPickerStartYear + 12) ||
-                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(minDate.Value.DateTime) >= _yearPickerStartYear)
+                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) < _yearPickerStartYear + 12) ||
+                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(GetDateTime(minDate.Value)) >= _yearPickerStartYear)
                ) is false;
     }
 
@@ -1102,27 +1745,17 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return Today ?? DateTimeOffset.Now;
     }
 
-    // Today as a whole day in the time zone of the component: the days it is compared against carry no
-    // time of day, so a bound taken from the current instant would place today on the wrong side of it.
-    private (DateTimeOffset start, DateTimeOffset end) GetTodayBounds()
-    {
-        var today = GetDateTime(GetNow()).Date;
-
-        var start = new DateTimeOffset(today, _timeZone.GetUtcOffset(today));
-
-        return (start, start.AddDays(1).AddTicks(-1));
-    }
-
     // DisablePast and DisableFuture bound the selectable days by today exactly the way MinDate and MaxDate
     // do, so every consumer of the allowed range reads the bounds through these two accessors. Where both
-    // apply, the narrower of the two wins. Today itself stays selectable under either of them.
+    // apply, the narrower of the two wins. Today itself stays selectable under either of them, since every
+    // comparison below weighs a whole day rather than an instant.
     private DateTimeOffset? GetMinDate()
     {
         if (DisablePast is false) return MinDate;
 
-        var startOfToday = GetTodayBounds().start;
+        var now = GetNow();
 
-        return MinDate.HasValue && MinDate.Value > startOfToday ? MinDate : startOfToday;
+        return MinDate.HasValue && MinDate.Value > now ? MinDate : now;
     }
 
     /// <inheritdoc cref="GetMinDate"/>
@@ -1130,23 +1763,25 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (DisableFuture is false) return MaxDate;
 
-        var endOfToday = GetTodayBounds().end;
+        var now = GetNow();
 
-        return MaxDate.HasValue && MaxDate.Value < endOfToday ? MaxDate : endOfToday;
+        return MaxDate.HasValue && MaxDate.Value < now ? MaxDate : now;
     }
 
+    // Every caller weighs a day of the calendar, so the comparison is day against day: a MinDate that carries
+    // a time of day rules out the days before it, not the day it itself falls on.
     private bool IsWeekDayOutOfMinAndMaxDate(DateTime date)
     {
         var maxDate = GetMaxDate();
         if (maxDate.HasValue)
         {
-            if (date > GetDateTime(maxDate.Value)) return true;
+            if (date.Date > GetDateTime(maxDate.Value).Date) return true;
         }
 
         var minDate = GetMinDate();
         if (minDate.HasValue)
         {
-            if (date < GetDateTime(minDate.Value)) return true;
+            if (date.Date < GetDateTime(minDate.Value).Date) return true;
         }
 
         return false;
@@ -1154,20 +1789,30 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool IsMonthOutOfMinAndMaxDate(int month)
     {
-        var maxDate = GetMaxDate();
-        if (maxDate.HasValue)
+        // The supported range of the calendar itself bounds the selection the same way MinDate and MaxDate do:
+        // a month past its edge has no representable days at all.
+        var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
+        if (_currentYear < minCalendarYear || (_currentYear == minCalendarYear && month < minCalendarMonth)) return true;
+
+        var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
+        if (_currentYear > maxCalendarYear || (_currentYear == maxCalendarYear && month > maxCalendarMonth)) return true;
+
+        var max = GetMaxDate();
+        if (max.HasValue)
         {
-            var maxDateYear = _culture.Calendar.GetYear(maxDate.Value.DateTime);
-            var maxDateMonth = _culture.Calendar.GetMonth(maxDate.Value.DateTime);
+            var maxDate = GetDateTime(max.Value);
+            var maxDateYear = _culture.Calendar.GetYear(maxDate);
+            var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
 
             if (_currentYear > maxDateYear || (_currentYear == maxDateYear && month > maxDateMonth)) return true;
         }
 
-        var minDate = GetMinDate();
-        if (minDate.HasValue)
+        var min = GetMinDate();
+        if (min.HasValue)
         {
-            var minDateYear = _culture.Calendar.GetYear(minDate.Value.DateTime);
-            var minDateMonth = _culture.Calendar.GetMonth(minDate.Value.DateTime);
+            var minDate = GetDateTime(min.Value);
+            var minDateYear = _culture.Calendar.GetYear(minDate);
+            var minDateMonth = _culture.Calendar.GetMonth(minDate);
 
             if (_currentYear < minDateYear || (_currentYear == minDateYear && month < minDateMonth)) return true;
         }
@@ -1180,11 +1825,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var maxDate = GetMaxDate();
         var minDate = GetMinDate();
 
-        return (maxDate.HasValue && year > _culture.Calendar.GetYear(maxDate.Value.DateTime))
-            || (minDate.HasValue && year < _culture.Calendar.GetYear(minDate.Value.DateTime));
+        // The years outside of the calendar's own supported range are as unselectable as the ones outside of
+        // MinDate and MaxDate - the year picker can show them at the edges of its ranges.
+        return year < GetMinCalendarYearMonth().Year
+            || year > GetMaxCalendarYearMonth().Year
+            || (maxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(maxDate.Value)))
+            || (minDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(minDate.Value)));
     }
 
-    private (string style, string klass) GetDayButtonCss(DateTime date)
+    private (string style, string klass) GetDayButtonCss(DateTime date, int monthIndex)
     {
         StringBuilder klass = new StringBuilder();
         StringBuilder style = new StringBuilder();
@@ -1198,16 +1847,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
                 klass.Append(' ').Append(Classes?.SelectedDayButton);
             }
 
-            if (Styles?.SelectedDayButton is not null)
-            {
-                style.Append(Styles?.SelectedDayButton);
-            }
+            AppendStyle(style, Styles?.SelectedDayButton);
         }
 
-        var month = _culture.Calendar.GetMonth(date);
+        var isInMonth = IsInMonth(date, monthIndex);
 
-        //Isn't in current month
-        if (month != _currentMonth)
+        //Isn't in the month of this pane
+        if (isInMonth is false)
         {
             klass.Append(" bit-cal-dbo");
         }
@@ -1222,14 +1868,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
                 klass.Append(' ').Append(Classes?.HighlightedDayButton);
             }
 
-            if (Styles?.HighlightedDayButton is not null)
-            {
-                style.Append(' ').Append(Styles?.HighlightedDayButton);
-            }
+            AppendStyle(style, Styles?.HighlightedDayButton);
         }
 
         //Is today
-        if (month == _currentMonth && date == GetToday().Date)
+        if (HighlightToday && isInMonth && date == GetToday().Date)
         {
             klass.Append(" bit-cal-dtd");
 
@@ -1238,10 +1881,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
                 klass.Append(' ').Append(Classes?.TodayDayButton);
             }
 
-            if (Styles?.TodayDayButton is not null)
-            {
-                style.Append(' ').Append(Styles?.TodayDayButton);
-            }
+            AppendStyle(style, Styles?.TodayDayButton);
         }
 
         var customClass = GetDayClass?.Invoke(GetDateTimeOfDayCell(date));
@@ -1250,7 +1890,26 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             klass.Append(' ').Append(customClass);
         }
 
+        // The style of every day comes last so it wins over the state specific ones, and it goes through the
+        // same appender so it is separated from them by a semicolon.
+        AppendStyle(style, Styles?.DayButton);
+
         return (style.ToString(), klass.ToString());
+    }
+
+    // The styles of a day come from more than one state at a time (a selected day that is also today), so each
+    // one is closed with a semicolon before the next is appended - without it the last declaration of one and
+    // the first of the next would run together into a single invalid one.
+    private static void AppendStyle(StringBuilder builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        if (builder.Length > 0 && builder[^1] != ';')
+        {
+            builder.Append(';');
+        }
+
+        builder.Append(style);
     }
 
     private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
@@ -1276,7 +1935,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private DateTimeOffset GetDateTimeOfMonthCell(int monthIndex)
     {
-        var date = _culture.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0);
+        var date = GetFirstDayOfMonthOrClamp(_currentYear, monthIndex);
         return new(date, _timeZone.GetUtcOffset(date));
     }
 
@@ -1302,9 +1961,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void BuildEventsLookup()
     {
+        // The events of a day read as its agenda, so they are ordered the way one is: the all-day ones (which
+        // carry no start time) first, then the rest by the time they start at.
         _eventsByDate = Events is null
             ? []
-            : Events.GroupBy(e => e.Date).ToDictionary(g => g.Key, g => g.ToList());
+            : Events.GroupBy(e => e.Date)
+                    .ToDictionary(g => g.Key, g => g.OrderBy(e => e.StartTime ?? TimeOnly.MinValue).ToList());
     }
 
     private void BuildDatesLookups()
@@ -1332,9 +1994,24 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return GetDateTime(Today ?? DateTimeOffset.Now);
     }
 
-    private bool IsInCurrentMonth(DateTime date)
+    // Whether the date is a day of the month the given pane of the day picker is headed with, rather than one
+    // of the adjacent months that fill the first and the last row of its grid.
+    private bool IsInMonth(DateTime date, int monthIndex)
     {
-        return _culture.Calendar.GetYear(date) == _currentYear && _culture.Calendar.GetMonth(date) == _currentMonth;
+        var (year, month) = _monthsOfView[monthIndex];
+
+        return _culture.Calendar.GetYear(date) == year && _culture.Calendar.GetMonth(date) == month;
+    }
+
+    /// <inheritdoc cref="IsInMonth"/>
+    private bool IsInDisplayedMonths(DateTime date)
+    {
+        for (var monthIndex = 0; monthIndex < _monthCount; monthIndex++)
+        {
+            if (IsInMonth(date, monthIndex)) return true;
+        }
+
+        return false;
     }
 
     private string GetDayButtonId(DateTime date)
@@ -1342,29 +2019,264 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return FormattableString.Invariant($"{_Id}-day-{date.Year:D4}-{date.Month:D2}-{date.Day:D2}");
     }
 
+    private string GetMonthButtonId(int month)
+    {
+        return FormattableString.Invariant($"{_Id}-month-{month:D2}");
+    }
+
+    private string GetYearButtonId(int year)
+    {
+        return FormattableString.Invariant($"{_Id}-year-{year:D4}");
+    }
+
+    // A day of the previous or the next month is a day of the pane beside it in a multi-month view, so it is
+    // never drawn twice: what fills the first and the last row of every grid there is an empty cell.
+    private bool ShowOutsideDaysOfMonth() => ShowOutsideDays && _monthCount == 1;
+
+    // The single day of the grid that is in the tab sequence (the roving tabindex of the APG grid pattern):
+    // the one the keyboard last landed on, otherwise the selection, otherwise today, and as a last resort the
+    // first day that can actually be selected - the grid must never be unreachable.
     private DateTime GetFocusableDay()
     {
-        if (_focusedDate.HasValue && IsInCurrentMonth(_focusedDate.Value) && IsDayDisabled(_focusedDate.Value) is false) return _focusedDate.Value;
+        if (_focusedDate.HasValue && IsInDisplayedMonths(_focusedDate.Value) && IsDayDisabled(_focusedDate.Value) is false) return _focusedDate.Value;
 
         if (CurrentValue.HasValue)
         {
             var selectedDate = GetDateTime(CurrentValue.Value).Date;
-            if (IsInCurrentMonth(selectedDate) && IsDayDisabled(selectedDate) is false) return selectedDate;
+            if (IsInDisplayedMonths(selectedDate) && IsDayDisabled(selectedDate) is false) return selectedDate;
         }
 
         var today = GetToday().Date;
-        if (IsInCurrentMonth(today) && IsDayDisabled(today) is false) return today;
+        if (IsInDisplayedMonths(today) && IsDayDisabled(today) is false) return today;
 
-        for (var week = 0; week < DEFAULT_WEEK_COUNT; week++)
+        for (var monthIndex = 0; monthIndex < _monthCount; monthIndex++)
         {
-            for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+            for (var week = 0; week < DEFAULT_WEEK_COUNT; week++)
             {
-                var date = _daysOfCurrentMonth[week, day];
-                if (date.HasValue && IsInCurrentMonth(date.Value) && IsDayDisabled(date.Value) is false) return date.Value;
+                for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+                {
+                    var date = _daysOfMonths[monthIndex][week, day];
+                    if (date.HasValue && IsInMonth(date.Value, monthIndex) && IsDayDisabled(date.Value) is false) return date.Value;
+                }
             }
         }
 
-        return _daysOfCurrentMonth[0, 0].GetValueOrDefault(today);
+        // A month can be disabled from end to end, and a disabled day is not focusable anyway - but the
+        // tabindex still has to land on a day of a month of the view itself: the days around them are either
+        // not rendered as buttons at all (ShowOutsideDays turned off) or belong to the pane next door.
+        for (var monthIndex = 0; monthIndex < _monthCount; monthIndex++)
+        {
+            for (var week = 0; week < DEFAULT_WEEK_COUNT; week++)
+            {
+                for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+                {
+                    var date = _daysOfMonths[monthIndex][week, day];
+                    if (date.HasValue && IsInMonth(date.Value, monthIndex)) return date.Value;
+                }
+            }
+        }
+
+        return today;
+    }
+
+    // The single month of the month grid that is in the tab sequence: the one the keyboard last landed on,
+    // otherwise the month the calendar displays, and as a last resort the first month the Min/Max range
+    // allows - a month is always returned, so the grid is reachable even when every month is disabled.
+    private int GetFocusableMonth()
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+
+        if (_focusedMonthCell.HasValue &&
+            _focusedMonthCell.Value >= 1 && _focusedMonthCell.Value <= monthsInYear &&
+            IsMonthOutOfMinAndMaxDate(_focusedMonthCell.Value) is false) return _focusedMonthCell.Value;
+
+        if (_currentMonth >= 1 && _currentMonth <= monthsInYear &&
+            IsMonthOutOfMinAndMaxDate(_currentMonth) is false) return _currentMonth;
+
+        for (var month = 1; month <= monthsInYear; month++)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+        }
+
+        return Math.Clamp(_currentMonth, 1, monthsInYear);
+    }
+
+    // The same roving tabindex for the year grid. The displayed year is not always inside the range the year
+    // picker shows (browsing the ranges moves the range alone), so the first year of the range is what the tab
+    // sequence falls back to.
+    private int GetFocusableYear()
+    {
+        if (_focusedYearCell.HasValue &&
+            _focusedYearCell.Value >= _yearPickerStartYear && _focusedYearCell.Value <= _yearPickerEndYear &&
+            IsYearOutOfMinAndMaxDate(_focusedYearCell.Value) is false) return _focusedYearCell.Value;
+
+        if (_currentYear >= _yearPickerStartYear && _currentYear <= _yearPickerEndYear &&
+            IsYearOutOfMinAndMaxDate(_currentYear) is false) return _currentYear;
+
+        for (var year = _yearPickerStartYear; year <= _yearPickerEndYear; year++)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+        }
+
+        return _yearPickerStartYear;
+    }
+
+    // The month grid answers the same keys as the day grid, one row being four months wide, and
+    // PageUp/PageDown moving to the same month of the adjacent year.
+    private async Task HandleMonthKeyDown(KeyboardEventArgs e, int month)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            DismissMonthPickerOverlay();
+            return;
+        }
+
+        if (e.Key is "PageUp" or "PageDown")
+        {
+            var isNext = e.Key is "PageDown";
+
+            if (CanChangeYear(isNext) is false) return;
+
+            await HandleYearChange(isNext);
+
+            FocusMonthCell(GetFocusableMonth());
+            return;
+        }
+
+        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+
+        int? target = e.Key switch
+        {
+            "ArrowLeft" => FindEnabledMonth(month, isRtl ? 1 : -1),
+            "ArrowRight" => FindEnabledMonth(month, isRtl ? -1 : 1),
+            "ArrowUp" => FindEnabledMonth(month, -4),
+            "ArrowDown" => FindEnabledMonth(month, 4),
+            "Home" => FindEnabledMonthFrom(1, 1),
+            "End" => FindEnabledMonthFrom(GetMonthsInCurrentYear(), -1),
+            _ => null
+        };
+
+        if (target.HasValue is false) return;
+
+        FocusMonthCell(target.Value);
+    }
+
+    private void FocusMonthCell(int month)
+    {
+        _focusedMonthCell = month;
+        _focusElementIdAfterRender = GetMonthButtonId(month);
+    }
+
+    private int? FindEnabledMonth(int from, int step)
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+        var month = from + step;
+
+        while (month >= 1 && month <= monthsInYear)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+
+            month += step;
+        }
+
+        return null;
+    }
+
+    private int? FindEnabledMonthFrom(int from, int step)
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+        var month = from;
+
+        while (month >= 1 && month <= monthsInYear)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+
+            month += step;
+        }
+
+        return null;
+    }
+
+    // The year grid answers the same keys, one row being four years wide, and PageUp/PageDown moving to the
+    // adjacent range of years.
+    private void HandleYearKeyDown(KeyboardEventArgs e, int year)
+    {
+        if (IsEnabled is false) return;
+
+        // Escape leaves the year grid the way it was reached: back to the months of the year it is showing,
+        // and from there - a second Escape - out of the overlay entirely.
+        if (e.Key is "Escape")
+        {
+            ToggleBetweenMonthAndYearPicker();
+            FocusMonthCell(GetFocusableMonth());
+            return;
+        }
+
+        if (e.Key is "PageUp" or "PageDown")
+        {
+            var isNext = e.Key is "PageDown";
+
+            if (CanChangeYearRange(isNext) is false) return;
+
+            HandleYearRangeChange(isNext);
+
+            _focusedYearCell = null;
+            FocusYearCell(GetFocusableYear());
+            return;
+        }
+
+        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+
+        int? target = e.Key switch
+        {
+            "ArrowLeft" => FindEnabledYear(year, isRtl ? 1 : -1),
+            "ArrowRight" => FindEnabledYear(year, isRtl ? -1 : 1),
+            "ArrowUp" => FindEnabledYear(year, -4),
+            "ArrowDown" => FindEnabledYear(year, 4),
+            "Home" => FindEnabledYearFrom(_yearPickerStartYear, 1),
+            "End" => FindEnabledYearFrom(_yearPickerEndYear, -1),
+            _ => null
+        };
+
+        if (target.HasValue is false) return;
+
+        FocusYearCell(target.Value);
+    }
+
+    private void FocusYearCell(int year)
+    {
+        _focusedYearCell = year;
+        _focusElementIdAfterRender = GetYearButtonId(year);
+    }
+
+    private int? FindEnabledYear(int from, int step)
+    {
+        var year = from + step;
+
+        while (year >= _yearPickerStartYear && year <= _yearPickerEndYear)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+
+            year += step;
+        }
+
+        return null;
+    }
+
+    private int? FindEnabledYearFrom(int from, int step)
+    {
+        var year = from;
+
+        while (year >= _yearPickerStartYear && year <= _yearPickerEndYear)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+
+            year += step;
+        }
+
+        return null;
     }
 
     private async Task HandleDayKeyDown(KeyboardEventArgs e, DateTime date)
@@ -1380,9 +2292,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             "ArrowUp" => FindEnabledDay(date, -7),
             "ArrowDown" => FindEnabledDay(date, 7),
             "Home" => FindEnabledDayTowards(GetStartOfWeek(date), date),
-            "End" => FindEnabledDayTowards(GetStartOfWeek(date).AddDays(6), date),
-            "PageUp" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, -1) : _culture.Calendar.AddMonths(date, -1), date),
-            "PageDown" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, 1) : _culture.Calendar.AddMonths(date, 1), date),
+            "End" => FindEnabledDayTowards(GetEndOfWeek(date), date),
+            "PageUp" => FindEnabledDayTowards(e.ShiftKey ? TryAddYears(date, -1) : TryAddMonths(date, -1), date),
+            "PageDown" => FindEnabledDayTowards(e.ShiftKey ? TryAddYears(date, 1) : TryAddMonths(date, 1), date),
             _ => null
         };
 
@@ -1391,13 +2303,57 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         await MoveFocusToDay(target.Value);
     }
 
+    // A step that runs off the end of what a DateTime, or of what the culture's own calendar, can represent
+    // has nowhere to land - so it is refused rather than thrown, and the key simply moves the focus nowhere.
+    // The days at the very edge of the range are reachable all the same: every step that does land is taken.
+    private static DateTime? TryAddDays(DateTime date, int days)
+    {
+        try
+        {
+            return date.AddDays(days);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc cref="TryAddDays"/>
+    private DateTime? TryAddMonths(DateTime date, int months)
+    {
+        try
+        {
+            return _culture.Calendar.AddMonths(date, months);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc cref="TryAddDays"/>
+    private DateTime? TryAddYears(DateTime date, int years)
+    {
+        try
+        {
+            return _culture.Calendar.AddYears(date, years);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
     private DateTime? FindEnabledDay(DateTime from, int stepDays)
     {
         var date = from;
 
         for (var i = 0; i < 366; i++)
         {
-            date = date.AddDays(stepDays);
+            var next = TryAddDays(date, stepDays);
+            if (next.HasValue is false) return null;
+
+            date = next.Value;
 
             if (IsWeekDayOutOfMinAndMaxDate(date)) return null;
 
@@ -1407,11 +2363,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return null;
     }
 
-    private DateTime? FindEnabledDayTowards(DateTime target, DateTime origin)
+    private DateTime? FindEnabledDayTowards(DateTime? target, DateTime origin)
     {
-        var step = target < origin ? 1 : -1;
-        var date = target;
+        if (target.HasValue is false) return null;
 
+        var step = target.Value < origin ? 1 : -1;
+        var date = target.Value;
+
+        // Both ends are days the calendar can represent, so every day walked between them is one too.
         while (date != origin)
         {
             if (IsDayDisabled(date) is false) return date;
@@ -1422,11 +2381,19 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return null;
     }
 
-    private DateTime GetStartOfWeek(DateTime date)
+    private DateTime? GetStartOfWeek(DateTime date)
     {
         var diff = ((int)date.DayOfWeek - (int)GetFirstDayOfWeek() + 7) % 7;
 
-        return date.AddDays(-diff);
+        return TryAddDays(date, -diff);
+    }
+
+    /// <inheritdoc cref="GetStartOfWeek"/>
+    private DateTime? GetEndOfWeek(DateTime date)
+    {
+        var start = GetStartOfWeek(date);
+
+        return start.HasValue ? TryAddDays(start.Value, 6) : null;
     }
 
     private async Task MoveFocusToDay(DateTime target)
@@ -1434,19 +2401,24 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
 
-        var year = _culture.Calendar.GetYear(target);
-        var month = _culture.Calendar.GetMonth(target);
-
-        if (year != _currentYear || month != _currentMonth)
+        // A day the view already shows is reached without moving the calendar - the arrow keys cross from
+        // one month of a multi-month view into the next without paging it. A day outside of the view scrolls
+        // it by the least that brings the day into it: onto its month going back, onto the page ending with
+        // its month going forward, so the day the keyboard lands on is where it was reached from.
+        if (IsInDisplayedMonths(target) is false)
         {
-            _currentYear = year;
-            _currentMonth = month;
+            var year = _culture.Calendar.GetYear(target);
+            var month = _culture.Calendar.GetMonth(target);
+
+            (_currentYear, _currentMonth) = CompareYearMonth(year, month, _currentYear, _currentMonth) < 0
+                ? (year, month)
+                : AddCalendarMonths(year, month, -(_monthCount - 1));
 
             GenerateMonthData(_currentYear, _currentMonth);
         }
 
         _focusedDate = target;
-        _focusAfterRender = true;
+        _focusElementIdAfterRender = GetDayButtonId(target);
 
         await NotifyMonthChange(previousYear, previousMonth);
     }
@@ -1456,9 +2428,31 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (previousYear == _currentYear && previousMonth == _currentMonth) return;
         if (OnMonthChange.HasDelegate is false) return;
 
-        var date = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, 1, 0, 0, 0, 0);
+        var date = GetFirstDayOfMonthOrClamp(_currentYear, _currentMonth);
 
         await OnMonthChange.InvokeAsync(new(date, _timeZone.GetUtcOffset(date)));
+    }
+
+    // How many dots a day can wear before the row of them stops saying anything a shorter row does not.
+    private const int MAX_EVENT_INDICATORS = 3;
+
+    private static IEnumerable<BitCalendarEvent> GetIndicatorEvents(IReadOnlyList<BitCalendarEvent> events)
+    {
+        return events.Take(MAX_EVENT_INDICATORS);
+    }
+
+    // An event of its own color paints its dot with it; one without takes whatever the calendar's event color
+    // is, which is the Color role unless --bit-Calendar-event-color says otherwise.
+    private static string? GetEventIndicatorColorClass(BitCalendarEvent evt)
+    {
+        return evt.Color.HasValue ? BitCssClasses.Color(evt.Color, "bit-cal-evi") : null;
+    }
+
+    // The card of an event in the details dialog is painted with the same color as its dot, so the stripe
+    // down its side is the dot said again beside what the dot stood for.
+    private static string? GetEventItemColorClass(BitCalendarEvent evt)
+    {
+        return evt.Color.HasValue ? BitCssClasses.Color(evt.Color, "bit-cal-emi") : null;
     }
 
     private IReadOnlyList<BitCalendarEvent> GetDayEvents(DateTime date)
@@ -1482,32 +2476,115 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return date.ToDateTime(TimeOnly.MinValue).ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
     }
 
+    // The events of a day as one line each, for the native tooltip of its cell.
     private string GetEventTooltip(IReadOnlyList<BitCalendarEvent> events)
     {
-        return string.Join("\n", events.Select(e =>
-            e.StartTime.HasValue ? $"{e.Title} ({FormatEventTime(e.StartTime.Value)})" : e.Title));
+        return GetEventSummary(events, "\n");
     }
 
     private async Task HandleDayClick(DateTime date, IReadOnlyList<BitCalendarEvent> events)
     {
-        if (events.Count > 0)
+        if (ShowEventDetails && events.Count > 0)
         {
-            OpenEventModal(date, events);
+            OpenEventModal(date);
+
+            // Opening the details of the day the value is already on is a second look at its events, not a
+            // second press of a toggle: the day stays selected, so its dialog can be opened as often as the
+            // user likes. Without this, AllowDeselect would empty the value on every other look.
+            if (AllowDeselect && IsSelectedDate(date)) return;
         }
-        
+
         await SelectDate(date);
     }
 
-    private void OpenEventModal(DateTime date, IReadOnlyList<BitCalendarEvent> events)
+    private void OpenEventModal(DateTime date)
     {
         _eventModalDate = DateOnly.FromDateTime(date);
-        _eventModalEvents = events;
         _showEventModal = true;
+    }
+
+    // Only the day is held, never the events of it: the events the dialog lists are read from the lookup on
+    // every render, so a page that loads them for the visible month while the dialog is open shows what it
+    // loaded rather than what the day held when it was opened.
+    private IReadOnlyList<BitCalendarEvent> GetEventModalEvents()
+    {
+        return _eventsByDate.TryGetValue(_eventModalDate, out var list) ? list : [];
     }
 
     private void CloseEventModal()
     {
         _showEventModal = false;
+    }
+
+    // Escape closes the dialog, the way every dismissible surface in the library is left, and hands the
+    // keyboard back to the day that opened it (SyncEventDialogFocus).
+    private void HandleEventDialogKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is not "Escape") return;
+
+        CloseEventModal();
+    }
+
+    // The dialog takes the keyboard over while it is open: the focus is recorded and moved into it, Tab is kept
+    // cycling inside it, and closing it puts the focus back on the day cell it was opened from. Driven from
+    // OnAfterRenderAsync rather than from the open and close handlers, since the surface has to be in the DOM
+    // before the focus can be placed in it and gone from it before the focus can be handed back.
+    private async Task SyncEventDialogFocus()
+    {
+        if (IsDisposed) return;
+
+        if (_showEventModal)
+        {
+            if (_eventModalFocusTrapped) return;
+
+            _eventModalFocusTrapped = true;
+            _eventModalFocusStored = true;
+
+            try
+            {
+                await _js.BitUtilsStoreFocus(_eventDialogId);
+                await _js.BitUtilsSetupFocusTrap(_eventDialogId);
+                await _js.BitUtilsFocusFirstElement(_eventDialogId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            return;
+        }
+
+        if (_eventModalFocusTrapped is false) return;
+
+        _eventModalFocusTrapped = false;
+
+        try
+        {
+            await _js.BitUtilsDisposeFocusTrap(_eventDialogId);
+
+            if (_eventModalFocusStored)
+            {
+                _eventModalFocusStored = false;
+
+                await _js.BitUtilsRestoreFocus(_eventDialogId);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // What a screen reader is told a day is: the date, and the events it carries - the indicator dot and the
+    // tooltip that report them to everyone else are both invisible to it. The label replaces the content of the
+    // button, so the events cannot simply be added to the markup inside it.
+    private string GetDayAriaLabel(DateTime date, IReadOnlyList<BitCalendarEvent> events)
+    {
+        var label = date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture);
+
+        if (events.Count == 0) return label;
+
+        return $"{label}, {GetEventSummary(events, ", ")}";
+    }
+
+    private string GetEventSummary(IReadOnlyList<BitCalendarEvent> events, string separator)
+    {
+        return string.Join(separator, events.Select(e =>
+            e.StartTime.HasValue ? $"{e.Title} ({FormatEventTime(e.StartTime.Value)})" : e.Title));
     }
 
     private DateTime GetDateTime(DateTimeOffset dateTimeOffset)
@@ -1529,20 +2606,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         await _js.BitUtilsSelectText(_inputTimeMinuteRef);
     }
 
-    private void ToggleAmPmTime()
-    {
-        if (ReadOnly) return;
-        if (IsEnabled is false) return;
-
-        _hourView = _hour + (_hour >= 12 ? -12 : 12);
-    }
-
     private void HandleOnAmClick()
     {
         if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
+
+        // Half a day is a wide move, so it can land outside of what a bound on this day allows.
+        ClampTimeToBounds();
+
         UpdateTime();
     }
 
@@ -1557,6 +2630,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         }
 
         _hour %= 24;
+
+        ClampTimeToBounds();
+
         UpdateTime();
     }
 
@@ -1665,7 +2741,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // one, and a step that does not divide the day wraps to the top of the grid instead of drifting off it.
     private void ChangeHour(bool isNext)
     {
-        _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, h => BitTimeSteps.IsOnGrid(h, HourStep, 0, 24)) ?? _hour;
+        _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, IsHourAllowed) ?? _hour;
+
+        // Stepping onto the hour a bound falls in can leave the minute past the bound, so it comes along.
+        _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
 
         UpdateTime();
     }
@@ -1673,12 +2752,170 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <inheritdoc cref="ChangeHour"/>
     private void ChangeMinute(bool isNext)
     {
-        _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, m => BitTimeSteps.IsOnGrid(m, MinuteStep, 0, 60)) ?? _minute;
+        _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, IsMinuteAllowed) ?? _minute;
 
         UpdateTime();
     }
 
-    public bool DayPickerIsVisible()
+    // The grid HourStep and MinuteStep lay over the day and over the hour, which everything that moves the
+    // time - the spin buttons, the keys, what is typed - is held to, so no two of them can disagree about
+    // which times the picker offers.
+    private bool IsHourOnGrid(int hour) => BitTimeSteps.IsOnGrid(hour, HourStep, 0, 24);
+
+    /// <inheritdoc cref="IsHourOnGrid"/>
+    private bool IsMinuteOnGrid(int minute) => BitTimeSteps.IsOnGrid(minute, MinuteStep, 0, 60);
+
+    // MinDate and MaxDate rule out whole days everywhere else in the calendar and the very hours of one day
+    // here: the day a bound falls on stays selectable, but only from the time of day the bound carries. So
+    // the time picker of a calendar bounded at "now" cannot be wound back into this morning, the way its day
+    // grid cannot be wound back to yesterday. Everything that moves the time is held to it alongside the
+    // step grid, since both are simply which times this picker offers.
+    private bool IsHourAllowed(int hour)
+    {
+        if (IsHourOnGrid(hour) is false) return false;
+
+        var (min, max) = GetTimeBounds();
+
+        if (min.HasValue && hour < min.Value.Hours) return false;
+        if (max.HasValue && hour > max.Value.Hours) return false;
+
+        return true;
+    }
+
+    /// <inheritdoc cref="IsHourAllowed"/>
+    private bool IsMinuteAllowed(int minute)
+    {
+        if (IsMinuteOnGrid(minute) is false) return false;
+
+        var (min, max) = GetTimeBounds();
+
+        // Only the hour a bound falls in is bounded by its minutes: every later hour of the day the minimum
+        // falls on, and every earlier one of the day the maximum does, is in range from end to end.
+        if (min.HasValue && _hour == min.Value.Hours && minute < min.Value.Minutes) return false;
+        if (max.HasValue && _hour == max.Value.Hours && minute > max.Value.Minutes) return false;
+
+        return true;
+    }
+
+    /// <inheritdoc cref="IsHourAllowed"/>
+    private (TimeSpan? Min, TimeSpan? Max) GetTimeBounds()
+    {
+        // The picker writes into the value, so the day it is setting the time of is the day the value is on.
+        // Without one it produces nothing and nothing constrains it.
+        return CurrentValue.HasValue ? GetTimeBounds(GetDateTime(CurrentValue.Value).Date) : (null, null);
+    }
+
+    /// <inheritdoc cref="IsHourAllowed"/>
+    private (TimeSpan? Min, TimeSpan? Max) GetTimeBounds(DateTime day)
+    {
+        TimeSpan? min = null;
+        TimeSpan? max = null;
+
+        // Only a calendar carrying a time picker picks a time at all. Without one the time of the value is
+        // whatever it was given rather than something the user chose here, and a day bound rules out days:
+        // pulling today's midnight up to this very minute would hand the same minute to every later day
+        // picked afterwards, none of it ever shown.
+        if (ShowTimePicker is false) return (min, max);
+
+        var minDate = GetMinDate();
+        if (minDate.HasValue)
+        {
+            // The seconds of a bound are dropped rather than rounded up, so the minute it falls in - the one
+            // a bound of "now" is in - is a minute the picker can still be set to.
+            var date = GetDateTime(minDate.Value);
+            if (date.Date == day.Date)
+            {
+                min = new TimeSpan(date.Hour, date.Minute, 0);
+            }
+        }
+
+        var maxDate = GetMaxDate();
+        if (maxDate.HasValue)
+        {
+            var date = GetDateTime(maxDate.Value);
+            if (date.Date == day.Date)
+            {
+                max = new TimeSpan(date.Hour, date.Minute, 0);
+            }
+        }
+
+        return (min, max);
+    }
+
+    /// <inheritdoc cref="ClampTimeToBounds(DateTime)"/>
+    private void ClampTimeToBounds()
+    {
+        if (CurrentValue.HasValue is false) return;
+
+        ClampTimeToBounds(GetDateTime(CurrentValue.Value).Date);
+    }
+
+    // The time brought into what the bounds allow on the given day. The bound itself is where an out of
+    // range time lands, whether or not it sits on the step grid: a time the application declared is a time
+    // the picker may produce.
+    private void ClampTimeToBounds(DateTime day)
+    {
+        var (min, max) = GetTimeBounds(day);
+
+        if (min.HasValue is false && max.HasValue is false) return;
+
+        var time = new TimeSpan(_hour, _minute, 0);
+
+        if (min.HasValue && time < min.Value)
+        {
+            _hour = min.Value.Hours;
+            _minute = min.Value.Minutes;
+        }
+        else if (max.HasValue && time > max.Value)
+        {
+            _hour = max.Value.Hours;
+            _minute = max.Value.Minutes;
+        }
+    }
+
+    // A committed hour or minute - the field left, Enter pressed, an arrow key or a spinner of the number
+    // input stepped, each of which fires a change of its own - is held to the HourStep/MinuteStep grid, so
+    // the two halves of the same control cannot disagree about which times the picker offers. The value
+    // typed on the way there was left alone (see the setters above), so the grid never rewrites a half-typed
+    // number; the value the editing started from is what tells a move of exactly one - an arrow key - from
+    // a number that was typed, so a step of a sparser grid moves on rather than sitting still.
+    private void HandleOnTimeInputChange(bool isHour)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        // A typed number is brought inside the bounds before the grid has its say: distance on a clock is
+        // measured around it, so the allowed value nearest to a number below the minimum can be the one late
+        // on the other side of the day - while what was meant is plainly the earliest time on offer.
+        ClampTimeToBounds();
+
+        if (isHour)
+        {
+            _hour = BitTimeSteps.FindAllowedNear(_hour, _hourBeforeInput, 24, IsHourAllowed) ?? _hour;
+            _minute = BitTimeSteps.FindNearestAllowed(_minute, 60, IsMinuteAllowed) ?? _minute;
+        }
+        else
+        {
+            _minute = BitTimeSteps.FindAllowedNear(_minute, _minuteBeforeInput, 60, IsMinuteAllowed) ?? _minute;
+        }
+
+        UpdateTime();
+    }
+
+    // The hour and the minute answer PageUp and PageDown with the same step the spin buttons next to them
+    // move by, so the time can be set without leaving the keyboard or the field.
+    private void HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        if (e.Key is not ("PageUp" or "PageDown")) return;
+
+        ChangeTime(e.Key is "PageUp", isHour);
+    }
+
+    // Which of the pickers is on screen is the calendar's own business: what the day picker, the month and
+    // year picker and the time picker leave room for one another depends on which of them are shown at all,
+    // which of them are laid over the others, and which of the overlays is currently up.
+    private bool DayPickerIsVisible()
     {
         if (_showMonthPicker is false && _showTimePicker is false) return true;
 
@@ -1727,6 +2964,20 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         try
         {
             await _js.BitCalendarsDispose(_Id);
+
+            if (_eventModalFocusTrapped)
+            {
+                _eventModalFocusTrapped = false;
+
+                await _js.BitUtilsDisposeFocusTrap(_eventDialogId);
+            }
+
+            if (_eventModalFocusStored)
+            {
+                _eventModalFocusStored = false;
+
+                await _js.BitUtilsForgetFocus(_eventDialogId);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

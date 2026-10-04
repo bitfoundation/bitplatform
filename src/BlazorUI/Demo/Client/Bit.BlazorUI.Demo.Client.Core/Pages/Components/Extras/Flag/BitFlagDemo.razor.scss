@@ -1,4 +1,4 @@
-.flag-row {
+﻿.flag-row {
     gap: 1rem;
     display: flex;
     flex-wrap: wrap;
@@ -19,12 +19,19 @@
     }
 }
 
-// Two hundred and thirty nine flags: a wrapping row rather than a grid of fixed columns, so the
-// rows fill whatever width the page has.
+// Two hundred and thirty nine flags, each captioned with its name and code: columns as many as
+// fit rather than a fixed count, so the rows fill whatever width the page has.
 .flag-grid {
-    gap: 0.25rem;
-    display: flex;
-    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+
+    > div {
+        gap: 0.5rem;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
 }
 
 // The classes below are passed to the component as parameters and land on markup the component itself

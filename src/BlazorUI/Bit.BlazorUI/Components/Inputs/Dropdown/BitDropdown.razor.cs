@@ -48,13 +48,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _selectAllStateSelectionVersion = -1;
     private (bool HasCandidates, bool AllSelected, bool AnySelected)? _selectAllState;
     private bool _isResponsiveMode;
-    private int _calloutScrollOffset = -1;
+    private (bool SearchBox, bool SelectAll)? _calloutChrome;
     private bool _internalIsOpenChange;
     private bool _suppressOpenOnFocus;
     private bool _openedOnFocus;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
     private bool _pendingSearchBoxFocus;
+    private int? _pendingSearchBoxCaret;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private ICollection<TItem>? _lastItemsReference;
@@ -68,6 +69,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
     private string _labelId = string.Empty;
+    private string _errorId = string.Empty;
+    private string _ariaDescriptionId = string.Empty;
     private string _descriptionId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
@@ -87,6 +90,30 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the dropdown component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple dropdown components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// Only a <see cref="BitDropdownParams{TItem, TValue}"/> closed over this dropdown's own type arguments
+    /// is matched, so one <see cref="BitParams"/> can carry one object per pair of type arguments.
+    /// </remarks>
+    [CascadingParameter(Name = BitDropdownParams<TItem, TValue>.ParamName)]
+    public BitDropdownParams<TItem, TValue>? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Detailed description of the dropdown for the benefit of screen readers. It is rendered into a
+    /// visually hidden element that the dropdown references through its aria-describedby attribute,
+    /// which is what lets a field carry an instruction too long to show next to it. It is read after
+    /// <see cref="Description"/>, so the two can be used together.
+    /// </summary>
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// Clears the typed search text after each selection in the multi select ComboBox mode, so the next
@@ -342,6 +369,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
+    /// The message shown under the dropdown when the selection was rejected, which is what turns a red
+    /// frame into something the user can act on. Setting it marks the dropdown invalid on its own - the
+    /// same look and the same aria-invalid attribute <see cref="Invalid"/> gives it - and the message is
+    /// referenced by the dropdown through its aria-describedby attribute and announced by its live
+    /// region, so it reaches a screen reader the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two
+    /// fields). A dropdown inside an <c>EditForm</c> already gets its messages from the cascading
+    /// EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text
+    /// and marks the dropdown invalid in the same way. Only the plain text is announced by the live
+    /// region, since a template is free to render anything at all.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Decides whether the text committed in the ComboBox mode already stands for one of the selected
     /// items, in place of the default comparison of that text with the item texts, ignoring case. It
     /// receives the selected items and the committed text, and returning true stops the commit, so the
@@ -380,6 +430,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// only decides whether <see cref="DebounceTime"/> and <see cref="ThrottleTime"/> apply.
     /// </summary>
     [Parameter] public bool Immediate { get; set; }
+
+    /// <summary>
+    /// Marks the dropdown as invalid without an <c>EditContext</c> having said so, which is what a
+    /// rejection the app decided on its own (a server response, a rule spanning two fields) needs. It
+    /// gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does.
+    /// Setting <see cref="ErrorMessage"/> implies it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
@@ -830,7 +889,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
-    /// The custom template for the text of the dropdown.
+    /// The custom template for the text of the dropdown, which replaces the selection it shows once
+    /// something is selected. It has no effect with <see cref="Chips"/> enabled, where the selection is
+    /// drawn as one chip per item and <see cref="ChipTemplate"/> is what renders each of them.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
 
@@ -930,6 +991,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// </summary>
     public ValueTask FocusComboInputAsync() => Combo ? FocusTrigger() : ValueTask.CompletedTask;
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// In the ComboBox mode the element that takes the focus is the editable input inside the field,
+    /// which is where the keyboard lands and what carries the combobox role; the field around it is
+    /// out of the tab order there, so focusing it would leave the caret nowhere.
+    /// </remarks>
+    public override ValueTask FocusAsync() => Combo ? FocusTrigger() : base.FocusAsync();
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        if (Combo is false) return base.FocusAsync(preventScroll);
+
+        return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync(preventScroll);
+    }
+
     /// <summary>
     /// The ElementReference to the search input element, which is null while the search box is not
     /// rendered - it needs <see cref="ShowSearchBox"/> and an open callout to live in, and it is
@@ -996,6 +1074,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await HandleOnItemClick(item);
     }
+
+    /// <summary>
+    /// Clears the whole selection exactly as the clear button does, so the same events fire: it reports
+    /// itself through <see cref="OnClear"/> and empties the typed text of the ComboBox mode along with
+    /// the selection. It is refused in the same places that button is - a read-only dropdown, a one-way
+    /// binding - which is what unselecting the items one by one cannot express.
+    /// </summary>
+    public Task ClearAsync() => HandleOnClearClick();
 
     /// <summary>
     /// Unselects the given item exactly as picking an already selected one in the callout would (or, in
@@ -1673,6 +1759,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         ClassBuilder.Register(() => GetSizeClass());
 
+        // The base class marks the root invalid from the EditContext alone, which knows nothing about a
+        // rejection the app itself decided on; it is registered separately rather than folded into that
+        // one so the two cannot both add the class to the same element.
+        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
+
         ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
         ClassBuilder.Register(() => ReadOnly ? "bit-drp-rol" : string.Empty);
@@ -1695,8 +1786,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         StyleBuilder.Register(() => FitWidth ? "width:fit-content" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDropdownParams<,>))]
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is applied here as well as in OnParametersSet, because this method already reads the
+        // parameters it would otherwise only get after the first render: MultiSelect decides which of the
+        // two initialization branches runs, and ItemsProvider and Items decide whether an empty item
+        // collection is created for the dropdown.
+        CascadingParameters?.UpdateParameters(this);
+
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _overlayId = $"{_dropdownId}-overlay";
@@ -1705,6 +1803,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _footerId = $"{_dropdownId}-footer";
 
         _labelId = $"{_dropdownId}-label";
+        _errorId = $"{_dropdownId}-error";
+        _ariaDescriptionId = $"{_dropdownId}-aria-description";
         _descriptionId = $"{_dropdownId}-description";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
 
@@ -1757,6 +1857,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // dropdown's own parameters (Styles, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
@@ -1809,6 +1911,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 _pendingSearchBoxFocus = false;
 
                 await FocusOnSearchBox();
+            }
+
+            // A character typed on the closed trigger went into the search box, which only holds it as
+            // of this render (see TypeIntoSearchBox).
+            if (_pendingSearchBoxCaret is int caret)
+            {
+                _pendingSearchBoxCaret = null;
+
+                await FocusSearchBoxCaret(caret);
             }
 
             return;
@@ -2345,8 +2456,51 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         else if (IsPrintableKey(e))
         {
             await OpenCallout();
-            await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+
+            // A dropdown that filters through a search box has no type-ahead: HandleOnCalloutKeyDown leaves
+            // every printable key to that box, and Dropdowns.ts hands one typed on an option back to it. The
+            // character that opened the list is therefore typed INTO it rather than spent on a focus move,
+            // which would have dropped it and left the next character to start the term on its own.
+            if (HasSearchBox)
+            {
+                await TypeIntoSearchBox(e.Key!);
+            }
+            else
+            {
+                await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+            }
         }
+    }
+
+    // The first character of a search typed on a closed dropdown, which the search box never saw: the key
+    // was handled by the trigger the focus was still on. It is put into the box, and the box takes the
+    // focus, so the characters that follow simply continue the term natively.
+    private async Task TypeIntoSearchBox(string key)
+    {
+        var text = (_searchInputText ?? string.Empty) + key;
+
+        // Through the input handler, so the term follows the same Immediate / debounce / throttle path a
+        // typed character takes instead of applying itself on rules of its own.
+        await HandleOnSearchBoxInput(new ChangeEventArgs { Value = text });
+
+        // The input only holds the new text as of the render this handler is followed by, so the focus -
+        // and the caret that has to end up behind the character - is left to OnAfterRenderAsync rather
+        // than moved onto a value that is still the one the box had.
+        _pendingSearchBoxCaret = text.Length;
+    }
+
+    // Focuses the search box and puts the caret at the given offset, whatever AutoFocusSearchBox says: this
+    // is not the focus an opening hands to the box, it is the box being typed into.
+    private async Task FocusSearchBoxCaret(int caret)
+    {
+        if (IsEnabled is false || HasSearchBox is false) return;
+        if (IsOpen is false || IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await _js.BitDropdownsFocusSearchBox(_calloutId, caret);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     // See the note on HandleOnTriggerKeyDown about keeping these keys in sync with Dropdowns.ts.
@@ -2403,9 +2557,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 {
                     await HandleOnSelectAllClick();
                 }
-                // In Combo mode the combo input is the type-ahead, and printable keys
-                // typed into the search box must keep filtering instead of moving focus.
-                else if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
+                // In Combo mode the combo input is the type-ahead, and so is the search box of a dropdown
+                // that has one: the keydown listener of Dropdowns.ts hands a printable key typed on an
+                // option back to whichever of the two is there, and a type-ahead on top of it would move
+                // the focus away from the field the character is about to be typed into.
+                else if (Combo is false && HasSearchBox is false && IsPrintableKey(e))
                 {
                     await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
                 }
@@ -3063,6 +3219,34 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // The same, for the description element carrying _descriptionId.
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
+    // The same, for the error element carrying _errorId.
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A rejection the app decided on its own, which the EditContext knows nothing about. A message is
+    // one: a field that says what is wrong with its value is a field saying the value is wrong.
+    private bool HasError => Invalid || HasErrorMessage;
+
+    // What the dropdown reports to assistive technologies as the state of its value: either the
+    // rejection the EditContext produced or the one the app asserted here.
+    private bool IsInvalid => ValueInvalid is true || HasError;
+
+    // Every piece of text that describes the field rather than names it, in reading order: what is wrong
+    // with the value first, then the visible helper text, then the one written for a screen reader alone.
+    private string? DescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
     private string GetDropdownAriaLabelledby()
     {
         return HasLabel ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
@@ -3304,42 +3488,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     }
 
     // The height available to the scrollable item list is the callout's height minus the parts that sit
-    // above it, so every one of those parts has to be reported here or the callout overflows the
-    // viewport. The values mirror the --bit-drp-h (search box) and --bit-drp-itm-h plus its bottom
-    // border (select all row) of each size in the stylesheet.
-    private int GetCalloutScrollOffset()
-    {
-        var offset = 0;
+    // above it - the search box and the select all row - and those are sized with --bit-Dropdown-min-height
+    // and --bit-Dropdown-item-height, which an author is free to override. So the heights are not repeated
+    // here at all: the callout is asked to measure its own chrome (see Callouts.position), which a number
+    // hard-coded against the defaults of those variables could only ever guess at.
+    private const int MEASURED_CALLOUT_SCROLL_OFFSET = -1;
 
-        if (HasSearchBox)
-        {
-            offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
-        }
-
-        if (HasSelectAllItem)
-        {
-            offset += Size switch { BitSize.Small => 31, BitSize.Large => 45, _ => 37 };
-        }
-
-        return offset;
-    }
+    // Only WHETHER those parts are there, which is what can change while the callout stays open and is
+    // therefore what decides when it has to be measured again.
+    private (bool SearchBox, bool SelectAll) GetCalloutChrome() => (HasSearchBox, HasSelectAllItem);
 
     // The height available to the item list is only computed when the callout is laid out, which happens
     // when it is toggled. The parts above that list can come and go while it stays open - a search that
-    // matches nothing takes the select all row with it - so a change to the offset is pushed to the
-    // already positioned callout instead of waiting for the next open.
+    // matches nothing takes the select all row with it - so a re-measure is pushed to the already
+    // positioned callout instead of waiting for the next open.
     private async Task RefreshCalloutScrollOffset()
     {
         if (IsOpen is false || IsDisposed || IsEnabled is false) return;
 
-        var scrollOffset = GetCalloutScrollOffset();
-        if (scrollOffset == _calloutScrollOffset) return;
+        var chrome = GetCalloutChrome();
+        if (chrome == _calloutChrome) return;
 
-        _calloutScrollOffset = scrollOffset;
+        _calloutChrome = chrome;
 
         try
         {
-            await _js.BitCalloutUpdateScrollOffset(_calloutId, scrollOffset);
+            await _js.BitCalloutUpdateScrollOffset(_calloutId, MEASURED_CALLOUT_SCROLL_OFFSET);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -3352,7 +3526,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // handler left for the click it may be paired with stops being about the current state.
         _openedOnFocus = false;
 
-        _calloutScrollOffset = GetCalloutScrollOffset();
+        _calloutChrome = GetCalloutChrome();
 
         _isResponsiveMode = await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -3366,7 +3540,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: _scrollContainerId,
-            scrollOffset: _calloutScrollOffset,
+            scrollOffset: MEASURED_CALLOUT_SCROLL_OFFSET,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
@@ -3901,10 +4075,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return string.Join(MultiSelectDelimiter, _selectedItems.Skip(GetDisplayedItemsCount()).Select(GetText));
     }
 
-    // The whole selection as one piece of text, which is what the chips and the overflow indicator show
-    // between them, so the combobox can be named after it instead of after the display that also holds
-    // the remove button of every chip.
-    private string GetChipsAriaText()
+    // The whole selection as one piece of text: what the chips and the overflow indicator show between
+    // them, so the combobox can be named after it instead of after the display that also holds the
+    // remove button of every chip - and what the text display stands for once it has collapsed into a
+    // count of the selection.
+    private string GetSelectedItemsText()
     {
         return string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
     }
@@ -3975,6 +4150,78 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         foreach (var it in _selectedItems)
         {
             SetIsSelected(it, true);
+        }
+    }
+
+    // The public custom properties of the component, which are what its stylesheet reads off the root with a
+    // fallback (see BitDropdown.scss). Nothing else in a style string is copied to the callout.
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Dropdown-";
+
+    private string? _publicCssVariables;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
+
+    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
+    // callout is open - so they inherit nothing an author sets on the dropdown: neither the Style of the
+    // instance nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them
+    // once they have moved). The public --bit-Dropdown-* declarations are therefore carried across by hand, so
+    // ONE Style on the component restyles the field, the list it opens and the layer behind it together, the
+    // way it reads as if it would.
+    private string? GetPublicCssVariables()
+    {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+
+        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
+        // re-rendered on every keystroke typed into the search box, and parsing two style strings per
+        // render for a result that almost never changes is work no one asked for.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
+        {
+            return _publicCssVariables;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+
+        StringBuilder? builder = null;
+
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+
+        _publicCssVariables = builder?.ToString();
+
+        return _publicCssVariables;
+    }
+
+    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
+    private string? GetCalloutStyles()
+    {
+        var variables = GetPublicCssVariables();
+        var stylesCallout = Styles?.Callout;
+
+        if (variables.HasNoValue()) return stylesCallout;
+        if (stylesCallout.HasNoValue()) return variables;
+
+        return variables + stylesCallout;
+    }
+
+    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
+    // rather than in the stylesheet because it is what the component toggles the layer with.
+    private string GetOverlayStyles()
+    {
+        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
+    }
+
+    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+
+            (builder ??= new StringBuilder()).Append(declaration).Append(';');
         }
     }
 
