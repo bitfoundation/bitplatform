@@ -24,12 +24,16 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(0, "h" + h.Level);
                 if (!string.IsNullOrEmpty(h.Id))
                     b.AddAttribute(1, "id", h.Id);
+                if (r.AutoDirection)
+                    b.AddAttribute(37, "dir", "auto");
                 r.WriteNodes(b, h.Inlines);
                 b.CloseElement();
                 break;
 
             case BitMarkdownParagraphNode p:
                 b.OpenElement(2, "p");
+                if (r.AutoDirection)
+                    b.AddAttribute(38, "dir", "auto");
                 r.WriteNodes(b, p.Inlines);
                 b.CloseElement();
                 break;
@@ -44,6 +48,12 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(3, "pre");
                 if (language is not null)
                     b.AddAttribute(35, "class", language);
+                // A block scrolls rather than wraps, so it is a tab stop: a line wider than the
+                // document can then be scrolled to with the keyboard alone (WCAG 2.1.1). A focusable
+                // element needs a name, and a name needs a role - the one a table's scroll area has.
+                b.AddAttribute(36, "tabindex", "0");
+                b.AddAttribute(41, "role", "region");
+                b.AddAttribute(42, "aria-label", r.Texts.CodeBlock);
                 b.OpenElement(4, "code");
                 if (language is not null)
                     b.AddAttribute(5, "class", language);
@@ -91,18 +101,22 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
 
             case BitMarkdownLinkNode link:
                 b.OpenElement(14, "a");
+                bool newTab = false;
                 if (!string.IsNullOrEmpty(link.Url))
                 {
-                    b.AddAttribute(15, "href", link.Url);
+                    b.AddAttribute(15, "href", r.ResolveInPageUrl(link.Url));
                     if (BitMarkdownLinkHelpers.IsExternalUrl(link.Url))
                     {
                         b.AddAttribute(16, "target", "_blank");
                         b.AddAttribute(17, "rel", "noopener noreferrer");
+                        newTab = true;
                     }
                 }
                 if (!string.IsNullOrEmpty(link.Title))
                     b.AddAttribute(18, "title", link.Title);
                 r.WriteNodes(b, link.Children);
+                if (newTab)
+                    r.WriteNewTabNotice(b, 43);
                 b.CloseElement();
                 break;
 
@@ -159,6 +173,8 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
         // bullets without depending on ":has()".
         if (list.Items.Exists(i => i.IsTask))
             b.AddAttribute(33, "class", "contains-task-list");
+        if (r.AutoDirection)
+            b.AddAttribute(39, "dir", "auto");
 
         foreach (var item in list.Items)
         {
@@ -167,6 +183,10 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
             b.OpenElement(27, "li");
             if (item.IsTask)
                 b.AddAttribute(34, "class", "task-list-item");
+            // Each item takes its own direction too: a tight item's text sits straight in the <li>, which
+            // would otherwise take the direction the list guessed from its first item.
+            if (r.AutoDirection)
+                b.AddAttribute(40, "dir", "auto");
             // Tight lists render a lone paragraph's inlines directly inside <li>.
             if (list.Tight)
             {
