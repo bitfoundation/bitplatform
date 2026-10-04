@@ -66,7 +66,7 @@ public partial class BitPdfViewerDemo
             Name = "EnableKeyboardShortcuts",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the viewer handles keyboard shortcuts while it has focus: page navigation (n/j, p/k, PageUp/PageDown, Home/End, plus the arrow keys and Space while one page is shown at a time), zoom (Ctrl +, Ctrl -, Ctrl 0), rotation (r, Shift+r), find (Ctrl+F, Ctrl+G, Shift+Ctrl+G), print (Ctrl+P), download (Ctrl+S), presentation mode (Ctrl+Alt+P) and the sidebar (F4).",
+            Description = "Whether the viewer handles keyboard shortcuts while it has focus: page navigation (n/j, p/k, PageUp/PageDown, Home/End, plus the arrow keys and Space while one page is shown at a time), zoom (Ctrl +, Ctrl -, Ctrl 0), rotation (r, Shift+r), find (Ctrl+F, Ctrl+G, Shift+Ctrl+G), print (Ctrl+P), download (Ctrl+S), presentation mode (Ctrl+Alt+P) and the sidebar (F4). Find, print and download follow ToolbarItems: leaving their control out of the toolbar leaves their shortcut out too.",
         },
         new()
         {
@@ -90,6 +90,13 @@ public partial class BitPdfViewerDemo
             Description = "The initial zoom behavior.",
             LinkType = LinkType.Link,
             Href = "#pdf-zoom-mode-enum"
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content shown in place of the pages while a document is fetched and parsed. Defaults to a page-shaped placeholder; the loading bar shows either way.",
         },
         new()
         {
@@ -135,6 +142,15 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "OnDownloading",
+            Type = "EventCallback<BitPdfDownloadArgs>",
+            DefaultValue = "",
+            Description = "The callback raised before the document is downloaded - from the toolbar, Ctrl+S or the Download method - to rename the file or cancel the download.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-download-args"
+        },
+        new()
+        {
             Name = "OnError",
             Type = "EventCallback<string>",
             DefaultValue = "",
@@ -167,6 +183,15 @@ public partial class BitPdfViewerDemo
             Type = "Func<Task<string?>>?",
             DefaultValue = "null",
             Description = "Invoked when an encrypted document needs a password. Return the password to retry, or null/empty to cancel. When unset, the viewer's own password dialog asks instead (see ShowPasswordPrompt).",
+        },
+        new()
+        {
+            Name = "OnPrinting",
+            Type = "EventCallback<BitPdfPrintArgs>",
+            DefaultValue = "",
+            Description = "The callback raised before the document is printed - from the toolbar, Ctrl+P or a Print method - with the page range, to cancel the print.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-print-args"
         },
         new()
         {
@@ -569,7 +594,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "Download",
             Type = "Task Download()",
-            Description = "Downloads the original document bytes. Works for URL sources too: the bytes fetched for the current document are reused, so nothing is downloaded twice.",
+            Description = "Downloads the original document bytes. Works for URL sources too: the bytes fetched for the current document are reused, so nothing is downloaded twice. OnDownloading runs first and may rename or cancel it.",
         },
         new()
         {
@@ -685,7 +710,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "Print",
             Type = "Task Print()",
-            Description = "Opens the browser print dialog with all pages of the document. An overload takes a page range: Print(int from, int to).",
+            Description = "Opens the browser print dialog with all pages of the document. An overload takes a page range: Print(int from, int to). OnPrinting runs first and may cancel it.",
         },
         new()
         {
@@ -960,6 +985,59 @@ public partial class BitPdfViewerDemo
                     Type = "long",
                     DefaultValue = "0",
                     Description = "The size in bytes of Content.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "pdf-download-args",
+            Title = "BitPdfDownloadArgs",
+            Description = "Arguments for the OnDownloading callback, raised before the document is saved.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "FileName",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The name the file is offered under: the source's own name, then the document title, then \"document.pdf\". Change it to rename the download; a blank value keeps the default.",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the download.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "pdf-print-args",
+            Title = "BitPdfPrintArgs",
+            Description = "Arguments for the OnPrinting callback, raised before the pages are prepared for the print dialog.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "FromPage",
+                    Type = "int",
+                    DefaultValue = "",
+                    Description = "The first page about to be printed (1-based).",
+                },
+                new()
+                {
+                    Name = "ToPage",
+                    Type = "int",
+                    DefaultValue = "",
+                    Description = "The last page about to be printed (1-based, inclusive).",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the print.",
                 },
             ]
         },
@@ -1575,6 +1653,7 @@ public partial class BitPdfViewerDemo
     private int boundRotation;
     private bool panTool;
     private bool a11yEnabled = true;
+    private bool blockPrinting;
     private BitPdfScrollMode scrollMode = BitPdfScrollMode.Vertical;
     private BitPdfSpreadMode spreadMode = BitPdfSpreadMode.None;
     private BitPdfRenderMode renderMode = BitPdfRenderMode.Html;
@@ -1598,6 +1677,18 @@ public partial class BitPdfViewerDemo
     private void Share(BitPdfViewer viewer)
     {
         toolbarMessage = viewer.PageCount == 0 ? null : $"Link to page {viewer.CurrentPage} copied";
+    }
+
+    private void HandleDownloading(BitPdfDownloadArgs args)
+    {
+        args.FileName = $"report-{DateTime.Now:yyyy-MM-dd}.pdf";
+        eventsLog.Add($"Saving as {args.FileName}");
+    }
+
+    private void HandlePrinting(BitPdfPrintArgs args)
+    {
+        args.Cancel = blockPrinting;
+        eventsLog.Add($"Printing pages {args.FromPage}-{args.ToPage}{(args.Cancel ? " (blocked)" : "")}");
     }
 
     /// <summary>Reads back what the reader has highlighted in the document, which is

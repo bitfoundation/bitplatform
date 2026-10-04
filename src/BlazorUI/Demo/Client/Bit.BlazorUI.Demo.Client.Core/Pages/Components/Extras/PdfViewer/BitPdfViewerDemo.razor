@@ -60,7 +60,8 @@
 
             <DemoExample Title="Toolbar" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
                 <div>
-                    <b>ToolbarItems</b> (a flags enum) picks the built-in groups and <b>ShowToolbar</b> hides the bar.
+                    <b>ToolbarItems</b> (a flags enum) picks the built-in groups - a group left out takes its find, print or
+                    download shortcut with it - and <b>ShowToolbar</b> hides the bar.
                     <b>ToolbarStartTemplate</b> and <b>ToolbarEndTemplate</b> add your own content, with the viewer as its
                     context. <b>OpenFile</b> adds a file picker; handle <b>OnFileOpened</b> to take the picked file
                     yourself, and <b>MaxOpenFileSize</b> caps what it reads.
@@ -228,16 +229,21 @@
                 <BitPdfViewer Source="passwordSource" Height="400px" RespectPermissions />
             </DemoExample>
 
-            <DemoExample Title="Empty & error states" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <DemoExample Title="Loading, empty & error states" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
                 <div>
-                    <b>EmptyTemplate</b> replaces the message of a viewer with no document, <b>ErrorTemplate</b> that of a
+                    <b>LoadingTemplate</b> replaces the page-shaped placeholder while a document is fetched and parsed,
+                    <b>EmptyTemplate</b> the message of a viewer with no document, and <b>ErrorTemplate</b> that of a
                     failed load, with the message <b>OnError</b> receives. A failure is announced as an alert either way.
                 </div>
                 <br />
+                <BitButton OnClick="() => statesSource = CreateArticleSource()">Load a document</BitButton>
                 <BitButton OnClick="LoadBrokenFile">Load a broken file</BitButton>
                 <BitButton IsEnabled="statesSource is not null" OnClick="() => statesSource = null">Clear</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="statesSource" Height="300px" AllowDropFile>
+                    <LoadingTemplate>
+                        <BitSpinnerLoading Label="Opening the document..." />
+                    </LoadingTemplate>
                     <EmptyTemplate>
                         <BitText>Drop a pdf file here.</BitText>
                     </EmptyTemplate>
@@ -250,10 +256,13 @@
             <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>
                     Every state change is reported: loading, page, zoom, rotation and sidebar, each rendered page
-                    (<b>OnPageRendered</b>), download progress of a URL source (<b>OnProgress</b>), non-fatal parse
-                    diagnostics (<b>OnWarnings</b>) and failures (<b>OnError</b>).
+                    (<b>OnPageRendered</b>), load progress of a URL source (<b>OnProgress</b>), non-fatal parse
+                    diagnostics (<b>OnWarnings</b>) and failures (<b>OnError</b>). <b>OnDownloading</b> and
+                    <b>OnPrinting</b> run first, whatever started them (toolbar, shortcut or code): this one renames the
+                    download and can block printing.
                 </div>
                 <br />
+                <BitToggle @bind-Value="blockPrinting" Label="Block printing" />
                 <BitButton IsEnabled="eventsSource is null" OnClick="() => eventsSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="eventsSource" Height="400px"
@@ -264,8 +273,10 @@
                               OnRotationChanged='r => eventsLog.Add($"Rotation changed: {r}deg")'
                               OnSidebarChanged='s => eventsLog.Add($"Sidebar changed: {s}")'
                               OnWarnings='w => eventsLog.Add($"Warnings: {w.Count}")'
-                              OnProgress='p => eventsLog.Add($"Downloading: {p:P0}")'
-                              OnError='e => eventsLog.Add($"Error: {e}")' />
+                              OnProgress='p => eventsLog.Add($"Loading: {p:P0}")'
+                              OnError='e => eventsLog.Add($"Error: {e}")'
+                              OnDownloading="HandleDownloading"
+                              OnPrinting="HandlePrinting" />
                 <br />
                 <div>Events:</div>
                 <div style="max-height:8rem;overflow:auto">
@@ -355,7 +366,8 @@
             <DemoExample Title="Keyboard & accessibility" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
                 <div>
                     With focus inside the viewer the familiar shortcuts work (and override the browser's <kbd>Ctrl</kbd>+
-                    <kbd>F</kbd> / <kbd>P</kbd> / <kbd>S</kbd>); <b>EnableKeyboardShortcuts</b>=false hands them back. The
+                    <kbd>F</kbd> / <kbd>P</kbd> / <kbd>S</kbd>), and each toolbar button announces its own through
+                    <b>aria-keyshortcuts</b>; <b>EnableKeyboardShortcuts</b>=false hands them back. The
                     thumbnails are a listbox and the bookmarks a tree, each one tab stop moved by the arrow keys. Each page
                     is a named group whose text is read once, its links are named tab stops, and page moves are
                     announced; the dialogs trap focus and close on <kbd>Esc</kbd>. A disabled viewer

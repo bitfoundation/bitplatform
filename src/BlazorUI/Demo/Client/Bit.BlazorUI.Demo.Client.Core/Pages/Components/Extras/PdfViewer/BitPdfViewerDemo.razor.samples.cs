@@ -223,10 +223,14 @@ private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
 // private Task<string?> AskForPassword() => myOwnDialog.ShowAsync();";
 
     private readonly string example11RazorCode = @"
+<BitButton OnClick='() => statesSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load a document</BitButton>
 <BitButton OnClick=""LoadBrokenFile"">Load a broken file</BitButton>
 <BitButton IsEnabled=""statesSource is not null"" OnClick=""() => statesSource = null"">Clear</BitButton>
 
 <BitPdfViewer Source=""statesSource"" Height=""300px"" AllowDropFile>
+    <LoadingTemplate>
+        <BitSpinnerLoading Label=""Opening the document..."" />
+    </LoadingTemplate>
     <EmptyTemplate>
         <BitText>Drop a pdf file here.</BitText>
     </EmptyTemplate>
@@ -242,6 +246,7 @@ private void LoadBrokenFile()
     => statesSource = BitPdfSource.FromBytes(""%PDF-1.7 this is not a pdf""u8.ToArray(), ""broken.pdf"");";
 
     private readonly string example12RazorCode = @"
+<BitToggle @bind-Value=""blockPrinting"" Label=""Block printing"" />
 <BitButton IsEnabled=""eventsSource is null""
            OnClick='() => eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
@@ -253,8 +258,10 @@ private void LoadBrokenFile()
               OnRotationChanged='r => eventsLog.Add($""Rotation changed: {r}deg"")'
               OnSidebarChanged='s => eventsLog.Add($""Sidebar changed: {s}"")'
               OnWarnings='w => eventsLog.Add($""Warnings: {w.Count}"")'
-              OnProgress='p => eventsLog.Add($""Downloading: {p:P0}"")'
-              OnError='e => eventsLog.Add($""Error: {e}"")' />
+              OnProgress='p => eventsLog.Add($""Loading: {p:P0}"")'
+              OnError='e => eventsLog.Add($""Error: {e}"")'
+              OnDownloading=""HandleDownloading""
+              OnPrinting=""HandlePrinting"" />
 
 <div>Events:</div>
 <div style=""max-height:8rem;overflow:auto"">
@@ -265,8 +272,21 @@ private void LoadBrokenFile()
 </div>";
     private readonly string example12CsharpCode = @"
 private BitPdfSource? eventsSource;
+private bool blockPrinting;
 
-private readonly List<string> eventsLog = [];";
+private readonly List<string> eventsLog = [];
+
+private void HandleDownloading(BitPdfDownloadArgs args)
+{
+    args.FileName = $""report-{DateTime.Now:yyyy-MM-dd}.pdf"";
+    eventsLog.Add($""Saving as {args.FileName}"");
+}
+
+private void HandlePrinting(BitPdfPrintArgs args)
+{
+    args.Cancel = blockPrinting;
+    eventsLog.Add($""Printing pages {args.FromPage}-{args.ToPage}{(args.Cancel ? "" (blocked)"" : """")}"");
+}";
 
     private readonly string example13RazorCode = @"
 <BitButton IsEnabled=""bindingSource is null""
