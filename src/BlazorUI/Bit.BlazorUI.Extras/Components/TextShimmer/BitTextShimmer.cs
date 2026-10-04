@@ -37,9 +37,9 @@ public partial class BitTextShimmer : BitComponentBase
     private const string DefaultElement = "p";
     private const double DefaultSpread = 2;
 
-    // Whether the Spread was asked for, by the markup or by a BitParams, rather than left at its default value -
-    // which a value equal to that default cannot say on its own.
-    private bool _isSpreadAssigned;
+    // Whether the markup set the Spread and the Color on the last render, which decides whether a SpreadLength and a
+    // GradientColor supplied by a BitParams are written.
+    private (bool Spread, bool Color) _isSetByMarkup;
 
 
 
@@ -114,7 +114,8 @@ public partial class BitTextShimmer : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The color is read from the theme, so it follows the preset and the color scheme of the page. An explicit
-    /// <see cref="GradientColor"/> wins over it.
+    /// <see cref="GradientColor"/> wins over it, unless that one only comes from a <see cref="BitParams"/>: a default
+    /// shared by a whole region does not overrule the color this shimmer asks for itself.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -240,21 +241,20 @@ public partial class BitTextShimmer : BitComponentBase
 
     /// <summary>
     /// The shimmer band width multiplier. The effective spread of the band (px) is Spread times the character count,
-    /// so longer text gets a proportionally wider shine.
-    /// <br />
-    /// The default value is <strong>2</strong>.
+    /// so longer text gets a proportionally wider shine. When null, a multiplier of 2 is used.
     /// </summary>
     /// <remarks>
     /// The effective width is the distance from the brightest point of the band to each of its edges. The character
     /// count is the length of <see cref="Text"/> in user-perceived characters, or <see cref="ContentLength"/> when
     /// the content is supplied using <see cref="ChildContent"/>. A negative value is treated as zero, which draws a
-    /// hard edged band, and a value that is not a finite number is ignored. <see cref="SpreadLength"/> wins over it.
+    /// hard edged band, and a value that is not a finite number is ignored. <see cref="SpreadLength"/> wins over it,
+    /// unless that one only comes from a <see cref="BitParams"/> and this one is set on the shimmer itself.
     /// <br />
-    /// Left unset, the computed spread gives way to a "--bit-TextShimmer-spread" set by a class, an ancestor or
+    /// Left null, the computed spread gives way to a "--bit-TextShimmer-spread" set by a class, an ancestor or
     /// ":root"; any value that is set, directly or through <see cref="BitParams"/>, wins over that variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
-    public double Spread { get; set; } = DefaultSpread;
+    public double? Spread { get; set; }
 
     /// <summary>
     /// An explicit CSS length for the spread of the band, which replaces the one computed from Spread and the character count.
@@ -331,43 +331,47 @@ public partial class BitTextShimmer : BitComponentBase
     {
         StyleBuilder.Register(() =>
         {
-            if (SpreadLength.HasValue()) return $"--bit-tsh-spread:{SpreadLength!.Trim()}";
+            // A SpreadLength the markup did not set is one a BitParams supplied, which is a default for the region and
+            // so gives way to a Spread the markup did set.
+            if (SpreadLength.HasValue() && (HasNotBeenSet(nameof(SpreadLength)) is false || HasNotBeenSet(nameof(Spread))))
+            {
+                return $"--bit-tsh-spread:{SpreadLength!.Trim()}";
+            }
 
             var length = ChildContent is null && Text is not null ? new StringInfo(Text).LengthInTextElements : ContentLength;
             // A spread that is not a finite number would write a length the browser refuses, and a gradient with an
-            // invalid stop is no gradient at all - so it falls back to the default multiplier instead.
-            var isFinite = double.IsFinite(Spread);
-            var multiplier = isFinite ? Spread : DefaultSpread;
-            var spread = Math.Max(0, Math.Max(0, length) * multiplier);
+            // invalid stop is no gradient at all - so it is ignored, the same as one left null.
+            var isSet = Spread.HasValue && double.IsFinite(Spread.Value);
+            var spread = Math.Max(0, Math.Max(0, length) * (isSet ? Spread!.Value : DefaultSpread));
 
             // The spread of an unset multiplier is only the fallback of the public variable, which a class or an
             // ancestor may set to restyle every shimmer at once; a multiplier that was asked for wins over it, even
-            // one equal to the default. One that is ignored for not being finite counts as unset.
-            return _isSpreadAssigned && isFinite
+            // one equal to the default.
+            return isSet
                 ? $"--bit-tsh-spread:{Format(spread)}px"
                 : $"--bit-tsh-auto-spread:{Format(spread)}px";
         });
 
-        StyleBuilder.Register(() => Duration.HasValue ? $"--bit-tsh-duration:{Ms(Duration.Value)}" : string.Empty);
+        // The sweep is the duration as it was asked for, before the loop factor of the theme retunes it: the stylesheet
+        // takes the rest of RepeatDelay as a ratio of it, so a theme that retunes the default sweep retunes its rest
+        // along with it, while an explicit duration keeps the rest it was given.
+        StyleBuilder.Register(() => Duration.HasValue ? $"--bit-tsh-duration:{Ms(Duration.Value)};--bit-tsh-sweep:{Ms(Duration.Value)}" : string.Empty);
         StyleBuilder.Register(() => Delay.HasValue ? $"--bit-tsh-delay:{Ms(Delay.Value)}" : string.Empty);
 
         // The pause is written as a time, and the stylesheet turns it into the ratio of the whole cycle to the sweep
-        // it lengthens the animation and the distance the band travels by alike - taken of the duration the element
-        // actually ends up with, which may be one a class sets rather than one this component knows. Without a
-        // Duration the pause is retuned by the loop factor of the theme, the same as the default sweep it follows.
-        StyleBuilder.Register(() =>
-        {
-            if (RepeatDelay is not > 0 || Duration <= 0) return string.Empty;
-
-            return Duration.HasValue
-                ? $"--bit-tsh-repeat-delay:{Ms(RepeatDelay.Value)}"
-                : $"--bit-tsh-repeat-delay:calc({Ms(RepeatDelay.Value)} * var(--bit-mot-loop-factor, 1))";
-        });
+        // it lengthens the animation and the distance the band travels by alike - taken of the sweep the element
+        // actually ends up with, which may be one a class sets rather than one this component knows. It is written
+        // as the literal time the public variable takes, so the two give the same rest wherever they are set.
+        StyleBuilder.Register(() => RepeatDelay > 0 && Duration is not <= 0 ? $"--bit-tsh-repeat-delay:{Ms(RepeatDelay.Value)}" : string.Empty);
 
         StyleBuilder.Register(() => Iterations >= 1 ? $"--bit-tsh-iterations:{Iterations.Value.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
         StyleBuilder.Register(() => Angle.HasValue && double.IsFinite(Angle.Value) ? $"--bit-tsh-angle:{Format(Angle.Value)}deg" : string.Empty);
         StyleBuilder.Register(() => BaseColor.HasValue() ? $"--bit-tsh-base-clr:{BaseColor}" : string.Empty);
-        StyleBuilder.Register(() => GradientColor.HasValue() ? $"--bit-tsh-gradient-clr:{GradientColor}" : string.Empty);
+        // A GradientColor the markup did not set is one a BitParams supplied, which gives way to a Color role the
+        // markup did set rather than painting over it.
+        StyleBuilder.Register(() => GradientColor.HasValue() && (HasNotBeenSet(nameof(GradientColor)) is false || HasNotBeenSet(nameof(Color)))
+            ? $"--bit-tsh-gradient-clr:{GradientColor}"
+            : string.Empty);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTextShimmerParams))]
@@ -375,12 +379,12 @@ public partial class BitTextShimmer : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        // A BitParams supplies the Spread whenever it holds one the markup did not set, even when it equals the value
-        // the shimmer already has - in which case nothing else resets the style for it.
-        var isSpreadAssigned = HasNotBeenSet(nameof(Spread)) is false || CascadingParameters?.Spread.HasValue is true;
-        if (_isSpreadAssigned != isSpreadAssigned)
+        // Whether a SpreadLength or a GradientColor of a BitParams gives way depends on whether the markup sets a
+        // Spread or a Color, which can change from one render to the next while neither value does.
+        var isSetByMarkup = (HasNotBeenSet(nameof(Spread)) is false, HasNotBeenSet(nameof(Color)) is false);
+        if (_isSetByMarkup != isSetByMarkup)
         {
-            _isSpreadAssigned = isSpreadAssigned;
+            _isSetByMarkup = isSetByMarkup;
 
             StyleBuilder.Reset();
         }
