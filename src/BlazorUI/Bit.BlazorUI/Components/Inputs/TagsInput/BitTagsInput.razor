@@ -136,6 +136,12 @@
                     @* The position is spelled out rather than left to be counted off the elements: once
                        MaxDisplayedTags folds the rest away, the tags that are drawn are no longer the
                        tags there are, and "2 of 2" said over a list of six is worse than nothing. *@
+                    @* The chip is named by the tag it stands for rather than by everything it holds:
+                       the contents of a chip are the handle that moves it and the button that removes
+                       it as well as the word itself, so a chip reading "blazor" would be read out as
+                       "Move blazor, blazor, Remove blazor". A chip a TagTemplate draws as something
+                       other than its value - "Ada Lovelace" over ada@@example.com - is named through
+                       GetTagName, the template being markup nothing can read a name off. *@
                     <div @ref="_tagRefs[index]"
                          @onclick="e => HandleOnTagClick(e, index)"
                          @onclick:stopPropagation="true"
@@ -151,12 +157,6 @@
                          @ondrop:preventDefault="true"
                          role="listitem"
                          draggable="@(CanDragTag(index) ? "true" : null)"
-                         @* The chip is named by the tag it stands for rather than by everything it holds:
-                            the contents of a chip are the handle that moves it and the button that removes
-                            it as well as the word itself, so a chip reading "blazor" would be read out as
-                            "Move blazor, blazor, Remove blazor". A chip a TagTemplate draws as something
-                            other than its value - "Ada Lovelace" over ada@@example.com - is named through
-                            GetTagName, the template being markup nothing can read a name off. *@
                          aria-label="@TagName(tag)"
                          aria-posinset="@(index + 1)"
                          aria-setsize="@tagCount"

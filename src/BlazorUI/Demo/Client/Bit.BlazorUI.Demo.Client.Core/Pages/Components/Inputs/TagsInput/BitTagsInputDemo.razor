@@ -875,18 +875,20 @@
             keeps its logical order: the first chip is always the first tag of the list.
         </div>
         <br />
-        <div class="example-box" dir="rtl">
-            <BitTagsInput Dir="BitDir.Rtl"
-                          Label="برچسب‌ها"
-                          Placeholder="برچسب جدید..."
-                          Description="با کلید Enter برچسب را ثبت کنید."
-                          DefaultValue="@(new List<string> { "بلیزر", "دات‌نت" })" />
-            <BitTagsInput Dir="BitDir.Rtl"
-                          Label="با دکمه پاک کردن"
-                          ShowClearButton
-                          Separators="@(["،"])"
-                          Placeholder="برچسب‌ها را با ویرگول جدا کنید"
-                          DefaultValue="@(new List<string> { "بلیزر", "دات‌نت" })" />
+        <div dir="rtl">
+            <div class="example-box">
+                <BitTagsInput Dir="BitDir.Rtl"
+                              Label="برچسب‌ها"
+                              Placeholder="برچسب جدید..."
+                              Description="با کلید Enter برچسب را ثبت کنید."
+                              DefaultValue="@(new List<string> { "بلیزر", "دات‌نت" })" />
+                <BitTagsInput Dir="BitDir.Rtl"
+                              Label="با دکمه پاک کردن"
+                              ShowClearButton
+                              Separators="@(["،"])"
+                              Placeholder="برچسب‌ها را با ویرگول جدا کنید"
+                              DefaultValue="@(new List<string> { "بلیزر", "دات‌نت" })" />
+            </div>
         </div>
     </DemoExample>
 </DemoPage>
