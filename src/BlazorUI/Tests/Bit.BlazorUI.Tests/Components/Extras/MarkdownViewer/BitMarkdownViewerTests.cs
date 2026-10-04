@@ -637,7 +637,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         // Four spaces make it an indented code block, not a definition.
-        Assert.Contains("<pre>", component.Markup);
+        Assert.Contains("<pre tabindex=\"0\">", component.Markup);
         Assert.Contains("[a]: /a", component.Markup);
     }
 
@@ -2107,7 +2107,8 @@ public class BitMarkdownViewerTests : BunitTestContext
         var checkbox = component.Find(".bit-mdv input[type=checkbox]");
 
         Assert.IsFalse(checkbox.HasAttribute("disabled"));
-        Assert.AreEqual("Task 1", checkbox.GetAttribute("aria-label"));
+        // Named after the text beside it, so what a reader hears is what they see (WCAG 2.5.3).
+        Assert.AreEqual("one", checkbox.GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -2531,7 +2532,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         // A template is not a way around the policy: the blocked image arrives with no source.
-        Assert.AreEqual(string.Empty, component.Find(".bit-mdv span").GetAttribute("data-src"));
+        Assert.AreEqual(string.Empty, component.Find(".bit-mdv span[data-src]").GetAttribute("data-src"));
     }
 
     [TestMethod]
@@ -2773,7 +2774,8 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, "- [ ] eins");
+            // An item with no text of its own (an image with no alt) falls back to its number.
+            parameters.Add(p => p.Markdown, "- [ ] ![](/x.png)");
             parameters.Add(p => p.Pipeline, pipeline);
             parameters.Add(p => p.OnTaskChanged, _ => { });
         });

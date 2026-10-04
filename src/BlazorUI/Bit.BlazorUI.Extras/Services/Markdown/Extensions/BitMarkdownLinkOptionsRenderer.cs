@@ -44,7 +44,7 @@ public sealed class BitMarkdownLinkOptionsRenderer : BitMarkdownNodeRenderer
         b.OpenElement(0, "a");
         if (string.IsNullOrEmpty(link.Url) is false)
         {
-            b.AddAttribute(1, "href", link.Url);
+            b.AddAttribute(1, "href", r.ResolveInPageUrl(link.Url));
 
             var target = external ? ExternalTarget : InternalTarget;
             if (target != BitMarkdownLinkTarget.Self)

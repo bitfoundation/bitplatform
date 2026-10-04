@@ -31,6 +31,37 @@ public sealed class BitMarkdownRenderer
     /// </summary>
     public BitMarkdownTexts Texts { get; }
 
+    /// <summary>
+    /// The address of the page the output is placed in, without a fragment. When set, an in-page
+    /// destination (<c>#id</c>) is written as this address followed by the fragment.
+    /// </summary>
+    /// <remarks>
+    /// A bare <c>#id</c> is resolved against the document's <c>&lt;base href&gt;</c>, not against the
+    /// page, so in an app whose base is <c>/</c> every footnote, permalink and in-page link on any
+    /// other page would lead to the home page instead. Leave it <c>null</c> where the page is the
+    /// base address itself, or where no <c>&lt;base&gt;</c> is in play.
+    /// </remarks>
+    public string? DocumentUrl { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, every paragraph, heading and list is written with <c>dir="auto"</c>, so each
+    /// takes the direction of its own text - what a document mixing right-to-left and left-to-right
+    /// languages needs, since one direction for the whole document lays out every block written in
+    /// the other backwards. Defaults to <c>false</c>.
+    /// </summary>
+    public bool AutoDirection { get; init; }
+
+    /// <summary>
+    /// Returns the destination to write for <paramref name="url"/>: an in-page one (<c>#id</c>)
+    /// prefixed with <see cref="DocumentUrl"/>, anything else unchanged.
+    /// </summary>
+    public string ResolveInPageUrl(string url)
+    {
+        if (string.IsNullOrEmpty(DocumentUrl) || string.IsNullOrEmpty(url) || url[0] != '#') return url;
+
+        return DocumentUrl + url;
+    }
+
     /// <summary>Renders a sequence of nodes.</summary>
     public void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownNode> nodes)
     {

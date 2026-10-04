@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -21,6 +23,13 @@ namespace Bit.BlazorUI;
 /// is treated as text and link / image URLs are sanitized, keeping the output safe from
 /// script injection by default.
 /// </para>
+/// <para>
+/// <see cref="BitComponentBase.Dir"/> set to <see cref="BitDir.Auto"/> is applied block by block:
+/// every paragraph, heading and list takes the direction of its own text, so a document mixing
+/// right-to-left and left-to-right languages lays each one out the right way round. What a
+/// <see cref="CodeBlockTemplate"/>, <see cref="ImageTemplate"/> or <see cref="LinkTemplate"/>
+/// draws is outside the viewer's stylesheet, so a component placed there keeps its own look.
+/// </para>
 /// </remarks>
 public partial class BitMarkdownViewer : BitComponentBase
 {
@@ -30,11 +39,17 @@ public partial class BitMarkdownViewer : BitComponentBase
     private BitMarkdownViewerImageRendering _parsedImageRendering;
     private int _parsedMaxDepth;
     private int _parsedMaxLength;
+    private int _parsedHeadingLevelOffset;
     private bool _parsedStripBidi;
     private bool _parsedInteractiveTasks;
     private bool _notifyParsed;
-    private BitMarkdownRenderer? _templateRenderer;
-    private BitMarkdownPipeline? _templateRendererPipeline;
+    private BitMarkdownRenderer? _renderer;
+    private BitMarkdownPipeline? _rendererPipeline;
+    private string? _rendererDocumentUrl;
+    private bool _rendererHasTemplates;
+    private bool _rendererAutoDirection;
+    private string? _renderedDocumentUrl;
+    private bool _followsLocation;
 
 
 
@@ -43,9 +58,33 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the markdown viewer component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the pipeline, the untrusted-input limits and the
+    /// templates of a site, above all) to be applied to multiple markdown viewer components through the
+    /// <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitMarkdownViewerParams.ParamName)]
+    public BitMarkdownViewerParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The Markdown string value to render as html elements.
     /// </summary>
     [Parameter] public string? Markdown { get; set; }
+
+    /// <summary>
+    /// Shifts every heading down by this many levels, so the document's outline nests under the page it is placed in:
+    /// with an offset of 1, a <c>#</c> heading renders as an <c>h2</c>. The result is clamped to <c>h1</c>-<c>h6</c>,
+    /// so headings that would go deeper all render as <c>h6</c>. Use it wherever the page already has its own
+    /// <c>h1</c> - a comment, a chat message, a card - so the document does not compete with it for the top of the
+    /// outline assistive technology navigates by. Defaults to 0.
+    /// </summary>
+    [Parameter] public int HeadingLevelOffset { get; set; }
 
     /// <summary>
     /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipelines.Basic"/>,
@@ -123,7 +162,10 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// Renders every fenced or indented code block, instead of the <c>&lt;pre&gt;&lt;code&gt;</c>
     /// the viewer would otherwise draw. This is where a syntax highlighter, a copy button or a
     /// diagram renderer goes: the template is given the block, so it can read the language off
-    /// <c>Info</c> and the source off <c>Content</c>.
+    /// <c>Info</c> and the source off <c>Content</c>. The template's output is outside the viewer's
+    /// stylesheet (it is drawn into a <c>display: contents</c> wrapper the rules stop at), so it is
+    /// styled by whatever it is - a component keeps its own look, a bare <c>&lt;pre&gt;</c> needs
+    /// a rule of yours.
     /// </summary>
     [Parameter] public RenderFragment<BitMarkdownCodeBlockNode>? CodeBlockTemplate { get; set; }
 
@@ -166,10 +208,29 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipelines.Basic;
 
+    protected override void OnInitialized()
+    {
+        // The in-page links are written against the address of the page, which can change under a viewer
+        // that stays put (a query string, a route parameter of the same page). There is nothing to follow
+        // where the navigation manager was never initialized.
+        if (TryReadAddress(out _, out _))
+        {
+            _navigationManager.LocationChanged += HandleLocationChanged;
+            _followsLocation = true;
+        }
+
+        base.OnInitialized();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownViewerParams))]
     protected override void OnParametersSet()
     {
+        // Before anything below reads the parameters it may fill in.
+        CascadingParameters?.UpdateParameters(this);
+
         var pipeline = EffectivePipeline;
         var maxDepth = MaxNestingDepth > 0 ? MaxNestingDepth : BitMarkdownParseOptions.DefaultMaxDepth;
+        var interactiveTasks = AreTasksInteractive;
 
         // Re-parse only when an input that affects the output changes.
         if (_parsedSource != Markdown ||
@@ -177,25 +238,31 @@ public partial class BitMarkdownViewer : BitComponentBase
             _parsedImageRendering != ImageRendering ||
             _parsedMaxDepth != maxDepth ||
             _parsedMaxLength != MaxLength ||
+            _parsedHeadingLevelOffset != HeadingLevelOffset ||
             _parsedStripBidi != StripBidiControlCharacters ||
-            _parsedInteractiveTasks != OnTaskChanged.HasDelegate)
+            _parsedInteractiveTasks != interactiveTasks)
         {
             _document = ParseSafely(pipeline, maxDepth);
             ApplyImageRendering(_document.Children);
-            WireTaskCheckboxes();
+            ApplyHeadingLevelOffset(_document.Children);
+            WireTaskCheckboxes(interactiveTasks);
             ScopeFootnoteIds();
             _parsedSource = Markdown;
             _parsedWith = pipeline;
             _parsedImageRendering = ImageRendering;
             _parsedMaxDepth = maxDepth;
             _parsedMaxLength = MaxLength;
+            _parsedHeadingLevelOffset = HeadingLevelOffset;
             _parsedStripBidi = StripBidiControlCharacters;
-            _parsedInteractiveTasks = OnTaskChanged.HasDelegate;
+            _parsedInteractiveTasks = interactiveTasks;
             _notifyParsed = true;
         }
 
         base.OnParametersSet();
     }
+
+    // A disabled viewer keeps its checkboxes the read-only boxes a document nobody is editing shows.
+    private bool AreTasksInteractive => OnTaskChanged.HasDelegate && IsEnabled;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -214,17 +281,24 @@ public partial class BitMarkdownViewer : BitComponentBase
     }
 
     /// <summary>
-    /// Gives every task-list checkbox the handler that makes it interactive, when the host is
-    /// listening. The handler reads <see cref="OnTaskChanged"/> at the moment it fires rather than
-    /// capturing it, so the callback the host most recently supplied is always the one invoked.
+    /// Gives every task-list checkbox the handler that makes it interactive, and the text it is named
+    /// after, when the host is listening. The handler reads <see cref="OnTaskChanged"/> at the moment it
+    /// fires rather than capturing it, so the callback the host most recently supplied is always the one
+    /// invoked. The name is read off the finished tree, after every extension has rewritten the text.
     /// </summary>
-    private void WireTaskCheckboxes()
+    private void WireTaskCheckboxes(bool interactive)
     {
-        if (OnTaskChanged.HasDelegate is false) return;
+        if (interactive is false) return;
 
-        foreach (var checkbox in BitMarkdownAstHelper.Descendants(_document).OfType<BitMarkdownTaskCheckboxNode>())
+        foreach (var node in BitMarkdownAstHelper.Descendants(_document))
         {
-            var box = checkbox;
+            if (node is not BitMarkdownListItemNode { IsTask: true } item) continue;
+            if (item.Children.FirstOrDefault() is not BitMarkdownParagraphNode paragraph) continue;
+            if (paragraph.Inlines.FirstOrDefault() is not BitMarkdownTaskCheckboxNode box) continue;
+
+            var text = new BitMarkdownParagraphNode();
+            text.Inlines.AddRange(paragraph.Inlines.Skip(1));
+            box.Label = BitMarkdownAstHelper.ToPlainText(text);
             box.OnChange = EventCallback.Factory.Create<ChangeEventArgs>(this, args => HandleTaskChangedAsync(box, args));
         }
     }
@@ -307,7 +381,8 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var renderer = ResolveRenderer();
+        _renderedDocumentUrl = ResolveDocumentUrl();
+        var renderer = ResolveRenderer(_renderedDocumentUrl);
 
         // Inline mode wants a span, but a span may not legally hold a list or a table. A document
         // that is nothing but paragraphs gets one; anything else keeps the div and is laid out
@@ -326,13 +401,19 @@ public partial class BitMarkdownViewer : BitComponentBase
         }
         if (AriaLabel is not null)
         {
+            // A name is only announced on an element with a role, which a div has none of: a named
+            // document is a region of the page, unless the host has given it a role of its own.
             builder.AddAttribute(6, "aria-label", AriaLabel);
+            if (asSpan is false && HasSplattedRole() is false)
+            {
+                builder.AddAttribute(7, "role", "region");
+            }
         }
         if (TabIndex is not null)
         {
-            builder.AddAttribute(7, "tabindex", TabIndex);
+            builder.AddAttribute(8, "tabindex", TabIndex);
         }
-        builder.AddElementReferenceCapture(8, v => RootElement = v);
+        builder.AddElementReferenceCapture(9, v => RootElement = v);
 
         if (Inline)
         {
@@ -347,32 +428,131 @@ public partial class BitMarkdownViewer : BitComponentBase
     }
 
     /// <summary>
-    /// The renderer this viewer draws with. With no template supplied it is the pipeline's own,
-    /// shared instance - which holds nothing but the pipeline's immutable renderer list, so there
-    /// is nothing to allocate per render. A viewer that does supply one gets a renderer of its own,
-    /// built once, with the template renderer last so it wins over everything the pipeline
-    /// registered.
+    /// The renderer this viewer draws with. With no template supplied, on a page that is the base
+    /// address itself, and with no automatic direction, it is the pipeline's own, shared instance -
+    /// which holds nothing but the pipeline's immutable renderer list, so there is nothing to allocate
+    /// per render. Otherwise the viewer gets a renderer of its own, built once per pipeline, page
+    /// address and direction: one that writes in-page links against the page, gives each block its
+    /// own direction under <see cref="BitDir.Auto"/>, and has the template renderer last so it wins
+    /// over everything the pipeline registered.
     /// </summary>
-    private BitMarkdownRenderer ResolveRenderer()
+    private BitMarkdownRenderer ResolveRenderer(string? documentUrl)
     {
         var pipeline = EffectivePipeline;
+        bool hasTemplates = CodeBlockTemplate is not null || ImageTemplate is not null || LinkTemplate is not null;
+        // One direction guessed for a whole document lays every block written in the other language out
+        // backwards, so Auto is taken block by block, the way GitHub renders a comment.
+        bool autoDirection = Dir == BitDir.Auto;
 
-        if (CodeBlockTemplate is null && ImageTemplate is null && LinkTemplate is null)
+        if (hasTemplates is false && documentUrl is null && autoDirection is false)
             return pipeline.Renderer;
 
-        if (_templateRenderer is null || ReferenceEquals(_templateRendererPipeline, pipeline) is false)
+        if (_renderer is null ||
+            ReferenceEquals(_rendererPipeline, pipeline) is false ||
+            _rendererHasTemplates != hasTemplates ||
+            _rendererAutoDirection != autoDirection ||
+            string.Equals(_rendererDocumentUrl, documentUrl, StringComparison.Ordinal) is false)
         {
-            var renderers = new List<BitMarkdownNodeRenderer>(pipeline.Renderers)
-            {
-                new BitMarkdownViewerTemplateRenderer(this)
-            };
+            IReadOnlyList<BitMarkdownNodeRenderer> renderers = hasTemplates
+                ? [.. pipeline.Renderers, new BitMarkdownViewerTemplateRenderer(this)]
+                : pipeline.Renderers;
+
             // Given the pipeline's own words, so supplying a template does not silently put a
             // localized document's alerts and back-links back into English.
-            _templateRenderer = new BitMarkdownRenderer(renderers, pipeline.Texts);
-            _templateRendererPipeline = pipeline;
+            _renderer = new BitMarkdownRenderer(renderers, pipeline.Texts) { DocumentUrl = documentUrl, AutoDirection = autoDirection };
+            _rendererPipeline = pipeline;
+            _rendererHasTemplates = hasTemplates;
+            _rendererAutoDirection = autoDirection;
+            _rendererDocumentUrl = documentUrl;
         }
 
-        return _templateRenderer;
+        return _renderer;
+    }
+
+    /// <summary>
+    /// The address an in-page link has to be written against: the page's path and query, or
+    /// <c>null</c> when the page is the base address, where a bare <c>#id</c> already lands.
+    /// </summary>
+    private string? ResolveDocumentUrl()
+    {
+        if (TryReadAddress(out var uri, out var baseUri) is false) return null;
+
+        int hash = uri.IndexOf('#');
+        if (hash >= 0) uri = uri[..hash];
+
+        if (string.Equals(uri, baseUri, StringComparison.Ordinal)) return null;
+
+        // Relative to the origin rather than absolute, so a prerendered document behind a proxy does
+        // not carry the address the server saw.
+        return Uri.TryCreate(uri, UriKind.Absolute, out var absolute) ? absolute.PathAndQuery : uri;
+    }
+
+    /// <summary>
+    /// Reads the page and base addresses, which a <see cref="NavigationManager"/> that was never
+    /// initialized - a viewer rendered by an <c>HtmlRenderer</c> into an email or a static file -
+    /// refuses to answer. There is no page there for an in-page link to be resolved against.
+    /// </summary>
+    private bool TryReadAddress(out string uri, out string baseUri)
+    {
+        try
+        {
+            uri = _navigationManager.Uri;
+            baseUri = _navigationManager.BaseUri;
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            uri = baseUri = string.Empty;
+            return false;
+        }
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (IsDisposed) return;
+
+        if (string.Equals(ResolveDocumentUrl(), _renderedDocumentUrl, StringComparison.Ordinal)) return;
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private bool HasSplattedRole()
+    {
+        foreach (var key in HtmlAttributes.Keys)
+        {
+            if (string.Equals(key, "role", StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Replaces every heading with one <see cref="HeadingLevelOffset"/> levels deeper, clamped to
+    /// h1-h6. The level is init-only, so the node is replaced rather than changed, keeping its id
+    /// and its content.
+    /// </summary>
+    private void ApplyHeadingLevelOffset(IList<BitMarkdownNode> nodes)
+    {
+        if (HeadingLevelOffset == 0) return;
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i] is BitMarkdownHeadingNode heading)
+            {
+                var shifted = new BitMarkdownHeadingNode
+                {
+                    Level = Math.Clamp(heading.Level + HeadingLevelOffset, 1, 6),
+                    Id = heading.Id
+                };
+                shifted.Inlines.AddRange(heading.Inlines);
+                nodes[i] = shifted;
+                continue;
+            }
+
+            foreach (var childList in nodes[i].ChildLists)
+            {
+                ApplyHeadingLevelOffset(childList);
+            }
+        }
     }
 
     private static bool HoldsOnlyParagraphs(IList<BitMarkdownNode> nodes)
@@ -397,7 +577,7 @@ public partial class BitMarkdownViewer : BitComponentBase
             {
                 // Paragraphs are separated by a space rather than run together, so two of them do
                 // not read as one word.
-                if (i > 0) builder.AddContent(9, " ");
+                if (i > 0) builder.AddContent(10, " ");
                 renderer.WriteNodes(builder, paragraph.Inlines);
                 continue;
             }
@@ -467,7 +647,8 @@ public partial class BitMarkdownViewer : BitComponentBase
             return false;
 
         // Resolve the image URL against the page's base URI and compare origins.
-        if (Uri.TryCreate(_navigationManager.BaseUri, UriKind.Absolute, out var baseUri) &&
+        if (TryReadAddress(out _, out var pageBaseUri) &&
+            Uri.TryCreate(pageBaseUri, UriKind.Absolute, out var baseUri) &&
             Uri.TryCreate(baseUri, url, out var imageUri))
         {
             return string.Equals(baseUri.Scheme, imageUri.Scheme, StringComparison.OrdinalIgnoreCase) is false ||
@@ -477,5 +658,17 @@ public partial class BitMarkdownViewer : BitComponentBase
 
         // If the origin can't be determined, err on the side of caution and block.
         return true;
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        if (_followsLocation)
+        {
+            _navigationManager.LocationChanged -= HandleLocationChanged;
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

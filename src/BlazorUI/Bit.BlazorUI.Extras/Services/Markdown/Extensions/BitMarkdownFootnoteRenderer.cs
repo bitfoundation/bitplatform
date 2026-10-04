@@ -22,7 +22,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(0, "sup");
                 b.AddAttribute(1, "class", "footnote-ref");
                 b.OpenElement(2, "a");
-                b.AddAttribute(3, "href", $"#{referenceScope}fn-{reference.Number}");
+                b.AddAttribute(3, "href", r.ResolveInPageUrl($"#{referenceScope}fn-{reference.Number}"));
                 b.AddAttribute(4, "id", FootnoteRefId(reference));
                 b.AddAttribute(5, "aria-describedby", $"{referenceScope}footnotes");
                 b.AddContent(6, reference.Number.ToString());
@@ -81,7 +81,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
         {
             b.AddContent(16, " ");
             b.OpenElement(17, "a");
-            b.AddAttribute(18, "href", $"#{Scope(definition.IdScope)}fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}");
+            b.AddAttribute(18, "href", r.ResolveInPageUrl($"#{Scope(definition.IdScope)}fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}"));
             b.AddAttribute(19, "class", "footnote-backref");
             b.AddAttribute(20, "aria-label", definition.ReferenceCount > 1
                 ? string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReferenceOccurrence, definition.Number, i)

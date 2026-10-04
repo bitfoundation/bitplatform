@@ -24,12 +24,16 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(0, "h" + h.Level);
                 if (!string.IsNullOrEmpty(h.Id))
                     b.AddAttribute(1, "id", h.Id);
+                if (r.AutoDirection)
+                    b.AddAttribute(37, "dir", "auto");
                 r.WriteNodes(b, h.Inlines);
                 b.CloseElement();
                 break;
 
             case BitMarkdownParagraphNode p:
                 b.OpenElement(2, "p");
+                if (r.AutoDirection)
+                    b.AddAttribute(38, "dir", "auto");
                 r.WriteNodes(b, p.Inlines);
                 b.CloseElement();
                 break;
@@ -44,6 +48,9 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(3, "pre");
                 if (language is not null)
                     b.AddAttribute(35, "class", language);
+                // A block scrolls rather than wraps, so it is a tab stop: a line wider than the
+                // document can then be scrolled to with the keyboard alone (WCAG 2.1.1).
+                b.AddAttribute(36, "tabindex", "0");
                 b.OpenElement(4, "code");
                 if (language is not null)
                     b.AddAttribute(5, "class", language);
@@ -93,7 +100,7 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(14, "a");
                 if (!string.IsNullOrEmpty(link.Url))
                 {
-                    b.AddAttribute(15, "href", link.Url);
+                    b.AddAttribute(15, "href", r.ResolveInPageUrl(link.Url));
                     if (BitMarkdownLinkHelpers.IsExternalUrl(link.Url))
                     {
                         b.AddAttribute(16, "target", "_blank");
@@ -159,6 +166,8 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
         // bullets without depending on ":has()".
         if (list.Items.Exists(i => i.IsTask))
             b.AddAttribute(33, "class", "contains-task-list");
+        if (r.AutoDirection)
+            b.AddAttribute(39, "dir", "auto");
 
         foreach (var item in list.Items)
         {

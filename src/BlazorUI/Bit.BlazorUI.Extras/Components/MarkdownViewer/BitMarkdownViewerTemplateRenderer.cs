@@ -28,21 +28,37 @@ internal sealed class BitMarkdownViewerTemplateRenderer : BitMarkdownNodeRendere
     };
 
     // Fixed literal sequence numbers (see BitMarkdownCoreRenderer for the rationale).
+    //
+    // Each template's output sits in a display: contents wrapper the stylesheet stops at, so the rules
+    // written for the renderers' own markup - and the reset under them - never reach a component the
+    // host put into the document. The wrapper is a span where the node is inline content, since a div
+    // may not sit in a paragraph.
     public override void Write(BitMarkdownRenderer renderer, RenderTreeBuilder builder, BitMarkdownNode node)
     {
         switch (node)
         {
             case BitMarkdownCodeBlockNode code:
-                builder.AddContent(0, _viewer.CodeBlockTemplate, code);
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", TemplateClass);
+                builder.AddContent(2, _viewer.CodeBlockTemplate, code);
+                builder.CloseElement();
                 break;
 
             case BitMarkdownImageNode image:
-                builder.AddContent(1, _viewer.ImageTemplate, image);
+                builder.OpenElement(3, "span");
+                builder.AddAttribute(4, "class", TemplateClass);
+                builder.AddContent(5, _viewer.ImageTemplate, image);
+                builder.CloseElement();
                 break;
 
             case BitMarkdownLinkNode link:
-                builder.AddContent(2, _viewer.LinkTemplate, link);
+                builder.OpenElement(6, "span");
+                builder.AddAttribute(7, "class", TemplateClass);
+                builder.AddContent(8, _viewer.LinkTemplate, link);
+                builder.CloseElement();
                 break;
         }
     }
+
+    internal const string TemplateClass = "bit-mdv-tpl";
 }
