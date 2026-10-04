@@ -376,12 +376,12 @@ public partial class AppMenu
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         //#if (multitenant == true)
         AuthManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
         //#endif
+
+        await base.DisposeAsync(disposing);
     }
 
     private async Task ModalSignIn()
