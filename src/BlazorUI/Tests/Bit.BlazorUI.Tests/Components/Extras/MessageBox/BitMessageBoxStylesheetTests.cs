@@ -86,7 +86,12 @@ public partial class BitMessageBoxStylesheetTests
         StringAssert.Contains(root, "var(--bit-Modal-border-width, #{spacing(0.5)})");
         StringAssert.Contains(root, "(2 * var(--bit-Modal-offset, 0px))");
         StringAssert.Contains(root, "max-height: var(--bit-msb-max-height);");
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-msb-con {"), "max-height: calc(var(--bit-msb-max-height) - (2 * var(--bit-MessageBox-padding, var(--bit-msb-pad))));");
+
+        // The container shrinks inside the root's padding by layout rather than by subtracting the padding, which a
+        // two-value --bit-MessageBox-padding would turn into an invalid calc().
+        StringAssert.Contains(root, "flex-direction: column;");
+        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-msb-con {"), "min-height: 0;");
+        Assert.IsFalse(Block(ReadStylesheet(), "\n.bit-msb-con {").Contains("--bit-MessageBox-padding"), "The container's height is derived from the public padding.");
     }
 
     [TestMethod]

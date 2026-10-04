@@ -41,6 +41,10 @@ $msb-ttl-line-height: 1.4;
     // top edge and the offset it keeps from the edges. Without them the box would be that much taller than the
     // modal, which then scrolls the whole box by those few pixels on top of the body scrolling inside it.
     --bit-msb-max-height: var(--bit-MessageBox-max-height, calc(#{$bit-env-height-available} - var(--bit-Modal-border-width, #{spacing(0.5)}) - (2 * var(--bit-Modal-offset, 0px))));
+    // A column the container shrinks in: the inset of the root is what the container has less of to work with,
+    // which the layout works out from the padding itself - so any padding (a two-value shorthand included) holds.
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
     max-height: var(--bit-msb-max-height);
     padding: var(--bit-MessageBox-padding, var(--bit-msb-pad));
@@ -63,9 +67,8 @@ $msb-ttl-line-height: 1.4;
     align-items: flex-start;
     justify-content: flex-start;
     gap: var(--bit-MessageBox-gap, #{spacing(2)});
-    // The inset of the root is what the container has less of to work with, and the root pads both
-    // sides of it - so twice the padding, not three times.
-    max-height: calc(var(--bit-msb-max-height) - (2 * var(--bit-MessageBox-padding, var(--bit-msb-pad))));
+    // Shrinks to the room the root's max-height leaves inside its padding, which is what lets the body scroll.
+    min-height: 0;
 }
 
 .bit-msb-hdr {

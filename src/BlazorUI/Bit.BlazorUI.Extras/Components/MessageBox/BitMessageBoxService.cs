@@ -207,9 +207,24 @@ public class BitMessageBoxService(BitModalService modalService)
             BuildModalParameters(parameters, id, asksAQuestion, prompt),
             parameters.Persistent ?? false);
 
-        // Close rather than Dismiss: this is the page taking the box back, which a CanClose guard has no say over.
-        using var registration = cancellationToken.Register(() => _ = modalRef.Close());
+        // The token only signals: the close itself is awaited below, so a close handler that fails (Close rethrows
+        // their failures as an AggregateException) reaches the caller rather than being dropped unobserved.
+        var cancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var registration = cancellationToken.Register(() => cancelled.TrySetResult());
 
+        var answer = WaitForAnswer(modalRef);
+
+        if (await Task.WhenAny(answer, cancelled.Task) != answer)
+        {
+            // Close rather than Dismiss: this is the page taking the box back, which a CanClose guard has no say over.
+            await modalRef.Close();
+        }
+
+        return await answer;
+    }
+
+    private static async Task<BitMessageBoxResult> WaitForAnswer(BitModalReference modalRef)
+    {
         // A modal shown with no container mounted is never rendered and never closed, so its result would
         // never arrive: whoever asked the question is let go with no answer instead of left waiting.
         if (await modalRef.Rendered is false && modalRef.IsClosed is false) return BitMessageBoxResult.None;
