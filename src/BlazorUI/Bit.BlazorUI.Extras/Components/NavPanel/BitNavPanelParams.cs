@@ -41,8 +41,10 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public bool? AllExpanded { get; set; }
 
     /// <summary>
-    /// Moves the focus onto the search box (or the first item) of the drawer as it opens, instead of onto the
-    /// drawer itself.
+    /// Moves the focus onto the search box of the drawer as it opens - or onto the first item of a panel
+    /// without one - instead of onto the drawer itself, where a modal drawer puts it otherwise.
+    /// It also moves the focus into a drawer that does not trap it (NoFocusTrap, NoOverlay), which takes none
+    /// of its own.
     /// </summary>
     public bool? AutoFocus { get; set; }
 
@@ -216,7 +218,9 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoCollapse { get; set; }
 
     /// <summary>
-    /// Stops the open drawer of a small screen from holding the focus inside itself.
+    /// Stops the open drawer of a small screen from taking the focus as it opens and holding it inside itself.
+    /// Left false, every modal drawer under the <see cref="BitParams"/> takes the focus onto itself as it opens
+    /// (or AutoFocus moves it further in), and hands it back as it closes.
     /// </summary>
     public bool? NoFocusTrap { get; set; }
 
@@ -231,7 +235,9 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoPad { get; set; }
 
     /// <summary>
-    /// Stops the closing drawer of a small screen from handing the focus back to the element that had it.
+    /// Stops the closing drawer of a small screen from handing the focus back to the element that had it
+    /// when the drawer opened. Only ever read by a panel that took the focus in the first place: a modal
+    /// drawer, or one with AutoFocus.
     /// </summary>
     public bool? NoRestoreFocus { get; set; }
 
