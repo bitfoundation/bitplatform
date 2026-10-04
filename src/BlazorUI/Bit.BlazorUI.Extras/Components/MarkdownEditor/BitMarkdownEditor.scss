@@ -21,6 +21,7 @@
 //   --bit-MarkdownEditor-placeholder-color         placeholder of the textarea                 (default: $clr-fg-sec)
 //   --bit-MarkdownEditor-preview-padding           padding of the preview pane                 (default: spacing(1.5) spacing(2))
 //   --bit-MarkdownEditor-toolbar-background        background of the toolbar and find panel    (default: $clr-bg-sec)
+//   --bit-MarkdownEditor-toolbar-sticky-offset     gap above a StickyToolbar once it is pinned (default: 0)
 //   --bit-MarkdownEditor-button-size               square of a toolbar button                  (default: $siz-ctrl-md)
 //   --bit-MarkdownEditor-button-color              glyph of a toolbar button                   (default: $clr-fg-sec)
 //   --bit-MarkdownEditor-button-radius             corner radius of a toolbar button           (default: $shp-radius-button)
@@ -108,6 +109,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
     .bit-mde-txa,
     .bit-mde-lbl,
+    .bit-mde-des,
     .bit-mde-sbr {
         color: $clr-fg-dis;
     }
@@ -170,6 +172,18 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
         opacity: $opa-dis;
         cursor: not-allowed;
     }
+}
+
+.bit-mde-stk > .bit-mde-tlb {
+    position: sticky;
+    // Above the panes it slides over, below the menus it opens (which sit inside it).
+    z-index: 1;
+    top: var(--bit-MarkdownEditor-toolbar-sticky-offset, 0);
+}
+
+// Full-screen already keeps the toolbar on screen, and the viewport is the editor's own there.
+.bit-mde-fsc.bit-mde-stk > .bit-mde-tlb {
+    position: static;
 }
 
 .bit-mde-sep {
@@ -289,6 +303,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     background: $clr-bg-pri;
     font-size: $tg-fs-xs;
     box-sizing: border-box;
+    text-transform: $tg-ctrl-text-transform;
     // WCAG 2.5.8: a pointer target is at least 24px square, which the padding alone does not reach.
     min-width: spacing(3);
     min-height: spacing(3);
@@ -312,9 +327,12 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
         border-color: $mde-button-active-background;
     }
 
+    // A text-bearing control: it greys out with the disabled colors rather than fading as a whole.
     &:disabled {
-        opacity: $opa-dis;
         cursor: not-allowed;
+        color: $clr-fg-dis;
+        background: $clr-bg-dis;
+        border-color: $clr-brd-dis;
     }
 }
 
@@ -459,6 +477,13 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     color: $mde-error;
 }
 
+.bit-mde-des {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    padding: spacing(0.5) spacing(1.5);
+    border-top: $shp-border-width $shp-border-style $mde-divider;
+}
+
 .bit-mde-sbr {
     display: flex;
     flex-wrap: wrap;
@@ -514,7 +539,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     max-height: calc(100% - #{spacing(4)});
     width: min(spacing(45), 90%);
     box-shadow: $box-shadow-dialog;
-    padding: spacing(2) spacing(2.25);
+    padding: $spa-dialog;
     border-radius: $shp-radius-dialog;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 

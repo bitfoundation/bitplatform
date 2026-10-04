@@ -35,6 +35,51 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownEditorShouldDescribeItsTextAreaWithTheDescription()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Markdown is supported.");
+            parameters.Add(p => p.MaxLength, 100);
+            parameters.Add(p => p.Classes, new() { Description = "custom-description" });
+        });
+
+        var description = component.Find(".bit-mde-des");
+        Assert.AreEqual("Markdown is supported.", description.TextContent.Trim());
+        Assert.IsTrue(description.ClassList.Contains("custom-description"));
+
+        // Both the description and the counter are read out with the field, the description first.
+        var describedBy = component.Find(".bit-mde-txa").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.AreEqual(2, describedBy.Length);
+        Assert.AreEqual(description.Id, describedBy[0]);
+        Assert.AreEqual("0 / 100 chars", component.Find($"[id='{describedBy[1]}']").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldRenderTheDescriptionTemplate()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Ignored");
+            parameters.Add(p => p.DescriptionTemplate, builder => builder.AddMarkupContent(0, "<a href=\"/help\">Markdown help</a>"));
+        });
+
+        var description = component.Find(".bit-mde-des");
+        Assert.AreEqual(1, description.QuerySelectorAll("a").Length);
+        Assert.IsFalse(description.TextContent.Contains("Ignored"));
+        Assert.AreEqual(description.Id, component.Find(".bit-mde-txa").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldRenderNoDescriptionWithoutOne()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-des").Count);
+        Assert.IsFalse(component.Find(".bit-mde").ClassList.Contains("bit-mde-stk"));
+    }
+
+    [TestMethod]
     public void BitMarkdownEditorShouldPostUnderItsName()
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters => parameters.Add(p => p.Name, "notes"));

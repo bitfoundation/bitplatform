@@ -50,14 +50,11 @@
                     <b>DefaultValue</b> seeds an uncontrolled editor once, and <b>OnChange</b> reports every edit.
                 </div>
                 <br />
-                <BitMarkdownEditor @bind-Value="bindingValue" Mode="BitMarkdownEditorMode.Edit" Height="8rem" />
+                <BitMarkdownEditor @bind-Value="bindingValue" />
                 <br />
                 <BitTextField Multiline Rows="4" Label="Bound value (editable)" @bind-Value="@bindingValue" Immediate />
                 <br /><br />
-                <BitMarkdownEditor DefaultValue="# This is the default value"
-                                   Mode="BitMarkdownEditorMode.Edit"
-                                   Height="8rem"
-                                   OnChange="v => onChangeValue = v" />
+                <BitMarkdownEditor DefaultValue="# This is the default value" OnChange="v => onChangeValue = v" />
                 <br />
                 <div>OnChange value:</div>
                 <pre class="code-box">@onChangeValue</pre>
@@ -79,7 +76,25 @@
                 <BitMarkdownEditor @bind-Mode="mode" DefaultValue="@modeDefaultValue" />
             </DemoExample>
 
-            <DemoExample Title="Toolbar" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <DemoExample Title="Height & FullScreen" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+                <div>
+                    <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b> take any CSS length and bound the <b>Resizable</b>
+                    handle; <b>AutoHeight</b> grows the editor with its content up to MaxHeight instead, and
+                    <b>StickyToolbar</b> keeps its toolbar in view while the page scrolls past it. <b>FullScreen</b>
+                    (two-way bindable, also the toolbar button and F11) covers the viewport, locks the page scroll and keeps
+                    Tab inside; Escape leaves it.
+                </div>
+                <br />
+                <BitToggleButton @bind-IsChecked="fullScreen" OnText="Exit full-screen" OffText="Go full-screen" />
+                <br /><br />
+                <BitMarkdownEditor @bind-FullScreen="fullScreen" Height="10rem" MinHeight="6rem" MaxHeight="20rem" Resizable />
+                <br /><br />
+                <div>AutoHeight with a StickyToolbar (type a few lines, then scroll):</div>
+                <br />
+                <BitMarkdownEditor AutoHeight StickyToolbar MinHeight="5rem" Mode="BitMarkdownEditorMode.Edit" />
+            </DemoExample>
+
+            <DemoExample Title="Toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>
                     <b>Toolbar</b> takes your own list of items: commands, dropdowns, separators and <b>Custom</b> items that
                     receive the editor (set <b>AlwaysEnabled</b> to keep one usable while read-only). <b>ShowToolbar</b> and
@@ -92,7 +107,7 @@
                 <BitMarkdownEditor ShowToolbar="false" ShowStatusBar="false" Height="8rem" />
             </DemoExample>
 
-            <DemoExample Title="Commands" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <DemoExample Title="Commands" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
                 <div>
                     Drive the editor from code: <b>Run</b> applies any command to the selection, <b>Insert</b> adds markdown as
                     one undo step, <b>GetSelection</b> / <b>SetSelection</b> read and move the caret, <b>Undo</b> / <b>Redo</b>
@@ -121,7 +136,7 @@
                 <pre class="code-box">@getValueResult</pre>
             </DemoExample>
 
-            <DemoExample Title="Preview" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <DemoExample Title="Preview" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
                 <div>
                     The preview uses the GitHub pipeline of the BitMarkdownViewer. <b>PreviewPipeline</b> swaps it,
                     <b>PreviewTemplate</b> replaces the pane, and <b>DebounceTime</b> sets how long typing settles before it
@@ -139,23 +154,6 @@
                         <pre style="margin:0;white-space:pre-wrap">@context</pre>
                     </PreviewTemplate>
                 </BitMarkdownEditor>
-            </DemoExample>
-
-            <DemoExample Title="Height & FullScreen" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-                <div>
-                    <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b> take any CSS length and bound the <b>Resizable</b>
-                    handle; <b>AutoHeight</b> grows the editor with its content up to MaxHeight instead. <b>FullScreen</b>
-                    (two-way bindable, also the toolbar button and F11) covers the viewport, locks the page scroll and keeps
-                    Tab inside; Escape leaves it.
-                </div>
-                <br />
-                <BitToggleButton @bind-IsChecked="fullScreen" OnText="Exit full-screen" OffText="Go full-screen" />
-                <br /><br />
-                <BitMarkdownEditor @bind-FullScreen="fullScreen" Height="10rem" MinHeight="6rem" MaxHeight="20rem" Resizable />
-                <br /><br />
-                <div>AutoHeight (type a few lines):</div>
-                <br />
-                <BitMarkdownEditor AutoHeight MinHeight="5rem" MaxHeight="24rem" Mode="BitMarkdownEditorMode.Edit" Placeholder="Grows as you type..." />
             </DemoExample>
 
             <DemoExample Title="Editing" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
@@ -300,7 +298,8 @@
                 <div>
                     Inside an <b>EditForm</b>, <b>@@bind-Value</b> ties the editor to its field: edits are validated as typed,
                     and a failing field gets <code>aria-invalid</code> and the error border. <b>Label</b> (or
-                    <b>LabelTemplate</b>) names the textarea, <b>Required</b> marks it, <b>Name</b> posts it with a plain form,
+                    <b>LabelTemplate</b>) names the textarea, <b>Description</b> (or <b>DescriptionTemplate</b>) describes
+                    it, <b>Required</b> marks it, <b>Name</b> posts it with a plain form,
                     and <b>OnSubmit</b> makes Ctrl/Cmd+Enter submit. <b>OnFocus</b>, <b>OnBlur</b>, <b>Focus</b>,
                     <b>Blur</b> and <b>AutoFocus</b> handle the focus.
                 </div>
@@ -310,9 +309,10 @@
                     <BitMarkdownEditor @bind-Value="formModel.ReleaseNotes"
                                        Label="Release notes"
                                        Required
+                                       Description="Markdown is supported. Press Ctrl+Enter to publish."
                                        Name="releaseNotes"
                                        Height="8rem"
-                                       Placeholder="At least 20 characters, then press Ctrl+Enter..."
+                                       Placeholder="At least 20 characters..."
                                        OnFocus="EditorFocused"
                                        OnBlur="EditorBlurred"
                                        OnSubmit="SubmitFromEditor" />

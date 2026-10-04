@@ -164,6 +164,11 @@ public class BitMarkdownEditorParams : BitComponentBaseParams, IBitComponentPara
     public bool? SpellCheck { get; set; }
 
     /// <summary>
+    /// Keeps the toolbar on screen while the page scrolls past a tall editor.
+    /// </summary>
+    public bool? StickyToolbar { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the editor.
     /// </summary>
     public BitMarkdownEditorClassStyles? Styles { get; set; }
@@ -370,6 +375,13 @@ public class BitMarkdownEditorParams : BitComponentBaseParams, IBitComponentPara
         if (SpellCheck.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(SpellCheck)))
         {
             bitMarkdownEditor.SpellCheck = SpellCheck.Value;
+        }
+
+        if (StickyToolbar.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(StickyToolbar)) && bitMarkdownEditor.StickyToolbar != StickyToolbar.Value)
+        {
+            bitMarkdownEditor.StickyToolbar = StickyToolbar.Value;
+
+            bitMarkdownEditor.ClassBuilder.Reset();
         }
 
         if (Styles is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMarkdownEditor.Styles, Styles) is false)

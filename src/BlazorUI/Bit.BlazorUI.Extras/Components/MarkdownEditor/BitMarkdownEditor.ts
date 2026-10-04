@@ -535,9 +535,13 @@
             if (idx < 0) idx = 0;
 
             e.preventDefault();
+            // The arrows follow what is on screen: in a right-to-left toolbar the next button sits to the left.
+            const rtl = getComputedStyle(this.toolbar!).direction === 'rtl';
+            const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
+            const backward = rtl ? 'ArrowRight' : 'ArrowLeft';
             let next = idx;
-            if (e.key === 'ArrowRight') next = (idx + 1) % buttons.length;
-            else if (e.key === 'ArrowLeft') next = (idx - 1 + buttons.length) % buttons.length;
+            if (e.key === forward) next = (idx + 1) % buttons.length;
+            else if (e.key === backward) next = (idx - 1 + buttons.length) % buttons.length;
             else if (e.key === 'Home') next = 0;
             else if (e.key === 'End') next = buttons.length - 1;
 
@@ -1360,7 +1364,7 @@
                 try {
                     const base64 = await this.fileToBase64(file);
                     const url = await this.dotnetObj?.invokeMethodAsync<string | null>('UploadImage', name, base64, file.type);
-                    const replacement = url ? `![${this.escapeAlt(name)}](${url})` : '';
+                    const replacement = url ? `![${this.escapeAlt(name)}](${this.linkDestination(url)})` : '';
 
                     // The finished markdown is usually longer than the placeholder it replaces.
                     // When it no longer fits, the placeholder is taken back out rather than the
@@ -1411,6 +1415,12 @@
             // Brackets would close the alt text early and a newline would end the image
             // markup altogether, so neither survives into the document.
             return text.replace(/[\[\]]/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        // A space or a parenthesis in a URL (a storage key built from the file name, for one) ends a plain link
+        // destination early, so such a URL goes in angle brackets, inside which only < and > need escaping.
+        private linkDestination(url: string) {
+            return /[\s()<>]/.test(url) ? `<${url.replace(/[<>]/g, c => encodeURIComponent(c))}>` : url;
         }
 
         private isUrl(text: string) {

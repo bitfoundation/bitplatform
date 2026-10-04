@@ -154,6 +154,17 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public string? DefaultValue { get; set; }
 
     /// <summary>
+    /// A hint rendered below the panes (the markdown flavor accepted, what the text is for) and tied to the
+    /// textarea through aria-describedby, so assistive tech reads it out with the field.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// A custom template for the description of the editor, replacing <see cref="Description"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
     /// Whether the editor is rendered in full-screen mode.
     /// </summary>
     [Parameter, TwoWayBound, ResetClassBuilder, CallOnSetAsync(nameof(OnFullScreenSet))]
@@ -364,6 +375,14 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// Enables the native browser spell checking in the textarea.
     /// </summary>
     [Parameter] public bool SpellCheck { get; set; } = true;
+
+    /// <summary>
+    /// Keeps the toolbar on screen while the page scrolls past a tall editor (an <see cref="AutoHeight"/> one,
+    /// above all), pinned <c>--bit-MarkdownEditor-toolbar-sticky-offset</c> below the top of the scrolling
+    /// ancestor - the height of a fixed app header, for one.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool StickyToolbar { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the editor.
@@ -776,6 +795,8 @@ public partial class BitMarkdownEditor : BitComponentBase
 
         ClassBuilder.Register(() => AutoHeight ? "bit-mde-ahg" : string.Empty);
 
+        ClassBuilder.Register(() => StickyToolbar ? "bit-mde-stk" : string.Empty);
+
         ClassBuilder.Register(() => _invalid ? "bit-inv" : string.Empty);
     }
 
@@ -987,13 +1008,26 @@ public partial class BitMarkdownEditor : BitComponentBase
 
     private string CounterId => $"{_Id}-cnt";
 
+    private string DescriptionId => $"{_Id}-des";
+
     private string HelpTitleId => $"{_Id}-hlt";
 
     private string GetMenuId(BitMarkdownEditorToolbarItem item) => $"{_Id}-mnu-{item.Name}";
 
-    // A limit nobody can see is a limit that surprises: while MaxLength is set, the counter
-    // describes the textarea so assistive tech reads out how much room is left.
-    private string? TextAreaDescribedBy => ShowStatusBar && MaxLength is > 0 ? CounterId : null;
+    private bool HasDescription => string.IsNullOrEmpty(Description) is false || DescriptionTemplate is not null;
+
+    // The description is read out with the field, and so is the counter while MaxLength is set: a limit
+    // nobody can see is a limit that surprises, so assistive tech reads out how much room is left.
+    private string? TextAreaDescribedBy
+    {
+        get
+        {
+            var description = HasDescription ? DescriptionId : null;
+            var counter = ShowStatusBar && MaxLength is > 0 ? CounterId : null;
+
+            return description is null ? counter : counter is null ? description : $"{description} {counter}";
+        }
+    }
 
     // A visible label already names the field through its for/id pair, and an aria-label on
     // top of it would win over the label and hide it from the accessibility tree.

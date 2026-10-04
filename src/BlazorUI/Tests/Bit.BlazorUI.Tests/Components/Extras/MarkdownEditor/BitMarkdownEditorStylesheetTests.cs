@@ -22,7 +22,7 @@ public partial class BitMarkdownEditorStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(28, documented.Length, "The stylesheet does not document the twenty-eight public variables.");
+        Assert.AreEqual(29, documented.Length, "The stylesheet does not document the twenty-nine public variables.");
 
         foreach (var name in documented)
         {
@@ -90,6 +90,19 @@ public partial class BitMarkdownEditorStylesheetTests
         // Full-screen comes after it, so a full-screen editor still fills the viewport.
         Assert.IsTrue(ReadStylesheet().IndexOf("\n.bit-mde-fsc .bit-mde-bdy {", System.StringComparison.Ordinal) >
                       ReadStylesheet().IndexOf("\n.bit-mde-ahg .bit-mde-bdy {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorStickyToolbarShouldPinBelowTheOffset()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var sticky = Block(stylesheet, "\n.bit-mde-stk > .bit-mde-tlb {");
+        StringAssert.Contains(sticky, "position: sticky;");
+        StringAssert.Contains(sticky, "top: var(--bit-MarkdownEditor-toolbar-sticky-offset, 0);");
+
+        // Full-screen gives the editor the viewport, so there is nothing to stick to there.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-mde-fsc.bit-mde-stk > .bit-mde-tlb {"), "position: static;");
     }
 
     [TestMethod]

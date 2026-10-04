@@ -203,6 +203,21 @@
         </div>
     </div>
 
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content. *@
+        <div id="@DescriptionId" style="@Styles?.Description" class="bit-mde-des @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
     @* Kept on the page while empty: a live region only announces a change made after it is already there. *@
     <span class="bit-mde-ann" aria-live="polite" aria-atomic="true">@_announcement</span>
 

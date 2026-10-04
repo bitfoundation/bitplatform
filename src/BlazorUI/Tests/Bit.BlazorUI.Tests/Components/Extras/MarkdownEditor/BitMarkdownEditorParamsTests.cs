@@ -24,6 +24,8 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
         nameof(BitMarkdownEditor.AutoFocus),
         nameof(BitMarkdownEditor.AutoSaveId),
         nameof(BitMarkdownEditor.DefaultValue),
+        nameof(BitMarkdownEditor.Description),
+        nameof(BitMarkdownEditor.DescriptionTemplate),
         nameof(BitMarkdownEditor.FullScreen),
         nameof(BitMarkdownEditor.FullScreenChanged),
         nameof(BitMarkdownEditor.Label),
@@ -93,6 +95,7 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
             Placeholder = "Schreiben...",
             SpellCheck = false,
             Resizable = true,
+            StickyToolbar = true,
             ShowReadingTime = true,
             MaxLength = 50,
             Texts = new() { EditorAriaLabel = "Markdown-Editor", ReadingTimeFormat = "{0} Min." },
@@ -103,6 +106,7 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-mde-rsz"));
+        Assert.IsTrue(root.ClassList.Contains("bit-mde-stk"));
         StringAssert.Contains(root.GetAttribute("style"), "--bit-MarkdownEditor-height:12rem");
 
         var textArea = component.Find(".bit-mde-txa");

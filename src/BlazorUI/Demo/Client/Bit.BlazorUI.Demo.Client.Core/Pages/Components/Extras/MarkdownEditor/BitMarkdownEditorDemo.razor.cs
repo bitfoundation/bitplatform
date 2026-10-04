@@ -98,6 +98,20 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A hint rendered below the panes and tied to the textarea through aria-describedby, so assistive tech reads it out with the field.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template for the description of the editor, replacing Description.",
+        },
+        new()
+        {
             Name = "FullScreen",
             Type = "bool",
             DefaultValue = "false",
@@ -316,6 +330,13 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
+            Name = "StickyToolbar",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the toolbar on screen while the page scrolls past a tall editor, pinned --bit-MarkdownEditor-toolbar-sticky-offset below the top of the scrolling ancestor.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitMarkdownEditorClassStyles?",
             DefaultValue = "null",
@@ -530,6 +551,7 @@ public partial class BitMarkdownEditorDemo
         new() { Name = "--bit-MarkdownEditor-placeholder-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Placeholder text of the textarea." },
         new() { Name = "--bit-MarkdownEditor-preview-padding", DefaultValue = "spacing(1.5) spacing(2)", Description = "Padding of the preview pane." },
         new() { Name = "--bit-MarkdownEditor-toolbar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the toolbar and the find panel." },
+        new() { Name = "--bit-MarkdownEditor-toolbar-sticky-offset", DefaultValue = "0", Description = "Gap between a StickyToolbar and the top of the scrolling ancestor once it is pinned (the height of a fixed header)." },
         new() { Name = "--bit-MarkdownEditor-button-size", DefaultValue = "var(--bit-siz-ctrl-md)", Description = "Width and height of a toolbar button." },
         new() { Name = "--bit-MarkdownEditor-button-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Glyph of a toolbar button." },
         new() { Name = "--bit-MarkdownEditor-button-radius", DefaultValue = "var(--bit-shp-radius-button)", Description = "Corner radius of a toolbar button." },
@@ -674,6 +696,13 @@ public partial class BitMarkdownEditorDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the preview pane of the BitMarkdownEditor.",
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description of the BitMarkdownEditor.",
                 },
                 new()
                 {

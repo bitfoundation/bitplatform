@@ -6,14 +6,11 @@ public partial class BitMarkdownEditorDemo
 <BitMarkdownEditor />";
 
     private readonly string example2RazorCode = @"
-<BitMarkdownEditor @bind-Value=""bindingValue"" Mode=""BitMarkdownEditorMode.Edit"" Height=""8rem"" />
+<BitMarkdownEditor @bind-Value=""bindingValue"" />
 
 <BitTextField Multiline Rows=""4"" Label=""Bound value (editable)"" @bind-Value=""@bindingValue"" Immediate />
 
-<BitMarkdownEditor DefaultValue=""# This is the default value""
-                   Mode=""BitMarkdownEditorMode.Edit""
-                   Height=""8rem""
-                   OnChange=""v => onChangeValue = v"" />
+<BitMarkdownEditor DefaultValue=""# This is the default value"" OnChange=""v => onChangeValue = v"" />
 
 <div>OnChange value:</div>
 <pre>@onChangeValue</pre>";
@@ -37,10 +34,19 @@ Switch between **Edit**, **Split** and **Preview** using the choice group above,
 the eye button of the toolbar, the F9 key, or the `@bind-Mode` parameter."";";
 
     private readonly string example4RazorCode = @"
+<BitToggleButton @bind-IsChecked=""fullScreen"" OnText=""Exit full-screen"" OffText=""Go full-screen"" />
+
+<BitMarkdownEditor @bind-FullScreen=""fullScreen"" Height=""10rem"" MinHeight=""6rem"" MaxHeight=""20rem"" Resizable />
+
+<BitMarkdownEditor AutoHeight StickyToolbar MinHeight=""5rem"" Mode=""BitMarkdownEditorMode.Edit"" />";
+    private readonly string example4CsharpCode = @"
+private bool fullScreen;";
+
+    private readonly string example5RazorCode = @"
 <BitMarkdownEditor @bind-Value=""customToolbarValue"" Toolbar=""customToolbar"" Height=""8rem"" />
 
 <BitMarkdownEditor ShowToolbar=""false"" ShowStatusBar=""false"" Height=""8rem"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string? customToolbarValue = ""The toolbar of this editor only offers **basic** formatting and a custom *clear* button."";
 private IReadOnlyList<BitMarkdownEditorToolbarItem> customToolbar = [];
 
@@ -82,7 +88,7 @@ protected override void OnInitialized()
     ];
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <div class=""commands-bar"">
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.Heading1)"">H1</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.Bold)""><b>B</b></BitButton>
@@ -103,7 +109,7 @@ protected override void OnInitialized()
 
 <div>Result:</div>
 <pre>@getValueResult</pre>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private BitMarkdownEditor commandsRef = default!;
 private string? getValueResult;
 
@@ -139,7 +145,7 @@ private async Task SelectFirstLine()
     await commandsRef.SetSelection(0, end < 0 ? value.Length : end);
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitMarkdownEditor DefaultValue=""@previewDefaultValue"" PreviewPipeline=""BitMarkdownPipelines.Basic"" />
 
 <BitMarkdownEditor DefaultValue=""@previewDefaultValue"" DebounceTime=""500"">
@@ -147,7 +153,7 @@ private async Task SelectFirstLine()
         <pre style=""margin:0;white-space:pre-wrap"">@context</pre>
     </PreviewTemplate>
 </BitMarkdownEditor>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string previewDefaultValue =
 @""GitHub flavored extras like ~~strikethrough~~, https://bitplatform.dev autolinks,
 
@@ -157,15 +163,6 @@ private string previewDefaultValue =
 | and | tables |
 | --- | ------ |
 | are | here   |"";";
-
-    private readonly string example7RazorCode = @"
-<BitToggleButton @bind-IsChecked=""fullScreen"" OnText=""Exit full-screen"" OffText=""Go full-screen"" />
-
-<BitMarkdownEditor @bind-FullScreen=""fullScreen"" Height=""10rem"" MinHeight=""6rem"" MaxHeight=""20rem"" Resizable />
-
-<BitMarkdownEditor AutoHeight MinHeight=""5rem"" MaxHeight=""24rem"" Mode=""BitMarkdownEditorMode.Edit"" Placeholder=""Grows as you type..."" />";
-    private readonly string example7CsharpCode = @"
-private bool fullScreen;";
 
     private readonly string example8RazorCode = @"
 <BitMarkdownEditor Placeholder=""Type a ( or a ` here, or select a word and type *...""
@@ -376,9 +373,10 @@ private BitMarkdownEditorTexts frenchTexts = new()
     <BitMarkdownEditor @bind-Value=""formModel.ReleaseNotes""
                        Label=""Release notes""
                        Required
+                       Description=""Markdown is supported. Press Ctrl+Enter to publish.""
                        Name=""releaseNotes""
                        Height=""8rem""
-                       Placeholder=""At least 20 characters, then press Ctrl+Enter...""
+                       Placeholder=""At least 20 characters...""
                        OnFocus=""EditorFocused""
                        OnBlur=""EditorBlurred""
                        OnSubmit=""SubmitFromEditor"" />
