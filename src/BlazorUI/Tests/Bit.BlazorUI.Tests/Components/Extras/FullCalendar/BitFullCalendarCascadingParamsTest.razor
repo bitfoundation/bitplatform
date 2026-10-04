@@ -1,0 +1,30 @@
+﻿@* Covers BitFullCalendarParams: the cascaded values fill in the parameters the calendar did not set itself, and
+   never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitFullCalendarParams[]
+                         {
+                             new()
+                             {
+                                 Class = "cascaded",
+                                 Views = [BitFullCalendarView.Week, BitFullCalendarView.Month],
+                                 HideFilters = true,
+                                 Texts = CascadedTexts,
+                                 Settings = SharedSettings,
+                                 Classes = new() { Header = "cascaded-header", Event = "cascaded-event" },
+                                 Styles = new() { Body = "outline: 1px solid red" }
+                             }
+                         })">
+    <BitFullCalendar Id="first-calendar" Events="Events" />
+    <BitFullCalendar Id="second-calendar" Events="Events" HideFilters="false" Views="null" />
+</BitParams>
+
+@code {
+    public static readonly BitFullCalendarTexts CascadedTexts = new() { TodayButton = "Now" };
+
+    public static readonly BitFullCalendarSettings SharedSettings = new() { Use24HourFormat = false };
+
+    private static readonly List<BitFullCalendarEvent> Events =
+    [
+        new() { Id = "1", Title = "Standup", StartDate = DateTime.Today.AddHours(9), EndDate = DateTime.Today.AddHours(10) }
+    ];
+}

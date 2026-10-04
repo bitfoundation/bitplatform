@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 
 @{
-    var isToday = Cell.Date.Date == DateTime.Today;
+    var isToday = Cell.Date.Date == State.Today;
     var maxSlots = State.MaxEventsPerDayCell;
     var cellEvents = BitFullCalendarHelpers.GetMonthCellEvents(Cell.Date, Events, EventPositions, maxSlots);
     // A date the calendar is not allowed to navigate to is shown for context but never accepts a
@@ -11,6 +11,10 @@
     // what showNonCurrentDates turns off elsewhere. The cell still holds its column open.
     var isBlank = Cell.CurrentMonth is false && State.ShowNonCurrentDates is false;
     var isOffDay = State.HighlightBusinessHours && State.IsBusinessDay(Cell.Date.DayOfWeek) is false;
+    // Only a background event covering the whole day tints a month day; a timed one (a lunch break) has no clock
+    // axis to be drawn on here, as in the other calendar libraries.
+    var dayBackground = GetWholeDayBackground(isBlank);
+    var backgroundLabel = string.Concat(dayBackground.Where(e => string.IsNullOrWhiteSpace(e.Title) is false).Select(e => $", {e.Title}"));
 }
 
 @if (isBlank)
@@ -19,37 +23,55 @@
 }
 else
 {
-<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") @(isOutOfRange ? "bit-bfc-out-of-range" : "") @(isOffDay ? "bit-bfc-day-off" : "") @(IsLastColumn ? "bit-bfc-month-cell-last-col" : "") bit-bfc-droppable"
+<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") @(isOutOfRange ? "bit-bfc-out-of-range" : "") @(isOffDay ? "bit-bfc-day-off" : "") @(IsLastColumn ? "bit-bfc-month-cell-last-col" : "") @(dayBackground.Count > 0 ? "bit-bfc-month-cell-has-bg" : null) bit-bfc-droppable"
      @ondragover="OnDragOver"
      @ondragover:preventDefault="true"
      @ondrop="OnDrop"
      @onclick="() => OnCellClick()">
+
+    @foreach (var bg in dayBackground)
+    {
+        <div class="bit-bfc-bg-event bit-bfc-bg-event-day @(bg.IsBlocking ? "bit-bfc-bg-event-blocking" : null) @Parts.Classes?.Event @bg.CssClass"
+             style="@($"{ColorScheme.GetColorStyle(bg.Color)}{Parts.Styles?.Event}")"
+             aria-hidden="@(State.CanAdd ? "true" : null)">
+            @if (string.IsNullOrWhiteSpace(bg.Title) is false)
+            {
+                <span class="bit-bfc-bg-event-title">@bg.Title</span>
+            }
+        </div>
+    }
 
     @* With nav links on, the day number opens that single day - the affordance every calendar puts
        there - and stays a plain label otherwise. *@
     @if (State.NavLinks && isOutOfRange is false)
     {
         <button type="button" class="bit-bfc-month-cell-day bit-bfc-navlink @(isToday ? "today" : "")"
+                aria-current="@(isToday ? "date" : null)"
                 aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))"
                 @onclick="GoToDayView"
                 @onclick:stopPropagation="true">@Cell.Day</button>
     }
     else
     {
-        <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
+        <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")" aria-hidden="true">@Cell.Day</div>
     }
-    @if (!State.ReadOnly && !isOutOfRange)
+    @if (Parts.MonthCellTemplate is { } cellTemplate)
+    {
+        <div class="bit-bfc-month-cell-content">@cellTemplate(Cell)</div>
+    }
+    @if (State.CanAdd && !isOutOfRange)
     {
         @* Roving tabindex: only one cell of the month grid is in the tab order at a time, and the
            arrow keys move both it and the focus. Enter and Space are left to the button itself. *@
         <button type="button" class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month"
                 id="@AddButtonId"
-                tabindex="@(IsRovingCell ? "0" : "-1")"
-                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("d", State.Culture)}")"
+                data-bit-bfc-roving tabindex="@(IsRovingCell ? "0" : "-1")"
+                aria-current="@(isToday ? "date" : null)"
+                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}{backgroundLabel}")"
                 @onclick="() => OnCellClick()"
                 @onkeydown="args => OnCellKeyDown.InvokeAsync((Cell.Date, args))"
                 @onclick:stopPropagation="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             @Texts.AddEventHoverHint
         </button>
     }
@@ -63,7 +85,7 @@ else
             {
                 var position = GetBadgePosition(item.Event, Cell.Date);
                 <div class="bit-bfc-month-event-slot">
-                    <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                    <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" IsLead="@IsLeadSegment(item.Event, position)" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                 </div>
             }
             else

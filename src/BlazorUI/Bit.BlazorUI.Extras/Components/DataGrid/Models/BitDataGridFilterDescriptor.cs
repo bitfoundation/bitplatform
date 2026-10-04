@@ -16,7 +16,9 @@ public sealed class BitDataGridFilterDescriptor
     /// <summary>
     /// The value to filter by. Its meaning depends on the selected <see cref="Operator"/> and it is
     /// unused for value-less operators such as <see cref="BitDataGridFilterOperator.IsEmpty"/> and
-    /// <see cref="BitDataGridFilterOperator.IsNotEmpty"/>.
+    /// <see cref="BitDataGridFilterOperator.IsNotEmpty"/>. For <see cref="BitDataGridFilterOperator.In"/> and
+    /// <see cref="BitDataGridFilterOperator.NotIn"/> it is a collection of values (an <c>OnRead</c> consumer
+    /// receives a <c>List&lt;object?&gt;</c> from the built-in editor, or whatever a <c>FilterTemplate</c> applied).
     /// <para>
     /// Server-side note for <c>OnRead</c> consumers: when an <see cref="BitDataGridFilterOperator.Equals"/>
     /// (or <see cref="BitDataGridFilterOperator.NotEquals"/>) filter targets a <see cref="System.DateTime"/>

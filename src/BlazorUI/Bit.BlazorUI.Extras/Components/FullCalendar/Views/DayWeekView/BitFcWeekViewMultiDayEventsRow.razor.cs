@@ -20,8 +20,8 @@ public partial class BitFcWeekViewMultiDayEventsRow
         // The week shape has to come from the calendar's own culture, first-day override, and hidden
         // days - reading the ambient culture here would misalign this row against the grid below it
         // whenever the two differ.
-        _weekDays = BitFullCalendarHelpers.GetWeekDates(Date, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
-        _weekEvents = BitFullCalendarHelpers.GetEventsForWeek(MultiDayEvents, Date, State.Culture, State.FirstDayOfWeekOverride)
+        _weekDays = BitFullCalendarHelpers.GetWeekDates(Date, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays, State.WeekDayCount);
+        _weekEvents = BitFullCalendarHelpers.GetEventsForWeek(MultiDayEvents, Date, State.Culture, State.FirstDayOfWeekOverride, State.WeekDayCount, State.HiddenDays)
             .Where(e => e.IsAllDayOrMultiDay)
             .OrderByDescending(e => (e.EndDate - e.StartDate).TotalDays)
             .ThenBy(e => e.StartDate)

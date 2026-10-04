@@ -1,5 +1,27 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
+// ancestor) re-tunes every list under it and one set on the Style of an instance that one alone:
+//   --bit-InfiniteScrolling-status-color          text of the loading, empty and end blocks   (default: $clr-fg-sec)
+//   --bit-InfiniteScrolling-status-font-size      size of the text of every status block      (default: $tg-fs-sm)
+//   --bit-InfiniteScrolling-status-padding        padding of every status block               (default: spacing(1))
+//   --bit-InfiniteScrolling-status-gap            room between the spinner and its text       (default: spacing(1))
+//   --bit-InfiniteScrolling-status-text-align     alignment of every status block             (default: center)
+//   --bit-InfiniteScrolling-error-color           text of the default error block            (default: $clr-err)
+//   --bit-InfiniteScrolling-spinner-size          diameter of the default loading spinner     (default: $siz-icon-md)
+//   --bit-InfiniteScrolling-spinner-color         the spinner's moving arc                    (default: $clr-pri)
+//   --bit-InfiniteScrolling-spinner-track-color   the ring the arc travels on                 (default: $clr-brd-pri)
+//   --bit-InfiniteScrolling-button-color          label of the Load more / Retry button       (default: $clr-pri)
+//   --bit-InfiniteScrolling-button-hover-color    ... under the pointer                       (default: $clr-pri-hover)
+//   --bit-InfiniteScrolling-button-background     background of the button                   (default: transparent)
+//   --bit-InfiniteScrolling-button-hover-background ... under the pointer                     (default: the button background)
+//   --bit-InfiniteScrolling-button-radius         corner radius of the button and its ring    (default: $shp-radius-button)
+//   --bit-InfiniteScrolling-button-padding        padding of the button                       (default: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm)
+//   --bit-InfiniteScrolling-item-focus-color      focus indicator of a feed's article         (default: $clr-pri-focus)
+
+// What the focus ring of the button takes up outside its border box.
+$isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
+
 .bit-isc {
     overflow: auto;
     box-sizing: border-box;
@@ -44,6 +66,23 @@
         align-self: center;
     }
 
+    // The auto margins that center the button under a column would push it away from the items of a row; the
+    // room its focus ring needs at the end of the row is kept instead.
+    > .bit-isc-btn {
+        margin-inline: $isc-ring-room;
+    }
+
+    // The box of a feed lays its articles out in the same row, and each article is as wide as its content, like
+    // any other item of a row.
+    > .bit-isc-fed {
+        display: flex;
+        flex-direction: row;
+
+        > .bit-isc-art {
+            flex: 0 0 auto;
+        }
+    }
+
     // The sentinel is as tall as the row, and never thinner than the pixel the observer needs to see.
     > .bit-isc-lst {
         min-height: 1px;
@@ -61,6 +100,32 @@
 // what the list (or its flex container) lays out.
 .bit-isc-itm {
     display: contents;
+}
+
+// The box of the Feed mode's role, which holds the articles and nothing else. Like the articles it has to be a
+// box rather than display:contents, which cannot be relied on to keep a role; it is never squeezed by the flex
+// line of a reversed or horizontal list either.
+.bit-isc-fed {
+    flex: 0 0 auto;
+}
+
+// The article of the Feed mode. It has to be a box: an element laid out with display:contents can neither
+// take the focus nor be relied on to keep its role. The indicator is an outline drawn inside the article, since
+// the scroller around it would clip a ring drawn outside - and an outline, unlike an inset box-shadow, is painted
+// above the article's content, so an item whose root fills the article with a background cannot hide it.
+.bit-isc-art {
+    display: block;
+    box-sizing: border-box;
+
+    &:focus-visible {
+        outline: #{$shp-focus-ring-width} solid var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus});
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+        // The forced palette turns the ring into the system's own focus color.
+        @media (forced-colors: active) {
+            outline: #{$shp-focus-ring-width} solid Highlight;
+        }
+    }
 }
 
 // The sentinel is never squeezed by the flex line of a reversed or horizontal list: an element shrunk to no
@@ -85,50 +150,86 @@
 
 .bit-isc-ldg,
 .bit-isc-emp,
-.bit-isc-end {
+.bit-isc-end,
+.bit-isc-err {
     width: 100%;
     box-sizing: border-box;
     font-family: $tg-font-family;
-    font-size: $tg-fs-sm;
+    overflow-wrap: break-word;
+    font-size: var(--bit-InfiniteScrolling-status-font-size, #{$tg-fs-sm});
+    padding: var(--bit-InfiniteScrolling-status-padding, #{spacing(1)});
+    text-align: var(--bit-InfiniteScrolling-status-text-align, center);
 }
 
+.bit-isc-ldg,
 .bit-isc-emp,
 .bit-isc-end {
-    color: $clr-fg-sec;
+    color: var(--bit-InfiniteScrolling-status-color, #{$clr-fg-sec});
+}
+
+// The spinner sits inline before the loading text, so the loading block wraps and aligns its two parts as text,
+// the way every other status block does - under any value of the text-align variable, which is not always one
+// that a flex alignment would take.
+.bit-isc-spn {
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--bit-InfiniteScrolling-status-gap, #{spacing(1)});
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: var(--bit-InfiniteScrolling-spinner-size, #{$siz-icon-md});
+    height: var(--bit-InfiniteScrolling-spinner-size, #{$siz-icon-md});
+    border: $siz-spinner-stroke $shp-border-style var(--bit-InfiniteScrolling-spinner-track-color, #{$clr-brd-pri});
+    border-block-start-color: var(--bit-InfiniteScrolling-spinner-color, #{$clr-pri});
+    // The spinner tokens rather than a literal duration: a looping animation must slow down under
+    // prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
+    animation: bit-isc-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-isc-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 // The message sits on the list's own ground, so it takes the error color itself; $clr-err-text is the text
 // color ON an error fill.
 .bit-isc-err {
-    width: 100%;
-    box-sizing: border-box;
-    color: $clr-err;
-    font-size: $tg-fs-sm;
-    font-family: $tg-font-family;
+    color: var(--bit-InfiniteScrolling-error-color, #{$clr-err});
 }
 
 // A link-like button with the least style a control can get away with: a primary-colored label, no box of
-// its own, so a list of any look can host it (and LoadMoreTemplate restyle it) without fighting it.
+// its own, so a list of any look can host it (and LoadMoreTemplate restyle it) without fighting it. It sits
+// centered under the status blocks it follows.
 .bit-isc-btn {
-    margin: 0;
     border: none;
+    display: block;
     cursor: pointer;
-    color: $clr-pri;
-    padding: spacing(0.5) 0;
-    align-self: flex-start;
-    background-color: transparent;
+    margin-inline: auto;
+    // The ring is drawn outside the button, and a box-shadow is not part of what a scroller scrolls to: without
+    // this room the ring of a button at the very end (or, reversed, the very start) of the list is clipped.
+    margin-block: $isc-ring-room;
+    box-sizing: border-box;
+    min-height: $siz-ctrl-sm;
     font-family: $tg-font-family;
-    font-size: $tg-fs-sm;
-    transition: color $mot-duration-short $mot-easing;
+    font-size: var(--bit-InfiniteScrolling-status-font-size, #{$tg-fs-sm});
+    font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    color: var(--bit-InfiniteScrolling-button-color, #{$clr-pri});
+    background-color: var(--bit-InfiniteScrolling-button-background, transparent);
+    border-radius: var(--bit-InfiniteScrolling-button-radius, #{$shp-radius-button});
+    padding: var(--bit-InfiniteScrolling-button-padding, #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm});
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
-        &:hover {
-            color: $clr-pri-hover;
+        &:hover:not([aria-disabled="true"]) {
             text-decoration: underline;
+            color: var(--bit-InfiniteScrolling-button-hover-color, #{$clr-pri-hover});
+            background-color: var(--bit-InfiniteScrolling-button-hover-background, var(--bit-InfiniteScrolling-button-background, transparent));
         }
     }
 
-    &:active {
+    &:active:not([aria-disabled="true"]) {
         color: $clr-pri-active;
     }
 
@@ -136,10 +237,55 @@
         @include focus-ring($clr-pri-focus);
     }
 
-    // The button keeps its place while the load it started runs, so the focus that pressed it is not dropped.
-    &:disabled {
+    // The button keeps its place - and the focus that pressed it - while the load it started runs. It is marked
+    // aria-disabled rather than disabled for that: the browser drops the focus of an element that gets disabled.
+    &[aria-disabled="true"] {
         cursor: default;
         color: $clr-fg-dis;
         text-decoration: none;
+    }
+}
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so the spinner's track and
+// arc would be painted the same color and stop reading as motion, and the disabled button would look enabled.
+@media (forced-colors: active) {
+    .bit-isc-spn {
+        border-color: GrayText;
+        border-block-start-color: CanvasText;
+    }
+
+    // A button of no box of its own would read as plain text once the palette is forced, so it is outlined.
+    .bit-isc-btn {
+        border: $shp-border-width $shp-border-style ButtonText;
+    }
+
+    .bit-isc-btn[aria-disabled="true"] {
+        color: GrayText;
+        border-color: GrayText;
+    }
+}
+
+// On paper a list is the items it has loaded: nothing is clipped by its scroller, and what only makes sense
+// on a screen - the spinner, the button that loads more - is left out.
+@media print {
+    .bit-isc {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .bit-isc-hor,
+    .bit-isc-hor > .bit-isc-fed {
+        flex-wrap: wrap;
+    }
+
+    .bit-isc-hor > .bit-isc-fed {
+        flex-shrink: 1;
+    }
+
+    .bit-isc-ldg,
+    .bit-isc-btn,
+    .bit-isc-lst {
+        display: none !important;
     }
 }

@@ -2,12 +2,13 @@
 
 <PageOutlet Url="components/infinitescrolling"
             Title="InfiniteScrolling"
-            Description="BitInfiniteScrolling is a container that keeps fetching and rendering the next page of items as the end of its list comes into view, with loading, empty, end and error states, a manual Load more mode, a reversed chat mode and a horizontal mode." />
+            Description="BitInfiniteScrolling keeps fetching and rendering the next page of items as the end of its list comes into view, with loading, empty, end and error states, a manual Load more mode, reversed (chat), horizontal and accessible feed modes." />
 
 <div>
     <DemoPage Name="InfiniteScrolling"
-              Description="BitInfiniteScrolling is a container that enables scrolling through a list of items infinitely as long as there are items to fetch and render. An IntersectionObserver watches a sentinel element at the end of the list and asks the ItemsProvider for the next page as soon as it comes into view, so nothing is fetched before it is needed. It renders the loading, empty, end and error states out of the box, each of them replaceable by a template, and it can load on demand through a Load more button, run reversed to prepend older items while the scroll position stays where the user left it, or scroll sideways. A page in flight is cancelled when it is no longer needed, and the loaded items can be capped, keyed, driven from code and reset from a key."
+              Description="BitInfiniteScrolling fetches the next page from its ItemsProvider as soon as the end of the list comes into view, so nothing is loaded before it is needed. It renders the loading, empty, end and error states (each replaceable by a template), can load on demand through a Load more button (from the start or after a few automatic pages), run reversed to prepend older items without moving the reader, scroll sideways, or render as an accessible ARIA feed. A page in flight is cancelled when no longer needed, and the loaded items can be capped, keyed, edited from code and reset from a key."
               Parameters="componentParameters"
+              CssVariables="componentCssVariables"
               SubClasses="componentSubClasses"
               PublicMembers="componentPublicMembers"
               GitHubExtrasUrl="InfiniteScrolling/BitInfiniteScrolling.razor"
@@ -28,11 +29,9 @@
         <Examples>
             <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
                 <div>
-                    The <b>ItemsProvider</b> is the only required parameter: it receives the number of the items already
-                    loaded as the <b>Skip</b> of its request and returns the next page. The component renders each returned
-                    item with its child content, appends it to the list, and then waits for the sentinel element at the end
-                    of the list to come into view again, so the next page is fetched only when the user actually gets there.
-                    While a page is in flight, the default <b>Loading...</b> text is rendered under the items.
+                    The <b>ItemsProvider</b> receives the number of loaded items as <b>Skip</b> and returns the next page,
+                    which is requested when the end of the list comes into view. Give the list a height to scroll on its
+                    own; without one it loads as the page scrolls.
                 </div>
                 <br />
                 <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic" Context="item">
@@ -40,33 +39,20 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Templates" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <DemoExample Title="PageSize & states" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
                 <div>
-                    The content of the component is replaceable: <b>ItemTemplate</b> (an alias of the child content) renders
-                    each item, and <b>LoadingTemplate</b> replaces the loading text while a page is being fetched. The
-                    plain-text variant of the latter is also configurable through the <b>LoadingMessage</b> parameter, which
-                    is enough when no markup is needed. Whatever they render, the state the list is in is also announced to
-                    screen readers by a live region the component keeps in the DOM.
+                    <b>PageSize</b> is sent as the <b>Count</b> of each request, and a shorter page marks the end of the
+                    data without an extra empty round trip. <b>EndMessage</b> follows the last item; <b>EmptyMessage</b>
+                    replaces the list when the first page has no item.
                 </div>
                 <br />
-                <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic">
-                    <ItemTemplate Context="item">
-                        <div class="item">Item @item</div>
-                    </ItemTemplate>
-                    <LoadingTemplate>
-                        <div class="loading">
-                            <BitEllipsisLoading />
-                        </div>
-                    </LoadingTemplate>
+                <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
+                                      PageSize="15"
+                                      Class="basic"
+                                      Context="item"
+                                      EndMessage="You have reached the end of the list.">
+                    <div>Item @item</div>
                 </BitInfiniteScrolling>
-            </DemoExample>
-
-            <DemoExample Title="Empty" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-                <div>
-                    The empty state is rendered only when the very first page comes back without a single item, and never
-                    alongside any item. Its text comes from <b>EmptyMessage</b>, and <b>EmptyTemplate</b> replaces it with
-                    markup of your own. Both lists below are fed by a provider that returns no item.
-                </div>
                 <br /><br />
                 <div><b>EmptyMessage:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadEmptyItems"
@@ -75,7 +61,28 @@
                                       EmptyMessage="Nothing to show here.">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
-                <br /><br /><br />
+            </DemoExample>
+
+            <DemoExample Title="Templates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                <div>
+                    <b>ItemTemplate</b> (an alias of the child content) renders each item, and <b>LoadingTemplate</b>,
+                    <b>EndTemplate</b> and <b>EmptyTemplate</b> replace the built-in state blocks.
+                </div>
+                <br /><br />
+                <BitInfiniteScrolling ItemsProvider="LoadPagedItems" PageSize="15" Class="basic">
+                    <ItemTemplate Context="item">
+                        <div class="item">Item @item</div>
+                    </ItemTemplate>
+                    <LoadingTemplate>
+                        <div class="loading">
+                            <BitEllipsisLoading />
+                        </div>
+                    </LoadingTemplate>
+                    <EndTemplate>
+                        <div class="end"><b>--- The end ---</b></div>
+                    </EndTemplate>
+                </BitInfiniteScrolling>
+                <br /><br />
                 <div><b>EmptyTemplate:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadEmptyItems" Class="basic">
                     <ItemTemplate Context="item">
@@ -87,48 +94,15 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="PageSize" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <DemoExample Title="Manual" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
                 <div>
-                    Setting <b>PageSize</b> sends the size of the page to the provider as the <b>Count</b> of its request,
-                    so the query knows how many items to take. It also tells the component where the data ends: a page that
-                    comes back with fewer items than requested is the last one, which saves the extra empty round trip that
-                    would otherwise be needed to discover the end. Once there is nothing left to fetch, the <b>EndMessage</b>
-                    is rendered after the last item and the sentinel stops being watched; <b>EndTemplate</b> replaces that
-                    message with markup of your own.
+                    <b>Manual</b> loads every page after the first one from a button, which keeps the page footer
+                    reachable and gives keyboard users a real control. Its label is <b>LoadMoreText</b>, and
+                    <b>LoadMoreTemplate</b> replaces its content. While its page loads the button stays in place and keeps
+                    the focus, marked <b>aria-disabled</b> rather than disabled. <b>AutoLoadLimit</b> mixes both modes:
+                    the second list loads two pages on its own, then switches to the button.
                 </div>
                 <br /><br />
-                <div><b>EndMessage:</b></div><br />
-                <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
-                                      PageSize="15"
-                                      Class="basic"
-                                      Context="item"
-                                      EndMessage="You have reached the end of the list.">
-                    <div>Item @item</div>
-                </BitInfiniteScrolling>
-                <br /><br /><br />
-                <div><b>EndTemplate:</b></div><br />
-                <BitInfiniteScrolling ItemsProvider="LoadPagedItems" PageSize="15" Class="basic">
-                    <ItemTemplate Context="item">
-                        <div>Item @item</div>
-                    </ItemTemplate>
-                    <EndTemplate>
-                        <div class="end"><b>--- The end ---</b></div>
-                    </EndTemplate>
-                </BitInfiniteScrolling>
-            </DemoExample>
-
-            <DemoExample Title="Manual" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-                <div>
-                    The <b>Manual</b> parameter replaces the automatic loading with an explicit button: the first page is
-                    still fetched on its own, but every next one waits for a click. This is the accessible fallback of an
-                    infinite list - it keeps the page footer reachable and gives keyboard and screen reader users a real
-                    control to operate - and it is also the polite choice on metered connections. The label of the button
-                    comes from <b>LoadMoreText</b>, and <b>LoadMoreTemplate</b> replaces its content entirely. The button
-                    keeps its place while the page it asked for is loading, disabled rather than removed, so the keyboard
-                    focus that pressed it is not dropped back to the top of the page.
-                </div>
-                <br /><br />
-                <div><b>LoadMoreText:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
                                       Manual
                                       PageSize="10"
@@ -138,10 +112,10 @@
                                       EndMessage="No more items to load.">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
-                <br /><br /><br />
-                <div><b>LoadMoreTemplate:</b></div><br />
+                <br /><br />
+                <div><b>AutoLoadLimit & LoadMoreTemplate:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
-                                      Manual
+                                      AutoLoadLimit="2"
                                       PageSize="10"
                                       Class="basic"
                                       EndMessage="No more items to load.">
@@ -154,29 +128,28 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Error handling" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <DemoExample Title="Error handling" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>
-                    An items provider that throws no longer takes the whole list down with it: the exception is caught, the
-                    <b>ErrorMessage</b> is rendered with a retry button, and the sentinel stops being watched so a failing
-                    endpoint cannot turn the list into a request storm. Clicking retry (or calling <b>LoadMoreAsync</b>)
-                    requests the same page again and the list continues from where it stopped - the button stays where it
-                    is, disabled and still labelled <b>RetryText</b>, until that retry is over. Use <b>ErrorTemplate</b>,
-                    which receives the thrown exception, to render the failure your own way - it replaces the built-in
-                    retry button too, so it should offer a way back of its own. Both lists below fail once, on their second
-                    page.
+                    A provider that throws renders <b>ErrorMessage</b> with a <b>RetryText</b> button and stops loading
+                    until the retry, so a failing server is not flooded with requests. <b>OnError</b> receives the exception.
+                    <b>ErrorTemplate</b> replaces both the message and the button, so it offers its own way back
+                    (<b>LoadMoreAsync</b>); screen readers still hear <b>ErrorMessage</b>. Both lists fail once, on their
+                    second page.
                 </div>
                 <br /><br />
-                <div><b>ErrorMessage:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadFaultyItems"
                                       PageSize="10"
                                       Class="basic"
                                       Context="item"
                                       RetryText="Try again"
                                       ErrorMessage="Something went wrong while loading the items."
-                                      EndMessage="No more items to load.">
+                                      EndMessage="No more items to load."
+                                      OnError="HandleOnError">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
-                <br /><br /><br />
+                <br />
+                <div>Last error: @(lastError ?? "-")</div>
+                <br /><br />
                 <div><b>ErrorTemplate:</b></div><br />
                 <BitInfiniteScrolling @ref="errorTemplateRef"
                                       TItem="int"
@@ -196,44 +169,58 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Reversed" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <DemoExample Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
                 <div>
-                    The <b>Reversed</b> parameter turns the list into a chat or a log: the sentinel moves to the top, each
-                    page is prepended above the already rendered items, and the component starts out scrolled to the newest
-                    ones. Scrolling up loads the older items while the scroll position is corrected around every insertion,
-                    so the item the user is reading stays exactly where it is instead of being pushed down the viewport.
-                    The loading, end and Load more blocks follow the sentinel to the top, which is where they belong in this
-                    mode.
+                    <b>Reversed</b> turns the list into a chat: it opens on the newest items, and scrolling up prepends
+                    older pages without moving what the reader is looking at. <b>Preload</b> fetches the first page during
+                    initialization. <b>ItemKey</b> matches each item by a stable key instead of its position, so state an
+                    element holds (type a note, then scroll up) stays with its own item.
                 </div>
                 <br />
-                <BitInfiniteScrolling ItemsProvider="LoadOlderMessages"
+                <BitInfiniteScrolling TItem="ChatMessage"
+                                      ItemsProvider="LoadKeyedMessages"
                                       Reversed
                                       Preload
                                       PageSize="10"
                                       Class="chat"
                                       Context="message"
+                                      ItemKey="@(m => m.Id)"
                                       LoadingMessage="Loading older messages..."
                                       EndMessage="This is the beginning of the conversation.">
-                    <div class="message">@message</div>
+                    <div class="message">
+                        <span>@message.Text</span>
+                        <input class="note" placeholder="note" aria-label="Note for @message.Text" />
+                    </div>
+                </BitInfiniteScrolling>
+            </DemoExample>
+
+            <DemoExample Title="Horizontal" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                <div>
+                    <b>Horizontal</b> lays the items out in a row and loads while scrolling sideways. Give the items
+                    <code>flex: 0 0 auto</code> so the row overflows instead of squeezing them.
+                </div>
+                <br />
+                <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
+                                      Horizontal
+                                      PageSize="10"
+                                      Class="h-list"
+                                      Context="item"
+                                      EndMessage="The end.">
+                    <div class="h-item">Item @item</div>
                 </BitInfiniteScrolling>
             </DemoExample>
 
             <DemoExample Title="Scroller" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>
-                    By default the root element of the component is its own scroll container. <b>ScrollerSelector</b> points
-                    it at another one instead, and the <b>window</b> value (like <b>document</b>, <b>body</b> and <b>html</b>)
-                    means the page itself scrolls, which is the layout of a feed that has no box of its own. A component
-                    that hands its scrolling over this way stops clipping and scrolling its own content. <b>RootMargin</b>
-                    grows the area the sentinel is checked against, so <code>200px</code> starts the next page 200 pixels
-                    before the end of the list becomes visible and the list stays ahead of the reader. <b>LastElementHeight</b>
-                    gives the sentinel a real height, which is the coarser way of triggering the load earlier, and
-                    <b>Threshold</b> then decides how much of that height has to be visible before the load starts.
-                    <b>Preload</b> fetches the first page during initialization so prerendered markup is not empty.
+                    <b>ScrollerSelector</b> points the list at another scroll container; <b>window</b> (or <b>document</b>,
+                    <b>body</b>, <b>html</b>) is the page itself. <b>RootMargin</b> starts loading before the end is
+                    visible (<code>200px</code> ahead here), <b>LastElementHeight</b> gives the trigger element a size, and
+                    <b>Threshold</b> sets how much of it has to be visible.
                 </div>
                 <br />
                 <BitInfiniteScrolling ItemsProvider="LoadScrollerItems"
                                       Preload
-                                      Class="advanced"
+                                      Class="grid"
                                       ScrollerSelector="window"
                                       RootMargin="200px"
                                       LastElementHeight="96px"
@@ -241,48 +228,41 @@
                     <ItemTemplate Context="item">
                         <div class="item">Item @item</div>
                     </ItemTemplate>
-                    <LoadingTemplate>
-                        <div class="loading">
-                            <BitEllipsisLoading />
-                        </div>
-                    </LoadingTemplate>
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <DemoExample Title="Events & progress" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
                 <div>
-                    <b>OnItemsLoaded</b> is invoked after each successful page with the items of that page only, which is
-                    where analytics, an updated counter, or a URL that reflects the loaded range belong. <b>OnEnd</b> fires
-                    once, when the provider reports that nothing is left, and <b>OnError</b> hands over the exception that a
-                    failed page threw.
+                    <b>OnItemsLoaded</b> receives each loaded page and <b>OnEnd</b> fires once nothing is left. A provider
+                    may return a <b>BitInfiniteScrollingItemsProviderResult</b>: still the page, plus <b>HasMore</b> (the
+                    end as a cursor-paged API knows it) and <b>TotalCount</b>, published on the component.
                 </div>
                 <br />
-                <BitInfiniteScrolling TItem="int"
-                                      ItemsProvider="LoadPagedItems"
+                <BitInfiniteScrolling @ref="progressRef"
+                                      TItem="int"
+                                      ItemsProvider="LoadCatalogItems"
                                       PageSize="10"
                                       Class="basic"
                                       Context="item"
                                       OnEnd="HandleOnEnd"
-                                      OnError="HandleOnError"
-                                      OnItemsLoaded="HandleOnItemsLoaded">
+                                      OnItemsLoaded="HandleOnItemsLoaded"
+                                      EndMessage="No more items to load.">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
                 <br />
-                <div>Loaded pages: @loadedPages, loaded items: @loadedItems @(reachedEnd ? "(end reached)" : "") @lastError</div>
+                <div>
+                    Loaded @(progressRef?.Items.Count ?? 0) of @(progressRef?.TotalCount?.ToString() ?? "?") items
+                    in @loadedPages pages @(reachedEnd ? "(end reached)" : "")
+                </div>
             </DemoExample>
 
             <DemoExample Title="Public members" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
                 <div>
-                    A reference to the component exposes what it has loaded so far (<b>Items</b>, <b>HasMore</b>,
-                    <b>IsLoading</b>, <b>TotalCount</b> and the <b>Error</b> of the last failed page) and the methods to
-                    drive it: <b>RefreshDataAsync</b> throws the loaded items away and starts over from the first page,
-                    <b>LoadMoreAsync</b> fetches the next page the way reaching the end of the list does,
-                    <b>AppendItemsAsync</b>, <b>PrependItemsAsync</b>, <b>SetItemsAsync</b> and <b>RemoveItemAsync</b>
-                    change the loaded items without calling the provider at all, and <b>ScrollToTopAsync</b>,
-                    <b>ScrollToBottomAsync</b>, <b>ScrollToOffsetAsync</b> and <b>GetScrollOffsetAsync</b> read and move the
-                    scroll container - the last two are what restore the position of a list the user is coming back to.
-                    The <b>MaxItems</b> parameter used here also caps the list: the last page is narrowed down to what is
-                    still missing and nothing is requested afterwards, so the list never grows past the cap.
+                    A reference exposes the state (<b>Items</b>, <b>HasMore</b>, <b>IsLoading</b>, <b>TotalCount</b>,
+                    <b>Error</b>) and methods to reload (<b>RefreshDataAsync</b>, <b>LoadMoreAsync</b>), edit the items
+                    without the provider (<b>AppendItemsAsync</b>, <b>PrependItemsAsync</b>, <b>SetItemsAsync</b>,
+                    <b>RemoveItemAsync</b>) and scroll (<b>ScrollToTopAsync</b>, <b>ScrollToBottomAsync</b>,
+                    <b>ScrollToOffsetAsync</b>, <b>GetScrollOffsetAsync</b>). <b>MaxItems</b> caps this list at 20 items.
                 </div>
                 <br />
                 <BitInfiniteScrolling @ref="membersRef"
@@ -314,84 +294,11 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Provider result" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <DemoExample Title="ResetKey" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
                 <div>
-                    A provider can return a <b>BitInfiniteScrollingItemsProviderResult</b> instead of a plain sequence. It
-                    is an <b>IEnumerable</b> of the same page, so nothing else changes, but it also carries <b>HasMore</b>
-                    and <b>TotalCount</b>. <b>HasMore</b> lets the source say for itself where the data ends, which is what
-                    a cursor-paged API knows and a short page cannot express; <b>TotalCount</b> is published on the
-                    <b>TotalCount</b> member of the component, which is how a list reports the progress it has made through
-                    a known total.
-                </div>
-                <br />
-                <BitInfiniteScrolling @ref="catalogRef"
-                                      TItem="int"
-                                      ItemsProvider="LoadCatalogItems"
-                                      PageSize="10"
-                                      Class="basic"
-                                      Context="item"
-                                      OnItemsLoaded="HandleCatalogLoaded"
-                                      EndMessage="No more items to load.">
-                    <div>Item @item</div>
-                </BitInfiniteScrolling>
-                <br />
-                <div>Loaded @(catalogRef?.Items.Count ?? 0) of @(catalogRef?.TotalCount?.ToString() ?? "?") items.</div>
-            </DemoExample>
-
-            <DemoExample Title="Horizontal" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-                <div>
-                    <b>Horizontal</b> lays the items out in a row and moves the whole component onto the horizontal axis:
-                    the pages are fetched while scrolling sideways, the sentinel becomes a thin column at the end of the
-                    row - sized by <b>LastElementWidth</b> rather than by <b>LastElementHeight</b> - and
-                    <b>ScrollToTopAsync</b>, <b>ScrollToBottomAsync</b> and <b>ScrollToOffsetAsync</b> all work along that
-                    axis, right-to-left lists included. Give the items a <code>flex: 0 0 auto</code> so the row grows past
-                    the width of the container instead of squeezing them into it.
-                </div>
-                <br />
-                <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
-                                      Horizontal
-                                      PageSize="10"
-                                      Class="h-list"
-                                      Context="item"
-                                      EndMessage="The end.">
-                    <div class="h-item">Item @item</div>
-                </BitInfiniteScrolling>
-            </DemoExample>
-
-            <DemoExample Title="ItemKey" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-                <div>
-                    Without a key an item is matched by its position, so a page prepended above the rendered items rewrites
-                    the content of every node below it - which is both the slow way to insert a page and the reason the
-                    state a node holds on its own (the text in an input, a running animation, the caret) ends up next to
-                    the wrong item. <b>ItemKey</b> returns a stable key per item, and the items are matched by that key
-                    instead. Type a note next to a message below, then scroll up to load the older ones: the note stays
-                    with its own message.
-                </div>
-                <br />
-                <BitInfiniteScrolling TItem="ChatMessage"
-                                      ItemsProvider="LoadKeyedMessages"
-                                      Reversed
-                                      Preload
-                                      PageSize="10"
-                                      Class="chat"
-                                      Context="message"
-                                      ItemKey="@(m => m.Id)"
-                                      LoadingMessage="Loading older messages..."
-                                      EndMessage="This is the beginning of the conversation.">
-                    <div class="k-message">
-                        <span>@message.Text</span>
-                        <input class="note" placeholder="note" />
-                    </div>
-                </BitInfiniteScrolling>
-            </DemoExample>
-
-            <DemoExample Title="ResetKey" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-                <div>
-                    A provider written as a lambda that captures a filter is the same method on every render, so a changed
-                    filter cannot be told apart from a re-render of the parent - and reloading on the delegate alone would
-                    throw the list away every time the parent renders. <b>ResetKey</b> is what settles it: hand the
-                    filter (or anything derived from it) to the component and every change of that value refreshes the
-                    list from its first page, exactly like calling <b>RefreshDataAsync</b>.
+                    A provider lambda that captures a filter is the same method on every render, so a changed filter
+                    cannot be detected from it. Pass the filter as <b>ResetKey</b>: each change reloads the list from its
+                    first page.
                 </div>
                 <br />
                 <BitStack Horizontal Wrap Gap="0.5rem">
@@ -410,35 +317,91 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>
-                    The <b>Style</b> and <b>Class</b> parameters style the root element, while <b>Styles</b> and
-                    <b>Classes</b> reach the inner parts of the component - the sentinel (<b>LastElement</b>), the
-                    <b>Loading</b>, <b>Empty</b>, <b>End</b> and <b>Error</b> containers, and the <b>Button</b> of the manual
-                    and retry states. The <b>LastElementClass</b>, <b>LastElementStyle</b>, <b>LastElementHeight</b> and
-                    <b>LastElementWidth</b> parameters remain the shorthand for the sentinel alone.
+                    <b>Feed</b> renders the WAI-ARIA feed pattern: each item is a focusable article with its position in
+                    the set. Tab into the list, then <b>Page Down</b> / <b>Page Up</b> move between items and
+                    <b>Ctrl+End</b> / <b>Ctrl+Home</b> leave it. A page loaded from the button receives the focus.
+                    <b>ItemAriaLabel</b> names each article, <b>LoadedMessage</b> announces each page to screen readers,
+                    and <b>AriaLabel</b> names the list.
+                    Outside a feed, a scrolling list with nothing focusable inside needs <b>TabIndex="0"</b> and a name
+                    to be scrollable from the keyboard.
                 </div>
                 <br />
+                <BitInfiniteScrolling ItemsProvider="LoadCatalogItems"
+                                      Feed
+                                      Manual
+                                      PageSize="5"
+                                      Class="basic"
+                                      Context="item"
+                                      AriaLabel="Products"
+                                      ItemAriaLabel="@(item => $"Product {item}")"
+                                      LoadMoreText="Load more products"
+                                      LoadedMessage="{0} more products loaded, {1} in total."
+                                      EndMessage="All products are loaded.">
+                    <div class="product">
+                        <b>Product @item</b>
+                        <span>A short description of product @item.</span>
+                    </div>
+                </BitInfiniteScrolling>
+            </DemoExample>
+
+            <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+                <div>
+                    <b>BitParams</b> with a <b>BitInfiniteScrollingParams</b> sets defaults (texts, templates, loading mode,
+                    styles) for every list under it - one place to localize them. A list's own value wins (the second list
+                    keeps its own button text).
+                </div>
+                <br />
+                <BitParams Parameters="infiniteScrollingParams">
+                    <BitInfiniteScrolling ItemsProvider="LoadPagedItems" Class="basic" Context="item">
+                        <div>Item @item</div>
+                    </BitInfiniteScrolling>
+                    <br />
+                    <BitInfiniteScrolling ItemsProvider="LoadPagedItems" LoadMoreText="Show me more" Class="basic" Context="item">
+                        <div>Item @item</div>
+                    </BitInfiniteScrolling>
+                </BitParams>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+                <div>
+                    <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part:
+                    <b>Root</b>, <b>Item</b>, <b>LastElement</b>, <b>Loading</b>, <b>Spinner</b>, <b>Empty</b>, <b>End</b>,
+                    <b>Error</b> and <b>Button</b>. The public <b>--bit-InfiniteScrolling-*</b> CSS variables restyle the
+                    states and the button, here or for the whole app from <code>:root</code>.
+                </div>
+                <br /><br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
                                       PageSize="15"
                                       Context="item"
                                       Style="max-height:300px;border:1px solid gray"
                                       Classes="@(new() { Loading = "custom-loading", End = "custom-end" })"
-                                      Styles="@(new() { Empty = "text-align:center" })"
+                                      Styles="@(new() { Spinner = "display:none" })"
+                                      EndMessage="No more items to load.">
+                    <div>Item @item</div>
+                </BitInfiniteScrolling>
+                <br /><br />
+                <div><b>CSS variables:</b></div><br />
+                <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
+                                      Manual
+                                      PageSize="10"
+                                      Class="basic"
+                                      Context="item"
+                                      Style="@cssVariablesStyle"
                                       EndMessage="No more items to load.">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
                 <div>
-                    Set <b>Dir</b> to <b>BitDir.Rtl</b> to render the list right-to-left. The items, the status blocks and
-                    the button of the manual and retry states all flip along with it, and a horizontal list scrolls from
-                    the right.
+                    With <b>Dir</b> set to <b>Rtl</b> the items, the state blocks and the button flip, and a horizontal list
+                    scrolls from the right.
                 </div>
                 <br />
                 <BitInfiniteScrolling Dir="BitDir.Rtl"
-                                      ItemsProvider="LoadRtlItems"
+                                      ItemsProvider="LoadPagedItems"
                                       PageSize="15"
                                       Class="basic"
                                       Context="item"

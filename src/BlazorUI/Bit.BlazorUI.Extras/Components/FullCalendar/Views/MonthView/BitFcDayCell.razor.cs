@@ -5,6 +5,8 @@ public partial class BitFcDayCell
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
     [Parameter] public BitFullCalendarCell Cell { get; set; } = default!;
@@ -28,10 +30,19 @@ public partial class BitFcDayCell
     /// </summary>
     [Parameter] public bool IsLastColumn { get; set; }
 
+    /// <summary>
+    /// True for the first day a week row shows (its leading column, or the first day after the blanked days of a
+    /// neighbouring month), where a multi-day event that began earlier starts the row's run of its bar.
+    /// </summary>
+    [Parameter] public bool IsRowStart { get; set; }
+
     /// <summary>Raised for every key pressed on the add button, together with this cell's date.</summary>
     [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
 
     private bool _showEventList;
+
+    private List<BitFullCalendarEvent> GetWholeDayBackground(bool isBlank)
+        => isBlank ? [] : State.GetWholeDayBackground(Cell.Date);
     private bool _showAddDialog;
     private DateTime _addDraftStart;
     private BitFullCalendarEvent? _selectedEvent;
@@ -71,7 +82,7 @@ public partial class BitFcDayCell
 
         // Selecting the date above is navigation and stays available in read-only mode; only the
         // add affordance behind the same click is suppressed.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         // Build the draft once and use it for both the external add handler and the built-in dialog
@@ -89,6 +100,22 @@ public partial class BitFcDayCell
             _addDraftStart = draft.StartDate;
             _showAddDialog = true;
         }
+    }
+
+    /// <summary>
+    /// True for the segment that starts a run of <paramref name="ev"/>'s bar in this week row: its own first day, the row's
+    /// first shown day, or the first shown day after its start when the start falls on a hidden weekday.
+    /// </summary>
+    private bool IsLeadSegment(BitFullCalendarEvent ev, string position)
+    {
+        if (IsRowStart || position is "first" or "none")
+            return true;
+
+        var previousShown = Cell.Date.Date.AddDays(-1);
+        for (var i = 0; i < 6 && State.HiddenDays.Contains(previousShown.DayOfWeek); i++)
+            previousShown = previousShown.AddDays(-1);
+
+        return ev.StartDate.Date > previousShown;
     }
 
     private string GetBadgePosition(BitFullCalendarEvent ev, DateTime cellDate)

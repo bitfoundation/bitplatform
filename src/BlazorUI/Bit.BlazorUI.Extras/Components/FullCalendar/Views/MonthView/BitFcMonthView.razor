@@ -50,14 +50,17 @@
                 }
                 else
                 {
-                    <div class="bit-bfc-weeknum-cell" aria-label="@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)">
-                        @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
+                    @* A name on a role-less div is not read, so the spoken form travels as hidden text. *@
+                    <div class="bit-bfc-weeknum-cell">
+                        <span aria-hidden="true">@string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)</span>
+                        <span class="bit-bfc-sr-only">@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)</span>
                     </div>
                 }
             }
             <BitFcDayCell @key="cell.Date"
                           Cell="cell"
                           IsLastColumn="@(i % columnCount == columnCount - 1)"
+                          IsRowStart="@(i % columnCount == 0 || (State.ShowNonCurrentDates is false && cells[i - 1].CurrentMonth is false))"
                           Events="allEvents"
                           EventPositions="eventPositions"
                           EventTemplate="EventTemplate"

@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarDayView : IDisposable
+public partial class BitFcDayView : IDisposable
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
@@ -29,7 +29,7 @@ public partial class BitFcCalendarDayView : IDisposable
     // The hour slots exist only as add/drop targets, so a read-only grid must not expose a focusable
     // no-op button per slot to keyboard and assistive-technology users. A null attribute value is
     // omitted from the rendered markup.
-    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotRole => State.CanAdd is false ? null : "button";
 
     // Roving tabindex: the grid is a single tab stop, and the arrow keys move both the tabbable slot
     // and the focus. Without it a day would put one stop in the tab order per slot - 48 at the
@@ -67,7 +67,7 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private string? SlotTabIndex(int hour, int minute)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         return RovingSlot == (hour, minute) ? "0" : "-1";
@@ -119,7 +119,7 @@ public partial class BitFcCalendarDayView : IDisposable
         return (State.VisibleStartHour + (index / slots.Length), slots[index % slots.Length]);
     }
 
-    private bool CanSelectRange => State.ReadOnly is false && State.AllowRangeSelection;
+    private bool CanSelectRange => State.CanAdd && State.AllowRangeSelection;
 
     private bool IsSlotSelected(int hour, int minute)
     {
@@ -173,7 +173,7 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private async Task OpenAddForRangeAsync(int hour, int minute, int durationMinutes)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         if (OnAddClick.HasDelegate)
@@ -192,7 +192,7 @@ public partial class BitFcCalendarDayView : IDisposable
 
     protected override void OnInitialized()
     {
-        // The "Happening now" panel is derived from DateTime.Now; refresh once a minute so it
+        // The "Happening now" panel is derived from the calendar's clock; refresh once a minute so it
         // doesn't go stale during long sessions. The callback can fire after disposal, so guard
         // against re-rendering a disposed component.
         _nowTimer = new Timer(_ =>
@@ -221,7 +221,7 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private async Task OnHourClickAsync(int hour, int minute = 0)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         if (OnAddClick.HasDelegate)
@@ -285,11 +285,12 @@ public partial class BitFcCalendarDayView : IDisposable
     private string? HourSlotAriaLabel(int hour, int minute = 0)
     {
         // The slot is inert in read-only mode, so it carries no label to announce.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
+        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
+               + State.DescribeBackground(start, start.AddMinutes(State.SlotDurationMinutes));
     }
 
     private async Task OnDropHour(int hour, int minute)

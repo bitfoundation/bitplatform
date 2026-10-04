@@ -11,6 +11,12 @@ public class BitFullCalendarTexts
     public string ModeEvent { get; set; } = "Events";
     public string ModeTimeline { get; set; } = "Timeline";
 
+    /// <summary>Accessible name of the view tab strip (day, week, month, year, agenda).</summary>
+    public string ViewTabsAriaLabel { get; set; } = "Views";
+
+    /// <summary>Accessible name of the mode tab strip (events, timeline).</summary>
+    public string ModeTabsAriaLabel { get; set; } = "Modes";
+
     /// <summary>Label of the "today" navigation button.</summary>
     public string TodayButton { get; set; } = "Today";
 
@@ -115,6 +121,12 @@ public class BitFullCalendarTexts
     /// hours while <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is on.
     /// </summary>
     public string OutsideBusinessHoursMessage { get; set; } = "That time is outside business hours.";
+
+    /// <summary>
+    /// Notice shown when a move, resize, or save is refused because it would overlap an event marked
+    /// <see cref="BitFullCalendarEvent.IsBlocking"/>.
+    /// </summary>
+    public string BlockedMessage { get; set; } = "That time is unavailable.";
 
     /// <summary>Label of the business-hours toggle in the settings panel.</summary>
     public string HighlightBusinessHoursLabel { get; set; } = "Highlight business hours";

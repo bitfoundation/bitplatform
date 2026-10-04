@@ -1,28 +1,31 @@
 @using System.Globalization
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @* Escape closes the picker's own popup first and stops there, so it never dismisses the dialog the
    picker sits in while the popup is still open. *@
 <div class="bit-bfc-dtp" tabindex="-1" @onkeydown="OnKeyDown" @onkeydown:stopPropagation="_isOpen" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
-    <button type="button" class="bit-bfc-dtp-trigger" @onclick="ToggleOpen" aria-expanded="@(_isOpen ? "true" : "false")" aria-label="@GetTriggerAriaLabel()">
+    <button type="button" id="@_TriggerId" class="bit-bfc-dtp-trigger" @onclick="ToggleOpen" aria-haspopup="dialog" aria-expanded="@(_isOpen ? "true" : "false")" aria-controls="@(_isOpen ? _PanelId : null)" aria-label="@GetTriggerAriaLabel()"
+            aria-invalid="@(Invalid ? "true" : null)" aria-describedby="@DescribedBy">
         <span>@GetDisplayText()</span>
-        <span class="bit-bfc-dtp-trigger-icon">&#9662;</span>
+        <span class="bit-bfc-dtp-trigger-icon" aria-hidden="true">&#9662;</span>
     </button>
 
     @if (_isOpen)
     {
-        <div class="bit-bfc-dtp-panel">
+        <div id="@_PanelId" class="bit-bfc-dtp-panel" role="dialog" aria-label="@(TriggerAriaLabel ?? GetMonthYearLabel(_visibleMonthAnchor))">
             <div class="bit-bfc-dtp-header">
                 <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowPreviousMonth" aria-label="@PreviousMonthAriaLabel">
                     &#8249;
                 </button>
-                <div class="bit-bfc-dtp-month-label">@GetMonthYearLabel(_visibleMonthAnchor)</div>
+                @* Announced as the arrow keys or the chevrons turn the month. *@
+                <div class="bit-bfc-dtp-month-label" aria-live="polite">@GetMonthYearLabel(_visibleMonthAnchor)</div>
                 <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowNextMonth" aria-label="@NextMonthAriaLabel">
                     &#8250;
                 </button>
             </div>
 
-            <div class="bit-bfc-dtp-weekdays">
+            <div class="bit-bfc-dtp-weekdays" aria-hidden="true">
                 @foreach (var weekday in _weekdayHeaders)
                 {
                     <span>@weekday</span>
@@ -36,7 +39,12 @@
                     @* A date the calendar itself may not navigate to cannot be picked either, so the
                        cell is disabled here instead of only failing validation on save. *@
                     var outOfRange = IsOutOfRange(day.Date);
-                    <button type="button" class="@dayClass" aria-label="@GetDayAriaLabel(day)" disabled="@outOfRange" @onclick="() => SelectDate(day.Date)">
+                    @* Roving tabindex: the day grid is one tab stop the arrow keys walk. *@
+                    <button type="button" class="@dayClass" id="@DayId(day.Date)" aria-label="@GetDayAriaLabel(day)" disabled="@outOfRange"
+                            data-bit-bfc-roving tabindex="@(day.Date == RovingDate ? "0" : "-1")"
+                            aria-current="@(day.Date == (State?.Today ?? DateTime.Today) ? "date" : null)"
+                            @onkeydown="args => OnDayKeyDown(day.Date, args)"
+                            @onclick="() => SelectDate(day.Date)">
                         @day.Label
                     </button>
                 }

@@ -1,4 +1,5 @@
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @{
     var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
@@ -88,12 +89,26 @@
             list.Add(ev);
         }
     }
+
+    // Each month's cells are built once, for both the roving walk below and the grid that renders them.
+    var monthCells = months
+        .Select(m => (Month: m, Cells: BitFullCalendarHelpers.GetCalendarCells(m, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays)))
+        .ToList();
+
+    // The days the arrow keys walk, in date order: every day of the year that has events, one tab stop among them.
+    // A day is a current-month cell of its own month only, and the months and their cells run in date order, so the
+    // walk comes out in order without sorting.
+    _eventDays = monthCells
+        .SelectMany(mc => mc.Cells
+            .Where(c => cal.GetMonth(c.Date) == cal.GetMonth(mc.Month) && cal.GetYear(c.Date) == culturalYear && eventsByDay.ContainsKey(c.Date.Date))
+            .Select(c => c.Date.Date))
+        .ToList();
+    var rovingDate = RovingDate;
 }
 
 <div class="bit-bfc-year">
-    @foreach (var monthDate in months)
+    @foreach (var (monthDate, cells) in monthCells)
     {
-        var cells = BitFullCalendarHelpers.GetCalendarCells(monthDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
         var monthIndex = cal.GetMonth(monthDate);
         var monthName = dtf.GetMonthName(monthIndex);
         var yearGridTemplate = $"grid-template-columns:repeat({yearColumnCount}, minmax(0, 1fr));";
@@ -101,7 +116,7 @@
             <button type="button" class="bit-bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
                 @monthName
             </button>
-            <div class="bit-bfc-year-weekdays" style="@yearGridTemplate">
+            <div class="bit-bfc-year-weekdays" style="@yearGridTemplate" aria-hidden="true">
                 @foreach (var wd in yearWeekDayHeaders)
                 {
                     <div class="bit-bfc-year-weekday">@(wd.Length > 2 ? wd[..2] : wd)</div>
@@ -113,18 +128,22 @@
                     var cellCulturalMonth = cal.GetMonth(cell.Date);
                     var isCurrentMonth = cellCulturalMonth == monthIndex
                         && cal.GetYear(cell.Date) == culturalYear;
-                    var isToday = cell.Date.Date == DateTime.Today;
+                    var isToday = cell.Date.Date == State.Today;
                     var dayEvents = eventsByDay.TryGetValue(cell.Date.Date, out var evs) ? evs : [];
                     var hasEvents = isCurrentMonth && dayEvents.Count > 0;
 
                     @if (hasEvents)
                     {
                         <button type="button" class="bit-bfc-year-day has-events"
-                                style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
-                                aria-label="@cell.Date.ToString("D", State.Culture)"
-                                @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
+                                id="@DayId(cell.Date)"
+                                data-bit-bfc-roving
+                                tabindex="@(cell.Date.Date == rovingDate ? "0" : "-1")"
+                                @onkeydown="args => OnDayKeyDown(cell.Date.Date, args)"
+                                aria-label="@($"{cell.Date.ToString("D", State.Culture)}, {string.Format(State.Culture, Texts.EventListCountFormat, dayEvents.Count)}")"
+                                aria-current="@(isToday ? "date" : null)"
+                                @onclick="() => ShowEventsForDay(cell.Date)">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
-                            <span class="bit-bfc-year-day-bullets">
+                            <span class="bit-bfc-year-day-bullets" aria-hidden="true">
                                 @foreach (var ev in dayEvents.Take(3))
                                 {
                                     <BitFcEventBullet Color="ev.Color" />
@@ -134,7 +153,7 @@
                     }
                     else
                     {
-                        <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "")">
+                        <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "")" aria-hidden="@(isCurrentMonth ? null : "true")">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                         </div>
                     }
@@ -146,5 +165,6 @@
 
 @if (_showEventList)
 {
-    <BitFcEventListDialog Date="_eventListDate" Events="_eventListEvents" OnClose="() => _showEventList = false" />
+    @* Read from this render's index, so an event edited or deleted from the list leaves it at once. *@
+    <BitFcEventListDialog Date="_eventListDate" Events="@(eventsByDay.TryGetValue(_eventListDate.Date, out var listed) ? listed : [])" OnClose="() => _showEventList = false" />
 }
