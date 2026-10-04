@@ -25,8 +25,8 @@ public partial class BitFcCalendarYearView
         {
             if (_focusedDate is { } focused && _eventDays.Contains(focused))
                 return focused;
-            if (_eventDays.Contains(DateTime.Today))
-                return DateTime.Today;
+            if (_eventDays.Contains(State.Today))
+                return State.Today;
             return _eventDays.Count > 0 ? _eventDays[0] : null;
         }
     }

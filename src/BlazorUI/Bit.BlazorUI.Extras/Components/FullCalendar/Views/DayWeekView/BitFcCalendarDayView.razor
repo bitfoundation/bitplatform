@@ -9,13 +9,13 @@
     // Include in-progress multi-day events too, not just single-day ones, so the sidebar shows
     // every event currently happening (e.g. a multi-day conference active right now).
     var currentEvents = SingleDayEvents.Concat(MultiDayEvents).Where(e =>
-        DateTime.Now >= e.StartDate && DateTime.Now <= e.EndDate).ToList();
+        State.Now >= e.StartDate && State.Now <= e.EndDate).ToList();
     var visibleHours = State.VisibleHours.ToArray();
     var slotMinutes = State.SlotMinutes;
     var slotHeightPercent = 100.0 / slotMinutes.Length;
     var showNowIndicator = State.ShowCurrentTimeIndicator
-        && State.SelectedDate.Date == DateTime.Today
-        && BitFullCalendarHelpers.IsNowInVisibleHours(State.VisibleStartHour, State.VisibleEndHour);
+        && State.SelectedDate.Date == State.Today
+        && BitFullCalendarHelpers.IsNowInVisibleHours(State.VisibleStartHour, State.VisibleEndHour, State.Now);
 }
 
 <div class="bit-bfc-day-layout">
@@ -26,9 +26,10 @@
                 <span class="bit-bfc-day-header-weekday">
                     @State.SelectedDate.ToString("ddd", State.Culture)
                 </span>
-                <span class="bit-bfc-day-header-date @(State.SelectedDate.Date == DateTime.Today ? "today" : "")" aria-current="@(State.SelectedDate.Date == DateTime.Today ? "date" : null)">
+                <span class="bit-bfc-day-header-date @(State.SelectedDate.Date == State.Today ? "today" : "")" aria-current="@(State.SelectedDate.Date == State.Today ? "date" : null)">
                     @BitFullCalendarHelpers.GetCulturalDayOfMonth(State.SelectedDate, State.Culture)
                 </span>
+                <BitFcDayBackgroundLabels Events="State.BackgroundEvents" Day="State.SelectedDate" />
             </div>
         </div>
 
@@ -71,7 +72,7 @@
                                      @onclick="() => OnHourClickAsync(hour, minute)"
                                      @onkeydown="e => OnHourKeyDownAsync(e, hour, minute)"></div>
                             }
-                            @if (!State.ReadOnly)
+                            @if (State.CanAdd)
                             {
                                 <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -80,6 +81,8 @@
                             }
                         </div>
                 }
+
+                <BitFcBackgroundEvents Events="State.BackgroundEvents" AxisStart="State.SelectedDate.Date.AddHours(State.VisibleStartHour)" AxisEnd="State.SelectedDate.Date.AddHours(State.VisibleEndHour)" />
 
                 <BitFcRenderGroupedEvents GroupedEvents="groupedEvents" Day="State.SelectedDate" OnEventSelected="SelectEvent" EventTemplate="EventTemplate" />
                 @if (showNowIndicator)

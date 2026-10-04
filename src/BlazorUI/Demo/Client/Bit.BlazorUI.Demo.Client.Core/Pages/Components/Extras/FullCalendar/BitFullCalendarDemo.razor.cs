@@ -88,6 +88,24 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "EventDetailsTemplate",
+            Type = "RenderFragment<BitFullCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "Extra content for the built-in event details dialog, under the built-in rows.",
+            LinkType = LinkType.Link,
+            Href = "#event-class",
+        },
+        new()
+        {
+            Name = "EventEditorTemplate",
+            Type = "RenderFragment<BitFullCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "Extra fields for the built-in add/edit dialog. It receives the draft, whose Data the save commits; assign a new Data rather than changing the object it starts with, so Cancel leaves the event as it was.",
+            LinkType = LinkType.Link,
+            Href = "#event-class",
+        },
+        new()
+        {
             Name = "Events",
             Type = "List<BitFullCalendarEvent>?",
             DefaultValue = "null",
@@ -299,6 +317,13 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "TimeProvider",
+            Type = "TimeProvider?",
+            DefaultValue = "null",
+            Description = "The clock \"now\" and \"today\" are read from: the today marker, the current-time line, the Today button and the opening date. Defaults to TimeProvider.System, which on Blazor Server is the server's clock - pass one whose LocalTimeZone is the user's, or a fixed one for tests.",
+        },
+        new()
+        {
             Name = "TimelineEventTemplate",
             Type = "RenderFragment<BitFullCalendarEvent>?",
             DefaultValue = "null",
@@ -454,10 +479,11 @@ public partial class BitFullCalendarDemo
             Items =
             [
                 new() { Name = "None", Description = "The change was applied (or there was nothing to apply).", Value = "0" },
-                new() { Name = "ReadOnly", Description = "The calendar - or the single event - is read-only, so nothing was changed.", Value = "1" },
+                new() { Name = "ReadOnly", Description = "The calendar, the single event, or the edit permissions (Settings.AllowEdit / AllowDrag / AllowResize) do not allow the change, so nothing was changed.", Value = "1" },
                 new() { Name = "Overlap", Description = "The resulting range would overlap another event on the same resource while Settings.AllowEventOverlap is false.", Value = "2" },
                 new() { Name = "OutOfRange", Description = "The resulting range falls outside the MinDate/MaxDate window the calendar is allowed to show.", Value = "3" },
                 new() { Name = "OutsideBusinessHours", Description = "The resulting range is not fully contained in the business hours while Settings.RestrictToBusinessHours is true.", Value = "4" },
+                new() { Name = "Blocked", Description = "The resulting range would overlap an event marked IsBlocking on the same resource (or one blocking every resource).", Value = "5" },
             ]
         },
     ];
@@ -497,6 +523,8 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Resource", Type = "string?", DefaultValue = "null", Description = "Optional resource identifier linking this event to a BitFullCalendarResource. Used by the timeline view to place the event on the matching resource row. null or empty means the event is unassigned.", LinkType = LinkType.Link, Href = "#resource-class" },
                 new() { Name = "IsAllDay", Type = "bool", DefaultValue = "false", Description = "Marks the event as lasting the whole day (or span of days) rather than a time range. It renders in the all-day row above the day and week time grids and its badge shows no clock time." },
                 new() { Name = "IsReadOnly", Type = "bool", DefaultValue = "false", Description = "Locks this single event: it cannot be dragged, resized, edited, or deleted even while the calendar itself is editable. Reading its details keeps working." },
+                new() { Name = "IsBackground", Type = "bool", DefaultValue = "false", Description = "Draws the event as a shaded band behind the grid (a lunch break, a holiday) instead of a card: never clicked, focused, dragged or listed, and not an overlap. The time grids and the timeline draw its range (on its Resource's row, or every row); the month grid tints the days it covers whole. Its title is spoken with the slots it covers." },
+                new() { Name = "IsBlocking", Type = "bool", DefaultValue = "false", Description = "Keeps every other event out of this event's range - an add, move or resize overlapping it is refused as Blocked, even while overlaps are allowed. With a Resource it blocks that resource only. A blocking background band is hatched." },
                 new() { Name = "CssClass", Type = "string?", DefaultValue = "null", Description = "Extra CSS class(es) applied to every element that renders this event - the month badge, the day/week block, the timeline block, and the agenda row." },
                 new() { Name = "Recurrence", Type = "BitFullCalendarRecurrence?", DefaultValue = "null", Description = "Repeat rule that turns this event into a series master. The calendar expands it into occurrences across the visible range; the master itself is never rendered once it has one.", LinkType = LinkType.Link, Href = "#recurrence-class" },
                 new() { Name = "SeriesId", Type = "string?", DefaultValue = "null", Description = "Set on a generated occurrence to the Id of the series master it came from. Null on every event a consumer supplied." },
@@ -607,6 +635,12 @@ public partial class BitFullCalendarDemo
                 new() { Name = "RequireEventDescription", Type = "bool", DefaultValue = "false", Description = "Makes the description field of the built-in add/edit dialog mandatory. Only the title is required by default." },
                 new() { Name = "AllowEventOverlap", Type = "bool", DefaultValue = "true", Description = "Allows two events on the same resource to occupy the same time range. When false, a drag, resize, or dialog save that would create an overlap is refused." },
                 new() { Name = "AllowRangeSelection", Type = "bool", DefaultValue = "true", Description = "Lets the user press and drag across the day or week time grid to select a range of slots, which opens the new event already spanning it. A plain click still creates a one-slot event." },
+                new() { Name = "WeekDayCount", Type = "int?", DefaultValue = "null", Description = "Days the week view and the week timeline show (3 for a phone), starting at the selected date and skipping hidden days; prev/next turn by that length. null, or a value outside 1-6, is the culture's whole week." },
+                new() { Name = "AllowAdd", Type = "bool", DefaultValue = "true", Description = "Lets the user create events: the Add Event button, the add affordance of every day and slot, and range selection." },
+                new() { Name = "AllowEdit", Type = "bool", DefaultValue = "true", Description = "Lets the user change existing events: the Edit action of the details dialog and - since they are edits too - dragging and resizing." },
+                new() { Name = "AllowDelete", Type = "bool", DefaultValue = "true", Description = "Lets the user delete events from the details dialog." },
+                new() { Name = "AllowDrag", Type = "bool", DefaultValue = "true", Description = "Lets the user move events by dragging them or with Alt+Arrow keys, while AllowEdit is on." },
+                new() { Name = "AllowResize", Type = "bool", DefaultValue = "true", Description = "Lets the user change how long events last by dragging their edges or with Shift+Arrow keys, while AllowEdit is on." },
                 new() { Name = "AgendaModeGroupBy", Type = "BitFullCalendarAgendaGroupBy", DefaultValue = "BitFullCalendarAgendaGroupBy.Date", Description = "How events are grouped in the agenda view.", LinkType = LinkType.Link, Href = "#agenda-group-by-enum" },
                 new() { Name = "EventLayout", Type = "BitFullCalendarEventLayout", DefaultValue = "BitFullCalendarEventLayout.Overlap", Description = "How overlapping event cards are positioned in the day and week views.", LinkType = LinkType.Link, Href = "#event-layout-enum" },
                 new() { Name = "ShowDayViewCalendar", Type = "bool", DefaultValue = "true", Description = "Renders the mini calendar shown in the day view sidebar." },
@@ -737,6 +771,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "EventOverlapMessage", Type = "string", DefaultValue = "\"This time range is already taken on that resource.\"", Description = "Notice shown when a move, resize, or save is refused because it would overlap another event." },
                 new() { Name = "OutOfRangeMessage", Type = "string", DefaultValue = "\"That date is outside the allowed range.\"", Description = "Notice shown when a move or resize is refused because it falls outside the allowed date range." },
                 new() { Name = "OutsideBusinessHoursMessage", Type = "string", DefaultValue = "\"That time is outside business hours.\"", Description = "Notice shown when a move, resize, or save is refused because it falls outside the business hours." },
+                new() { Name = "BlockedMessage", Type = "string", DefaultValue = "\"That time is unavailable.\"", Description = "Notice shown when a move, resize, or save is refused because it overlaps a blocking event." },
                 new() { Name = "HighlightBusinessHoursLabel", Type = "string", DefaultValue = "\"Highlight business hours\"", Description = "Label for the business-hours toggle in the settings panel." },
                 new() { Name = "NavLinkDayAriaLabelFormat", Type = "string", DefaultValue = "\"Go to {0}\"", Description = "Accessible name of a day number or column header that navigates to that day; {0} is the formatted date." },
                 new() { Name = "NavLinkWeekAriaLabelFormat", Type = "string", DefaultValue = "\"Go to week {0}\"", Description = "Accessible name of a week number that navigates to that week; {0} is the ISO-8601 week number." },
@@ -866,6 +901,13 @@ public partial class BitFullCalendarDemo
             DefaultValue = "",
             Description = "The inclusive start and end dates currently on screen.",
         },
+        new()
+        {
+            Name = "ScrollToTimeAsync",
+            Type = "Func<TimeSpan, Task<bool>>",
+            DefaultValue = "",
+            Description = "Scrolls the day and week grids, or the day and week timeline, to a time (clamped into the visible hours). Returns false when the active view has no time axis.",
+        },
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =
@@ -876,12 +918,14 @@ public partial class BitFullCalendarDemo
         new() { Name = "--bit-FullCalendar-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Text color." },
         new() { Name = "--bit-FullCalendar-secondary-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Secondary text: weekday headers, group titles, descriptions." },
         new() { Name = "--bit-FullCalendar-muted-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Muted text: hour labels, week numbers, days of the neighbouring months." },
-        new() { Name = "--bit-FullCalendar-border-color", DefaultValue = "var(--bit-clr-brd-ter)", Description = "Grid lines and the borders of the calendar and its controls." },
+        new() { Name = "--bit-FullCalendar-border-color", DefaultValue = "var(--bit-clr-brd-ter)", Description = "Grid lines and the border of the calendar." },
+        new() { Name = "--bit-FullCalendar-control-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Edges of the fields, selects, search box and switch tracks (kept at 3:1 against the surface)." },
         new() { Name = "--bit-FullCalendar-accent-color", DefaultValue = "var(--bit-clr-pri)", Description = "Accent: today's marker, the primary button, the selected choices, the focus outline of a slot." },
         new() { Name = "--bit-FullCalendar-accent-hover-color", DefaultValue = "var(--bit-clr-pri-hover)", Description = "Accent of a hovered primary button." },
         new() { Name = "--bit-FullCalendar-accent-text-color", DefaultValue = "var(--bit-clr-pri-text)", Description = "Text drawn on the accent color." },
         new() { Name = "--bit-FullCalendar-event-color", DefaultValue = "--bit-FullCalendar-accent-color", Description = "Color of an event whose Color is neither a color option nor a CSS color. Its chip, swatch and bullet are derived from it." },
         new() { Name = "--bit-FullCalendar-event-border-radius", DefaultValue = "var(--bit-shp-radius-control)", Description = "Corner radius of the event badges and blocks." },
+        new() { Name = "--bit-FullCalendar-background-event-opacity", DefaultValue = "0.16", Description = "How strongly a background event's color tints its band, from 0 to 1." },
         new() { Name = "--bit-FullCalendar-today-background", DefaultValue = "6% accent", Description = "Tint of today's column in the week grid." },
         new() { Name = "--bit-FullCalendar-selection-background", DefaultValue = "22% accent", Description = "The slots a range selection covers." },
         new() { Name = "--bit-FullCalendar-off-hours-background", DefaultValue = "7% secondary text", Description = "Shading outside the business hours (Settings.HighlightBusinessHours)." },
@@ -1025,6 +1069,12 @@ public partial class BitFullCalendarDemo
         set => workWeekSettings.ShowWeekNumbers = value;
     }
 
+    private bool workWeekThreeDays
+    {
+        get => workWeekSettings.WeekDayCount is 3;
+        set => workWeekSettings.WeekDayCount = value ? 3 : null;
+    }
+
 
     // Month grid
     private readonly BitFullCalendarSettings monthGridSettings = new()
@@ -1094,8 +1144,10 @@ public partial class BitFullCalendarDemo
     private void HandleRefused(BitFullCalendarChangeRefusal refusal) => lastRefusal = refusal.ToString();
 
 
-    // Read-only
-    private bool isReadOnly = true;
+    // Read-only & permissions
+    private bool isReadOnly;
+
+    private readonly BitFullCalendarSettings permissionSettings = new();
 
 
     // OnChange & OnChanging
@@ -1189,6 +1241,12 @@ public partial class BitFullCalendarDemo
     private bool hideHeader;
     private BitFullCalendar? toolbarCalendar;
     private string? visibleRange;
+
+    private async Task ScrollToAfternoon()
+    {
+        if (toolbarCalendar is null) return;
+        await toolbarCalendar.ScrollToTimeAsync(TimeSpan.FromHours(14));
+    }
 
     private void ShowVisibleRange()
     {
@@ -1426,6 +1484,8 @@ public partial class BitFullCalendarDemo
             new() { Id = (++id).ToString(), Title = "Payroll run", Description = "Locked - cannot be moved.", StartDate = today.AddHours(9), EndDate = today.AddHours(10), Color = "red", IsReadOnly = true },
             new() { Id = (++id).ToString(), Title = "Design Review", Description = "Try dragging this onto the locked slot.", StartDate = today.AddHours(11), EndDate = today.AddHours(12), Color = "purple" },
             new() { Id = (++id).ToString(), Title = "Retro", Description = "Sprint retrospective.", StartDate = today.AddHours(15), EndDate = today.AddHours(16), Color = "blue" },
+            new() { Id = (++id).ToString(), Title = "Lunch break", StartDate = today.AddHours(12), EndDate = today.AddHours(13), Color = "#94a3b8", IsBackground = true, IsBlocking = true, Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily } },
+            new() { Id = (++id).ToString(), Title = "Company offsite", StartDate = today.AddDays(2), EndDate = today.AddDays(2), Color = "green", IsAllDay = true, IsBackground = true },
         ];
     }
 

@@ -886,9 +886,15 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(1));
         });
 
+        // aria-disabled rather than disabled, so the press that reaches the edge keeps the focus on the button.
         var navButtons = component.FindAll(".bit-bfc-btn-nav");
-        Assert.IsTrue(navButtons[0].HasAttribute("disabled"), "there is nothing before MinDate to navigate to");
-        Assert.IsFalse(navButtons[1].HasAttribute("disabled"));
+        Assert.AreEqual("true", navButtons[0].GetAttribute("aria-disabled"), "there is nothing before MinDate to navigate to");
+        Assert.IsFalse(navButtons[0].HasAttribute("disabled"));
+        Assert.IsFalse(navButtons[1].HasAttribute("aria-disabled"));
+
+        var before = component.Instance.State.SelectedDate;
+        navButtons[0].Click();
+        Assert.AreEqual(before, component.Instance.State.SelectedDate, "an aria-disabled step does nothing");
     }
 
     [TestMethod]
@@ -1699,12 +1705,12 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarShouldKeepARecurringOccurrenceFromBeingDraggedButOfferItsActions()
+    public void BitFullCalendarShouldLetARecurringOccurrenceBeDraggedAndOfferItsActions()
     {
         var component = RenderSeries();
 
         var badge = component.Find(".bit-bfc-event-badge");
-        Assert.AreEqual("false", badge.GetAttribute("draggable"));
+        Assert.AreEqual("true", badge.GetAttribute("draggable"), "an occurrence moves on its own");
 
         badge.Click();
 
@@ -1717,10 +1723,85 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderSeries(readOnlyMaster: true);
 
+        Assert.AreEqual("false", component.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
         component.Find(".bit-bfc-event-badge").Click();
 
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer button").Count);
     }
+
+    [TestMethod]
+    public void BitFullCalendarShouldDetachAnOccurrenceMovedByKeyboard()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        // Alt+Right moves the second occurrence (June 11) a day later, on its own.
+        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+
+        var state = component.Instance.State;
+        var master = state.AllEvents.Single(e => e.Id == "series");
+        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+        var detached = state.AllEvents.Single(e => e.Id != "series");
+        Assert.AreEqual(new DateTime(2024, 6, 12, 9, 0, 0), detached.StartDate);
+        Assert.IsNull(detached.Recurrence);
+        Assert.IsNull(detached.SeriesId);
+
+        Assert.AreEqual(2, changes.Count, "the master's skipped date and the new one-off");
+        Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
+        Assert.AreEqual(BitFullCalendarChangeKind.Add, changes[1].Kind);
+        Assert.IsTrue(changes.All(c => c.Source == BitFullCalendarChangeSource.Drag));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldDetachAnOccurrenceDroppedElsewhere()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+        var state = component.Instance.State;
+
+        var occurrence = state.Events.Single(e => e.OccurrenceDate == new DateTime(2024, 6, 12));
+        state.StartDrag(occurrence);
+        component.InvokeAsync(() => Notifier(component).HandleDropAsync(new DateTime(2024, 6, 20))).Wait();
+
+        Assert.IsFalse(state.IsDragging);
+        Assert.AreEqual(3, state.Events.Count, "two occurrences left in the series and the one moved out of it");
+        Assert.IsTrue(state.Events.Any(e => e.StartDate == new DateTime(2024, 6, 20, 9, 0, 0) && e.IsOccurrence is false));
+        Assert.AreEqual(2, changes.Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldPutBothHalvesBackWhenOnChangingRefusesAnOccurrenceMove()
+    {
+        var start = new DateTime(2024, 6, 10);
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.DefaultDate, start);
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent
+                {
+                    Id = "series",
+                    Title = "Standup",
+                    StartDate = start.AddHours(9),
+                    EndDate = start.AddHours(10),
+                    Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 3 }
+                }
+            ]);
+            parameters.Add(p => p.OnChanging, (BitFullCalendarChangingEventArgs args) => args.Cancel = args.Kind == BitFullCalendarChangeKind.Add);
+        });
+
+        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+
+        var state = component.Instance.State;
+        Assert.AreEqual(1, state.AllEvents.Count);
+        Assert.IsNull(state.AllEvents[0].Recurrence!.ExceptionDates, "the skipped date is taken back");
+        Assert.IsFalse(component.Find(".bit-bfc-body").HasAttribute("data-bit-bfc-moved-from"), "a move that never happened hands no focus on");
+    }
+
+    private static BitFullCalendarChangeNotifier Notifier(IRenderedComponent<BitFullCalendar> component)
+        => (BitFullCalendarChangeNotifier)typeof(BitFullCalendar)
+            .GetField("_changeNotifier", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(component.Instance)!;
 
     [TestMethod]
     public void BitFullCalendarShouldSkipTheDateWhenOnlyThisOccurrenceIsDeleted()

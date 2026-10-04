@@ -40,7 +40,7 @@ public partial class BitFcAgendaEvents
 
         try
         {
-            var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
+            var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, State.Today);
             if (scrolled)
                 _lastAgendaScrollNonce = nonce;
         }

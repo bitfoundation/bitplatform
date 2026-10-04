@@ -139,6 +139,12 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     protected override void OnInitialized() => State.OnStateChanged += HandleStateChanged;
 
+    // What the form may still save: an edit needs editing allowed, a new event adding allowed - either can be taken
+    // away (read-only, a permission turned off) while the form is open.
+    private BitFullCalendarEvent _draft = new();
+
+    private bool CanSubmit => _isEditing ? State.ReadOnly is false && State.AllowEdit : State.CanAdd;
+
     /// <summary>
     /// The calendar can be switched to read-only while this dialog is open - every entry point only
     /// checks read-only when it opens the dialog, so an already-open form would otherwise stay live.
@@ -146,7 +152,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// </summary>
     private void HandleStateChanged()
     {
-        if (State.ReadOnly is false)
+        if (CanSubmit)
             return;
 
         _ = InvokeAsync(OnClose.InvokeAsync);
@@ -194,6 +200,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         _isEditing = ExistingEvent != null;
         _isOccurrenceEdit = ExistingEvent?.IsOccurrence is true;
+        // What an EventEditorTemplate edits: a copy, so only a save carries its Data into the calendar.
+        _draft = _isEditing ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent!) : new BitFullCalendarEvent();
         var defaultColor = ColorScheme.Options.Count > 0
             ? ColorScheme.Options[0].Id
             : BitFullCalendarColorScheme.FallbackColorId;
@@ -492,7 +500,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // Last line of defense for every host of this dialog (add entry points and the details
         // dialog's edit overlay): read-only may have been switched on after the dialog opened, so
         // refuse the save rather than mutating state the calendar no longer allows to change.
-        if (State.ReadOnly) return;
+        if (CanSubmit is false) return;
 
         // Guard against re-entrancy: a second click or Enter press while the first save is still
         // in flight would otherwise add/update the event twice before the dialog closes.
@@ -541,6 +549,9 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
                 case BitFullCalendarChangeRefusal.Overlap:
                     _errors["overlap"] = Texts.EventOverlapMessage;
                     break;
+                case BitFullCalendarChangeRefusal.Blocked:
+                    _errors["overlap"] = Texts.BlockedMessage;
+                    break;
             }
         }
 
@@ -586,12 +597,15 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         EndDate = _endDate,
         Color = _color,
         Resource = resourceId,
-        Data = _isEditing ? ExistingEvent!.Data : null,
+        // The draft starts with the event's own Data, so without an editor template this is exactly what it was.
+        Data = _draft.Data,
         Attendees = [.. _attendees],
         IsAllDay = _isAllDay,
-        // An occurrence is read-only only so it cannot be dragged; the one-off it becomes is not.
+        // An occurrence carries its series' lock, which the one-off it becomes does not inherit.
         IsReadOnly = _isEditing && _isOccurrenceEdit is false && ExistingEvent!.IsReadOnly,
         CssClass = _isEditing ? ExistingEvent!.CssClass : null,
+        IsBackground = _isEditing && ExistingEvent!.IsBackground,
+        IsBlocking = _isEditing && ExistingEvent!.IsBlocking,
         Recurrence = BuildRecurrence()
     };
 

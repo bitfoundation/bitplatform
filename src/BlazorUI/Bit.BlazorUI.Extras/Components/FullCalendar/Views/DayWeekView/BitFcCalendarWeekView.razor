@@ -3,10 +3,10 @@
 
 @{
     var inv = System.Globalization.CultureInfo.InvariantCulture;
-    var weekStart = BitFullCalendarHelpers.StartOfWeek(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
     // The hidden weekdays are dropped from the column set, so a work-week configuration renders
-    // exactly the days it allows.
-    var weekDays = BitFullCalendarHelpers.GetWeekDates(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    // exactly the days it allows; a shorter week (WeekDayCount) is the run of days it starts at.
+    var weekDays = State.GetVisibleWeekDates();
+    var weekStart = weekDays[0];
     var visibleHours = State.VisibleHours.ToArray();
     var slotMinutes = State.SlotMinutes;
     var slotHeightPercent = 100.0 / slotMinutes.Length;
@@ -17,11 +17,15 @@
 }
 
 <div class="bit-bfc-week-layout">
-    <div class="bit-bfc-week-mobile-warning">
-        @Texts.WeekMobileWarning
-    </div>
+    @* A week of three days or fewer is what a phone is meant to show, so it carries no warning. *@
+    @if (weekDays.Length > 3)
+    {
+        <div class="bit-bfc-week-mobile-warning">
+            @Texts.WeekMobileWarning
+        </div>
+    }
 
-    <BitFcWeekViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.SelectedDate" EventTemplate="EventTemplate" />
+    <BitFcWeekViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.WeekSpanStart" EventTemplate="EventTemplate" />
 
     <div id="@_timeGridScrollElementId" class="bit-bfc-week-scroll">
         <div class="bit-bfc-week-header">
@@ -38,7 +42,7 @@
             @foreach (var day in weekDays)
             {
                 var d = day;
-                var isToday = d.Date == DateTime.Today;
+                var isToday = d.Date == State.Today;
                 <div class="bit-bfc-week-header-day">
                     @* With nav links on, the column header opens that single day - the affordance
                        every calendar puts there - and stays plain text otherwise. *@
@@ -58,6 +62,7 @@
                         <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
                         <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>
                     }
+                    <BitFcDayBackgroundLabels Events="State.BackgroundEvents" Day="d" />
                 </div>
             }
         </div>
@@ -85,7 +90,7 @@
                     var isOutOfRange = State.IsDateInAllowedRange(d) is false;
 
                     @* Today's column is tinted so the eye finds it without reading the header. *@
-                    <div class="bit-bfc-week-day-col @(isOutOfRange ? "bit-bfc-out-of-range" : null) @(d.Date == DateTime.Today ? "bit-bfc-today-col" : null)" style="--bit-bfc-visible-hours:@(visibleHours.Length);">
+                    <div class="bit-bfc-week-day-col @(isOutOfRange ? "bit-bfc-out-of-range" : null) @(d.Date == State.Today ? "bit-bfc-today-col" : null)" style="--bit-bfc-visible-hours:@(visibleHours.Length);">
                         @foreach (var h in visibleHours)
                         {
                             var hour = h;
@@ -119,7 +124,7 @@
                                          @onclick="() => OnHourClickAsync(d, hour, minute)"
                                          @onkeydown="e => OnHourKeyDownAsync(e, dayIndex, d, hour, minute)"></div>
                                 }
-                                @if (!State.ReadOnly && !isOutOfRange)
+                                @if (State.CanAdd && !isOutOfRange)
                                 {
                                     <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -129,11 +134,13 @@
                             </div>
                         }
 
+                        <BitFcBackgroundEvents Events="State.BackgroundEvents" AxisStart="d.Date.AddHours(State.VisibleStartHour)" AxisEnd="d.Date.AddHours(State.VisibleEndHour)" />
+
                         <BitFcRenderGroupedEvents GroupedEvents="grouped" Day="d" OnEventSelected="SelectEvent" EventTemplate="EventTemplate" />
 
-                        @if (d.Date == DateTime.Today
+                        @if (d.Date == State.Today
                              && State.ShowCurrentTimeIndicator
-                             && BitFullCalendarHelpers.IsNowInVisibleHours(State.VisibleStartHour, State.VisibleEndHour))
+                             && BitFullCalendarHelpers.IsNowInVisibleHours(State.VisibleStartHour, State.VisibleEndHour, State.Now))
                         {
                             <BitFcCalendarTimeline />
                         }

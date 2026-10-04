@@ -176,6 +176,7 @@ private int gridSlotMinutes
     <BitChoiceGroupOption Text=""Sun - Thu"" Value=""@(""sun-thu"")"" />
 </BitChoiceGroup>
 <BitToggle @bind-Value=""workWeekNumbers"" Text=""Week numbers"" />
+<BitToggle @bind-Value=""workWeekThreeDays"" Text=""Three days"" />
 
 <BitFullCalendar Events=""events"" Settings=""workWeekSettings"" DefaultView=""BitFullCalendarView.Week"" />";
     private readonly string example5CsharpCode = @"
@@ -208,6 +209,12 @@ private bool workWeekNumbers
 {
     get => workWeekSettings.ShowWeekNumbers;
     set => workWeekSettings.ShowWeekNumbers = value;
+}
+
+private bool workWeekThreeDays
+{
+    get => workWeekSettings.WeekDayCount is 3;
+    set => workWeekSettings.WeekDayCount = value ? 3 : null;
 }
 " + eventsCode;
 
@@ -376,7 +383,9 @@ private static List<BitFullCalendarEvent> CreateEvents()
                  WeekEventTemplate=""EventCard""
                  MonthEventTemplate=""MonthBadge""
                  MonthCellTemplate=""HolidayCell""
-                 AgendaEventTemplate=""AgendaRow"" />";
+                 AgendaEventTemplate=""AgendaRow""
+                 EventDetailsTemplate=""LocationRow""
+                 EventEditorTemplate=""LocationField"" />";
     private readonly string example10CsharpCode = @"
 private readonly Dictionary<DateTime, string> holidays = new()
 {
@@ -408,6 +417,18 @@ private RenderFragment<BitFullCalendarEvent> AgendaRow => ev =>
         <strong>@ev.Title</strong>
         <span>@ev.StartDate.ToString(""ddd d MMM, HH:mm"")</span>
     </span>;
+
+// The location lives in Data; the editor template sets it on the draft, which the save commits.
+private RenderFragment<BitFullCalendarEvent> LocationRow => ev =>
+    @<text>
+        @if (ev.Data is string location)
+        {
+            <BitText>📍 @location</BitText>
+        }
+    </text>;
+
+private RenderFragment<BitFullCalendarEvent> LocationField => ev =>
+    @<BitTextField Label=""Location"" Value=""@(ev.Data as string)"" ValueChanged=""(string? value) => ev.Data = value"" />;
 " + eventsCode;
 
     private readonly string example11RazorCode = @"
@@ -515,15 +536,24 @@ private static List<BitFullCalendarEvent> CreateRuleEvents()
         new() { Id = (++id).ToString(), Title = ""Payroll run"", Description = ""Locked - cannot be moved."", StartDate = today.AddHours(9), EndDate = today.AddHours(10), Color = ""red"", IsReadOnly = true },
         new() { Id = (++id).ToString(), Title = ""Design Review"", Description = ""Try dragging this onto the locked slot."", StartDate = today.AddHours(11), EndDate = today.AddHours(12), Color = ""purple"" },
         new() { Id = (++id).ToString(), Title = ""Retro"", Description = ""Sprint retrospective."", StartDate = today.AddHours(15), EndDate = today.AddHours(16), Color = ""blue"" },
+        new() { Id = (++id).ToString(), Title = ""Lunch break"", StartDate = today.AddHours(12), EndDate = today.AddHours(13), Color = ""#94a3b8"", IsBackground = true, IsBlocking = true, Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily } },
+        new() { Id = (++id).ToString(), Title = ""Company offsite"", StartDate = today.AddDays(2), EndDate = today.AddDays(2), Color = ""green"", IsAllDay = true, IsBackground = true },
     ];
 }";
 
     private readonly string example14RazorCode = @"
 <BitToggle @bind-Value=""isReadOnly"" Text=""Read-only"" />
+<BitToggle @bind-Value=""permissionSettings.AllowAdd"" Text=""Add"" />
+<BitToggle @bind-Value=""permissionSettings.AllowEdit"" Text=""Edit"" />
+<BitToggle @bind-Value=""permissionSettings.AllowDelete"" Text=""Delete"" />
+<BitToggle @bind-Value=""permissionSettings.AllowDrag"" Text=""Drag"" />
+<BitToggle @bind-Value=""permissionSettings.AllowResize"" Text=""Resize"" />
 
-<BitFullCalendar Events=""events"" ReadOnly=""isReadOnly"" />";
+<BitFullCalendar Events=""events"" ReadOnly=""isReadOnly"" Settings=""permissionSettings"" DefaultView=""BitFullCalendarView.Week"" />";
     private readonly string example14CsharpCode = @"
-private bool isReadOnly = true;
+private bool isReadOnly;
+
+private readonly BitFullCalendarSettings permissionSettings = new();
 " + eventsCode;
 
     private readonly string example15RazorCode = @"
@@ -678,6 +708,7 @@ private static List<BitFullCalendarEvent> CreateEventsBetween(DateTime start, Da
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.NavigateNext()"">Next</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.ChangeView(BitFullCalendarView.Day)"">Day view</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.ChangeView(BitFullCalendarView.Month)"">Month view</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ScrollToAfternoon"">Scroll to 14:00</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ShowVisibleRange"">Read visible range</BitButton>
 
 <BitFullCalendar @ref=""calendar"" Events=""events"" HideFilters HideSettings HideHeader=""hideHeader"" />
@@ -687,6 +718,12 @@ private static List<BitFullCalendarEvent> CreateEventsBetween(DateTime start, Da
 private bool hideHeader;
 private BitFullCalendar? calendar;
 private string? visibleRange;
+
+private async Task ScrollToAfternoon()
+{
+    if (calendar is null) return;
+    await calendar.ScrollToTimeAsync(TimeSpan.FromHours(14));
+}
 
 private void ShowVisibleRange()
 {

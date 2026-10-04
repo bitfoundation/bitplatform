@@ -42,10 +42,14 @@ public partial class BitFcEventBlock
     private int ResizeDeadZoneMinutes => Math.Max(1, MinEventDurationMinutes / 2);
 
     /// <summary>
-    /// True while this block may be moved or resized: the calendar has to be editable AND the event
-    /// itself must not be locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// True while this block may be moved: the calendar has to be editable, moving allowed
+    /// (<see cref="BitFullCalendarSettings.AllowDrag"/>), and the event itself not locked with
+    /// <see cref="BitFullCalendarEvent.IsReadOnly"/>.
     /// </summary>
-    private bool CanEdit => State.ReadOnly is false && Event.IsReadOnly is false;
+    private bool CanMove => State.CanDrag(Event);
+
+    /// <summary>True while this block may be resized - the same rule with <see cref="BitFullCalendarSettings.AllowResize"/>.</summary>
+    private bool CanResize => State.CanResize(Event);
 
     private void OnDragStart()
     {
@@ -80,7 +84,7 @@ public partial class BitFcEventBlock
 
         // In the week grid, Alt+Left/Right moves the block to the neighbouring shown day, following the reading
         // direction - the keyboard's way of dragging it across columns.
-        if (e.AltKey && e.Key is "ArrowLeft" or "ArrowRight" && CanEdit && State.View == BitFullCalendarView.Week)
+        if (e.AltKey && e.Key is "ArrowLeft" or "ArrowRight" && CanMove && State.View == BitFullCalendarView.Week)
         {
             var direction = (e.Key == "ArrowRight") != State.IsRtl ? 1 : -1;
             var days = direction;
@@ -92,7 +96,7 @@ public partial class BitFcEventBlock
             return;
         }
 
-        if (e.Key is not ("ArrowUp" or "ArrowDown") || CanEdit is false)
+        if (e.Key is not ("ArrowUp" or "ArrowDown"))
             return;
 
         // Keyboard parity for the pointer gestures: Alt+Arrow moves the block by one slot,
@@ -100,9 +104,9 @@ public partial class BitFcEventBlock
         // resize obeys, so a refusal is reported the same way.
         var step = TimeSpan.FromMinutes(e.Key == "ArrowDown" ? State.SlotDurationMinutes : -State.SlotDurationMinutes);
 
-        if (e.AltKey)
+        if (e.AltKey && CanMove)
             await ApplyKeyboardEditAsync(step, step, BitFullCalendarChangeSource.Drag);
-        else if (e.ShiftKey)
+        else if (e.ShiftKey && CanResize)
             await ApplyKeyboardEditAsync(TimeSpan.Zero, step, BitFullCalendarChangeSource.Resize);
     }
 
@@ -130,32 +134,8 @@ public partial class BitFcEventBlock
             return;
         }
 
-        var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
-        // Cloning carries every field the event has - the series identity included - so a keyboard
-        // edit never silently drops one the way a hand-written copy does.
-        var updated = BitFullCalendarChangeNotifier.CloneEvent(Event);
-        updated.StartDate = start;
-        updated.EndDate = end;
-
-        State.UpdateEvent(updated);
-
-        try
-        {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                OldEvent = oldSnapshot,
-                Kind = BitFullCalendarChangeKind.Edit,
-                Source = source
-            });
-        }
-        catch
-        {
-            // Notification failed: restore the previous times so the local state stays in sync with
-            // what consumers believe, mirroring the pointer resize's compensation.
-            State.UpdateEvent(oldSnapshot);
-            throw;
-        }
+        // An occurrence of a series moves on its own; the notifier detaches it and reports both halves.
+        await Notifier.CommitEditAsync(Event, start, end, Event.Resource, source);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -164,7 +144,7 @@ public partial class BitFcEventBlock
         // to. The handles are removed from the DOM (taking their listeners with them), so the flag
         // is cleared as well - otherwise the fresh handles rendered when read-only is turned back
         // off would be skipped here and never receive listeners.
-        if (CanEdit is false)
+        if (CanResize is false)
         {
             _resizeInitialized = false;
             return;
@@ -196,7 +176,7 @@ public partial class BitFcEventBlock
 
         // The handles are not rendered while read-only, but a listener bound before the switch can
         // still deliver a start; refuse it so the block never enters resize mode in read-only.
-        if (CanEdit is false)
+        if (CanResize is false)
             return;
 
         _isResizing = true;
@@ -219,7 +199,7 @@ public partial class BitFcEventBlock
         // pointer listeners keep running. Cancel the whole gesture (not just the preview) so the block
         // snaps back to the stored times and stays there - keeping the resize alive would let it pick
         // up again, and commit on release, if read-only were switched back off before the pointer up.
-        if (CanEdit is false)
+        if (CanResize is false)
         {
             _previewStart = null;
             _previewEnd = null;
@@ -307,7 +287,7 @@ public partial class BitFcEventBlock
         {
             // Never commit in read-only: the switch can land between the last move and the release,
             // which would otherwise persist a resize the calendar no longer allows.
-            if (CanEdit && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
+            if (CanResize && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
             {
                 var s = _previewStart.Value;
                 var e = _previewEnd.Value;
@@ -325,32 +305,7 @@ public partial class BitFcEventBlock
                         return;
                     }
 
-                    var updated = new BitFullCalendarEvent
-                    {
-                        Id = b.Id,
-                        Title = b.Title,
-                        Description = b.Description,
-                        StartDate = s,
-                        EndDate = e,
-                        Color = b.Color,
-                        Resource = b.Resource,
-                        Data = b.Data,
-                        Attendees = [.. b.Attendees],
-                        IsAllDay = b.IsAllDay,
-                        Recurrence = b.Recurrence,
-                        IsReadOnly = b.IsReadOnly,
-                        CssClass = b.CssClass
-                    };
-
-                    State.UpdateEvent(updated);
-
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-                    {
-                        Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                        OldEvent = BitFullCalendarChangeNotifier.CloneEvent(b),
-                        Kind = BitFullCalendarChangeKind.Edit,
-                        Source = BitFullCalendarChangeSource.Resize
-                    });
+                    await Notifier.CommitEditAsync(b, s, e, b.Resource, BitFullCalendarChangeSource.Resize);
                 }
             }
         }

@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 
 @{
-    var isToday = Cell.Date.Date == DateTime.Today;
+    var isToday = Cell.Date.Date == State.Today;
     var maxSlots = State.MaxEventsPerDayCell;
     var cellEvents = BitFullCalendarHelpers.GetMonthCellEvents(Cell.Date, Events, EventPositions, maxSlots);
     // A date the calendar is not allowed to navigate to is shown for context but never accepts a
@@ -11,6 +11,10 @@
     // what showNonCurrentDates turns off elsewhere. The cell still holds its column open.
     var isBlank = Cell.CurrentMonth is false && State.ShowNonCurrentDates is false;
     var isOffDay = State.HighlightBusinessHours && State.IsBusinessDay(Cell.Date.DayOfWeek) is false;
+    // Only a background event covering the whole day tints a month day; a timed one (a lunch break) has no clock
+    // axis to be drawn on here, as in the other calendar libraries.
+    var dayBackground = GetWholeDayBackground(isBlank);
+    var backgroundLabel = string.Concat(dayBackground.Where(e => string.IsNullOrWhiteSpace(e.Title) is false).Select(e => $", {e.Title}"));
 }
 
 @if (isBlank)
@@ -19,11 +23,23 @@
 }
 else
 {
-<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") @(isOutOfRange ? "bit-bfc-out-of-range" : "") @(isOffDay ? "bit-bfc-day-off" : "") @(IsLastColumn ? "bit-bfc-month-cell-last-col" : "") bit-bfc-droppable"
+<div class="bit-bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") @(isOutOfRange ? "bit-bfc-out-of-range" : "") @(isOffDay ? "bit-bfc-day-off" : "") @(IsLastColumn ? "bit-bfc-month-cell-last-col" : "") @(dayBackground.Count > 0 ? "bit-bfc-month-cell-has-bg" : null) bit-bfc-droppable"
      @ondragover="OnDragOver"
      @ondragover:preventDefault="true"
      @ondrop="OnDrop"
      @onclick="() => OnCellClick()">
+
+    @foreach (var bg in dayBackground)
+    {
+        <div class="bit-bfc-bg-event bit-bfc-bg-event-day @(bg.IsBlocking ? "bit-bfc-bg-event-blocking" : null) @Parts.Classes?.Event @bg.CssClass"
+             style="@($"{ColorScheme.GetColorStyle(bg.Color)}{Parts.Styles?.Event}")"
+             aria-hidden="@(State.CanAdd ? "true" : null)">
+            @if (string.IsNullOrWhiteSpace(bg.Title) is false)
+            {
+                <span class="bit-bfc-bg-event-title">@bg.Title</span>
+            }
+        </div>
+    }
 
     @* With nav links on, the day number opens that single day - the affordance every calendar puts
        there - and stays a plain label otherwise. *@
@@ -43,7 +59,7 @@ else
     {
         <div class="bit-bfc-month-cell-content">@cellTemplate(Cell)</div>
     }
-    @if (!State.ReadOnly && !isOutOfRange)
+    @if (State.CanAdd && !isOutOfRange)
     {
         @* Roving tabindex: only one cell of the month grid is in the tab order at a time, and the
            arrow keys move both it and the focus. Enter and Space are left to the button itself. *@
@@ -51,7 +67,7 @@ else
                 id="@AddButtonId"
                 data-bit-bfc-roving tabindex="@(IsRovingCell ? "0" : "-1")"
                 aria-current="@(isToday ? "date" : null)"
-                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}")"
+                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}{backgroundLabel}")"
                 @onclick="() => OnCellClick()"
                 @onkeydown="args => OnCellKeyDown.InvokeAsync((Cell.Date, args))"
                 @onclick:stopPropagation="true">

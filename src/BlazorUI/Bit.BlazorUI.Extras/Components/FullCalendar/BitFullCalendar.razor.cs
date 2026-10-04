@@ -111,6 +111,21 @@ public partial class BitFullCalendar
     [Parameter] public List<BitFullCalendarEvent>? Events { get; set; }
 
     /// <summary>
+    /// Optional extra content for the built-in event details dialog, under the built-in rows - a location, a meeting
+    /// link, whatever the application keeps in <see cref="BitFullCalendarEvent.Data"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventDetailsTemplate { get; set; }
+
+    /// <summary>
+    /// Optional extra fields for the built-in add/edit dialog, under the built-in ones. The template receives the
+    /// draft being edited, and the draft's <see cref="BitFullCalendarEvent.Data"/> is what the save commits - so the
+    /// built-in fields, the repeat rule, the validation and the occurrence/series choice all keep working. Assign the
+    /// draft a new <c>Data</c> rather than changing the object it starts with (which the event still holds), so Cancel
+    /// leaves the event as it was.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventEditorTemplate { get; set; }
+
+    /// <summary>
     /// When <c>true</c>, the built-in color and attendee filter dropdowns are hidden from the calendar header.
     /// Consumers can provide their own external filter UI and pass pre-filtered events to the calendar.
     /// </summary>
@@ -291,6 +306,15 @@ public partial class BitFullCalendar
     [Parameter] public BitFullCalendarTexts Texts { get; set; } = new();
 
     /// <summary>
+    /// The clock the calendar reads "now" and "today" from: the today highlight, the current-time line, the
+    /// "Today" button, the "Happening now" panel and the date it opens on. Defaults to
+    /// <see cref="System.TimeProvider.System"/>, which on Blazor Server is the SERVER's clock and time zone - hand
+    /// it a provider whose <see cref="System.TimeProvider.LocalTimeZone"/> is the user's to show their today, or a
+    /// fake one to pin the date in tests and screenshots.
+    /// </summary>
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    /// <summary>
     /// Optional template for customizing event rendering in the resource timeline view.
     /// When provided, replaces the default event card content inside the timeline blocks.
     /// </summary>
@@ -382,7 +406,7 @@ public partial class BitFullCalendar
         { _changeNotifier },
         { _colorScheme },
         { Settings },
-        { new BitFcParts(Classes, Styles, _Id, HideHeader, ResourceTemplate, MonthCellTemplate, AgendaEventTemplate) },
+        { new BitFcParts(Classes, Styles, _Id, HideHeader, ResourceTemplate, MonthCellTemplate, AgendaEventTemplate, EventDetailsTemplate, EventEditorTemplate) },
         { HideFilters, "HideFilters" },
         { HideSettings, "HideSettings" },
         { OnAddClick, "OnAddClick" },
@@ -428,6 +452,7 @@ public partial class BitFullCalendar
         Settings ??= new();
         Texts ??= new();
 
+        State.SetTimeProvider(TimeProvider);
         State.Initialize(Events ?? [], ResolveCulture());
         State.SetDirection(Dir);
         State.SetDateBounds(MinDate, MaxDate);
@@ -479,6 +504,7 @@ public partial class BitFullCalendar
             // The keyboard and pointer handlers map a physical direction onto earlier/later through the state,
             // so it has to know the direction the calendar is rendered in, not only the culture's.
             State.SetDirection(Dir);
+            State.SetTimeProvider(TimeProvider);
 
             if (Events is not null)
                 State.SyncEvents(Events);
@@ -534,8 +560,7 @@ public partial class BitFullCalendar
         if (firstRender && _initialDateChangeRaised is false && OnDateChange.HasDelegate)
         {
             _initialDateChangeRaised = true;
-            var (start, end) = BitFullCalendarHelpers.GetDateRange(
-                State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+            var (start, end) = State.GetVisibleRange();
             // This range never travelled through the state's own channel, so tell it the range has
             // been reported - otherwise a first navigation that lands right back on it (pressing
             // "Today" while today is already showing) would report the same range a second time.
@@ -692,6 +717,11 @@ public partial class BitFullCalendar
             State.SetShowNonCurrentDates(current.ShowNonCurrentDates);
         if (previous.NavLinks != current.NavLinks)
             State.SetNavLinks(current.NavLinks);
+        if (previous.WeekDayCount != current.WeekDayCount)
+            State.SetWeekDayCount(current.WeekDayCount);
+        if ((previous.AllowAdd, previous.AllowEdit, previous.AllowDelete, previous.AllowDrag, previous.AllowResize)
+            != (current.AllowAdd, current.AllowEdit, current.AllowDelete, current.AllowDrag, current.AllowResize))
+            State.SetEditPermissions(current.AllowAdd, current.AllowEdit, current.AllowDelete, current.AllowDrag, current.AllowResize);
     }
 
     private void PushAllSettings()
@@ -720,6 +750,8 @@ public partial class BitFullCalendar
         State.SetFixedWeekCount(Settings.FixedWeekCount);
         State.SetShowNonCurrentDates(Settings.ShowNonCurrentDates);
         State.SetNavLinks(Settings.NavLinks);
+        State.SetWeekDayCount(Settings.WeekDayCount);
+        State.SetEditPermissions(Settings.AllowAdd, Settings.AllowEdit, Settings.AllowDelete, Settings.AllowDrag, Settings.AllowResize);
     }
 
     /// <summary>
@@ -891,6 +923,7 @@ public partial class BitFullCalendar
             BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
             BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,
             BitFullCalendarChangeRefusal.OutsideBusinessHours => Texts.OutsideBusinessHoursMessage,
+            BitFullCalendarChangeRefusal.Blocked => Texts.BlockedMessage,
             _ => null
         };
 
@@ -932,9 +965,53 @@ public partial class BitFullCalendar
     /// </summary>
     public void ChangeMode(BitFullCalendarMode mode) => State.SetMode(mode);
 
+    /// <summary>
+    /// Scrolls the time axis to <paramref name="time"/> - the top of the day and week grids, or the leading edge of the
+    /// timeline day and week (on the selected day, when the week shows it). A time outside the visible hours is
+    /// clamped into them. Returns <c>false</c> when the active view has no time axis (month, year, agenda, the month
+    /// timeline) or nothing is rendered yet. <c>ScrollToTimeAsync(calendar.State.Now.TimeOfDay)</c> scrolls to now.
+    /// </summary>
+    public async Task<bool> ScrollToTimeAsync(TimeSpan time)
+    {
+        var hours = Math.Clamp(time.TotalHours, State.VisibleStartHour, State.VisibleEndHour);
+        var offsetHours = hours - State.VisibleStartHour;
+
+        try
+        {
+            if (State.Mode == BitFullCalendarMode.Event)
+            {
+                if (State.View is not (BitFullCalendarView.Day or BitFullCalendarView.Week)) return false;
+
+                return await _js.InvokeAsync<bool>("BitBlazorUI.FullCalendar.scrollGridToTime", RootElement, offsetHours);
+            }
+
+            double offsetPx;
+            switch (State.View)
+            {
+                case BitFullCalendarView.Day:
+                    offsetPx = offsetHours * BitFullCalendarHelpers.TimelineHourWidthPx;
+                    break;
+                case BitFullCalendarView.Week:
+                    // The week timeline lays its shown days end to end, each as long as the visible hours.
+                    var days = State.GetVisibleWeekDates();
+                    var dayIndex = Math.Max(0, Array.FindIndex(days, d => d.Date == State.SelectedDate.Date));
+                    offsetPx = (dayIndex * State.VisibleHourCount + offsetHours) * BitFullCalendarHelpers.TimelineHourWidthPx;
+                    break;
+                default:
+                    return false;
+            }
+
+            return await _js.InvokeAsync<bool>("BitBlazorUI.FullCalendar.scrollTimelineToOffset", RootElement, offsetPx);
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>The inclusive start and end dates the calendar is currently showing.</summary>
     public (DateTime Start, DateTime End) GetVisibleRange()
-        => BitFullCalendarHelpers.GetDateRange(State.View, State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
+        => State.GetVisibleRange();
 
 
 
@@ -980,7 +1057,13 @@ public partial class BitFullCalendar
         bool RestrictToBusinessHours,
         bool FixedWeekCount,
         bool ShowNonCurrentDates,
-        bool NavLinks)
+        bool NavLinks,
+        bool AllowAdd,
+        bool AllowEdit,
+        bool AllowDelete,
+        bool AllowDrag,
+        bool AllowResize,
+        int? WeekDayCount)
     {
         /// <summary>
         /// The baseline after a user-driven change: the values the state now holds, keeping the two
@@ -1014,7 +1097,14 @@ public partial class BitFullCalendar
             state.RestrictToBusinessHours,
             state.FixedWeekCount,
             state.ShowNonCurrentDates,
-            state.NavLinks);
+            state.NavLinks,
+            // The panel cannot change the permissions, so the state holds exactly what was last pushed.
+            state.AllowAdd,
+            state.AllowEdit,
+            state.AllowDelete,
+            state.AllowDrag,
+            state.AllowResize,
+            state.WeekDayCount);
 
         public static SettingsSnapshot From(BitFullCalendarSettings settings) => new(
             settings.Use24HourFormat,
@@ -1041,6 +1131,12 @@ public partial class BitFullCalendar
             settings.RestrictToBusinessHours,
             settings.FixedWeekCount,
             settings.ShowNonCurrentDates,
-            settings.NavLinks);
+            settings.NavLinks,
+            settings.AllowAdd,
+            settings.AllowEdit,
+            settings.AllowDelete,
+            settings.AllowDrag,
+            settings.AllowResize,
+            BitFullCalendarHelpers.NormalizeWeekDayCount(settings.WeekDayCount));
     }
 }

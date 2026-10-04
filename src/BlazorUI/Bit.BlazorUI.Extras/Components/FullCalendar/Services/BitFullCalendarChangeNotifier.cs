@@ -97,8 +97,8 @@ public sealed class BitFullCalendarChangeNotifier
     }
 
     /// <summary>
-    /// Applies drop logic through <see cref="BitFullCalendarState.HandleDrop"/> and emits
-    /// an Edit change when the event date-time has actually changed.
+    /// Drops the dragged event on the supplied date/time under every rule a drop obeys and commits it through
+    /// <see cref="CommitEditAsync"/>, when the event date-time has actually changed.
     /// </summary>
     public Task HandleDropAsync(DateTime targetDate, int? hour = null, int? minute = null)
         => HandleDropCoreAsync(targetDate, hour, minute, resourceId: null, applyResource: false);
@@ -110,40 +110,115 @@ public sealed class BitFullCalendarChangeNotifier
     public Task HandleResourceDropAsync(DateTime targetDate, int? hour, int? minute, string? resourceId)
         => HandleDropCoreAsync(targetDate, hour, minute, resourceId, applyResource: true);
 
-    private Task HandleDropCoreAsync(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
+    private async Task HandleDropCoreAsync(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
     {
         var dragged = _state.DraggedEvent;
         if (dragged is null)
-            return Task.CompletedTask;
+            return;
 
-        var oldSnapshot = CloneEvent(dragged);
-        var eventId = dragged.Id;
+        var (refusal, target) = _state.ResolveDrop(targetDate, hour, minute, resourceId, applyResource);
+        _state.EndDrag();
 
-        var refusal = _state.HandleDrop(targetDate, hour, minute, resourceId, applyResource);
         if (refusal is not BitFullCalendarChangeRefusal.None)
         {
             // The drop was rejected (overlap, out of range, locked event): tell the user why instead
             // of silently snapping the block back to where it started.
             ReportRefusal(refusal);
-            return Task.CompletedTask;
+            return;
         }
 
-        var after = _state.AllEvents.FirstOrDefault(e => e.Id == eventId);
-        if (after is null)
-            return Task.CompletedTask;
+        if (target is { } t)
+            await CommitEditAsync(dragged, t.Start, t.End, t.Resource, BitFullCalendarChangeSource.Drag);
+    }
 
-        var sameTime = after.StartDate == oldSnapshot.StartDate && after.EndDate == oldSnapshot.EndDate;
-        var sameResource = string.Equals(after.Resource ?? "", oldSnapshot.Resource ?? "", StringComparison.Ordinal);
-        if (sameTime && sameResource)
-            return Task.CompletedTask;
+    /// <summary>
+    /// Commits a move or a resize of <paramref name="original"/> - from a drag, a resize handle or their keyboard
+    /// equivalents - to the supplied range and resource, and reports it. The caller has already passed the change
+    /// through <see cref="BitFullCalendarState.ValidateRange"/>.
+    /// <para>
+    /// An occurrence of a series changes on its own, the way one meeting of a series is moved in a calendar app: its
+    /// date is skipped on the series master and a one-off takes its place. That is reported as an edit of the master
+    /// and an add, which stand or fall together.
+    /// </para>
+    /// Returns <c>false</c> when <c>OnChanging</c> refused it; the state is then back where it was.
+    /// </summary>
+    public async Task<bool> CommitEditAsync(BitFullCalendarEvent original, DateTime start, DateTime end, string? resource, BitFullCalendarChangeSource source)
+    {
+        ArgumentNullException.ThrowIfNull(original);
 
-        return NotifyAsync(new BitFullCalendarChangeEventArgs
+        if (original.IsOccurrence is false)
         {
-            Event = CloneEvent(after),
-            OldEvent = oldSnapshot,
+            var oldSnapshot = CloneEvent(original);
+            var updated = CloneEvent(original);
+            updated.StartDate = start;
+            updated.EndDate = end;
+            updated.Resource = resource;
+
+            _state.UpdateEvent(updated);
+            try
+            {
+                return await TryNotifyAsync(new BitFullCalendarChangeEventArgs
+                {
+                    Event = CloneEvent(updated),
+                    OldEvent = oldSnapshot,
+                    Kind = BitFullCalendarChangeKind.Edit,
+                    Source = source
+                });
+            }
+            catch
+            {
+                // The report failed: put the previous times back so the state matches what the consumer believes.
+                _state.UpdateEvent(oldSnapshot);
+                throw;
+            }
+        }
+
+        if (_state.DetachOccurrence(original, start, end, resource) is not { } detach)
+            return false;
+
+        void Undo()
+        {
+            _state.ClearLastDetach();
+            _state.RemoveEvent(detach.Detached.Id);
+            _state.UpdateEvent(detach.Master);
+        }
+
+        var skip = new BitFullCalendarChangeEventArgs
+        {
+            Event = CloneEvent(detach.Skipped),
+            OldEvent = CloneEvent(detach.Master),
             Kind = BitFullCalendarChangeKind.Edit,
-            Source = BitFullCalendarChangeSource.Drag
-        });
+            Source = source
+        };
+        var add = new BitFullCalendarChangeEventArgs
+        {
+            Event = CloneEvent(detach.Detached),
+            Kind = BitFullCalendarChangeKind.Add,
+            Source = source
+        };
+
+        var dispatched = false;
+        try
+        {
+            if (await ApproveAsync(skip) is false || await ApproveAsync(add) is false)
+            {
+                Undo();
+                return false;
+            }
+
+            dispatched = true;
+            await DispatchAsync(skip);
+            await DispatchAsync(add);
+            return true;
+        }
+        catch
+        {
+            // Once the first half has reached the consumer, taking the move back here would leave the calendar and the
+            // consumer disagreeing; the state keeps what was reported and the failure surfaces to the caller.
+            if (dispatched is false)
+                Undo();
+            throw;
+        }
     }
 
     /// <summary>
@@ -166,6 +241,8 @@ public sealed class BitFullCalendarChangeNotifier
             IsAllDay = source.IsAllDay,
             IsReadOnly = source.IsReadOnly,
             CssClass = source.CssClass,
+            IsBackground = source.IsBackground,
+            IsBlocking = source.IsBlocking,
             // The repeat rule is a consumer-owned object like Data, so it travels by reference.
             Recurrence = source.Recurrence,
             SeriesId = source.SeriesId,

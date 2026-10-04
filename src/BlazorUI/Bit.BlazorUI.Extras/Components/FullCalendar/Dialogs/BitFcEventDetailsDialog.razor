@@ -110,15 +110,26 @@
                     </div>
                 </div>
             }
+
+            @if (Parts.EventDetailsTemplate is { } detailsTemplate)
+            {
+                <div class="bit-bfc-dialog-custom">@detailsTemplate(Event)</div>
+            }
         </div>
         @* Read-only keeps the details readable but drops the mutating actions, leaving Close alone
            in the footer - so the row switches from space-between to a plain trailing alignment. *@
         <div class="bit-bfc-dialog-footer">
-            @if (CanEdit)
+            @if (CanEdit || CanDelete)
             {
                 <div class="bit-bfc-dialog-footer-group">
-                    <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
-                    <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
+                    @if (CanEdit)
+                    {
+                        <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
+                    }
+                    @if (CanDelete)
+                    {
+                        <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
+                    }
                 </div>
             }
             <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>

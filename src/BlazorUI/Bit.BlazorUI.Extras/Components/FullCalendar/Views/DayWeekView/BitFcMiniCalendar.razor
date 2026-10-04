@@ -44,7 +44,7 @@
                     @for (int col = 0; col < columns; col++)
                     {
                         var cell = cells[row * columns + col];
-                        var isToday = cell.Date.Date == DateTime.Today;
+                        var isToday = cell.Date.Date == State.Today;
                         var isSelected = cell.Date.Date == State.SelectedDate.Date;
                         var isOutOfRange = State.IsDateInAllowedRange(cell.Date) is false;
                         var cls = !cell.CurrentMonth

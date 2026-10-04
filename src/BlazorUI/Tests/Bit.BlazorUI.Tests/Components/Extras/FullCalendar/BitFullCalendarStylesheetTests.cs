@@ -21,7 +21,7 @@ public partial class BitFullCalendarStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(23, documented.Length, "The stylesheet does not document the twenty-three public variables.");
+        Assert.AreEqual(25, documented.Length, "The stylesheet does not document the twenty-five public variables.");
 
         foreach (var name in documented)
         {

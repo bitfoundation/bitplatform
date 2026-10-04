@@ -28,7 +28,7 @@ public partial class BitFcCalendarWeekView
     // The hour slots exist only as add/drop targets, so a read-only grid must not expose hundreds
     // of focusable no-op buttons to keyboard and assistive-technology users. A null attribute value
     // is omitted from the rendered markup.
-    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotRole => State.CanAdd is false ? null : "button";
 
     // Roving tabindex: the grid is a single tab stop, and the arrow keys move both the tabbable slot
     // and the focus. Without it a week would put hundreds of stops in the tab order - seven days
@@ -86,7 +86,7 @@ public partial class BitFcCalendarWeekView
     {
         // A read-only grid exposes no add affordance at all, and a column the calendar may not
         // navigate to accepts nothing, so neither carries a tab stop.
-        if (State.ReadOnly || IsColumnInRange(dayIndex) is false)
+        if (State.CanAdd is false || IsColumnInRange(dayIndex) is false)
             return null;
 
         return RovingSlot == (dayIndex, hour, minute) ? "0" : "-1";
@@ -181,7 +181,7 @@ public partial class BitFcCalendarWeekView
         return (State.VisibleStartHour + (index / slots.Length), slots[index % slots.Length]);
     }
 
-    private bool CanSelectRange => State.ReadOnly is false && State.AllowRangeSelection;
+    private bool CanSelectRange => State.CanAdd && State.AllowRangeSelection;
 
     private bool IsSlotSelected(int dayIndex, int hour, int minute)
     {
@@ -240,7 +240,7 @@ public partial class BitFcCalendarWeekView
 
     private async Task OpenAddForRangeAsync(DateTime day, int hour, int minute, int durationMinutes)
     {
-        if (State.ReadOnly || State.IsDateInAllowedRange(day) is false)
+        if (State.CanAdd is false || State.IsDateInAllowedRange(day) is false)
             return;
 
         State.SetSelectedDate(day);
@@ -275,7 +275,7 @@ public partial class BitFcCalendarWeekView
         // The slot is purely an add affordance, so a read-only grid leaves it inert - including the
         // date selection, which the user can still perform from the header and the mini calendar.
         // A day outside the allowed window is inert for the same reason.
-        if (State.ReadOnly || State.IsDateInAllowedRange(day) is false)
+        if (State.CanAdd is false || State.IsDateInAllowedRange(day) is false)
             return;
 
         State.SetSelectedDate(day);
@@ -350,11 +350,12 @@ public partial class BitFcCalendarWeekView
     private string? HourSlotAriaLabel(DateTime day, int hour, int minute = 0)
     {
         // The slot is inert in read-only mode, so it carries no label to announce.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         var start = day.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
+        return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
+               + State.DescribeBackground(start, start.AddMinutes(State.SlotDurationMinutes));
     }
 
     private async Task OnDrop(DateTime day, int hour, int minute)

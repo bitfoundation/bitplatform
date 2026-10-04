@@ -35,13 +35,19 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         : null;
 
     /// <summary>
-    /// True while the edit and delete actions are offered: the calendar has to be editable AND the
-    /// event itself must not be locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>. An
-    /// occurrence is always read-only (so it cannot be dragged), so for one the lock that counts is
-    /// its series master's.
+    /// The event whose lock decides the actions: for an occurrence, its series master - the record the lock lives on,
+    /// and the one an edit or a delete of the whole series changes.
     /// </summary>
-    private bool CanEdit => State.ReadOnly is false
-        && (Event.IsOccurrence ? SeriesMaster is { IsReadOnly: false } : Event.IsReadOnly is false);
+    private BitFullCalendarEvent? LockHolder => Event.IsOccurrence ? SeriesMaster : Event;
+
+    /// <summary>
+    /// True while the Edit action is offered: the calendar is editable, editing is allowed, and the event is not
+    /// locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// </summary>
+    private bool CanEdit => LockHolder is { } holder && State.CanEdit(holder);
+
+    /// <summary>True while the Delete action is offered - the same rule with deleting allowed instead.</summary>
+    private bool CanDelete => LockHolder is { } holder && State.CanDelete(holder);
 
     /// <summary>
     /// One-line description of the repeat rule behind this event, or <c>null</c> for a one-off.
@@ -123,7 +129,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private Task Delete()
     {
-        if (CanEdit is false)
+        if (CanDelete is false)
             return Task.CompletedTask;
 
         if (Event.IsOccurrence)
@@ -148,7 +154,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         _pendingScopeAction = ScopeAction.None;
 
         // Read-only may have been switched on, or the series removed, while the prompt was open.
-        if (CanEdit is false || SeriesMaster is not { } master)
+        if ((action is ScopeAction.Edit ? CanEdit : CanDelete) is false || SeriesMaster is not { } master)
             return;
 
         if (action is ScopeAction.Edit)

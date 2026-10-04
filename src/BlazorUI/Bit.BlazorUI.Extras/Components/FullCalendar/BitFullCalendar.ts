@@ -29,6 +29,37 @@ namespace BitBlazorUI {
         }
 
         /**
+         * Scrolls the calendar's time grid (day or week view) so the time <offsetHours> past the grid's first hour sits
+         * at the top of what is visible, just under the sticky day header. Returns false when no time grid is shown.
+         */
+        public static scrollGridToTime(root: HTMLElement, offsetHours: number): boolean {
+            const scroller = root?.querySelector<HTMLElement>('.bit-bfc-week-scroll, .bit-bfc-timegrid-wrapper');
+            const firstRow = scroller?.querySelector<HTMLElement>('.bit-bfc-hour-row');
+            if (!scroller || !firstRow) return false;
+
+            const pxPerHour = firstRow.getBoundingClientRect().height;
+            const rowsTop = firstRow.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+            const header = scroller.querySelector<HTMLElement>('.bit-bfc-week-header');
+            const covered = header ? header.getBoundingClientRect().height : 0;
+            scroller.scrollTop = Math.max(0, rowsTop + offsetHours * pxPerHour - covered);
+            return true;
+        }
+
+        /**
+         * Scrolls the calendar's timeline so the point <offsetPx> along its time axis sits just past the sticky resource
+         * gutter, in either writing direction. Returns false when no timeline is shown.
+         */
+        public static scrollTimelineToOffset(root: HTMLElement, offsetPx: number): boolean {
+            const scroller = root?.querySelector<HTMLElement>('.bit-bfc-tl-scroll');
+            if (!scroller) return false;
+
+            // A right-to-left scroller counts scrollLeft down from 0 toward the end.
+            const rtl = getComputedStyle(scroller).direction === 'rtl';
+            scroller.scrollLeft = rtl ? -offsetPx : offsetPx;
+            return true;
+        }
+
+        /**
          * Scrolls the timeline scroll container horizontally so the element marked with
          * data-bit-bfc-tl-scroll-target="true" sits just past the sticky resource gutter.
          * Direction-aware (works in both LTR and RTL layouts). Returns true if a target was
@@ -364,7 +395,13 @@ namespace BitBlazorUI {
             let lastFocused: HTMLElement | null = null;
             let scheduled = false;
 
-            root.addEventListener('focusin', e => { lastFocused = e.target as HTMLElement; });
+            root.addEventListener('focusin', e => {
+                const target = e.target as HTMLElement;
+                lastFocused = target;
+                // After the frame, so whatever scrolled the element into view (the browser on Tab, focusElement on
+                // an arrow key) has already done so.
+                requestAnimationFrame(() => FullCalendar.revealFromStickies(target));
+            });
             // Tabbing (or a script moving the focus) out of the calendar is leaving it, not losing the focus.
             root.addEventListener('focusout', e => {
                 const next = e.relatedTarget as Node | null;
@@ -394,6 +431,36 @@ namespace BitBlazorUI {
                 });
             });
             observer.observe(root, { childList: true, subtree: true });
+        }
+
+        /**
+         * Scrolls a focused element out from under the sticky parts of its scroller - the day header of the week
+         * grid, the time header and the resource gutter of the timeline - which neither the browser's focus
+         * scrolling nor scrollIntoView know are covering it (WCAG 2.4.11, focus not obscured).
+         */
+        private static revealFromStickies(el: HTMLElement): void {
+            if (el.isConnected === false || document.activeElement !== el) return;
+
+            const scroller = el.closest<HTMLElement>('.bit-bfc-week-scroll, .bit-bfc-tl-scroll');
+            if (!scroller) return;
+
+            const rect = el.getBoundingClientRect();
+
+            const header = scroller.querySelector<HTMLElement>('.bit-bfc-week-header, .bit-bfc-tl-header-row');
+            if (header && header.contains(el) === false) {
+                const covered = header.getBoundingClientRect().bottom - rect.top;
+                if (covered > 0) scroller.scrollTop -= covered;
+            }
+
+            const gutter = el.closest<HTMLElement>('.bit-bfc-tl-body-row')?.querySelector<HTMLElement>('.bit-bfc-tl-resource-cell');
+            if (gutter && gutter.contains(el) === false) {
+                const edge = gutter.getBoundingClientRect();
+                // The gutter sits on the inline start: the left in a left-to-right calendar, the right otherwise.
+                // Scrolling toward the start is scrollLeft going down in the first and up (toward 0) in the second.
+                const rtl = getComputedStyle(scroller).direction === 'rtl';
+                const covered = rtl ? rect.right - edge.left : edge.right - rect.left;
+                if (covered > 0) scroller.scrollLeft += rtl ? covered : -covered;
+            }
         }
 
         private static preventHandledKeyDefaults(e: KeyboardEvent): void {
@@ -443,11 +510,16 @@ namespace BitBlazorUI {
             const scope: HTMLElement = dialogs.length > 0 ? dialogs[dialogs.length - 1] : root;
 
             const key = lost?.getAttribute?.('data-bit-bfc-event');
-            let target: HTMLElement | null = null;
-            if (key) {
-                const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(key) : key.replace(/"/g, '\\"');
-                target = scope.querySelector<HTMLElement>(`[data-bit-bfc-event="${escaped}"]:not([tabindex="-1"]):not([aria-hidden="true"])`);
-            }
+            const find = (k: string | null | undefined): HTMLElement | null => {
+                if (!k) return null;
+                const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(k) : k.replace(/"/g, '\\"');
+                return scope.querySelector<HTMLElement>(`[data-bit-bfc-event="${escaped}"]:not([tabindex="-1"]):not([aria-hidden="true"])`);
+            };
+            // An occurrence moved out of its series comes back as a one-off with a key of its own; the body says which.
+            // The occurrence's own key is the fallback, for a move that was refused and so never happened.
+            const body = root.querySelector<HTMLElement>('.bit-bfc-body');
+            const movedTo = key && body?.getAttribute('data-bit-bfc-moved-from') === key ? body.getAttribute('data-bit-bfc-moved-to') : null;
+            let target: HTMLElement | null = find(movedTo) ?? find(key);
             target ??= scope === root
                 ? root.querySelector<HTMLElement>(FullCalendar.ROVING_STOP) ?? root.querySelector<HTMLElement>('.bit-bfc-body')
                 : FullCalendar.getDialogFocusable(scope)[0] ?? scope;

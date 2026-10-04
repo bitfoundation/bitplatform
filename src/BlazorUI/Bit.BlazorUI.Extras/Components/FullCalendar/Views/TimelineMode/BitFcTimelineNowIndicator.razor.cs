@@ -37,7 +37,7 @@ public partial class BitFcTimelineNowIndicator : IDisposable
 
         // Align the first tick to the next clock-minute boundary so the marker doesn't lag by up to
         // ~60s; subsequent ticks fire every minute.
-        var now = DateTime.Now;
+        var now = State.Now;
         var dueTime = TimeSpan.FromMilliseconds(60_000 - ((now.Second * 1000) + now.Millisecond));
 
         _timer = new Timer(_ =>
@@ -62,7 +62,7 @@ public partial class BitFcTimelineNowIndicator : IDisposable
 
     private void UpdateOffset()
     {
-        var now = DateTime.Now;
+        var now = State.Now;
         if (Day.Date != now.Date || PixelsPerMinute <= 0)
         {
             _offsetPx = null;

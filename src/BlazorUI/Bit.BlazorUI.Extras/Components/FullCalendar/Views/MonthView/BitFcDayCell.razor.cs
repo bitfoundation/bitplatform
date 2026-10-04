@@ -6,6 +6,7 @@ public partial class BitFcDayCell
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
     [Parameter] public BitFullCalendarCell Cell { get; set; } = default!;
@@ -39,6 +40,9 @@ public partial class BitFcDayCell
     [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
 
     private bool _showEventList;
+
+    private List<BitFullCalendarEvent> GetWholeDayBackground(bool isBlank)
+        => isBlank ? [] : State.GetWholeDayBackground(Cell.Date);
     private bool _showAddDialog;
     private DateTime _addDraftStart;
     private BitFullCalendarEvent? _selectedEvent;
@@ -78,7 +82,7 @@ public partial class BitFcDayCell
 
         // Selecting the date above is navigation and stays available in read-only mode; only the
         // add affordance behind the same click is suppressed.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         // Build the draft once and use it for both the external add handler and the built-in dialog

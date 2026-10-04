@@ -266,6 +266,11 @@
                     <div id="@ErrorId("attendee")" class="bit-bfc-field-error">@_errors["attendee"]</div>
                 }
             </div>
+
+            @if (Parts.EventEditorTemplate is { } editorTemplate)
+            {
+                <div class="bit-bfc-dialog-custom">@editorTemplate(_draft)</div>
+            }
         </div>
         <div class="bit-bfc-dialog-footer">
             @if (_errors.ContainsKey("overlap"))

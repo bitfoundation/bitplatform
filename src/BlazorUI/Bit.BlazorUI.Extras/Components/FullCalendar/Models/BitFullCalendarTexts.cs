@@ -122,6 +122,12 @@ public class BitFullCalendarTexts
     /// </summary>
     public string OutsideBusinessHoursMessage { get; set; } = "That time is outside business hours.";
 
+    /// <summary>
+    /// Notice shown when a move, resize, or save is refused because it would overlap an event marked
+    /// <see cref="BitFullCalendarEvent.IsBlocking"/>.
+    /// </summary>
+    public string BlockedMessage { get; set; } = "That time is unavailable.";
+
     /// <summary>Label of the business-hours toggle in the settings panel.</summary>
     public string HighlightBusinessHoursLabel { get; set; } = "Highlight business hours";
 

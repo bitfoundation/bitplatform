@@ -14,9 +14,8 @@
     const int rowPadding = 4;
     const int minRowHeight = 60;
 
-    var weekStart = BitFullCalendarHelpers.StartOfWeek(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
     // Hidden weekdays are dropped from the axis, so a work-week timeline is as narrow as the grid.
-    var weekDays = BitFullCalendarHelpers.GetWeekDates(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    var weekDays = State.GetVisibleWeekDates();
     var visibleHours = State.VisibleHours.ToArray();
     var hoursPerDay = visibleHours.Length;
 
@@ -60,7 +59,7 @@
 
     // Pick the day and hour cell that should be in view after render: today's day if it falls
     // inside the visible week, otherwise the first day. Within that day, the start-of-day hour.
-    var todayIdx = Array.FindIndex(weekDays, d => d.Date == DateTime.Today);
+    var todayIdx = Array.FindIndex(weekDays, d => d.Date == State.Today);
     var scrollDayIdx = todayIdx >= 0 ? todayIdx : 0;
     var scrollHour = State.StartOfDayHour;
 }
@@ -76,7 +75,7 @@
         <div class="bit-bfc-tl-time-row bit-bfc-tl-time-row-days">
             @foreach (var d in weekDays)
             {
-                var isToday = d.Date == DateTime.Today;
+                var isToday = d.Date == State.Today;
                 <div class="bit-bfc-tl-day-header @(isToday ? "today" : "")" style="width:@(hoursPerDay * hourWidth)px;">
                     <span class="bit-bfc-tl-day-header-name">@d.ToString("ddd", State.Culture)</span>
                     <span class="bit-bfc-tl-day-header-date">@BitFullCalendarHelpers.FormatShortMonthDay(d, State.Culture)</span>
@@ -108,6 +107,7 @@
             var dayMap = perDay[dayIndex];
 
             @RowCells((resource.Id, resource.Title, day, dayOffsetPx))
+            @Background((resource.Id, day, dayOffsetPx))
 
             @if (!string.IsNullOrEmpty(resource.Id) && dayMap.TryGetValue(resource.Id, out var lanes))
             {
@@ -127,6 +127,7 @@
             var dayMap = perDay[dayIndex];
 
             @RowCells((_unassignedKey, Texts.NoResourceLabel, day, dayOffsetPx))
+            @Background((null, day, dayOffsetPx))
 
             @if (dayMap.TryGetValue(_unassignedKey, out var lanes))
             {
@@ -149,12 +150,23 @@
 }
 
 @code {
+    // The background events of a day's stretch of a row, over the hours the row shows.
+    private RenderFragment<(string? ResourceId, DateTime Day, int DayOffsetPx)> Background => column =>
+        @<BitFcBackgroundEvents Events="State.BackgroundEvents"
+                                AxisStart="column.Day.Date.AddHours(State.VisibleStartHour)"
+                                AxisEnd="column.Day.Date.AddHours(State.VisibleEndHour)"
+                                Horizontal
+                                OffsetPx="column.DayOffsetPx"
+                                PixelsPerHour="BitFullCalendarHelpers.TimelineHourWidthPx"
+                                ResourceId="@column.ResourceId"
+                                AnyResource="false" />;
+
     // The "current time" rule of a day's stretch of a row. The component renders nothing unless the
     // day it is given is today and the clock falls inside the hours the row shows.
     private RenderFragment<(DateTime Day, int DayOffsetPx)> NowIndicator => column => @<text>
         @* Only today's stretch gets a marker: the component would render nothing for the other six
            days anyway, and skipping it here keeps a week from starting seven timers per row. *@
-        @if (State.ShowCurrentTimeIndicator && column.Day.Date == DateTime.Today)
+        @if (State.ShowCurrentTimeIndicator && column.Day.Date == State.Today)
         {
             <BitFcTimelineNowIndicator Day="column.Day"
                                        ColumnOffsetPx="column.DayOffsetPx"
@@ -193,14 +205,14 @@
                              role="@_slotRole"
                              data-bit-bfc-roving tabindex="@SlotTabIndex(row.Key, row.Day, hour, minute)"
                              aria-disabled="@(State.IsDateInAllowedRange(row.Day) ? null : "true")"
-                             aria-label="@SlotAriaLabel(row.Label, row.Day, hour, minute)"
+                             aria-label="@SlotAriaLabel(row.Key, row.Label, row.Day, hour, minute)"
                              @ondragenter="() => OnDragEnter(row.Key, row.Day, hour, minute)"
                              @ondragover:preventDefault="true"
                              @ondrop="() => OnDrop(row.Key, row.Day, hour, minute)"
                              @onclick="() => OnSlotClickAsync(row.Key, row.Day, hour, minute)"
                              @onkeydown="e => OnSlotKeyDownAsync(e, row.Key, row.Day, hour, minute)"></div>
                     }
-                    @if (!State.ReadOnly)
+                    @if (State.CanAdd)
                     {
                         <div class="bit-bfc-cell-add-hint" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

@@ -37,11 +37,11 @@
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
      title="@tooltip"
      data-bit-bfc-event="@Event.Id"
-     data-bit-bfc-move="@(CanEdit ? (State.View == BitFullCalendarView.Week ? "xy" : "y") : null)"
+     data-bit-bfc-move="@(CanMove ? (State.View == BitFullCalendarView.Week ? "xy" : "y") : null)"
      role="button"
      tabindex="0"
      aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
-     draggable="@(CanEdit ? "true" : "false")"
+     draggable="@(CanMove ? "true" : "false")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
@@ -49,7 +49,7 @@
      @onclick:stopPropagation="true"
      @onkeydown:stopPropagation="true">
 
-    @if (CanEdit)
+    @if (CanResize)
     {
         <div id="@_topHandleId"
              class="bit-bfc-resize-handle bit-bfc-resize-handle-top"
@@ -80,7 +80,7 @@
         }
     }
 
-    @if (CanEdit)
+    @if (CanResize)
     {
         <div id="@_bottomHandleId"
              class="bit-bfc-resize-handle bit-bfc-resize-handle-bottom"

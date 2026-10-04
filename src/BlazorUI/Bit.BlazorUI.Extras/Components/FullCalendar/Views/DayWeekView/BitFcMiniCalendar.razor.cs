@@ -38,7 +38,7 @@ public partial class BitFcMiniCalendar
 
             var firstSelectable = _cells.FirstOrDefault(c => c.CurrentMonth && IsSelectable(c))
                                   ?? _cells.FirstOrDefault(IsSelectable);
-            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
+            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? State.Today;
         }
     }
 

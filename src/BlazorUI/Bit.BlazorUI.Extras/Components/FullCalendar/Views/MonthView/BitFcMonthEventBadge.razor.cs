@@ -50,7 +50,7 @@ public partial class BitFcMonthEventBadge
         // Keyboard parity for dragging a badge across the month grid: Alt+Arrow moves it a day,
         // following the reading direction, under the same rules the drop path obeys.
         if (e.Key is not ("ArrowLeft" or "ArrowRight") || e.AltKey is false) return;
-        if (State.ReadOnly || Event.IsReadOnly) return;
+        if (State.CanDrag(Event) is false) return;
 
         var forward = (e.Key == "ArrowRight") != State.IsRtl;
         var step = TimeSpan.FromDays(forward ? 1 : -1);
@@ -65,42 +65,7 @@ public partial class BitFcMonthEventBadge
             return;
         }
 
-        var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
-        var updated = new BitFullCalendarEvent
-        {
-            Id = Event.Id,
-            Title = Event.Title,
-            Description = Event.Description,
-            StartDate = start,
-            EndDate = end,
-            Color = Event.Color,
-            Resource = Event.Resource,
-            Data = Event.Data,
-            Attendees = [.. Event.Attendees],
-            IsAllDay = Event.IsAllDay,
-            Recurrence = Event.Recurrence,
-            IsReadOnly = Event.IsReadOnly,
-            CssClass = Event.CssClass
-        };
-
-        State.UpdateEvent(updated);
-
-        try
-        {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                OldEvent = oldSnapshot,
-                Kind = BitFullCalendarChangeKind.Edit,
-                Source = BitFullCalendarChangeSource.Drag
-            });
-        }
-        catch
-        {
-            // Notification failed: put the event back where it was so the local state stays in sync
-            // with what consumers believe, mirroring the drop path's compensation.
-            State.UpdateEvent(oldSnapshot);
-            throw;
-        }
+        // An occurrence of a series moves on its own; the notifier detaches it and reports both halves.
+        await Notifier.CommitEditAsync(Event, start, end, Event.Resource, BitFullCalendarChangeSource.Drag);
     }
 }

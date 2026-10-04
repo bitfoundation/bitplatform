@@ -30,7 +30,7 @@ public partial class BitFcCalendarMonthView
 
             var firstFocusable = _cells.FirstOrDefault(c => c.CurrentMonth && IsFocusable(c))
                                  ?? _cells.FirstOrDefault(IsFocusable);
-            return (firstFocusable ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
+            return (firstFocusable ?? _cells.FirstOrDefault())?.Date.Date ?? State.Today;
         }
     }
 
@@ -40,7 +40,7 @@ public partial class BitFcCalendarMonthView
     /// </summary>
     private bool IsFocusable(BitFullCalendarCell cell)
         => (cell.CurrentMonth || State.ShowNonCurrentDates)
-           && State.ReadOnly is false
+           && State.CanAdd
            && State.IsDateInAllowedRange(cell.Date);
 
     private string CellButtonId(DateTime date) => $"{_gridId}-{date:yyyyMMdd}";

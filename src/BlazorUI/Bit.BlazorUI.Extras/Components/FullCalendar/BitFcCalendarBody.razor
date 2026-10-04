@@ -10,6 +10,8 @@
      aria-labelledby="@(_IsTabPanel ? _LabelledBy : null)"
      tabindex="-1"
      aria-busy="@(IsLoading ? "true" : null)"
+     data-bit-bfc-moved-from="@State.LastDetach?.From"
+     data-bit-bfc-moved-to="@State.LastDetach?.To"
      @key="(State.Mode, State.View)">
     @if (IsLoading)
     {

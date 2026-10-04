@@ -124,7 +124,7 @@
                     var cellCulturalMonth = cal.GetMonth(cell.Date);
                     var isCurrentMonth = cellCulturalMonth == monthIndex
                         && cal.GetYear(cell.Date) == culturalYear;
-                    var isToday = cell.Date.Date == DateTime.Today;
+                    var isToday = cell.Date.Date == State.Today;
                     var dayEvents = eventsByDay.TryGetValue(cell.Date.Date, out var evs) ? evs : [];
                     var hasEvents = isCurrentMonth && dayEvents.Count > 0;
 

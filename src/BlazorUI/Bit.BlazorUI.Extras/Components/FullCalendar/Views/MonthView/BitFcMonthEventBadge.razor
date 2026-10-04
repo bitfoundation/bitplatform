@@ -15,7 +15,7 @@
     var showTitle = Position is "first" or "none";
     // An all-day event has no meaningful clock time, so its badge shows the all-day label instead.
     var showTime = Position is "last" or "none" && Event.IsAllDay is false;
-    var canDrag = State.ReadOnly is false && Event.IsReadOnly is false;
+    var canDrag = State.CanDrag(Event);
     // Include both the start and end dates (not just the times) so multi-day and overnight events
     // are announced unambiguously to assistive technology. BitFcDayCell.GetBadgePosition() treats a
     // 00:00 end as ending the previous day (exclusive midnight) via GetInclusiveEndDate, so the

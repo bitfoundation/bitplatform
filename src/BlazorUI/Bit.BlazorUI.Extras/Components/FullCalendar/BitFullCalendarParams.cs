@@ -74,6 +74,16 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
     public IReadOnlyList<BitFullCalendarColorOption>? EventColorOptions { get; set; }
 
     /// <summary>
+    /// Gets or sets the extra content of the built-in event details dialog.
+    /// </summary>
+    public RenderFragment<BitFullCalendarEvent>? EventDetailsTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the extra fields of the built-in add/edit dialog.
+    /// </summary>
+    public RenderFragment<BitFullCalendarEvent>? EventEditorTemplate { get; set; }
+
+    /// <summary>
     /// Gets or sets whether the built-in color and attendee filters are hidden.
     /// </summary>
     public bool? HideFilters { get; set; }
@@ -132,6 +142,11 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
     /// Gets or sets the localized strings of the calendar.
     /// </summary>
     public BitFullCalendarTexts? Texts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the clock the calendars read "now" and "today" from (the user's time zone on Blazor Server).
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the template that renders an event in the resource timeline.
@@ -205,6 +220,16 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitFullCalendar.EventColorOptions = EventColorOptions;
         }
 
+        if (EventDetailsTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(EventDetailsTemplate)))
+        {
+            bitFullCalendar.EventDetailsTemplate = EventDetailsTemplate;
+        }
+
+        if (EventEditorTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(EventEditorTemplate)))
+        {
+            bitFullCalendar.EventEditorTemplate = EventEditorTemplate;
+        }
+
         if (HideFilters.HasValue && bitFullCalendar.HasNotBeenSet(nameof(HideFilters)))
         {
             bitFullCalendar.HideFilters = HideFilters.Value;
@@ -267,6 +292,11 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
         if (Texts is not null && bitFullCalendar.HasNotBeenSet(nameof(Texts)))
         {
             bitFullCalendar.Texts = Texts;
+        }
+
+        if (TimeProvider is not null && bitFullCalendar.HasNotBeenSet(nameof(TimeProvider)))
+        {
+            bitFullCalendar.TimeProvider = TimeProvider;
         }
 
         if (TimelineEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(TimelineEventTemplate)))

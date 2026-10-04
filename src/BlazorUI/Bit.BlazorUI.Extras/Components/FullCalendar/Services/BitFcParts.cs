@@ -5,7 +5,8 @@
 /// <see cref="BitFullCalendar.Classes"/> and <see cref="BitFullCalendar.Styles"/> (both of the same type, so they
 /// travel together rather than as two cascades told apart by name), the id its other element ids are derived from,
 /// whether its toolbar is rendered at all, and the templates no single view hands down: a timeline resource row's
-/// header, a month-grid day's content and an event row of the agenda and of the event lists.
+/// header, a month-grid day's content, an event row of the agenda and of the event lists, and the consumer's own part
+/// of the details and the add/edit dialogs.
 /// </summary>
 internal sealed record BitFcParts(BitFullCalendarClassStyles? Classes,
                                  BitFullCalendarClassStyles? Styles,
@@ -13,7 +14,9 @@ internal sealed record BitFcParts(BitFullCalendarClassStyles? Classes,
                                  bool HideHeader,
                                  RenderFragment<BitFullCalendarResource>? ResourceTemplate = null,
                                  RenderFragment<BitFullCalendarCell>? MonthCellTemplate = null,
-                                 RenderFragment<BitFullCalendarEvent>? AgendaEventTemplate = null)
+                                 RenderFragment<BitFullCalendarEvent>? AgendaEventTemplate = null,
+                                 RenderFragment<BitFullCalendarEvent>? EventDetailsTemplate = null,
+                                 RenderFragment<BitFullCalendarEvent>? EventEditorTemplate = null)
 {
     /// <summary>The id of the body, the region every view renders into and the panel the view tabs control.</summary>
     public string BodyId => $"{CalendarId}-body";

@@ -42,7 +42,7 @@
                     @* Roving tabindex: the day grid is one tab stop the arrow keys walk. *@
                     <button type="button" class="@dayClass" id="@DayId(day.Date)" aria-label="@GetDayAriaLabel(day)" disabled="@outOfRange"
                             data-bit-bfc-roving tabindex="@(day.Date == RovingDate ? "0" : "-1")"
-                            aria-current="@(day.Date == DateTime.Today ? "date" : null)"
+                            aria-current="@(day.Date == (State?.Today ?? DateTime.Today) ? "date" : null)"
                             @onkeydown="args => OnDayKeyDown(day.Date, args)"
                             @onclick="() => SelectDate(day.Date)">
                         @day.Label

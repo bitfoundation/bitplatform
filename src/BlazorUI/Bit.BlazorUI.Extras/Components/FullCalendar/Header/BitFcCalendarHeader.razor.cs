@@ -14,14 +14,17 @@ public partial class BitFcCalendarHeader
 
     private async Task OnAddEventClick()
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         if (OnAddClick.HasDelegate)
         {
+            // One slot long, like every other draft (the built-in dialog, a month day, a grid slot).
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
                 State.SelectedDate,
-                State.StartOfDayHour);
+                State.StartOfDayHour,
+                0,
+                State.SlotDurationMinutes);
             await OnAddClick.InvokeAsync(draft);
         }
         else

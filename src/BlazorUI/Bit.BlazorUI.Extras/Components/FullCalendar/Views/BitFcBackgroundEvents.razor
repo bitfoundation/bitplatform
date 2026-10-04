@@ -1,0 +1,17 @@
+@namespace Bit.BlazorUI
+
+@* The background events of one stretch of a time axis - a day column of the time grid, or a day's stretch of a
+   timeline row. They sit under the events and take no pointer input. While the grid is editable they are hidden
+   from assistive technology, since the slots they cover speak their titles where the focus actually is; a
+   read-only grid has no slots to focus, so there the titles are left to be read. *@
+@foreach (var segment in _segments)
+{
+    <div class="bit-bfc-bg-event @(Horizontal ? "bit-bfc-bg-event-h" : null) @(segment.Event.IsBlocking ? "bit-bfc-bg-event-blocking" : null) @Parts.Classes?.Event @segment.Event.CssClass"
+         style="@($"{ColorScheme.GetColorStyle(segment.Event.Color)}{segment.Style}{Parts.Styles?.Event}")"
+         aria-hidden="@(State.CanAdd ? "true" : null)">
+        @if (segment.ShowTitle && string.IsNullOrWhiteSpace(segment.Event.Title) is false)
+        {
+            <span class="bit-bfc-bg-event-title">@segment.Event.Title</span>
+        }
+    </div>
+}
