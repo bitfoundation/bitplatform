@@ -714,7 +714,14 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
             if (IsDisposed is false)
             {
-                await _js.BitInfiniteScrollingFocusItem(UniqueId, focusIndex);
+                // Focus is a courtesy: a circuit or runtime going away mid-call must not fail the render.
+                try
+                {
+                    await _js.BitInfiniteScrollingFocusItem(UniqueId, focusIndex);
+                }
+                catch (JSDisconnectedException) { } // the circuit is gone along with the element to focus
+                catch (OperationCanceledException) { } // the renderer is being torn down along with the component
+                catch (ObjectDisposedException) { } // the JS runtime of a WebAssembly host may go first
             }
         }
 
