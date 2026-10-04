@@ -10,7 +10,7 @@ namespace Bit.Cli.Projects;
 
 public sealed class NewWorkflow(CliServices cli)
 {
-    private static readonly string[] featureOrder = ["multitenant", "notification", "cloudflare", "redis", "signalR", "offlineDb", "sentry", "appInsights", "ads", "brouter", "sample", "advancedTests"];
+    private static readonly string[] featureOrder = ["realProject", "multitenant", "notification", "cloudflare", "redis", "signalR", "offlineDb", "sentry", "appInsights", "ads", "brouter", "sample", "advancedTests"];
     private static readonly string[] moreOptions = ["filesStorage", "api", "pipeline", "captcha", "theme", "apiServerUrl", "webAppUrl"];
 
     public async Task<int> RunAsync(NewRequest request, CancellationToken cancellationToken)
@@ -162,7 +162,7 @@ public sealed class NewWorkflow(CliServices cli)
     {
         if (noWorkloads is false)
         {
-            await RunProjectStepAsync(steps, context, "workloads", "Installing .NET workloads", projectSteps.WorkloadsAsync, cancellationToken);
+            await RunProjectStepAsync(steps, context, "workloads", "Installing build tools", projectSteps.WorkloadsAsync, cancellationToken);
 
             if (context.Platforms.Contains(Platform.Android))
             {
@@ -405,7 +405,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (native.Count == 0)
             return current;
 
-        cli.Console.Out.MarkupLine($"[grey]Every project has the web, Android, iOS, Windows and macOS apps. Pick only the native apps to set up on this machine now: each adds .NET workloads (several GB) and minutes of build, so fewer is faster. Add one any time later from the project folder, e.g.[/] bit setup --platforms {Platforms.Name(native[0])}");
+        cli.Console.Out.MarkupLine($"[grey]Every project has the web, Android, iOS, Windows and macOS apps. Pick only the native apps to set up on this machine now: each needs several GB of extra build tools and minutes of build, so fewer is faster. Add one any time later from the project folder, e.g.[/] bit setup --platforms {Platforms.Name(native[0])}");
 
         var chosen = cli.Prompter.MultiSelect("Set up native apps on this machine now too?", native, native.Where(current.Contains), Platforms.Title);
         return [Platform.Web, .. chosen];
@@ -559,7 +559,7 @@ public sealed class NewWorkflow(CliServices cli)
         var stepsList = new List<string> { "create" };
         if (request.NoCertificate is false) stepsList.Add("unique app certificate");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
-        if (request.NoWorkloads is false) stepsList.Add("workloads");
+        if (request.NoWorkloads is false) stepsList.Add("build tools");
         if (request.NoRestore is false) stepsList.Add("restore");
         if (request.NoBuild is false) stepsList.Add("build");
         if (request.NoBuild is false && cli.Environment.IsCI is false) stepsList.Add("Chromium for UI tests");
@@ -587,7 +587,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         if (cli.Environment.IsWindows && request.NoWorkloads is false)
         {
-            cli.Console.Out.MarkupLine("[grey]Installing .NET workloads can show a Windows permission prompt too.[/]");
+            cli.Console.Out.MarkupLine("[grey]Installing the build tools can show a Windows permission prompt too.[/]");
         }
 
         cli.Console.Out.MarkupLine($"[grey]The same project, without questions:[/] {Markup.Escape(command)} --yes");

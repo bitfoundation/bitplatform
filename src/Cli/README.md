@@ -24,13 +24,13 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while Docker Desktop or the Android emulator needs it, less than 24 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own.
 5. Initializes git with `develop` and `main`, and commits.
-6. Installs the .NET workloads the chosen platforms need, restores NuGet packages, and builds, which also generates the CSS and JS. Then it installs the Chromium that Playwright runs the UI tests with.
+6. Installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. Then it installs the Chromium that Playwright runs the UI tests with.
 7. Runs `dotnet format`, and commits that on its own.
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
 9. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
 10. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
 
-A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly workloads and the first build.
+A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly build tools and the first build.
 
 ```bash
 bit new Contoso.Shop
@@ -67,6 +67,7 @@ Every option of `dotnet new bit-bp` works the same way:
 | `--brouter` | `true`, `false` | `false` |
 | `--sample` | `true`, `false` | `false` |
 | `--advancedTests` | `true`, `false` | `false` |
+| `--realProject` | `true`, `false` | `false` |
 | `--apiServerUrl` | a URL | |
 | `--webAppUrl` | a URL | |
 
@@ -75,7 +76,7 @@ And these of its own:
 | Option | What it does |
 |---|---|
 | `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
-| `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up, and each native app adds several GB of workloads and minutes of build, so it can wait for `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
+| `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up, and each native app adds several GB of build tools and minutes of build, so it can wait for `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code, asked in a terminal; `none` in CI. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
@@ -83,7 +84,7 @@ And these of its own:
 | `-y, --yes` | Accept every default and never ask. |
 | `--non-interactive` | Never ask; fail when a required value is missing. |
 | `--dry-run` | Show the plan and change nothing. |
-| `--no-setup` | Only create the project: no tools, workloads, restore or build. Run `bit setup` in its folder later. |
+| `--no-setup` | Only create the project: nothing is installed, restored or built. Run `bit setup` in its folder later. |
 | `--no-tools`, `--no-certificate`, `--no-git`, `--no-workloads`, `--no-restore`, `--no-build`, `--no-format`, `--no-migration`, `--no-trust`, `--no-open` | Skip that step. |
 
 ## bit setup
@@ -95,7 +96,7 @@ bit setup
 bit setup --platforms android
 ```
 
-It installs missing tools, workloads and packages, builds, installs Playwright's Chromium for the UI tests, and the VS Code extensions the project recommends when VS Code is installed.
+It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, and the VS Code extensions the project recommends when VS Code is installed.
 
 ## bit doctor
 

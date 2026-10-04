@@ -91,7 +91,7 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
         var missing = needed.Where(w => installed.Contains(w) is false).ToArray();
 
         if (list.Succeeded && missing.Length == 0)
-            return StepResult.Succeeded("Workloads already installed", string.Join(", ", needed));
+            return StepResult.Succeeded("Build tools already installed", string.Join(", ", needed));
 
         var toInstall = list.Succeeded ? missing : [.. needed];
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet workload install {string.Join(' ', toInstall)}";
@@ -114,11 +114,11 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
             }
             else
             {
-                return StepResult.Warning("Workloads need sudo", string.Join(", ", toInstall), followUp.Replace("dotnet workload", "sudo dotnet workload", StringComparison.Ordinal));
+                return StepResult.Warning("Build tools need sudo", string.Join(", ", toInstall), followUp.Replace("dotnet workload", "sudo dotnet workload", StringComparison.Ordinal));
             }
         }
 
-        return StepResult.FromProcess(result, "Installed workloads", "Couldn't install workloads", followUp, string.Join(", ", toInstall));
+        return StepResult.FromProcess(result, "Installed build tools", "Couldn't install build tools", followUp, string.Join(", ", toInstall));
     }
 
     public static IReadOnlySet<string> ParseInstalledWorkloads(string output)
