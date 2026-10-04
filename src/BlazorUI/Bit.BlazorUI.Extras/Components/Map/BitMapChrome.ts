@@ -17,6 +17,10 @@
         touchHint: string | null;
         /** Move focus out of the map canvas when Escape is pressed (WCAG 2.1.2). */
         escapeToExit: boolean;
+        /** Pan with the arrow keys and zoom with plus/minus while the canvas has focus. */
+        keyboardNavigation: boolean;
+        /** Make a keyboard pan or zoom jump instead of animating under a reduced-motion preference. */
+        respectReducedMotion: boolean;
     };
 
     type ChromeState = {
@@ -30,8 +34,17 @@
         lastHeight: number;
         hintTimer: any;
         listeners: { target: EventTarget, type: string, handler: any, capture: boolean }[];
+        /** Watches the document for a theme or scheme switch, and the colors the map was last painted in. */
+        themeObserver: MutationObserver | null;
+        themeFrame: number | null;
+        themeFingerprint: string;
         /** Element pinned to a geographic coordinate, and the frame loop keeping it there. */
-        anchor: { elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number } | null;
+        anchor: {
+            elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number,
+            autoPan: boolean, animate: boolean,
+            /** The auto-pan's settling window: when it ends, the popup size last seen, and for how many frames in a row. */
+            panDeadline: number | null, panWidth: number, panHeight: number, panStableFrames: number,
+        } | null;
     };
 
     /**
@@ -199,15 +212,21 @@
                 lastHeight: canvas.clientHeight,
                 hintTimer: null,
                 listeners: [],
+                themeObserver: null,
+                themeFrame: null,
+                themeFingerprint: '',
                 anchor: null,
             };
             BitMapChrome._instances[id] = state;
 
+            BitMapChrome._demoteProviderFocusTargets(state);
             BitMapChrome._applyAutoResize(id, state);
             BitMapChrome._applyCooperativeGestures(state);
-            BitMapChrome._applyEscapeToExit(state);
+            BitMapChrome._applyKeyboardNavigation(id, state);
+            BitMapChrome._applyEscapeToExit(id, state);
             BitMapChrome._applyContextLossReporting(state);
             BitMapChrome._applyFullscreenReporting(id, state);
+            BitMapChrome._applyThemeReporting(id, state);
         }
 
         /**
@@ -222,9 +241,13 @@
          * The position is recomputed per animation frame rather than per map event: a drag moves
          * the map continuously, and anything slower visibly lags behind the marker.
          */
-        public static trackAnchor(id: string, elementId: string, lat: number, lng: number) {
+        public static trackAnchor(id: string, elementId: string, lat: number, lng: number, autoPan: boolean = false, animate: boolean = false) {
             const s = BitMapChrome._instances[id];
             if (!s) return;
+
+            // Re-anchoring the same popup (its marker moved) keeps a pan the open asked for and has not yet
+            // made, but never arms a new one.
+            const pendingPan = s.anchor?.elementId === elementId && s.anchor.autoPan === true;
 
             BitMapChrome.untrackAnchor(id);
 
@@ -237,6 +260,15 @@
                 lat, lng,
                 frame: null as number | null,
                 deadline: Date.now() + 5_000,
+                // Spent once, as the popup opens: panning on every frame would fight a user dragging it
+                // away. Not on its first frame on screen, though - its content may not have laid out yet
+                // (or grow once an image loads), so the size is watched until it settles, within a bound.
+                autoPan: autoPan === true || pendingPan,
+                animate: animate === true,
+                panDeadline: null as number | null,
+                panWidth: -1,
+                panHeight: -1,
+                panStableFrames: 0,
             };
             s.anchor = anchor;
 
@@ -260,6 +292,10 @@
                 if (point) {
                     anchor.element.style.transform = `translate(${Math.round(point.x)}px, ${Math.round(point.y)}px)`;
                     anchor.element.style.visibility = '';
+                    if (anchor.autoPan && BitMapChrome._popupSettled(anchor, anchor.element)) {
+                        anchor.autoPan = false;
+                        BitMapChrome._panIntoView(s, id, anchor.element, anchor.animate);
+                    }
                 } else {
                     // Off-screen, or behind the globe on a 3D provider. Hide rather than park it
                     // at a stale position, which would read as a popup for the wrong place.
@@ -284,6 +320,8 @@
             if (s.resizeObserver) { try { s.resizeObserver.disconnect(); } catch { /* ignore */ } }
             if (s.resizeFrame !== null) cancelAnimationFrame(s.resizeFrame);
             if (s.hintTimer) clearTimeout(s.hintTimer);
+            if (s.themeObserver) { try { s.themeObserver.disconnect(); } catch { /* ignore */ } }
+            if (s.themeFrame !== null) cancelAnimationFrame(s.themeFrame);
             for (const l of s.listeners) {
                 try { l.target.removeEventListener(l.type, l.handler, l.capture); } catch { /* ignore */ }
             }
@@ -292,6 +330,57 @@
         }
 
         // ---- helpers ----
+
+        /**
+         * Whether the anchored popup has stopped changing size: the same nonzero size for a few frames
+         * in a row, or the settling window has run out - in which case the pan goes ahead with the size
+         * last seen rather than waiting on content that keeps changing.
+         */
+        private static _popupSettled(anchor: NonNullable<ChromeState['anchor']>, anchorElement: HTMLElement) {
+            const popup = (anchorElement.firstElementChild as HTMLElement | null) ?? anchorElement;
+            const box = popup.getBoundingClientRect();
+            const now = Date.now();
+            anchor.panDeadline ??= now + 500;
+
+            if (box.width === anchor.panWidth && box.height === anchor.panHeight && (box.width > 0 || box.height > 0)) {
+                anchor.panStableFrames++;
+            } else {
+                anchor.panWidth = box.width;
+                anchor.panHeight = box.height;
+                anchor.panStableFrames = 0;
+            }
+
+            return anchor.panStableFrames >= 3 || now >= anchor.panDeadline;
+        }
+
+        /**
+         * Pans the map just enough to bring a popup inside the container, with a small margin - what
+         * Leaflet's autoPan does for its own popups, done here so the Blazor-rendered popup gets it on
+         * every provider. When the popup is larger than the map its top-start corner wins, which is
+         * where its title and close button are.
+         */
+        private static _panIntoView(s: ChromeState, id: string, anchorElement: HTMLElement, animate: boolean) {
+            const popup = (anchorElement.firstElementChild as HTMLElement | null) ?? anchorElement;
+            const box = popup.getBoundingClientRect();
+            const frame = s.root.getBoundingClientRect();
+            if (box.width === 0 && box.height === 0) return;
+
+            const margin = 8;
+            const rtl = getComputedStyle(s.root).direction === 'rtl';
+            const overLeft = frame.left + margin - box.left;
+            const overRight = box.right - (frame.right - margin);
+            const overTop = frame.top + margin - box.top;
+            const overBottom = box.bottom - (frame.bottom - margin);
+
+            // A positive offset moves the content left / up, so the view travels toward the overflow.
+            let dx = 0;
+            if (rtl) dx = overRight > 0 ? overRight : (overLeft > 0 ? -overLeft : 0);
+            else dx = overLeft > 0 ? -overLeft : (overRight > 0 ? overRight : 0);
+            const dy = overTop > 0 ? -overTop : (overBottom > 0 ? overBottom : 0);
+            if (dx === 0 && dy === 0) return;
+
+            try { (globalThis as any).BitBlazorUI?.[s.options.jsObjectName]?.panBy?.(id, Math.round(dx), Math.round(dy), animate); } catch { /* ignore */ }
+        }
 
         private static _listen(s: ChromeState, target: EventTarget, type: string, handler: any, options?: AddEventListenerOptions) {
             target.addEventListener(type, handler, options);
@@ -390,12 +479,74 @@
         }
 
         /**
+         * The focusable surfaces some libraries put inside the container of their own: MapLibre's and
+         * Mapbox's canvas (a second region called "Map"), ArcGIS' view surface (role="application"),
+         * Azure Maps' canvas. Each is a second tab stop nested in the canvas, which is already the
+         * labelled, focusable map - so they lose the tab stop and the duplicate semantics, and the
+         * keyboard handler below does their job on the canvas instead. Without a tabindex a click no
+         * longer focuses them either, so the focus always lands on the canvas, wherever it came from.
+         */
+        private static _demoteProviderFocusTargets(s: ChromeState) {
+            const surfaces = s.canvas.querySelectorAll('.maplibregl-canvas, .mapboxgl-canvas, .esri-view-surface, .atlas-map-canvas');
+            surfaces.forEach(el => {
+                el.removeAttribute('tabindex');
+                el.removeAttribute('role');
+                el.removeAttribute('aria-label');
+            });
+        }
+
+        /**
+         * Arrow keys pan and plus/minus zoom while the canvas itself has the focus - on every backend.
+         * Leaflet does it itself (handlesCanvasKeyboard). OpenLayers listens on the canvas too and marks
+         * the keys it handles, so a key whose default is prevented is left alone - this is registered
+         * after it, so on the same element it runs second - and the keys it does not handle (Shift and
+         * an arrow, '=') still work. The others listen on an inner surface the focus never reaches (see
+         * _demoteProviderFocusTargets) or, like Cesium, have no keyboard at all.
+         */
+        private static _applyKeyboardNavigation(id: string, s: ChromeState) {
+            if (!s.options.keyboardNavigation) return;
+            if ((globalThis as any).BitBlazorUI?.[s.options.jsObjectName]?.handlesCanvasKeyboard === true) return;
+            const keydown = (e: KeyboardEvent) => {
+                if (e.defaultPrevented || e.target !== s.canvas) return;
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+                // The same steps the libraries use: 100px a press, and Shift for three times as far. Zoom is a
+                // level a press either way - on most layouts '+' (and '_') can only be typed with Shift held.
+                const step = e.shiftKey ? 300 : 100;
+                let dx = 0, dy = 0, zoom = 0;
+                switch (e.key) {
+                    case 'ArrowLeft': case 'Left': dx = -step; break;
+                    case 'ArrowRight': case 'Right': dx = step; break;
+                    case 'ArrowUp': case 'Up': dy = -step; break;
+                    case 'ArrowDown': case 'Down': dy = step; break;
+                    case '+': case '=': case 'Add': zoom = 1; break;
+                    case '-': case '_': case 'Subtract': zoom = -1; break;
+                    default: return;
+                }
+                // Keeps the page from scrolling, and tells anything listening after this that the key is spent.
+                e.preventDefault();
+
+                const animate = !(s.options.respectReducedMotion && BitMapChrome.prefersReducedMotion());
+                const provider = (globalThis as any).BitBlazorUI?.[s.options.jsObjectName];
+                try {
+                    if (zoom !== 0) provider?.zoomBy?.(id, zoom, animate);
+                    else provider?.panBy?.(id, dx, dy, animate);
+                } catch { /* ignore */ }
+            };
+            BitMapChrome._listen(s, s.canvas, 'keydown', keydown);
+        }
+
+        /**
          * WCAG 2.1.2 (No Keyboard Trap): a focused map consumes the arrow keys, so there
          * has to be a documented way out that is not "keep pressing Tab past every marker".
          * Escape returns focus to the document flow.
+         *
+         * Escape dismisses the innermost thing first, though: while one of the provider's own marker
+         * popups is open, the first press closes it and the second leaves the map. Only Leaflet does
+         * that by itself, and the capture below would keep the key from it - so it is done here, for
+         * every provider, and with or without EscapeToExit.
          */
-        private static _applyEscapeToExit(s: ChromeState) {
-            if (!s.options.escapeToExit) return;
+        private static _applyEscapeToExit(id: string, s: ChromeState) {
             const keydown = (e: KeyboardEvent) => {
                 if (e.key !== 'Escape') return;
                 // Stopping propagation during the CAPTURE phase keeps the event from reaching the
@@ -405,6 +556,21 @@
                 // the keyboard trap this exists for: focus there is already out of the canvas.
                 const target = e.target;
                 if (target instanceof Element && target.closest('.bit-map-popup, .bit-map-overlay')) return;
+
+                let closed = false;
+                try { closed = (globalThis as any).BitBlazorUI?.[s.options.jsObjectName]?.closeMarkerPopup?.(id) === true; } catch { /* ignore */ }
+                if (closed) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    // Focus inside the popup - its close button, a link - went with it, and would
+                    // otherwise drop to the body. The canvas is where the popup was opened from.
+                    if (!s.root.contains(document.activeElement)) {
+                        try { s.canvas.focus({ preventScroll: true }); } catch { /* ignore */ }
+                    }
+                    return;
+                }
+
+                if (!s.options.escapeToExit) return;
                 e.stopPropagation();
                 try {
                     // Focus may be on any focusable descendant - a marker button, a provider's own
@@ -420,12 +586,6 @@
             BitMapChrome._listen(s, s.root, 'keydown', keydown, { capture: true });
         }
 
-        /**
-         * Browsers cap the number of simultaneous WebGL contexts (roughly 8-16), and the
-         * least-recently-used one is dropped silently when the cap is hit - a map simply
-         * goes black with no error. Reporting the loss lets the component show its error
-         * state, and the restore lets it recover instead of staying blank.
-         */
         /**
          * Reports entering and leaving fullscreen, including the routes that never go through our
          * own API - the Escape key, the browser's own control, or another element taking over.
@@ -443,6 +603,57 @@
             BitMapChrome._listen(s, document, 'fullscreenchange', onChange);
         }
 
+        /**
+         * Reports a theme or color-scheme switch that changed the colors the map paints its pins and shapes in.
+         * Those are images and provider styles, resolved once as each is added, so no stylesheet repaints
+         * them - .NET draws the ones that follow the theme again. A preset is switched on the root element
+         * (an attribute, a class, an inline style) and a scheme can follow the system's, so those are what
+         * is watched; the colors read off the probe are what decide whether anything actually changed.
+         */
+        private static _applyThemeReporting(id: string, s: ChromeState) {
+            const fingerprint = () => {
+                const probe = BitMapHelpers.probe(id);
+                if (!probe) return '';
+                try {
+                    const style = getComputedStyle(probe);
+                    return [style.fill, style.stroke, style.color, style.backgroundColor, style.borderTopColor,
+                            document.documentElement.getAttribute('bit-theme') ?? ''].join('|');
+                } catch {
+                    return '';
+                }
+            };
+            s.themeFingerprint = fingerprint();
+
+            const check = () => {
+                if (s.themeFrame !== null) return;
+                // After the frame, when every mutation of one switch has landed and the styles have been
+                // recomputed, so a switch is reported once.
+                s.themeFrame = requestAnimationFrame(() => {
+                    s.themeFrame = null;
+                    const next = fingerprint();
+                    if (!next || next === s.themeFingerprint) return;
+                    s.themeFingerprint = next;
+                    s.dotnetObj?.invokeMethodAsync('OnThemeChanged');
+                });
+            };
+
+            try {
+                s.themeObserver = new MutationObserver(check);
+                s.themeObserver.observe(document.documentElement, { attributes: true });
+                if (document.body) s.themeObserver.observe(document.body, { attributes: true });
+            } catch { /* ignore */ }
+            try {
+                const scheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+                if (scheme) BitMapChrome._listen(s, scheme, 'change', check);
+            } catch { /* ignore */ }
+        }
+
+        /**
+         * Browsers cap the number of simultaneous WebGL contexts (roughly 8-16), and the
+         * least-recently-used one is dropped silently when the cap is hit - a map simply
+         * goes black with no error. Reporting the loss lets the component show its error
+         * state, and the restore lets it recover instead of staying blank.
+         */
         private static _applyContextLossReporting(s: ChromeState) {
             const lost = (e: Event) => {
                 // Calling preventDefault is what makes a restore possible at all.
