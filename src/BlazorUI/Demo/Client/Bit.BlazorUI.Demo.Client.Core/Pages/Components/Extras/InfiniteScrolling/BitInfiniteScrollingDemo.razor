@@ -6,7 +6,7 @@
 
 <div>
     <DemoPage Name="InfiniteScrolling"
-              Description="BitInfiniteScrolling fetches the next page from its ItemsProvider as soon as the end of the list comes into view, so nothing is loaded before it is needed. It renders the loading, empty, end and error states (each replaceable by a template), can load on demand through a Load more button, run reversed to prepend older items without moving the reader, scroll sideways, or render as an accessible ARIA feed. A page in flight is cancelled when no longer needed, and the loaded items can be capped, keyed, edited from code and reset from a key."
+              Description="BitInfiniteScrolling fetches the next page from its ItemsProvider as soon as the end of the list comes into view, so nothing is loaded before it is needed. It renders the loading, empty, end and error states (each replaceable by a template), can load on demand through a Load more button (from the start or after a few automatic pages), run reversed to prepend older items without moving the reader, scroll sideways, or render as an accessible ARIA feed. A page in flight is cancelled when no longer needed, and the loaded items can be capped, keyed, edited from code and reset from a key."
               Parameters="componentParameters"
               CssVariables="componentCssVariables"
               SubClasses="componentSubClasses"
@@ -99,7 +99,8 @@
                     <b>Manual</b> loads every page after the first one from a button, which keeps the page footer
                     reachable and gives keyboard users a real control. Its label is <b>LoadMoreText</b>, and
                     <b>LoadMoreTemplate</b> replaces its content. While its page loads the button stays in place and keeps
-                    the focus, marked <b>aria-disabled</b> rather than disabled.
+                    the focus, marked <b>aria-disabled</b> rather than disabled. <b>AutoLoadLimit</b> mixes both modes:
+                    the second list loads two pages on its own, then switches to the button.
                 </div>
                 <br /><br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
@@ -112,9 +113,9 @@
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
                 <br /><br />
-                <div><b>LoadMoreTemplate:</b></div><br />
+                <div><b>AutoLoadLimit & LoadMoreTemplate:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
-                                      Manual
+                                      AutoLoadLimit="2"
                                       PageSize="10"
                                       Class="basic"
                                       EndMessage="No more items to load.">
@@ -321,7 +322,8 @@
                     <b>Feed</b> renders the WAI-ARIA feed pattern: each item is a focusable article with its position in
                     the set. Tab into the list, then <b>Page Down</b> / <b>Page Up</b> move between items and
                     <b>Ctrl+End</b> / <b>Ctrl+Home</b> leave it. A page loaded from the button receives the focus.
-                    <b>LoadedMessage</b> announces each page to screen readers, and <b>AriaLabel</b> names the list.
+                    <b>ItemAriaLabel</b> names each article, <b>LoadedMessage</b> announces each page to screen readers,
+                    and <b>AriaLabel</b> names the list.
                     Outside a feed, a scrolling list with nothing focusable inside needs <b>TabIndex="0"</b> and a name
                     to be scrollable from the keyboard.
                 </div>
@@ -333,6 +335,7 @@
                                       Class="basic"
                                       Context="item"
                                       AriaLabel="Products"
+                                      ItemAriaLabel="@(item => $"Product {item}")"
                                       LoadMoreText="Load more products"
                                       LoadedMessage="{0} more products loaded, {1} in total."
                                       EndMessage="All products are loaded.">

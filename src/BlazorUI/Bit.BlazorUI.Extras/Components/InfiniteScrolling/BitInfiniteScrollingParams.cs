@@ -5,8 +5,8 @@
 /// </summary>
 /// <remarks>
 /// What belongs here is what the lists of an application agree on: the texts of their states (which is where a
-/// localized app sets them once), their templates, how they load (Manual, PageSize, the observer options) and how
-/// they are styled. The provider, the item template, the keys, the events and the layout of one list (Horizontal,
+/// localized app sets them once), their templates, how they load (Manual, AutoLoadLimit, PageSize, the observer options) and how
+/// they are styled. The provider, the item template, the keys and the names of the items, the events and the layout of one list (Horizontal,
 /// Reversed, ScrollerSelector) are left out on purpose: they are what makes one list the one it is.
 /// <br />
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance
@@ -29,6 +29,11 @@ public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentP
     public string Name => ParamName;
 
 
+
+    /// <summary>
+    /// The number of the pages loaded automatically before the list switches to the Load more button.
+    /// </summary>
+    public int? AutoLoadLimit { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the infinite scrolling.
@@ -177,6 +182,11 @@ public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentP
         // This runs on every render of every list under the BitParams, so the value that drives the class or the
         // style of the root is only assigned - and the builder only reset - when it differs from the one the list
         // already holds: an unchanged one would rebuild both strings on every render for nothing.
+        if (AutoLoadLimit.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(AutoLoadLimit)))
+        {
+            bitInfiniteScrolling.AutoLoadLimit = AutoLoadLimit.Value;
+        }
+
         if (Classes is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitInfiniteScrolling.Classes, Classes) is false)
         {
             bitInfiniteScrolling.Classes = Classes;

@@ -14,6 +14,7 @@
 //   --bit-InfiniteScrolling-button-color          label of the Load more / Retry button       (default: $clr-pri)
 //   --bit-InfiniteScrolling-button-hover-color    ... under the pointer                       (default: $clr-pri-hover)
 //   --bit-InfiniteScrolling-button-background     background of the button                   (default: transparent)
+//   --bit-InfiniteScrolling-button-hover-background ... under the pointer                     (default: the button background)
 //   --bit-InfiniteScrolling-button-radius         corner radius of the button and its ring    (default: $shp-radius-button)
 //   --bit-InfiniteScrolling-button-padding        padding of the button                       (default: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm)
 //   --bit-InfiniteScrolling-item-focus-color      focus indicator of a feed's article         (default: $clr-pri-focus)
@@ -217,12 +218,13 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     background-color: var(--bit-InfiniteScrolling-button-background, transparent);
     border-radius: var(--bit-InfiniteScrolling-button-radius, #{$shp-radius-button});
     padding: var(--bit-InfiniteScrolling-button-padding, #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm});
-    transition: color $mot-duration-short $mot-easing;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover:not([aria-disabled="true"]) {
             text-decoration: underline;
             color: var(--bit-InfiniteScrolling-button-hover-color, #{$clr-pri-hover});
+            background-color: var(--bit-InfiniteScrolling-button-hover-background, var(--bit-InfiniteScrolling-button-background, transparent));
         }
     }
 
@@ -251,8 +253,14 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
         border-block-start-color: CanvasText;
     }
 
+    // A button of no box of its own would read as plain text once the palette is forced, so it is outlined.
+    .bit-isc-btn {
+        border: $shp-border-width $shp-border-style ButtonText;
+    }
+
     .bit-isc-btn[aria-disabled="true"] {
         color: GrayText;
+        border-color: GrayText;
     }
 }
 

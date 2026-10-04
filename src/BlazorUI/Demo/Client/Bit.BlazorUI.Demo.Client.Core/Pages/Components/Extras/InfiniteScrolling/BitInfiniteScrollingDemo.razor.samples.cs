@@ -132,7 +132,7 @@ private async ValueTask<IEnumerable<int>> LoadEmptyItems(BitInfiniteScrollingIte
 </BitInfiniteScrolling>
 
 <BitInfiniteScrolling ItemsProvider=""LoadPagedItems""
-                      Manual
+                      AutoLoadLimit=""2""
                       PageSize=""10""
                       Class=""basic""
                       EndMessage=""No more items to load."">
@@ -571,6 +571,7 @@ private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrolling
                       Class=""basic""
                       Context=""item""
                       AriaLabel=""Products""
+                      ItemAriaLabel=""@(item => $""Product {item}"")""
                       LoadMoreText=""Load more products""
                       LoadedMessage=""{0} more products loaded, {1} in total.""
                       EndMessage=""All products are loaded."">
@@ -675,6 +676,7 @@ private const string cssVariablesStyle = ""--bit-InfiniteScrolling-status-color:
                                          ""--bit-InfiniteScrolling-button-color:var(--bit-clr-pri-text);"" +
                                          ""--bit-InfiniteScrolling-button-hover-color:var(--bit-clr-pri-text);"" +
                                          ""--bit-InfiniteScrolling-button-background:var(--bit-clr-pri);"" +
+                                         ""--bit-InfiniteScrolling-button-hover-background:var(--bit-clr-pri-hover);"" +
                                          ""--bit-InfiniteScrolling-button-radius:999px;"" +
                                          ""--bit-InfiniteScrolling-button-padding:0.5rem 1.5rem"";
 

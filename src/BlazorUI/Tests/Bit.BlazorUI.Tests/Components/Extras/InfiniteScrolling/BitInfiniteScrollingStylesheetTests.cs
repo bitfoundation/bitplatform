@@ -22,7 +22,7 @@ public partial class BitInfiniteScrollingStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(15, documented.Length, "The stylesheet does not document the fifteen public variables.");
+        Assert.AreEqual(16, documented.Length, "The stylesheet does not document the sixteen public variables.");
 
         foreach (var name in documented)
         {
@@ -68,6 +68,9 @@ public partial class BitInfiniteScrollingStylesheetTests
 
         StringAssert.Contains(forced, "border-block-start-color: CanvasText;");
         StringAssert.Contains(forced, "color: GrayText;");
+
+        // A button with no box of its own would read as plain text in a forced palette.
+        StringAssert.Contains(forced, "border: $shp-border-width $shp-border-style ButtonText;");
 
         // The ring of a feed's article is a box-shadow, which forced colors strip.
         StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-isc-art {"), "outline: #{$shp-focus-ring-width} solid Highlight;");

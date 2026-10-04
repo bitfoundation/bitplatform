@@ -462,6 +462,89 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitInfiniteScrollingAutoLoadLimitShouldSwitchToTheButtonAfterItsPages()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.AutoLoadLimit, 2);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+
+        // One page in, the list still loads on its own.
+        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+        Assert.AreNotEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
+
+        await component.InvokeAsync(() => component.Instance._LoadMoreItems());
+
+        // Two pages in, the sentinel is retired and the button takes over.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(10, component.Instance.Items.Count);
+            Assert.AreEqual("Load more", component.Find(".bit-isc-btn").TextContent.Trim());
+            Assert.AreEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
+        });
+
+        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]);
+
+        component.Find(".bit-isc-btn").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual(15, component.Instance.Items.Count));
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingAutoLoadLimitShouldStartOverWithARefresh()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.AutoLoadLimit, 1);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count));
+
+        await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
+
+        // The refresh loads one page again, which uses up the limit again - the count did not carry over.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(5, component.Instance.Items.Count);
+            Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.AutoLoadLimit, 3));
+
+        // A higher limit hands the loading back to the sentinel.
+        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingAutoLoadLimitOfZeroShouldBehaveAsTheManualMode()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.AutoLoadLimit, 0);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(5, component.Instance.Items.Count);
+            Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count);
+        });
+    }
+
+    [TestMethod]
     public async Task BitInfiniteScrollingRefreshDataAsyncShouldReloadFromScratch()
     {
         var calls = 0;

@@ -7,9 +7,9 @@ namespace Bit.BlazorUI;
 /// BitInfiniteScrolling is a container that enables scrolling through a list of items infinitely as long as
 /// there are items to fetch and render. It loads the next page through an items provider as soon as the
 /// sentinel element at the end of the list enters the scroll viewport, and it ships with loading, empty, end
-/// and error states, a manual (Load more) mode, a reversed (chat) mode that keeps the scroll position stable
-/// while older items get prepended, and a horizontal mode. The loaded items can be capped, keyed, driven from
-/// code and reset from a key.
+/// and error states, a manual (Load more) mode that can also take over after a few automatic pages, a reversed
+/// (chat) mode that keeps the scroll position stable while older items get prepended, and a horizontal mode.
+/// The loaded items can be capped, keyed, driven from code and reset from a key.
 /// </summary>
 /// <remarks>
 /// A list that is not given a height does not clip anything, so it loads as the page scrolls rather than all at
@@ -21,8 +21,8 @@ namespace Bit.BlazorUI;
 /// (<c>--bit-InfiniteScrolling-error-color</c>), the loading spinner (<c>--bit-InfiniteScrolling-spinner-size</c>,
 /// <c>-spinner-color</c>, <c>-spinner-track-color</c>), the Load more / Retry button
 /// (<c>--bit-InfiniteScrolling-button-color</c>, <c>-button-hover-color</c>, <c>-button-background</c>,
-/// <c>-button-radius</c>, <c>-button-padding</c>) and the focus indicator of a feed's articles
-/// (<c>--bit-InfiniteScrolling-item-focus-color</c>).
+/// <c>-button-hover-background</c>, <c>-button-radius</c>, <c>-button-padding</c>) and the focus indicator of a
+/// feed's articles (<c>--bit-InfiniteScrolling-item-focus-color</c>).
 /// </remarks>
 public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 {
@@ -41,6 +41,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     private bool _initialScrollDone;
     private int _lastLoadedCount;
     private int _lastLoadedTotal;
+    private int _loadedPages;
     private int? _pendingFocusIndex;
     private string? _jsSetupKey;
     private CancellationTokenSource? _cts;
@@ -61,7 +62,10 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // retry, the manual mode waits for the button, and a disabled component (or one with no provider) loads
     // nothing at all. Observing it in any of those states would make the browser ask for a page that the
     // component immediately declines, over and over.
-    private bool _canAutoLoad => IsEnabled && ItemsProvider is not null && Manual is false && _hasMore && _error is null;
+    private bool _canAutoLoad => IsEnabled && ItemsProvider is not null && _isManual is false && _hasMore && _error is null;
+
+    // The manual mode, or the automatic one that has used up the pages it may load on its own.
+    private bool _isManual => Manual || (AutoLoadLimit is int limit && _loadedPages >= Math.Max(0, limit));
 
     private bool _showEmpty => _initialized && _isLoading is false && _error is null && _items.Count == 0;
 
@@ -71,7 +75,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // The button loads the next page in manual mode and retries the page that failed in any mode. It stays in
     // the DOM (marked aria-disabled) while the load it started runs, rather than vanishing under the keyboard
     // focus that pressed it and dropping that focus back to the top of the page.
-    private bool _showButton => IsEnabled && (_error is not null || _retrying || (Manual && _hasMore && _initialized));
+    private bool _showButton => IsEnabled && (_error is not null || _retrying || (_isManual && _hasMore && _initialized));
 
     // The label of that button, which keeps saying "retry" for as long as the retry it started is running.
     private string? _buttonText => (_error is not null || _retrying) ? RetryText : LoadMoreText;
@@ -110,6 +114,16 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     public BitInfiniteScrollingParams? CascadingParameters { get; set; }
 
 
+
+    /// <summary>
+    /// The number of the pages the list loads on its own, as its end comes into view, before it switches to the
+    /// Load more button of the manual mode. Leaving it null keeps the loading automatic for good.
+    /// </summary>
+    /// <remarks>
+    /// An endless list keeps whatever follows it (the footer of a page, above all) out of reach, so a few automatic
+    /// pages followed by an explicit button is the usual compromise. The count starts over with every refresh.
+    /// </remarks>
+    [Parameter] public int? AutoLoadLimit { get; set; }
 
     /// <summary>
     /// The custom template to render each item.
@@ -188,6 +202,15 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     /// nothing to the layout. The keys have to be unique among the loaded items.
     /// </remarks>
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
+
+    /// <summary>
+    /// The function that returns the accessible name of the article of each item in the Feed mode, which is what
+    /// a screen reader announces as the focus lands on it (the title of a post, the name of a product).
+    /// </summary>
+    /// <remarks>
+    /// Without one an article is announced by its whole content. It has no effect outside the Feed mode.
+    /// </remarks>
+    [Parameter] public Func<TItem, string?>? ItemAriaLabel { get; set; }
 
     /// <summary>
     /// The item provider function that will be called when scrolling ends.
@@ -382,6 +405,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         _endedByCap = false;
         _totalCount = null;
         _lastLoadedCount = 0;
+        _loadedPages = 0;
         _pendingFocusIndex = null;
         _initialized = false;
         _initialScrollDone = false;
@@ -652,7 +676,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
             {
                 await RefreshDataAsync();
             }
-            else if (Manual)
+            else if (_isManual)
             {
                 // Nothing was loaded yet and there is no observer to fire in the manual mode, so the first
                 // page of the provider that just arrived is fetched the way the first render would have.
@@ -833,6 +857,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
             if (newItems.Length > 0)
             {
                 _lastLoadedCount = newItems.Length;
+                _loadedPages++;
 
                 if (Reversed && _initialScrollDone is false)
                 {
@@ -978,7 +1003,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         _items.RemoveRange(fromStart ? 0 : _items.Count - surplus, surplus);
     }
 
-    private string BuildJsSetupKey() => $"{ScrollerSelector}|{Threshold}|{RootMargin}|{Reversed}|{Horizontal}|{Manual}|{IsEnabled}|{Feed}";
+    private string BuildJsSetupKey() => $"{ScrollerSelector}|{Threshold}|{RootMargin}|{Reversed}|{Horizontal}|{_isManual}|{IsEnabled}|{Feed}";
 
     private async Task SetupJsAsync()
     {
@@ -996,7 +1021,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // no observer to fire, so its first page is fetched here and every next one by the button.
     private async Task LoadFirstManualPageAsync()
     {
-        if (Manual is false || _initialized || _isLoading || ItemsProvider is null) return;
+        if (_isManual is false || _initialized || _isLoading || ItemsProvider is null) return;
 
         await LoadMoreItemsAsync();
     }

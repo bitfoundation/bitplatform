@@ -72,6 +72,47 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitInfiniteScrollingFeedShouldNameEachArticleWithItemAriaLabel()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(3));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.Feed, true);
+            parameters.Add(p => p.ItemKey, item => item);
+            parameters.Add(p => p.ItemAriaLabel, item => item == 1 ? null : $"Post {item}");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("article").Count));
+
+        var articles = component.FindAll("article");
+
+        Assert.AreEqual("Post 0", articles[0].GetAttribute("aria-label"));
+        // An item the function has no name for keeps the name its content gives it.
+        Assert.IsFalse(articles[1].HasAttribute("aria-label"));
+        Assert.AreEqual("Post 2", articles[2].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingFeedArticlesShouldHaveNoNameOfTheirOwnByDefault()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(3));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.Feed, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("article").Count));
+
+        Assert.IsTrue(component.FindAll("article").All(a => a.HasAttribute("aria-label") is false));
+    }
+
+    [TestMethod]
     public void BitInfiniteScrollingFeedShouldKnowTheSizeOfTheSetOnceItHasEnded()
     {
         var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>

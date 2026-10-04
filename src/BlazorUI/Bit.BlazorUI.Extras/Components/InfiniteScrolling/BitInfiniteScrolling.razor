@@ -37,14 +37,14 @@
             var item = _items[i];
             if (ItemKey is null)
             {
-                <article class="@GetItemClass()" style="@Styles?.Item" tabindex="0"
+                <article class="@GetItemClass()" style="@Styles?.Item" tabindex="0" aria-label="@ItemAriaLabel?.Invoke(item)"
                          aria-posinset="@(offset + i + 1)" aria-setsize="@setSize">
                     @template(item)
                 </article>
             }
             else
             {
-                <article @key="ItemKey(item)" class="@GetItemClass()" style="@Styles?.Item" tabindex="0"
+                <article @key="ItemKey(item)" class="@GetItemClass()" style="@Styles?.Item" tabindex="0" aria-label="@ItemAriaLabel?.Invoke(item)"
                          aria-posinset="@(offset + i + 1)" aria-setsize="@setSize">
                     @template(item)
                 </article>

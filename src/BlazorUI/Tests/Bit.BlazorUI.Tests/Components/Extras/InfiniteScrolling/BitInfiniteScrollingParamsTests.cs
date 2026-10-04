@@ -25,6 +25,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
         nameof(BitInfiniteScrolling<int>.CascadingParameters),
         nameof(BitInfiniteScrolling<int>.ChildContent),
         nameof(BitInfiniteScrolling<int>.Horizontal),
+        nameof(BitInfiniteScrolling<int>.ItemAriaLabel),
         nameof(BitInfiniteScrolling<int>.ItemKey),
         nameof(BitInfiniteScrolling<int>.ItemsProvider),
         nameof(BitInfiniteScrolling<int>.ItemTemplate),
@@ -126,6 +127,21 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
         Assert.IsTrue(button.ClassList.Contains("cascaded-button"));
         Assert.AreEqual("Mehr laden", button.TextContent.Trim());
         Assert.AreEqual("4 geladen", component.Find(".bit-isc-sts").TextContent);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldTakeTheCascadedAutoLoadLimit()
+    {
+        var component = RenderWithParams(new BitInfiniteScrollingParams
+        {
+            PageSize = 5,
+            Preload = true,
+            AutoLoadLimit = 1,
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count));
+
+        Assert.AreEqual(1, component.FindComponent<BitInfiniteScrolling<int>>().Instance.AutoLoadLimit);
     }
 
     [TestMethod]

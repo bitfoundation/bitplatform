@@ -6,6 +6,13 @@ public partial class BitInfiniteScrollingDemo
     [
          new()
          {
+            Name = "AutoLoadLimit",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The number of the pages the list loads on its own, as its end comes into view, before it switches to the Load more button of the manual mode. The count starts over with every refresh; null keeps the loading automatic for good.",
+         },
+         new()
+         {
             Name = "ChildContent",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -75,6 +82,13 @@ public partial class BitInfiniteScrollingDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Lays the list out along the horizontal axis, so the pages are fetched while scrolling sideways and every scroll operation of the component works on the horizontal axis of its scroll container. The root element becomes a flex row in this mode and the sentinel element is given a width instead of a height.",
+         },
+         new()
+         {
+            Name = "ItemAriaLabel",
+            Type = "Func<TItem, string?>?",
+            DefaultValue = "null",
+            Description = "The function that returns the accessible name of the article of each item in the Feed mode, which a screen reader announces as the focus lands on it. Without one an article is announced by its whole content.",
          },
          new()
          {
@@ -278,6 +292,7 @@ public partial class BitInfiniteScrollingDemo
         new() { Name = "--bit-InfiniteScrolling-button-color", DefaultValue = "var(--bit-clr-pri)", Description = "Label of the Load more / Retry button." },
         new() { Name = "--bit-InfiniteScrolling-button-hover-color", DefaultValue = "var(--bit-clr-pri-hover)", Description = "Label of the button under the pointer." },
         new() { Name = "--bit-InfiniteScrolling-button-background", DefaultValue = "transparent", Description = "Background of the button." },
+        new() { Name = "--bit-InfiniteScrolling-button-hover-background", DefaultValue = "var(--bit-InfiniteScrolling-button-background)", Description = "Background of the button under the pointer." },
         new() { Name = "--bit-InfiniteScrolling-button-radius", DefaultValue = "var(--bit-shp-radius-button)", Description = "Corner radius of the button and its focus ring." },
         new() { Name = "--bit-InfiniteScrolling-button-padding", DefaultValue = "var(--bit-siz-ctrl-pad-y-sm) var(--bit-siz-ctrl-pad-x-sm)", Description = "Padding of the button." },
         new() { Name = "--bit-InfiniteScrolling-item-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Focus indicator of an article in the Feed mode." },
@@ -479,6 +494,7 @@ public partial class BitInfiniteScrollingDemo
                                              "--bit-InfiniteScrolling-button-color:var(--bit-clr-pri-text);" +
                                              "--bit-InfiniteScrolling-button-hover-color:var(--bit-clr-pri-text);" +
                                              "--bit-InfiniteScrolling-button-background:var(--bit-clr-pri);" +
+                                             "--bit-InfiniteScrolling-button-hover-background:var(--bit-clr-pri-hover);" +
                                              "--bit-InfiniteScrolling-button-radius:999px;" +
                                              "--bit-InfiniteScrolling-button-padding:0.5rem 1.5rem";
 
