@@ -150,6 +150,29 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
 
 
 
+    // A disabled shimmer is dimmed by a public variable, the same as a disabled BitText, and a forced palette - which
+    // takes the dimming away - paints it in the system color for disabled text instead.
+    [TestMethod]
+    public void ADisabledShimmerIsDimmedByAPublicVariableAndGrayedOutInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-tsh.bit-dis {"), "opacity: var(--bit-TextShimmer-disabled-opacity, #{$opa-dis});");
+        StringAssert.Contains(stylesheet, "//   --bit-TextShimmer-disabled-opacity ");
+        StringAssert.Contains(GetBlock(GetBlock(stylesheet, "@media (forced-colors: active)"), ".bit-tsh.bit-dis {"), "color: GrayText;");
+    }
+
+    // A shimmer a page made focusable is drawn with the focus ring of the library rather than the browser's own.
+    [TestMethod]
+    public void AFocusableShimmerIsDrawnWithTheFocusRing()
+    {
+        var root = GetBlock(ReadStylesheet(), "\n.bit-tsh {");
+
+        StringAssert.Contains(GetBlock(root, "&:focus-visible:not([tabindex=\"-1\"]) {"), "@include focus-ring;");
+    }
+
+
+
     private static string[] GetRootDeclarations()
     {
         return VariableDeclaration.Matches(GetBlock(ReadStylesheet(), "\n.bit-tsh {")).Select(m => m.Groups[1].Value).ToArray();

@@ -10,7 +10,11 @@ public partial class BitTextShimmerDemo
     private readonly string example2RazorCode = @"
 <BitTextShimmer Element=""h1"" Text=""A shimmering heading"" />
 
-<div>An <BitTextShimmer Element=""span"" Text=""inline text shimmer"" /> in the middle of a sentence.</div>";
+<div>An <BitTextShimmer Element=""span"" Text=""inline text shimmer"" /> in the middle of a sentence.</div>
+
+<BitText Typography=""BitTypography.H4"">
+    <BitTextShimmer Element=""span"" Text=""A heading in the typography of the theme"" />
+</BitText>";
 
     private readonly string example3RazorCode = @"
 <BitTextShimmer Spread=""5"" Text=""A wide shimmer band"" />

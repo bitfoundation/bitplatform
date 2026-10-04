@@ -2,14 +2,15 @@
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor, or on the Class or the Style of a shimmer inherits down to every shimmer under it:
-//   --bit-TextShimmer-base-color      resting color of the text                    (default: $clr-fg-ter)
-//   --bit-TextShimmer-gradient-color  color of the band                            (default: $clr-fg-pri)
-//   --bit-TextShimmer-spread          brightest point of the band to each edge     (default: 2px per character)
-//   --bit-TextShimmer-angle           tilt of the band from upright                (default: 0deg)
-//   --bit-TextShimmer-duration        one sweep                                    (default: 2s x the loop factor)
-//   --bit-TextShimmer-delay           pause before the first sweep                 (default: 0ms)
-//   --bit-TextShimmer-repeat-delay    extra rest between two sweeps                (default: 0ms)
-//   --bit-TextShimmer-iterations      sweeps before the text comes to rest         (default: infinite)
+//   --bit-TextShimmer-base-color        resting color of the text                       (default: $clr-fg-ter)
+//   --bit-TextShimmer-gradient-color    color of the band                               (default: $clr-fg-pri)
+//   --bit-TextShimmer-spread            brightest point of the band to each edge        (default: 2px per character)
+//   --bit-TextShimmer-angle             tilt of the band from upright                   (default: 0deg)
+//   --bit-TextShimmer-duration          one sweep                                       (default: 2s x the loop factor)
+//   --bit-TextShimmer-delay             pause before the first sweep                    (default: 0ms)
+//   --bit-TextShimmer-repeat-delay      extra rest between two sweeps                   (default: 0ms)
+//   --bit-TextShimmer-iterations        sweeps before the text comes to rest            (default: infinite)
+//   --bit-TextShimmer-disabled-opacity  opacity of a shimmer whose IsEnabled is false   (default: $opa-dis)
 // A parameter written on the shimmer itself (BaseColor, GradientColor, Color, Spread, SpreadLength, Angle, Duration,
 // Delay, RepeatDelay, Iterations) wins over its variable: the variable restyles the default, not a choice. That is
 // why a Spread left at its default publishes the spread it computes as a fallback only (--bit-tsh-auto-spread).
@@ -103,6 +104,13 @@
     & ::selection {
         -webkit-text-fill-color: currentcolor;
     }
+
+    // A run of text only takes the focus where a page made it focusable, and one the keyboard can tab to is drawn
+    // with the ring every other control uses. A tabindex of -1 is a text focused only by script, which gets no ring
+    // of its own, the same as BitText.
+    &:focus-visible:not([tabindex="-1"]) {
+        @include focus-ring;
+    }
 }
 
 // The cycle is taken of the duration the element ends up with - the one a parameter writes inline, the one a class
@@ -160,7 +168,7 @@
 // A disabled run of text is dimmed rather than recolored, and a shimmer that sweeps across it would say that
 // something is still going on - so it is left at rest as well.
 .bit-tsh.bit-dis {
-    opacity: $opa-dis;
+    opacity: var(--bit-TextShimmer-disabled-opacity, #{$opa-dis});
 
     @include bit-tsh-static;
 }
@@ -196,6 +204,12 @@
 @media (forced-colors: active) {
     .bit-tsh {
         @include bit-tsh-static(CanvasText);
+    }
+
+    // A forced palette takes away what the dimming was saying, so a disabled shimmer is painted in GrayText, the
+    // system color for it, the way a disabled BitText is.
+    .bit-tsh.bit-dis {
+        color: GrayText;
     }
 }
 
