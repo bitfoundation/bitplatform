@@ -131,6 +131,7 @@ private BitTextShimmerParams[] shimmerParams => [new() { Duration = 3000, Repeat
     .custom-class {
         font-size: 1.5rem;
         font-style: italic;
+        padding-inline-end: 0.1em;
     }
 </style>
 
