@@ -12,8 +12,12 @@
 /// (<c>Value</c>, <c>DefaultValue</c>, <c>Name</c>, <c>DisplayName</c>), its event callbacks, and what says
 /// something about the value currently in one field alone (<c>Invalid</c>, <c>ErrorMessage</c>,
 /// <c>GhostText</c>, <c>Loading</c>, <c>AutoFocus</c>).
+/// <br />
+/// <c>InputHtmlAttributes</c> and <c>NoValidate</c> are left out for the reasons
+/// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second
+/// is read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
+public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTextField"/> cascading parameters within <see cref="BitParams"/>.
@@ -193,11 +197,6 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public BitInputMode? InputMode { get; set; }
 
-    /// <summary>
-    /// Additional html attributes applied to the input element. They are merged into what the field already
-    /// carries rather than replacing it, so a field keeps the attributes it wrote for itself.
-    /// </summary>
-    public Dictionary<string, object>? InputHtmlAttributes { get; set; }
 
     /// <summary>
     /// Label displayed above the text field and read by screen readers.
@@ -249,10 +248,6 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public bool? NoBorder { get; set; }
 
-    /// <summary>
-    /// Disables the validation of the input.
-    /// </summary>
-    public bool? NoValidate { get; set; }
 
     /// <summary>
     /// Sets the pattern html attribute of the input element.
@@ -284,15 +279,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public bool? PreventEnter { get; set; }
 
-    /// <summary>
-    /// Makes the input read-only.
-    /// </summary>
-    public bool? ReadOnly { get; set; }
 
-    /// <summary>
-    /// Makes the input required.
-    /// </summary>
-    public bool? Required { get; set; }
 
     /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
@@ -411,7 +398,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitTextField is null) return;
 
-        UpdateBaseParameters(bitTextField);
+        UpdateInputBaseParameters(bitTextField);
 
         if (Accent.HasValue && bitTextField.HasNotBeenSet(nameof(Accent)))
         {
@@ -594,30 +581,6 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.SetInputMode();
         }
 
-        // Unlike every other parameter here, the attributes are merged rather than replaced: the two
-        // dictionaries are a set of attributes each, and a field writing one of its own should not lose the
-        // rest of the cascaded set along with the one it overrode.
-        if (InputHtmlAttributes is not null)
-        {
-            if (bitTextField.InputHtmlAttributes is null)
-            {
-                bitTextField.InputHtmlAttributes = new Dictionary<string, object>(InputHtmlAttributes);
-            }
-            else
-            {
-                // A new dictionary rather than the field's own: that one is the consumer's, and writing the
-                // cascaded attributes into it would leak them into every other place it is passed.
-                var merged = new Dictionary<string, object>(InputHtmlAttributes);
-
-                foreach (var attribute in bitTextField.InputHtmlAttributes)
-                {
-                    merged[attribute.Key] = attribute.Value;
-                }
-
-                bitTextField.InputHtmlAttributes = merged;
-            }
-        }
-
         if (Label.HasValue() && bitTextField.HasNotBeenSet(nameof(Label)))
         {
             bitTextField.Label = Label;
@@ -678,11 +641,6 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (NoValidate.HasValue && bitTextField.HasNotBeenSetOnInput(nameof(NoValidate)))
-        {
-            bitTextField.NoValidate = NoValidate.Value;
-        }
-
         if (Pattern.HasValue() && bitTextField.HasNotBeenSet(nameof(Pattern)))
         {
             bitTextField.Pattern = Pattern;
@@ -713,20 +671,6 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
         if (PreventEnter.HasValue && bitTextField.HasNotBeenSet(nameof(PreventEnter)))
         {
             bitTextField.PreventEnter = PreventEnter.Value;
-        }
-
-        if (ReadOnly.HasValue && bitTextField.HasNotBeenSetOnInput(nameof(ReadOnly)))
-        {
-            bitTextField.ReadOnly = ReadOnly.Value;
-
-            bitTextField.ClassBuilder.Reset();
-        }
-
-        if (Required.HasValue && bitTextField.HasNotBeenSetOnInput(nameof(Required)))
-        {
-            bitTextField.Required = Required.Value;
-
-            bitTextField.ClassBuilder.Reset();
         }
 
         if (Resizable.HasValue && bitTextField.HasNotBeenSet(nameof(Resizable)))

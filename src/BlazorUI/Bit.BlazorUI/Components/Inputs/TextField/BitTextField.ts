@@ -279,6 +279,35 @@ namespace BitBlazorUI {
             }, { signal });
         }
 
+        // The frame of the field shows a text cursor across its whole width, so a press on the chrome inside it -
+        // the prefix, the suffix, the decorative icon, the busy indicator - puts the caret in the input instead
+        // of doing nothing wherever the input itself does not reach. It is handled here rather than in .NET, where
+        // every press would cost a round trip and a render just to move the focus. The press is also kept from
+        // moving the focus in the first place, so the input never loses the selection it already had to an
+        // element that cannot hold one. The listener sits on the root and looks the input up on every press,
+        // since the Multiline mode swaps the element between an input and a textarea.
+        public static setupChromeFocus(id: string, rootElement: HTMLElement) {
+            if (!rootElement) return;
+
+            const signal = TextField.getSignal(id, 'chromeFocus');
+
+            rootElement.addEventListener('mousedown', e => {
+                const target = e.target as Element | null;
+
+                // The buttons inside the frame (clear, reveal, an icon with an action) keep their own press.
+                if (!target || target.closest('button')) return;
+
+                if (!target.closest('.bit-tfl-pre, .bit-tfl-suf, .bit-tfl-lod, .bit-tfl-ico')) return;
+
+                const input = rootElement.querySelector<HTMLInputElement | HTMLTextAreaElement>('.bit-tfl-inp');
+
+                if (!input || input.disabled) return;
+
+                e.preventDefault();
+                input.focus();
+            }, { signal });
+        }
+
         public static setupGhostText(id: string, inputElement: HTMLInputElement, dotnetObj: DotNetObject) {
             if (!inputElement) return;
 
@@ -395,6 +424,15 @@ namespace BitBlazorUI {
                 }
 
                 if (!hasGhost()) return;
+
+                // Escape rejects the suggestion and nothing else: the key is kept from the handlers of the
+                // component, so it neither clears what was typed (ClearOnEscape) nor closes a dialog around
+                // the field, the way an open list closes before anything around it hears the key.
+                if (e.key === 'Escape') {
+                    e.stopPropagation();
+                    clearGhost();
+                    return;
+                }
 
                 // A modifier on its own (Shift before a capital letter, Ctrl before a shortcut) does not
                 // change the value, so the suggestion survives it instead of blinking out of existence.

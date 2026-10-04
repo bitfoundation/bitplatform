@@ -1088,15 +1088,29 @@
         border-bottom: $shp-border-width $shp-border-style CanvasText;
     }
 
+    // A disabled NoBorder field loses its frame to a rule that has to outweigh the disabled frame
+    // (.bit-tfl.bit-dis.bit-tfl-nbd), which the two rules above are too light to override, so its stroke is
+    // handed back here at a weight above that one - in the GrayText the rest of a disabled field is drawn in.
+    .bit-tfl.bit-dis.bit-tfl-nbd:not(.bit-tfl-und) .bit-tfl-fgp {
+        border: $shp-border-width $shp-border-style GrayText;
+    }
+
+    .bit-tfl.bit-dis.bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
+        border-bottom: $shp-border-width $shp-border-style GrayText;
+    }
+
     // The rejection is carried by a color alone everywhere else, so here it is carried by the stroke itself:
     // a dashed frame is the one difference from an accepted field that the forced palette cannot flatten. It
-    // comes after the frame handed back to a borderless field above, which would otherwise repaint it solid.
+    // comes after the frames handed back to a borderless field above, which would otherwise repaint it solid,
+    // and the disabled borderless one is matched at the weight of the rule that handed its frame back.
     .bit-tfl.bit-inv {
-        .bit-tfl-fgp {
+        .bit-tfl-fgp,
+        &.bit-dis.bit-tfl-nbd:not(.bit-tfl-und) .bit-tfl-fgp {
             border-style: dashed;
         }
 
-        &.bit-tfl-und .bit-tfl-wrp {
+        &.bit-tfl-und .bit-tfl-wrp,
+        &.bit-dis.bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
             border-bottom-style: dashed;
         }
     }

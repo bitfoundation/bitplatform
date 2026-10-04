@@ -256,59 +256,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Clear button" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>
-            <b>ShowClearButton</b> renders a button that empties the field, and it only appears while there is something to
-            clear - from the very first keystroke, since it follows what the input holds rather than the bound value, which on a
-            field without <b>Immediate</b> is only committed on blur. Clearing sets the value to null through the normal binding,
-            fires <b>OnClear</b> and returns the focus to the
-            input so typing can continue right away. The button is a real button with an <b>ClearButtonAriaLabel</b>, so it is
-            reachable by keyboard, and it is disabled in the read-only and disabled states. <b>ClearButtonIconName</b> swaps its
-            icon, and it works in the multiline mode too. Emptying a field moves nothing and says nothing on its own, so the
-            field announces it through its live region - <b>ClearedAnnouncement</b> is what that announcement says instead of
-            the default "Cleared", and an empty string keeps it silent. <b>ClearOnEscape</b> puts the same clearing on the
-            Escape key, which is what a filter or a search field is expected to do; it needs no button of its own, leaves a
-            read-only field alone, and lets Escape keep its meaning while an input method editor is composing. A search input draws a clear affordance of its own in WebKit browsers,
-            which is hidden while the clear button is on so that the field never shows two of them. The <b>ClearAsync</b> method
-            does the same thing from code - without needing the button to be visible at all - and raises <b>OnClear</b> just
-            like a click on it does.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitTextField Label="Email" DefaultValue="example@email.com" ShowClearButton />
-            <br />
-            <BitTextField Label="Custom icon and aria-label"
-                          ShowClearButton
-                          DefaultValue="Clear me"
-                          ClearButtonAriaLabel="Empty this field"
-                          ClearButtonIconName="@BitIconName.ChromeClose" />
-            <br />
-            <BitTextField Label="Search (the native clear affordance is hidden)"
-                          Type="BitInputType.Search"
-                          ShowClearButton
-                          DefaultValue="bit BlazorUI" />
-            <br />
-            <BitTextField Label="Multiline" Multiline Rows="3" ShowClearButton DefaultValue="A multiline value that can be cleared." />
-            <br />
-            <BitTextField Label="ReadOnly (the button is disabled)" ReadOnly ShowClearButton DefaultValue="Read only value" />
-            <br />
-            <BitTextField Label="With an announcement of its own"
-                          ShowClearButton
-                          DefaultValue="hello@example.com"
-                          ClearedAnnouncement="The email address was cleared." />
-            <br />
-            <BitTextField Label="Cleared by the Escape key"
-                          ClearOnEscape
-                          ShowClearButton
-                          DefaultValue="Press Escape in this field" />
-            <br />
-            <BitTextField @ref="clearRef" Label="Cleared from the outside" @bind-Value="clearApiValue" />
-            <BitButton Style="margin-top: 0.5rem;" OnClick="() => clearRef?.ClearAsync()">ClearAsync</BitButton>
-            <div>Value: [@clearApiValue]</div>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             The value is committed on the change event by default, which for a text field means when it loses focus.
             <b>Immediate</b> switches to the input event so every keystroke updates the bound value; on top of it,
@@ -358,6 +306,58 @@
             <br />
             <BitTextField Label="Not trimmed" @bind-Value="notTrimmedValue" Placeholder="Type with spaces around the text..." />
             <pre>[@notTrimmedValue]</pre>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Clear button" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>ShowClearButton</b> renders a button that empties the field, and it only appears while there is something to
+            clear - from the very first keystroke, since it follows what the input holds rather than the bound value, which on a
+            field without <b>Immediate</b> is only committed on blur. Clearing sets the value to null through the normal binding,
+            fires <b>OnClear</b> and returns the focus to the
+            input so typing can continue right away. The button is a real button with an <b>ClearButtonAriaLabel</b>, so it is
+            reachable by keyboard, and it is disabled in the read-only and disabled states. <b>ClearButtonIconName</b> swaps its
+            icon, and it works in the multiline mode too. Emptying a field moves nothing and says nothing on its own, so the
+            field announces it through its live region - <b>ClearedAnnouncement</b> is what that announcement says instead of
+            the default "Cleared", and an empty string keeps it silent. <b>ClearOnEscape</b> puts the same clearing on the
+            Escape key, which is what a filter or a search field is expected to do; it needs no button of its own, leaves a
+            read-only field alone, and lets Escape keep its meaning while an input method editor is composing. A search input draws a clear affordance of its own in WebKit browsers,
+            which is hidden while the clear button is on so that the field never shows two of them. The <b>ClearAsync</b> method
+            does the same thing from code - without needing the button to be visible at all - and raises <b>OnClear</b> just
+            like a click on it does.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Email" DefaultValue="example@email.com" ShowClearButton />
+            <br />
+            <BitTextField Label="Custom icon and aria-label"
+                          ShowClearButton
+                          DefaultValue="Clear me"
+                          ClearButtonAriaLabel="Empty this field"
+                          ClearButtonIconName="@BitIconName.ChromeClose" />
+            <br />
+            <BitTextField Label="Search (the native clear affordance is hidden)"
+                          Type="BitInputType.Search"
+                          ShowClearButton
+                          DefaultValue="bit BlazorUI" />
+            <br />
+            <BitTextField Label="Multiline" Multiline Rows="3" ShowClearButton DefaultValue="A multiline value that can be cleared." />
+            <br />
+            <BitTextField Label="ReadOnly (the button is disabled)" ReadOnly ShowClearButton DefaultValue="Read only value" />
+            <br />
+            <BitTextField Label="With an announcement of its own"
+                          ShowClearButton
+                          DefaultValue="hello@example.com"
+                          ClearedAnnouncement="The email address was cleared." />
+            <br />
+            <BitTextField Label="Cleared by the Escape key"
+                          ClearOnEscape
+                          ShowClearButton
+                          DefaultValue="Press Escape in this field" />
+            <br />
+            <BitTextField @ref="clearRef" Label="Cleared from the outside" @bind-Value="clearApiValue" />
+            <BitButton Style="margin-top: 0.5rem;" OnClick="() => clearRef?.ClearAsync()">ClearAsync</BitButton>
+            <div>Value: [@clearApiValue]</div>
         </div>
     </DemoExample>
 
@@ -865,8 +865,8 @@
             wrong rather than merely unused: what identifies a field and carries its value (<b>Value</b>, <b>DefaultValue</b>,
             <b>Name</b>, <b>DisplayName</b>), the event callbacks, and what says something about the value in one field alone
             (<b>Invalid</b>, <b>ErrorMessage</b>, <b>GhostText</b>, <b>Loading</b>, <b>AutoFocus</b>). <b>InputHtmlAttributes</b>
-            is the one that is merged rather than replaced, since it is a set of attributes: a field adding one of its own keeps
-            the cascaded rest.
+            and <b>NoValidate</b> stay out too, as they do for every input: the first is a dictionary the field writes into, and
+            the second is read before a cascade is applied.
         </div>
         <br />
         <div class="example-box">

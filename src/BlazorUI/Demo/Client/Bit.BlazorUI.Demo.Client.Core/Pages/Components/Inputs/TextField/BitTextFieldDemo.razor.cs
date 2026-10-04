@@ -1874,6 +1874,47 @@ private int iconClickCount;";
 private BitTextField? passwordRef;";
 
     private readonly string example7RazorCode = @"
+<BitTextField Label=""One-way"" Value=""@oneWayValue"" />
+<div>Value: [@oneWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
+
+<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<div>Value: [@twoWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
+
+<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
+<BitLabel>Value: [@onChangeValue]</BitLabel>
+
+<BitTextField Label=""DefaultValue (uncontrolled)"" DefaultValue=""Initial value""
+              OnChange=""(v) => defaultValueChanged = v"" />
+<div>Value: [@defaultValueChanged]</div>
+
+<BitTextField Label=""Immediate"" @bind-Value=""@immediateValue"" Immediate />
+<div>Value: [@immediateValue]</div>
+
+<BitTextField Label=""Debounce"" @bind-Value=""@debounceValue"" Immediate DebounceTime=""300"" />
+<div>Value: [@debounceValue]</div>
+
+<BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
+<div>Value: [@throttleValue]</div>
+
+<BitTextField Label=""Trim"" Trim @bind-Value=""trimmedValue"" Placeholder=""Type with spaces around the text..."" />
+<pre>[@trimmedValue]</pre>
+
+<BitTextField Label=""Not trimmed"" @bind-Value=""notTrimmedValue"" Placeholder=""Type with spaces around the text..."" />
+<pre>[@notTrimmedValue]</pre>";
+    private readonly string example7CsharpCode = @"
+private string? oneWayValue;
+private string? twoWayValue;
+private string? onChangeValue;
+private string? defaultValueChanged;
+private string? immediateValue;
+private string? debounceValue;
+private string? throttleValue;
+private string? trimmedValue;
+private string? notTrimmedValue;";
+
+    private readonly string example8RazorCode = @"
 <BitTextField Label=""Email"" DefaultValue=""example@email.com"" ShowClearButton />
 
 <BitTextField Label=""Custom icon and aria-label""
@@ -1906,50 +1947,9 @@ private BitTextField? passwordRef;";
 <BitTextField @ref=""clearRef"" Label=""Cleared from the outside"" @bind-Value=""clearApiValue"" />
 <BitButton OnClick=""() => clearRef?.ClearAsync()"">ClearAsync</BitButton>
 <div>Value: [@clearApiValue]</div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitTextField? clearRef;
 private string? clearApiValue = ""Clear me from the button below"";";
-
-    private readonly string example8RazorCode = @"
-<BitTextField Label=""One-way"" Value=""@oneWayValue"" />
-<div>Value: [@oneWayValue]</div>
-<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
-
-<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<div>Value: [@twoWayValue]</div>
-<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
-
-<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
-<BitLabel>Value: [@onChangeValue]</BitLabel>
-
-<BitTextField Label=""DefaultValue (uncontrolled)"" DefaultValue=""Initial value""
-              OnChange=""(v) => defaultValueChanged = v"" />
-<div>Value: [@defaultValueChanged]</div>
-
-<BitTextField Label=""Immediate"" @bind-Value=""@immediateValue"" Immediate />
-<div>Value: [@immediateValue]</div>
-
-<BitTextField Label=""Debounce"" @bind-Value=""@debounceValue"" Immediate DebounceTime=""300"" />
-<div>Value: [@debounceValue]</div>
-
-<BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
-<div>Value: [@throttleValue]</div>
-
-<BitTextField Label=""Trim"" Trim @bind-Value=""trimmedValue"" Placeholder=""Type with spaces around the text..."" />
-<pre>[@trimmedValue]</pre>
-
-<BitTextField Label=""Not trimmed"" @bind-Value=""notTrimmedValue"" Placeholder=""Type with spaces around the text..."" />
-<pre>[@notTrimmedValue]</pre>";
-    private readonly string example8CsharpCode = @"
-private string? oneWayValue;
-private string? twoWayValue;
-private string? onChangeValue;
-private string? defaultValueChanged;
-private string? immediateValue;
-private string? debounceValue;
-private string? throttleValue;
-private string? trimmedValue;
-private string? notTrimmedValue;";
 
     private readonly string example9RazorCode = @"
 <BitTextField Label=""With a limit"" ShowCount MaxLength=""30"" Placeholder=""Up to 30 characters..."" />

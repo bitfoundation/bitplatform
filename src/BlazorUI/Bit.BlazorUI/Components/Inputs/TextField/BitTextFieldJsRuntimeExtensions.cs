@@ -22,6 +22,11 @@ internal static class BitTextFieldJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupSelectOnFocus", id, input);
     }
 
+    internal static ValueTask BitTextFieldSetupChromeFocus(this IJSRuntime jsRuntime, string id, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupChromeFocus", id, root);
+    }
+
     internal static ValueTask BitTextFieldSetupGhostText(this IJSRuntime jsRuntime, string id, ElementReference input, DotNetObjectReference<BitTextField> dotnetObj)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupGhostText", id, input, dotnetObj);

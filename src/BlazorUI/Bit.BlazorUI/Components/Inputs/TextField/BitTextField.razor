@@ -37,9 +37,7 @@
             else if (Prefix.HasValue())
             {
                 <div style="@Styles?.PrefixContainer"
-                     class="bit-tfl-pre @Classes?.PrefixContainer"
-                     @onclick="HandleOnChromeClick"
-                     @onmousedown:preventDefault>
+                     class="bit-tfl-pre @Classes?.PrefixContainer">
                     <span style="@Styles?.Prefix" class="@Classes?.Prefix">
                         @Prefix
                     </span>
@@ -148,9 +146,7 @@
                 @* The indicator is only drawn here; what it means is announced by the live region at the end
                    of the component, which is already on the page by the time the busy state shows up. *@
                 <div style="@Styles?.Loading"
-                     class="bit-tfl-lod @Classes?.Loading"
-                     @onclick="HandleOnChromeClick"
-                     @onmousedown:preventDefault>
+                     class="bit-tfl-lod @Classes?.Loading">
                     @if (LoadingTemplate is not null)
                     {
                         @LoadingTemplate
@@ -226,9 +222,7 @@
             else if (Suffix.HasValue())
             {
                 <div style="@Styles?.SuffixContainer"
-                     class="bit-tfl-suf @Classes?.SuffixContainer"
-                     @onclick="HandleOnChromeClick"
-                     @onmousedown:preventDefault>
+                     class="bit-tfl-suf @Classes?.SuffixContainer">
                     <span style="@Styles?.Suffix"
                           class="@Classes?.Suffix">
                         @Suffix
@@ -340,7 +334,7 @@
                     title="@IconTitle"
                     tabindex="@TabIndex"
                     style="@Styles?.IconButton"
-                    aria-label="@IconAriaLabel"
+                    aria-label="@IconButtonAriaLabel"
                     disabled="@(IsEnabled is false)"
                     class="bit-tfl-icb @Classes?.IconButton">
                 <i aria-hidden="true"
@@ -354,9 +348,7 @@
                class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
                role="@(IconAriaLabel.HasValue() ? "img" : null)"
                aria-label="@IconAriaLabel"
-               aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
-               @onclick="HandleOnChromeClick"
-               @onmousedown:preventDefault />
+               aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
         }
     </text>;
 }
