@@ -37,7 +37,7 @@ public class BitMarkdownTexts
     /// <summary>The title of a <c>&gt; [!CAUTION]</c> alert.</summary>
     public string AlertCaution { get; set; } = "Caution";
 
-    /// <summary>The accessible name of the footnotes section.</summary>
+    /// <summary>The heading of the footnotes section, read by a screen reader only.</summary>
     public string Footnotes { get; set; } = "Footnotes";
 
     /// <summary>The accessible name of a footnote's back-link, given the footnote's number.</summary>

@@ -552,7 +552,7 @@ public partial class BitMarkdownViewerDemo
                 new() { Name = "AlertImportant", Type = "string", DefaultValue = "Important", Description = "The title of a > [!IMPORTANT] alert." },
                 new() { Name = "AlertWarning", Type = "string", DefaultValue = "Warning", Description = "The title of a > [!WARNING] alert." },
                 new() { Name = "AlertCaution", Type = "string", DefaultValue = "Caution", Description = "The title of a > [!CAUTION] alert." },
-                new() { Name = "Footnotes", Type = "string", DefaultValue = "Footnotes", Description = "The accessible name of the footnotes section." },
+                new() { Name = "Footnotes", Type = "string", DefaultValue = "Footnotes", Description = "The heading of the footnotes section, read by a screen reader only; each footnote reference is described by it." },
                 new() { Name = "FootnoteBackReference", Type = "string", DefaultValue = "Back to reference {0}", Description = "The accessible name of a footnote's back-link, given the footnote's number." },
                 new() { Name = "FootnoteBackReferenceOccurrence", Type = "string", DefaultValue = "Back to reference {0}-{1}", Description = "The accessible name of one of several back-links on the same footnote, given the footnote's number and the citation's." },
                 new() { Name = "NewTab", Type = "string", DefaultValue = "(opens in a new tab)", Description = "Read out after the text of a link that opens in a new tab; not shown. An empty string leaves it out." },
@@ -1021,6 +1021,16 @@ dotnet add package Bit.BlazorUI.Extras
 
 And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
 ";
+
+    [Inject] private IJSRuntime js { get; set; } = default!;
+
+    private BitMarkdownCodeBlockNode? copiedBlock;
+
+    private async Task CopyCodeAsync(BitMarkdownCodeBlockNode block)
+    {
+        await js.InvokeVoidAsync("navigator.clipboard.writeText", block.Content);
+        copiedBlock = block;
+    }
 
 
 

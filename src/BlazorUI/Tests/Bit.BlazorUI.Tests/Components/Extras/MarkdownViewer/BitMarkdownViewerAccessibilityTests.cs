@@ -369,4 +369,54 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
 
         Assert.AreEqual("title", component.Find(".bit-mdv h1").Id);
     }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldDescribeAFootnoteReferenceByTheSectionsLabelNotItsNotes()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "One[^a] and two[^b].\n\n[^a]: First note.\n[^b]: Second note.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        var section = component.Find(".bit-mdv .footnotes");
+        var label = section.QuerySelector(".bit-mdv-sr-only")!;
+        var describedBy = component.Find(".footnote-ref a").GetAttribute("aria-describedby");
+
+        // A description is read out in full: pointing at the section would read every note after every reference.
+        Assert.AreEqual(label.Id, describedBy);
+        Assert.AreEqual(label.Id, section.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("Footnotes", label.TextContent);
+        Assert.AreEqual("H2", label.TagName);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldMoveTheFootnotesHeadingWithTheHeadingLevelOffset()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "Text[^1].\n\n[^1]: Note.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+            parameters.Add(p => p.HeadingLevelOffset, 2);
+        });
+
+        Assert.AreEqual("H4", component.Find(".bit-mdv .footnotes .bit-mdv-sr-only").TagName);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepTheAlertIconOutOfTheAccessibleName()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "> [!WARNING]\n> Mind the gap.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        var icon = component.Find(".bit-mdv .markdown-alert-title svg");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-mdv-alert-icon"));
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+        Assert.AreEqual("currentColor", icon.GetAttribute("stroke"));
+        Assert.AreEqual("Warning", component.Find(".bit-mdv .markdown-alert-title").TextContent);
+    }
 }

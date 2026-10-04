@@ -68,7 +68,7 @@ public partial class BitMarkdownViewerStylesheetTests
 
         // One boundary, written once and used by every element rule, including the reset.
         StringAssert.Contains(stylesheet, "$_own: ':not(:where(:is(.bit-mdv-tpl, .math) *:not(.bit-mdv-tpl .bit-mdv, .bit-mdv-tpl .bit-mdv *)))';");
-        StringAssert.Contains(stylesheet, "@include own('*:not(.bit-mdv)') {\n        all: revert;");
+        StringAssert.Contains(stylesheet, "@include own('*:not(.bit-mdv, .bit-mdv-alert-icon, .bit-mdv-alert-icon *)') {\n        all: revert;");
 
         // A bare descendant rule would reach into a template and restyle the components drawn there.
         Assert.IsFalse(Regex.IsMatch(RulesOf(stylesheet), @"^\s+(\*|a|p|pre|code|table|h[1-6]|ul|ol|li)\s*[,{]", RegexOptions.Multiline),

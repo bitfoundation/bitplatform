@@ -562,6 +562,11 @@ public partial class BitMarkdownViewer : BitComponentBase
                 continue;
             }
 
+            if (nodes[i] is BitMarkdownFootnotesNode footnotes)
+            {
+                footnotes.HeadingLevel = Math.Clamp(2 + HeadingLevelOffset, 1, 6);
+            }
+
             foreach (var childList in nodes[i].ChildLists)
             {
                 ApplyHeadingLevelOffset(childList);

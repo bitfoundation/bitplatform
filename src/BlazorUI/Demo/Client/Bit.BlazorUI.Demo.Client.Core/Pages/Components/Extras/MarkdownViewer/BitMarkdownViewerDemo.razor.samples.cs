@@ -418,7 +418,10 @@ The image is written with a relative path, the way a README writes one.
         <div class=""mdv-code-card"">
             <div class=""mdv-code-card-head"">
                 <span>@(context.Info ?? ""text"")</span>
-                <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Copy"" Title=""Copy"" AriaLabel=""Copy"" />
+                <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text""
+                       IconName=""@(copiedBlock == context ? BitIconName.CheckMark : BitIconName.Copy)""
+                       AriaLabel=""@(copiedBlock == context ? ""Copied"" : ""Copy code"")""
+                       OnClick=""@(() => CopyCodeAsync(context))"" />
             </div>
             <pre tabindex=""0""><code>@context.Content</code></pre>
         </div>
@@ -443,7 +446,17 @@ dotnet add package Bit.BlazorUI.Extras
 ```
 
 And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
-"";";
+"";
+
+[Inject] private IJSRuntime js { get; set; } = default!;
+
+private BitMarkdownCodeBlockNode? copiedBlock;
+
+private async Task CopyCodeAsync(BitMarkdownCodeBlockNode block)
+{
+    await js.InvokeVoidAsync(""navigator.clipboard.writeText"", block.Content);
+    copiedBlock = block;
+}";
 
     private readonly string example14ScssCode = @"
 // The template's output is outside the viewer's stylesheet, so its chrome - and its code block - is styled here.

@@ -35,7 +35,7 @@
             <DemoExample Title="GitHub flavored" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
                 <div>
                     <b>BitMarkdownPipelines.GitHub</b> adds pipe tables, strikethrough, task lists, autolink literals,
-                    footnotes and alerts. An alert's kind is written out as its title, so it does not rely on color.
+                    footnotes and alerts. An alert's kind is written out as its title beside its icon, so it does not rely on color.
                 </div>
                 <br />
                 <BitMarkdownViewer Markdown="@gitHubMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
@@ -238,7 +238,10 @@
                         <div class="mdv-code-card">
                             <div class="mdv-code-card-head">
                                 <span>@(context.Info ?? "text")</span>
-                                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Copy" Title="Copy" AriaLabel="Copy" />
+                                <BitButton Size="BitSize.Small" Variant="BitVariant.Text"
+                                           IconName="@(copiedBlock == context ? BitIconName.CheckMark : BitIconName.Copy)"
+                                           AriaLabel="@(copiedBlock == context ? "Copied" : "Copy code")"
+                                           OnClick="@(() => CopyCodeAsync(context))" />
                             </div>
                             <pre tabindex="0"><code>@context.Content</code></pre>
                         </div>

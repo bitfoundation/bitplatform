@@ -71,8 +71,9 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
     line-height: var(--bit-MarkdownViewer-line-height, 1.6);
 
     // Every element the renderers write starts from the browser's own styles rather than from whatever the page
-    // reset, and the rules below take it from there. A nested viewer's root is left to its own rule.
-    @include own('*:not(.bit-mdv)') {
+    // reset, and the rules below take it from there. A nested viewer's root is left to its own rule, and an icon to
+    // its presentation attributes, which a revert would discard along with the page's styles.
+    @include own('*:not(.bit-mdv, .bit-mdv-alert-icon, .bit-mdv-alert-icon *)') {
         all: revert;
     }
 
@@ -162,8 +163,10 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
         }
     }
 
-    // What a link opening in a new tab adds to its name for a screen reader: out of the flow rather than hidden,
-    // since display:none would hide it from the reader it is written for, and out of a copied selection.
+    // What only a screen reader meets - the heading of the footnotes, the notice a link opening in a new tab adds to
+    // its name: out of the flow rather than hidden, since display:none would hide it from the reader it is written
+    // for, and out of a copied selection.
+    .bit-mdv-sr-only,
     .bit-mdv-new-tab {
         border: 0;
         padding: 0;
@@ -408,6 +411,14 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
         margin-bottom: 0.25em;
         font-weight: $tg-fw-semibold;
         line-height: 1;
+    }
+
+    // Sized with the title it stands beside, whatever a page's reset does to an svg.
+    .bit-mdv-alert-icon {
+        flex: none;
+        width: 1em;
+        height: 1em;
+        display: block;
     }
 
     .markdown-alert-note,

@@ -2760,7 +2760,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.AreEqual("Achtung", root.QuerySelector(".markdown-alert-title")!.TextContent);
         Assert.AreEqual("Tabelle", root.QuerySelector(".bit-mdv-table-wrapper")!.GetAttribute("aria-label"));
-        Assert.AreEqual("Fußnoten", root.QuerySelector("section.footnotes")!.GetAttribute("aria-label"));
+        Assert.AreEqual("Fußnoten", root.QuerySelector("section.footnotes .bit-mdv-sr-only")!.TextContent);
         Assert.AreEqual("Zurück zu 1", root.QuerySelector(".footnote-backref")!.GetAttribute("aria-label"));
         Assert.AreEqual("Link zu Titel", root.QuerySelector(".bit-mdv-anchor")!.GetAttribute("aria-label"));
     }
