@@ -606,6 +606,45 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListClassStylesShouldReachEveryPartOfTheAccordion()
+    {
+        // Every item is a BitAccordion, so a part the accordion can be dressed in and the list cannot pass on is a part
+        // of the list nobody can style. The root and the expanded state are the item and its expanded state.
+        var listParts = typeof(BitAccordionListClassStyles).GetProperties().Select(p => p.Name).ToHashSet();
+
+        foreach (var part in typeof(BitAccordionClassStyles).GetProperties().Select(p => p.Name))
+        {
+            var listPart = part == nameof(BitAccordionClassStyles.Root) ? "Item" : $"Item{part}";
+
+            Assert.IsTrue(listParts.Contains(listPart), $"BitAccordionListClassStyles has no {listPart} for the accordion's {part}.");
+        }
+    }
+
+    [TestMethod]
+    public async Task BitAccordionListShouldPassTheSpinnerClassAndStyleToABusyItem()
+    {
+        var gate = new TaskCompletionSource();
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Classes, new BitAccordionListClassStyles { ItemSpinner = "custom-spn" });
+            parameters.Add(p => p.Styles, new BitAccordionListClassStyles { ItemSpinner = "color: red;" });
+            parameters.Add(p => p.OnToggling, EventCallback.Factory.Create<BitAccordionListToggleArgs<BitAccordionListItem>>(this, async _ => await gate.Task));
+        });
+
+        var click = component.InvokeAsync(() => component.Find(".bit-acd-hdr").Click());
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-acd-spn.custom-spn").Count));
+        Assert.AreEqual("color: red;", component.Find(".bit-acd-spn").GetAttribute("style"));
+
+        gate.SetResult();
+        await click;
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acd-spn").Count));
+    }
+
+    [TestMethod]
     public void BitAccordionListOptionShouldExpandFromItsOwnHeaderClick()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
@@ -1084,6 +1123,20 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListShouldNameItselfAsAGroupWhenItIsLabelledByAnotherElement()
+    {
+        var component = RenderComponent<BitAccordionListAriaLabelledbyTest>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        var root = component.Find(".bit-acl");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("settings-heading", root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
     public void BitAccordionListShouldLeaveARoleOfThePagesOwnAlone()
     {
         var component = RenderComponent<BitAccordionListHtmlAttributesTest>(parameters =>
@@ -1251,6 +1304,43 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         // The same key pressed on the header of the item is the navigation it has always been.
         component.FindAll(".bit-acd-con")[0].FocusOut(new FocusEventArgs());
+        component.FindAll(".bit-acl-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.AreEqual(1, FocusCalls());
+
+        int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [TestMethod]
+    [DataRow("Shift")]
+    [DataRow("Ctrl")]
+    [DataRow("Alt")]
+    [DataRow("Meta")]
+    public void BitAccordionListShouldLeaveTheNavigationKeysPressedWithAModifierAlone(string modifier)
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        // The listener that keeps the page from scrolling under the navigation leaves a modified key alone
+        // (Ctrl+Home is the page's own), so the navigation has to as well - or the reader moves twice.
+        var wrapper = component.FindAll(".bit-acl-itm")[0];
+        foreach (var key in new[] { "ArrowDown", "ArrowUp", "Home", "End" })
+        {
+            wrapper.KeyDown(new KeyboardEventArgs
+            {
+                Key = key,
+                ShiftKey = modifier == "Shift",
+                CtrlKey = modifier == "Ctrl",
+                AltKey = modifier == "Alt",
+                MetaKey = modifier == "Meta",
+            });
+        }
+
+        Assert.AreEqual(0, FocusCalls());
+
+        // The bare key is still the navigation.
         component.FindAll(".bit-acl-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
         Assert.AreEqual(1, FocusCalls());

@@ -8,17 +8,12 @@ public partial class BitChartDemo
     [
         new()
         {
-            Name = "AriaLabel",
-            Type = "string?",
+            Name = "Classes",
+            Type = "BitChartClassStyles?",
             DefaultValue = "null",
-            Description = "Accessible label for the chart. When null it falls back to the chart title, then to a generated summary."
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS class applied to the root element of the chart."
+            Description = "Custom CSS classes for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip, empty state and loading state.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
         },
         new()
         {
@@ -40,24 +35,17 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "Dir",
-            Type = "BitDir?",
+            Name = "Description",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "Text direction of the chrome around the plot (title, legend, tooltip and the screen-reader table). The plot keeps its own coordinates; mirror it by setting Reverse on the index scale."
-        },
-        new()
-        {
-            Name = "ForceAnimation",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Plays the entry and update animations even when reduced motion is requested (prefers-reduced-motion: reduce). By default the chart honors that preference and draws itself straight in its final state."
+            Description = "A visually hidden summary of what the chart shows - its trend or takeaway - that the plot is described by: the long description a complex image needs beside its name and its data table."
         },
         new()
         {
             Name = "GenerateTable",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Renders a visually-hidden data table for screen readers and points the chart's aria-describedby at it."
+            Description = "Renders a visually hidden data table right after the chart, which a screen reader can browse cell by cell."
         },
         new()
         {
@@ -68,17 +56,24 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "HtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "new()",
-            Description = "Additional HTML attributes applied to the root element."
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a loading veil with a spinner over the plot, marks the chart aria-busy and holds back the empty state, so a chart still waiting for its data does not claim it has none."
         },
         new()
         {
-            Name = "Id",
+            Name = "LoadingLabel",
             Type = "string?",
+            DefaultValue = "\"Loading\"",
+            Description = "The text shown under the spinner, and announced, while IsLoading is set."
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The id of the root element of the chart."
+            Description = "Custom content shown in place of the default spinner while IsLoading is set."
         },
         new()
         {
@@ -99,7 +94,7 @@ public partial class BitChartDemo
             Name = "NavigationHint",
             Type = "string?",
             DefaultValue = "\"Interactive chart. Use the left and right arrow keys...\"",
-            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby alongside the data table. Only rendered when there is data to navigate; set it to null to leave it out."
+            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby. Only rendered while there is data to navigate; set it to null to leave it out."
         },
         new()
         {
@@ -150,10 +145,21 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "Style",
-            Type = "string?",
+            Name = "Styles",
+            Type = "BitChartClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS style applied to the root element of the chart."
+            Description = "Custom CSS styles for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip, empty state and loading state.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "Texts",
+            Type = "BitChartTexts?",
+            DefaultValue = "null",
+            Description = "The texts written for assistive technologies and into the CSV export: the default accessible name, the legend's name, the keyboard announcements, the table headers and captions. English by default; override them to localize.",
+            LinkType = LinkType.Link,
+            Href = "#chart-texts"
         },
         new()
         {
@@ -175,6 +181,179 @@ public partial class BitChartDemo
             Type = "string",
             DefaultValue = "100%",
             Description = "CSS width of the chart container."
+        },
+        new()
+        {
+            Name = "ZoomHint",
+            Type = "string?",
+            DefaultValue = "\"Press plus or minus to zoom, and 0 to reset the zoom.\"",
+            Description = "Appended to NavigationHint while zoom is enabled, naming the zoom keys. Set it to null to leave it out."
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Chart-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Typeface of every text the chart draws: title, legend, ticks, labels and tooltip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-series-color-1 ... --bit-Chart-series-color-10",
+            DefaultValue = "The Chart.js palette (#36a2eb, #ff6384, #4bc0c0, ...)",
+            Description = "The default palette, one color per series - or per slice of a pie, doughnut or polar area. Only used where the dataset names no color; its translucent area and hover shades are derived from it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-title-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-subtitle-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the subtitle.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-legend-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the legend labels.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tick-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the axis tick labels and the radar / polar point labels.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-axis-title-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the axis titles.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-axis-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the axis border lines.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-grid-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the grid lines, the tick marks and the radar angle lines. Minor grid lines draw it at 40%.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-data-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the data labels.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-crosshair-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the crosshair through the hovered index.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-annotation-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Default color of an annotation's line or outline, its translucent fill and its label pill. BitChartAnnotation.Color overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-annotation-label-color",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Default text color of an annotation's label. BitChartAnnotation.LabelColor overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-center-text-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the text BitChartCenterTextPlugin draws in a doughnut's cutout.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-surface-color",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "The surface the chart sits on: the border that separates pie and doughnut slices, and the backdrop behind radial tick labels. Set it to the card color when the chart sits on a card.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-background",
+            DefaultValue = "--bit-clr-tooltip-bg",
+            Description = "Fill of the tooltip and its caret, and of the crosshair's axis chip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-color",
+            DefaultValue = "--bit-clr-tooltip-fg",
+            Description = "Text color of the tooltip and of the crosshair's axis chip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the tooltip. Tooltip.CornerRadius in the options overrides it.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-tooltip-shadow",
+            DefaultValue = "--bit-shd-tooltip",
+            Description = "Elevation of the tooltip.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring of the plot and the legend items, and the outline of the element the keyboard is on.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-zoom-box-background",
+            DefaultValue = "--bit-clr-pri at 20%",
+            Description = "Fill of the drag-to-zoom selection box.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-zoom-box-border-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Border of the drag-to-zoom selection box.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-inactive-opacity",
+            DefaultValue = "0.2",
+            Description = "Opacity of the series faded behind a legend item that is hovered or focused (Legend.HighlightOnHover).",
+        },
+        new()
+        {
+            Name = "--bit-Chart-no-data-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the empty-state message.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-loading-background",
+            DefaultValue = "--bit-clr-bg-pri at 70%",
+            Description = "The veil laid over the plot while IsLoading is set; translucent, so the chart behind it shows through.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-loading-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the loading label.",
+        },
+        new()
+        {
+            Name = "--bit-Chart-loading-spinner-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the turning arc of the loading spinner.",
         },
     ];
 
@@ -255,8 +434,8 @@ public partial class BitChartDemo
         new()
         {
             Name = "ExportPngAsync",
-            Type = "Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = \"#ffffff\")",
-            Description = "Downloads the chart as a .png image rasterized from the live SVG at the given pixel ratio."
+            Type = "Task<bool> ExportPngAsync(string? fileName = null, double scale = 2, string? backgroundColor = SurfaceBackground)",
+            Description = "Downloads the chart as a .png image rasterized from the live SVG at the given pixel ratio, on the surface the chart sits on (so a dark theme exports dark); pass a color of your own, or null for a transparent image."
         },
         new()
         {
@@ -279,13 +458,59 @@ public partial class BitChartDemo
         new()
         {
             Name = "ToBase64ImageAsync",
-            Type = "Task<string?> ToBase64ImageAsync(string mimeType = \"image/png\", double scale = 2, string? backgroundColor = \"#ffffff\")",
+            Type = "Task<string?> ToBase64ImageAsync(string mimeType = \"image/png\", double scale = 2, string? backgroundColor = SurfaceBackground)",
             Description = "Returns the rasterized chart as a data: URL - the same picture ExportPngAsync downloads - ready for an img src or a PDF. Mirrors Chart.js's toBase64Image."
+        },
+        new()
+        {
+            Name = "SurfaceBackground",
+            Type = "const string",
+            DefaultValue = "\"var(--bit-Chart-surface-color, var(--bit-clr-bg-pri))\"",
+            Description = "The default background of ExportPngAsync and ToBase64ImageAsync: the surface the chart sits on, resolved in the browser."
         },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitChartClassStyles",
+            Description = "Defines per-part CSS class/style values for BitChart.",
+            Parameters =
+            [
+                new() { Name = "Root", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the root element." },
+                new() { Name = "Title", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the title." },
+                new() { Name = "Subtitle", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the subtitle." },
+                new() { Name = "Legend", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the legend container." },
+                new() { Name = "LegendItem", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to each legend item." },
+                new() { Name = "Plot", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the plot container that holds the SVG, the tooltip and the empty state." },
+                new() { Name = "Tooltip", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the tooltip box, the default one and a custom template's alike." },
+                new() { Name = "NoData", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the empty state shown when there is nothing to draw." },
+                new() { Name = "Loading", Type = "string?", DefaultValue = "null", Description = "Custom class or style applied to the loading state shown over the plot while the chart is loading." },
+            ]
+        },
+        new()
+        {
+            Id = "chart-texts",
+            Title = "BitChartTexts",
+            Description = "The texts BitChart writes for assistive technologies and into its CSV export. All default to English; the ...Format ones are composite format strings filled in the chart's culture.",
+            Parameters =
+            [
+                new() { Name = "DefaultAriaLabelFormat", Type = "string", DefaultValue = "\"{0} chart with {1} data series.\"", Description = "Accessible name of a chart with neither an AriaLabel nor a displayed title. {0} is the chart type, {1} the number of series." },
+                new() { Name = "RoleDescription", Type = "string", DefaultValue = "\"chart\"", Description = "What a screen reader calls the plot in place of its role (aria-roledescription)." },
+                new() { Name = "TypeNames", Type = "Dictionary<BitChartType, string>", DefaultValue = "\"Line\", \"Bar\", ... \"Polar area\"", Description = "The name of each chart type, filled into {0} of DefaultAriaLabelFormat." },
+                new() { Name = "NotesFormat", Type = "string", DefaultValue = "\"Marked on the chart: {0}.\"", Description = "The hidden sentence the plot is described by that names what the plugins drew - annotations, labeled trend lines, a center text. {0} is the list of them." },
+                new() { Name = "LegendAriaLabel", Type = "string", DefaultValue = "\"Chart legend\"", Description = "Accessible name of a legend that has no title of its own." },
+                new() { Name = "PositionFormat", Type = "string", DefaultValue = "\"{0} of {1}\"", Description = "Announced after the keyboard-focused value: its position within its series." },
+                new() { Name = "SeriesPositionFormat", Type = "string", DefaultValue = "\"series {0} of {1}\"", Description = "Announced when the chart has more than one series: which one the focused value belongs to." },
+                new() { Name = "DatasetLabelFormat", Type = "string", DefaultValue = "\"Dataset {0}\"", Description = "Name of a dataset without a Label, in the legend, the table and the CSV alike. {0} is the 1-based dataset number." },
+                new() { Name = "Series", Type = "string", DefaultValue = "\"Series\"", Description = "Header of the series column of the table and the CSV." },
+                new() { Name = "X / Y", Type = "string", DefaultValue = "\"X\" / \"Y\"", Description = "Headers of the point columns of scatter and bubble data, used when the axis shows no title of its own." },
+                new() { Name = "Radius", Type = "string", DefaultValue = "\"R\"", Description = "Header of the radius column of bubble data." },
+                new() { Name = "RowsTruncatedFormat / ColumnsTruncatedFormat", Type = "string", DefaultValue = "\"Showing the first {0} of {1} rows.\" / \"... columns.\"", Description = "Appended to the table's caption when MaxTableRows / MaxTableColumns cut it short." },
+            ]
+        },
         new()
         {
             Id = "chart-config",
@@ -676,6 +901,71 @@ public partial class BitChartDemo
         },
         new()
         {
+            Id = "chart-annotation",
+            Title = "BitChartAnnotation",
+            Description = "One line, box, ellipse, polygon, point or label drawn in data coordinates by BitChartAnnotationPlugin, which is registered through Options.Plugins.Custom. Cartesian charts only.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Kind",
+                    Type = "BitChartAnnotationKind",
+                    DefaultValue = "Line",
+                    Description = "The shape: Line, Box, Point, Label, Ellipse or Polygon."
+                },
+                new()
+                {
+                    Name = "Orientation / Value / AxisId",
+                    Type = "BitChartLineOrientation / double / string",
+                    DefaultValue = "Horizontal / 0 / \"y\"",
+                    Description = "Where a line is drawn: a y value for a horizontal line, an x value (or category index with XIsIndex) for a vertical one."
+                },
+                new()
+                {
+                    Name = "XMin / XMax / YMin / YMax / XIsIndex",
+                    Type = "double? / bool",
+                    DefaultValue = "null / false",
+                    Description = "The bounds of a box or an ellipse in data coordinates; a null bound runs to the edge of the plot. XIsIndex reads the X values as category indices."
+                },
+                new()
+                {
+                    Name = "Sides / Radius / Rotation",
+                    Type = "int / double? / double",
+                    DefaultValue = "3 / null / 0",
+                    Description = "The shape of a polygon, and the pixel radius of a polygon or a point."
+                },
+                new()
+                {
+                    Name = "Color / FillColor / LineWidth / Dash",
+                    Type = "string / string? / double / List<double>?",
+                    DefaultValue = "--bit-Chart-annotation-color / null / 2 / null",
+                    Description = "Styling. A null fill is the color made translucent."
+                },
+                new()
+                {
+                    Name = "Label / LabelColor / LabelBackground / LabelFont",
+                    Type = "string? / string / string? / BitChartFont",
+                    DefaultValue = "null / --bit-Chart-annotation-label-color / null / 11px bold",
+                    Description = "An optional pill beside the shape. A null background follows Color."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "What a screen reader is told about the annotation, in place of its label and value. The drawing is hidden from assistive technologies, so an annotation with neither a Label nor a Description is treated as decoration."
+                },
+                new()
+                {
+                    Name = "DrawBehindDatasets",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Draws the annotation under the datasets rather than over them."
+                },
+            ]
+        },
+        new()
+        {
             Id = "chart-trendline",
             Title = "BitChartTrendline",
             Description = "One fitted line drawn over a dataset by BitChartTrendlinePlugin, which is registered through Options.Plugins.Custom. Cartesian charts only.",
@@ -721,7 +1011,7 @@ public partial class BitChartDemo
                     Name = "Label / LabelColor / LabelBackground / LabelFont",
                     Type = "string? / string / string? / BitChartFont",
                     DefaultValue = "null / #fff / null / 11px bold",
-                    Description = "An optional pill drawn at the end of the line, pinned inside the plot so it stays readable at the edge."
+                    Description = "An optional pill drawn at the end of the line, pinned inside the plot so it stays readable at the edge. A labeled line is also named to screen readers."
                 },
                 new()
                 {

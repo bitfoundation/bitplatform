@@ -48,6 +48,15 @@ public partial class _BitChartInteractionDemo
 
     private void ToggleEmpty() => _hasData = !_hasData;
 
+    private bool _loading;
+
+    private async Task Reload()
+    {
+        _loading = true;
+        await Task.Delay(1500);
+        _loading = false;
+    }
+
     private BitChartData EmptyDemoData() => _hasData ? BitChartSampleData.Revenue() : new BitChartData();
 
 
@@ -95,13 +104,27 @@ private BitChartOptions ModeOptions() => new()
     Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
 };";
 
-    private readonly string emptyRazorCode = @"<BitButton Variant=""BitVariant.Outline"" OnClick=""ToggleEmpty"">Clear the data</BitButton>
+    private readonly string emptyRazorCode = @"
+<BitButton Variant=""BitVariant.Outline"" OnClick=""Reload"" IsEnabled=""_loading is false"">Reload</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ToggleEmpty"">@(_hasData ? ""Clear the data"" : ""Restore the data"")</BitButton>
 
-<BitChart Type=""BitChartType.Bar"" Data=""EmptyDemoData()"" NoDataText=""No results for this filter"" />";
+<BitChart Type=""BitChartType.Bar""
+          Data=""EmptyDemoData()""
+          IsLoading=""_loading""
+          LoadingLabel=""Fetching revenue...""
+          NoDataText=""No results for this filter"" />";
     private readonly string emptyCsharpCode = @"
 private bool _hasData = true;
+private bool _loading;
 
 private void ToggleEmpty() => _hasData = !_hasData;
+
+private async Task Reload()
+{
+    _loading = true;
+    await Task.Delay(1500); // stands in for fetching the data
+    _loading = false;
+}
 
 private BitChartData EmptyDemoData() => _hasData ? Revenue() : new BitChartData();";
 

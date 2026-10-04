@@ -68,7 +68,7 @@ public sealed partial class BitChartRenderer
                 if (tick.Minor)
                 {
                     if (g.Display && drawArea && g.DrawOnChartArea)
-                        scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = y, X2 = plot.Right, Y2 = y, Stroke = BitChartColorUtil.WithAlpha(g.Color, 0.4), StrokeWidth = g.LineWidth });
+                        scene.Background.Add(new BitChartSvgLine { X1 = plot.Left, Y1 = y, X2 = plot.Right, Y2 = y, Stroke = BitChartColorUtil.Translucent(g.Color, 0.4), StrokeWidth = g.LineWidth });
                     continue;
                 }
                 if (g.Display && drawArea && g.DrawOnChartArea)
@@ -107,7 +107,7 @@ public sealed partial class BitChartRenderer
                 if (tick.Minor)
                 {
                     if (g.Display && drawArea && g.DrawOnChartArea)
-                        scene.Background.Add(new BitChartSvgLine { X1 = x, Y1 = plot.Top, X2 = x, Y2 = plot.Bottom, Stroke = BitChartColorUtil.WithAlpha(g.Color, 0.4), StrokeWidth = g.LineWidth });
+                        scene.Background.Add(new BitChartSvgLine { X1 = x, Y1 = plot.Top, X2 = x, Y2 = plot.Bottom, Stroke = BitChartColorUtil.Translucent(g.Color, 0.4), StrokeWidth = g.LineWidth });
                     continue;
                 }
                 if (g.Display && drawArea && g.DrawOnChartArea)

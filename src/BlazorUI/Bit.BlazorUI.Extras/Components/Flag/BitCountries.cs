@@ -524,7 +524,10 @@ public class BitCountries
     // The dialing codes are keyed the way a lookup normalizes one rather than the way the table writes
     // it, so the hyphen of a North American code is off both sides of the comparison: "1-242",
     // "+1 (242)" and "1242" are the same code written three ways, and all three reach the Bahamas.
-    private static readonly Dictionary<string, BitCountry> _codeMap = CreateMap(static c => NormalizeCode(c.Code));
+    //
+    // A code several countries share is the one country's that owns it in practice - the one carrying the higher
+    // Priority - so "+1" is the United States and "+7" Russia, which is how BitPhoneInput reads the same code.
+    private static readonly Dictionary<string, BitCountry> _codeMap = CreateMap(static c => NormalizeCode(c.Code), preferPriority: true);
 
     // The names a country is also written down by, which is not the same table a second time: the ISO
     // name where this one carries the everyday name ("Czechia" for the Czech Republic), the everyday
@@ -553,16 +556,24 @@ public class BitCountries
     private const int CancelTag = 0xE007F;
     private static readonly string[] _subdivisionFlags = ["GBENG", "GBSCT", "GBWLS"];
 
-    private static Dictionary<string, BitCountry> CreateMap(Func<BitCountry, string> keySelector)
+    private static Dictionary<string, BitCountry> CreateMap(Func<BitCountry, string> keySelector, bool preferPriority = false)
     {
         var map = new Dictionary<string, BitCountry>(All.Length, StringComparer.OrdinalIgnoreCase);
 
         // Dialing codes are not unique - Canada and the United States both carry "1" - so the first
         // country of the table that carries a key keeps it, which is the country the scan this
-        // replaced would have stopped at.
+        // replaced would have stopped at - unless a later one carries a higher priority, where that is
+        // what is asked for.
         foreach (var country in All)
         {
-            map.TryAdd(keySelector(country), country);
+            var key = keySelector(country);
+
+            if (map.TryAdd(key, country)) continue;
+
+            if (preferPriority && country.Priority > map[key].Priority)
+            {
+                map[key] = country;
+            }
         }
 
         return map;
@@ -751,14 +762,16 @@ public class BitCountries
     /// "+1 (242)" and "1242" are all the Bahamas.
     /// <br />
     /// Dialing codes are not unique - Canada and the United States both carry "1", Kazakhstan and
-    /// Russia both carry "7" - and the country answered with is the first of them in <see cref="All"/>,
-    /// which is alphabetical. Where the difference matters, look the country up by its ISO code.
+    /// Russia both carry "7" - and the country answered with is the one that owns the code in practice,
+    /// the one of them carrying the highest <see cref="BitCountry.Priority"/> - the United States and
+    /// Russia - and otherwise the first of them in <see cref="All"/>, which is alphabetical. Where the
+    /// difference matters, look the country up by its ISO code.
     /// </remarks>
     /// <param name="code">
     /// The dialing code to look up.
     /// </param>
     /// <returns>
-    /// The first country carrying the code, or null where no country of <see cref="All"/> does.
+    /// The country owning the code, or null where no country of <see cref="All"/> carries it.
     /// </returns>
     public static BitCountry? FindByCode(string? code)
     {

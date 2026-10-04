@@ -17,7 +17,7 @@ public partial class _BitChartAnnotationsDemo
                 {
                     new BitChartAnnotationPlugin(
                         new BitChartAnnotation { Orientation = BitChartLineOrientation.Horizontal, Value = 80, Color = "#2ecc71", Dash = new() { 6, 4 }, Label = "Target" },
-                        new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, YMin = 0, YMax = 30, Color = "#ff6384", FillColor = "rgba(255,99,132,0.10)", LineWidth = 0, Label = "Low", DrawBehindDatasets = true }
+                        new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, YMin = 0, YMax = 30, Color = "#ff6384", FillColor = "rgba(255,99,132,0.10)", LineWidth = 0, Label = "Low", Description = "Low band: scores under 30", DrawBehindDatasets = true }
                     )
                 }
             }
@@ -99,7 +99,8 @@ protected override void OnInitialized()
                     new BitChartAnnotation { Orientation = BitChartLineOrientation.Horizontal, Value = 80,
                         Color = ""#2ecc71"", Dash = new() { 6, 4 }, Label = ""Target"" },
                     new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, YMin = 0, YMax = 30,
-                        Color = ""#ff6384"", FillColor = ""rgba(255,99,132,0.10)"", LineWidth = 0, Label = ""Low"", DrawBehindDatasets = true }
+                        Color = ""#ff6384"", FillColor = ""rgba(255,99,132,0.10)"", LineWidth = 0, Label = ""Low"",
+                        Description = ""Low band: scores under 30"", DrawBehindDatasets = true }
                 )
             }
         }

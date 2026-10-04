@@ -1,0 +1,29 @@
+﻿@* Covers BitAppShellParams: the cascaded values fill in the parameters the shell did not set itself, and
+   never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitAppShellParams[]
+                         {
+                             new()
+                             {
+                                 Class = "cascaded",
+                                 NoInsets = true,
+                                 FullScreen = true,
+                                 StableInsets = true,
+                                 NoScroll = true,
+                                 Gutter = BitScrollbarGutter.Stable,
+                                 ScrollPadding = "3rem 0 0 0",
+                                 ScrollBehavior = BitScrollBehavior.Instant,
+                                 AutoGoToTop = true,
+                                 TrackScrollState = true,
+                                 Classes = new() { Main = "cascaded-main" },
+                                 Styles = new() { Root = "--bit-AppShell-background: red" }
+                             }
+                         })">
+    <BitAppShell Id="first-shell" />
+    <BitAppShell Id="second-shell"
+                 NoInsets="false"
+                 NoScroll="false"
+                 ScrollPadding="1rem"
+                 ScrollBehavior="BitScrollBehavior.Smooth"
+                 Classes="@(new() { Main = "own-main" })" />
+</BitParams>
