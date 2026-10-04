@@ -1,11 +1,15 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarToast : IAsyncDisposable
+public partial class BitFcToast : IAsyncDisposable
 {
     private readonly List<ToastItem> _toasts = [];
     private readonly List<CancellationTokenSource> _removalTokens = [];
     private readonly object _removalTokensLock = new();
     private int _nextId;
+
+    // A refusal is the only place its reason is written, so it stays up twice as long as a confirmation.
+    private const int SuccessLifetimeMs = 3000;
+    private const int ErrorLifetimeMs = 6000;
 
     public void Show(string message, bool isError = false)
     {
@@ -39,19 +43,19 @@ public partial class BitFcCalendarToast : IAsyncDisposable
             _toasts.Add(item);
             StateHasChanged();
             // Start the expiration timer only after the toast has actually been queued into the UI,
-            // so the 3s lifetime begins from when it becomes visible rather than from when Show was
+            // so the lifetime begins from when it becomes visible rather than from when Show was
             // scheduled (which may run on a non-renderer thread before the add is dispatched).
-            _ = RemoveAfterDelay(item.Id, cts, token);
+            _ = RemoveAfterDelay(item.Id, item.IsError ? ErrorLifetimeMs : SuccessLifetimeMs, cts, token);
         });
     }
 
-    private async Task RemoveAfterDelay(int id, CancellationTokenSource cts, CancellationToken token)
+    private async Task RemoveAfterDelay(int id, int lifetimeMs, CancellationTokenSource cts, CancellationToken token)
     {
         try
         {
             try
             {
-                await Task.Delay(3000, token);
+                await Task.Delay(lifetimeMs, token);
             }
             catch (OperationCanceledException)
             {

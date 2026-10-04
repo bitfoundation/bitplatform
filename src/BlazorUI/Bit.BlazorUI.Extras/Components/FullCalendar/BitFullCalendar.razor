@@ -2,20 +2,25 @@
 @inherits BitComponentBase
 
 <BitCascadingValueProvider ValueList="BuildCascadingValues()">
+    @* The role and the name are written BEFORE the splatted attributes, so a role or a name the page writes as a
+       plain attribute wins over them - and a null name never removes the one it wrote. *@
     <div @ref="RootElement"
+         role="@_Role"
+         aria-label="@AriaLabel"
          @attributes="HtmlAttributes"
          id="@_Id"
          style="@StyleBuilder.Value"
-         class="@ClassBuilder.Value @(State.ReadOnly ? "bit-bfc-readonly" : null)"
+         class="@ClassBuilder.Value @(State.ReadOnly ? "bit-bfc-readonly" : null) @(State.CanAdd ? null : "bit-bfc-no-add") @(State.IsRtl ? "bit-bfc-rtl" : null)"
          dir="@ResolvedDir.ToString().ToLowerInvariant()">
         @if (HideHeader is false)
         {
-            <BitFcCalendarHeader />
+            <BitFcHeader />
         }
-        <BitFcCalendarBody MonthEventTemplate="MonthEventTemplate"
+        <BitFcBody MonthEventTemplate="MonthEventTemplate"
                            WeekEventTemplate="WeekEventTemplate"
                            DayEventTemplate="DayEventTemplate"
-                           TimelineEventTemplate="TimelineEventTemplate" />
-        <BitFcCalendarToast @ref="_toast" />
+                           TimelineEventTemplate="TimelineEventTemplate"
+                           IsLoading="IsLoading" />
+        <BitFcToast @ref="_toast" />
     </div>
 </BitCascadingValueProvider>

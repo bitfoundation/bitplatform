@@ -33,7 +33,7 @@ public partial class BitFcTimelineWeekView
 
     // The slots exist only as add/drop targets, so a read-only timeline must not expose a focusable
     // no-op button per slot and resource. A null attribute value is omitted from the markup.
-    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotRole => State.CanAdd is false ? null : "button";
 
     // Roving tabindex: the whole grid is a single tab stop and the arrow keys move both the tabbable
     // slot and the focus. A resource row per day per slot would otherwise put a four-figure number of
@@ -76,7 +76,7 @@ public partial class BitFcTimelineWeekView
 
     private string? SlotTabIndex(string rowKey, DateTime day, int hour, int minute)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         var roving = RovingSlot;
@@ -189,7 +189,8 @@ public partial class BitFcTimelineWeekView
 
     private async Task OnSlotClickAsync(string resourceId, DateTime day, int hour, int minute)
     {
-        if (State.ReadOnly)
+        // A day outside the date window is shown for context, never as an add target.
+        if (State.CanAdd is false || State.IsDateInAllowedRange(day) is false)
             return;
 
         if (OnAddClick.HasDelegate)
@@ -259,14 +260,15 @@ public partial class BitFcTimelineWeekView
         }
     }
 
-    private string? SlotAriaLabel(string rowLabel, DateTime day, int hour, int minute)
+    private string? SlotAriaLabel(string rowKey, string rowLabel, DateTime day, int hour, int minute)
     {
         // The slot is inert in read-only mode, so it carries no label to announce.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         var start = day.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
+        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
+               + State.DescribeBackground(start, start.AddMinutes(State.SlotDurationMinutes), rowKey == _unassignedKey ? null : rowKey, anyResource: false);
     }
 
     private void OnDragEnter(string resourceId, DateTime day, int hour, int minute)
@@ -301,8 +303,8 @@ public partial class BitFcTimelineWeekView
             await BitFcFocusInterop.TryFocusAsync(JS, SlotElementId(rowKey, day, hour, minute));
         }
 
-        var weekStart = BitFullCalendarHelpers.StartOfWeek(State.SelectedDate, State.Culture, State.FirstDayOfWeekOverride);
-        var sig = $"{weekStart:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}|{DateTime.Today:yyyy-MM-dd}";
+        var weekStart = State.GetVisibleWeekDates()[0];
+        var sig = $"{weekStart:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}|{State.Today:yyyy-MM-dd}";
         if (sig == _scrollSignature) return;
 
         if (await BitFcTimelineScrollInterop.TryScrollToTargetAsync(JS, _scrollContainerId))

@@ -1,0 +1,10 @@
+@namespace Bit.BlazorUI
+
+@* The titles of the background events covering a whole day, under the day's name in the time grid's sticky header:
+   the band that fills the column below has no edge of its own to carry them where they stay in view. *@
+@foreach (var ev in _events)
+{
+    <span class="bit-bfc-bg-event-label @Parts.Classes?.Event @ev.CssClass"
+          style="@($"{ColorScheme.GetColorStyle(ev.Color)}{Parts.Styles?.Event}")"
+          title="@ev.Title">@ev.Title</span>
+}

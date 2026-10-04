@@ -1,7 +1,22 @@
 @namespace Bit.BlazorUI
 @implements IDisposable
 
-<div class="bit-bfc-body" @key="(State.Mode, State.View)">
+@* The body is the panel the view (and mode) tabs control, so it says which tab labels it; with no tab strip
+   rendered - one view, the toolbar hidden - it is a plain region of the calendar. *@
+<div id="@Parts.BodyId"
+     class="bit-bfc-body @Parts.Classes?.Body"
+     style="@Parts.Styles?.Body"
+     role="@(_IsTabPanel ? "tabpanel" : null)"
+     aria-labelledby="@(_IsTabPanel ? _LabelledBy : null)"
+     tabindex="-1"
+     aria-busy="@(IsLoading ? "true" : null)"
+     data-bit-bfc-moved-from="@State.LastDetach?.From"
+     data-bit-bfc-moved-to="@State.LastDetach?.To"
+     @key="(State.Mode, State.View)">
+    @if (IsLoading)
+    {
+        <div class="bit-bfc-loading" aria-hidden="true"></div>
+    }
     @if (State.Mode == BitFullCalendarMode.Timeline)
     {
         switch (State.View)
@@ -25,16 +40,16 @@
         switch (State.View)
         {
             case BitFullCalendarView.Month:
-                <BitFcCalendarMonthView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="MonthEventTemplate" />
+                <BitFcMonthView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="MonthEventTemplate" />
                 break;
             case BitFullCalendarView.Week:
-                <BitFcCalendarWeekView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="WeekEventTemplate" />
+                <BitFcWeekView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="WeekEventTemplate" />
                 break;
             case BitFullCalendarView.Day:
-                <BitFcCalendarDayView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="DayEventTemplate" />
+                <BitFcDayView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="DayEventTemplate" />
                 break;
             case BitFullCalendarView.Year:
-                <BitFcCalendarYearView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" />
+                <BitFcYearView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" />
                 break;
             case BitFullCalendarView.Agenda:
                 <BitFcAgendaEvents />

@@ -59,6 +59,7 @@
 
     <RowContent Context="resource">
         @RowCells((resource.Id, resource.Title))
+        @Background(resource.Id)
         @if (grouped.TryGetValue(resource.Id, out var lanes))
         {
             @RenderLanes(lanes)
@@ -68,6 +69,7 @@
 
     <UnassignedRowContent>
         @RowCells((_unassignedKey, Texts.NoResourceLabel))
+        @Background(null)
         @if (hasUnassigned && grouped.TryGetValue(_unassignedKey, out var unassignedLanes))
         {
             @RenderLanes(unassignedLanes)
@@ -87,12 +89,21 @@
 }
 
 @code {
+    // The background events of a row, over the hours the row shows.
+    private RenderFragment<string?> Background => resourceId => @<BitFcBackgroundEvents Events="State.BackgroundEvents"
+                                                                                      AxisStart="State.SelectedDate.Date.AddHours(State.VisibleStartHour)"
+                                                                                      AxisEnd="State.SelectedDate.Date.AddHours(State.VisibleEndHour)"
+                                                                                      Horizontal
+                                                                                      PixelsPerHour="BitFullCalendarHelpers.TimelineHourWidthPx"
+                                                                                      ResourceId="@resourceId"
+                                                                                      AnyResource="false" />;
+
     // The "current time" rule of every row, rendered only while the selected date is today and the
     // clock falls inside the hours the row shows (the component decides both).
     private RenderFragment NowIndicator => @<text>
         @* Only today has a marker to place; skipping it otherwise keeps a row from running a timer
            it would never use. *@
-        @if (State.ShowCurrentTimeIndicator && State.SelectedDate.Date == DateTime.Today)
+        @if (State.ShowCurrentTimeIndicator && State.SelectedDate.Date == State.Today)
         {
             <BitFcTimelineNowIndicator Day="State.SelectedDate"
                                        ColumnOffsetPx="0"
@@ -129,15 +140,15 @@
                              id="@SlotElementId(row.Key, hour, minute)"
                              style="position:absolute;top:0;bottom:0;inset-inline-start:@(startPercent)%;inset-inline-end:auto;width:@(widthPercent)%;"
                              role="@_slotRole"
-                             tabindex="@SlotTabIndex(row.Key, hour, minute)"
-                             aria-label="@SlotAriaLabel(row.Label, hour, minute)"
+                             data-bit-bfc-roving="nopage" tabindex="@SlotTabIndex(row.Key, hour, minute)"
+                             aria-label="@SlotAriaLabel(row.Key, row.Label, hour, minute)"
                              @ondragenter="() => OnDragEnter(row.Key, hour, minute)"
                              @ondragover:preventDefault="true"
                              @ondrop="() => OnDrop(row.Key, hour, minute)"
                              @onclick="() => OnSlotClickAsync(row.Key, hour, minute)"
                              @onkeydown="e => OnSlotKeyDownAsync(e, row.Key, hour, minute)"></div>
                     }
-                    @if (!State.ReadOnly)
+                    @if (State.CanAdd)
                     {
                         <div class="bit-bfc-cell-add-hint" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

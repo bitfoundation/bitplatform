@@ -8,6 +8,7 @@ public partial class BitFcEventListDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
