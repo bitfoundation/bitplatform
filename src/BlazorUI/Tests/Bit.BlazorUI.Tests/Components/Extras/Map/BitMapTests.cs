@@ -947,6 +947,38 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapShouldRedrawWhatFollowsTheThemeWhenTheThemeChanges()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_MARKER);
+        Context.JSInterop.SetupVoid(ADD_POLYLINE);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "themed", Position = new(1, 2) });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "variable", Position = new(1, 2), Color = "var(--bit-clr-sec)" });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "red", Position = new(1, 2), Color = "red" });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "icon", Position = new(1, 2), IconUrl = "pin.png" });
+        await component.Instance.AddPolyline("themed", [new(0, 0), new(1, 1)]);
+        await component.Instance.AddPolyline("weighted", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Weight = 5 });
+        await component.Instance.AddPolyline("red", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Color = "red" });
+        await component.Instance.AddPolyline("fill", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Color = "red", FillColor = "var(--bit-clr-pri)" });
+
+        var markersBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_MARKER);
+        var polylinesBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_POLYLINE);
+
+        await component.Instance._OnThemeChanged();
+
+        var markers = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_MARKER).Skip(markersBefore)
+            .Select(i => (string)i.Arguments[1]!).ToList();
+        var polylines = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_POLYLINE).Skip(polylinesBefore)
+            .Select(i => (string)i.Arguments[1]!).ToList();
+
+        CollectionAssert.AreEquivalent(new[] { "themed", "variable" }, markers);
+        CollectionAssert.AreEquivalent(new[] { "themed", "weighted", "fill" }, polylines);
+    }
+
+    [TestMethod]
     public void BitMapMarkersShouldDifferByColor()
     {
         var plain = new BitMapMarker { Id = "a", Position = new(1, 2) };
@@ -2448,6 +2480,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(anchorsBefore + 1, anchors.Count, "The popup has to follow its marker");
         Assert.AreEqual(10d, anchors[^1].Arguments[2]);
         Assert.AreEqual(20d, anchors[^1].Arguments[3]);
+        Assert.AreEqual(false, anchors[^1].Arguments[4], "Auto-pan is spent as the popup opens, not re-armed by every move");
     }
 
     [TestMethod]

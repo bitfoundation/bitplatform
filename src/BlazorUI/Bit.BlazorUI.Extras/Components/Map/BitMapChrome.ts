@@ -34,6 +34,10 @@
         lastHeight: number;
         hintTimer: any;
         listeners: { target: EventTarget, type: string, handler: any, capture: boolean }[];
+        /** Watches the document for a theme or scheme switch, and the colors the map was last painted in. */
+        themeObserver: MutationObserver | null;
+        themeFrame: number | null;
+        themeFingerprint: string;
         /** Element pinned to a geographic coordinate, and the frame loop keeping it there. */
         anchor: {
             elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number,
@@ -208,6 +212,9 @@
                 lastHeight: canvas.clientHeight,
                 hintTimer: null,
                 listeners: [],
+                themeObserver: null,
+                themeFrame: null,
+                themeFingerprint: '',
                 anchor: null,
             };
             BitMapChrome._instances[id] = state;
@@ -219,6 +226,7 @@
             BitMapChrome._applyEscapeToExit(id, state);
             BitMapChrome._applyContextLossReporting(state);
             BitMapChrome._applyFullscreenReporting(id, state);
+            BitMapChrome._applyThemeReporting(id, state);
         }
 
         /**
@@ -237,6 +245,10 @@
             const s = BitMapChrome._instances[id];
             if (!s) return;
 
+            // Re-anchoring the same popup (its marker moved) keeps a pan the open asked for and has not yet
+            // made, but never arms a new one.
+            const pendingPan = s.anchor?.elementId === elementId && s.anchor.autoPan === true;
+
             BitMapChrome.untrackAnchor(id);
 
             const anchor = {
@@ -251,7 +263,7 @@
                 // Spent once, as the popup opens: panning on every frame would fight a user dragging it
                 // away. Not on its first frame on screen, though - its content may not have laid out yet
                 // (or grow once an image loads), so the size is watched until it settles, within a bound.
-                autoPan: autoPan === true,
+                autoPan: autoPan === true || pendingPan,
                 animate: animate === true,
                 panDeadline: null as number | null,
                 panWidth: -1,
@@ -308,6 +320,8 @@
             if (s.resizeObserver) { try { s.resizeObserver.disconnect(); } catch { /* ignore */ } }
             if (s.resizeFrame !== null) cancelAnimationFrame(s.resizeFrame);
             if (s.hintTimer) clearTimeout(s.hintTimer);
+            if (s.themeObserver) { try { s.themeObserver.disconnect(); } catch { /* ignore */ } }
+            if (s.themeFrame !== null) cancelAnimationFrame(s.themeFrame);
             for (const l of s.listeners) {
                 try { l.target.removeEventListener(l.type, l.handler, l.capture); } catch { /* ignore */ }
             }
@@ -496,17 +510,17 @@
                 if (e.defaultPrevented || e.target !== s.canvas) return;
                 if (e.altKey || e.ctrlKey || e.metaKey) return;
 
-                // The same steps the libraries use: 100px a press, and Shift for three times as far.
-                const factor = e.shiftKey ? 3 : 1;
-                const step = 100 * factor;
+                // The same steps the libraries use: 100px a press, and Shift for three times as far. Zoom is a
+                // level a press either way - on most layouts '+' (and '_') can only be typed with Shift held.
+                const step = e.shiftKey ? 300 : 100;
                 let dx = 0, dy = 0, zoom = 0;
                 switch (e.key) {
                     case 'ArrowLeft': case 'Left': dx = -step; break;
                     case 'ArrowRight': case 'Right': dx = step; break;
                     case 'ArrowUp': case 'Up': dy = -step; break;
                     case 'ArrowDown': case 'Down': dy = step; break;
-                    case '+': case '=': case 'Add': zoom = factor; break;
-                    case '-': case '_': case 'Subtract': zoom = -factor; break;
+                    case '+': case '=': case 'Add': zoom = 1; break;
+                    case '-': case '_': case 'Subtract': zoom = -1; break;
                     default: return;
                 }
                 // Keeps the page from scrolling, and tells anything listening after this that the key is spent.
@@ -587,6 +601,51 @@
             };
             // fullscreenchange fires on the document, not on the element that went fullscreen.
             BitMapChrome._listen(s, document, 'fullscreenchange', onChange);
+        }
+
+        /**
+         * Reports a theme or color-scheme switch that changed the colors the map paints its pins and shapes in.
+         * Those are images and provider styles, resolved once as each is added, so no stylesheet repaints
+         * them - .NET draws the ones that follow the theme again. A preset is switched on the root element
+         * (an attribute, a class, an inline style) and a scheme can follow the system's, so those are what
+         * is watched; the colors read off the probe are what decide whether anything actually changed.
+         */
+        private static _applyThemeReporting(id: string, s: ChromeState) {
+            const fingerprint = () => {
+                const probe = BitMapHelpers.probe(id);
+                if (!probe) return '';
+                try {
+                    const style = getComputedStyle(probe);
+                    return [style.fill, style.stroke, style.color, style.backgroundColor, style.borderTopColor,
+                            document.documentElement.getAttribute('bit-theme') ?? ''].join('|');
+                } catch {
+                    return '';
+                }
+            };
+            s.themeFingerprint = fingerprint();
+
+            const check = () => {
+                if (s.themeFrame !== null) return;
+                // After the frame, when every mutation of one switch has landed and the styles have been
+                // recomputed, so a switch is reported once.
+                s.themeFrame = requestAnimationFrame(() => {
+                    s.themeFrame = null;
+                    const next = fingerprint();
+                    if (!next || next === s.themeFingerprint) return;
+                    s.themeFingerprint = next;
+                    s.dotnetObj?.invokeMethodAsync('OnThemeChanged');
+                });
+            };
+
+            try {
+                s.themeObserver = new MutationObserver(check);
+                s.themeObserver.observe(document.documentElement, { attributes: true });
+                if (document.body) s.themeObserver.observe(document.body, { attributes: true });
+            } catch { /* ignore */ }
+            try {
+                const scheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+                if (scheme) BitMapChrome._listen(s, scheme, 'change', check);
+            } catch { /* ignore */ }
         }
 
         /**

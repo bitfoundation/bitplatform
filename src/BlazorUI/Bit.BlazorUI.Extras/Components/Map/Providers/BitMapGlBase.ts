@@ -614,7 +614,10 @@ namespace BitBlazorUI {
             if (!html && !text) return undefined;
 
             const gl = s.gl;
-            const direction = opts.tooltipDirection;
+            // A GL anchor names the side of the popup that touches the point, the opposite of the side of the
+            // marker BitMapTooltipDirection names: a tooltip above the marker is one anchored at its bottom.
+            const anchors: { [direction: string]: string } = { top: 'bottom', bottom: 'top', left: 'right', right: 'left', center: 'center' };
+            const direction = anchors[opts.tooltipDirection];
             const tooltip = new gl.Popup({
                 closeButton: false,
                 closeOnClick: false,
@@ -624,7 +627,7 @@ namespace BitBlazorUI {
                 offset: BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32),
                 className: 'bit-map-gl-tooltip',
                 // 'auto' is spelled as "let the library decide", which is the absent option.
-                anchor: direction && direction !== 'auto' ? direction : undefined,
+                anchor: direction,
             });
             if (html) tooltip.setHTML(String(html));
             else tooltip.setText(String(text));

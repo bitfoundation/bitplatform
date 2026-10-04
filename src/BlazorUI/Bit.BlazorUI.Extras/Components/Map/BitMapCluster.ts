@@ -250,7 +250,7 @@
          * The bubble's colours: the ones .NET was given, or else the theme's, read off the probe the
          * component renders inside the map. A stylesheet cannot reach into an image, so this is how the
          * --bit-Map-cluster-* variables - and the tokens they fall back to - get into the bubble.
-         * Computed colours come back as rgb(), which an SVG image paints as reliably as any literal.
+         * Computed colours are handed on as rgb(), which an SVG image paints as reliably as any literal.
          */
         private static _colors(id: string, options: ClusterOptions): BubbleColors {
             let fill = '#3388ff', text = '#ffffff', ring = '#ffffff';
@@ -258,9 +258,9 @@
             if (probe) {
                 try {
                     const style = getComputedStyle(probe);
-                    fill = style.backgroundColor || fill;
-                    text = style.color || text;
-                    ring = style.borderTopColor || ring;
+                    fill = BitMapHelpers.toRgbString(style.backgroundColor) ?? fill;
+                    text = BitMapHelpers.toRgbString(style.color) ?? text;
+                    ring = BitMapHelpers.toRgbString(style.borderTopColor) ?? ring;
                 } catch { /* keep the defaults */ }
             }
             // .NET's colors are resolved too: an image is painted in plain colors, so a theme variable

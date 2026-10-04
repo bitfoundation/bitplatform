@@ -63,7 +63,7 @@ namespace BitBlazorUI {
             const zoom: number = o.zoom ?? 13;
 
             const zoomControlEnabled = o.zoomControl !== false;
-            const map = L.map(element, {
+            const map = BitMapLeaflet._keepTabIndex(element, () => L.map(element, {
                 center, zoom,
                 minZoom: o.minZoom ?? undefined,
                 maxZoom: o.maxZoom ?? undefined,
@@ -76,7 +76,7 @@ namespace BitBlazorUI {
                 keyboard: o.keyboardNavigation !== false,
                 // Spread last so an escape-hatch entry wins over what the component models.
                 ...(o.additionalOptions || {}),
-            });
+            }));
 
             // The default tileUrl is OpenStreetMap, which contractually requires the
             // standard attribution. When the caller leaves tileUrl unset (so we serve
@@ -228,7 +228,9 @@ namespace BitBlazorUI {
             if (o.doubleClickZoom !== undefined) o.doubleClickZoom ? s.map.doubleClickZoom.enable() : s.map.doubleClickZoom.disable();
             if (o.boxZoom !== undefined) o.boxZoom ? s.map.boxZoom.enable() : s.map.boxZoom.disable();
             if (o.dragging !== undefined) o.dragging ? s.map.dragging.enable() : s.map.dragging.disable();
-            if (o.keyboardNavigation !== undefined) o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable();
+            if (o.keyboardNavigation !== undefined) {
+                BitMapLeaflet._keepTabIndex(s.map.getContainer(), () => o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable());
+            }
 
             // Zoom limits are constructor options in Leaflet, so a provider that changes
             // MinZoom/MaxZoom after init has to be pushed through the setters or the new
@@ -495,7 +497,7 @@ namespace BitBlazorUI {
             style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
-            const pl = L.polyline(latlngs.map(p => [p.lat, p.lng]), BitMapLeaflet._pathStyle(style)).addTo(s.map);
+            const pl = L.polyline(latlngs.map(p => [p.lat, p.lng]), BitMapLeaflet._pathStyle(style, false)).addTo(s.map);
             BitMapLeaflet._wireVectorClick(s, pl, layerId, 'polyline');
             BitMapLeaflet._setLayer(s, layerId, pl);
         }
@@ -536,7 +538,7 @@ namespace BitBlazorUI {
             try { gj = JSON.parse(geoJsonString); }
             catch { throw new Error("BitMapLeaflet.addGeoJson: invalid GeoJSON string."); }
             const layer = L.geoJSON(gj, {
-                style: () => BitMapLeaflet._pathStyle(style),
+                style: (feature: any) => BitMapLeaflet._pathStyle(style, !/LineString$/.test(feature?.geometry?.type ?? '')),
                 // Default L.geoJSON renders Point/MultiPoint features as a vanilla
                 // L.marker which ignores the path style passed above. Provide a
                 // pointToLayer that wraps each point as a styled circleMarker so
@@ -622,7 +624,22 @@ namespace BitBlazorUI {
             });
         }
 
-        private static _pathStyle(style: any) {
+        /**
+         * Runs a Leaflet call that may enable its keyboard handler, which makes its container a tab stop by
+         * setting a non-positive tabIndex to 0 - undoing a TabIndex of the component's, such as -1 for a
+         * decorative map, that Blazor will not write again while its own value is unchanged.
+         */
+        private static _keepTabIndex<T>(element: HTMLElement, action: () => T): T {
+            const tabIndex = element.getAttribute('tabindex');
+            try {
+                return action();
+            } finally {
+                if (tabIndex !== null && element.getAttribute('tabindex') !== tabIndex) element.setAttribute('tabindex', tabIndex);
+            }
+        }
+
+        /** A shape's Leaflet options. An open line is never filled: Leaflet would fill the area its ends enclose. */
+        private static _pathStyle(style: any, closed: boolean = true) {
             if (!style) return {};
             return {
                 color: style.color ?? '#3388ff',
@@ -630,7 +647,7 @@ namespace BitBlazorUI {
                 opacity: style.opacity ?? 1,
                 // `fill: false` is not the same as a zero fill opacity: an invisible fill is
                 // still rendered and still hit-tested, so an outline-only shape needs the flag.
-                fill: style.fill !== false,
+                fill: closed && style.fill !== false,
                 fillColor: style.fillColor ?? style.color ?? '#3388ff',
                 fillOpacity: style.fillOpacity ?? 0.2,
                 dashArray: style.dashArray ?? undefined,

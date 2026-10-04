@@ -26,10 +26,11 @@ namespace BitBlazorUI {
         }
 
         /**
-         * Resolves any CSS color - a name, hex, rgb(), hsl(), a theme variable such as var(--bit-clr-pri) - to
-         * the rgb() / rgba() form that a canvas, an SVG attribute and a WebGL style all accept, by letting the
-         * browser compute it on the map's probe. The libraries each parse colors their own way, several only
-         * hex, so nothing reaches them unresolved. Null when there is no color, or the browser rejects it.
+         * Resolves any CSS color - a name, hex, rgb(), hsl(), oklch(), color-mix(), a theme variable such as
+         * var(--bit-clr-pri) - to the rgb() / rgba() form that a canvas, an SVG attribute and a WebGL style all
+         * accept, by letting the browser compute it on the map's probe. The libraries each parse colors their
+         * own way, several only hex, so nothing reaches them unresolved. Null when there is no color, or the
+         * browser rejects it - a var() naming nothing included.
          */
         static resolveColor(mapId: string, color: string | null | undefined): string | null {
             if (!color || typeof color !== 'string') return null;
@@ -37,12 +38,57 @@ namespace BitBlazorUI {
             if (!probe) return color; // no DOM to resolve against - hand it on as given
             try {
                 if (globalThis.CSS?.supports && !CSS.supports('color', color)) return null;
+                // A var() naming nothing leaves the property at its initial value, currentcolor - the probe's
+                // own color, which is the cluster bubble's text color. The probe's color is a sentinel while
+                // the color is read, so that case is told apart and taken as no color at all.
+                probe.style.color = 'rgb(1, 2, 3)';
+                const sentinel = getComputedStyle(probe).color;
                 probe.style.outlineColor = color;
-                return getComputedStyle(probe).outlineColor || color;
+                const computed = getComputedStyle(probe).outlineColor;
+                if (!computed || computed === sentinel) return null;
+                return BitMapHelpers.toRgbString(computed);
             } catch {
                 return color;
             } finally {
                 probe.style.outlineColor = '';
+                probe.style.color = '';
+            }
+        }
+
+        private static _pixel: CanvasRenderingContext2D | null | undefined;
+
+        /**
+         * A computed color in the rgb() / rgba() form every library parses. A browser computes the legacy
+         * syntaxes to rgb(), but the newer ones - color-mix(), oklch(), lab(), color() - stay in a space of
+         * their own (color(srgb ...), oklch(...)), so those are painted onto a pixel and read back as plain
+         * channels. Null when not even a canvas takes it.
+         */
+        static toRgbString(color: string | null | undefined): string | null {
+            if (!color || typeof color !== 'string') return null;
+            if (BitMapHelpers.parseColor(color)) return color;
+            if (BitMapHelpers._pixel === undefined) {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 1;
+                    BitMapHelpers._pixel = canvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D | null;
+                } catch {
+                    BitMapHelpers._pixel = null;
+                }
+            }
+            const ctx = BitMapHelpers._pixel;
+            if (!ctx) return null;
+            try {
+                // An assignment the canvas cannot parse is ignored, leaving the sentinel in place.
+                ctx.fillStyle = '#010203';
+                const sentinel = ctx.fillStyle;
+                ctx.fillStyle = color;
+                if (ctx.fillStyle === sentinel) return null;
+                ctx.clearRect(0, 0, 1, 1);
+                ctx.fillRect(0, 0, 1, 1);
+                const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+                return a === 255 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${Math.round(a / 255 * 1000) / 1000})`;
+            } catch {
+                return null;
             }
         }
 
@@ -53,8 +99,8 @@ namespace BitBlazorUI {
             if (probe) {
                 try {
                     const style = getComputedStyle(probe);
-                    marker = style.fill || marker;
-                    vector = style.stroke || vector;
+                    marker = BitMapHelpers.toRgbString(style.fill) ?? marker;
+                    vector = BitMapHelpers.toRgbString(style.stroke) ?? vector;
                 } catch { /* keep the defaults */ }
             }
             return { marker, vector };

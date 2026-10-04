@@ -1551,6 +1551,54 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
     }
 
+    /// <summary>
+    /// The theme or the color scheme changed the colors the map paints its own images and shapes in. The
+    /// providers resolve a color once, as a pin or a shape is added, so each one that follows the theme -
+    /// its color left to the theme, or written as a variable of it - is drawn again.
+    /// </summary>
+    [JSInvokable("OnThemeChanged")]
+    public async Task _OnThemeChanged()
+    {
+        try { await _lifecycleGate.WaitAsync(); }
+        catch (ObjectDisposedException) { return; /* disposed mid-flight */ }
+
+        try
+        {
+            if (Gone || _initialized is false || _activeProvider is null) return;
+
+            if (IsClustering)
+            {
+                // A new set always re-renders, and the bubbles and the pins alike are drawn afresh from it.
+                await PushClusteredMarkersAsync(nameof(_OnThemeChanged));
+            }
+            else
+            {
+                foreach (var (id, marker) in _markerState)
+                {
+                    if (marker.IconUrl is not null || FollowsTheme(marker.Color) is false) continue;
+                    await SafeInvokeAsync(_js.BitMapAddMarker(JsObject, _Id, id, ToMarkerPayload(marker)), nameof(_OnThemeChanged));
+                }
+            }
+
+            foreach (var snap in _vectorState.Values)
+            {
+                if (_hiddenLayers.Contains(snap.LayerId)) continue;
+                if (snap.Style is { } style && FollowsTheme(style.Color) is false && (style.FillColor is null || FollowsTheme(style.FillColor) is false)) continue;
+                await AddVectorLayerAsync(snap, nameof(_OnThemeChanged));
+            }
+        }
+        finally
+        {
+            try { _lifecycleGate.Release(); } catch (ObjectDisposedException) { }
+        }
+
+        // Unset, or written in terms of something a theme or a scheme decides.
+        static bool FollowsTheme(string? color) => color is null
+            || color.Contains("var(", StringComparison.OrdinalIgnoreCase)
+            || color.Contains("light-dark(", StringComparison.OrdinalIgnoreCase)
+            || color.Contains("currentcolor", StringComparison.OrdinalIgnoreCase);
+    }
+
 
 
     protected override string RootElementClass => "bit-map";
@@ -1925,9 +1973,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         _openPopupMarker = current;
         await InvokeAsync(StateHasChanged);
+        // No auto-pan: it is spent as the popup opens, and re-arming it on every update of a marker that
+        // moves would pan the map back to the popup each time, fighting a user who has dragged elsewhere.
+        // A pan still pending from the open is carried over by the script.
         await SafeInvokeAsync(
             _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, current.Position.Latitude, current.Position.Longitude,
-                                        PopupAutoPan, ShouldAnimate(true, false)),
+                                        false, ShouldAnimate(true, false)),
             nameof(OpenPopup));
     }
 
