@@ -74,9 +74,9 @@ public partial class ProductsCountPerCategoryWidget
     //#if (signalR == true)
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
     //#endif
 }

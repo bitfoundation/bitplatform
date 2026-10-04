@@ -22,6 +22,20 @@ namespace BitBlazorUI {
                 input?.select();
             }, { signal });
 
+            // The mouseup that ends a click puts the caret where it landed and drops the selection the
+            // handler above just made - in WebKit even when the click is the one that brought the focus in.
+            // That would leave the caret before the single character the box holds rather than over it, and
+            // a Backspace pressed there has nothing to delete, so a box clicked into to correct it would
+            // never clear. The default action is swallowed instead: there is no caret to place in a box
+            // holding one character, which is the very reason the character is selected to begin with.
+            root.addEventListener('mouseup', (e: MouseEvent) => {
+                const input = OtpInput.getInput(e);
+                if (!input) return;
+
+                e.preventDefault();
+                input.select();
+            }, { signal });
+
             // The row of boxes reads as a single field, so the gaps between them (and the separators
             // sitting in those gaps) have to behave like a part of it rather than as dead space. A click
             // that misses a box lands on the input the typing is meant to carry on in, which is the first
@@ -90,6 +104,18 @@ namespace BitBlazorUI {
             active.blur?.();
         }
 
+        /**
+         * Submits the form the component sits in the way pressing Enter would. requestSubmit rather than
+         * submit, since only the former runs the constraint validation and raises the submit event, which
+         * is the one an EditForm listens to.
+         */
+        public static submit(root: HTMLElement) {
+            const form = root?.closest('form');
+            if (!form || typeof form.requestSubmit !== 'function') return;
+
+            form.requestSubmit();
+        }
+
         public static dispose(id: string) {
             const ac = OtpInput.abortControllers[id];
             if (!ac) return;
@@ -112,7 +138,14 @@ namespace BitBlazorUI {
         private static writeCodeToClipboard(e: ClipboardEvent, root: HTMLElement): boolean {
             if (!OtpInput.getInput(e)) return false;
             if (!e.clipboardData) return false;
-            if (root.dataset.bitOtpNocopy === 'true') return false;
+
+            // A code that is not shown is kept off the clipboard altogether rather than only being left to
+            // the browser: what the boxes hold is the masking character, and handing that over is neither
+            // of any use nor what the password input this reproduces would do.
+            if (root.dataset.bitOtpNocopy === 'true') {
+                e.preventDefault();
+                return false;
+            }
 
             const code = Array.from(root.querySelectorAll<HTMLInputElement>('input.bit-otp-inp'))
                               .map(i => i.value)

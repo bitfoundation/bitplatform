@@ -22,7 +22,7 @@ public static class DeploymentConfigurationReader
         {
             InstanceName = System.Environment.MachineName,
             Environment = environment.EnvironmentName,
-            ApplicationVersion = assembly.GetName().Version?.ToString(),
+            ApplicationVersion = assembly.GetName().Version?.ToString(3),
             TimeZone = TimeZoneInfo.Local.Id,
             Runtime = RuntimeInformation.FrameworkDescription,
             OperatingSystem = $"{RuntimeInformation.OSDescription} ({RuntimeInformation.ProcessArchitecture})",

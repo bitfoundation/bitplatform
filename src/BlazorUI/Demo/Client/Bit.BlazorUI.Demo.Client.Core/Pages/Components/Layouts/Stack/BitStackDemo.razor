@@ -2,21 +2,20 @@
 
 <PageOutlet Url="components/stack"
             Title="Stack"
-            Description="A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components, in a row or in a column, with a gap between them, aligned on either axis, wrapping, sizing its children and itself, behaving as a child of another stack, and switching direction - and with it the alignment of those children, the spacing between them on both axes or on one, and whether they wrap at all - with the width of the window." />
+            Description="A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components: a row or a column with a gap, aligned on either axis, wrapping, and responsive per breakpoint." />
 <div>
     <DemoPage Name="Stack"
               SecondaryNames="@(["WrapPanel"])"
-              Description="A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components. It lays them out in a single direction - a column by default, a row with Horizontal - puts a Gap between them and places them on each of the two axes by name through HorizontalAlign and VerticalAlign, so the same parameter means the same thing whichever way the stack faces. Beyond that it sizes those children (FillContent, GrowContent, EqualContent, NoShrinkContent) and itself (Auto and Fit), behaves as a child of another stack (Grow, Basis, Shrink, Shrinkable, Self, Order), and answers to the width of the window through HorizontalXs to HorizontalXxl, which the two alignments follow, GapXs to GapXxl - per axis with HorizontalGapXs to VerticalGapXxl - and WrapXs to WrapXxl."
+              Description="A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components. It lays them out in a column or a row with a gap, aligns them by axis name (HorizontalAlign, VerticalAlign) so the same parameter means the same thing in either direction, sizes them and itself, acts as a flex item inside another stack, and switches direction, spacing and wrapping per breakpoint."
               Parameters="componentParameters"
+              CssVariables="componentCssVariables"
               SubEnums="componentSubEnums"
               GitHubUrl="Layouts/Stack/BitStack.cs"
               GitHubDemoUrl="Layouts/Stack/BitStackDemo.razor">
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div class="example-desc">
-                A stack is a flex container with a gap. By default it stacks its children in a column, and <b>Horizontal</b>
-                lays them out in a row instead. <b>Reversed</b> paints them from the far end back towards the near one -
-                bottom-to-top in a column, end-to-start in a row - which only changes the painted order: the order the
-                content is read in by a screen reader and reached in by the keyboard stays the order it is written in.
+                A column by default; <b>Horizontal</b> makes it a row. <b>Reversed</b> flips the painted order only - screen
+                readers and the keyboard still follow the source order.
             </div>
             <div class="example-content">
                 <div class="caption">Default (vertical)</div>
@@ -49,70 +48,18 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Gap" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Alignment" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div class="example-desc">
-                <b>Gap</b> is the room between the children, in any CSS length (<code>0.5rem</code>, <code>8px</code>,
-                <code>2%</code>, <code>var(--my-gap)</code>), and it defaults to <code>1rem</code>. It is created with the
-                CSS gap rather than with margins on the children, so it never appears before the first child or after the
-                last one and it survives a child being hidden. <b>HorizontalGap</b> and <b>VerticalGap</b> each replace it
-                on a single axis, which is what a wrapping stack that needs more air between its rows than between its
-                columns wants, and <b>GapXs</b> to <b>GapXxl</b> - and, per axis, <b>HorizontalGapXs</b> to
-                <b>VerticalGapXxl</b>, shown in the <BitLink Href="#example5">Responsive</BitLink> section - replace it per
-                breakpoint. The room is left empty; drawing a
-                line in it is a <BitLink Href="/components/separator">BitSeparator</BitLink> placed between the two children it
-                separates, which is a child of the stack like any other and is spaced by the same gap on both of its sides.
+                <b>HorizontalAlign</b> and <b>VerticalAlign</b> name the screen axis, not the flexbox property, so they keep
+                their meaning when the direction flips. The space distributions only apply along the children's axis,
+                <b>Baseline</b> and <b>Stretch</b> only across it; a value that does not apply falls back to <b>Alignment</b>, the both-axes
+                shorthand. To push one child away from the rest, use a <BitLink Href="/components/spacer">BitSpacer</BitLink>.
             </div>
             <div class="example-content">
-                <BitSlider Label="Gap between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@gap" />
-                <br />
-                <BitStack Gap="@($"{gap.ToString(CultureInfo.InvariantCulture)}rem")" Class="stack">
-                    <div class="item">Item 1</div>
-                    <div class="item">Item 2</div>
-                    <div class="item">Item 3</div>
-                </BitStack>
-                <br />
-                <div class="caption">Per axis (<code>HorizontalGap</code> 2rem, <code>VerticalGap</code> 0.25rem)</div>
-                <BitStack Horizontal Wrap HorizontalGap="2rem" VerticalGap="0.25rem" Class="stack">
-                    @for (int i = 1; i <= 12; i++)
-                    {
-                        <div class="item">Item @i</div>
-                    }
-                </BitStack>
-                <br />
-                <div class="caption">A <code>BitSeparator</code> drawn in the room the gap leaves</div>
-                <BitStack AutoHeight HorizontalAlign="BitAlignment.Stretch" Class="stack">
-                    <div class="item">Item 1</div>
-                    <BitSeparator />
-                    <div class="item">Item 2</div>
-                </BitStack>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Alignment" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div class="example-desc">
-                <b>HorizontalAlign</b> and <b>VerticalAlign</b> place the children by axis rather than by the flexbox
-                property that happens to reach that axis, so each of them keeps meaning the same thing when the stack
-                changes direction. On the axis the children are laid out along, all of <b>Start</b>, <b>Center</b>,
-                <b>End</b> and the three space distributions apply; on the axis across them, <b>Start</b>, <b>Center</b>,
-                <b>End</b>, <b>Baseline</b> and <b>Stretch</b> do. A value that means nothing on the axis it lands on is
-                dropped and steps aside for <b>Alignment</b>, the shorthand that sets both axes at once. These place all of
-                the children at once; pushing a single one of them - the actions at the end of a toolbar, say - away from the
-                rest is a <BitLink Href="/components/spacer">BitSpacer</BitLink> between the two groups instead.
-            </div>
-            <div class="example-content">
-                <BitStack Horizontal Wrap Gap="2rem">
+                <BitStack Horizontal>
                     <BitToggle @bind-Value="isHorizontal" Text="Horizontal" />
                     <BitToggle @bind-Value="isReversed" Text="Reversed" />
                 </BitStack>
-                <br />
-                <BitChoiceGroup @bind-Value="direction"
-                                Horizontal
-                                Label="Direction"
-                                TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">
-                    <BitChoiceGroupOption Text="LTR" Value="BitDir.Ltr" />
-                    <BitChoiceGroupOption Text="RTL" Value="BitDir.Rtl" />
-                    <BitChoiceGroupOption Text="Auto" Value="BitDir.Auto" />
-                </BitChoiceGroup>
                 <br />
                 <BitChoiceGroup @bind-Value="horizontalAlign"
                                 Horizontal
@@ -142,8 +89,7 @@
                     <BitChoiceGroupOption Text="Stretch" Value="BitAlignment.Stretch" />
                 </BitChoiceGroup>
                 <br />
-                <BitStack Dir="direction"
-                          Class="stack"
+                <BitStack Class="stack"
                           Reversed="isReversed"
                           Horizontal="isHorizontal"
                           VerticalAlign="verticalAlign"
@@ -161,16 +107,13 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Wrap" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Wrap" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div class="example-desc">
-                Without <b>Wrap</b> the children of a stack are squeezed to fit rather than moved, which is what a toolbar
-                that must never break wants and what a row of chips does not. <b>WrapReverse</b> wraps the other way, laying
-                the rows out from the far edge of the stack back towards the near one. Once there is more than one row and
-                the stack is larger than they are, <b>AlignContent</b> is what decides where those rows sit - it is the only
-                alignment that acts on the rows themselves rather than on the children within a row. <b>WrapXs</b> to
-                <b>WrapXxl</b> answer the question per breakpoint, with <b>Wrap</b> as the base of that chain, so a row that
-                breaks onto a second line on a phone and holds its single line on a desktop is those two parameters and
-                nothing else; <b>WrapReverse</b> stays outside the chain and is the way every breakpoint that wraps wraps.
+                <b>Wrap</b> moves children that do not fit into more lines instead of squeezing them: in the default
+                vertical direction, a stack of fixed height starts another column once its children overflow it.
+                <b>WrapReverse</b> stacks those columns from the far edge, and <b>AlignContent</b> places them once there
+                is more than one. A <b>Horizontal</b> stack wraps into rows the same way.
+                <b>WrapXs</b> to <b>WrapXxl</b> switch wrapping per breakpoint, with <b>Wrap</b> as the base.
             </div>
             <div class="example-content">
                 <BitSlider Label="Stack height" Min="10" Max="20" Step="0.1" ValueFormat="0.0 rem" @bind-Value="@stackHeight" />
@@ -204,7 +147,7 @@
                     Per breakpoint: this row wraps below <code>md</code> (960px) and holds its single line from it upwards,
                     where what no longer fits is squeezed instead
                 </div>
-                <BitStack Horizontal Wrap WrapMd="false" Gap="0.5rem" Class="stack" AutoHeight>
+                <BitStack Horizontal Wrap WrapMd="false" Class="stack">
                     @for (int i = 1; i <= 16; i++)
                     {
                         <div class="square">@i</div>
@@ -213,25 +156,47 @@
             </div>
         </DemoExample>
 
+        <DemoExample Title="Gap" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div class="example-desc">
+                <b>Gap</b> takes any CSS length (one for both axes, or two: vertical then horizontal) and defaults to the
+                theme spacing (<code>1rem</code>), which <code>--bit-Stack-gap</code> overrides app-wide.
+                <b>HorizontalGap</b> and <b>VerticalGap</b> replace it on one axis. It is a CSS gap, so there is never room
+                before the first child or after the last. For a visible divider, put a
+                <BitLink Href="/components/separator">BitSeparator</BitLink> between two children.
+            </div>
+            <div class="example-content">
+                <BitSlider Label="Gap between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@gap" />
+                <br />
+                <BitStack Gap="@($"{gap.ToString(CultureInfo.InvariantCulture)}rem")" Class="stack">
+                    <div class="item">Item 1</div>
+                    <div class="item">Item 2</div>
+                    <div class="item">Item 3</div>
+                </BitStack>
+                <br />
+                <div class="caption">Per axis: <code>HorizontalGap</code> 2rem between the columns, <code>VerticalGap</code> 0.25rem between the rows</div>
+                <BitStack Horizontal Wrap HorizontalGap="2rem" VerticalGap="0.25rem" Class="stack">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <div class="item">Item @i</div>
+                    }
+                </BitStack>
+                <br />
+                <div class="caption">A <code>BitSeparator</code> drawn in the room the gap leaves</div>
+                <BitStack HorizontalAlign="BitAlignment.Stretch" Class="stack">
+                    <div class="item">Item 1</div>
+                    <BitSeparator />
+                    <div class="item">Item 2</div>
+                </BitStack>
+            </div>
+        </DemoExample>
+
         <DemoExample Title="Responsive" RazorCode="@example5RazorCode" Id="example5">
             <div class="example-desc">
-                <b>HorizontalXs</b> to <b>HorizontalXxl</b> give the stack a direction per breakpoint: true lays the children
-                out in a row and false in a column, and each value keeps applying to every wider breakpoint until another one
-                replaces it. That makes the column-on-a-phone, row-on-a-desktop layout a single parameter instead of a media
-                query, and it leaves <b>Horizontal</b> as the base of the chain for any width none of them reach.
-                <b>HorizontalAlign</b> and <b>VerticalAlign</b> follow the direction each breakpoint gives, so they keep naming
-                the same axis of the screen at every width and the stack is realigned along with it - including which of their
-                values mean anything on the axis they land on there. <b>GapXs</b> to <b>GapXxl</b> are the same chain for the
-                spacing, with <b>Gap</b> as their base, which is what a stack that folds into a column and wants less room
-                between its children there is written as. <b>HorizontalGapXs</b> to <b>HorizontalGapXxl</b> and
-                <b>VerticalGapXs</b> to <b>VerticalGapXxl</b> are one more chain each, for the wrapping stack whose rows and
-                columns want to change by different amounts; a breakpoint neither of them names falls back to whatever the
-                <b>Gap</b> chain resolves to there, so only the axis that needs its own answer has to be written out.
-                <b>WrapXs</b> to <b>WrapXxl</b>, shown in the <BitLink Href="#example4">Wrap</BitLink> section, are one more
-                chain of the same shape, for the row that may break onto a second line at some widths and not at others.
-                <b>Reversed</b> and <b>WrapReverse</b> are not part of any of these chains: each of them says which way
-                round, and that is the same answer at every width. Narrow the
-                window to below <code>960px</code> to watch the stacks fold into columns.
+                Per-breakpoint chains, mobile first: each value applies from its breakpoint upwards until a wider one
+                replaces it, and the plain parameter is the base. <b>HorizontalXs</b>..<b>HorizontalXxl</b> set the
+                direction (the alignments follow it), <b>GapXs</b>..<b>GapXxl</b> the spacing, and
+                <b>HorizontalGapXs</b>..<b>VerticalGapXxl</b> one axis of it. <b>Reversed</b> and <b>WrapReverse</b> apply at
+                every width. Narrow the window below <code>960px</code> to see them change.
             </div>
             <div class="example-content">
                 <div class="caption">Column below <code>md</code> (960px), row from it upwards</div>
@@ -249,9 +214,8 @@
                 </BitStack>
                 <br />
                 <div class="caption">
-                    One pair of alignments (<code>HorizontalAlign</code> SpaceBetween, <code>VerticalAlign</code> Center) at both
-                    directions: as a column the children are centered down the stack, since spreading them is meaningless across
-                    it; as a row they are spread along it and centered across it
+                    The alignments follow the direction: <code>HorizontalAlign</code> SpaceBetween spreads the row and is
+                    ignored by the column, <code>VerticalAlign</code> Center centers either one
                 </div>
                 <BitStack HorizontalMd
                           Class="stack"
@@ -267,7 +231,7 @@
                     Direction and spacing together: a column with a <code>0.25rem</code> gap below <code>md</code>, a row with
                     a <code>3rem</code> one from it upwards
                 </div>
-                <BitStack HorizontalMd Gap="0.25rem" GapMd="3rem" Class="stack" AutoHeight>
+                <BitStack HorizontalMd Gap="0.25rem" GapMd="3rem" Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
@@ -278,7 +242,7 @@
                     gives them at every width, while its columns open from <code>0.5rem</code> to <code>3rem</code> at
                     <code>md</code> and to <code>5rem</code> at <code>lg</code>
                 </div>
-                <BitStack Horizontal Wrap Gap="0.5rem" HorizontalGapMd="3rem" HorizontalGapLg="5rem" Class="stack" AutoHeight>
+                <BitStack Horizontal Wrap Gap="0.5rem" HorizontalGapMd="3rem" HorizontalGapLg="5rem" Class="stack">
                     @for (int i = 1; i <= 8; i++)
                     {
                         <div class="item">Item @i</div>
@@ -289,10 +253,8 @@
 
         <DemoExample Title="Nesting" RazorCode="@example6RazorCode" Id="example6">
             <div class="example-desc">
-                A stack is a flex container and a flex child at the same time, so nesting one inside another is how a real
-                layout is built: the outer stack decides the direction and the spacing of its parts, and each inner stack
-                does the same for its own. Every stack keeps its own parameters - the ones below alternate direction at each
-                level - and a nested stack claims only the space its parent gives it.
+                A stack is both a flex container and a flex item, so real layouts are stacks inside stacks, each with its own
+                direction and spacing.
             </div>
             <div class="example-content">
                 <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceAround" Class="stack">
@@ -313,17 +275,10 @@
 
         <DemoExample Title="Content sizing" RazorCode="@example7RazorCode" Id="example7">
             <div class="example-desc">
-                The four parameters that act on the children instead of on the stack. <b>FillContent</b> expands every direct
-                child across the axis they are <em>not</em> laid out along - the full width in a column, the full height in a
-                row - which is what a menu or a sidebar of equally wide items wants; the size is forced, so a child that stated
-                one of its own is overridden. On a stack that wraps, or one that changes direction with the width of the window,
-                it fills the row each child landed on rather than the whole stack, as a stretch that leaves a stated size alone.
-                The other three act <em>along</em> that axis: <b>GrowContent</b> lays the children
-                out at their natural size and shares what is left over between them, so a child that holds more stays larger;
-                <b>EqualContent</b> takes their content out of the sum instead, so a row of three ends up in exact thirds
-                whatever each of them holds; and <b>NoShrinkContent</b> keeps them at their own size when the stack runs out of
-                room, so what no longer fits overflows it - or wraps, with <b>Wrap</b> - rather than being crushed into it.
-                <b>FillContent</b> is on the other axis from all three, so it combines with any of them.
+                These act on the direct children. <b>FillContent</b> stretches them across the stack (full width in a
+                column, full height in a row). Along it, <b>GrowContent</b> shares the leftover room (bigger content stays
+                bigger), <b>EqualContent</b> gives exactly equal shares, and <b>NoShrinkContent</b> stops them being
+                squeezed, so they overflow or wrap instead.
             </div>
             <div class="example-content">
                 <div class="caption">FillContent (cross axis)</div>
@@ -355,7 +310,7 @@
                 </BitStack>
                 <br />
                 <div class="caption">Eight squares in a row too narrow for them: squeezed to fit</div>
-                <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight Style="width:20rem">
+                <BitStack Horizontal Gap="0.5rem" Class="host" Style="width:20rem">
                     @for (int i = 1; i <= 8; i++)
                     {
                         <div class="square">@i</div>
@@ -363,7 +318,7 @@
                 </BitStack>
                 <br />
                 <div class="caption">NoShrinkContent: kept at their own size, and what no longer fits overflows</div>
-                <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" AutoHeight Style="width:20rem">
+                <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" Style="width:20rem">
                     @for (int i = 1; i <= 8; i++)
                     {
                         <div class="square">@i</div>
@@ -374,11 +329,9 @@
 
         <DemoExample Title="Sizing" RazorCode="@example8RazorCode" Id="example8">
             <div class="example-desc">
-                A stack fills its container on both axes by default, which is what a stack that lays a page or a panel out
-                wants and what a stack of a few rows sitting inside a taller box does not. <b>AutoWidth</b>, <b>AutoHeight</b>
-                and the <b>AutoSize</b> shorthand hand that axis back to the content. <b>FitWidth</b>, <b>FitHeight</b> and
-                <b>FitSize</b> do the same but with a definite size, so unlike the automatic ones they also hold when the stack
-                is a child of another flex container that stretches its children - which is what the dotted row below does.
+                A stack fills its container by default. <b>AutoWidth</b>, <b>AutoHeight</b> and <b>AutoSize</b> size it to its
+                content; <b>FitWidth</b>, <b>FitHeight</b> and <b>FitSize</b> do the same but also hold inside a parent that
+                stretches its children.
             </div>
             <div class="example-content">
                 <div class="caption">In a plain block: the default fills the width, AutoWidth hands it back</div>
@@ -407,19 +360,10 @@
 
         <DemoExample Title="As a flex item" RazorCode="@example9RazorCode" Id="example9">
             <div class="example-desc">
-                These eight describe the stack as a child of another flex container rather than as a container itself, so they
-                only say something inside a parent that has room to share out - most often another stack. <b>Grow</b> is the
-                flex-grow factor and <b>Grows</b> is the same thing with the factor every layout reaches for first, so the three
-                nested stacks below take three sixths, two sixths and one sixth of whatever their row has left over. <b>Basis</b>
-                is the size that sharing starts from, and a basis of <code>0</code> takes the content of a stack out of the sum,
-                which is how a row of equal columns is built out of stacks that hold different amounts. <b>NoShrink</b> takes a
-                stack out of being squeezed when the room runs out, so the space has to come from its siblings instead, and
-                <b>Shrink</b> is the same thing with a factor of its own - the mirror of <b>Grow</b> for a shortage rather than
-                a leftover. <b>Shrinkable</b> is the other end of the same story: a flex child is never squeezed below its own
-                content unless it is told it may, which is why a nested stack refuses to shrink far enough for the label inside
-                it to be truncated with an ellipsis, and this is what lifts that floor on both axes. <b>Self</b> places this one
-                stack across the axis of its parent, overriding for it alone whatever the parent aligns its children with, and
-                <b>Order</b> moves it among its siblings visually while leaving the reading and tab order untouched.
+                For a stack inside another flex container. <b>Grow</b>/<b>Grows</b> take leftover room, <b>Basis</b> is the
+                starting size (<code>0</code> gives equal columns), <b>Shrink</b>/<b>NoShrink</b> control squeezing,
+                <b>Shrinkable</b> lets it shrink below its content (for ellipsis or scrolling), <b>Self</b> overrides the
+                parent's cross-axis alignment, and <b>Order</b> moves it visually without changing reading or tab order.
             </div>
             <div class="example-content">
                 <div class="caption">Grow &amp; Grows</div>
@@ -485,12 +429,8 @@
 
         <DemoExample Title="Padding" RazorCode="@example10RazorCode" Id="example10">
             <div class="example-desc">
-                <b>Padding</b> is the room between the border of the stack and its children, and it takes the CSS shorthand in
-                full: one length pads every side, two pad the block and then the inline axis, and four pad each side in turn.
-                The stack is sized border-box, so the padding is taken out of the size it already has rather than added to it,
-                and a padded stack still fits exactly where an unpadded one did. There is no per breakpoint chain for it as
-                there is for the direction and the spacing: a padding that answers to the width of the window is a fluid
-                length such as <code>clamp(0.5rem, 2vw, 2rem)</code>, which follows the viewport without a breakpoint at all.
+                <b>Padding</b> takes the CSS shorthand. The stack is border-box, so padding never grows it. Use a fluid length
+                such as <code>clamp(0.5rem, 2vw, 2rem)</code> for padding that follows the viewport.
             </div>
             <div class="example-content">
                 <BitStack Horizontal Gap="1rem" AutoHeight>
@@ -511,16 +451,10 @@
 
         <DemoExample Title="Element & Inline" RazorCode="@example11RazorCode" Id="example11">
             <div class="example-desc">
-                The stack renders a <code>div</code>, and <b>Element</b> swaps that tag for any other one, which is how a stack
-                of things that form a list becomes a <code>ul</code> or a region of the page becomes a <code>nav</code>. Only
-                the tag name changes - the layout is untouched - so a landmark element given here is worth pairing with an
-                <b>AriaLabel</b> that names it. A stack rendered as a <code>ul</code>, an <code>ol</code> or a <code>menu</code>
-                is also given a <code>role="list"</code> of its own, since some browsers stop reporting those elements as lists
-                as soon as they are laid out as a flex container; a <code>role</code> among the splatted html attributes still
-                replaces it. <b>Inline</b> changes the box the stack itself is rather than its tag: an inline
-                stack flows with the text around it and is sized by its content instead of by the box around it, which is what a
-                group of chips or of icons sitting inside a sentence, a table cell or a label needs. A size given through
-                <b>Style</b> or through the Fit and Auto parameters still wins over that.
+                <b>Element</b> changes the tag (<code>nav</code>, <code>section</code>, <code>ul</code>...) for the right
+                semantics; name a landmark with <b>AriaLabel</b>. A <code>ul</code>, <code>ol</code> or <code>menu</code> also
+                gets <code>role="list"</code>, which flex layout makes some browsers drop. <b>Inline</b> renders an
+                <code>inline-flex</code> box sized by its content, to sit inside a line of text.
             </div>
             <div class="example-content">
                 <BitStack Horizontal Element="nav" AriaLabel="Main" Class="stack" AutoHeight>
@@ -547,13 +481,31 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div class="example-desc">
-                <b>Size</b> is the gap picked from the spacing scale of the theme instead of being written out by hand, in the
-                usual three steps: <b>Small</b>, <b>Medium</b> and <b>Large</b>. It is the parameter to reach for when the
-                layouts of an application should stay on the rhythm of its theme, since the length it resolves to follows the
-                spacing unit and the density of the current theme and changes along with them. The more specific <b>Gap</b>,
-                <b>HorizontalGap</b> and <b>VerticalGap</b> each win over it on the axis they target.
+                <b>BitParams</b> hands a <b>BitStackParams</b> to every stack below it as defaults: a stack that sets a
+                parameter itself keeps its own value.
+            </div>
+            <div class="example-content">
+                <BitParams Parameters="@stackParams">
+                    <BitStack Class="stack">
+                        <div class="item">Item 1</div>
+                        <div class="item">Item 2</div>
+                        <div class="item">Item 3</div>
+                    </BitStack>
+                    <br />
+                    <BitStack Horizontal="false" Class="stack">
+                        <div class="item">Its own Horizontal="false"</div>
+                        <div class="item">The cascaded rest</div>
+                    </BitStack>
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
+            <div class="example-desc">
+                <b>Size</b> picks the gap from the theme spacing scale (<b>Small</b>, <b>Medium</b>, <b>Large</b>), so it follows
+                the theme spacing unit and density. <b>Gap</b>, <b>HorizontalGap</b> and <b>VerticalGap</b> win over it.
             </div>
             <div class="example-content">
                 <BitStack Horizontal Size="BitSize.Small" Class="stack" AutoHeight>
@@ -576,14 +528,13 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
             <div class="example-desc">
-                The stack renders a single element, so <b>Style</b> and <b>Class</b> land straight on it. The inline styles are
-                appended after the ones the component generates, so they win over them - which is how a stack is given a height,
-                a background or a border without a class at all. The one declaration that is deliberately hard to reach is the
-                <code>display</code>, since a stack that is not a flex container is not a stack. Everything the parameters of the
-                stack already cover - the gap, the padding, the direction, the sizing - is worth reaching for there first, since
-                those are resolved per breakpoint and per theme where a hardcoded declaration is not.
+                <b>Style</b> and <b>Class</b> land on the root. <b>Style</b> is appended after the styles the stack generates,
+                so it wins over them, <code>display</code> included; the stack writes its layout inline, so a <b>Class</b> needs
+                <code>!important</code> to override it. The <code>hidden</code> attribute and <b>Visibility</b> still hide it.
+                <code>--bit-Stack-gap</code> inherits, so setting it on <code>:root</code> or any ancestor changes the default
+                gap of every stack inside that was given no gap of its own.
             </div>
             <div class="example-content">
                 <BitStack Horizontal AutoHeight Style="padding:1rem;border-radius:0.5rem;border:2px dashed var(--bit-clr-err);background:color-mix(in srgb, var(--bit-clr-err) 14%, transparent)">
@@ -595,15 +546,21 @@
                     <div class="item">Class</div>
                     <div class="item">on the stack</div>
                 </BitStack>
+                <br />
+                <div class="caption"><code>--bit-Stack-gap</code> set on a wrapper</div>
+                <div style="--bit-Stack-gap:0.25rem">
+                    <BitStack Horizontal AutoHeight Class="stack">
+                        <div class="item">A tight</div>
+                        <div class="item">default</div>
+                        <div class="item">gap</div>
+                    </BitStack>
+                </div>
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
             <div class="example-desc">
-                A horizontal stack runs along the text direction, so marking it right-to-left with <b>Dir</b> mirrors it: the
-                children begin at the right edge, and <b>HorizontalAlign</b> keeps meaning "towards the edge the children begin
-                at" rather than a fixed side of the screen. <b>Reversed</b> composes with it and flips that back again. A
-                vertical stack lays its children out top to bottom either way, so only the alignment across it moves.
+                With <b>Dir</b> set to RTL a horizontal stack starts at the right, and <b>HorizontalAlign</b> start/end follow.
             </div>
             <div class="example-content">
                 <div class="caption">Horizontal, right-to-left</div>

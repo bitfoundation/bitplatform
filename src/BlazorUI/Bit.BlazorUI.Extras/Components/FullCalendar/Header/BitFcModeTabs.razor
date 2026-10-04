@@ -11,7 +11,7 @@
 {
     @* A tab strip is a single tab stop the arrow keys move within, per the ARIA tabs pattern:
        without the roving tabindex every mode would take its own place in the tab order. *@
-    <div class="bit-bfc-mode-tabs" role="tablist" aria-orientation="horizontal">
+    <div class="bit-bfc-mode-tabs" role="tablist" aria-label="@Texts.ModeTabsAriaLabel">
         @foreach (var mode in _modes)
         {
             var m = mode;
@@ -20,6 +20,7 @@
                     role="tab"
                     id="@TabId(m)"
                     aria-selected="@(State.Mode == m ? "true" : "false")"
+                    aria-controls="@Parts.BodyId"
                     tabindex="@(State.Mode == m ? "0" : "-1")"
                     @onkeydown="e => OnKeyDown(e, m)"
                     @onclick="() => State.SetMode(m)">

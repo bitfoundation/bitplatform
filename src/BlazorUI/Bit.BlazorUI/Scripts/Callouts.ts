@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Callouts {
         // Matches the attributes that Blazor's CSS isolation generates (e.g. `b-abc1234567`).
         private static readonly CSS_SCOPE_REGEX = /^b-[a-z0-9]+$/i;
@@ -49,6 +49,9 @@ namespace BitBlazorUI {
             dropDirection: BitDropDirection,
             isRtl: boolean,
             scrollContainerId: string,
+            // The height in pixels of everything the callout renders around its scroll container, which comes
+            // off the room that container is given. A NEGATIVE value has the callout measure it itself, which
+            // is what a consumer whose chrome is sized with overridable custom properties passes.
             scrollOffset: number,
             headerId: string,
             footerId: string,
@@ -88,6 +91,9 @@ namespace BitBlazorUI {
             // The distance in pixels the arrow is kept away from the corners of the callout, so that it
             // never lands on a rounded one; zero takes the default the placement keeps on its own.
             arrowPadding: number = 0,
+            // Keeps a scroll or a resize of the page from dismissing the callout without taking away what
+            // noDismiss does as well: a click outside of it still closes it. It follows its component instead.
+            noScrollDismiss: boolean = false,
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -117,7 +123,10 @@ namespace BitBlazorUI {
 
             Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId);
 
-            Callouts.replaceCurrent({ dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss });
+            Callouts.replaceCurrent({
+                dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
+                noScrollDismiss: noDismiss || noScrollDismiss
+            });
 
             // Remember the inputs used to position this callout so it can be repositioned later
             // when the visual viewport changes (e.g. the iOS keyboard shows/hides).
@@ -296,6 +305,18 @@ namespace BitBlazorUI {
                 calloutWidth = width;
             }
 
+            // A negative offset asks the callout to MEASURE the space its scrollable content cannot use
+            // instead of being told it in pixels: everything it renders around that content, less the header
+            // and the footer that are measured separately just above. A consumer whose chrome is sized with
+            // publicly overridable custom properties - BitDropdown's search box and select all row - has no
+            // number it could pass, since the one it hard-coded would only be the default of a height the
+            // author of a theme or of an instance is free to change.
+            if (scrollOffset < 0) {
+                scrollOffset = scrollContainerId
+                    ? Math.max(0, callout.offsetHeight - (scrollContainer as HTMLElement).offsetHeight - headerHeight - footerHeight)
+                    : 0;
+            }
+
             if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
                 callout.style.opacity = '1';
                 callout.style.transform = 'translate(0,0)';
@@ -418,7 +439,13 @@ namespace BitBlazorUI {
                 callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                 scrollContainer.style.maxHeight = cap(Math.max(0, available - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
-                if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
+                // A callout measuring nothing is one whose content has not arrived yet - a list still
+                // being fetched - and "nothing fits below" is true however little room there is down
+                // there, which would pin it to a side that cannot show it once it fills. With no height
+                // to go on, the side with more room is the one to take.
+                const fitsBelow = calloutHeight > 0 && calloutHeight <= distanceToBottom;
+
+                if (fitsBelow || distanceToBottom >= distanceToTop) {
                     callout.style.top = (componentY + componentHeight + offset - fixedRect.top) + 'px';
                     scrollContainer.style.maxHeight = cap(Math.max(0, distanceToBottom - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
                 } else {
@@ -741,7 +768,9 @@ namespace BitBlazorUI {
         public static updateScrollOffset(calloutId: string, scrollOffset: number) {
             const params = Callouts._params.get(calloutId);
             if (params == null) return;
-            if (params.scrollOffset === scrollOffset) return;
+            // A negative offset is not a value to compare but a request to measure again (see position), and
+            // the caller only asks when what it renders around the scrollable content has actually changed.
+            if (scrollOffset >= 0 && params.scrollOffset === scrollOffset) return;
 
             params.scrollOffset = scrollOffset;
 
@@ -820,12 +849,29 @@ namespace BitBlazorUI {
         // SearchBox input that owns the suggestion callout). Used so that a scroll/resize while that input
         // is focused - typically caused by the on-screen keyboard moving the page - re-anchors the callout
         // to the component's new position instead of dismissing it.
-        public static componentContains(node: Node | null): boolean {
+        // `scope` narrows it to the components inside that element, for a surface that asks whether a popup
+        // of its own content owns the key rather than one of a component the surface itself sits inside.
+        public static componentContains(node: Node | null, scope?: Node | null): boolean {
             if (node == null) return false;
 
             return Callouts._stack.some(entry => {
                 const componentId = Callouts._params.get(entry.calloutId)?.componentId;
-                return componentId ? (document.getElementById(componentId)?.contains(node) ?? false) : false;
+                const component = componentId ? document.getElementById(componentId) : null;
+                if (component == null || (scope != null && scope.contains(component) === false)) return false;
+
+                return component.contains(node);
+            });
+        }
+
+        // True when one of the open callouts was opened from a component inside the given element - a dropdown
+        // or a menu inside a modal, whose popup is relocated to the body and so is no longer inside it itself.
+        public static isOpenedFrom(root: Element | null): boolean {
+            if (root == null) return false;
+
+            return Callouts._stack.some(entry => {
+                const componentId = Callouts._params.get(entry.calloutId)?.componentId ?? entry.componentId;
+                const component = componentId ? document.getElementById(componentId) : null;
+                return component != null && root.contains(component);
             });
         }
 
@@ -991,7 +1037,7 @@ namespace BitBlazorUI {
             if (!callout) {
                 // Innermost first, and only down to a callout that asked not to be dismissed by the page
                 // moving under it: that one, and everything it is nested in, follows its component instead.
-                while (Callouts._stack.length > 0 && !Callouts.current.noDismiss) {
+                while (Callouts._stack.length > 0 && !Callouts.current.noScrollDismiss) {
                     Callouts.closeTop();
                 }
 
@@ -1031,6 +1077,50 @@ namespace BitBlazorUI {
             // The callout is going away with its component, so it is not told about it; anything opened
             // from inside it still is, since its anchor is going away too.
             Callouts.remove(calloutId, false);
+        }
+
+        // Hands the keyboard over to an opening BitCallout in one call rather than one per piece, since each
+        // is a round trip of its own on a server-rendered page and all of them stand between the click and the
+        // focus moving into the callout: the element the focus is on is remembered (to be handed back to on
+        // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
+        // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
+        // component has already set up are not asked for again. Reports whether a focus origin was remembered.
+        public static setupKeyboard(
+            calloutId: string,
+            dotnetObj: DotNetObject,
+            captureFocusOrigin: boolean,
+            escape: boolean,
+            escapeTriggerId: string | null,
+            focusTrap: boolean,
+            tabOutTriggerId: string | null) {
+            const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
+
+            if (escape) {
+                Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
+            }
+
+            if (focusTrap) {
+                Utils.setupFocusTrap(calloutId);
+            }
+
+            if (tabOutTriggerId) {
+                Utils.setupTabOut(calloutId, tabOutTriggerId, dotnetObj);
+            }
+
+            return captured;
+        }
+
+        // Takes back everything setupKeyboard may have set up for a closing BitCallout, in one call. Each of
+        // the disposals is a no-op for what was never set up. The remembered focus origin is only forgotten
+        // when the component is not about to hand the focus back to it.
+        public static disposeKeyboard(calloutId: string, forgetFocusOrigin: boolean) {
+            Utils.disposeFocusTrap(calloutId);
+            Utils.disposeTabOut(calloutId);
+            Utils.disposeEscape(calloutId);
+
+            if (forgetFocusOrigin) {
+                Utils.disposeFocusOrigin(calloutId);
+            }
         }
 
         // Whether the callout about to be opened belongs to a component that sits inside the innermost open
@@ -1104,6 +1194,9 @@ namespace BitBlazorUI {
         overlayId?: string;
         arrowId?: string;
         noDismiss?: boolean;
+        // Whether a scroll or a resize of the page leaves the callout open, following its component. A
+        // callout that is not dismissed from outside at all is not dismissed by these either.
+        noScrollDismiss?: boolean;
         dotnetObj?: DotNetObject;
         scrollContainerId?: string;
         responsiveMode?: BitResponsiveMode;

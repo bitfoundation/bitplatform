@@ -7,6 +7,13 @@ namespace BitBlazorUI {
     export class BitMapOpenLayers {
         private static _olLoadPromise: Promise<any> | null = null;
 
+        /**
+         * The raster layers render into a canvas of their own, apart from the vectors and markers, so
+         * BitMap.scss can apply --bit-Map-tile-filter to the tiles alone - a dark scheme's inverted
+         * basemap must not invert the shapes drawn on it. 'ol-layer' is the default it replaces.
+         */
+        private static readonly _tileClassName = 'ol-layer bit-map-ol-tiles';
+
         private static _maps: { [id: string]: {
             ol: any, map: any, dotnetObj: DotNetObject | null | undefined,
             baseTileLayer: any, markers: { [k: string]: any },
@@ -61,6 +68,7 @@ namespace BitBlazorUI {
                     attributions: tileAttribution,
                 }),
                 opacity: tileOpacity,
+                className: BitMapOpenLayers._tileClassName,
             });
 
             const map = new ol.Map({
@@ -378,23 +386,24 @@ namespace BitBlazorUI {
             else v.animate({ center: target, duration: 250 });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const extent = ol.transformExtent([Math.min(swLng, neLng), Math.min(swLat, neLat), Math.max(swLng, neLng), Math.max(swLat, neLat)], 'EPSG:4326', 'EPSG:3857');
             const pad = paddingPx ?? 48;
-            s.map.getView().fit(extent, { padding: [pad, pad, pad, pad], maxZoom: maxZoom ?? 18, duration: 0 });
+            s.map.getView().fit(extent, { padding: [pad, pad, pad, pad], maxZoom: maxZoom ?? 18, duration: animate ? 250 : 0 });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapOpenLayers._require(id);
             const ext = s.markerSource.getExtent();
             if (!ext || !Number.isFinite(ext[0])) return;
             const pad = paddingPx ?? 48;
-            s.map.getView().fit(ext, { padding: [pad, pad, pad, pad], maxZoom: maxZoom ?? 18, duration: 0 });
+            s.map.getView().fit(ext, { padding: [pad, pad, pad, pad], maxZoom: maxZoom ?? 18, duration: animate ? 250 : 0 });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
+            opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const f = new ol.Feature({
@@ -402,6 +411,9 @@ namespace BitBlazorUI {
                 markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '',
                 tooltipHtml: opts.tooltipHtml || '', tooltipText: opts.tooltipText || '',
                 draggable: !!opts.draggable,
+                // Where the popup and the tooltip point from: the top of this marker's own icon, so they
+                // open above it rather than over it, however tall it is.
+                popupOffset: BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32)['bottom'],
             });
             f.setId(markerId);
             f.setStyle(BitMapOpenLayers._markerStyle(ol, opts));
@@ -446,10 +458,24 @@ namespace BitBlazorUI {
             if (!s) return;
             const f = s.markers[markerId];
             if (!f) return;
+            // Opened right after a camera move - "show on map" from the marker list - the map has not
+            // rendered the new view yet, and the popup's auto-pan would measure it against the old one
+            // and throw the map far off. Rendering first gives it the frame it is about to be drawn in.
+            try { s.map.renderSync(); } catch { /* ignore */ }
             BitMapOpenLayers._showPopupForFeature(s, f);
         }
 
+        /** Closes the marker popup, if it is open. Returns whether it was. */
+        public static closeMarkerPopup(id: string): boolean {
+            const s = BitMapOpenLayers._maps[id];
+            if (!s || s.popupElement.classList.contains('bit-map-ol-popup--hidden')) return false;
+            s.popupOverlay.setPosition(undefined);
+            s.popupElement.classList.add('bit-map-ol-popup--hidden');
+            return true;
+        }
+
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const coords = latlngs.map(p => ol.fromLonLat([p.lng, p.lat]));
@@ -459,6 +485,7 @@ namespace BitBlazorUI {
         }
 
         public static addPolygon(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const ring = latlngs.map(p => ol.fromLonLat([p.lng, p.lat]));
@@ -469,6 +496,7 @@ namespace BitBlazorUI {
         }
 
         public static addCircle(id: string, layerId: string, lat: number, lng: number, radiusMeters: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const ring = BitMapHelpers.circleRingLngLat(lat, lng, radiusMeters).map(p => ol.fromLonLat(p));
@@ -478,6 +506,7 @@ namespace BitBlazorUI {
         }
 
         public static addRectangle(id: string, layerId: string, swLat: number, swLng: number, neLat: number, neLng: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             const ring = [
@@ -491,6 +520,7 @@ namespace BitBlazorUI {
         }
 
         public static addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
             let gj: any;
@@ -505,8 +535,8 @@ namespace BitBlazorUI {
                     return new ol.Style({
                         image: new ol.CircleStyle({
                             radius: 7,
-                            fill: new ol.Fill({ color: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) }),
-                            stroke: new ol.Stroke({ color: BitMapHelpers.hexToRgba(st.color, st.opacity), width: st.weight }),
+                            fill: new ol.Fill({ color: BitMapHelpers.toRgba(st.fillColor, st.fillOpacity) }),
+                            stroke: new ol.Stroke({ color: BitMapHelpers.toRgba(st.color, st.opacity), width: st.weight }),
                         }),
                     });
                 }
@@ -558,6 +588,7 @@ namespace BitBlazorUI {
                 }),
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
+                className: BitMapOpenLayers._tileClassName,
             });
             s.tileOverlays[opts.id] = tl;
             s.map.addLayer(tl);
@@ -652,31 +683,27 @@ namespace BitBlazorUI {
             }
         }
 
+        /** Every marker has an icon by now - its own, or the default pin BitMapHelpers.withDefaultIcon drew. */
         private static _markerStyle(ol: any, opts: any) {
-            if (opts.iconUrl) {
-                const iconOpts: any = {
-                    src: opts.iconUrl,
-                    anchor: [0.5, 1], anchorXUnits: 'fraction', anchorYUnits: 'fraction',
-                };
-                // OpenLayers' ol.Icon asserts when both explicit width/height and a scale
-                // are provided - pick one path: honor caller-supplied dimensions when
-                // present, otherwise fall back to the default 1:1 scale.
-                if (opts.iconWidth || opts.iconHeight) {
-                    if (opts.iconWidth) iconOpts.width = opts.iconWidth;
-                    if (opts.iconHeight) iconOpts.height = opts.iconHeight;
-                } else {
-                    iconOpts.scale = 1;
-                }
-                return new ol.Style({
-                    image: new ol.Icon(iconOpts),
-                });
+            // The anchor as fractions of the icon, which hold whatever the image's natural size is: OpenLayers'
+            // pixel anchors are in the image's own pixels, before the width / height scale it.
+            const w = opts.iconWidth, h = opts.iconHeight;
+            const [ax, ay] = w && h ? BitMapHelpers.readIconAnchor(opts, w, h) : [0, 0];
+            const iconOpts: any = {
+                src: opts.iconUrl,
+                anchor: w && h ? [ax / w, ay / h] : [0.5, 1], anchorXUnits: 'fraction', anchorYUnits: 'fraction',
+            };
+            // OpenLayers' ol.Icon asserts when both explicit width/height and a scale
+            // are provided - pick one path: honor caller-supplied dimensions when
+            // present, otherwise fall back to the default 1:1 scale.
+            if (w || h) {
+                if (w) iconOpts.width = w;
+                if (h) iconOpts.height = h;
+            } else {
+                iconOpts.scale = 1;
             }
             return new ol.Style({
-                image: new ol.CircleStyle({
-                    radius: 7,
-                    fill: new ol.Fill({ color: '#3388ff' }),
-                    stroke: new ol.Stroke({ color: '#ffffff', width: 2 }),
-                }),
+                image: new ol.Icon(iconOpts),
             });
         }
 
@@ -694,7 +721,7 @@ namespace BitBlazorUI {
             }
             const lineDashOffset = style?.dashOffset != null ? parseFloat(String(style.dashOffset)) : undefined;
             return new ol.Stroke({
-                color: BitMapHelpers.hexToRgba(st.color, st.opacity),
+                color: BitMapHelpers.toRgba(st.color, st.opacity),
                 width: st.weight,
                 lineCap: style?.lineCap ?? 'round',
                 lineJoin: style?.lineJoin ?? 'round',
@@ -711,7 +738,7 @@ namespace BitBlazorUI {
         private static _fill(ol: any, style: any) {
             if (style && style.fill === false) return undefined;
             const st = BitMapHelpers.readPathStyle(style);
-            return new ol.Fill({ color: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) });
+            return new ol.Fill({ color: BitMapHelpers.toRgba(st.fillColor, st.fillOpacity) });
         }
 
         private static _setLayer(s: any, layerId: string, layer: any) {
@@ -741,6 +768,8 @@ namespace BitBlazorUI {
             else s.tooltipElement.textContent = text;
 
             s.tooltipElement.classList.remove('bit-map-ol-tooltip--hidden');
+            const [dx, dy] = feature.get('popupOffset') ?? [0, -14];
+            s.tooltipOverlay.setOffset([dx, dy - 6]);
             s.tooltipOverlay.setPosition(feature.getGeometry().getCoordinates());
             return true;
         }
@@ -769,6 +798,8 @@ namespace BitBlazorUI {
 
             const coords = feature.getGeometry().getCoordinates();
             s.popupElement.classList.remove('bit-map-ol-popup--hidden');
+            const [dx, dy] = feature.get('popupOffset') ?? [0, -12];
+            s.popupOverlay.setOffset([dx, dy - 8]);
             s.popupOverlay.setPosition(coords);
         }
 

@@ -107,7 +107,6 @@ public partial class Acknowledgements
         //#endif
         //#if (aspire == true && filesStorage == "S3")
         new("RustFS", "https://rustfs.com", "https://github.com/rustfs/rustfs", "Apache-2.0"),
-        new("AspireIntegration.Hosting.RustFs", "https://github.com/konnta0/Aspire.Extensions", "https://github.com/konnta0/Aspire.Extensions", "MIT"),
         //#endif
         //#if (aspire == true && cloudflare == true)
         new("Shirubasoft.Aspire.CloudflareTunnels", "https://github.com/Shirubasoft/aspire-extensions", "https://github.com/Shirubasoft/aspire-extensions", "MIT"),

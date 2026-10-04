@@ -929,6 +929,12 @@ internal sealed class BitInternalColor
     private const double LchChromaRange = 150;
 
     /// <summary>
+    /// The name of a hue on its own - the fully saturated, mid-lightness color at that angle - which is what
+    /// the hue slider announces beside its degrees, since a number of degrees names no color by itself.
+    /// </summary>
+    public static string HueDescription(double hue) => HueName(hue, 0.5, 1);
+
+    /// <summary>
     /// The name a hue goes by, in the bands the names actually cover: they are not twelve equal slices,
     /// since the eye gives yellow a far narrower band than it gives green or blue.
     /// </summary>

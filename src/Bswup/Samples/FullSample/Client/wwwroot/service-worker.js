@@ -1,4 +1,4 @@
-// bit version: 10.6.1
+// bit version: 10.6.2
 
 // Development service worker of the FullSample. Unlike the standard Blazor template - whose
 // dev worker is a no-op so caching never hides source changes - this sample runs the full
@@ -10,7 +10,7 @@ self.assetsInclude = [];
 // Blazor Web App the host project merges the client's scoped styles into its own
 // <HostAssembly>.styles.css. Precaching it would fail with a 404, so it's excluded here and
 // the two files the page actually loads are precached through externalAssets instead.
-self.assetsExclude = [/^Bit\.Bswup\.FullSample\.Client\.styles\.css$/, /weather\.json$/];
+self.assetsExclude = [/^Bit\.Bswup\.FullSample\.Client\.styles\.css$/, /weather\.json$/, /^_framework\/blazor\.webassembly\.js$/];
 self.defaultUrl = '/';
 self.prohibitedUrls = [];
 // self.assetsUrl is deliberately NOT set: since v-10-6-0 it defaults to a relative

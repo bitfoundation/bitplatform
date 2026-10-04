@@ -1,3 +1,8 @@
+// The width the bars were drawn at, which Thickness and --bit-Loading-thickness replace.
+.bit-ldn-spn {
+    --bit-ldn-stroke-authored: calc(6 * var(--bit-ldn-unit));
+}
+
 .bit-ldn-spn-ccn {
     position: relative;
     display: inline-block;
@@ -7,7 +12,7 @@
 
 .bit-ldn-spn-chl {
     animation: bit-ldn-spn-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
-    transform-origin: var(--bit-ldn-spn-40) var(--bit-ldn-spn-40);
+    transform-origin: calc(40 * var(--bit-ldn-unit)) calc(40 * var(--bit-ldn-unit));
 }
 
 .bit-ldn-spn-chl::after {
@@ -15,14 +20,14 @@
     display: block;
     position: absolute;
     border-radius: 20%;
-    top: var(--bit-ldn-spn-3);
-    height: var(--bit-ldn-spn-18);
+    top: calc(3 * var(--bit-ldn-unit));
+    height: calc(18 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
-    width: var(--bit-ldn-stroke, var(--bit-ldn-spn-6));
+    width: var(--bit-ldn-thickness);
 
     // Centred against the box rather than offset by a measured amount, so that a bar made thicker or
     // thinner by Thickness still turns about the middle of the drawing instead of drifting off it.
-    left: calc((var(--bit-ldn-size) - var(--bit-ldn-stroke, var(--bit-ldn-spn-6))) / 2);
+    left: calc((var(--bit-ldn-size) - var(--bit-ldn-thickness)) / 2);
 }
 
 .bit-ldn-spn-ch1 {

@@ -95,7 +95,7 @@ public partial class Routes : ComponentBase, IDisposable
 /// </summary>
 public class AppRouter :
     //#if (brouter == true)
-    Brouter
+    global::Bit.Brouter.Brouter
 { }
 //#else
 //#if (IsInsideProjectTemplate == true)

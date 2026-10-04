@@ -1355,7 +1355,7 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Weight of the label.",
         },
         new()

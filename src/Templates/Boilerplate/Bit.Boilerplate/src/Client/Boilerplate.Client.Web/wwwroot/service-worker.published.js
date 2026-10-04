@@ -2,7 +2,7 @@
 // [mirror] push notification and notificationclick handlers - keep in sync with:
 // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js
 
-// bit version: 10.6.1
+// bit version: 10.6.2
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -72,7 +72,7 @@ self.assetsExclude = [
     /_headers$/,
 
     // The standalone app's css bundle; Server.Web serves that css inside its own bundle below instead.
-    ...(isServerHosted ? [/Boilerplate\.Client\.Web\.styles\.css$/] : [])
+    ...(isServerHosted ? [/Boilerplate\.Client\.Web\.styles\.css$/, /^_framework\/blazor\.webassembly\.js$/] : [])
 ];
 self.externalAssets = [
     {

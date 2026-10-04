@@ -49,8 +49,8 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration =>
             {
                 // Pre-rendering makes the server produce the product page's HTML itself, so the page is a cacheable
                 // response rather than an empty shell filled in later by the client.
@@ -73,19 +73,19 @@ public partial class ProductResponseCacheTests
             // ---- Step 1: both readers fetch the product, filling the output cache ----
 
             // The signed-in tenant-user reads it through the public (UserAgnostic) product view API.
-            await using var tenantUserScope = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(tenantUserScope, TenantUserEmail);
-            var tenantUserProductView = tenantUserScope.ServiceProvider.GetRequiredService<IProductViewController>();
+            await using var tenantUserClient = server.CreateAppClient();
+            await SignIn(tenantUserClient, TenantUserEmail);
+            var tenantUserProductView = tenantUserClient.GetController<IProductViewController>();
 
             var seenByTenantUser = await tenantUserProductView.Get(productShortId, TestContext.CancellationToken);
             Assert.AreEqual(productName, seenByTenantUser.Name);
             Assert.AreEqual(originalDescription, seenByTenantUser.DescriptionText);
 
             // ...and an anonymous visitor reads the pre-rendered public product page. A bare HttpClient - rather than the
-            // app's own one from DI - keeps this reader free of any access token and of the client-side message handlers
+            // app's - keeps this reader free of any access token and of the client-side message handlers
             // (retry, client caching, exception translation) that would sit between the assertions and what the server
             // actually returned.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
             // The same page, requested four ways. The bare url no longer has an entry of its own - UseCultureUrlRedirection
             // 302s it onto its culture-prefixed form, so requesting it exercises the redirect and lands on the en-US entry -
@@ -110,9 +110,9 @@ public partial class ProductResponseCacheTests
 
             // ---- Step 2: the tenant-admin edits the description through the real write endpoint ----
 
-            await using (var tenantAdminScope = server.WebApp.Services.CreateAsyncScope())
+            await using (var tenantAdminClient = server.CreateAppClient())
             {
-                var tenantAdminUser = await SignIn(tenantAdminScope, TenantAdminEmail);
+                var tenantAdminUser = await SignIn(tenantAdminClient, TenantAdminEmail);
 
                 // ProductController demands a privileged session, a selected tenant and ProductCatalog_Manage. Her fresh
                 // password sign-in covers the first, and being a t-admin of the tenant that owns the product covers the rest.
@@ -121,7 +121,7 @@ public partial class ProductResponseCacheTests
 
                 // A real authenticated PUT, so the purge under test is the one the endpoint itself performs after saving
                 // (See ProductController.Update) - including running it under a genuine HttpContext.
-                var products = tenantAdminScope.ServiceProvider.GetRequiredService<IProductController>();
+                var products = tenantAdminClient.GetController<IProductController>();
 
                 var toUpdate = await products.Get(productId, TestContext.CancellationToken);
                 toUpdate.DescriptionText = updatedDescription;
@@ -149,9 +149,9 @@ public partial class ProductResponseCacheTests
 
             await DeleteProduct(server, productId);
 
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
                 Assert.IsFalse(await dbContext.Products.IgnoreQueryFilters().AnyAsync(p => p.Id == productId, TestContext.CancellationToken),
                     "The product should be gone from the database at this point.");
             }
@@ -173,9 +173,9 @@ public partial class ProductResponseCacheTests
 
             // The row is gone, so ProductController.Delete would 404 before reaching its purge; this control step calls the
             // shared purge service directly instead.
-            await using (var scope = server.WebApp.Services.CreateAsyncScope())
+            await using (var scopeApiApp = server.ApiApp.Services.CreateAsyncScope())
             {
-                await PurgeProductCache(scope, productShortId);
+                await PurgeProductCache(scopeApiApp, productShortId);
             }
 
             await Assert.ThrowsExactlyAsync<ResourceNotFoundException>(
@@ -209,8 +209,8 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration =>
             {
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
             }).Start(TestContext.CancellationToken);
@@ -221,9 +221,9 @@ public partial class ProductResponseCacheTests
         try
         {
 
-            // A bare HttpClient keeps the client-side message handlers out of the way, so the headers asserted below are
+            // A raw HttpClient keeps the client-side message handlers out of the way, so the headers asserted below are
             // the ones the server actually wrote.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = server.CreateRawHttpClient();
 
             var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
             using var response = await visitorHttpClient.GetAsync($"{requestPath}?utm_source=test", TestContext.CancellationToken);
@@ -288,8 +288,8 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration =>
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration =>
             {
                 configuration["WebAppRender:PrerenderEnabled"] = "true";
                 configuration["ResponseCaching:EnableCdnEdgeCaching"] = "true";
@@ -301,7 +301,7 @@ public partial class ProductResponseCacheTests
         try
         {
             // A bare HttpClient, so the headers asserted below are the ones the server actually wrote.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
             string? enCacheTag = null;
 
@@ -355,8 +355,8 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
         var marker = Guid.NewGuid().ToString("N");
@@ -365,10 +365,10 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            // One bare HttpClient for both reads, so the ONLY difference between the two requests is the token: any other
-            // difference (a header the DI client adds, for instance) would split the cache key on its own and the test
+            // One raw HttpClient for both reads, so the ONLY difference between the two requests is the token: any other
+            // difference (a header the app's HttpClient adds, for instance) would split the cache key on its own and the test
             // would pass for the wrong reason.
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = server.CreateRawHttpClient();
 
             var requestPath = $"/api/v1/ProductView/Get/{productShortId}";
 
@@ -388,9 +388,9 @@ public partial class ProductResponseCacheTests
             Assert.Contains(productName, await cachedAnonymousResponse.Content.ReadAsStringAsync(TestContext.CancellationToken),
                 "The anonymous read was not served from the output cache, so this test cannot detect a shared entry.");
 
-            await using var tenantUserScope = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(tenantUserScope, TenantUserEmail);
-            var accessToken = await tenantUserScope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+            await using var tenantUserClient = server.CreateAppClient();
+            await SignIn(tenantUserClient, TenantUserEmail);
+            var accessToken = await tenantUserClient.Services.GetRequiredService<IStorageService>().GetItem("access_token");
             Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Signing in did not store an access token, so the read below would not be authenticated.");
 
             using var tenantMemberRequest = new HttpRequestMessage(HttpMethod.Get, requestPath);
@@ -426,8 +426,8 @@ public partial class ProductResponseCacheTests
         await using var server = new AppTestServer();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
-            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfiguration: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true")
             .Start(TestContext.CancellationToken);
 
         var marker = Guid.NewGuid().ToString("N");
@@ -436,7 +436,7 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
             var html = await GetProductPage(visitorHttpClient, $"/en-US{PageUrls.Product}/{productShortId}");
 
@@ -472,11 +472,13 @@ public partial class ProductResponseCacheTests
         var replays = new ReplayCountingOutputCacheStore.Counter();
 
         await server.Build(
-            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics().CountOutputCacheReplays(replays),
-            configureTestConfigurations: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
+            configureTestServices: services => services.FakeExternalStatistics(),
+            // products.xml is Server.Web's, and so is the output cache that replays it.
+            configureTestWebAppServices: services => services.CountOutputCacheReplays(replays),
+            configureTestConfiguration: configuration => configuration["ResponseCaching:EnableOutputCaching"] = "true")
             .Start(TestContext.CancellationToken);
 
-        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppAddress };
 
         // Both fetches happen before the product exists, so the entry the assertions below have to defeat is in place:
         // whatever the second one returned is what a cache would keep replaying.
@@ -495,12 +497,13 @@ public partial class ProductResponseCacheTests
 
         try
         {
-            await using var tenantAdminScope = server.WebApp.Services.CreateAsyncScope();
-            await SignIn(tenantAdminScope, TenantAdminEmail);
-            var products = tenantAdminScope.ServiceProvider.GetRequiredService<IProductController>();
+            await using var client = server.CreateAppClient();
+            await SignIn(client, TenantAdminEmail);
+            var products = client.GetController<IProductController>();
 
             // IgnoreQueryFilters because a bare DI scope has no HttpContext for TenantProvider to read the tenant from.
-            var dbContext = tenantAdminScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
             var categoryId = await dbContext.Products
                 .IgnoreQueryFilters()
                 .Where(p => p.TenantId == TenantConfiguration.FallbackTenantId)
@@ -560,7 +563,7 @@ public partial class ProductResponseCacheTests
 
     private async Task<(Guid Id, int ShortId)> CreateProduct(AppTestServer server, string name, string description)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var categoryId = await dbContext.Products
@@ -592,7 +595,7 @@ public partial class ProductResponseCacheTests
 
     private async Task DeleteProduct(AppTestServer server, Guid productId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.Products
@@ -602,13 +605,13 @@ public partial class ProductResponseCacheTests
     }
 
     /// <summary>
-    /// Signs the given e-mail in within <paramref name="scope"/> and returns her resulting claims. The access token
-    /// lands in that scope's (in-memory) TestStorageService, so every typed API client resolved from the same scope
-    /// calls the server as her.
+    /// Signs the given e-mail in on <paramref name="client"/> and returns her resulting claims. The access token
+    /// lands in that client's (in-memory) TestStorageService, so every controller created from the same client calls
+    /// the server as her.
     /// </summary>
-    private async Task<ClaimsPrincipal> SignIn(AsyncServiceScope scope, string email)
+    private async Task<ClaimsPrincipal> SignIn(AppClient client, string email)
     {
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var requiresTwoFactor = await authManager.SignIn(new()
         {
@@ -625,18 +628,18 @@ public partial class ProductResponseCacheTests
     /// Runs <c>ResponseCacheService.PurgeProductCache</c>, which needs an HttpContext of its own to decide whether the
     /// request came through a CDN, and there is none in a bare DI scope (See <c>ResponseCacheService.PurgeCache</c>).
     /// </summary>
-    private async Task PurgeProductCache(AsyncServiceScope scope, int productShortId)
+    private async Task PurgeProductCache(AsyncServiceScope scopeApiApp, int productShortId)
     {
-        var httpContextAccessor = scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
-        httpContextAccessor.HttpContext ??= new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        var httpContextAccessor = scopeApiApp.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext ??= new DefaultHttpContext { RequestServices = scopeApiApp.ServiceProvider };
 
-        var responseCacheService = scope.ServiceProvider.GetRequiredService<ResponseCacheService>();
+        var responseCacheService = scopeApiApp.ServiceProvider.GetRequiredService<ResponseCacheService>();
 
         await responseCacheService.PurgeProductCache(productShortId);
     }
 
     /// <summary>
-    /// Fetches the pre-rendered public product page. A raw HttpClient is used rather than Playwright so that what gets
+    /// Fetches the pre-rendered public product page. A bare HttpClient is used rather than Playwright so that what gets
     /// asserted is the exact HTML the server produced (or replayed from the output cache), with no client-side
     /// re-rendering on top of it.
     /// </summary>

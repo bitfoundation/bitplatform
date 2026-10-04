@@ -248,6 +248,41 @@ $clr-swr-dis-text: var(--bit-clr-swr-dis-text);
 $clr-err-dis: var(--bit-clr-err-dis);
 $clr-err-dis-text: var(--bit-clr-err-dis-text);
 
+//foreground - each accent role's color when it is read as text or an icon on the page's own surfaces
+//(an outlined or text-only variant that drops the role's fill) instead of being filled behind its
+//on-color (-text). A role's main color is picked to fill a surface, so it is often too light (or, in a
+//dark scheme, too dark) to be read on the page directly. The palette-agnostic default lives once in
+//family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or BitTheme.Color.<Role>.Foreground
+//retunes it without selecting any component class.
+$clr-pri-fg: var(--bit-clr-pri-fg);
+$clr-sec-fg: var(--bit-clr-sec-fg);
+$clr-ter-fg: var(--bit-clr-ter-fg);
+$clr-inf-fg: var(--bit-clr-inf-fg);
+$clr-suc-fg: var(--bit-clr-suc-fg);
+$clr-wrn-fg: var(--bit-clr-wrn-fg);
+$clr-swr-fg: var(--bit-clr-swr-fg);
+$clr-err-fg: var(--bit-clr-err-fg);
+
+//tint - each accent role laid over a surface as a faint, translucent wash instead of a fill: the surface of
+//a tinted (soft) variant, whose text reads the role foreground above. The palette-agnostic default lives
+//once in family-tokens.scss; a preset (in its own :root[bit-theme="..."] block) or
+//BitTheme.Color.<Role>.Tint retunes it without selecting any component class.
+$clr-pri-tint: var(--bit-clr-pri-tint);
+$clr-sec-tint: var(--bit-clr-sec-tint);
+$clr-ter-tint: var(--bit-clr-ter-tint);
+$clr-inf-tint: var(--bit-clr-inf-tint);
+$clr-suc-tint: var(--bit-clr-suc-tint);
+$clr-wrn-tint: var(--bit-clr-wrn-tint);
+$clr-swr-tint: var(--bit-clr-swr-tint);
+$clr-err-tint: var(--bit-clr-err-tint);
+
+//tooltip - the fill and the text of the tooltip surface, the one popup whose colors design systems disagree on
+//(Fluent lifts a light surface with a shadow, Material paints its plain tooltip in the inverse surface with none).
+//The palette-agnostic default lives once in family-tokens.scss; a preset (in its own :root[bit-theme="..."]
+//block) or BitTheme.Color.TooltipBackground / TooltipForeground retunes it without selecting any component class.
+$clr-tooltip-bg: var(--bit-clr-tooltip-bg);
+$clr-tooltip-fg: var(--bit-clr-tooltip-fg);
+
 //focus (a11y) - per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
 $clr-pri-focus: var(--bit-clr-pri-focus);
 $clr-sec-focus: var(--bit-clr-sec-focus);
@@ -302,6 +337,8 @@ $box-shadow-callout2: var(--bit-shd-cal2);
 //or wants hairlines instead of shadows (Cupertino) retunes one token per family. Components consume
 //these instead of the callout primitive.
 $box-shadow-card: var(--bit-shd-card);
+//the elevation a card that reacts to the pointer lifts to while it is hovered.
+$box-shadow-card-hover: var(--bit-shd-card-hover);
 $box-shadow-popup: var(--bit-shd-popup);
 $box-shadow-dialog: var(--bit-shd-dialog);
 $box-shadow-sheet: var(--bit-shd-sheet);
@@ -349,6 +386,10 @@ $box-shadow-24: var(--bit-shd-24);
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
 //the base inset of a dialog surface (header/body/footer padding).
 $spa-dialog: var(--bit-spa-dialog);
+//the inset of a card and of each of its parts, per size class (Fluent 2 8/12/16px, Material 16dp).
+$spa-card-sm: var(--bit-spa-card-sm);
+$spa-card-md: var(--bit-spa-card-md);
+$spa-card-lg: var(--bit-spa-card-lg);
 
 //layout
 //density is a unitless multiplier over the spacing unit; the fallback of 1 keeps the base rhythm
@@ -361,6 +402,9 @@ $layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
 //how those buttons are aligned across the footer: centered under Fluent and Material, stretched
 //under Cupertino - which is what runs the stacked alert actions full width.
 $layout-dialog-actions-align: var(--bit-layout-dialog-actions-align);
+//how a dialog's title and message sit across it: start-aligned under Fluent and Material, centred
+//under Cupertino, whose alerts centre their text above the stacked actions.
+$layout-dialog-text-align: var(--bit-layout-dialog-text-align);
 
 //z-index
 $zindex-snackbar: var(--bit-zin-snackbar);
@@ -399,10 +443,12 @@ $shp-radius-full: var(--bit-shp-radius-full);
 //  surface - cards, accordions, messages, images, list rows
 //  popup   - callouts, menus, dropdown lists, tooltips, snackbars
 //  dialog  - dialogs and modals
+//  sheet   - the inner corners of panels and other edge-anchored sheets (square unless a preset rounds them)
 $shp-radius-control: var(--bit-shp-radius-control);
 $shp-radius-surface: var(--bit-shp-radius-surface);
 $shp-radius-popup: var(--bit-shp-radius-popup);
 $shp-radius-dialog: var(--bit-shp-radius-dialog);
+$shp-radius-sheet: var(--bit-shp-radius-sheet);
 
 //shape - per control sub-family radius. A button, a chip and a selection box are controls too, so
 //all three fall back to $shp-radius-control; a design system that shapes them apart from a plain
@@ -415,6 +461,14 @@ $shp-radius-dialog: var(--bit-shp-radius-dialog);
 $shp-radius-button: var(--bit-shp-radius-button);
 $shp-radius-chip: var(--bit-shp-radius-chip);
 $shp-radius-selection: var(--bit-shp-radius-selection);
+
+//shape - the corners of the selection indicator of a tab strip (BitPivot): square under Fluent, a capsule
+//under Fluent 2, rounded on the edge facing the label under Material. Two tokens rather than one shorthand,
+//since the edge facing the label is the top one under a horizontal header but the inline-end one beside a
+//vertical header: -tab-indicator rounds the corners facing the label, -tab-indicator-base the ones on the
+//edge the indicator stands on, and follows the first unless a design system shapes the two apart.
+$shp-radius-tab-indicator: var(--bit-shp-radius-tab-indicator);
+$shp-radius-tab-indicator-base: var(--bit-shp-radius-tab-indicator-base, var(--bit-shp-radius-tab-indicator));
 
 /*---- Size ----*/
 //The dimensions every design system decides once and every component repeats: control heights,
@@ -436,6 +490,7 @@ $siz-item-md: var(--bit-siz-item-md);
 $siz-item-lg: var(--bit-siz-item-lg);
 $siz-tab: var(--bit-siz-tab);
 $siz-tab-indicator: var(--bit-siz-tab-indicator);
+$siz-tab-divider: var(--bit-siz-tab-divider);
 $siz-divider: var(--bit-siz-divider);
 $siz-track-sm: var(--bit-siz-track-sm);
 $siz-track-md: var(--bit-siz-track-md);
@@ -463,6 +518,18 @@ $siz-switch-thumb-lg: var(--bit-siz-switch-thumb-lg);
 $siz-slider-thumb-sm: var(--bit-siz-slider-thumb-sm);
 $siz-slider-thumb-md: var(--bit-siz-slider-thumb-md);
 $siz-slider-thumb-lg: var(--bit-siz-slider-thumb-lg);
+//the height of a badge per size class, which is also the diameter of a single-digit counter, and the
+//diameter of a dot badge (Fluent 2's 16/20/24px counters, Material's 16dp large and 6dp small badge).
+$siz-badge-sm: var(--bit-siz-badge-sm);
+$siz-badge-md: var(--bit-siz-badge-md);
+$siz-badge-lg: var(--bit-siz-badge-lg);
+$siz-badge-dot-sm: var(--bit-siz-badge-dot-sm);
+$siz-badge-dot-md: var(--bit-siz-badge-dot-md);
+$siz-badge-dot-lg: var(--bit-siz-badge-dot-lg);
+//the height of a chip (BitTag) per size class, inside its rule (Fluent 2's 20/24/32px tags, Material's 32dp chip).
+$siz-chip-sm: var(--bit-siz-chip-sm);
+$siz-chip-md: var(--bit-siz-chip-md);
+$siz-chip-lg: var(--bit-siz-chip-lg);
 $siz-spinner-stroke: var(--bit-siz-spinner-stroke);
 $siz-popup-max-height: var(--bit-siz-popup-max-height);
 $siz-dialog-max-width: var(--bit-siz-dialog-max-width);
@@ -548,6 +615,17 @@ $tg-fw-bold: var(--bit-tpg-fw-bold);
 // nav item). Fluent leaves both alone; Material 2 upper-cases buttons and tracks labels at 0.1px.
 $tg-ctrl-letter-spacing: var(--bit-tpg-ctrl-letter-spacing);
 $tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
+
+// dialog typography - the title of a dialog, which every design system sizes apart from its heading
+// ramp (Fluent and Fluent 2: 20px semibold; Material: headline-small 24px regular; Cupertino: the 17px
+// semibold alert headline).
+$tg-dialog-title-font-size: var(--bit-tpg-dialog-title-font-size);
+$tg-dialog-title-font-weight: var(--bit-tpg-dialog-title-font-weight);
+
+// field-label typography - the weight of the caption that names a form field (BitLabel and the label an
+// input renders above itself), which design systems decide apart from the control-label weight: Fluent
+// sets it semibold, while Fluent 2, Material and Cupertino caption a field in their regular weight.
+$tg-field-label-font-weight: var(--bit-tpg-field-label-font-weight);
 
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);

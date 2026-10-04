@@ -73,9 +73,9 @@ public partial class ProductsPercentageWidget
     //#if (signalR == true)
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
     //#endif
 }

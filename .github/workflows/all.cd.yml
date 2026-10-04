@@ -26,9 +26,14 @@ on:
         description: iOS apps
         type: boolean
         default: true
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo and the platform website)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
 
@@ -37,6 +42,8 @@ jobs:
     if: inputs.server
     uses: ./.github/workflows/platform.website.cd.yml
     secrets: inherit
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
 
   sales_website:
     name: sales website
@@ -85,6 +92,7 @@ jobs:
     with:
       server: ${{ inputs.server }}
       windows: ${{ inputs.windows }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}
 
   admin_sample:
     name: admin sample
@@ -96,6 +104,7 @@ jobs:
       windows: ${{ inputs.windows }}
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}
 
   todo_sample:
     name: todo sample
@@ -107,3 +116,4 @@ jobs:
       windows: ${{ inputs.windows }}
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}

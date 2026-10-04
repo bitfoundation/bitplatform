@@ -136,7 +136,19 @@ public sealed record BitMapMarker
     /// <summary>When true, the marker can be moved by the user.</summary>
     public bool Draggable { get; init; }
 
-    /// <summary>Optional URL to a custom marker icon image.</summary>
+    /// <summary>
+    /// Color of the default pin - any CSS color, a theme variable such as <c>var(--bit-clr-sec)</c>
+    /// included. Null takes <c>--bit-Map-marker-color</c>, the theme's primary color unless set.
+    /// Ignored when <see cref="IconUrl"/> is set.
+    /// <para>
+    /// The same pin is drawn on every provider, so a marker colored by category looks the same on
+    /// all of them. Color alone carries no meaning to a screen reader or a color-blind user: say
+    /// the category in <see cref="Alt"/> too.
+    /// </para>
+    /// </summary>
+    public string? Color { get; init; }
+
+    /// <summary>Optional URL to a custom marker icon image, in place of the default pin.</summary>
     public string? IconUrl { get; init; }
 
     /// <summary>Width in pixels of the custom marker icon. Values below 1 are clamped to 1.</summary>

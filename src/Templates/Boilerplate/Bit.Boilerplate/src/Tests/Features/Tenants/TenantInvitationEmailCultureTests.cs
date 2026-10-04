@@ -29,16 +29,16 @@ public partial class TenantInvitationEmailCultureTests
         }
 
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         // A per-run recipient, so nothing another test does to the shared seeded account's sessions can shadow the
         // culture arranged here (See TestAccountUtils' rationale).
-        await using var recipientScope = server.WebApp.Services.CreateAsyncScope();
-        var (recipientEmail, recipientUserId) = await Identity.TestAccountUtils.CreateAndSignIn(server, recipientScope, TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (recipientEmail, recipientUserId) = await Identity.TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         // The recipient's client reports fa-IR through the real write path (See UserController.UpdateSession and
         // AppClientCoordinator.UpdateUserSession).
-        await recipientScope.ServiceProvider.GetRequiredService<IUserController>().UpdateSession(new()
+        await client.GetController<IUserController>().UpdateSession(new()
         {
             CultureName = "fa-IR",
             AppVersion = "1.0.0-test",
@@ -46,13 +46,13 @@ public partial class TenantInvitationEmailCultureTests
             PlatformType = AppPlatform.Type
         }, TestContext.CancellationToken);
 
-        await using var inviterScope = server.WebApp.Services.CreateAsyncScope();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
 
         // The e-mail templates read HttpContext.Request.GetWebAppUrl() for the footer links, and there is no real
         // request in a bare DI scope.
-        SetCurrentHttpContext(inviterScope.ServiceProvider, server.WebAppServerAddress);
+        SetCurrentHttpContext(scopeApiApp.ServiceProvider, server.WebAppAddress);
 
-        var recipient = await inviterScope.ServiceProvider.GetRequiredService<AppDbContext>()
+        var recipient = await scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>()
             .Users.SingleAsync(user => user.Id == recipientUserId, TestContext.CancellationToken);
 
         // The REAL IdentityEmailService (tests normally replace it with the capture-only TestIdentityEmailService,
@@ -64,7 +64,7 @@ public partial class TenantInvitationEmailCultureTests
             .Invokes((Job job, IState _) => enqueuedJob = job)
             .Returns("captured-job-id");
 
-        var emailService = ActivatorUtilities.CreateInstance<IdentityEmailService>(inviterScope.ServiceProvider, backgroundJobClient);
+        var emailService = ActivatorUtilities.CreateInstance<IdentityEmailService>(scopeApiApp.ServiceProvider, backgroundJobClient);
 
         // The inviter's own request culture - the language the e-mail must NOT be rendered in.
         var originalCulture = (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
@@ -75,7 +75,7 @@ public partial class TenantInvitationEmailCultureTests
             CultureInfo.CurrentCulture = inviterCulture;
             CultureInfo.CurrentUICulture = inviterCulture;
 
-            await emailService.SendTenantInvitation(recipient, "Inviter Adminsson", "Contoso", server.WebAppServerAddress, TestContext.CancellationToken);
+            await emailService.SendTenantInvitation(recipient, "Inviter Adminsson", "Contoso", server.WebAppAddress, TestContext.CancellationToken);
 
             Assert.AreEqual("sv-SE", CultureInfo.CurrentUICulture.Name,
                 "SendTenantInvitation must restore the inviter's culture: the rest of their request is still theirs.");

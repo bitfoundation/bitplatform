@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 
 namespace Bit.BlazorUI.Tests.Mcp;
@@ -326,11 +326,60 @@ public class ComponentCatalogTests : McpTestBase
     /// read the whole answer still has no way to learn that one object can set the defaults of
     /// every instance under it.
     /// </para>
+    /// <para>
+    /// A generic component's params class is generic too, and the name has to be the one that both
+    /// compiles in the snippet and resolves as the <c>typeName</c> the same line says to pass -
+    /// <c>BitDropdownParams&lt;TItem, TValue&gt;</c> rather than the <c>BitDropdownParams`2</c>
+    /// reflection calls it.
+    /// </para>
     /// </summary>
     [TestMethod]
     [DataRow("BitActionButton", "BitActionButtonParams")]
     [DataRow("BitText", "BitTextParams")]
     [DataRow("BitStack", "BitStackParams")]
+    [DataRow("BitChoiceGroup", "BitChoiceGroupParams")]
+    [DataRow("BitCircularTimePicker", "BitCircularTimePickerParams")]
+    [DataRow("BitCarousel", "BitCarouselParams")]
+    [DataRow("BitDropdown", "BitDropdownParams<TItem, TValue>")]
+    [DataRow("BitPagination", "BitPaginationParams")]
+    [DataRow("BitElement", "BitElementParams")]
+    [DataRow("BitCallout", "BitCalloutParams")]
+    [DataRow("BitAccordion", "BitAccordionParams")]
+    [DataRow("BitBreadcrumb", "BitBreadcrumbParams")]
+    [DataRow("BitTag", "BitTagParams")]
+    [DataRow("BitBasicList", "BitBasicListParams")]
+    [DataRow("BitPersona", "BitPersonaParams")]
+    [DataRow("BitMessage", "BitMessageParams")]
+    [DataRow("BitBadge", "BitBadgeParams")]
+    [DataRow("BitCard", "BitCardParams")]
+    [DataRow("BitIcon", "BitIconParams")]
+    [DataRow("BitPivot", "BitPivotParams")]
+    [DataRow("BitPanel", "BitPanelParams")]
+    [DataRow("BitScrollablePane", "BitScrollablePaneParams")]
+    [DataRow("BitModal", "BitModalParams")]
+    [DataRow("BitDialog", "BitDialogParams")]
+    [DataRow("BitCollapse", "BitCollapseParams")]
+    [DataRow("BitMediaQuery", "BitMediaQueryParams")]
+    [DataRow("BitLabel", "BitLabelParams")]
+    [DataRow("BitPullToRefresh", "BitPullToRefreshParams")]
+    [DataRow("BitLink", "BitLinkParams")]
+    [DataRow("BitSticky", "BitStickyParams")]
+    [DataRow("BitImage", "BitImageParams")]
+    [DataRow("BitShimmer", "BitShimmerParams")]
+    [DataRow("BitTooltip", "BitTooltipParams")]
+    [DataRow("BitProgress", "BitProgressParams")]
+    [DataRow("BitSplitter", "BitSplitterParams")]
+    [DataRow("BitSeparator", "BitSeparatorParams")]
+    [DataRow("BitOverlay", "BitOverlayParams")]
+    [DataRow("BitAppShell", "BitAppShellParams")]
+    [DataRow("BitFullCalendar", "BitFullCalendarParams")]
+    [DataRow("BitInfiniteScrolling", "BitInfiniteScrollingParams")]
+    [DataRow("BitAccordionList", "BitAccordionListParams")]
+    [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
+    [DataRow("BitFlag", "BitFlagParams")]
+    [DataRow("BitErrorBoundary", "BitErrorBoundaryParams")]
+    [DataRow("BitChart", "BitChartParams")]
+    [DataRow("BitMap", "BitMapParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
@@ -348,9 +397,120 @@ public class ComponentCatalogTests : McpTestBase
 
         // The line is only worth its cost where it is true: a component with no params class of its
         // own must not carry it.
-        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDropdown" });
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitTextField" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
+    }
+
+    /// <summary>
+    /// A service named after the component it shows says that component's params object reaches the
+    /// modals it shows: the service has no markup of its own and no <c>[CascadingParameter]</c> to read
+    /// it off, so without this an agent has no way to learn that one <c>BitParams</c> around the
+    /// container sets the defaults of every modal the service opens - or that a showing's own
+    /// parameters still win over them.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_names_the_params_object_of_the_component_it_shows()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## Cascading parameters", "BitModalService no longer says the modals it shows take a params object.");
+        StringAssert.Contains(answer, "`BitModalParams`", "BitModalService does not name the type the cascade carries.");
+        StringAssert.Contains(answer, "Every `BitModal` this service shows", "BitModalService does not say which component takes the cascade.");
+        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitModalParams\")", "BitModalService does not say where BitModalParams's members are listed.");
+    }
+
+    /// <summary>
+    /// A service has no root of its own, so its demo page lists no CSS variables - but the modals it
+    /// shows read BitModal's, and the <c>Style</c> of the parameters is where a service sets them. The
+    /// answer points at them rather than leaving an agent to conclude there is nothing to set.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_points_at_the_css_variables_of_the_component_it_shows()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## CSS variables", "BitModalService does not say the modals it shows read CSS variables.");
+        StringAssert.Contains(answer, "GetBitBlazorUIComponent(name: \"BitModal\")", "BitModalService does not say where the variables are listed.");
+        StringAssert.Contains(answer, "`--bit-Modal-", "BitModalService does not name a variable of the modals it shows.");
+    }
+
+    /// <summary>
+    /// A service's types are named after the component it shows, not after the service, yet the service's
+    /// page is the only one documenting them. Treated as shared, they were cut down to a one-line list of
+    /// the member names in their table - <c>BitModalParameters: CanClose, CloseOnNavigation</c> - which
+    /// reads as if those two were all a modal could be shown with.
+    /// </summary>
+    [TestMethod]
+    public async Task A_service_documents_its_own_types_in_full()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## BitModalReference (class)", "BitModalService does not document its reference in full.");
+        StringAssert.Contains(answer, "## BitModalParameters (class)", "BitModalService does not document its parameters in full.");
+        StringAssert.Contains(answer, "Every parameter of BitModal", "BitModalService does not say its parameters carry every parameter of BitModal.");
+        StringAssert.Contains(answer, "## BitModalContentParameters<TComponent> (class)", "BitModalService does not document its typed content parameters.");
+        Assert.DoesNotContain("- `BitModalParameters` (class)", answer, "BitModalService still lists its parameters as a one-liner.");
+        StringAssert.Contains(answer, "Action<BitModalParameters>", "BitModalService does not document the Update that changes some of the parameters.");
+        StringAssert.Contains(answer, "## BitModalContainer (component)", "BitModalService does not document its container.");
+        StringAssert.Contains(answer, "BitModalService?", "BitModalService does not document the Service a container can be handed.");
+    }
+
+    /// <summary>
+    /// What a params object does NOT carry, which is the half of the cascade a reader cannot infer.
+    /// <para>
+    /// Every <c>...Params</c> derives from <c>BitComponentBaseParams</c>, so it carries that half of
+    /// the inherited parameters and nothing of what a base below it adds: <c>BitCalendar</c> closes
+    /// <c>BitInputBase&lt;DateTimeOffset?&gt;</c>, and its <c>Value</c>, its validation and its
+    /// callbacks stay on the instance. Nor are the event callbacks of any component on one. An
+    /// answer that says only what is there reads as if everything is, which is the assumption that
+    /// produces a <c>BitCalendarParams</c> with a <c>Value</c> on it that does not compile.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitCalendar", "Value")]
+    [DataRow("BitCalendar", "OnSelectDate")]
+    [DataRow("BitButton", "OnClick")]
+    [DataRow("BitStack", "ChildContent")]
+    public async Task A_params_object_names_the_parameters_it_does_not_carry(string component, string parameter)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "Not on it", $"{component}'s answer does not say what its params object leaves out.");
+        StringAssert.Contains(answer, $"`{parameter}`", $"{component}'s answer does not name {parameter} at all.");
+
+        var missing = answer[answer.IndexOf("Not on it", StringComparison.Ordinal)..]
+                            .Split('\n', 2, StringSplitOptions.None)[0];
+
+        StringAssert.Contains(missing, $"`{parameter}`", $"{component}'s params object is not said to leave {parameter} out.");
+    }
+
+    /// <summary>
+    /// The members a params object takes from <c>BitComponentBaseParams</c>, which its own answer
+    /// would otherwise leave out: the tables are read with <c>DeclaredOnly</c>, so a type whose base
+    /// is a real class answers as if <c>Class</c>, <c>Style</c> and <c>IsEnabled</c> were not on it
+    /// - while the component's own answer counts them in the total it quotes.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitCalendarParams")]
+    [DataRow("BitButtonParams")]
+    public async Task A_params_type_names_what_it_inherits(string paramsType)
+    {
+        var answer = await CallAsync("GetBitBlazorUIType", new { typeName = paramsType });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "Inherited from `BitComponentBaseParams`", $"{paramsType} does not name the base it takes members from.");
+        StringAssert.Contains(answer, "`IsEnabled`", $"{paramsType} answers without the inherited members.");
+        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitComponentBaseParams\")", $"{paramsType} does not say where the inherited members are documented.");
     }
 
     /// <summary>
@@ -364,7 +524,10 @@ public class ComponentCatalogTests : McpTestBase
     {
         var answers = await AnswersAsync();
 
-        var documented = answers.Where(a => a.Value.Contains("## CSS variables", StringComparison.Ordinal)).ToArray();
+        // A service's section is a pointer at the component it shows rather than a table of its own (see
+        // A_service_points_at_the_css_variables_of_the_component_it_shows).
+        var documented = answers.Where(a => a.Value.Contains("## CSS variables", StringComparison.Ordinal) &&
+                                            a.Value.Contains("| Variable | Default | Description |", StringComparison.Ordinal)).ToArray();
 
         using var scope = Assert.Scope();
 
@@ -405,5 +568,30 @@ public class ComponentCatalogTests : McpTestBase
         CollectionAssert.Contains(names, "--bit-ActionButton-color");
         StringAssert.Contains(answer, ":root", "The answer does not say a variable can be set app-wide.");
         StringAssert.Contains(answer, "`Style`", "The answer does not say a variable can be set on one instance.");
+    }
+
+    /// <summary>
+    /// The eighteen loaders are documented on one page, Loading, whose name belongs to the shell they all render
+    /// through - a plain ComponentBase taking a <c>This</c> nobody writes. The family's API is its abstract base, and
+    /// the answer has to say which tags that API is written on.
+    /// </summary>
+    [TestMethod]
+    public async Task A_family_of_components_answers_with_its_shared_base_and_its_tags()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "Loading" });
+
+        var parameters = TableRows(answer, "## Parameters").Skip(1).Select(row => row[0].Trim('`')).ToArray();
+
+        using var scope = Assert.Scope();
+
+        CollectionAssert.Contains(parameters, "Label");
+        CollectionAssert.Contains(parameters, "Delay");
+        CollectionAssert.DoesNotContain(parameters, "This", "The answer documents the internal shell rather than the family.");
+        CollectionAssert.DoesNotContain(parameters, "ChildContent", "The answer documents the internal shell rather than the family.");
+
+        StringAssert.Contains(answer, "`BitComponentBase`", "The family's inherited parameters are not named.");
+        StringAssert.Contains(answer, "BitLoadingParams", "The family's BitParams cascade is not named.");
+        StringAssert.Contains(answer, "`BitRingLoading`", "The answer does not name the tags the family is written with.");
+        StringAssert.Contains(answer, "`BitXboxLoading`", "The answer does not name the tags the family is written with.");
     }
 }

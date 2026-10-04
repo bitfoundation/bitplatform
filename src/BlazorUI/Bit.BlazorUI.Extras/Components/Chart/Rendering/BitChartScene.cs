@@ -22,6 +22,12 @@ public sealed class BitChartScene
     /// <summary>Pattern definitions referenced via url(#id).</summary>
     public List<BitChartPatternDef> Patterns { get; } = new();
 
+    /// <summary>
+    /// The context the plugins drew with, which is also what they describe their marks from. Null when the chart drew
+    /// nothing for them to draw over.
+    /// </summary>
+    public BitChartPluginContext? PluginContext { get; set; }
+
     public BitChartLegendModel? Legend { get; set; }
     public BitChartTitleModel? Title { get; set; }
     public BitChartTitleModel? Subtitle { get; set; }

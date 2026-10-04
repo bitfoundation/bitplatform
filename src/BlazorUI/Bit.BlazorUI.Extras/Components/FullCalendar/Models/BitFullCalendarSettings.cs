@@ -186,6 +186,44 @@ public class BitFullCalendarSettings
     /// </summary>
     public bool AllowRangeSelection { get; set; } = true;
 
+    /// <summary>
+    /// The number of days the week view (and the week timeline) shows - 3 for the usual phone layout - or <c>null</c>
+    /// (the default) for the culture's whole week. A shorter week starts on the selected date rather than on the
+    /// week's first day, skips the hidden weekdays, and the previous/next buttons turn it by its own length. Values
+    /// below 1 or from 7 up mean the whole week.
+    /// </summary>
+    public int? WeekDayCount { get; set; }
+
+    /// <summary>
+    /// Lets the user create events: the "Add Event" button, the add affordance of every day and slot, and range
+    /// selection. Defaults to <c>true</c>. <c>ReadOnly</c> turns it off along with everything else.
+    /// </summary>
+    public bool AllowAdd { get; set; } = true;
+
+    /// <summary>
+    /// Lets the user change existing events: the Edit action of the details dialog, and - since they are edits
+    /// too - dragging and resizing (see <see cref="AllowDrag"/> and <see cref="AllowResize"/>). Defaults to
+    /// <c>true</c>.
+    /// </summary>
+    public bool AllowEdit { get; set; } = true;
+
+    /// <summary>
+    /// Lets the user delete events from the details dialog. Defaults to <c>true</c>.
+    /// </summary>
+    public bool AllowDelete { get; set; } = true;
+
+    /// <summary>
+    /// Lets the user move events by dragging them, or with Alt+Arrow keys, while <see cref="AllowEdit"/> is on.
+    /// Defaults to <c>true</c>.
+    /// </summary>
+    public bool AllowDrag { get; set; } = true;
+
+    /// <summary>
+    /// Lets the user change how long events last by dragging their edges, or with Shift+Arrow keys, while
+    /// <see cref="AllowEdit"/> is on. Defaults to <c>true</c>.
+    /// </summary>
+    public bool AllowResize { get; set; } = true;
+
     /// <summary>The accepted <see cref="SlotDurationMinutes"/> values, ascending.</summary>
     internal static readonly int[] SlotDurations = [5, 6, 10, 12, 15, 20, 30, 60];
 

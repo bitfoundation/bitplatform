@@ -5,7 +5,7 @@ public sealed class BitChartTitleOptions
 {
     public bool Display { get; set; }
     public string Text { get; set; } = "";
-    public string Color { get; set; } = "var(--bit-clr-fg-pri, #1A1A1A)";
+    public string Color { get; set; } = "var(--bit-Chart-title-color, var(--bit-clr-fg-pri))";
     public BitChartPosition Position { get; set; } = BitChartPosition.Top;
     public BitChartAlign Align { get; set; } = BitChartAlign.Center;
     public BitChartFont Font { get; set; } = new() { Size = 16, Weight = "bold" };

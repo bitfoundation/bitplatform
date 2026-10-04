@@ -33,7 +33,7 @@
 //                                           field drags along                               (default: vertical)
 //   --bit-TextField-label-color             color of the label                              (default: $clr-fg-pri)
 //   --bit-TextField-label-font-size         size of the label                               (default: --bit-TextField-font-size)
-//   --bit-TextField-label-font-weight       weight of the label                             (default: $tg-fw-semibold)
+//   --bit-TextField-label-font-weight       weight of the label                             (default: $tg-field-label-font-weight)
 //   --bit-TextField-label-letter-spacing    tracking of the label                           (default: $tg-ctrl-letter-spacing)
 //   --bit-TextField-label-gap               room between the label and the frame when the
 //                                           two share a row (LabelPosition Start/End)       (default: spacing(1))
@@ -213,7 +213,7 @@
     overflow-wrap: break-word;
     color: var(--bit-TextField-label-color, #{$clr-fg-pri});
     letter-spacing: var(--bit-TextField-label-letter-spacing, #{$tg-ctrl-letter-spacing});
-    font-weight: var(--bit-TextField-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-TextField-label-font-weight, #{$tg-field-label-font-weight});
     font-size: var(--bit-TextField-label-font-size, var(--bit-TextField-font-size, var(--bit-tfl-font-size)));
 }
 

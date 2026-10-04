@@ -433,7 +433,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
         // The parameters of the input base classes are not tracked by the generated HasNotBeenSet of the
         // component, which only knows the ones the component declares itself, so they are asked about through
         // the tier that does track them.
-        if (AutoComplete.HasValue() && bitTextField.InheritedParameterHasNotBeenSet(nameof(AutoComplete)))
+        if (AutoComplete.HasValue() && bitTextField.HasNotBeenSetOnTextInput(nameof(AutoComplete)))
         {
             bitTextField.AutoComplete = AutoComplete;
         }
@@ -520,7 +520,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.CountTemplate = CountTemplate;
         }
 
-        if (DebounceTime.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue && bitTextField.HasNotBeenSetOnTextInput(nameof(DebounceTime)))
         {
             bitTextField.DebounceTime = DebounceTime.Value;
         }
@@ -582,7 +582,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.IconTitle = IconTitle;
         }
 
-        if (Immediate.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(Immediate)))
+        if (Immediate.HasValue && bitTextField.HasNotBeenSetOnTextInput(nameof(Immediate)))
         {
             bitTextField.Immediate = Immediate.Value;
         }
@@ -674,7 +674,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (NoValidate.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(NoValidate)))
+        if (NoValidate.HasValue && bitTextField.HasNotBeenSetOnInput(nameof(NoValidate)))
         {
             bitTextField.NoValidate = NoValidate.Value;
         }
@@ -711,14 +711,14 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.PreventEnter = PreventEnter.Value;
         }
 
-        if (ReadOnly.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(ReadOnly)))
+        if (ReadOnly.HasValue && bitTextField.HasNotBeenSetOnInput(nameof(ReadOnly)))
         {
             bitTextField.ReadOnly = ReadOnly.Value;
 
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (Required.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(Required)))
+        if (Required.HasValue && bitTextField.HasNotBeenSetOnInput(nameof(Required)))
         {
             bitTextField.Required = Required.Value;
 
@@ -803,7 +803,7 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.SuffixTemplate = SuffixTemplate;
         }
 
-        if (ThrottleTime.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue && bitTextField.HasNotBeenSetOnTextInput(nameof(ThrottleTime)))
         {
             bitTextField.ThrottleTime = ThrottleTime.Value;
         }

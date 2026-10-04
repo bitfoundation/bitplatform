@@ -4,14 +4,13 @@ public partial class BitFcViewTabs
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-
-    // Unique per instance so two calendars on one page don't produce duplicate element ids.
-    private readonly string _stripId = "bit-bfc-view-tabs-" + Guid.NewGuid().ToString("N");
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     private IReadOnlyList<BitFullCalendarView> _views = [];
     private bool _pendingFocus;
 
-    private string TabId(BitFullCalendarView view) => $"{_stripId}-{(int)view}";
+    // Derived from the calendar's id, so the body can name the tab that labels it.
+    private string TabId(BitFullCalendarView view) => Parts.ViewTabId(view);
 
     /// <summary>
     /// Arrow, Home, and End move the selection along the strip - the tab pattern every toolbar

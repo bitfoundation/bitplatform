@@ -1,5 +1,36 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// swiper and one set on the Style of an instance re-skins that one alone:
+//   --bit-Swiper-gap                         space between the items                        (default: 0, the Gap parameter wins)
+//   --bit-Swiper-peek                        room at both ends the neighboring items peek
+//                                            into                                           (default: 0, the Peek parameter wins)
+//   --bit-Swiper-vertical-height             height of a vertical swiper                    (default: spacing(25))
+//   --bit-Swiper-focus-color                 color of every keyboard focus indicator        (default: $clr-pri-focus / the role's focus color)
+//   --bit-Swiper-button-color                glyph color of the next/prev and play/pause
+//                                            buttons                                        (default: $clr-fg-pri / the role's main color)
+//   --bit-Swiper-button-hover-color          glyph color of those buttons on hover          (default: $clr-fg-pri-hover / the role's hover color)
+//   --bit-Swiper-button-background           background of the next/prev buttons            (default: transparent)
+//   --bit-Swiper-button-hover-background     background of the next/prev buttons on hover   (default: the rest background)
+//   --bit-Swiper-button-opacity              opacity of the buttons at rest                 (default: .7)
+//   --bit-Swiper-button-width                width of the next/prev strips (their height on
+//                                            a vertical swiper, never below 24px)           (default: 10%)
+//   --bit-Swiper-button-size                 glyph size of the next/prev buttons            (default: per Size)
+//   --bit-Swiper-dot-size                    diameter of a dot                              (default: per Size)
+//   --bit-Swiper-dot-current-width           width of the current dot, for a pill-shaped
+//                                            marker                                         (default: the dot size)
+//   --bit-Swiper-dot-radius                  corner radius of a dot                         (default: $shp-radius-full)
+//   --bit-Swiper-dot-gap                     space between the dots                         (default: whatever keeps a 24px target per dot)
+//   --bit-Swiper-dot-color                   fill of a dot                                  (default: $clr-brd-pri)
+//   --bit-Swiper-dot-hover-color             fill of a dot on hover                         (default: $clr-brd-pri-hover)
+//   --bit-Swiper-dot-current-color           fill of the current dot                        (default: the accent / the role's main color)
+//   --bit-Swiper-dot-current-hover-color     fill of the current dot on hover               (default: the accent / the role's hover color)
+//   --bit-Swiper-dots-margin                 space between the items and the row of dots    (default: spacing(1.25))
+
+// The smallest pointer target of WCAG 2.2 (SC 2.5.8). The dots are drawn smaller than that, so their hit area
+// is grown around them and the row spaces them at least this far apart.
+$swp-target: 24px;
+
 .bit-swp {
     margin: auto;
     display: flex;
@@ -7,25 +38,31 @@
     position: relative;
     flex-direction: column;
 
-    // The dot of the current page takes the accent (or the Color) of the swiper, and the buttons take the
-    // neutral foreground so they stay legible over whatever the items hold. The uncolored swiper resolves
-    // to the primary accent.
-    --bit-swp-clr: #{$clr-pri};
-    --bit-swp-clr-hover: #{$clr-pri-hover};
-    --bit-swp-btn: #{$clr-fg-pri};
-    --bit-swp-btn-hover: #{$clr-fg-pri-hover};
-    --bit-swp-dot: #{$clr-bg-ter};
-    --bit-swp-dot-hover: #{$clr-bg-ter-hover};
-    --bit-swp-gap: 0px;
-    --bit-swp-dot-size: #{spacing(1.25)};
-    --bit-swp-btn-size: #{spacing(3)};
+    // The size classes write the -def values and the public variables read them as their fallback, so a size
+    // class and a variable set on :root never fight over the same property: the public name always wins.
+    --bit-swp-dot-size-def: #{spacing(1.25)};
+    --bit-swp-btn-size-def: #{spacing(3)};
+
+    // The accent (or the Color) colors the current dot, and the buttons take the neutral foreground so they
+    // stay legible over whatever the items hold. A role class replaces these internal values; the public
+    // variables stay on top of both.
+    --bit-swp-clr-def: #{$clr-pri};
+    --bit-swp-clr-hover-def: #{$clr-pri-hover};
+    --bit-swp-btn-def: #{$clr-fg-pri};
+    --bit-swp-btn-hover-def: #{$clr-fg-pri-hover};
+    --bit-swp-focus-def: #{$clr-pri-focus};
+
+    --bit-swp-gap: var(--bit-Swiper-gap, 0px);
+    --bit-swp-peek: var(--bit-Swiper-peek, 0px);
+    --bit-swp-focus: var(--bit-Swiper-focus-color, var(--bit-swp-focus-def));
+    --bit-swp-dot-size: var(--bit-Swiper-dot-size, var(--bit-swp-dot-size-def));
 
     // The axis the swiper scrolls on, which the snapping below is written in terms of so a single class
     // covers both orientations.
     --bit-swp-axis: x;
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-swp-focus));
     }
 }
 
@@ -52,6 +89,15 @@
     overflow-y: hidden;
     overscroll-behavior-x: contain;
     scroll-snap-type: var(--bit-swp-snap, none);
+
+    // The peek is padding, so the fraction VisibleItemsCount sizes the items with is a fraction of what is
+    // left between the two ends, and scroll padding, so the snapping settles the items against it rather than
+    // against the edge of the box. The browser side reads it back off the box for its own alignment. Each end
+    // is capped at a quarter of the box (a padding percentage is one of the width the box fills), so however
+    // large a peek is asked for, half the swiper is always left for the items.
+    box-sizing: border-box;
+    padding-inline: min(var(--bit-swp-peek), 25%);
+    scroll-padding-inline: min(var(--bit-swp-peek), 25%);
 
     // The swiper animates itself by writing the scroll position a frame at a time, which a smooth
     // scrolling rule of the hosting application would animate a second time, so the box is kept on the
@@ -124,10 +170,23 @@
     scroll-snap-align: end;
 }
 
+// The live region that announces the item the swiper comes to stand on, kept out of sight.
+.bit-swp-sro {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 // A vertical swiper is laid out over its own height, so it needs one; this is the default, which any
-// height set through the Style parameter or a class replaces.
+// height set through the Style parameter, a class or the public variable replaces.
 .bit-swp-vrt {
-    height: spacing(25);
+    height: var(--bit-Swiper-vertical-height, #{spacing(25)});
     --bit-swp-axis: y;
 
     .bit-swp-cnt {
@@ -136,6 +195,12 @@
         overflow-y: auto;
         overscroll-behavior-x: auto;
         overscroll-behavior-y: contain;
+        // A padding percentage is one of the width even here, so the quarter-of-the-box cap is measured by
+        // the browser side and handed down as --bit-swp-pmx; until it has measured, the peek goes uncapped.
+        padding-inline: 0;
+        padding-block: min(var(--bit-swp-peek), var(--bit-swp-pmx, var(--bit-swp-peek)));
+        scroll-padding-inline: 0;
+        scroll-padding-block: min(var(--bit-swp-peek), var(--bit-swp-pmx, var(--bit-swp-peek)));
     }
 }
 
@@ -145,35 +210,38 @@
     border: 0;
     padding: 0;
     z-index: 1;
-    opacity: .5;
     display: flex;
     cursor: pointer;
     background: 0 0;
     text-align: center;
     align-items: center;
     justify-content: center;
-    color: var(--bit-swp-btn);
-    font-size: var(--bit-swp-btn-size);
-    transition: opacity $mot-duration $mot-easing;
+    color: var(--bit-Swiper-button-color, var(--bit-swp-btn-def));
+
+    // The resting glyph stays opaque enough to keep the 3:1 contrast of a control (WCAG 1.4.11) against the
+    // background it sits on; the hover brings it to full strength.
+    opacity: var(--bit-Swiper-button-opacity, .7);
+    transition: opacity $mot-duration $mot-easing, color $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            outline: 0;
-            opacity: .9;
+            opacity: 1;
             text-decoration: none;
-            color: var(--bit-swp-btn-hover);
+            color: var(--bit-Swiper-button-hover-color, var(--bit-swp-btn-hover-def));
         }
-    }
-
-    &:focus-visible {
-        opacity: 1;
-
-        @include focus-ring;
     }
 
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
+    }
+}
+
+.bit-swp-ppb {
+    &:focus-visible {
+        opacity: 1;
+
+        @include focus-ring(var(--bit-swp-focus));
     }
 }
 
@@ -183,9 +251,31 @@
 .bit-swp-lbt {
     top: 0;
     bottom: 0;
-    width: 10%;
     z-index: 2;
     position: absolute;
+    width: var(--bit-Swiper-button-width, 10%);
+    // A percentage of a narrow swiper is less than a pointer target, so the strip never gets narrower than one.
+    min-width: $swp-target;
+    font-size: var(--bit-Swiper-button-size, var(--bit-swp-btn-size-def));
+    background-color: var(--bit-Swiper-button-background, transparent);
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-Swiper-button-hover-background, var(--bit-Swiper-button-background, transparent));
+        }
+    }
+
+    // The strips sit against the edges of a box that clips its overflow, so a ring drawn outside of them
+    // would be cut off on three sides. The indicator is drawn inside the strip instead.
+    &:focus-visible {
+        opacity: 1;
+        outline: $shp-focus-ring-width solid var(--bit-swp-focus);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+        @media (forced-colors: active) {
+            outline-color: Highlight;
+        }
+    }
 }
 
 .bit-swp-rbt {
@@ -205,7 +295,9 @@
         bottom: unset;
         inset-inline: 0;
         width: 100%;
-        height: 10%;
+        min-width: 0;
+        height: var(--bit-Swiper-button-width, 10%);
+        min-height: $swp-target;
     }
 
     .bit-swp-rbt {
@@ -227,44 +319,61 @@
     align-items: center;
     justify-content: center;
     gap: spacing(0.5);
-    margin-top: spacing(1.25);
+    margin-top: var(--bit-Swiper-dots-margin, #{spacing(1.25)});
+
+    // The root clips its overflow, so the row keeps room under its controls for their focus rings.
+    padding-bottom: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
 }
 
 .bit-swp-ppb {
     position: relative;
+    min-width: $swp-target;
+    min-height: $swp-target;
+    border-radius: $shp-radius-button;
     font-size: calc(var(--bit-swp-dot-size) + #{spacing(0.5)});
 }
 
 // The dots group scopes the accessible label to the dots alone (the play/pause button lives outside of
 // it). It lays the dots out exactly like its container does, so the row looks the same with or without the
-// button next to it.
+// button next to it. The default gap keeps the dots a pointer target apart, which is what lets their grown
+// hit areas below sit side by side without overlapping.
 .bit-swp-dts {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: spacing(0.5);
+    min-height: $swp-target;
+    gap: var(--bit-Swiper-dot-gap, max(#{spacing(0.5)}, calc(#{$swp-target} - var(--bit-swp-dot-size))));
 }
 
 .bit-swp-dot {
     border: 0;
     padding: 0;
     cursor: pointer;
-    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
     display: inline-block;
     width: var(--bit-swp-dot-size);
     height: var(--bit-swp-dot-size);
-    background-color: var(--bit-swp-dot);
-    transition: background-color $mot-duration-long $mot-easing;
+    border-radius: var(--bit-Swiper-dot-radius, #{$shp-radius-full});
+    background-color: var(--bit-Swiper-dot-color, #{$clr-brd-pri});
+    transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing;
+
+    // The hit area is grown to the WCAG pointer target around the drawn dot, without changing how it looks.
+    &::after {
+        content: "";
+        position: absolute;
+        inset: min(0px, calc((var(--bit-swp-dot-size) - #{$swp-target}) / 2));
+    }
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-swp-dot-hover);
+            background-color: var(--bit-Swiper-dot-hover-color, #{$clr-brd-pri-hover});
         }
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-swp-focus));
     }
 
     &:disabled {
@@ -279,18 +388,24 @@
     width: auto;
     height: auto;
     line-height: 1;
-    border-radius: 0;
+    min-width: $swp-target;
+    min-height: $swp-target;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--bit-swp-btn);
+    border-radius: $shp-radius-button;
     background-color: transparent;
+    color: var(--bit-Swiper-button-color, var(--bit-swp-btn-def));
     transition: color $mot-duration-long $mot-easing;
+
+    &::after {
+        content: none;
+    }
 
     @media (hover: hover) {
         &:hover {
             background-color: transparent;
-            color: var(--bit-swp-btn-hover);
+            color: var(--bit-Swiper-button-hover-color, var(--bit-swp-btn-hover-def));
         }
     }
 
@@ -301,73 +416,109 @@
 }
 
 .bit-swp-cud {
-    background-color: var(--bit-swp-clr);
+    width: var(--bit-Swiper-dot-current-width, var(--bit-swp-dot-size));
+    background-color: var(--bit-Swiper-dot-current-color, var(--bit-swp-clr-def));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-swp-clr-hover);
+            background-color: var(--bit-Swiper-dot-current-hover-color, var(--bit-swp-clr-hover-def));
         }
     }
 }
 
 .bit-swp-dtt.bit-swp-cud {
+    width: auto;
     background-color: transparent;
-    color: var(--bit-swp-clr);
+    color: var(--bit-Swiper-dot-current-color, var(--bit-swp-clr-def));
 
     @media (hover: hover) {
         &:hover {
             background-color: transparent;
-            color: var(--bit-swp-clr-hover);
+            color: var(--bit-Swiper-dot-current-hover-color, var(--bit-swp-clr-hover-def));
         }
     }
 }
 
 
 .bit-swp-sm {
-    --bit-swp-dot-size: #{spacing(1)};
-    --bit-swp-btn-size: #{spacing(2)};
+    --bit-swp-dot-size-def: #{spacing(1)};
+    --bit-swp-btn-size-def: #{spacing(2)};
 }
 
 .bit-swp-md {
-    --bit-swp-dot-size: #{spacing(1.25)};
-    --bit-swp-btn-size: #{spacing(3)};
+    --bit-swp-dot-size-def: #{spacing(1.25)};
+    --bit-swp-btn-size-def: #{spacing(3)};
 }
 
 .bit-swp-lg {
-    --bit-swp-dot-size: #{spacing(1.75)};
-    --bit-swp-btn-size: #{spacing(4)};
+    --bit-swp-dot-size-def: #{spacing(1.75)};
+    --bit-swp-btn-size-def: #{spacing(4)};
 }
 
 
 .bit-swp-apri {
-    --bit-swp-clr: #{$clr-pri};
-    --bit-swp-clr-hover: #{$clr-pri-hover};
+    --bit-swp-clr-def: #{$clr-pri};
+    --bit-swp-clr-hover-def: #{$clr-pri-hover};
 }
 
 .bit-swp-asec {
-    --bit-swp-clr: #{$clr-sec};
-    --bit-swp-clr-hover: #{$clr-sec-hover};
+    --bit-swp-clr-def: #{$clr-sec};
+    --bit-swp-clr-hover-def: #{$clr-sec-hover};
 }
 
 .bit-swp-ater {
-    --bit-swp-clr: #{$clr-ter};
-    --bit-swp-clr-hover: #{$clr-ter-hover};
+    --bit-swp-clr-def: #{$clr-ter};
+    --bit-swp-clr-hover-def: #{$clr-ter-hover};
 }
 
 .bit-swp-atra {
-    --bit-swp-clr: transparent;
-    --bit-swp-clr-hover: transparent;
+    --bit-swp-clr-def: transparent;
+    --bit-swp-clr-hover-def: transparent;
 }
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They sit
 // after the accent classes, so a swiper that sets both Color and Accent renders with its Color. The
-// buttons take the role color as well, so the whole chrome of the swiper reads as that role.
+// buttons and the focus indicators take the role color as well, so the whole chrome of the swiper reads as
+// that role.
 @each $role, $tokens in $bit-color-roles {
     .bit-swp-#{$role} {
-        --bit-swp-clr: #{role($tokens, main)};
-        --bit-swp-clr-hover: #{role($tokens, hover)};
-        --bit-swp-btn: #{role($tokens, main)};
-        --bit-swp-btn-hover: #{role($tokens, hover)};
+        --bit-swp-clr-def: #{role($tokens, main)};
+        --bit-swp-clr-hover-def: #{role($tokens, hover)};
+        --bit-swp-btn-def: #{role($tokens, main)};
+        --bit-swp-btn-hover-def: #{role($tokens, hover)};
+        --bit-swp-focus-def: #{role($tokens, focus)};
+    }
+}
+
+
+// Forced-colors modes paint every background with the page color, which would leave the dots as nothing
+// at all, so they are drawn in the system colors instead: the text color for a dot and the highlight for
+// the current one, which is then told apart by more than its color alone.
+@media (forced-colors: active) {
+    .bit-swp-dot {
+        forced-color-adjust: none;
+        background-color: CanvasText;
+
+        &:disabled {
+            background-color: GrayText;
+        }
+    }
+
+    .bit-swp-cud {
+        background-color: Highlight;
+        outline: 1px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    .bit-swp-dtt {
+        color: ButtonText;
+        background-color: transparent;
+    }
+
+    .bit-swp-dtt.bit-swp-cud {
+        color: Highlight;
+        outline: none;
+        text-decoration: underline;
     }
 }

@@ -156,10 +156,81 @@ public static class BitDataGridQueryableProcessor
             BitDataGridFilterOperator.Contains or BitDataGridFilterOperator.DoesNotContain
                 or BitDataGridFilterOperator.StartsWith or BitDataGridFilterOperator.EndsWith
                 => BuildStringMatch(member, filter),
+            BitDataGridFilterOperator.In => BuildSetMatch(accessor, member, filter, negate: false),
+            BitDataGridFilterOperator.NotIn => BuildSetMatch(accessor, member, filter, negate: true),
             _ => BuildComparison(accessor, member, filter),
         };
 
         return body is null ? null : Expression.Lambda<Func<TItem, bool>>(body, param);
+    }
+
+    /// <summary>
+    /// Translates a set operand into one <c>Enumerable.Contains</c> over a typed array (SQL <c>IN</c>),
+    /// or - for a DateTime/DateTimeOffset member, whose midnight members mean a whole day - into an OR
+    /// of the same per-member equalities a single <see cref="BitDataGridFilterOperator.Equals"/> builds.
+    /// Members that cannot be coerced to the member type are dropped; a set left empty applies no filter.
+    /// </summary>
+    private static Expression? BuildSetMatch<TItem>(
+        BitDataGridPropertyAccessor<TItem> accessor, Expression member, BitDataGridFilterDescriptor filter, bool negate)
+    {
+        if (!BitDataGridDataProcessor.TryGetSetMembers(filter.Value, out var members) || members.Count == 0) return null;
+
+        var underlying = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+        var nullable = !member.Type.IsValueType || member.Type != underlying;
+
+        Expression? body;
+        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset))
+        {
+            body = null;
+            foreach (var m in members)
+            {
+                var eq = BuildComparison(accessor, member, new BitDataGridFilterDescriptor { ColumnId = filter.ColumnId, Operator = BitDataGridFilterOperator.Equals, Value = m });
+                if (eq is null) continue;
+                body = body is null ? eq : Expression.OrElse(body, eq);
+            }
+        }
+        else
+        {
+            var values = new List<object?>(members.Count);
+            foreach (var m in members)
+            {
+                if (m is null)
+                {
+                    if (nullable) values.Add(null);
+                    continue;
+                }
+                if (accessor.TryConvertValue(m, out var converted) && converted is not null) values.Add(converted);
+            }
+            if (values.Count == 0)
+            {
+                body = null;
+            }
+            else if (member.Type == typeof(string))
+            {
+                // Case-insensitive like the in-memory pipeline (BitDataGridValueComparer) and BuildStringMatch:
+                // both sides are lowered with the same culture-aware ToLower(), and a null row value is matched
+                // separately since ToLower() cannot be called on it.
+                var toLower = typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
+                var lowered = values.OfType<string>().Select(v => v.ToLower()).Distinct().ToArray();
+                var isNull = Expression.Equal(member, Expression.Constant(null, typeof(string)));
+                Expression? match = lowered.Length == 0 ? null : Expression.AndAlso(Expression.Not(isNull),
+                    Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)],
+                        Expression.Constant(lowered, typeof(string[])), Expression.Call(member, toLower)));
+                body = values.Contains(null)
+                    ? (match is null ? isNull : Expression.OrElse(isNull, match))
+                    : match;
+            }
+            else
+            {
+                var array = Array.CreateInstance(member.Type, values.Count);
+                for (int i = 0; i < values.Count; i++) array.SetValue(values[i], i);
+                body = Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [member.Type],
+                    Expression.Constant(array, array.GetType()), member);
+            }
+        }
+
+        if (body is null) return null;
+        return negate ? Expression.Not(body) : body;
     }
 
     private static Expression? BuildEmptiness(Expression member, bool negate)

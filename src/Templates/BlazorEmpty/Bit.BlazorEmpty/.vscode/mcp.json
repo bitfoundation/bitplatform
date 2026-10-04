@@ -1,8 +1,8 @@
-{
+﻿{
     "servers": {
-        "DeepWiki": {
-            "type": "sse",
-            "url": "https://mcp.deepwiki.com/mcp"
+        "blazorui": {
+            "type": "http",
+            "url": "https://blazorui.bitplatform.dev/mcp"
         },
         "microsoft.docs.mcp": {
             "type": "http",

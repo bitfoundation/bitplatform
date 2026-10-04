@@ -3,6 +3,7 @@ namespace Bit.BlazorUI;
 public partial class BitFcMonthEventBadge
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
@@ -12,17 +13,25 @@ public partial class BitFcMonthEventBadge
     [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
+    /// <summary>
+    /// True for the segment that stands for the event in the tab order and to assistive technology: a multi-day
+    /// event is drawn once per day it covers, and only the first segment of each run (a week row) is one stop -
+    /// the rest stay clickable but are skipped, instead of repeating the same event once per day.
+    /// </summary>
+    [Parameter] public bool IsLead { get; set; } = true;
+
     private string MarginStyle
     {
         get
         {
-            var isRtl = State.IsRtl;
+            // Logical margins, so a bar joined across cells overlaps its neighbour on the side it continues
+            // to in either direction - whether the direction comes from the culture or from Dir.
             return Position switch
             {
-                "first"  => isRtl ? "margin-left:-4px; margin-right:2px;" : "margin-left:2px; margin-right:-4px;",
-                "middle" => "margin-left:-4px; margin-right:-4px;",
-                "last"   => isRtl ? "margin-left:2px; margin-right:-4px;" : "margin-left:-4px; margin-right:2px;",
-                _        => "margin:0 2px;"
+                "first"  => "margin-inline:2px -4px;",
+                "middle" => "margin-inline:-4px;",
+                "last"   => "margin-inline:-4px 2px;",
+                _        => "margin-inline:2px;"
             };
         }
     }
@@ -41,7 +50,7 @@ public partial class BitFcMonthEventBadge
         // Keyboard parity for dragging a badge across the month grid: Alt+Arrow moves it a day,
         // following the reading direction, under the same rules the drop path obeys.
         if (e.Key is not ("ArrowLeft" or "ArrowRight") || e.AltKey is false) return;
-        if (State.ReadOnly || Event.IsReadOnly) return;
+        if (State.CanDrag(Event) is false) return;
 
         var forward = (e.Key == "ArrowRight") != State.IsRtl;
         var step = TimeSpan.FromDays(forward ? 1 : -1);
@@ -56,42 +65,7 @@ public partial class BitFcMonthEventBadge
             return;
         }
 
-        var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
-        var updated = new BitFullCalendarEvent
-        {
-            Id = Event.Id,
-            Title = Event.Title,
-            Description = Event.Description,
-            StartDate = start,
-            EndDate = end,
-            Color = Event.Color,
-            Resource = Event.Resource,
-            Data = Event.Data,
-            Attendees = [.. Event.Attendees],
-            IsAllDay = Event.IsAllDay,
-            Recurrence = Event.Recurrence,
-            IsReadOnly = Event.IsReadOnly,
-            CssClass = Event.CssClass
-        };
-
-        State.UpdateEvent(updated);
-
-        try
-        {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                OldEvent = oldSnapshot,
-                Kind = BitFullCalendarChangeKind.Edit,
-                Source = BitFullCalendarChangeSource.Drag
-            });
-        }
-        catch
-        {
-            // Notification failed: put the event back where it was so the local state stays in sync
-            // with what consumers believe, mirroring the drop path's compensation.
-            State.UpdateEvent(oldSnapshot);
-            throw;
-        }
+        // An occurrence of a series moves on its own; the notifier detaches it and reports both halves.
+        await Notifier.CommitEditAsync(Event, start, end, Event.Resource, BitFullCalendarChangeSource.Drag);
     }
 }

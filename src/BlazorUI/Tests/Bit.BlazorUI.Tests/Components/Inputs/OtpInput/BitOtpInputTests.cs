@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -1039,6 +1041,89 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.AreEqual("1", com.Instance.Value);
         Assert.AreEqual("••", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotWriteASingleCharacterMaskIntoTheCode()
+    {
+        // The very same event as above with a Mask of one character, which is what a mask usually is: the
+        // masking glyph is the whole value the input reports, so the single character shortcut of the diff
+        // used to take it for a typed character and write it into the code.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Mask, "●");
+            parameters.Add(p => p.DefaultValue, "1");
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "●" });
+
+        Assert.AreEqual("1", com.Instance.Value);
+        Assert.AreEqual("●", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldStillReplaceACharacterTypedOverAMaskedInput()
+    {
+        // The guard above must not swallow the keystroke that replaces a masked character: focusing an input
+        // selects what it holds, so what the browser reports is the new character on its own.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Mask, "●");
+            parameters.Add(p => p.DefaultValue, "12");
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "9" });
+
+        Assert.AreEqual("92", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldTakeACharacterTypedOverTheSameCharacter()
+    {
+        // Focusing an input selects the character it holds, so typing that very same character over it is
+        // reported as a value equal to the one the input was already showing. With no Mask set that is a
+        // keystroke like any other: it has to be written and the focus has to move on. The guard answering
+        // an unchanged masked value must not reach it, or a code re-typed over a code that starts with the
+        // same digit would lose that digit and shift the rest of itself one input to the left.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.DefaultValue, "19");
+        });
+
+        var focusCount = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual("19", com.Instance.Value);
+        Assert.AreEqual(focusCount + 1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldWalkThroughACodeTypedOverTheSameCode()
+    {
+        // The whole of what a swallowed keystroke costs: the focus is what carries the next character to the
+        // next input, so a code typed over the very same code has to advance once per input but the last -
+        // otherwise the character after the swallowed one lands in the input that kept the focus, and the
+        // rest of the code shifts one input to the left.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        var focusCount = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        var code = "1234";
+        for (var index = 0; index < code.Length; index++)
+        {
+            await com.FindAll(".bit-otp-inp")[index].InputAsync(new ChangeEventArgs { Value = code[index].ToString() });
+        }
+
+        Assert.AreEqual("1234", com.Instance.Value);
+        Assert.AreEqual(focusCount + 3, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]
@@ -2251,6 +2336,38 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
     }
 
+    [TestMethod]
+    public async Task BitOtpInputFocusAsyncShouldDoNothingBeforeTheFirstRender()
+    {
+        // The element references are bound once the inputs have been rendered, so every one of the four
+        // overloads has to be refused until then - including the two inherited ones, which is what an
+        // argument list of none and one of a single bool are resolved to.
+        var otpInput = new BitOtpInput();
+
+        await otpInput.FocusAsync();
+        await otpInput.FocusAsync(true);
+        await otpInput.FocusAsync(0);
+        await otpInput.FocusAsync(3);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputFocusAsyncShouldLandOnTheFirstInputWhateverOverloadIsCalled()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+        });
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync());
+        await com.InvokeAsync(() => com.Instance.FocusAsync(true));
+
+        // The inherited InputElement stands for the input holding the first character of the code, so the
+        // two overloads of the base class address the very same element that FocusAsync(0) does.
+        Assert.AreEqual(com.Instance.InputElements[0], com.Instance.InputElement);
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)
@@ -2601,5 +2718,469 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual("●", inputs[0].GetAttribute("value"));
         Assert.IsTrue(string.IsNullOrEmpty(inputs[1].GetAttribute("value")));
         Assert.AreEqual("0", inputs[1].GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRejectWhitespaceInsteadOfClearingTheInput()
+    {
+        // The focused input is selected, so a pressed space bar replaces the character that was in it. No
+        // code is made of whitespace, so it must be refused rather than allowed to delete that character.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.DefaultValue, "12");
+        });
+
+        (string Value, int Index)? invalidArgs = null;
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.OnInvalid, args => invalidArgs = args);
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = " " });
+
+        Assert.AreEqual("12", com.Instance.Value);
+        Assert.AreEqual("2", com.FindAll(".bit-otp-inp")[1].GetAttribute("value"));
+        Assert.AreEqual(" ", invalidArgs?.Value);
+        Assert.AreEqual(1, invalidArgs?.Index);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldStillClearAnInputOnAnEmptyInputEvent()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.DefaultValue, "123");
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "" });
+
+        Assert.AreEqual("13", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldNotRenderAnAriaLabelOnItsGenericRootElement()
+    {
+        // aria-label is prohibited on a generic element and dropped by assistive technologies, so the name
+        // of the code belongs on the group of the inputs instead of being rendered in both places.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "One time code");
+        });
+
+        Assert.IsFalse(com.Find(".bit-otp").HasAttribute("aria-label"));
+        Assert.AreEqual("One time code", com.Find(".bit-otp-iwr").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldAnnounceTheDescriptionAsTheInvalidStateTurnsOn()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "That code is not correct.");
+        });
+
+        var status = com.Find(".bit-otp-sts");
+
+        // The region is rendered from the start and left empty, since one added with its text already in
+        // it is not announced by most screen readers.
+        Assert.AreEqual("status", status.GetAttribute("role"));
+        Assert.AreEqual("polite", status.GetAttribute("aria-live"));
+        Assert.AreEqual(string.Empty, status.TextContent);
+
+        com.Render(parameters => parameters.Add(p => p.Invalid, true));
+
+        Assert.AreEqual("That code is not correct.", com.Find(".bit-otp-sts").TextContent);
+
+        com.Render(parameters => parameters.Add(p => p.Invalid, false));
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-otp-sts").TextContent);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldAnnounceTheDescriptionWhileTheCodeIsBeingChecked()
+    {
+        // aria-busy asks a screen reader to hold off on the changes inside the group, it never announces
+        // the wait itself, so the sentence that says the code is being checked has to reach the live region
+        // the very same way the sentence of a rejected code does.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Enter the code we sent you.");
+        });
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-otp-sts").TextContent);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Description, "Checking the code…");
+        });
+
+        Assert.AreEqual("Checking the code…", com.Find(".bit-otp-sts").TextContent);
+
+        // The answer came back rejected: the busy state goes and the error state arrives, so the region
+        // keeps announcing and moves on to the sentence of the rejection.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Invalid, true);
+            parameters.Add(p => p.Description, "That code is not correct.");
+        });
+
+        Assert.AreEqual("That code is not correct.", com.Find(".bit-otp-sts").TextContent);
+
+        // Neither state is on any more, so the region goes quiet and the next rejection is announced again
+        // even when it comes back with the very same sentence.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Invalid, false);
+        });
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-otp-sts").TextContent);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldLeaveTheAnnouncementOfADescriptionTemplateToItsOwnMarkup()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "That code is not correct.");
+            parameters.Add(p => p.DescriptionTemplate, (RenderFragment)(builder => builder.AddContent(0, "Resend in 30s")));
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-otp-sts").TextContent);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOtpInputFullWidthTest(bool fullWidth)
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.FullWidth, fullWidth);
+        });
+
+        var bitOtpInput = com.Find(".bit-otp");
+
+        Assert.AreEqual(fullWidth, bitOtpInput.ClassList.Contains("bit-otp-fwi"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitOtpInputParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitOtpInput)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitOtpInputParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitOtpInputParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitOtpInputParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitOtpInputParams
+            {
+                Length = 6,
+                Label = "Cascaded label",
+                Accent = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Fill,
+                Merged = true,
+                Vertical = true,
+                FullWidth = true,
+                Placeholder = "0",
+                SingleTabStop = true,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-otp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-fil"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-mrg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-vrt"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-fwi"));
+
+        Assert.AreEqual("Cascaded label", com.Find(".bit-otp-lbl").TextContent.Trim());
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.AreEqual(6, inputs.Count);
+        Assert.AreEqual("0", inputs[0].GetAttribute("placeholder"));
+        Assert.AreEqual("-1", inputs[1].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitOtpInputParams
+            {
+                Length = 6,
+                Accent = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Fill,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.AddAttribute(1, nameof(BitOtpInput.Length), 4);
+                builder.AddAttribute(2, nameof(BitOtpInput.Accent), BitColor.Error);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-otp");
+
+        // What the component wrote for itself wins over the cascade.
+        Assert.AreEqual(4, com.FindAll(".bit-otp-inp").Count);
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-err"));
+
+        // What it left unset is still filled in from the cascade, parameter by parameter.
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-fil"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldApplyTheCascadedRestrictionsToTheTypedCharacters()
+    {
+        // The rules that decide which characters a code may hold are exactly what a BitParams is there to
+        // carry, so they have to reach the filtering and not only the rendering.
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitOtpInputParams
+            {
+                Length = 4,
+                Uppercase = true,
+                Pattern = "^[A-Z]$",
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var otpInput = com.FindComponent<BitOtpInput>();
+
+        await otpInput.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "a" });
+
+        Assert.AreEqual("A", otpInput.Instance.Value);
+
+        await otpInput.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual("A", otpInput.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldApplyTheCascadedParametersOfTheInputBase()
+    {
+        // ReadOnly and Required are declared by BitInputBase rather than by the component, and they are taken
+        // out of the ParameterView before either of the sets that HasNotBeenSet reads is filled, so a cascade
+        // reaching them is what this covers.
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitOtpInputParams
+            {
+                Length = 4,
+                ReadOnly = true,
+                Required = true,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-otp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-rdl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-otp-req"));
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.AreEqual(4, inputs.Count);
+
+        for (int i = 0; i < inputs.Count; i++)
+        {
+            Assert.IsTrue(inputs[i].HasAttribute("readonly"));
+            Assert.IsTrue(inputs[i].HasAttribute("required"));
+        }
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldKeepItsOwnInputBaseParametersOverTheCascadedOnes()
+    {
+        // The whole point of the third assigned-parameter set: a component that writes ReadOnly="false" for
+        // itself has written it, so the cascade must not turn it back on.
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitOtpInputParams
+            {
+                ReadOnly = true,
+                Required = true,
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.AddAttribute(1, nameof(BitOtpInput.ReadOnly), false);
+                builder.AddAttribute(2, nameof(BitOtpInput.Required), false);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-otp");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-otp-rdl"));
+        Assert.IsFalse(root.ClassList.Contains("bit-otp-req"));
+        Assert.IsFalse(com.Find(".bit-otp-inp").HasAttribute("readonly"));
+        Assert.IsFalse(com.Find(".bit-otp-inp").HasAttribute("required"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldNotCascadeTheValueOfASingleField()
+    {
+        // Value and DefaultValue identify one field, so they are deliberately not part of the params class:
+        // a code shared by every input under the cascade is never what a consumer means. (The Name of the
+        // component is not checked here because the params class carries a Name of its own, the discriminator
+        // that IBitComponentParams is resolved by.)
+        var properties = typeof(BitOtpInputParams).GetProperties();
+
+        Assert.IsNull(Array.Find(properties, p => p.Name == nameof(BitOtpInput.Value)));
+        Assert.IsNull(Array.Find(properties, p => p.Name == nameof(BitOtpInput.DefaultValue)));
+    }
+
+    [TestMethod]
+    public void BitOtpInputParamsShouldCarryEveryPlainParameterOfTheComponent()
+    {
+        // A parameter added to the component without its counterpart here is one a BitParams cascade silently
+        // ignores. Callbacks, templates and the cascade itself are the ones deliberately left out.
+        var paramsProperties = typeof(BitOtpInputParams).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var missing = typeof(BitOtpInput).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                         .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                         .Where(p => p.PropertyType.Name.StartsWith("EventCallback") is false)
+                                         .Where(p => p.PropertyType.Name.StartsWith("RenderFragment") is false)
+                                         .Select(p => p.Name)
+                                         .Where(n => paramsProperties.Contains(n) is false)
+                                         .ToList();
+
+        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldSubmitTheFormOnFillWhenAutoSubmitIsEnabled()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.AutoSubmit, true);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+
+        // Retyping a character of the complete code keeps the very same code, which is not submitted twice.
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldSubmitAfterTheOnFillCallback()
+    {
+        var submitsSeenByOnFill = -1;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 1);
+            parameters.Add(p => p.AutoSubmit, true);
+            parameters.Add(p => p.OnFill, (string? _) => submitsSeenByOnFill = Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        });
+
+        await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(0, submitsSeenByOnFill);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotSubmitOnFillWithoutAutoSubmit()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 1);
+        });
+
+        await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldTakeAutoSubmitFromTheCascade()
+    {
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitOtpInputParams { Length = 1, AutoSubmit = true } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitOtpInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
     }
 }

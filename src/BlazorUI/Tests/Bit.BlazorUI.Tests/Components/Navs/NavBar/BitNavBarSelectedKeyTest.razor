@@ -1,0 +1,11 @@
+@using Bit.BlazorUI
+
+<BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual" @bind-SelectedKey="Key">
+    <BitNavBarOption Text="Home" Key="home" />
+    <BitNavBarOption Text="Products" Key="products" />
+    <BitNavBarOption Text="Settings" Key="settings" />
+</BitNavBar>
+
+@code {
+    [Parameter] public string? Key { get; set; }
+}

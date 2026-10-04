@@ -16,6 +16,8 @@ namespace Bit.Websites.Platform.Server.Services.Mcp;
 /// server - deployed, or one <see cref="McpVersionsService"/> runs on loopback for a released version -
 /// or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to a subset
 /// of its tools, and such a tool is then exposed under a name and a description written here.
+/// <see cref="McpFeedbackTool"/> is the one tool no upstream provides: it is merged into the list and
+/// answered by this site.
 /// </summary>
 public partial class McpProxyService : IAsyncDisposable
 {
@@ -26,7 +28,7 @@ public partial class McpProxyService : IAsyncDisposable
     [AutoInject] private McpVersions versions = default!;
 
     /// <summary>
-    /// The description DeepWiki gives its ask_question tool says no more than that it answers questions about a
+    /// The description DeepWiki gives its ask_wiki_question tool says no more than that it answers questions about a
     /// GitHub repository, which leaves the agent to guess whether a repository worth asking exists at all. Naming
     /// the third party repositories the bit platform team relies on, and what each one is the right source for, turns
     /// it into a tool an agent reaches for on its own instead of one it only uses when it is told to. The template's
@@ -88,11 +90,11 @@ public partial class McpProxyService : IAsyncDisposable
     private readonly Upstream[] sharedUpstreams =
     [
         new("MicrosoftLearn", new("https://learn.microsoft.com/api/mcp")),
-        // Only ask_question is exposed: it answers against the whole repository by itself, while the
+        // Only ask_wiki_question is exposed: it answers against the whole repository by itself, while the
         // read_wiki_structure and read_wiki_contents tools of the same server dump the generated wiki
         // of a repository, which is a slower and far more token hungry way to reach the same answer.
         // Renamed, as a developer may have DeepWiki's own server installed next to this one.
-        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", "AskGitHubRepository", askQuestionDescription)])
+        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_wiki_question", "AskGitHubRepository", askQuestionDescription)])
     ];
 
     /// <summary>
@@ -116,9 +118,17 @@ public partial class McpProxyService : IAsyncDisposable
     public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, CancellationToken cancellationToken)
         => (await ToolsOf(versions.Resolve(requestedVersion), cancellationToken)).Tools;
 
-    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, CallToolRequestParams request, CancellationToken cancellationToken)
+    /// <summary>
+    /// Answers one tool call. <paramref name="requestServices"/> belongs to the request being served and is
+    /// what the feedback tool is resolved from: it reaches the team's chat through scoped services, unlike
+    /// the proxying this singleton does for every other tool.
+    /// </summary>
+    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, IServiceProvider requestServices, CallToolRequestParams request, CancellationToken cancellationToken)
     {
         var version = versions.Resolve(requestedVersion);
+
+        if (request.Name is McpFeedbackTool.ToolName)
+            return await requestServices.GetRequiredService<McpFeedbackTool>().Call(request, version, cancellationToken);
 
         if ((await ToolsOf(version, cancellationToken)).UpstreamPerToolName.TryGetValue(request.Name, out var upstream) is false)
             throw new McpException($"Unknown tool: '{request.Name}'.");
@@ -287,19 +297,20 @@ public partial class McpProxyService : IAsyncDisposable
 
             var toolsPerUpstream = await Task.WhenAll(UpstreamsOf(version).Select(async upstream => (upstream, tools: await ListTools(upstream, version, cancellationToken))));
 
-            List<Tool> mergedTools = [];
+            // This site's own tool leads the list; the upstreams fill in the rest behind it.
+            List<Tool> mergedTools = [McpFeedbackTool.Definition];
             Dictionary<string, Upstream> mergedUpstreamPerToolName = new(StringComparer.Ordinal);
 
             foreach (var (upstream, upstreamTools) in toolsPerUpstream)
             {
                 foreach (var tool in upstreamTools ?? [])
                 {
-                    if (mergedUpstreamPerToolName.TryAdd(tool.Name, upstream) is false)
+                    if (tool.Name is McpFeedbackTool.ToolName || mergedUpstreamPerToolName.TryAdd(tool.Name, upstream) is false)
                     {
                         // Tool names are the only address an MCP client has, so two servers claiming the same
                         // name cannot both be exposed. The first one wins and the clash is reported.
                         logger.LogWarning("The {ToolName} tool of the {McpServerName} MCP server is not exposed because {OtherMcpServerName} already provides a tool with that name.",
-                            tool.Name, upstream.Name, mergedUpstreamPerToolName[tool.Name].Name);
+                            tool.Name, upstream.Name, mergedUpstreamPerToolName.GetValueOrDefault(tool.Name)?.Name ?? "this site");
                         continue;
                     }
 

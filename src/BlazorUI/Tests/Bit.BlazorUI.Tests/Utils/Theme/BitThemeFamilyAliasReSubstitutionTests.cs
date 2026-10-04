@@ -23,11 +23,11 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     // (foreground-tinted expressions) and the snackbar elevation (a literal `none`) do not match,
     // which is exactly the set the C# table leaves out: there is nothing to re-substitute for them.
     private static readonly Regex FamilyDeclaration = new(
-        @"(--bit-(?:shp-radius|shd)-[a-z0-9-]+)\s*:\s*var\((--bit-[a-z0-9-]+)\)\s*;",
+        @"(--bit-(?:shp-radius|shd|clr-tooltip)-[a-z0-9-]+)\s*:\s*var\((--bit-[a-z0-9-]+)\)\s*;",
         RegexOptions.Compiled);
 
     private static readonly Regex ReDeclaredAlias = new(
-        @"--bit-(?:shp-radius|shd)-[a-z0-9-]+:var\(--bit-[a-z0-9-]+\)",
+        @"--bit-(?:shp-radius|shd|clr-tooltip)-[a-z0-9-]+:var\(--bit-[a-z0-9-]+\)",
         RegexOptions.Compiled);
 
     private static (string Alias, string Target)[] ScssAliasPairs()
@@ -37,6 +37,47 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
         return FamilyDeclaration.Matches(File.ReadAllText(scssPath))
             .Select(m => (Alias: m.Groups[1].Value, Target: m.Groups[2].Value))
+            .Distinct()
+            .ToArray();
+    }
+
+    // The per-role foregrounds are the tier's one derived color: a color-mix() of the role and the
+    // primary foreground rather than a plain var() alias, so they are re-declared as that expression.
+    private static readonly Regex RoleForegroundDeclaration = new(
+        @"(--bit-clr-[a-z]+-fg)\s*:\s*(color-mix\([^;]+\))\s*;",
+        RegexOptions.Compiled);
+
+    private static readonly Regex ReDeclaredRoleForeground = new(
+        @"--bit-clr-[a-z]+-fg:color-mix\(",
+        RegexOptions.Compiled);
+
+    private static (string Alias, string Value)[] ScssRoleForegrounds()
+    {
+        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
+        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
+
+        return RoleForegroundDeclaration.Matches(File.ReadAllText(scssPath))
+            .Select(m => (Alias: m.Groups[1].Value, Value: m.Groups[2].Value))
+            .Distinct()
+            .ToArray();
+    }
+
+    // The per-role tints are a translucent color-mix() of the role alone.
+    private static readonly Regex RoleTintDeclaration = new(
+        @"(--bit-clr-[a-z]+-tint)\s*:\s*(color-mix\([^;]+\))\s*;",
+        RegexOptions.Compiled);
+
+    private static readonly Regex ReDeclaredRoleTint = new(
+        @"--bit-clr-[a-z]+-tint:color-mix\(",
+        RegexOptions.Compiled);
+
+    private static (string Alias, string Value)[] ScssRoleTints()
+    {
+        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
+        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
+
+        return RoleTintDeclaration.Matches(File.ReadAllText(scssPath))
+            .Select(m => (Alias: m.Groups[1].Value, Value: m.Groups[2].Value))
             .Distinct()
             .ToArray();
     }
@@ -55,13 +96,16 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     [TestMethod]
     public void ReSubstitutionCoversExactlyTheScssFamilyVocabulary()
     {
-        // Overriding the two roots of the family tier (the global radius and the callout shadow)
-        // must re-declare every plain var() alias family-tokens.scss defines - each pair present (an
-        // alias the C# table forgot, or one ordered ahead of the alias it chains from, fails here)
-        // and none extra (an alias the scss no longer declares fails the count).
+        // Overriding the roots of the family tier (the global radius, the callout shadow and the two
+        // palette colors the tooltip surface reads) must re-declare every plain var() alias
+        // family-tokens.scss defines - each pair present (an alias the C# table forgot, or one ordered
+        // ahead of the alias it chains from, fails here) and none extra (an alias the scss no longer
+        // declares fails the count).
         var theme = new BitTheme();
         theme.Shape.BorderRadius = "1rem";
         theme.BoxShadow.Callout = "0 2px 4px #0003";
+        theme.Color.Background.Secondary = "#EEEEEE";
+        theme.Color.Foreground.Primary = "#111111";
 
         var style = RenderProviderStyle(theme);
         var scssPairs = ScssAliasPairs();
@@ -118,6 +162,117 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     }
 
     [TestMethod]
+    public void OverridingThePrimaryForegroundReShadesEveryRoleForeground()
+    {
+        // Every role foreground mixes towards the primary foreground, so re-valuing that one token must
+        // re-declare all of them - with exactly the expression family-tokens.scss declares (an alias the C#
+        // table forgot, or a default that drifted from the stylesheet, fails here) and none extra.
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#101010";
+
+        var style = RenderProviderStyle(theme);
+        var scssForegrounds = ScssRoleForegrounds();
+
+        Assert.AreEqual(8, scssForegrounds.Length, "family-tokens.scss must declare one foreground per accent role.");
+
+        foreach (var (alias, value) in scssForegrounds)
+        {
+            StringAssert.Contains(style, $"{alias}:{value}",
+                $"Role foreground {alias} must be re-declared as {value} when the primary foreground is overridden.");
+        }
+
+        Assert.AreEqual(scssForegrounds.Length, ReDeclaredRoleForeground.Matches(style).Count,
+            "The provider re-declared a different number of role foregrounds than family-tokens.scss " +
+            "defines - the C# table and the scss have drifted apart.");
+    }
+
+    [TestMethod]
+    public void OverridingARoleReShadesOnlyThatRolesForeground()
+    {
+        var theme = new BitTheme();
+        theme.Color.Warning.Main = "#FFB900";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-wrn-fg:color-mix(in srgb, var(--bit-clr-wrn) 55%, var(--bit-clr-fg-pri))");
+        Assert.AreEqual(1, ReDeclaredRoleForeground.Matches(style).Count,
+            $"Untouched roles must not be re-declared by a sparse overlay. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void ExplicitRoleForegroundWinsOverReSubstitution()
+    {
+        var theme = new BitTheme();
+        theme.Color.Warning.Main = "#FFB900";
+        theme.Color.Warning.Foreground = "#8A5A00";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-wrn-fg:#8A5A00");
+        Assert.IsFalse(style.Contains("--bit-clr-wrn-fg:color-mix(", StringComparison.Ordinal),
+            $"An explicitly-set role foreground must not be replaced by the re-substitution. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void OverridingEveryRoleReTintsEveryRoleTint()
+    {
+        // Every role tint is a wash of its own role, so re-valuing all eight roles must re-declare all
+        // eight tints - with exactly the expression family-tokens.scss declares - and none extra.
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#0F6CBD";
+        theme.Color.Secondary.Main = "#FD7F36";
+        theme.Color.Tertiary.Main = "#424242";
+        theme.Color.Info.Main = "#6B737C";
+        theme.Color.Success.Main = "#228422";
+        theme.Color.Warning.Main = "#EDAE12";
+        theme.Color.SevereWarning.Main = "#CE4207";
+        theme.Color.Error.Main = "#D2393B";
+
+        var style = RenderProviderStyle(theme);
+        var scssTints = ScssRoleTints();
+
+        Assert.AreEqual(8, scssTints.Length, "family-tokens.scss must declare one tint per accent role.");
+
+        foreach (var (alias, value) in scssTints)
+        {
+            StringAssert.Contains(style, $"{alias}:{value}",
+                $"Role tint {alias} must be re-declared as {value} when its role is overridden.");
+        }
+
+        Assert.AreEqual(scssTints.Length, ReDeclaredRoleTint.Matches(style).Count,
+            "The provider re-declared a different number of role tints than family-tokens.scss " +
+            "defines - the C# table and the scss have drifted apart.");
+    }
+
+    [TestMethod]
+    public void OverridingThePrimaryForegroundLeavesTheRoleTintsAlone()
+    {
+        // A tint washes its role over whatever surface is below, so the page's text color is not one of
+        // its inputs and re-valuing it must not re-declare any tint.
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#101010";
+
+        var style = RenderProviderStyle(theme);
+
+        Assert.AreEqual(0, ReDeclaredRoleTint.Matches(style).Count,
+            $"The role tints do not depend on the primary foreground. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void ExplicitRoleTintWinsOverReSubstitution()
+    {
+        var theme = new BitTheme();
+        theme.Color.Error.Main = "#D2393B";
+        theme.Color.Error.Tint = "#FDE7E9";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-err-tint:#FDE7E9");
+        Assert.AreEqual(0, ReDeclaredRoleTint.Matches(style).Count,
+            $"An explicitly-set role tint must not be replaced by the re-substitution. Actual: {style}");
+    }
+
+    [TestMethod]
     public void ExplicitFamilyValueWinsOverReSubstitution()
     {
         var theme = new BitTheme();
@@ -129,5 +284,47 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         StringAssert.Contains(style, "--bit-shp-radius-surface:2rem");
         Assert.IsFalse(style.Contains("--bit-shp-radius-surface:var(", StringComparison.Ordinal),
             $"An explicitly-set family alias must not be replaced by the re-substitution. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void OverridingTheSecondaryBackgroundReFillsTheTooltip()
+    {
+        var theme = new BitTheme();
+        theme.Color.Background.Secondary = "#EEEEEE";
+
+        var style = RenderProviderStyle(theme);
+
+        // The text is re-declared along with the fill: a preset that remaps the pair (Material's inverse
+        // surface) would otherwise keep its own text color over the default fill.
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:var(--bit-clr-bg-sec)");
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:var(--bit-clr-fg-pri)");
+    }
+
+    [TestMethod]
+    public void OverridingThePrimaryForegroundReDeclaresTheWholeTooltipPair()
+    {
+        var theme = new BitTheme();
+        theme.Color.Foreground.Primary = "#111111";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:var(--bit-clr-fg-pri)");
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:var(--bit-clr-bg-sec)");
+    }
+
+    [TestMethod]
+    public void ExplicitTooltipColorsWinOverReSubstitution()
+    {
+        var theme = new BitTheme();
+        theme.Color.Background.Secondary = "#EEEEEE";
+        theme.Color.TooltipBackground = "#222222";
+        theme.Color.TooltipForeground = "#FAFAFA";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-clr-tooltip-bg:#222222");
+        StringAssert.Contains(style, "--bit-clr-tooltip-fg:#FAFAFA");
+        Assert.IsFalse(style.Contains("--bit-clr-tooltip-bg:var(", StringComparison.Ordinal),
+            $"An explicitly-set tooltip color must not be replaced by the re-substitution. Actual: {style}");
     }
 }

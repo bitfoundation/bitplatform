@@ -3,6 +3,9 @@ namespace Bit.BlazorUI;
 public partial class BitFcAgendaEvents
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
+
+    private readonly string _resultsId = $"bit-bfc-agenda-results-{Guid.NewGuid():N}";
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
@@ -37,7 +40,7 @@ public partial class BitFcAgendaEvents
 
         try
         {
-            var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
+            var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, State.Today);
             if (scrolled)
                 _lastAgendaScrollNonce = nonce;
         }

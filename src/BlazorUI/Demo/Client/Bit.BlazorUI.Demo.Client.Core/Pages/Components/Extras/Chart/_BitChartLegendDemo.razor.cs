@@ -6,6 +6,7 @@ public partial class _BitChartLegendDemo
     private BitChartAlign _align = BitChartAlign.Center;
     private bool _usePointStyle;
     private bool _reverse;
+    private bool _highlight = true;
 
     private readonly BitChartOptions _titled = new()
     {
@@ -29,7 +30,7 @@ public partial class _BitChartLegendDemo
         {
             Legend = new BitChartLegendOptions
             {
-                Position = _position, Align = _align, Reverse = _reverse,
+                Position = _position, Align = _align, Reverse = _reverse, HighlightOnHover = _highlight,
                 Labels = new BitChartLegendLabelOptions { UsePointStyle = _usePointStyle }
             }
         }
@@ -62,6 +63,7 @@ public partial class _BitChartLegendDemo
 <select @bind=""_align"">...Start/Center/End...</select>
 <input type=""checkbox"" @bind=""_usePointStyle"" /> Point style
 <input type=""checkbox"" @bind=""_reverse"" /> Reverse
+<input type=""checkbox"" @bind=""_highlight"" /> Highlight on hover
 
 <BitChart Type=""BitChartType.Line"" Data=""MultiSeries()"" Options=""Live()"" />";
     private readonly string liveCsharpCode = @"
@@ -69,6 +71,7 @@ private BitChartPosition _position = BitChartPosition.Top;
 private BitChartAlign _align = BitChartAlign.Center;
 private bool _usePointStyle;
 private bool _reverse;
+private bool _highlight = true;
 
 private BitChartOptions Live() => new()
 {
@@ -76,7 +79,7 @@ private BitChartOptions Live() => new()
     {
         Legend = new BitChartLegendOptions
         {
-            Position = _position, Align = _align, Reverse = _reverse,
+            Position = _position, Align = _align, Reverse = _reverse, HighlightOnHover = _highlight,
             Labels = new BitChartLegendLabelOptions { UsePointStyle = _usePointStyle }
         }
     }

@@ -52,11 +52,18 @@ namespace BitBlazorUI {
             if (!header) return [];
 
             try {
-                return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)')).map(el => el.id);
+                return Pivot.getOwnItems(header).map(el => el.id);
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.getItemsOrder:', e);
                 return [];
             }
+        }
+
+        // The tabs of this tablist, wherever they sit in it: an app can wrap each of them in an element of
+        // its own, but the tabs of a pivot nested in a header template belong to that pivot's tablist.
+        public static getOwnItems(header: HTMLElement): HTMLElement[] {
+            return Array.from(header.querySelectorAll<HTMLElement>('.bit-pvti'))
+                        .filter(el => el.closest('.bit-pvt-hct') === header);
         }
 
         // Brings a tab back into view after a selection or a focus move that did not come from a click
@@ -117,11 +124,10 @@ namespace BitBlazorUI {
                 if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
 
                 // only the tab itself: a header template can hold something interactive of its own, and
-                // the space typed into an input there belongs to the input rather than to the tablist.
-                // the More button keeps its own space as well, which is what raises the click that opens
-                // its menu.
+                // the space typed into an input there belongs to the input rather than to the tablist - as
+                // do the tabs of a pivot nested in one, whose keys are handled by that pivot.
                 const target = e.target as HTMLElement | null;
-                if (!target || !target.matches || !target.matches('.bit-pvti:not(.bit-pvt-mor)')) return;
+                if (!target || !target.classList || !target.classList.contains('bit-pvti') || target.closest('.bit-pvt-hct') !== header) return;
 
                 e.preventDefault();
             };
@@ -171,10 +177,9 @@ namespace BitBlazorUI {
         private dotnetObj: DotNetObject;
         private disposed: boolean = false;
         private observer: ResizeObserver | null = null;
-        private scrollHandler: (() => void) | null = null;
+        private scrollHandler: ((() => void) & { cancel(): void }) | null = null;
         private wheelHandler: ((e: WheelEvent) => void) | null = null;
         private dragStartHandler: ((e: DragEvent) => void) | null = null;
-        private slideTimer: number | null = null;
         private lastOverflow: string = '';
         private lastSlideState: string = '';
 
@@ -202,14 +207,18 @@ namespace BitBlazorUI {
         public start() {
             try {
                 this.observer = new ResizeObserver(() => this.update());
-                this.observer.observe(this.header);
+                // the More button of the Menu behavior sits beside the header, so showing it shrinks the
+                // header from inside this very callback. the wrapper around the two keeps its size through
+                // that, and observing it is what keeps the fold from re-triggering the observer (a resize
+                // loop the browser reports on window every time the fold changes).
+                const observed = this.isMenu && this.header.parentElement ? this.header.parentElement : this.header;
+                this.observer.observe(observed);
 
                 if (this.isSlide) {
-                    const throttled = Utils.throttle(() => this.updateSlide(), 100) as () => void;
-                    // the throttle only calls on its leading edge, so a scroll that comes to rest inside
-                    // its window would otherwise leave the buttons reporting the state the header was in
-                    // on the way rather than the one it ended up in.
-                    this.scrollHandler = () => { throttled(); this.scheduleSlideUpdate(); };
+                    // the throttle calls on both edges, so a scroll that comes to rest inside its window
+                    // leaves the buttons reporting the state the header ended up in rather than the one it
+                    // was in on the way - which also covers the smooth scroll a slide() starts.
+                    this.scrollHandler = Utils.throttle(() => this.updateSlide(), 100, { trailing: true });
                     this.header.addEventListener('scroll', this.scrollHandler, { passive: true });
 
                     if (!this.isVertical) {
@@ -289,7 +298,7 @@ namespace BitBlazorUI {
         }
 
         private getItems(): HTMLElement[] {
-            return Array.from(this.header.querySelectorAll<HTMLElement>('.bit-pvti:not(.bit-pvt-mor)'));
+            return Pivot.getOwnItems(this.header);
         }
 
         private outerSize(el: HTMLElement): number {
@@ -370,22 +379,6 @@ namespace BitBlazorUI {
             }
         }
 
-        // A final read of the header once it has come to rest, which is what the leading-edge throttle
-        // of the scroll handler cannot give on its own.
-        private scheduleSlideUpdate() {
-            if (this.disposed) return;
-
-            if (this.slideTimer !== null) {
-                clearTimeout(this.slideTimer);
-            }
-
-            this.slideTimer = setTimeout(() => {
-                this.slideTimer = null;
-                if (this.disposed) return;
-                this.updateSlide();
-            }, 150) as unknown as number;
-        }
-
         private updateSlide() {
             try {
                 let atStart: boolean;
@@ -438,10 +431,6 @@ namespace BitBlazorUI {
                     const sign = this.isRtl ? -1 : 1;
                     this.header.scrollBy({ left: direction * sign * amount, behavior });
                 }
-
-                // the smooth scroll above lands after the last scroll event the throttle let through,
-                // so the buttons are asked to read the header again once it has come to rest.
-                this.scheduleSlideUpdate();
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.slide:', e);
             }
@@ -462,15 +451,12 @@ namespace BitBlazorUI {
                 }
                 if (this.scrollHandler) {
                     this.header.removeEventListener('scroll', this.scrollHandler);
+                    this.scrollHandler.cancel();
                     this.scrollHandler = null;
                 }
                 if (this.wheelHandler) {
                     this.header.removeEventListener('wheel', this.wheelHandler);
                     this.wheelHandler = null;
-                }
-                if (this.slideTimer !== null) {
-                    clearTimeout(this.slideTimer);
-                    this.slideTimer = null;
                 }
                 if (this.dragStartHandler) {
                     this.header.removeEventListener('dragstart', this.dragStartHandler);
