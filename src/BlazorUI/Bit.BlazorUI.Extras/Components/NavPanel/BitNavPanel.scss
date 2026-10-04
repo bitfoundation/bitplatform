@@ -11,7 +11,7 @@
 //   --bit-NavPanel-padding                  inset of the panel                                  (default: spacing(2), 0 on the drawer; NoPad removes it)
 //   --bit-NavPanel-container-padding        inset of the content inside the panel               (default: spacing(1); NoPad removes it)
 //   --bit-NavPanel-gap                      space between the header, the search box, the items and the footer (default: spacing(2))
-//   --bit-NavPanel-radius                   corner radius of the panel                          (default: 0)
+//   --bit-NavPanel-radius                   corner radius of the panel                          (default: $shp-radius-sheet, square unless a preset rounds it)
 //   --bit-NavPanel-border-width             rule along the edge the panel turns to the page     (default: 0)
 //   --bit-NavPanel-border-color             color of that rule                                  (default: $clr-brd-sec)
 //   --bit-NavPanel-header-icon-size         largest width and height of the logo                (default: spacing(4.75))
@@ -21,8 +21,20 @@
 //   --bit-NavPanel-overlay-backdrop-filter  filter over the page behind the overlay, e.g. blur(4px) (default: none)
 
 // The panel has one of two shapes, and DrawerBreakpoint decides where the one gives way to the other: a column
-// of the page at and above the breakpoint, an off-canvas drawer below it. Each shape is a mixin, so every
-// breakpoint applies the very same rules under its own media query (see the bit-npn-b* classes below).
+// of the page at and above the breakpoint, an off-canvas drawer below it. Which of them the panel has is
+// reported by the browser, from the live theme breakpoints, and handed to the stylesheet as a class
+// (bit-npn-col / bit-npn-drw) - the same answer the dialog role, the scroll lock and the focus trap are
+// decided by. Until the browser has answered, the breakpoint itself is the class (bit-npn-b*), split here at
+// the default breakpoints. Each shape is a mixin, so both cases apply the very same rules.
+
+// The first screen width of each breakpoint, from which the panel is a column until the browser has reported
+// the live breakpoints: the drawer is below it.
+$npn-fallback-breakpoints: (
+    bsm: $mq-sm-min,
+    bmd: $mq-md-min,
+    blg: $mq-lg-min,
+    bxl: $mq-xl-min
+);
 
 // The rail and the open panel are the two ends of a transition rather than a jump, whichever of them
 // asked for it - the toggle button, the Toggle method, or the pointer over an ExpandOnHover rail. Only
@@ -134,7 +146,7 @@
     position: sticky;
     padding: var(--bit-NavPanel-padding, #{spacing(2)});
     overflow: hidden auto;
-    border-radius: var(--bit-NavPanel-radius, 0);
+    border-radius: var(--bit-NavPanel-radius, #{$shp-radius-sheet});
     // The rule is drawn along the edge that faces the page: the inline end of a panel at the start of the
     // layout, and the inline start of one docked to the end (see below).
     border-inline-end: var(--bit-NavPanel-border-width, 0) $shp-border-style var(--bit-NavPanel-border-color, #{$clr-brd-sec});
@@ -216,54 +228,27 @@
         width: 100%;
     }
 
-    // The shape of each DrawerBreakpoint: Never is always a column, Always always a drawer, and the others split
-    // the screens at their breakpoint (Md is the default).
-    &.bit-npn-bnv {
+    // The shape. Its class is wrapped in :where() so it adds nothing to the weight of the rules it selects: they
+    // weigh what the rules of the bare .bit-npn they replace weighed, and the Class an app restyles the panel
+    // with keeps winning over them.
+    &:where(.bit-npn-col) {
         @include npn-column;
     }
 
-    &.bit-npn-bsm {
-        @include gt-xs {
-            @include npn-column;
-        }
-
-        @include lt-sm {
-            @include npn-drawer;
-        }
-    }
-
-    &.bit-npn-bmd {
-        @include gt-sm {
-            @include npn-column;
-        }
-
-        @include lt-md {
-            @include npn-drawer;
-        }
-    }
-
-    &.bit-npn-blg {
-        @include gt-md {
-            @include npn-column;
-        }
-
-        @include lt-lg {
-            @include npn-drawer;
-        }
-    }
-
-    &.bit-npn-bxl {
-        @include gt-lg {
-            @include npn-column;
-        }
-
-        @include lt-xl {
-            @include npn-drawer;
-        }
-    }
-
-    &.bit-npn-bal {
+    &:where(.bit-npn-drw) {
         @include npn-drawer;
+    }
+
+    @each $class, $min in $npn-fallback-breakpoints {
+        &:where(.bit-npn-#{$class}) {
+            @media screen and (min-width: #{$min}) {
+                @include npn-column;
+            }
+
+            @media screen and (max-width: #{$min - 1px}) {
+                @include npn-drawer;
+            }
+        }
     }
 }
 
@@ -300,32 +285,13 @@
     background-color: var(--bit-NavPanel-overlay-background, #{$clr-bg-overlay});
     backdrop-filter: var(--bit-NavPanel-overlay-backdrop-filter, none);
 
-    // The overlay only belongs to the drawer, so it is taken away on the screens the panel is a column on.
-    &.bit-npn-bnv {
-        display: none;
-    }
-
-    &.bit-npn-bsm {
-        @include gt-xs {
-            display: none;
-        }
-    }
-
-    &.bit-npn-bmd {
-        @include gt-sm {
-            display: none;
-        }
-    }
-
-    &.bit-npn-blg {
-        @include gt-md {
-            display: none;
-        }
-    }
-
-    &.bit-npn-bxl {
-        @include gt-lg {
-            display: none;
+    // The overlay only belongs to the drawer: the panel renders none once the browser has reported a column,
+    // and until then it is taken away on the screens the column is on.
+    @each $class, $min in $npn-fallback-breakpoints {
+        &.bit-npn-#{$class} {
+            @media screen and (min-width: #{$min}) {
+                display: none;
+            }
         }
     }
 }
