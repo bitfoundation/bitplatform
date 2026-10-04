@@ -14,15 +14,44 @@
    assistive technology holds back the updates under a busy element - the loading message among them. *@
 <div class="bit-isc-sts" role="status" aria-busy="false">@GetStatusMessage()</div>
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* The role and the name are written BEFORE the splatted attributes, so a role or a name the page writes as a
+   plain attribute wins over them - and a null name never removes the one it wrote. *@
+<div @ref="RootElement"
+     role="@_Role"
+     aria-label="@AriaLabel"
+     @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      tabindex="@TabIndex"
-     aria-label="@AriaLabel"
      aria-busy="@(_isLoading ? "true" : "false")">
-    @if (template is not null)
+    @if (template is not null && Feed)
+    {
+        @* The feed pattern of WAI-ARIA: every item is an article the keyboard can land on, placed in the set it
+           belongs to - whose size is unknown (-1) for as long as more of it can still arrive. *@
+        var setSize = _feedSetSize;
+        var offset = _feedPositionOffset;
+        for (var i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            if (ItemKey is null)
+            {
+                <article class="@GetItemClass()" style="@Styles?.Item" tabindex="0"
+                         aria-posinset="@(offset + i + 1)" aria-setsize="@setSize">
+                    @template(item)
+                </article>
+            }
+            else
+            {
+                <article @key="ItemKey(item)" class="@GetItemClass()" style="@Styles?.Item" tabindex="0"
+                         aria-posinset="@(offset + i + 1)" aria-setsize="@setSize">
+                    @template(item)
+                </article>
+            }
+        }
+    }
+    else if (template is not null)
     {
         if (ItemKey is null)
         {
@@ -38,7 +67,7 @@
                wrapper the key needs is laid out with display:contents, so it adds nothing to the layout. *@
             foreach (var item in _items)
             {
-                <div @key="ItemKey(item)" class="bit-isc-itm">@template(item)</div>
+                <div @key="ItemKey(item)" class="@GetKeyedItemClass()" style="@Styles?.Item">@template(item)</div>
             }
         }
     }
@@ -68,7 +97,9 @@
         <div class="bit-isc-ldg @Classes?.Loading" style="@Styles?.Loading">
             @if (LoadingTemplate is null)
             {
-                @LoadingMessage
+                @* The live region above is what announces the loading, so the spinner is only drawn. *@
+                <span class="bit-isc-spn @Classes?.Spinner" style="@Styles?.Spinner" aria-hidden="true"></span>
+                <span>@LoadingMessage</span>
             }
             else
             {

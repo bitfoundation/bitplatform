@@ -11,13 +11,14 @@ namespace BitBlazorUI {
             rootMargin: string | undefined,
             horizontal: boolean,
             autoLoad: boolean,
+            feed: boolean,
             dotnetObj: DotNetObject) {
 
             // The observer bakes its root, threshold and margin in at construction, so a setup that arrives
             // for an id that already has one is a change of those options: drop the old one first.
             InfiniteScrolling.dispose(id);
 
-            const instance = new InfiniteScrollingInstance(scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, dotnetObj);
+            const instance = new InfiniteScrollingInstance(scrollerSelector, rootElement, lastElement, threshold, rootMargin, horizontal, feed, dotnetObj);
             InfiniteScrolling._instances.set(id, instance);
 
             if (autoLoad) {
@@ -53,6 +54,10 @@ namespace BitBlazorUI {
             return InfiniteScrolling._instances.get(id)?.getScrollOffset() ?? 0;
         }
 
+        public static focusItem(id: string, index: number) {
+            InfiniteScrolling._instances.get(id)?.focusItem(index);
+        }
+
         public static dispose(id: string) {
             const instance = InfiniteScrolling._instances.get(id);
             if (!instance) return;
@@ -69,14 +74,23 @@ namespace BitBlazorUI {
     //     itself rather than an element that never clips anything.
     //   * Records and restores the scroll geometry around a prepend, which is what keeps the reversed
     //     (chat) mode from jumping while older items are inserted above the current one.
+    //   * Moves the focus between the articles of a feed with Page Up / Page Down, and out of it with
+    //     Ctrl+Home / Ctrl+End, as the WAI-ARIA feed pattern describes.
     class InfiniteScrollingInstance {
         // Selectors that all mean "the page itself scrolls". The IntersectionObserver root has to be null
         // for those: passing document.body (which is not the scroll container) makes the sentinel intersect
         // the whole document at all times, so every page would be requested at once.
         private static readonly VIEWPORT_SELECTORS = ['window', 'document', 'body', 'html', ':root'];
 
+        private static readonly FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), iframe, summary, [contenteditable=""], [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+
         private _observer: IntersectionObserver;
+        // The second observer of a list that scrolls an element of its own (see the constructor).
+        private _viewportObserver: IntersectionObserver | null = null;
+        private _inScroller = false;
+        private _inViewport = false;
         private _dotnetObj: DotNetObject;
+        private _rootElement: HTMLElement;
         private _scroller: HTMLElement | null;   // null means the page viewport
         private _horizontal: boolean;
         private _lastElement: HTMLElement | null = null;
@@ -85,6 +99,7 @@ namespace BitBlazorUI {
         private _observing = false;
         private _pending = false;
         private _prevScrollSize = -1;
+        private _keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
         constructor(
             scrollerSelector: string | undefined,
@@ -93,9 +108,11 @@ namespace BitBlazorUI {
             threshold: number | undefined,
             rootMargin: string | undefined,
             horizontal: boolean,
+            feed: boolean,
             dotnetObj: DotNetObject) {
 
             this._dotnetObj = dotnetObj;
+            this._rootElement = rootElement;
             this._horizontal = !!horizontal;
             this._scroller = InfiniteScrollingInstance._resolveScroller(scrollerSelector, rootElement, lastElement);
 
@@ -108,12 +125,30 @@ namespace BitBlazorUI {
                 threshold: Math.min(1, Math.max(0, threshold ?? 0)),
             };
 
+            this._observer = InfiniteScrollingInstance._createObserver(options, entries => this._onIntersect(entries, true));
+
+            // An element only clips what it holds once something limits its size. A list given no height grows
+            // with its items, so its sentinel is always inside it and an observer of that element alone would
+            // ask for every page at once - long before the reader gets anywhere near them. So while the scroller
+            // does not actually overflow, the sentinel also has to be inside the page viewport, which is what
+            // turns a list of no height into one that loads as the page scrolls.
+            if (this._scroller) {
+                this._viewportObserver = InfiniteScrollingInstance._createObserver({ ...options, root: null }, entries => this._onIntersect(entries, false));
+            }
+
+            if (feed) {
+                this._keydownHandler = e => this._onFeedKeydown(e);
+                rootElement.addEventListener('keydown', this._keydownHandler);
+            }
+        }
+
+        private static _createObserver(options: IntersectionObserverInit, callback: IntersectionObserverCallback): IntersectionObserver {
             try {
-                this._observer = new IntersectionObserver(entries => this._onIntersect(entries), options);
+                return new IntersectionObserver(callback, options);
             } catch {
                 // A malformed rootMargin is the only thing the constructor rejects here. Losing the margin is
                 // better than losing the loading altogether.
-                this._observer = new IntersectionObserver(entries => this._onIntersect(entries), { ...options, rootMargin: '0px' });
+                return new IntersectionObserver(callback, { ...options, rootMargin: '0px' });
             }
         }
 
@@ -142,10 +177,21 @@ namespace BitBlazorUI {
             return element as HTMLElement;
         }
 
-        private async _onIntersect(entries: IntersectionObserverEntry[]) {
-            if (this._disposed) return;
+        private async _onIntersect(entries: IntersectionObserverEntry[], fromScroller: boolean) {
+            if (this._disposed || !this._observing || entries.length === 0) return;
 
-            if (!entries.some(e => e.isIntersecting)) return;
+            // Only the latest state counts: a batch may carry both the leave and the re-enter of a sentinel.
+            const intersecting = entries[entries.length - 1].isIntersecting;
+
+            if (fromScroller) {
+                this._inScroller = intersecting;
+            } else {
+                this._inViewport = intersecting;
+            }
+
+            if (!this._inScroller) return;
+
+            if (this._viewportObserver && !this._inViewport && !this._scrollerOverflows()) return;
 
             // .NET re-observes the sentinel from inside the Load call, so the intersection of a sentinel that
             // stayed in view is delivered while the previous page is still landing. An observer only reports
@@ -190,7 +236,11 @@ namespace BitBlazorUI {
 
             this._lastElement = lastElement;
             this._observing = true;
+            // Every observe() delivers the current state of the sentinel, so both flags start out unknown.
+            this._inScroller = false;
+            this._inViewport = false;
             this._observer.observe(lastElement);
+            this._viewportObserver?.observe(lastElement);
         }
 
         public unobserve() {
@@ -198,6 +248,7 @@ namespace BitBlazorUI {
 
             if (this._lastElement) {
                 this._observer.unobserve(this._lastElement);
+                this._viewportObserver?.unobserve(this._lastElement);
             }
         }
 
@@ -246,20 +297,107 @@ namespace BitBlazorUI {
             return this._scrollOffset(el);
         }
 
+        public focusItem(index: number) {
+            if (this._disposed) return;
+
+            const articles = this._articles();
+            const article = articles[Math.max(0, Math.min(index, articles.length - 1))];
+
+            article?.focus();
+        }
+
+        // The keyboard of the WAI-ARIA feed pattern. Page Down / Page Up move between the articles from wherever
+        // the focus is inside one, and Ctrl+End / Ctrl+Home leave the feed for the first focusable element after
+        // or before it - the way out of a list that may never end.
+        private _onFeedKeydown(e: KeyboardEvent) {
+            if (this._disposed || e.altKey || e.metaKey) return;
+
+            const articles = this._articles();
+            if (articles.length === 0) return;
+
+            const target = e.target as Element | null;
+            const current = articles.findIndex(a => a === target || a.contains(target));
+
+            if (e.ctrlKey && (e.key === 'End' || e.key === 'Home')) {
+                const outside = this._focusableOutside(e.key === 'End');
+                if (!outside) return;
+
+                e.preventDefault();
+                outside.focus();
+                return;
+            }
+
+            if (e.ctrlKey || e.shiftKey || current < 0) return;
+
+            // Page Up / Page Down belong to a control that scrolls text of its own.
+            if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || (target as HTMLElement | null)?.isContentEditable) return;
+
+            let next = -1;
+            if (e.key === 'PageDown') {
+                next = Math.min(articles.length - 1, current + 1);
+            } else if (e.key === 'PageUp') {
+                next = Math.max(0, current - 1);
+            }
+
+            if (next < 0) return;
+
+            // The key is taken even at either end, where the focus stays put, rather than scrolling the page
+            // away from the article that has it.
+            e.preventDefault();
+
+            if (next !== current) {
+                articles[next].focus();
+            }
+        }
+
+        private _articles(): HTMLElement[] {
+            return Array.from(this._rootElement.children).filter(c => c.classList.contains('bit-isc-art')) as HTMLElement[];
+        }
+
+        private _focusableOutside(after: boolean): HTMLElement | null {
+            const all = Array.from(document.querySelectorAll<HTMLElement>(InfiniteScrollingInstance.FOCUSABLE))
+                .filter(el => !this._rootElement.contains(el) && el.getClientRects().length > 0);
+
+            const position = (el: HTMLElement) => this._rootElement.compareDocumentPosition(el);
+
+            if (after) {
+                return all.find(el => (position(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) ?? null;
+            }
+
+            const before = all.filter(el => (position(el) & Node.DOCUMENT_POSITION_PRECEDING) !== 0);
+
+            return before.length > 0 ? before[before.length - 1] : null;
+        }
+
         // The target is recomputed on the second pass: a list whose images or fonts land after the first one
         // is taller by then, and the end of a chat that is scrolled to too early stops short of the newest item.
         private _applyScroll(el: HTMLElement, target: () => number, smooth: boolean) {
-            const apply = () => this._setScrollOffset(el, target(), smooth);
+            // A reader who asked the system for less motion gets the jump rather than the glide, unless the
+            // component (or an ancestor) was told to animate anyway (ForceAnimation).
+            const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches && !this._rootElement.closest('.bit-fam');
+            const animate = smooth && !reduced;
+            const apply = () => this._setScrollOffset(el, target(), animate);
 
             apply();
 
-            if (smooth) return;
+            if (animate) return;
 
             requestAnimationFrame(apply);
         }
 
         private _scrollElement(): HTMLElement | null {
             return this._scroller ?? (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+        }
+
+        // Whether the scroller clips anything along the scroll axis, which is what makes it the one that decides
+        // what the reader can see. The pixel of slack absorbs the rounding of fractional sizes.
+        private _scrollerOverflows(): boolean {
+            const el = this._scroller;
+            if (!el) return true;
+
+            const clientSize = this._horizontal ? el.clientWidth : el.clientHeight;
+
+            return this._scrollSize(el) > clientSize + 1;
         }
 
         private _scrollSize(el: HTMLElement): number {
@@ -292,7 +430,13 @@ namespace BitBlazorUI {
             this._observing = false;
             this._pending = false;
             this._observer.disconnect();
+            this._viewportObserver?.disconnect();
             this._lastElement = null;
+
+            if (this._keydownHandler) {
+                this._rootElement.removeEventListener('keydown', this._keydownHandler);
+                this._keydownHandler = null;
+            }
         }
     }
 }

@@ -1,0 +1,128 @@
+﻿using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Bit.BlazorUI.Tests.Components.Extras.InfiniteScrolling;
+
+/// <summary>
+/// Pins the public --bit-InfiniteScrolling-* variables and the rules of the stylesheet a bUnit render cannot see:
+/// every variable the header documents is read with a fallback, none of them is ever declared (so they keep
+/// inheriting from :root), nothing is read that the header does not document, the spinner slows down rather than
+/// stops under reduced motion, and the list prints at the length of what it has loaded.
+/// </summary>
+[TestClass]
+public partial class BitInfiniteScrollingStylesheetTests
+{
+    [TestMethod]
+    public void BitInfiniteScrollingShouldReadEveryPublicVariableItDocuments()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var documented = DocumentedVariables(stylesheet);
+
+        Assert.AreEqual(15, documented.Length, "The stylesheet does not document the fifteen public variables.");
+
+        foreach (var name in documented)
+        {
+            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+        }
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldNotReadAPublicVariableItDoesNotDocument()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var documented = DocumentedVariables(stylesheet);
+        var read = ReadVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct();
+
+        foreach (var name in read)
+        {
+            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+        }
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldNeverDeclareAPublicVariable()
+    {
+        var body = RulesOf(ReadStylesheet());
+
+        Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-InfiniteScrolling-* variable is declared, which stops it inheriting.");
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldTurnTheSpinnerWithTheSpinnerTokens()
+    {
+        var spinner = Block(ReadStylesheet(), "\n.bit-isc-spn {");
+
+        // The spinner tokens slow a looping animation down under reduced motion instead of collapsing it to zero.
+        StringAssert.Contains(spinner, "animation: bit-isc-spin $mot-duration-spinner $mot-easing-spinner infinite;");
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldKeepItsIndicatorsInForcedColors()
+    {
+        var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+
+        StringAssert.Contains(forced, "border-block-start-color: CanvasText;");
+        StringAssert.Contains(forced, "color: GrayText;");
+
+        // The ring of a feed's article is a box-shadow, which forced colors strip.
+        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-isc-art {"), "outline: #{$shp-focus-ring-width} solid Highlight;");
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldPrintAtTheLengthOfItsItems()
+    {
+        var print = Block(ReadStylesheet(), "\n@media print {");
+
+        StringAssert.Contains(print, "overflow: visible !important;");
+        StringAssert.Contains(print, "max-height: none !important;");
+        StringAssert.Contains(print, ".bit-isc-btn");
+        StringAssert.Contains(print, "display: none !important;");
+    }
+
+    private static string Block(string stylesheet, string opening)
+    {
+        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
+
+        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
+
+        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
+        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
+
+        return stylesheet[start..end];
+    }
+
+    private static string[] DocumentedVariables(string stylesheet)
+    {
+        return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
+    }
+
+    // The header comment is where the variables are documented, so only what is not a comment is searched for declarations.
+    private static string RulesOf(string stylesheet)
+    {
+        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
+    }
+
+    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
+    {
+        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
+                                                 "Bit.BlazorUI.Extras", "Components", "InfiniteScrolling", "BitInfiniteScrolling.scss"));
+
+        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
+
+        return File.ReadAllText(path).Replace("\r\n", "\n");
+    }
+
+    [GeneratedRegex(@"^//\s+(--bit-InfiniteScrolling-[a-z-]+)\s", RegexOptions.Multiline)]
+    private static partial Regex DocumentedVariable();
+
+    [GeneratedRegex(@"var\((--bit-InfiniteScrolling-[a-z-]+)[,)]")]
+    private static partial Regex ReadVariable();
+
+    [GeneratedRegex(@"(^|[;{\s])--bit-InfiniteScrolling-[a-z-]+\s*:", RegexOptions.Multiline)]
+    private static partial Regex DeclaredVariable();
+}
