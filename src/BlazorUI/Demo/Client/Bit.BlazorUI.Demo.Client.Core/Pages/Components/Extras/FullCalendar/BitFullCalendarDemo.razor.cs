@@ -960,7 +960,6 @@ public partial class BitFullCalendarDemo
     private readonly List<BitFullCalendarEvent> toolbarEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> localizationEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> accessibilityEvents = CreateEvents();
-    private readonly List<BitFullCalendarEvent> cssVarsEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> cascadeEvents1 = CreateEvents();
     private readonly List<BitFullCalendarEvent> cascadeEvents2 = CreateEvents();
     private readonly List<BitFullCalendarEvent> styleEvents = CreateEvents();

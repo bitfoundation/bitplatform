@@ -859,20 +859,6 @@ private readonly BitFullCalendarTexts persianTexts = new()
     private readonly string example20CsharpCode = eventsCode;
 
     private readonly string example21RazorCode = @"
-<div style=""--bit-FullCalendar-accent-color:#0f766e;
-            --bit-FullCalendar-accent-hover-color:#115e59;
-            --bit-FullCalendar-today-background:rgba(15, 118, 110, 0.08);
-            --bit-FullCalendar-selection-background:rgba(15, 118, 110, 0.2);
-            --bit-FullCalendar-now-indicator-color:#f59e0b;
-            --bit-FullCalendar-border-radius:16px;
-            --bit-FullCalendar-event-border-radius:999px;
-            --bit-FullCalendar-hour-height:64px;
-            --bit-FullCalendar-height:480px;"">
-    <BitFullCalendar Events=""events"" DefaultView=""BitFullCalendarView.Week"" />
-</div>";
-    private readonly string example21CsharpCode = eventsCode;
-
-    private readonly string example22RazorCode = @"
 <style>
     .cascade-pair {
         gap: 1rem;
@@ -888,7 +874,7 @@ private readonly BitFullCalendarTexts persianTexts = new()
         <BitFullCalendar Events=""events2"" Views=""null"" />
     </div>
 </BitParams>";
-    private readonly string example22CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private readonly BitFullCalendarParams[] calendarParams =
 [
     new()
@@ -905,11 +891,11 @@ private readonly List<BitFullCalendarEvent> events1 = CreateEvents();
 private readonly List<BitFullCalendarEvent> events2 = CreateEvents();
 " + eventsCode.Replace("private readonly List<BitFullCalendarEvent> events = CreateEvents();\n\n", "").Replace("private readonly List<BitFullCalendarEvent> events = CreateEvents();\r\n\r\n", "");
 
-    private readonly string example23RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitFullCalendar Events=""events""
                  Style=""border: 2px dashed var(--bit-clr-pri)""
                  Styles=""calendarStyles"" />";
-    private readonly string example23CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private readonly BitFullCalendarClassStyles calendarStyles = new()
 {
     Header = ""background: var(--bit-clr-bg-sec)"",
@@ -918,7 +904,7 @@ private readonly BitFullCalendarClassStyles calendarStyles = new()
 };
 " + eventsCode;
 
-    private readonly string example24RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitFullCalendar Dir=""BitDir.Rtl"" Events=""events"" />";
-    private readonly string example24CsharpCode = eventsCode;
+    private readonly string example23CsharpCode = eventsCode;
 }

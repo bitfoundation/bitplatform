@@ -395,27 +395,7 @@
             <BitFullCalendar Events="accessibilityEvents" AriaLabel="Team schedule" />
         </DemoExample>
 
-        <DemoExample Title="CSS variables" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
-            <div>
-                The public <b>--bit-FullCalendar-*</b> variables re-skin the calendar without overriding its selectors. They
-                inherit, so set them on <code>:root</code>, on a wrapper (as here) or on one calendar's <b>Style</b>.
-                <b>--bit-FullCalendar-hour-height</b> re-scales the time grids, events and resizing included.
-            </div>
-            <br />
-            <div style="--bit-FullCalendar-accent-color:#0f766e;
-                        --bit-FullCalendar-accent-hover-color:#115e59;
-                        --bit-FullCalendar-today-background:rgba(15, 118, 110, 0.08);
-                        --bit-FullCalendar-selection-background:rgba(15, 118, 110, 0.2);
-                        --bit-FullCalendar-now-indicator-color:#f59e0b;
-                        --bit-FullCalendar-border-radius:16px;
-                        --bit-FullCalendar-event-border-radius:999px;
-                        --bit-FullCalendar-hour-height:64px;
-                        --bit-FullCalendar-height:480px;">
-                <BitFullCalendar Events="cssVarsEvents" DefaultView="BitFullCalendarView.Week" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
                 <b>BitParams</b> with a <b>BitFullCalendarParams</b> sets defaults for every calendar under it - here the views,
                 a hidden filter bar and one shared <b>Settings</b> object (a preference changed in one calendar's gear reaches
@@ -430,7 +410,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part: <b>Root</b>,
                 <b>Header</b>, <b>Body</b>, <b>Event</b> (every event surface, beside its own <b>CssClass</b>) and
@@ -442,7 +422,7 @@
                              Styles="calendarStyles" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
                 <b>Dir="BitDir.Rtl"</b> renders right-to-left - toolbar, chevrons, grids, dialogs and the timeline - and the arrow
                 keys and resizing follow. Only needed when the direction differs from the culture's.
