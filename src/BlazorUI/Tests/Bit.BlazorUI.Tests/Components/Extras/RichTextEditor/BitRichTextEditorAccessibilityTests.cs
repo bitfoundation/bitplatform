@@ -139,11 +139,185 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitRichTextEditor>();
 
-        component.InvokeAsync(() => component.Instance._OnClientError("invalid-image", "Bad image.")).Wait();
+        component.InvokeAsync(() => component.Instance._OnClientError("invalid-image", "image-unsupported-type", "Bad image.", null)).Wait();
 
         var error = component.Find(".bit-rte-err");
         Assert.AreEqual("alert", error.GetAttribute("role"));
         Assert.AreEqual(error.Id, component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorDescriptionShouldDescribeTheSurface()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Description, "What changed and why.");
+            parameters.Add(p => p.ShowCount, true);
+        });
+
+        var description = component.Find(".bit-rte-dsc");
+
+        Assert.AreEqual("What changed and why.", description.TextContent);
+        Assert.AreEqual($"{description.Id} {component.Find(".bit-rte-cnt").Id}", component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
+        Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorErrorMessageShouldMarkTheEditorInvalidAndBeAnnouncedOnce()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Description, "Help."));
+
+        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.AreEqual("", component.Find(".bit-rte-ann").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, "Refused."));
+
+        var message = component.Find(".bit-rte-erm");
+        var surface = component.Find(".bit-rte-edt");
+
+        Assert.AreEqual("Refused.", message.TextContent);
+        Assert.IsFalse(message.HasAttribute("role"), "The message would be read twice: by its own role and by the status region.");
+        Assert.IsTrue(component.Find(".bit-rte").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", surface.GetAttribute("aria-invalid"));
+        // What is wrong is read before the helper text.
+        Assert.AreEqual($"{message.Id} {component.Find(".bit-rte-dsc").Id}", surface.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Refused.", component.Find(".bit-rte-ann").TextContent);
+
+        // A render that keeps the same message does not say it again.
+        component.Render(parameters => parameters.Add(p => p.Placeholder, "Write..."));
+        Assert.AreEqual("Refused.", component.Find(".bit-rte-ann").TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessage, (string?)null));
+
+        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+        Assert.IsFalse(component.Find(".bit-rte").ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorInvalidShouldMarkTheEditorWithoutAMessage()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Invalid, true));
+
+        Assert.IsTrue(component.Find(".bit-rte").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-rte-edt").GetAttribute("aria-invalid"));
+        Assert.AreEqual(0, component.FindAll(".bit-rte-erm").Count);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorSourceToggleByPointerShouldMoveTheFocusIntoTheNewView()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.RichTextEditor.validateHtml", _ => true).SetResult(true);
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("<p>edited</p>");
+
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Source));
+
+        // A pointer click (detail 1): the surface that held the caret is hidden, so the source view takes the focus.
+        await ButtonByLabel(component, "HTML source view").ClickAsync(new MouseEventArgs { Detail = 1 });
+        Assert.AreEqual(1, component.FindAll(".bit-rte-src").Count);
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus"));
+
+        // And back: the text takes it again.
+        await ButtonByLabel(component, "HTML source view").ClickAsync(new MouseEventArgs { Detail = 1 });
+        Assert.AreEqual(0, component.FindAll(".bit-rte-src").Count);
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorSourceToggleByKeyboardShouldKeepTheFocusOnTheButton()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Source));
+
+        // A click raised by Enter or Space reports no click count.
+        await ButtonByLabel(component, "HTML source view").ClickAsync(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(1, component.FindAll(".bit-rte-src").Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorWithoutAPaletteShouldKeepTheBrowsersColorPicker()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color));
+
+        Assert.AreEqual(2, component.FindAll(".bit-rte-tlb input[type=color]").Count);
+        Assert.AreEqual(0, component.FindAll("button[aria-label='Text color']").Count);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorColorPaletteShouldBeANamedGridOfSwatches()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color);
+            parameters.Add(p => p.ColorPalette, [new("#2563eb", "Blue"), new("#DC2626")]);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState { ForeColor = "#dc2626" }));
+
+        var toggle = ButtonByLabel(component, "Text color");
+        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb input[type=color]").Count);
+        Assert.AreEqual("false", toggle.GetAttribute("aria-expanded"));
+
+        await toggle.ClickAsync(new());
+
+        var panel = component.Find(".bit-rte-bar");
+        Assert.AreEqual("group", panel.GetAttribute("role"));
+        Assert.AreEqual("Text color", panel.GetAttribute("aria-label"));
+        Assert.AreEqual(panel.Id, ButtonByLabel(component, "Text color").GetAttribute("aria-controls"));
+        Assert.AreEqual("true", ButtonByLabel(component, "Text color").GetAttribute("aria-expanded"));
+
+        var swatches = component.FindAll(".bit-rte-swatch");
+        Assert.AreEqual(2, swatches.Count);
+        // Named by its name, or by its value when it has none; the color under the caret is the pressed one.
+        Assert.AreEqual("Blue", swatches[0].GetAttribute("aria-label"));
+        Assert.AreEqual("false", swatches[0].GetAttribute("aria-pressed"));
+        Assert.AreEqual("#DC2626", swatches[1].GetAttribute("aria-label"));
+        Assert.AreEqual("true", swatches[1].GetAttribute("aria-pressed"));
+
+        // The swatches are one tab stop, and the focus moves onto them.
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.enableGridRoving"));
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus"));
+
+        await component.FindAll(".bit-rte-swatch")[0].ClickAsync(new());
+
+        var apply = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applyColor");
+        Assert.AreEqual("fore", apply.Arguments[1]);
+        Assert.AreEqual("#2563eb", apply.Arguments[2]);
+        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke(RestoreFocus));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorColorPanelShouldFollowTheButtonThatOpenedItAndCloseOnEscape()
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color);
+            parameters.Add(p => p.ColorPalette, [new("#fff3a3", "Soft yellow")]);
+        });
+
+        await ButtonByLabel(component, "Text color").ClickAsync(new());
+        await ButtonByLabel(component, "Highlight color").ClickAsync(new());
+
+        Assert.AreEqual("Highlight color", component.Find(".bit-rte-bar").GetAttribute("aria-label"));
+        Assert.AreEqual("false", ButtonByLabel(component, "Text color").GetAttribute("aria-expanded"));
+
+        await component.Find(".bit-rte-swatch").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+    }
+
+    [TestMethod]
+    [DataRow(BitRichTextEditorToolbar.Image, 1, "Image inserted. Select an image and use the image button to describe it.")]
+    [DataRow(BitRichTextEditorToolbar.Inline, 3, "3 images inserted.")]
+    public void BitRichTextEditorDroppedImagesShouldBeAnnouncedWithWhereToDescribeThem(BitRichTextEditorToolbar toolbar, int count, string expected)
+    {
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, toolbar));
+
+        component.InvokeAsync(() => component.Instance._OnImagesInserted(count)).Wait();
+
+        Assert.AreEqual(expected, component.Find(".bit-rte-ann").TextContent);
     }
 
     [TestMethod]

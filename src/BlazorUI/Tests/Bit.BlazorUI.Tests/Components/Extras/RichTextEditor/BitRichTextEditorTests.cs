@@ -973,6 +973,66 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNull(url);
         Assert.IsNotNull(error);
         Assert.AreEqual("file-too-large", error!.Code);
+        Assert.AreEqual("\"big.png\" exceeds the 10 MB limit.", error.Message);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorMaxImageSizeShouldLowerTheLimitOnBothSides()
+    {
+        SetupJsInterop();
+
+        BitRichTextEditorError? error = null;
+        var uploaded = false;
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.MaxImageSize, 512 * 1024);
+            parameters.Add(p => p.OnImageUpload, _ => { uploaded = true; return Task.FromResult<string?>("https://cdn/x.png"); });
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        // The bridge is told the limit, so a file past it is refused before it is even read.
+        Assert.AreEqual(512L * 1024, SetupOption(LastSetupOptions(), "MaxImageBytes"));
+
+        var url = await component.InvokeAsync(() =>
+            component.Instance._ResolveImageUrl("photo.png", "image/png", new string('A', 4 * (600 * 1024 / 3))));
+
+        Assert.IsNull(url);
+        Assert.IsFalse(uploaded, "An image past the limit reached the upload handler.");
+        Assert.AreEqual("\"photo.png\" exceeds the 512 KB limit.", error!.Message);
+
+        // Zero or less is no limit to keep: the default comes back.
+        component.Render(parameters => parameters.Add(p => p.MaxImageSize, 0));
+        Assert.AreEqual(10L * 1024 * 1024, component.Instance.MaxImageSize);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorClientErrorsShouldBeLocalized()
+    {
+        SetupJsInterop();
+
+        BitRichTextEditorError? error = null;
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Localizer, new TestLocalizer(new()
+            {
+                ["image-too-large"] = "«{0}» supera el límite de {1}.",
+                ["too-many-images"] = "Solo {0} imágenes {9}.",
+            }));
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnClientError("file-too-large", "image-too-large", "\"{0}\" exceeds the {1} limit.", ["a.png", "10 MB"]));
+        Assert.AreEqual("file-too-large", error!.Code);
+        Assert.AreEqual("«a.png» supera el límite de 10 MB.", error.Message);
+        Assert.AreEqual("«a.png» supera el límite de 10 MB.", component.Find(".bit-rte-err").TextContent);
+
+        // A key the localizer does not know keeps the English template.
+        await component.InvokeAsync(() => component.Instance._OnClientError("invalid-url", "links-not-allowed", "Links are not allowed by the current policy.", []));
+        Assert.AreEqual("Links are not allowed by the current policy.", error.Message);
+
+        // A translation whose placeholders do not fit the values falls back to the English rather than throwing.
+        await component.InvokeAsync(() => component.Instance._OnClientError("too-many-files", "too-many-images", "Only {0} images can be inserted per drop.", ["20"]));
+        Assert.AreEqual("Only 20 images can be inserted per drop.", error.Message);
     }
 
     [TestMethod]
@@ -1732,7 +1792,7 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
         });
 
-        await component.InvokeAsync(() => component.Instance._OnClientError("file-too-large", "Too big."));
+        await component.InvokeAsync(() => component.Instance._OnClientError("file-too-large", "image-too-large", "Too big.", null));
 
         Assert.IsNotNull(error);
         Assert.AreEqual("file-too-large", error!.Code);

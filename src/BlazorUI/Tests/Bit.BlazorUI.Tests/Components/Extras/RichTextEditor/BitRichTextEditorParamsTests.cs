@@ -22,6 +22,9 @@ public class BitRichTextEditorParamsTests : BunitTestContext
     [
         nameof(BitRichTextEditor.CascadingParameters),
         nameof(BitRichTextEditor.AutoFocus),
+        nameof(BitRichTextEditor.Description),
+        nameof(BitRichTextEditor.ErrorMessage),
+        nameof(BitRichTextEditor.Invalid),
         nameof(BitRichTextEditor.Label),
         nameof(BitRichTextEditor.OnBlur),
         nameof(BitRichTextEditor.OnChange),
