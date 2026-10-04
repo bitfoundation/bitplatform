@@ -77,11 +77,11 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Shape" RazorCode="@example3RazorCode" Id="example3">
+            <DemoExample Title="Shape & grayscale" RazorCode="@example3RazorCode" Id="example3">
                 <div class="example-desc">
-                    <b>Rounded</b>, <b>Circular</b>, <b>Bordered</b> and <b>Shadow</b> shape the frame, which is cut
-                    to the flag rather than to the square image around it. <b>Bordered</b> keeps a mostly white flag
-                    visible on a white surface and takes no extra room.
+                    <b>Rounded</b>, <b>Circular</b>, <b>Bordered</b> and <b>Shadow</b> shape the frame, cut to the
+                    flag rather than to the square image around it. <b>Bordered</b> keeps a mostly white flag visible
+                    on a white surface and takes no extra room. <b>Grayscale</b> marks a country that is not in play.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -89,7 +89,8 @@
                     <div><BitFlag Circular Height="2rem" Country="BitCountries.Japan" /> <span>Circular</span></div>
                     <div><BitFlag Bordered Height="2rem" Country="BitCountries.Japan" /> <span>Bordered</span></div>
                     <div><BitFlag Shadow Height="2rem" Country="BitCountries.Japan" /> <span>Shadow</span></div>
-                    <div><BitFlag Circular Bordered Shadow Height="2rem" Country="BitCountries.Japan" /> <span>All three</span></div>
+                    <div><BitFlag Circular Bordered Shadow Height="2rem" Country="BitCountries.Japan" /> <span>Circular Bordered Shadow</span></div>
+                    <div><BitFlag Grayscale Rounded Height="2rem" Country="BitCountries.Brazil" /> <span>Grayscale</span></div>
                 </div>
             </DemoExample>
 
@@ -127,28 +128,12 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Grayscale & IsEnabled" RazorCode="@example6RazorCode" Id="example6">
+            <DemoExample Title="Image sets" RazorCode="@example6RazorCode" Id="example6">
                 <div class="example-desc">
-                    <b>Grayscale</b> marks a country that is not in play while keeping it recognisable.
-                    <b>IsEnabled</b>=false dims the flag and refuses clicks and keys, but keeps its tooltip, so the
-                    reason it is unavailable can still be read.
-                </div>
-                <br />
-                <div class="flag-list">
-                    <div><BitFlag Height="2rem" Country="BitCountries.Brazil" /> <span>Normal</span></div>
-                    <div><BitFlag Height="2rem" Grayscale Country="BitCountries.Brazil" /> <span>Grayscale</span></div>
-                    <div><BitFlag Height="2rem" IsEnabled="false" Title="Not shipped to Brazil yet" Country="BitCountries.Brazil" /> <span>IsEnabled="false" - hover it</span></div>
-                    <div><BitFlag Height="2rem" Grayscale IsEnabled="false" Country="BitCountries.Brazil" /> <span>Both</span></div>
-                </div>
-            </DemoExample>
-
-            <DemoExample Title="Image sets" RazorCode="@example7RazorCode" Id="example7">
-                <div class="example-desc">
-                    <b>ImageSet</b> draws the flag from the <b>Flat</b> or <b>Shiny</b> set of Bit.BlazorUI.Assets
-                    (16 to 64px), and the browser fetches only the size the flag and the screen density need - read off
-                    <b>Width</b>/<b>Height</b> in px or rem, else <b>Size</b>. <b>ImageSize</b> pins one size instead.
-                    A <b>CascadingValue</b> of a <b>BitFlagImageSet</b> sets it for every flag inside; a flag's own wins.
-                    Missing images fall back to the packaged flag.
+                    <b>ImageSet</b> draws from the <b>Flat</b> or <b>Shiny</b> set of Bit.BlazorUI.Assets (16-64px);
+                    the browser fetches only the size the flag and the screen density need, read off a px or rem
+                    <b>Height</b>/<b>Width</b>. <b>ImageSize</b> pins one size. A <b>CascadingValue</b> of a
+                    <b>BitFlagImageSet</b> sets it for every flag inside. A missing image falls back to the packaged flag.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -169,12 +154,13 @@
                 </CascadingValue>
             </DemoExample>
 
-            <DemoExample Title="Src, SrcPattern & FallbackTemplate" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <DemoExample Title="Src, SrcPattern & FallbackTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
                 <div class="example-desc">
                     <b>Src</b> points one flag at an image of the page's own; <b>SrcPattern</b> points every flag at a
-                    set - a CDN or a vector package - with <code>{iso2}</code>, <code>{iso3}</code> (lower case) or
-                    <code>{ISO2}</code>, <code>{ISO3}</code> (upper case) written in. An image that fails falls back to
-                    the packaged flag, then to <b>FallbackTemplate</b>, which also stands in for an unknown country.
+                    set - a CDN or a vector package - writing in <code>{iso2}</code>/<code>{iso3}</code> (lower case)
+                    or <code>{ISO2}</code>/<code>{ISO3}</code> (upper case). A <b>BitCountry</b> of the page's own
+                    covers what the table lacks, such as the European Union. A failed image falls back to the packaged
+                    flag, then to <b>FallbackTemplate</b>, which also stands in for an unknown country.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -185,6 +171,7 @@
                         <BitFlag Height="2rem" SrcPattern="@flagCdnPattern" Country="BitCountries.Japan" />
                         <span>SrcPattern - one url for every country</span>
                     </div>
+                    <div><BitFlag Height="2rem" AutoAlt SrcPattern="@flagCdnPattern" Country="europeanUnion" /> <span>A country of the page's own</span></div>
                     <div><BitFlag Height="2rem" Bordered Src="/not-a-real-flag.png" Country="BitCountries.Japan" /> <span>A failed Src - the packaged flag stands in</span></div>
                     <div><BitFlag Iso2="zz" /> <span>An unknown country draws nothing...</span></div>
                     <div>
@@ -202,12 +189,11 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Aspect ratio & fit" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <DemoExample Title="Aspect ratio & fit" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div class="example-desc">
-                    The frame is square. <b>AspectRatio</b> gives it another shape - 4:3 and 3:2 are what vector sets
-                    ship - keeping the height. <b>Fit</b> places the image in it: it covers and crops by default;
-                    <b>Contain</b> shows the whole image. A packaged or <b>ImageSet</b> flag covers the frame with the
-                    flag itself, so <b>AspectRatio</b>="1" draws a square flag.
+                    The frame is square. <b>AspectRatio</b> reshapes it, keeping the height - 4:3 and 3:2 are what
+                    vector sets ship. <b>Fit</b> places the image: it covers and crops by default, <b>Contain</b> shows
+                    all of it. A packaged or <b>ImageSet</b> flag fills any ratio with the flag itself.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -224,12 +210,11 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Loading & events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <DemoExample Title="Loading & events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
                 <div class="example-desc">
-                    Images load lazily; <b>Loading</b>=<b>Eager</b> starts the fetch at once. <b>OnLoad</b> and
-                    <b>OnError</b> are the image's own events (never fired for an emoji); a failed <b>Src</b> raises
-                    <b>OnError</b> again if the packaged flag fails too. <b>ImageAttributes</b> land on the img, e.g. a
-                    <code>referrerpolicy</code> for a CDN. Press the button to render the flags and watch the events.
+                    Images load lazily; <b>Loading</b>=<b>Eager</b> fetches at once. <b>OnLoad</b> and <b>OnError</b>
+                    are the image's own events (never fired for an emoji). <b>ImageAttributes</b> land on the img, e.g.
+                    a <code>referrerpolicy</code> for a CDN. Press the button to render the flags and count the events.
                 </div>
                 <br />
                 <BitButton OnClick="RenderEventFlags">
@@ -263,12 +248,12 @@
                 }
             </DemoExample>
 
-            <DemoExample Title="OnClick" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <DemoExample Title="OnClick & IsEnabled" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
                 <div class="example-desc">
-                    <b>OnClick</b> makes the flag a button: focusable, with a focus ring, activated by Enter and Space,
-                    and with a pointer target grown to the 24px of WCAG 2.2 without growing the flag. It is named by
-                    its <b>Alt</b>, else by its country. Attributes such as <code>aria-pressed</code> pass through to it, so
-                    a picker tells screen readers which flag is selected, not only the eye.
+                    <b>OnClick</b> makes the flag a button: focusable, activated by Enter and Space, named by its
+                    <b>Alt</b> or else its country, with a pointer target grown to WCAG's 24px without growing the flag.
+                    <code>aria-pressed</code> passes through, so screen readers hear the selection too.
+                    <b>IsEnabled</b>=false dims it and refuses clicks and keys, but keeps its tooltip - hover the last one.
                 </div>
                 <br />
                 <div class="flag-row">
@@ -282,12 +267,18 @@
                                  aria-pressed="@(selectedCountry == country ? "true" : "false")"
                                  OnClick="@(() => selectedCountry = country)" />
                     }
+                    <BitFlag AutoAlt Bordered Rounded Grayscale
+                             Height="2rem"
+                             IsEnabled="false"
+                             Title="Not shipped to Portugal yet"
+                             Country="BitCountries.Portugal"
+                             OnClick="@(() => selectedCountry = BitCountries.Portugal)" />
                 </div>
                 <br />
                 <div>Selected: @(selectedCountry?.Name ?? "(none)")</div>
             </DemoExample>
 
-            <DemoExample Title="All countries" RazorCode="@example12RazorCode" Id="example12">
+            <DemoExample Title="All countries" RazorCode="@example11RazorCode" Id="example11">
                 <div class="example-desc">
                     Every country of <b>BitCountries.All</b>, loaded lazily as it scrolls into view. Hover one for its
                     name and code.
@@ -301,7 +292,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div class="example-desc">
                     <b>BitParams</b> with a <b>BitFlagParams</b> sets defaults for every flag under it - the size, the
                     shape, the image source, the naming; a flag's own value wins (the last one turns rounding off). The
@@ -318,7 +309,7 @@
                 </BitParams>
             </DemoExample>
 
-            <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
+            <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
                 <div class="example-desc">
                     <b>Size</b> picks one of the theme's icon sizes (Medium, 16px, is the default); <b>Width</b> and
                     <b>Height</b> win over it. Past these sizes, an <b>ImageSet</b>, the emoji or a vector <b>Src</b>
@@ -333,7 +324,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+            <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
                 <div class="example-desc">
                     <b>Style</b> and <b>Class</b> reach the frame; <b>Styles</b> and <b>Classes</b> reach each part:
                     <b>Root</b>, <b>Image</b>, <b>Emoji</b> and <b>Fallback</b>. The <b>--bit-Flag-*</b> variables
@@ -368,7 +359,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+            <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
                 <div class="example-desc">
                     <b>Dir</b> flips the row the flag sits in, never the flag: a mirrored flag is a different flag.
                 </div>

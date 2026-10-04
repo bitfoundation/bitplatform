@@ -67,7 +67,7 @@ public partial class BitFlagDemo
             Name = "Country",
             Type = "BitCountry?",
             DefaultValue = "null",
-            Description = "The country of the flag, taken as given rather than looked up - a country of the page's own works too. It wins over Iso2, Iso3, Code and Name.",
+            Description = "The country of the flag, taken as given rather than looked up. A country of the page's own works too, and one the packaged images do not cover (the European Union) is drawn by a Src or SrcPattern. It wins over Iso2, Iso3, Code and Name.",
             LinkType = LinkType.Link,
             Href = "#country",
         },
@@ -668,6 +668,10 @@ public partial class BitFlagDemo
 
     // One url for every country: {iso2} is written in as the lower-cased alpha-2 code.
     private const string flagCdnPattern = "https://flagcdn.com/{iso2}.svg";
+
+    // A country the table does not carry, which a source of the page's own covers: the European Union has an
+    // exceptionally reserved alpha-2 code and no alpha-3 one.
+    private static readonly BitCountry europeanUnion = new("European Union", "", "EU", "");
 
     private static readonly BitCountry[] clickableCountries =
     [

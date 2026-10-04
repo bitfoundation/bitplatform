@@ -345,7 +345,10 @@ public partial class BitFlag : BitComponentBase
     /// This is the fastest of the five ways of naming the country - there is nothing to look up - and
     /// it wins over all of them. It is not restricted to <see cref="BitCountries.All"/> either: a
     /// country of the page's own is rendered from its own <see cref="BitCountry.Iso2"/>, which is what
-    /// lets a <see cref="Src"/> of the page's own cover a country the packaged images do not.
+    /// lets a <see cref="Src"/> or a <see cref="SrcPattern"/> of the page's own cover a country the packaged
+    /// images do not - the European Union of a currency picker, say. Such a country is never looked for
+    /// among the packaged images, so without one of those it draws the <see cref="FallbackTemplate"/>, or
+    /// the emoji flag where <see cref="Emoji"/> asks for it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitCountry? Country { get; set; }
@@ -463,7 +466,8 @@ public partial class BitFlag : BitComponentBase
     /// It is also cascaded: a <c>CascadingValue</c> of a BitFlagImageSet sets it for every flag inside,
     /// and one set on the flag wins over it - as does one a <see cref="BitParams"/> cascades through a
     /// <see cref="BitFlagParams"/>. <see cref="Src"/>, <see cref="SrcPattern"/> and <see cref="Emoji"/> win over
-    /// it, and a country the sets do not cover is drawn from the packaged image.
+    /// it. The sets cover exactly the countries the packaged image does, so a country of the page's own that
+    /// neither covers is never asked of them.
     /// </remarks>
     [Parameter] public BitFlagImageSet? ImageSet { get; set; }
 
@@ -811,7 +815,10 @@ public partial class BitFlag : BitComponentBase
         _flagIso2 = iso2.HasValue() ? iso2!.ToUpperInvariant() : null;
         _imageSet = ImageSet ?? CascadingImageSet;
 
-        var packaged = _flagIso2 is null ? null : GetFlagUrl(_flagIso2);
+        // A country of the page's own may carry a code no packaged image is named by - Kosovo's "XK", the European
+        // Union's "EU" - and asking for one would only ever end in a failed request and an OnError. It has no
+        // packaged flag, the way a code the table does not carry has none.
+        var packaged = _flagIso2 is not null && BitCountries.HasFlag(_flagIso2) ? GetFlagUrl(_flagIso2) : null;
         var src = packaged;
         string? srcSet = null;
         var imageSize = 0;
@@ -823,17 +830,17 @@ public partial class BitFlag : BitComponentBase
             src = Src;
             _drawsOwnSrc = true;
         }
-        else if (SrcPattern.HasValue() && _country is not null && _country.Iso2.HasValue())
+        else if (SrcPattern.HasValue() && _country is not null && FormatSrcPattern(SrcPattern!, _country) is { } patternSrc)
         {
-            src = FormatSrcPattern(SrcPattern!, _country);
+            src = patternSrc;
             _drawsOwnSrc = true;
         }
-        // A code the sets do not cover is not asked of them: it keeps the packaged image it always had
-        // rather than paying a failed request before falling back to it.
-        else if (_imageSet.HasValue && _flagIso2 is not null && BitCountries.HasFlag(_flagIso2))
+        // The sets cover exactly the codes the packaged image does, so a code without a packaged image is
+        // not asked of them either: it would only pay for a failed request.
+        else if (_imageSet.HasValue && packaged is not null)
         {
-            (imageSize, srcSet) = PickSetImage(_imageSet.Value, _flagIso2);
-            src = GetFlagUrl(_flagIso2, _imageSet.Value, imageSize);
+            (imageSize, srcSet) = PickSetImage(_imageSet.Value, _flagIso2!);
+            src = GetFlagUrl(_flagIso2!, _imageSet.Value, imageSize);
         }
 
         // A new source is a new image, so whatever the previous one ended up as is no longer the
@@ -940,10 +947,22 @@ public partial class BitFlag : BitComponentBase
     /// The url a <see cref="SrcPattern"/> comes to for a country: its codes written in where the pattern names
     /// them, lower-cased or upper-cased the way the placeholder itself is written.
     /// </summary>
-    private static string FormatSrcPattern(string pattern, BitCountry country)
+    /// <remarks>
+    /// A code the country does not carry - the alpha-3 code of a country of the page's own that has none, as the
+    /// European Union does not - would write a url that names no image at all, so there is no url to draw then,
+    /// and the flag is drawn as though there were no pattern.
+    /// </remarks>
+    private static string? FormatSrcPattern(string pattern, BitCountry country)
     {
         var iso2 = country.Iso2;
-        var iso3 = country.Iso3 ?? string.Empty;
+        var iso3 = country.Iso3;
+
+        if (iso2.HasValue() is false) return null;
+
+        if (iso3.HasValue() is false &&
+            (pattern.Contains("{iso3}", StringComparison.Ordinal) || pattern.Contains("{ISO3}", StringComparison.Ordinal))) return null;
+
+        iso3 ??= string.Empty;
 
         return pattern.Replace("{iso2}", iso2.ToLowerInvariant(), StringComparison.Ordinal)
                       .Replace("{ISO2}", iso2.ToUpperInvariant(), StringComparison.Ordinal)

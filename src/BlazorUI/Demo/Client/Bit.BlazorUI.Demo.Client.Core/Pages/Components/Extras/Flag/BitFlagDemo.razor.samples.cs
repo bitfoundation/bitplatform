@@ -37,7 +37,9 @@ public partial class BitFlagDemo
 
 <BitFlag Shadow Height=""2rem"" Country=""BitCountries.Japan"" />
 
-<BitFlag Circular Bordered Shadow Height=""2rem"" Country=""BitCountries.Japan"" />";
+<BitFlag Circular Bordered Shadow Height=""2rem"" Country=""BitCountries.Japan"" />
+
+<BitFlag Grayscale Rounded Height=""2rem"" Country=""BitCountries.Brazil"" />";
 
     private readonly string example4RazorCode = @"
 <BitFlag Emoji Country=""BitCountries.Iran"" />
@@ -64,15 +66,6 @@ public partial class BitFlagDemo
 <BitFlag Emoji AutoAlt Height=""1.5rem"" Country=""BitCountries.Canada"" />";
 
     private readonly string example6RazorCode = @"
-<BitFlag Height=""2rem"" Country=""BitCountries.Brazil"" />
-
-<BitFlag Height=""2rem"" Grayscale Country=""BitCountries.Brazil"" />
-
-<BitFlag Height=""2rem"" IsEnabled=""false"" Title=""Not shipped to Brazil yet"" Country=""BitCountries.Brazil"" />
-
-<BitFlag Height=""2rem"" Grayscale IsEnabled=""false"" Country=""BitCountries.Brazil"" />";
-
-    private readonly string example7RazorCode = @"
 <BitFlag Height=""3rem"" Country=""BitCountries.Brazil"" />
 
 <BitFlag ImageSet=""BitFlagImageSet.Flat"" Height=""3rem"" Country=""BitCountries.Brazil"" />
@@ -91,12 +84,14 @@ public partial class BitFlagDemo
     <BitFlag Height=""2rem"" ImageSet=""BitFlagImageSet.Flat"" Country=""BitCountries.Brazil"" />
 </CascadingValue>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitFlag Height=""2rem"" Src=""@japanSvg"" Country=""BitCountries.Japan"" />
 
 <BitFlag Height=""2rem"" SrcPattern=""@flagCdnPattern"" Country=""BitCountries.Canada"" />
 <BitFlag Height=""2rem"" SrcPattern=""@flagCdnPattern"" Country=""BitCountries.Germany"" />
 <BitFlag Height=""2rem"" SrcPattern=""@flagCdnPattern"" Country=""BitCountries.Japan"" />
+
+<BitFlag Height=""2rem"" AutoAlt SrcPattern=""@flagCdnPattern"" Country=""europeanUnion"" />
 
 <BitFlag Height=""2rem"" Bordered Src=""/not-a-real-flag.png"" Country=""BitCountries.Japan"" />
 
@@ -110,14 +105,17 @@ public partial class BitFlagDemo
     <FallbackTemplate><BitIcon IconName=""@BitIconName.Error"" /></FallbackTemplate>
 </BitFlag>";
 
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 // A vector image of the flag, inline so the example carries its own file.
 private const string japanSvg = ""data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%23fff'/%3E%3Ccircle cx='450' cy='300' r='180' fill='%23bc002d'/%3E%3C/svg%3E"";
 
 // One url for every country: {iso2} is written in as the lower-cased alpha-2 code.
-private const string flagCdnPattern = ""https://flagcdn.com/{iso2}.svg"";";
+private const string flagCdnPattern = ""https://flagcdn.com/{iso2}.svg"";
 
-    private readonly string example9RazorCode = @"
+// A country the table does not carry: the European Union has an alpha-2 code but no alpha-3 one.
+private static readonly BitCountry europeanUnion = new(""European Union"", """", ""EU"", """");";
+
+    private readonly string example8RazorCode = @"
 <BitFlag Bordered Height=""2rem"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
 
 <BitFlag Bordered Height=""2rem"" AspectRatio=""3/2"" Src=""@netherlandsSvg"" Country=""BitCountries.Netherlands"" />
@@ -130,11 +128,11 @@ private const string flagCdnPattern = ""https://flagcdn.com/{iso2}.svg"";";
 <BitFlag Rounded Height=""2rem"" AspectRatio=""1"" ImageSet=""BitFlagImageSet.Shiny"" Country=""BitCountries.Brazil"" />
 <BitFlag Bordered Height=""2rem"" AspectRatio=""2"" Country=""BitCountries.Brazil"" />";
 
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 // A 3:2 vector image, the shape the flag itself is drawn in.
 private const string netherlandsSvg = ""data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%231e4785'/%3E%3Crect width='900' height='400' fill='%23fff'/%3E%3Crect width='900' height='200' fill='%23ae1c28'/%3E%3C/svg%3E"";";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitButton OnClick=""RenderEventFlags"">
     @(eventFlagsRenderCount == 0 ? ""Render the flags"" : ""Render the flags again"")
 </BitButton>
@@ -160,7 +158,7 @@ private const string netherlandsSvg = ""data:image/svg+xml,%3Csvg xmlns='http://
     </div>
 }";
 
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private int eventFlagsRenderCount;
 private int loadedCount;
 private int failedCount;
@@ -172,7 +170,7 @@ private void RenderEventFlags()
     eventFlagsRenderCount++;
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 @foreach (var country in clickableCountries)
 {
     <BitFlag AutoAlt AutoTitle
@@ -184,9 +182,16 @@ private void RenderEventFlags()
              OnClick=""@(() => selectedCountry = country)"" />
 }
 
+<BitFlag AutoAlt Bordered Rounded Grayscale
+         Height=""2rem""
+         IsEnabled=""false""
+         Title=""Not shipped to Portugal yet""
+         Country=""BitCountries.Portugal""
+         OnClick=""@(() => selectedCountry = BitCountries.Portugal)"" />
+
 <div>Selected: @(selectedCountry?.Name ?? ""(none)"")</div>";
 
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private static readonly BitCountry[] clickableCountries =
 [
     BitCountries.France,
@@ -197,7 +202,7 @@ private static readonly BitCountry[] clickableCountries =
 
 private BitCountry? selectedCountry;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <div class=""flag-grid"">
     @foreach (var country in BitCountries.All)
     {
@@ -205,7 +210,7 @@ private BitCountry? selectedCountry;";
     }
 </div>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitParams Parameters=""flagParams"">
     <BitFlag Country=""BitCountries.Canada"" />
     <BitFlag Country=""BitCountries.Germany"" />
@@ -213,7 +218,7 @@ private BitCountry? selectedCountry;";
     <BitFlag Rounded=""false"" Country=""BitCountries.Brazil"" />
 </BitParams>";
 
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly BitFlagParams[] flagParams =
 [
     new()
@@ -227,7 +232,7 @@ private readonly BitFlagParams[] flagParams =
     }
 ];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitFlag Size=""BitSize.Small"" Bordered Country=""BitCountries.Italy"" />
 
 <BitFlag Size=""BitSize.Medium"" Bordered Country=""BitCountries.Italy"" />
@@ -236,7 +241,7 @@ private readonly BitFlagParams[] flagParams =
 
 <BitFlag Width=""4rem"" Height=""2rem"" Bordered Country=""BitCountries.Italy"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         width: 3rem;
@@ -278,7 +283,7 @@ private readonly BitFlagParams[] flagParams =
     <BitFlag Grayscale Country=""BitCountries.France"" />
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitFlag Dir=""BitDir.Rtl"" Bordered Height=""2rem"" AutoTitle Country=""BitCountries.Iran"" />
 

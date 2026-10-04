@@ -188,10 +188,64 @@ public class BitFlagTests : BunitTestContext
     {
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.Country, new BitCountry("Kosovo", "383", "XK", "XKX"));
+            parameters.Add(p => p.Country, new BitCountry("Holland", "31", "NL", "NLD"));
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/XK-flat-16.webp");
+        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldNotAskForAPackagedImageOfACodeThePackageDoesNotShip()
+    {
+        // No packaged image is named "XK": asking for one would only ever end in a failed request and an OnError.
+        var kosovo = new BitCountry("Kosovo", "383", "XK", "XKX");
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, kosovo);
+            parameters.Add(p => p.FallbackTemplate, (RenderFragment)(builder => builder.AddContent(0, "XK")));
+        });
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.AreEqual("XK", component.Find(".bit-flg-fbk").TextContent.Trim());
+
+        // A source of the page's own is what covers it, and its failure goes straight on to the fallback.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Country, kosovo);
+            parameters.Add(p => p.SrcPattern, "/flags/{iso2}.svg");
+        });
+
+        Assert.AreEqual("/flags/xk.svg", component.Find("img").GetAttribute("src"));
+
+        component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-flg-fbk").Count);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldNotWriteAnAlpha3CodeTheCountryDoesNotCarryIntoTheSrcPattern()
+    {
+        // The European Union has an exceptionally reserved alpha-2 code and no alpha-3 one: a pattern naming the
+        // alpha-3 code has no url to write for it, while one naming the alpha-2 code does.
+        var europeanUnion = new BitCountry("European Union", string.Empty, "EU", string.Empty);
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, europeanUnion);
+            parameters.Add(p => p.SrcPattern, "/flags/{iso3}.svg");
+        });
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Country, europeanUnion);
+            parameters.Add(p => p.SrcPattern, "/flags/{ISO2}.svg");
+        });
+
+        Assert.AreEqual("/flags/EU.svg", component.Find("img").GetAttribute("src"));
     }
 
     [TestMethod,
@@ -703,18 +757,15 @@ public class BitFlagTests : BunitTestContext
     [TestMethod]
     public void BitFlagShouldNotAskTheImageSetForACountryItDoesNotCover()
     {
-        // Asked of the sets, a code they do not cover would only cost a failed request before the packaged
-        // image stood in for it.
+        // Asked of the sets, a code they do not cover would only cost a failed request - and the packaged image,
+        // which does not cover it either, a second one.
         var component = RenderComponent<BitFlag>(parameters =>
         {
             parameters.Add(p => p.Country, new BitCountry("Kosovo", "383", "XK", "XKX"));
             parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
         });
 
-        var image = component.Find("img");
-
-        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/XK-flat-16.webp", image.GetAttribute("src"));
-        Assert.IsFalse(image.HasAttribute("srcset"));
+        Assert.AreEqual(0, component.FindAll("img").Count);
     }
 
     [TestMethod]
