@@ -23,12 +23,21 @@
         </label>
     }
 
-    <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
+    @* The selector and the number are two controls of one field, so the visible label names the pair as a
+       group as well: the country button is otherwise announced with nothing tying it to the field it is in. *@
+    <div id="@_fieldGroupId"
+         role="@(HasLabel ? "group" : null)"
+         aria-labelledby="@(HasLabel ? _labelId : null)"
+         style="@Styles?.FieldGroup"
+         class="bit-phi-fgp @Classes?.FieldGroup">
 
         @if (NoDropdown)
         {
-            <div style="@Styles?.Dropdown" class="bit-phi-drp @Classes?.Dropdown">
-                <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
+            @* A fixed country is no control, so nothing would ever read it out: the input points at this element
+               through aria-describedby, and the element says the country in words rather than as a flag. *@
+            <div id="@_dropdownId" title="@DropdownTitle" style="@Styles?.Dropdown" class="bit-phi-drp @Classes?.Dropdown">
+                <span class="bit-phi-vhd">@DropdownLabel</span>
+                <span aria-hidden="true" style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
                     @if (DropdownTemplate is not null)
                     {
                         @DropdownTemplate(Country)
@@ -66,7 +75,7 @@
                     aria-controls="@(IsOpen ? _listId : null)"
                     aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
                     aria-label="@DropdownLabel"
-                    title="@(DropdownAriaLabel ?? Country?.Name)"
+                    title="@DropdownTitle"
                     disabled="@(IsEnabled is false)"
                     tabindex="@(IsEnabled && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
                     style="@Styles?.Dropdown"
@@ -116,6 +125,7 @@
                autocorrect="off"
                autocapitalize="off"
                disabled="@(IsEnabled is false)"
+               title="@InputTitle"
                placeholder="@InputPlaceholder"
                inputmode="@InputModeValue"
                enterkeyhint="@EnterKeyHint"
@@ -215,12 +225,12 @@
 {
     <div @onclick="CloseCallout"
          id="@_overlayId"
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         style="@GetOverlayStyles()"
          class="bit-phi-ovl @Classes?.Overlay"></div>
 
     <div id="@_calloutId"
-         style="@Styles?.Callout"
-         class="bit-phi-cal @SizeClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-phi-rtl" : null) @Classes?.Callout">
+         style="@GetCalloutStyles()"
+         class="bit-phi-cal @SizeClass @ColorClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-phi-rtl" : null) @Classes?.Callout">
 
         @if (Responsive)
         {
@@ -288,7 +298,7 @@
                         var country = items[index];
                         var isSelected = country.Iso2 == Country?.Iso2;
                         var isActive = index == _activeIndex;
-                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}";
+                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}{(IsLastPreferred(index) ? " bit-phi-ilp" : "")}";
                         <button @key="country.Iso2"
                                 id="@GetOptionId(index)"
                                 @onclick="() => HandleOnCountrySelect(country)"

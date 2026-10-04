@@ -57,6 +57,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private List<BitCountry> _allItems = [];
     private List<BitCountry> _viewItems = [];
 
+    // How many of the countries at the head of _allItems are there because they were preferred, which is where
+    // the unfiltered list draws the rule that sets them apart from the rest.
+    private int _preferredCount;
+
     // The name of each country of _allItems with its diacritics folded away, and the same name cut
     // into words. Both are read once per country per keystroke, so they are computed with the list
     // instead of being rebuilt 240 times for every letter typed into the search box.
@@ -98,6 +102,21 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the phone input component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings - the market of the app through
+    /// <see cref="DefaultCountry"/>, its country list, its look and its localized texts - to be applied to
+    /// multiple phone input components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPhoneInputParams.ParamName)]
+    public BitPhoneInputParams? CascadingParameters { get; set; }
 
 
 
@@ -185,7 +204,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
-    /// The aria-label of the country dropdown button.
+    /// The accessible name of the country selector, "Country" by default. The name of the selected country is
+    /// appended to it ("Country: Germany"), so a selector showing only a flag still says which country it is on,
+    /// and it is also the name of the country list. Set it to translate the selector for a screen reader.
     /// </summary>
     [Parameter] public string? DropdownAriaLabel { get; set; }
 
@@ -335,7 +356,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public bool NoFocusOnSelect { get; set; }
 
     /// <summary>
-    /// The message to show when the search result of the country dropdown is empty.
+    /// The message to show when the search result of the country dropdown is empty. It is also what a screen
+    /// reader announces for an empty result.
     /// </summary>
     [Parameter] public string? NoResultsMessage { get; set; }
 
@@ -475,6 +497,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// The placeholder text of the search box of the country dropdown.
     /// </summary>
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
+
+    /// <summary>
+    /// What a screen reader announces for the number of countries a search term leaves in the list, in place of
+    /// the default "1 country found" / "{count} countries found" - the way to translate that announcement. An
+    /// empty result announces <see cref="NoResultsMessage"/> instead, and returning null or an empty string keeps
+    /// a count from being announced at all.
+    /// </summary>
+    [Parameter] public Func<int, string?>? SearchResultsAnnouncement { get; set; }
 
     /// <summary>
     /// Shows a clear button in the number input while it holds a value.
@@ -892,18 +922,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-phi-pri",
-            BitColor.Secondary => "bit-phi-sec",
-            BitColor.Tertiary => "bit-phi-ter",
-            BitColor.Info => "bit-phi-inf",
-            BitColor.Success => "bit-phi-suc",
-            BitColor.Warning => "bit-phi-wrn",
-            BitColor.SevereWarning => "bit-phi-swr",
-            BitColor.Error => "bit-phi-err",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => ColorClass ?? string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -911,8 +930,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPhoneInputParams))]
     protected override void OnInitialized()
     {
+        // The cascade is read before the default country is applied, since the market of an app is the one
+        // default it is most likely to hand every phone input under it.
+        CascadingParameters?.UpdateParameters(this);
+
         _labelId = $"BitPhoneInput-{UniqueId}-label";
         _errorId = $"BitPhoneInput-{UniqueId}-error";
         _inputId = $"BitPhoneInput-{UniqueId}-input";
@@ -935,8 +959,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPhoneInputParams))]
     protected override void OnParametersSet()
     {
+        // The cascade is read first, so that the country list, the pattern and the classes below are computed from
+        // the parameters the field ends up with rather than from the ones it was written with.
+        CascadingParameters?.UpdateParameters(this);
+
         // Materialize the country list only when the source of it actually changes. The list is read
         // on every render while the callout is open, so without this cache the default country set
         // (BitCountries.All) would be copied into a new list of ~240 items each cycle.
@@ -947,7 +976,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             _lastCountries = Countries;
             _lastExcludeCountries = ExcludeCountries;
             _lastPreferredCountries = PreferredCountries;
-            _allItems = BuildItems();
+            _allItems = BuildItems(out _preferredCount);
             _foldedNames = [.. _allItems.Select(c => Fold(c.Name))];
             _foldedWords = [.. _foldedNames.Select(n => n.Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries))];
             _viewItemsValid = false;
@@ -977,8 +1006,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     // The countries in the order the dropdown shows them: the preferred ones first, in the order they
     // were given, then the rest in the order of the Countries list.
-    private List<BitCountry> BuildItems()
+    private List<BitCountry> BuildItems(out int preferredCount)
     {
+        preferredCount = 0;
+
         var countries = Countries;
 
         if (ExcludeCountries is not null && ExcludeCountries.Count > 0)
@@ -1006,6 +1037,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
             preferred.Add(match);
         }
+
+        preferredCount = preferred.Count;
 
         return [.. preferred, .. countries.Where(c => preferredIso.Contains(c.Iso2) is false)];
     }
@@ -1173,6 +1206,28 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _ => "bit-phi-md"
     };
 
+    // The callout is rendered outside the root as well, and the keyboard cue of its active row takes the focus
+    // color of the role, so the class is repeated on it the same way the size class is.
+    private string? ColorClass => Color switch
+    {
+        BitColor.Primary => "bit-phi-pri",
+        BitColor.Secondary => "bit-phi-sec",
+        BitColor.Tertiary => "bit-phi-ter",
+        BitColor.Info => "bit-phi-inf",
+        BitColor.Success => "bit-phi-suc",
+        BitColor.Warning => "bit-phi-wrn",
+        BitColor.SevereWarning => "bit-phi-swr",
+        BitColor.Error => "bit-phi-err",
+        _ => null
+    };
+
+    // The last of the pinned countries, after which the rest of the list starts. Only the unfiltered list has
+    // such a boundary: a search orders its matches by how close they are, wherever they came from.
+    private bool IsLastPreferred(int index) => _preferredCount > 0
+                                               && index == _preferredCount - 1
+                                               && index < _allItems.Count - 1
+                                               && ReferenceEquals(_viewItems, _allItems);
+
     private bool HasLabel => Label.HasValue() || LabelTemplate is not null;
 
     // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
@@ -1189,12 +1244,20 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     // The accessible name of the country selector. It carries the selected country, because an
     // aria-label replaces the content of the button for a screen reader: without the name in it, a
-    // selector showing only a flag (NoDialCode) would be announced as "select country" and nothing
-    // else, whatever country it is actually on.
-    private string DropdownLabel => DropdownAriaLabel
-                                 ?? (Country is not null
-                                        ? $"Country: {Country.Name}"
-                                        : DropdownPlaceholder ?? "Select country");
+    // selector showing only a flag (NoDialCode) would be announced as "country" and nothing else,
+    // whatever country it is actually on - which is why a translated DropdownAriaLabel is a prefix
+    // rather than the whole name.
+    private string DropdownLabel => Country is not null
+                                        ? $"{DropdownAriaLabel ?? "Country"}: {Country.Name}"
+                                        : DropdownPlaceholder ?? DropdownAriaLabel ?? "Select country";
+
+    // The tooltip of the selector names the country its flag stands for.
+    private string DropdownTitle => Country?.Name ?? DropdownLabel;
+
+    // The tooltip is written on the root, so it also covers the selector, and on the input itself, so it reaches
+    // a keyboard as well as a pointer. A title the consumer put on the input is kept, since the explicit
+    // attribute of the input would otherwise write a null over it.
+    private string? InputTitle => Title ?? GetInputAttribute("title");
 
     private bool ShowClear => ShowClearButton && Number.HasValue();
 
@@ -1211,11 +1274,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         get
         {
-            if (HasErrorMessage is false && HasDescription is false) return GetInputAttribute("aria-describedby");
+            if (HasErrorMessage is false && HasDescription is false && NoDropdown is false) return GetInputAttribute("aria-describedby");
 
             var ids = string.Join(' ', new[]
             {
                 GetInputAttribute("aria-describedby"),
+                NoDropdown ? _dropdownId : null,
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null
             }.Where(id => id.HasValue()));
@@ -1401,6 +1465,72 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     }
 
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
+
+    // The public custom properties of the component, which are what its stylesheet reads with a fallback (see
+    // BitPhoneInput.scss). Nothing else in a style string is copied to the callout.
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-PhoneInput-";
+
+    private string? _publicCssVariables;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
+
+    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
+    // callout is open - so they inherit nothing an author sets on the field: neither the Style of the instance
+    // nor a custom property declared on an ancestor of it. The public --bit-PhoneInput-* declarations are
+    // therefore carried across by hand, so one Style restyles the field and the list it opens together.
+    private string? GetPublicCssVariables()
+    {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+
+        // Rebuilt only when one of the two strings it is made of has changed: the callout is re-rendered on
+        // every keystroke typed into the search box.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
+        {
+            return _publicCssVariables;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+
+        StringBuilder? builder = null;
+
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+
+        _publicCssVariables = builder?.ToString();
+
+        return _publicCssVariables;
+    }
+
+    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+
+            (builder ??= new StringBuilder()).Append(declaration).Append(';');
+        }
+    }
+
+    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
+    private string? GetCalloutStyles()
+    {
+        var variables = GetPublicCssVariables();
+        var stylesCallout = Styles?.Callout;
+
+        if (variables.HasNoValue()) return stylesCallout;
+        if (stylesCallout.HasNoValue()) return variables;
+
+        return variables + stylesCallout;
+    }
+
+    // The display is written here rather than in the stylesheet because it is what the component toggles the
+    // layer with, and Styles.Overlay is appended last for the same reason Styles.Callout is.
+    private string GetOverlayStyles() => $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
 
     // Where the flag images live and how they are named is BitFlag's to know, so the two cannot drift.
     private string GetFlagUrl(BitCountry country)
@@ -1754,6 +1884,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         Announce(_viewItems.Count switch
         {
             0 => NoResultsMessage ?? "No results found",
+            var count when SearchResultsAnnouncement is not null => SearchResultsAnnouncement(count),
             1 => "1 country found",
             var count => $"{count} countries found"
         });

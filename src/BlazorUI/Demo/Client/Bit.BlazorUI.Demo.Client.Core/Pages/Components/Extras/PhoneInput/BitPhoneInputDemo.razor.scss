@@ -5,6 +5,19 @@
     flex-direction: column;
 }
 
+// The public custom properties are inherited, so one scope re-skins every field inside it
+// without a rule naming a part of the component.
+.phi-brand-scope {
+    --bit-PhoneInput-radius: 0;
+    --bit-PhoneInput-border-width: 2px;
+    --bit-PhoneInput-border-color: #00796b;
+    --bit-PhoneInput-hover-border-color: #26a69a;
+    --bit-PhoneInput-focus-color: #00796b;
+    --bit-PhoneInput-dropdown-background: #e0f2f1;
+    --bit-PhoneInput-dropdown-color: #004d40;
+    --bit-PhoneInput-separator-color: #00796b;
+}
+
 ::deep .custom-class {
     border-radius: 1rem;
     background: linear-gradient(90deg, rgba(138, 43, 226, 0.08), transparent);

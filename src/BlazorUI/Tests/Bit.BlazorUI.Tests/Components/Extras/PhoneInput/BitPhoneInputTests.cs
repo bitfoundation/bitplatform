@@ -1170,9 +1170,11 @@ public class BitPhoneInputTests : BunitTestContext
         // An aria-label replaces the content of the button, so it has to carry the country itself.
         Assert.AreEqual("Country: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
 
-        component.Render(parameters => parameters.Add(p => p.DropdownAriaLabel, "Dialing code"));
+        // A translated name is a prefix, so the selected country is still part of what is announced.
+        component.Render(parameters => parameters.Add(p => p.DropdownAriaLabel, "Land"));
 
-        Assert.AreEqual("Dialing code", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual("Land: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+        Assert.AreEqual("Germany", component.Find("button.bit-phi-drp").GetAttribute("title"));
     }
 
     [TestMethod]
@@ -1181,6 +1183,10 @@ public class BitPhoneInputTests : BunitTestContext
         var component = RenderComponent<BitPhoneInput>();
 
         Assert.AreEqual("Select country", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+
+        component.Render(parameters => parameters.Add(p => p.DropdownAriaLabel, "Land"));
+
+        Assert.AreEqual("Land", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
 
         component.Render(parameters => parameters.Add(p => p.DropdownPlaceholder, "Country"));
 
@@ -2163,6 +2169,160 @@ public class BitPhoneInputTests : BunitTestContext
         component.InvokeAsync(() => component.Instance.SetNumberAsync("(415) 555-0123")).GetAwaiter().GetResult();
 
         Assert.AreEqual("4155550123", number);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPhraseTheSearchResultAnnouncementWithSearchResultsAnnouncement()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.NoResultsMessage, "Kein Land gefunden");
+            parameters.Add(p => p.SearchResultsAnnouncement, count => $"{count} Länder gefunden");
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        component.Find("input.bit-phi-srch").Input("united");
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("2 Länder gefunden"));
+
+        // An empty result is what the no-results message is for, so it keeps being the one announced.
+        component.Find("input.bit-phi-srch").Input("zzz");
+
+        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("Kein Land gefunden"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldCarryItsPublicCssVariablesToTheCalloutAndTheOverlay()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Style, "width: 300px; --bit-PhoneInput-radius: 2rem");
+            parameters.Add(p => p.Styles, new BitPhoneInputClassStyles
+            {
+                Root = "--bit-PhoneInput-item-height: 40px;",
+                Callout = "--bit-PhoneInput-radius: 1rem;",
+                Overlay = "opacity: 0.5;",
+            });
+        });
+
+        var callout = component.Find(".bit-phi-cal").GetAttribute("style")!;
+        var overlay = component.Find(".bit-phi-ovl").GetAttribute("style")!;
+
+        // The callout and the overlay are rendered outside the root, so the public declarations are copied
+        // onto them - and nothing else of the root's style is.
+        StringAssert.Contains(callout, "--bit-PhoneInput-radius: 2rem;");
+        StringAssert.Contains(callout, "--bit-PhoneInput-item-height: 40px;");
+        Assert.IsFalse(callout.Contains("width"));
+        StringAssert.Contains(overlay, "--bit-PhoneInput-radius: 2rem;");
+        StringAssert.Contains(overlay, "display:none");
+        Assert.IsFalse(overlay.Contains("width"));
+
+        // What is written for the callout itself comes last, so it wins over the copy.
+        Assert.IsTrue(callout.IndexOf("--bit-PhoneInput-radius: 1rem;") > callout.IndexOf("--bit-PhoneInput-radius: 2rem;"));
+        Assert.IsTrue(overlay.EndsWith("opacity: 0.5;"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldLeaveTheCalloutStyleAloneWithoutPublicCssVariables()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Style, "width: 300px;");
+        });
+
+        Assert.IsNull(component.Find(".bit-phi-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldGroupTheSelectorAndTheNumberUnderTheLabel()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var group = component.Find(".bit-phi-fgp");
+
+        // Without a visible label there is nothing to name the group with, and an unnamed group says nothing.
+        Assert.IsNull(group.GetAttribute("role"));
+        Assert.IsNull(group.GetAttribute("aria-labelledby"));
+
+        component.Render(parameters => parameters.Add(p => p.Label, "Phone number"));
+
+        group = component.Find(".bit-phi-fgp");
+
+        Assert.AreEqual("group", group.GetAttribute("role"));
+        Assert.AreEqual(component.Find("label.bit-phi-lbl").Id, group.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldDescribeTheNumberWithAFixedCountry()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoDropdown, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Japan);
+            parameters.Add(p => p.Description, "A hint");
+        });
+
+        var selector = component.Find(".bit-phi-drp");
+        var input = component.Find("input.bit-phi-inp");
+
+        // A fixed country is no control, so the input points at it to have it read out at all.
+        Assert.AreEqual("Country: Japan", selector.QuerySelector(".bit-phi-vhd")!.TextContent);
+        Assert.AreEqual("true", selector.QuerySelector(".bit-phi-tcn")!.GetAttribute("aria-hidden"));
+        Assert.AreEqual(selector.Id, input.GetAttribute("aria-describedby")!.Split(' ')[0]);
+        StringAssert.Contains(input.GetAttribute("aria-describedby"), component.Find(".bit-phi-des").Id);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldWriteItsTitleOnTheNumberInput()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["title"] = "own title" });
+        });
+
+        // A title the consumer put on the input is kept while the field has none of its own.
+        Assert.AreEqual("own title", component.Find("input.bit-phi-inp").GetAttribute("title"));
+
+        component.Render(parameters => parameters.Add(p => p.Title, "the tooltip"));
+
+        Assert.AreEqual("the tooltip", component.Find("input.bit-phi-inp").GetAttribute("title"));
+        Assert.AreEqual("the tooltip", component.Find(".bit-phi").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSetThePreferredCountriesApartFromTheRest()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.PreferredCountries, [BitCountries.Germany, BitCountries.France]);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var items = component.FindAll("button.bit-phi-itm");
+
+        Assert.AreEqual(1, component.FindAll(".bit-phi-ilp").Count);
+        Assert.IsTrue(items[1].ClassList.Contains("bit-phi-ilp"));
+
+        // A search orders its matches by how close they are, so there is no boundary left to draw.
+        component.Find("input.bit-phi-srch").Input("an");
+
+        Assert.AreEqual(0, component.FindAll(".bit-phi-ilp").Count);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRepeatItsColorOnTheCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Success);
+        });
+
+        // The callout is rendered outside the root, and its keyboard cue takes the focus color of the role.
+        Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-suc"));
     }
 
     [TestMethod]

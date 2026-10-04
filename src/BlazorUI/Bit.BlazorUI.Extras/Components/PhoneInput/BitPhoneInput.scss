@@ -1,16 +1,137 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 @import '../../../Bit.BlazorUI/Styles/media-queries.scss';
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// phone input and one set on the Style of an instance (or through Styles.Root) re-skins that one alone.
+// The callout and the overlay are rendered outside the root element (and reparented to the body while the
+// callout is open), so the component copies the --bit-PhoneInput-* declarations of Style and Styles.Root
+// onto both of them by hand - see GetPublicCssVariables.
+//
+//   FIELD
+//   --bit-PhoneInput-background              fill of the field                        (default: $clr-bg-pri)
+//   --bit-PhoneInput-color                   text of the number                       (default: $clr-fg-pri)
+//   --bit-PhoneInput-placeholder-color       placeholder of the number input, of the
+//                                            selector and of the search box           (default: $clr-fg-ter)
+//   --bit-PhoneInput-border-color            frame at rest                            (default: the Color role, $clr-brd-pri)
+//   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: the Color role, $clr-brd-pri-hover)
+//   --bit-PhoneInput-border-width            thickness of the frame                   (default: $shp-border-width)
+//   --bit-PhoneInput-radius                  corner radius of the frame               (default: $shp-radius-control)
+//   --bit-PhoneInput-min-height              smallest height of the frame             (default: per Size, $siz-ctrl-*)
+//   --bit-PhoneInput-font-size               text size of the field and of the list   (default: per Size, from the type ramp)
+//   --bit-PhoneInput-padding                 padding of the number input              (default: 0 per Size, $siz-ctrl-pad-x-*)
+//   --bit-PhoneInput-focus-color             focused frame, focus ring and the
+//                                            keyboard cues inside the field and list  (default: the Color role's focus color)
+//   --bit-PhoneInput-invalid-color           frame, ring and message of a rejected
+//                                            value                                    (default: $clr-err / $clr-err-focus)
+//   --bit-PhoneInput-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
+//   --bit-PhoneInput-disabled-background     fill when disabled                       (default: $clr-bg-dis)
+//   --bit-PhoneInput-disabled-border-color   frame when disabled                      (default: $clr-brd-dis)
+//
+//   COUNTRY SELECTOR (the button on the leading side of the field)
+//   --bit-PhoneInput-dropdown-background     fill of the selector                     (default: transparent)
+//   --bit-PhoneInput-dropdown-hover-background  fill of the selector under a pointer  (default: $clr-bg-pri-hover)
+//   --bit-PhoneInput-dropdown-color          the dialing code                         (default: $clr-fg-pri)
+//   --bit-PhoneInput-dropdown-padding        padding of the selector                  (default: 0 per Size, $siz-ctrl-pad-x-*)
+//   --bit-PhoneInput-separator-color         rule between the selector and the number (default: $clr-brd-pri)
+//   --bit-PhoneInput-caret-color             the caret of the selector                (default: $clr-fg-sec)
+//   --bit-PhoneInput-flag-size               the flags of the selector and the list   (default: per Size, $siz-icon-*)
+//   --bit-PhoneInput-flag-radius             corner radius of a flag                  (default: $shp-radius-none)
+//
+//   CLEAR BUTTON
+//   --bit-PhoneInput-button-color            glyph of the clear button                (default: $clr-fg-sec)
+//   --bit-PhoneInput-button-hover-background fill of the clear button under a pointer (default: $clr-bg-pri-hover)
+//
+//   LABEL AND WHAT IS WRITTEN UNDER THE FIELD
+//   --bit-PhoneInput-label-color             label text                               (default: $clr-fg-pri)
+//   --bit-PhoneInput-label-font-size         label text size                          (default: --bit-PhoneInput-font-size)
+//   --bit-PhoneInput-label-font-weight       label weight                             (default: $tg-field-label-font-weight)
+//   --bit-PhoneInput-required-color          the asterisk of a Required field         (default: $clr-req)
+//   --bit-PhoneInput-description-color       description text                         (default: $clr-fg-sec)
+//   --bit-PhoneInput-footer-font-size        description and error message text size  (default: $tg-fs-2xs)
+//
+//   CALLOUT
+//   --bit-PhoneInput-callout-background      the list surface                         (default: $clr-bg-pri)
+//   --bit-PhoneInput-callout-border-color    its border, and the rules under the
+//                                            search box and the preferred countries   (default: $clr-brd-pri)
+//   --bit-PhoneInput-callout-radius          its corner radius                        (default: $shp-radius-popup)
+//   --bit-PhoneInput-callout-shadow          its elevation                            (default: $box-shadow-popup)
+//   --bit-PhoneInput-callout-max-height      tallest the scrolling list grows; the
+//                                            MaxHeight parameter wins over it         (default: $siz-popup-max-height)
+//   --bit-PhoneInput-responsive-width        width of the side panel a Responsive
+//                                            field opens on a small screen            (default: spacing(34))
+//   --bit-PhoneInput-overlay-background      the layer behind an open callout - give
+//                                            it a color for a modal-style scrim       (default: transparent)
+//
+//   ITEMS
+//   --bit-PhoneInput-item-height             smallest height of a row                 (default: per Size, $siz-item-*)
+//   --bit-PhoneInput-item-color              name of a row, and the search text       (default: $clr-fg-pri)
+//   --bit-PhoneInput-item-code-color         dialing code of a row                    (default: $clr-fg-sec)
+//   --bit-PhoneInput-item-hover-background   row under the pointer or the keyboard    (default: $clr-bg-pri-hover)
+//   --bit-PhoneInput-item-selected-background  the selected row                       (default: $clr-bg-sec)
+//   --bit-PhoneInput-item-selected-color     text of the selected row                 (default: --bit-PhoneInput-item-color)
+
+
+// The size of the control and of its callout is driven by these variables, so a single size class applied
+// to the root and repeated on the callout resizes every part consistently.
+@mixin phi-size($fs, $h, $pad-x, $icon, $itm-h) {
+    --bit-phi-sz-fs: #{$fs};
+    --bit-phi-sz-h: #{$h};
+    --bit-phi-sz-pad-x: #{$pad-x};
+    --bit-phi-sz-icon: #{$icon};
+    --bit-phi-sz-itm-h: #{$itm-h};
+}
+
 @mixin phi-size-medium {
-    --bit-phi-fs: #{$tg-fs-sm};
-    --bit-phi-h: #{$siz-ctrl-md};
-    --bit-phi-pad-x: #{$siz-ctrl-pad-x-md};
-    --bit-phi-icon: #{$siz-icon-md};
-    --bit-phi-itm-h: #{$siz-item-md};
+    @include phi-size($tg-fs-sm, $siz-ctrl-md, $siz-ctrl-pad-x-md, $siz-icon-md, $siz-item-md);
+}
+
+// The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
+// private variables this leaves behind, so no use site repeats the fallback chain - and the block is included
+// on the callout as well, which is a sibling of the root and inherits nothing from it.
+@mixin phi-vars {
+    --bit-phi-fs: var(--bit-PhoneInput-font-size, var(--bit-phi-sz-fs));
+    --bit-phi-h: var(--bit-PhoneInput-min-height, var(--bit-phi-sz-h));
+    --bit-phi-pad-x: var(--bit-phi-sz-pad-x);
+    --bit-phi-icon: var(--bit-phi-sz-icon);
+    --bit-phi-flg: var(--bit-PhoneInput-flag-size, var(--bit-phi-sz-icon));
+    --bit-phi-itm-h: var(--bit-PhoneInput-item-height, var(--bit-phi-sz-itm-h));
+    --bit-phi-radius: var(--bit-PhoneInput-radius, #{$shp-radius-control});
+    --bit-phi-brd-w: var(--bit-PhoneInput-border-width, #{$shp-border-width});
+    --bit-phi-brd: var(--bit-PhoneInput-border-color, var(--bit-phi-role-main, #{$clr-brd-pri}));
+    --bit-phi-brd-hover: var(--bit-PhoneInput-hover-border-color, var(--bit-phi-role-main, #{$clr-brd-pri-hover}));
+    --bit-phi-focus: var(--bit-PhoneInput-focus-color, var(--bit-phi-role-focus, #{$clr-pri-focus}));
+    --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
+    --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
+    --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
+}
+
+// The keyboard cue of everything that sits INSIDE the frame or the callout: the selector, the clear button,
+// the close button of the responsive panel and the active row of the list. An outline drawn inwards is never
+// clipped by the rounded frame or the scrolling list, and it survives a forced-colors palette, which strips
+// the box-shadow the ring of the whole field is drawn with. The library resets the outline of every button,
+// so without it the two halves of the field would share one ring with nothing saying which of them has focus.
+@mixin phi-focus-inset {
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus);
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
+}
+
+// A hover cue is drawn on a device that can hover only: on a touch screen it would stick to whatever was
+// tapped last.
+@mixin phi-hover {
+    @media (hover: hover) {
+        &:hover {
+            @content;
+        }
+    }
 }
 
 .bit-phi {
     @include phi-size-medium;
+    @include phi-vars;
 
     margin: 0;
     padding: 0;
@@ -30,12 +151,12 @@
 
 .bit-phi-lbl {
     display: block;
-    font-weight: $tg-fw-semibold;
-    color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: var(--bit-phi-fs);
-    letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(0.625) 0;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-PhoneInput-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-PhoneInput-label-font-size, var(--bit-phi-fs));
+    font-weight: var(--bit-PhoneInput-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 .bit-phi-fgp {
@@ -44,32 +165,23 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     min-height: var(--bit-phi-h);
-    border-radius: $shp-radius-control;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-}
+    border-radius: var(--bit-phi-radius);
+    background-color: var(--bit-PhoneInput-background, #{$clr-bg-pri});
+    border: var(--bit-phi-brd-w) $shp-border-style var(--bit-phi-brd);
 
-.bit-phi.bit-dis {
-    .bit-phi-lbl {
-        color: $clr-fg-dis;
-    }
-
-    .bit-phi-fgp {
-        cursor: default;
-        color: $clr-fg-dis;
-        background: $clr-bg-dis;
-        border-color: $clr-brd-dis;
-    }
-
-    .bit-phi-drp {
-        border-inline-end-color: $clr-brd-dis;
+    @include phi-hover {
+        border-color: var(--bit-phi-brd-hover);
     }
 }
 
 .bit-phi-fcs .bit-phi-fgp {
-    @include focus-ring($clr-pri);
+    @include focus-ring(var(--bit-phi-focus));
 
-    border-color: $clr-pri;
+    border-color: var(--bit-phi-focus);
+
+    @include phi-hover {
+        border-color: var(--bit-phi-focus);
+    }
 }
 
 .bit-phi-drp {
@@ -82,36 +194,40 @@
     text-align: start;
     align-items: center;
     white-space: nowrap;
-    color: $clr-fg-pri;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    padding: 0 var(--bit-phi-pad-x);
-    background-color: transparent;
     font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
     letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-PhoneInput-dropdown-color, #{$clr-fg-pri});
+    padding: var(--bit-PhoneInput-dropdown-padding, 0 var(--bit-phi-pad-x));
+    background-color: var(--bit-PhoneInput-dropdown-background, transparent);
     border-block: none;
     border-inline-start: none;
-    border-start-start-radius: $shp-radius-control;
-    border-end-start-radius: $shp-radius-control;
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-start-start-radius: var(--bit-phi-radius);
+    border-end-start-radius: var(--bit-phi-radius);
+    border-inline-end: var(--bit-phi-brd-w) $shp-border-style var(--bit-PhoneInput-separator-color, #{$clr-brd-pri});
 
-    &:hover {
-        background-color: $clr-bg-pri-hover;
+    @include phi-hover {
+        background-color: var(--bit-PhoneInput-dropdown-hover-background, #{$clr-bg-pri-hover});
+    }
+
+    &:focus-visible {
+        @include phi-focus-inset;
     }
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
-        background-color: transparent;
+        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+        background-color: var(--bit-PhoneInput-dropdown-background, transparent);
     }
 }
 
 .bit-phi-nod .bit-phi-drp {
     cursor: default;
 
-    &:hover {
-        background-color: transparent;
+    @include phi-hover {
+        background-color: var(--bit-PhoneInput-dropdown-background, transparent);
     }
 }
 
@@ -125,10 +241,11 @@
 }
 
 .bit-phi-flg {
-    width: var(--bit-phi-icon);
-    height: var(--bit-phi-icon);
-    object-fit: cover;
     flex-shrink: 0;
+    object-fit: cover;
+    width: var(--bit-phi-flg);
+    height: var(--bit-phi-flg);
+    border-radius: var(--bit-PhoneInput-flag-radius, #{$shp-radius-none});
 }
 
 .bit-phi-cod {
@@ -136,7 +253,7 @@
 }
 
 .bit-phi-pls {
-    color: $clr-fg-ter;
+    color: var(--bit-phi-plc);
 }
 
 .bit-phi-car {
@@ -145,7 +262,7 @@
     flex-shrink: 0;
     border-style: solid;
     border-width: spacing(0.5) spacing(0.375) 0 spacing(0.375);
-    border-color: $clr-fg-sec transparent transparent transparent;
+    border-color: var(--bit-PhoneInput-caret-color, #{$clr-fg-sec}) transparent transparent transparent;
 }
 
 .bit-phi-inp {
@@ -154,23 +271,23 @@
     outline: none;
     min-width: 0;
     width: 100%;
-    color: $clr-fg-pri;
     box-sizing: border-box;
     background-color: transparent;
     font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
     letter-spacing: $tg-ctrl-letter-spacing;
-    padding: 0 var(--bit-phi-pad-x);
-    border-start-end-radius: $shp-radius-control;
-    border-end-end-radius: $shp-radius-control;
+    color: var(--bit-PhoneInput-color, #{$clr-fg-pri});
+    padding: var(--bit-PhoneInput-padding, 0 var(--bit-phi-pad-x));
+    border-start-end-radius: var(--bit-phi-radius);
+    border-end-end-radius: var(--bit-phi-radius);
 
     &::placeholder {
-        color: $clr-fg-ter;
+        color: var(--bit-phi-plc);
     }
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
     }
 }
 
@@ -182,22 +299,57 @@
     cursor: pointer;
     appearance: none;
     align-items: center;
-    color: $clr-fg-sec;
     box-sizing: border-box;
     justify-content: center;
     background-color: transparent;
     width: var(--bit-phi-h);
     font-size: var(--bit-phi-icon);
-    border-start-end-radius: $shp-radius-control;
-    border-end-end-radius: $shp-radius-control;
+    color: var(--bit-PhoneInput-button-color, #{$clr-fg-sec});
+    border-start-end-radius: var(--bit-phi-radius);
+    border-end-end-radius: var(--bit-phi-radius);
 
-    &:hover {
-        background-color: $clr-bg-pri-hover;
+    @include phi-hover {
+        background-color: var(--bit-PhoneInput-button-hover-background, #{$clr-bg-pri-hover});
+    }
+
+    &:focus-visible {
+        @include phi-focus-inset;
     }
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+    }
+}
+
+.bit-phi.bit-dis {
+    .bit-phi-lbl {
+        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-phi-fgp {
+        cursor: default;
+        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+        background: var(--bit-PhoneInput-disabled-background, #{$clr-bg-dis});
+        border-color: var(--bit-PhoneInput-disabled-border-color, #{$clr-brd-dis});
+    }
+
+    .bit-phi-drp {
+        border-inline-end-color: var(--bit-PhoneInput-disabled-border-color, #{$clr-brd-dis});
+    }
+
+    .bit-phi-car {
+        border-top-color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+    }
+
+    // A flag keeps its own colors, so it is dimmed rather than recolored: one left at full saturation next to
+    // a greyed-out number reads as if that half of the field were still live.
+    .bit-phi-flg {
+        opacity: $opa-dis;
+    }
+
+    .bit-phi-inp::placeholder {
+        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
     }
 }
 
@@ -210,24 +362,24 @@
     min-width: 100%;
     box-sizing: border-box;
     overflow-wrap: break-word;
-    font-size: $tg-fs-2xs;
     padding-block-start: spacing(0.5);
+    font-size: var(--bit-PhoneInput-footer-font-size, #{$tg-fs-2xs});
 }
 
 .bit-phi-erm {
     @include phi-under-field;
 
-    color: $clr-err;
+    color: var(--bit-PhoneInput-invalid-color, #{$clr-err});
 
     span {
-        color: $clr-err;
+        color: inherit;
     }
 }
 
 .bit-phi-des {
     @include phi-under-field;
 
-    color: $clr-fg-sec;
+    color: var(--bit-PhoneInput-description-color, #{$clr-fg-sec});
 }
 
 .bit-phi-ovl {
@@ -238,31 +390,34 @@
     display: none;
     position: fixed;
     z-index: $zindex-overlay;
-    background-color: transparent;
+    background-color: var(--bit-PhoneInput-overlay-background, transparent);
 }
 
 .bit-phi-cal {
+    @include phi-size-medium;
+    @include phi-vars;
+
     display: none;
-    font-size: var(--bit-phi-fs);
-    font-weight: $tg-fw-regular;
     overflow: hidden;
     position: fixed;
     box-sizing: border-box;
     z-index: $zindex-callout;
+    font-size: var(--bit-phi-fs);
+    font-weight: $tg-fw-regular;
+    font-family: $tg-font-family;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
-    box-shadow: $box-shadow-popup;
-    border-radius: $shp-radius-popup;
-    background-color: $clr-bg-pri;
-    font-family: $tg-font-family;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: $mot-easing-decelerate;
+    border-radius: var(--bit-PhoneInput-callout-radius, #{$shp-radius-popup});
+    box-shadow: var(--bit-PhoneInput-callout-shadow, #{$box-shadow-popup});
+    background-color: var(--bit-PhoneInput-callout-background, #{$clr-bg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-PhoneInput-callout-border-color, #{$clr-brd-pri});
 }
 
 .bit-phi-sbx {
     box-sizing: border-box;
-    border-block-end: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-block-end: $shp-border-width $shp-border-style var(--bit-PhoneInput-callout-border-color, #{$clr-brd-pri});
 }
 
 .bit-phi-srch {
@@ -270,19 +425,23 @@
     border: none;
     outline: none;
     display: block;
-    color: $clr-fg-pri;
     box-sizing: border-box;
-    background-color: $clr-bg-pri;
+    background-color: transparent;
     font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
+    color: var(--bit-phi-itm-clr);
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(1) spacing(1.5);
+
+    &::placeholder {
+        color: var(--bit-phi-plc);
+    }
 }
 
 .bit-phi-scn {
     overflow: hidden auto;
     box-sizing: border-box;
-    max-height: $siz-popup-max-height;
+    max-height: var(--bit-PhoneInput-callout-max-height, #{$siz-popup-max-height});
 }
 
 .bit-phi-lst {
@@ -300,27 +459,43 @@
     cursor: pointer;
     appearance: none;
     text-align: start;
-    color: $clr-fg-pri;
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
     background-color: transparent;
-    min-height: var(--bit-phi-itm-h);
     font-size: var(--bit-phi-fs);
     font-family: $tg-font-family;
+    color: var(--bit-phi-itm-clr);
+    min-height: var(--bit-phi-itm-h);
     padding: spacing(0.75) spacing(1.5);
 
-    &:hover {
-        background-color: $clr-bg-pri-hover;
+    @include phi-hover {
+        background-color: var(--bit-phi-itm-hover-bg);
     }
 }
 
-.bit-phi-sel {
-    background-color: $clr-bg-sec;
+// The rule under the last of the PreferredCountries, which sets the pinned ones apart from the rest of the list.
+.bit-phi-ilp {
+    border-block-end: $shp-border-width $shp-border-style var(--bit-PhoneInput-callout-border-color, #{$clr-brd-pri});
 }
 
+.bit-phi-sel {
+    color: var(--bit-PhoneInput-item-selected-color, var(--bit-phi-itm-clr));
+    background-color: var(--bit-PhoneInput-item-selected-background, #{$clr-bg-sec});
+
+    @media (forced-colors: active) {
+        color: HighlightText;
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+}
+
+// The row the arrow keys are on. It is pointed at through aria-activedescendant rather than focused, so no
+// :focus-visible ever matches it, and a fill alone would read the same as the row under the pointer.
 .bit-phi-act {
-    background-color: $clr-bg-pri-hover;
+    background-color: var(--bit-phi-itm-hover-bg);
+
+    @include phi-focus-inset;
 }
 
 .bit-phi-inm {
@@ -330,13 +505,19 @@
 }
 
 .bit-phi-icd {
-    color: $clr-fg-sec;
     white-space: nowrap;
     margin-inline-start: auto;
+    color: var(--bit-PhoneInput-item-code-color, #{$clr-fg-sec});
+}
+
+.bit-phi-sel .bit-phi-icd {
+    @media (forced-colors: active) {
+        color: HighlightText;
+    }
 }
 
 .bit-phi-nor {
-    color: $clr-fg-ter;
+    color: var(--bit-phi-plc);
     box-sizing: border-box;
     font-size: var(--bit-phi-fs);
     padding: spacing(0.75) spacing(1.5);
@@ -348,11 +529,11 @@
 
 .bit-phi-rlb {
     display: block;
-    font-weight: $tg-fw-semibold;
-    color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: $tg-fs-sm;
     letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-PhoneInput-label-color, #{$clr-fg-pri});
+    font-weight: var(--bit-PhoneInput-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 .bit-phi-cls {
@@ -363,7 +544,7 @@
     cursor: pointer;
     appearance: none;
     align-items: center;
-    color: $clr-fg-pri;
+    color: var(--bit-phi-itm-clr);
     box-sizing: border-box;
     justify-content: center;
     background-color: transparent;
@@ -373,8 +554,12 @@
     margin-inline-start: auto;
     border-radius: $shp-radius-button;
 
-    &:hover {
-        background-color: $clr-bg-pri-hover;
+    @include phi-hover {
+        background-color: var(--bit-phi-itm-hover-bg);
+    }
+
+    &:focus-visible {
+        @include phi-focus-inset;
     }
 }
 
@@ -387,11 +572,11 @@
         display: block;
         overflow: hidden;
         max-height: unset;
-        width: spacing(34);
         animation-name: unset;
-        border-radius: unset;
+        border-radius: $shp-radius-sheet;
         transform: translateX(100%);
-        box-shadow: $box-shadow-sheet;
+        width: var(--bit-PhoneInput-responsive-width, #{spacing(34)});
+        box-shadow: var(--bit-PhoneInput-callout-shadow, #{$box-shadow-sheet});
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-phi-rlc {
@@ -420,25 +605,27 @@
 .bit-phi-nbd {
     .bit-phi-fgp {
         border-color: transparent;
+
+        @include phi-hover {
+            border-color: transparent;
+        }
     }
 
     .bit-phi-drp {
         border-inline-end-color: transparent;
     }
 
-    // A field asked to show no border keeps none in any state, and both the disabled rule and the
-    // focus rule above set a border color of their own, which would put one back on it. The focus
+    // A field asked to show no border keeps none in any state, and the disabled, the focused and the
+    // rejected rules each set a border color of their own, which would put one back on it. The focus
     // ring itself stays: it is the only thing left saying where the focus is.
-    &.bit-dis .bit-phi-fgp {
+    &.bit-dis .bit-phi-fgp,
+    &.bit-phi-fcs .bit-phi-fgp,
+    &.bit-inv .bit-phi-fgp {
         border-color: transparent;
     }
 
     &.bit-dis .bit-phi-drp {
         border-inline-end-color: transparent;
-    }
-
-    &.bit-phi-fcs .bit-phi-fgp {
-        border-color: transparent;
     }
 }
 
@@ -458,13 +645,20 @@
     &.bit-phi-fcs .bit-phi-fgp {
         box-shadow: none;
         border-block-end-width: $shp-border-width-thick;
+
+        // The thicker rule is the cue of the variant, and forced colors keep its color - but not the ring
+        // the focus-ring mixin restores there, which this variant has no box to draw around.
+        @media (forced-colors: active) {
+            outline: none;
+        }
     }
 }
 
-// The live region only exists for the assistive technologies, so it is removed from the visual
-// layout without ever being display:none or visibility:hidden, both of which would take it out of
-// the accessibility tree along with the announcement it carries.
-.bit-phi-lvr {
+// The live region and the spoken name of a fixed country only exist for the assistive technologies, so
+// they are removed from the visual layout without ever being display:none or visibility:hidden, both of
+// which would take them out of the accessibility tree along with what they carry.
+.bit-phi-lvr,
+.bit-phi-vhd {
     top: auto;
     width: 1px;
     height: 1px;
@@ -487,18 +681,14 @@
     // rendered through a LabelTemplate is just as required as any other one.
     & > label::after {
         content: "*";
-        color: $clr-req;
         margin-inline-start: spacing(0.625);
+        color: var(--bit-PhoneInput-required-color, #{$clr-req});
     }
 }
 
 
 .bit-phi-sm {
-    --bit-phi-fs: #{$tg-fs-xs};
-    --bit-phi-h: #{$siz-ctrl-sm};
-    --bit-phi-pad-x: #{$siz-ctrl-pad-x-sm};
-    --bit-phi-icon: #{$siz-icon-sm};
-    --bit-phi-itm-h: #{$siz-item-sm};
+    @include phi-size($tg-fs-xs, $siz-ctrl-sm, $siz-ctrl-pad-x-sm, $siz-icon-sm, $siz-item-sm);
 }
 
 .bit-phi-md {
@@ -506,68 +696,80 @@
 }
 
 .bit-phi-lg {
-    --bit-phi-fs: #{$tg-fs-md};
-    --bit-phi-h: #{$siz-ctrl-lg};
-    --bit-phi-pad-x: #{$siz-ctrl-pad-x-lg};
-    --bit-phi-icon: #{$siz-icon-lg};
-    --bit-phi-itm-h: #{$siz-item-lg};
+    @include phi-size($tg-fs-md, $siz-ctrl-lg, $siz-ctrl-pad-x-lg, $siz-icon-lg, $siz-item-lg);
 }
 
 
-.bit-phi {
-    &.bit-phi-err.bit-phi-fcs .bit-phi-fgp,
-    &.bit-inv.bit-phi-fcs .bit-phi-fgp {
-        @include focus-ring($clr-err);
-
-        border-color: $clr-err;
-    }
-
-    &.bit-phi-err .bit-phi-fgp,
-    &.bit-inv .bit-phi-fgp {
-        border-color: $clr-err;
-    }
-}
-
-@mixin phi-color($color) {
-    .bit-phi-fgp {
-        border-color: $color;
-    }
-
-    &.bit-phi-fcs .bit-phi-fgp {
-        @include focus-ring($color);
-
-        border-color: $color;
-    }
+// The general color of the field: the frame takes the main color of the role at rest and under a pointer,
+// and the ring and the keyboard cues take its focus color. Both stay below the public variables.
+@mixin phi-color($main, $focus) {
+    --bit-phi-role-main: #{$main};
+    --bit-phi-role-focus: #{$focus};
 }
 
 .bit-phi-pri {
-    @include phi-color($clr-pri);
+    @include phi-color($clr-pri, $clr-pri-focus);
 }
 
 .bit-phi-sec {
-    @include phi-color($clr-sec);
+    @include phi-color($clr-sec, $clr-sec-focus);
 }
 
 .bit-phi-ter {
-    @include phi-color($clr-ter);
+    @include phi-color($clr-ter, $clr-ter-focus);
 }
 
 .bit-phi-inf {
-    @include phi-color($clr-inf);
+    @include phi-color($clr-inf, $clr-inf-focus);
 }
 
 .bit-phi-suc {
-    @include phi-color($clr-suc);
+    @include phi-color($clr-suc, $clr-suc-focus);
 }
 
 .bit-phi-wrn {
-    @include phi-color($clr-wrn);
+    @include phi-color($clr-wrn, $clr-wrn-focus);
 }
 
 .bit-phi-swr {
-    @include phi-color($clr-swr);
+    @include phi-color($clr-swr, $clr-swr-focus);
 }
 
 .bit-phi-err {
-    @include phi-color($clr-err);
+    @include phi-color($clr-err, $clr-err-focus);
+}
+
+// A rejected value wins over the role and over the hover cue, whichever way it was rejected - by the
+// EditContext, by Invalid or by an ErrorMessage.
+.bit-phi.bit-inv {
+    .bit-phi-fgp {
+        border-color: var(--bit-PhoneInput-invalid-color, #{$clr-err});
+
+        @include phi-hover {
+            border-color: var(--bit-PhoneInput-invalid-color, #{$clr-err});
+        }
+    }
+
+    &.bit-phi-fcs .bit-phi-fgp {
+        @include focus-ring(var(--bit-PhoneInput-invalid-color, #{$clr-err-focus}));
+
+        border-color: var(--bit-PhoneInput-invalid-color, #{$clr-err});
+    }
+}
+
+// The two variants keep their own shape over a rejected value: no frame at all, or a single rule with no ring.
+.bit-phi.bit-phi-nbd.bit-inv .bit-phi-fgp {
+    border-color: transparent;
+
+    @include phi-hover {
+        border-color: transparent;
+    }
+}
+
+.bit-phi.bit-phi-und.bit-inv.bit-phi-fcs .bit-phi-fgp {
+    box-shadow: none;
+
+    @media (forced-colors: active) {
+        outline: none;
+    }
 }
