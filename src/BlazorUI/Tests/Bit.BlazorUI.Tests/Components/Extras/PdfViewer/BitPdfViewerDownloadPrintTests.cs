@@ -74,6 +74,58 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerShouldIgnoreASecondDownloadWhileOnDownloadingDecides()
+    {
+        var decision = new TaskCompletionSource();
+        int raised = 0;
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+            parameters.Add(p => p.OnDownloading, EventCallback.Factory.Create<BitPdfDownloadArgs>(this, async _ =>
+            {
+                raised++;
+                await decision.Task; // an async rename prompt, say
+            }));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        var first = component.InvokeAsync(() => component.Instance.Download());
+        await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
+        decision.SetResult();
+        await first;
+
+        Assert.AreEqual(1, raised);
+        Assert.AreEqual(1, Context.JSInterop.Invocations[DownloadCall].Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldIgnoreASecondPrintWhileOnPrintingDecides()
+    {
+        var decision = new TaskCompletionSource();
+        int raised = 0;
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+            parameters.Add(p => p.OnPrinting, EventCallback.Factory.Create<BitPdfPrintArgs>(this, async _ =>
+            {
+                raised++;
+                await decision.Task; // a confirm dialog, say
+            }));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        var first = component.InvokeAsync(() => component.Instance.Print());
+        await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
+        decision.SetResult();
+        await first;
+
+        Assert.AreEqual(1, raised);
+        Assert.AreEqual(1, Context.JSInterop.Invocations[PrintCall].Count);
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerOnPrintingShouldReportTheRangeAndCancelThePrint()
     {
         BitPdfPrintArgs? received = null;
