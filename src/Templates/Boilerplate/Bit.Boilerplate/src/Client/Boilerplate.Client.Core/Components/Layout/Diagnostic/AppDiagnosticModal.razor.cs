@@ -220,7 +220,8 @@ public partial class AppDiagnosticModal
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
         unsubscribers.ForEach(unsubscriber => unsubscriber());
+
+        await base.DisposeAsync(disposing);
     }
 }

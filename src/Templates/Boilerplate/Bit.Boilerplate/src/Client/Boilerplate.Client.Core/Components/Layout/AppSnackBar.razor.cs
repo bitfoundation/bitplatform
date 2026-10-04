@@ -19,7 +19,8 @@ public partial class AppSnackBar
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
         unsubscribe?.Invoke();
+
+        await base.DisposeAsync(disposing);
     }
 }

@@ -7,19 +7,19 @@
         @* A nullable bool has three states (true/false/null); a plain checkbox only has two and would
            silently collapse null into false. Use a select whose empty option round-trips back to null
            (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
-        <select class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
+        <select disabled="@(!Grid.IsEnabled)" class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
                 aria-label="@EditorLabel"
                 aria-invalid="@(Error is null ? null : "true")"
                 aria-describedby="@ErrorId"
                 @onchange="e => SetNullable(e.Value)">
             <option value="">@string.Empty</option>
-            <option value="true">True</option>
-            <option value="false">False</option>
+            <option value="true">@Grid.Strings.BooleanTrueText</option>
+            <option value="false">@Grid.Strings.BooleanFalseText</option>
         </select>
         break;
 
     case BitDataGridColumnDataType.Boolean:
-        <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
+        <input disabled="@(!Grid.IsEnabled)" type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
                checked="@(GetBool())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -28,8 +28,8 @@
         break;
 
     case BitDataGridColumnDataType.Number:
-        <input type="number" class="bit-dtg-editor" step="any"
-               value="@(GetNumberString())"
+        <input @key="_typedKey" disabled="@(!Grid.IsEnabled)" type="number" class="bit-dtg-editor" step="any"
+               value="@_typedStart"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
                aria-describedby="@ErrorId"
@@ -41,7 +41,7 @@
            GetDate/GetDateTime echo back for a conversion-rejected edit would never be shown. Fall
            back to a text input while the buffer holds raw text so the user's entry stays visible
            alongside the error; a successful parse flips the control back to its native type. *@
-        <input type="@(Value is string ? "text" : "date")" class="bit-dtg-editor"
+        <input disabled="@(!Grid.IsEnabled)" type="@(Value is string ? "text" : "date")" class="bit-dtg-editor"
                value="@(GetDate())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -50,7 +50,7 @@
         break;
 
     case BitDataGridColumnDataType.DateTime:
-        <input type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
+        <input disabled="@(!Grid.IsEnabled)" type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
                value="@(GetDateTime())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -59,7 +59,7 @@
         break;
 
     case BitDataGridColumnDataType.DateTimeOffset:
-        <input type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
+        <input disabled="@(!Grid.IsEnabled)" type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
                value="@(GetDateTime())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -68,7 +68,7 @@
         break;
 
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
-        <select class="bit-dtg-editor" value="@(GetString())"
+        <select disabled="@(!Grid.IsEnabled)" class="bit-dtg-editor" value="@(GetString())"
                 aria-label="@EditorLabel"
                 aria-invalid="@(Error is null ? null : "true")"
                 aria-describedby="@ErrorId"
@@ -85,8 +85,8 @@
         break;
 
     default:
-        <input type="text" class="bit-dtg-editor"
-               value="@(GetString())"
+        <input @key="_typedKey" disabled="@(!Grid.IsEnabled)" type="text" class="bit-dtg-editor"
+               value="@_typedStart"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
                aria-describedby="@ErrorId"
@@ -109,6 +109,36 @@
     private object? Value => Grid.GetEditValue(Column, Item);
     private string? Error => Grid.GetEditError(Column);
     private string GetString() => Value?.ToString() ?? string.Empty;
+
+    // What the typed (oninput) editors show. Every keystroke re-renders the grid, and a render that set the
+    // input's value from the buffer would land after the user had typed on, putting the input back a
+    // character or two and losing what was typed in between. So the input owns its text while it is open,
+    // and this only changes when the buffer is changed by something other than the input itself: another
+    // editor or a Validate writing this column's value, or this component being handed another cell (cells
+    // are not keyed, so hiding or scrolling a column passes an editor's slot to the next column).
+    private string? _typedStart;
+
+    // The cell and buffered value _typedStart was last taken from, or that the input itself last wrote.
+    private BitDataGridColumn<TItem>? _shownColumn;
+    private object? _shownItem;
+    private object? _shownValue;
+
+    // Bumped when a rewrite leaves _typedStart unchanged, so the input is rebuilt with it rather than keeping
+    // what was typed: a render that sets the same value attribute again would not touch the element.
+    private int _typedKey;
+
+    protected override void OnParametersSet()
+    {
+        var value = Value;
+        if (ReferenceEquals(_shownColumn, Column) && Equals(_shownItem, Item) && Equals(_shownValue, value)) return;
+
+        var text = Column.EffectiveDataType == BitDataGridColumnDataType.Number ? GetNumberString() : GetString();
+        if (_shownColumn is not null && text == _typedStart) _typedKey++;
+        _typedStart = text;
+        _shownColumn = Column;
+        _shownItem = Item;
+        _shownValue = value;
+    }
 
     // Each built-in editor renders a bare control with no visible <label>, so screen readers would
     // announce it without any field context. Expose the column's title as the accessible name so the
@@ -195,6 +225,7 @@
                 local = local.AddTicks(original.Ticks % TimeSpan.TicksPerMinute);
             }
             Grid.SetEditValue(Column, DateTime.SpecifyKind(local, kind));
+            _shownValue = Value;
         }
         else
         {
@@ -202,7 +233,13 @@
         }
     }
 
-    private void Set(object? raw) => Grid.SetEditValue(Column, raw);
+    // Every write records the value it leaves in the buffer, so the next render knows the input made it itself
+    // (see OnParametersSet) and keeps the text the user is typing.
+    private void Set(object? raw)
+    {
+        Grid.SetEditValue(Column, raw);
+        _shownValue = Value;
+    }
 
     // True when the bound member is a nullable value type (e.g. int?, DateTime?). A cleared editor
     // (empty string) should then map back to null rather than being rejected by the accessor's type
@@ -218,6 +255,7 @@
         if (raw is string s && string.IsNullOrEmpty(s) && IsNullableValue)
         {
             Grid.SetEditValue(Column, null);
+            _shownValue = Value;
             return;
         }
         Set(raw);
@@ -242,6 +280,7 @@
                 local = local.AddTicks(original.DateTime.Ticks % TimeSpan.TicksPerMinute);
             }
             Grid.SetEditValue(Column, new DateTimeOffset(local, offset));
+            _shownValue = Value;
         }
         else
         {
