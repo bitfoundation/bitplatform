@@ -2,39 +2,80 @@
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 @import "../../../Bit.BlazorUI/Styles/media-queries.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// message box - the ones the BitMessageBoxService shows included - one set on an ancestor the message boxes
+// inside it, and one set on the Style of an instance that one alone:
+//   --bit-MessageBox-padding            inset of the message box                       (default: per size, $spa-dialog for medium)
+//   --bit-MessageBox-gap                room between the header, body and footer       (default: spacing(2))
+//   --bit-MessageBox-min-width          width the message box does not shrink below    (default: per size, never past the max width)
+//   --bit-MessageBox-max-width          width the message box stops growing at         (default: $siz-dialog-max-width in a modal, 100% inline)
+//   --bit-MessageBox-max-height         height past which the body scrolls             (default: the height of the screen a modal leaves it)
+//   --bit-MessageBox-text-align         alignment of the title and the body            (default: $layout-dialog-text-align)
+//   --bit-MessageBox-icon-color         color of the leading icon                      (default: the main color of Color, else the text color)
+//   --bit-MessageBox-icon-size          size of the leading icon                       (default: per size, $siz-icon-*)
+//   --bit-MessageBox-title-color        color of the title                             (default: $clr-fg-pri)
+//   --bit-MessageBox-title-font-size    size of the title                              (default: per size, $tg-dialog-title-font-size for medium)
+//   --bit-MessageBox-title-font-weight  weight of the title                            (default: $tg-dialog-title-font-weight)
+//   --bit-MessageBox-body-color         color of the body                              (default: $clr-fg-sec)
+//   --bit-MessageBox-body-font-size     size of the body                               (default: per size, $tg-fs-md for medium)
+//   --bit-MessageBox-actions-gap        room between the action buttons                (default: spacing(2))
+//   --bit-MessageBox-actions-justify    how the action buttons sit along the footer    (default: $layout-dialog-actions-justify)
+
 // The line the title is set on, which the leading glyph beside it is centered against.
 $msb-ttl-line-height: 1.4;
 
 .bit-msb {
     // The values the size classes scale, declared here so an unsized message box is the medium one and
-    // nothing has to repeat the defaults.
-    --bit-msb-pad: #{spacing(2)};
-    --bit-msb-minwidth: #{spacing(40)};
+    // nothing has to repeat the defaults. They are private: the public variables above win over them.
+    --bit-msb-pad: #{$spa-dialog};
+    --bit-msb-min-width: #{spacing(40)};
     --bit-msb-fontsize: #{$tg-fs-md};
-    --bit-msb-ttl-fontsize: #{$tg-fs-xl};
+    --bit-msb-ttl-fontsize: #{$tg-dialog-title-font-size};
     --bit-msb-ico-fontsize: #{$siz-icon-md};
-    padding: var(--bit-msb-pad);
-    min-width: var(--bit-msb-minwidth);
-    max-height: $bit-env-height-available;
+    --bit-msb-cls-size: #{$siz-ctrl-md};
+    // Resolved once here so the title, the glyph beside it and the body all read the same value.
+    --bit-msb-ttl-size: var(--bit-MessageBox-title-font-size, var(--bit-msb-ttl-fontsize));
+    --bit-msb-text-align: var(--bit-MessageBox-text-align, #{$layout-dialog-text-align});
+    // Inline, a message box fills the container it was written into, as it always has; the ceiling of a dialog is
+    // only its default where it is one - the content of a modal, below.
+    --bit-msb-max-width: var(--bit-MessageBox-max-width, 100%);
+    // The room a BitModal - the usual host - leaves its content: the screen, less the accent border it wears on its
+    // top edge and the offset it keeps from the edges. Without them the box would be that much taller than the
+    // modal, which then scrolls the whole box by those few pixels on top of the body scrolling inside it.
+    --bit-msb-max-height: var(--bit-MessageBox-max-height, calc(#{$bit-env-height-available} - var(--bit-Modal-border-width, #{spacing(0.5)}) - (2 * var(--bit-Modal-offset, 0px))));
+    // A column the container shrinks in: the inset of the root is what the container has less of to work with,
+    // which the layout works out from the padding itself - so any padding (a two-value shorthand included) holds.
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+    max-height: var(--bit-msb-max-height);
+    padding: var(--bit-MessageBox-padding, var(--bit-msb-pad));
+    max-width: var(--bit-msb-max-width);
+    // A min-width larger than the max-width would win over it, so the floor never passes the ceiling - a
+    // preset whose dialogs are narrow (Cupertino's 270px alert) keeps a message box that narrow too.
+    min-width: min(var(--bit-MessageBox-min-width, var(--bit-msb-min-width)), var(--bit-msb-max-width));
 
     @include lt-md {
         min-width: unset;
     }
 }
 
+// The content of a modal - the service's, or one written by hand - is a dialog, and is as wide as the theme's dialogs.
+.bit-mdl-ctn > .bit-msb {
+    --bit-msb-max-width: var(--bit-MessageBox-max-width, #{$siz-dialog-max-width});
+}
+
 .bit-msb-con {
     width: 100%;
     height: 100%;
     display: flex;
-    gap: spacing(2);
     box-sizing: border-box;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    // The inset of the root is what the container has less of to work with, and the root pads both
-    // sides of it - so twice the padding, not three times.
-    max-height: calc(#{$bit-env-height-available} - (2 * var(--bit-msb-pad)));
+    gap: var(--bit-MessageBox-gap, #{spacing(2)});
+    // Shrinks to the room the root's max-height leaves inside its padding, which is what lets the body scroll.
+    min-height: 0;
 }
 
 .bit-msb-hdr {
@@ -53,27 +94,46 @@ $msb-ttl-line-height: 1.4;
     align-items: center;
     // The glyph is set beside the title, so it is dropped to the middle of the title's line rather than
     // left hanging off its cap height.
-    min-height: calc(var(--bit-msb-ttl-fontsize) * #{$msb-ttl-line-height});
+    min-height: calc(var(--bit-msb-ttl-size) * #{$msb-ttl-line-height});
 }
 
 .bit-msb-ico {
     line-height: 1;
-    font-size: var(--bit-msb-ico-fontsize);
-    color: var(--bit-msb-clr, currentcolor);
+    font-size: var(--bit-MessageBox-icon-size, var(--bit-msb-ico-fontsize));
+    color: var(--bit-MessageBox-icon-color, var(--bit-msb-clr, currentcolor));
 }
 
-// The title is a heading, but its type is the message box's own rather than the theme's h5: every preset
-// puts the h5 at a different stop of the ramp, so a size stepped off it comes out equal to - or larger
-// than - the medium one in some of them. Picking the stop beside the body's keeps small < medium < large
-// in every preset, and the medium stop is the one BitDialog's title is set in.
+// The title is a heading, but its type is the theme's dialog title rather than any of its heading levels:
+// every preset puts the h1..h6 at a different stop of the ramp, while the dialog title is the size each
+// design system gives the title of a dialog. The small and the large sizes step off it by a ratio, which
+// keeps small < medium < large in every preset.
 .bit-msb-ttl {
     margin: 0;
-    color: $clr-ter;
+    min-width: 0;
+    flex: 1 1 auto;
     overflow-wrap: anywhere;
     font-family: $tg-font-family;
-    font-weight: $tg-fw-semibold;
     line-height: $msb-ttl-line-height;
-    font-size: var(--bit-msb-ttl-fontsize);
+    font-size: var(--bit-msb-ttl-size);
+    text-align: var(--bit-msb-text-align);
+    color: var(--bit-MessageBox-title-color, #{$clr-fg-pri});
+    font-weight: var(--bit-MessageBox-title-font-weight, #{$tg-dialog-title-font-weight});
+}
+
+// The title grows to fill the header itself - which is what lets a centered one (Cupertino) sit in the
+// middle of it - so the spacer that pushes the close button to the end is only needed where there is no title.
+.bit-msb-ttl ~ .bit-msb-spc {
+    display: none;
+}
+
+// A centered title (Cupertino) beside the close button is balanced by the room that button takes, so it sits
+// in the middle of the box rather than in the middle of what the button leaves. A container style query is
+// what reads the alignment the theme picked; where it is not supported the title is only a little off center.
+// A leading icon balances the button well enough on its own, so only a title that opens the header is padded.
+@container style(--bit-msb-text-align: center) {
+    .bit-msb-hdr:has(> .bit-btn) > .bit-msb-ttl:first-child {
+        padding-inline-start: calc(var(--bit-msb-cls-size) + #{spacing(2)});
+    }
 }
 
 .bit-msb-bdy {
@@ -81,12 +141,14 @@ $msb-ttl-line-height: 1.4;
     flex-grow: 1;
     display: block;
     overflow: auto;
-    color: $clr-ter;
-    line-height: 1.5;
     overflow-wrap: anywhere;
+    line-height: $tg-body1-line-height;
+    letter-spacing: $tg-body1-letter-spacing;
+    box-sizing: border-box;
     font-weight: $tg-fw-regular;
-    font-size: var(--bit-msb-fontsize);
-    letter-spacing: 0.01em;
+    text-align: var(--bit-msb-text-align);
+    color: var(--bit-MessageBox-body-color, #{$clr-fg-sec});
+    font-size: var(--bit-MessageBox-body-font-size, var(--bit-msb-fontsize));
 }
 
 // Only a body written as text is laid out by its own whitespace: the line breaks in it are kept, while a
@@ -97,44 +159,54 @@ $msb-ttl-line-height: 1.4;
     white-space: pre-wrap;
 }
 
+// The body of a prompt the BitMessageBoxService shows: its question, then the field the answer is typed into.
+.bit-msb-pmt {
+    display: flex;
+    gap: var(--bit-MessageBox-gap, #{spacing(2)});
+    flex-direction: column;
+}
+
 .bit-msb-ftr {
     width: 100%;
     display: flex;
-    gap: spacing(2);
     flex-wrap: wrap;
     box-sizing: border-box;
+    gap: var(--bit-MessageBox-actions-gap, #{spacing(2)});
     // Follows the same theme decision as BitDialog's footer, so all dialog-like footers across the
     // library lay out their actions identically for the active design system - including the
     // stretch that runs a Cupertino alert's stacked actions full width.
     align-items: $layout-dialog-actions-align;
     flex-direction: $layout-dialog-actions-direction;
-    justify-content: $layout-dialog-actions-justify;
+    justify-content: var(--bit-MessageBox-actions-justify, #{$layout-dialog-actions-justify});
 }
 
 // The size classes scale the inset, the title, the body type and the leading glyph together, so a small
 // message box is not left carrying a medium-sized title or icon.
 .bit-msb-sm {
-    --bit-msb-pad: #{spacing(1.5)};
-    --bit-msb-minwidth: #{spacing(30)};
+    --bit-msb-pad: calc(#{$spa-dialog} * 0.667);
+    --bit-msb-min-width: #{spacing(30)};
     --bit-msb-fontsize: #{$tg-fs-sm};
-    --bit-msb-ttl-fontsize: #{$tg-fs-lg};
+    --bit-msb-ttl-fontsize: calc(#{$tg-dialog-title-font-size} * 0.8);
     --bit-msb-ico-fontsize: #{$siz-icon-sm};
+    --bit-msb-cls-size: #{$siz-ctrl-sm};
 }
 
 .bit-msb-md {
-    --bit-msb-pad: #{spacing(2)};
-    --bit-msb-minwidth: #{spacing(40)};
+    --bit-msb-pad: #{$spa-dialog};
+    --bit-msb-min-width: #{spacing(40)};
     --bit-msb-fontsize: #{$tg-fs-md};
-    --bit-msb-ttl-fontsize: #{$tg-fs-xl};
+    --bit-msb-ttl-fontsize: #{$tg-dialog-title-font-size};
     --bit-msb-ico-fontsize: #{$siz-icon-md};
+    --bit-msb-cls-size: #{$siz-ctrl-md};
 }
 
 .bit-msb-lg {
-    --bit-msb-pad: #{spacing(2.5)};
-    --bit-msb-minwidth: #{spacing(50)};
+    --bit-msb-pad: calc(#{$spa-dialog} * 1.333);
+    --bit-msb-min-width: #{spacing(50)};
     --bit-msb-fontsize: #{$tg-fs-lg};
-    --bit-msb-ttl-fontsize: #{$tg-fs-2xl};
+    --bit-msb-ttl-fontsize: calc(#{$tg-dialog-title-font-size} * 1.2);
     --bit-msb-ico-fontsize: #{$siz-icon-lg};
+    --bit-msb-cls-size: #{$siz-ctrl-lg};
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Only the
@@ -143,6 +215,19 @@ $msb-ttl-line-height: 1.4;
 @each $role, $tokens in $bit-color-roles {
     .bit-msb-#{$role} {
         --bit-msb-clr: #{role($tokens, main)};
+    }
+}
+
+// A message box printed from the page it is written in prints all of its body, rather than the part of
+// it the scroll box of the screen happened to show.
+@media print {
+    .bit-msb,
+    .bit-msb-con {
+        max-height: none !important;
+    }
+
+    .bit-msb-bdy {
+        overflow: visible !important;
     }
 }
 
