@@ -65,6 +65,42 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.IsTrue(component.Find("input.bit-phi-inp").HasAttribute("readonly"));
         Assert.AreEqual("-1", component.Find("button.bit-phi-drp").GetAttribute("tabindex"));
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-rdo"));
+
+        // The selector is out of the tab order, so the input is what says which country its number is read with.
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, component.Find("input.bit-phi-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow("GB", "07911 123456", false, "+447911123456"),
+        DataRow("GB", "+44 (0)7911 123456", false, "+447911123456"),
+        DataRow("GB", "07911 123456", true, "+4407911123456"),
+        DataRow("DE", "0170 1234567", false, "+491701234567"),
+        DataRow("US", "1 415 555 0123", false, "+14155550123"),
+        DataRow("US", "415 555 0123", false, "+14155550123"),
+        DataRow("RU", "8 912 345-67-89", false, "+79123456789"),
+        DataRow("RU", "812 345-67-89", false, "+78123456789"),
+        DataRow("HU", "06 30 123 4567", false, "+36301234567"),
+        DataRow("BY", "8 029 123-45-67", false, "+375291234567"),
+        DataRow("IT", "06 1234 5678", false, "+390612345678"),
+        DataRow("GB", "0", false, "+440")]
+    public void BitPhoneInputShouldDropTheNationalPrefixFromTheValue(string iso2, string typed, bool keep, string expected)
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.FindByIso2(iso2));
+            parameters.Add(p => p.KeepNationalPrefix, keep);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        component.Find("input.bit-phi-inp").Change(typed);
+
+        Assert.AreEqual(expected, value);
+
+        // The prefix is the country's own, so dropping it never moves the selection.
+        Assert.AreEqual(iso2, component.Instance.Country?.Iso2);
     }
 
     [TestMethod]
@@ -1480,6 +1516,33 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldNotMoveAFixedCountryForATypedDialCode()
+    {
+        string? value = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoDropdown, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        var input = component.Find("input.bit-phi-inp");
+
+        // A number of another country is kept whole rather than moving a country nothing on screen can move back.
+        input.Change("+44 7911 123456");
+
+        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.AreEqual("+447911123456", value);
+
+        // The code of the fixed country itself is still read off the number.
+        input.Change("+1 415 555 0123");
+
+        Assert.AreEqual("4155550123", component.Find("input.bit-phi-inp").GetAttribute("value"));
+        Assert.AreEqual("+14155550123", value);
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldNotRenderACalloutItDoesNotHave()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
@@ -1507,10 +1570,14 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find(".bit-phi-ovl").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
+
+        // The focus the hidden callout held is given back to the selector rather than dropped on the body.
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldDropTheFocusRingWithTheCalloutTheOverlayDismisses()
+    public void BitPhoneInputShouldKeepTheFocusRingOnTheSelectorTheOverlayDismissesTo()
     {
         var component = RenderComponent<BitPhoneInput>();
 
@@ -1523,11 +1590,15 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
 
-        // Dismissing the callout puts the focus back nowhere, and there is no focusout of the field
-        // left to fire for it.
+        // Dismissing the callout gives the focus it held back to the selector, so the ring stays with it.
         component.Find(".bit-phi-ovl").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+
+        // Leaving the selector afterwards is a focusout of the field like any other.
+        component.Find("button.bit-phi-drp").FocusOut();
+
         Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
     }
 
