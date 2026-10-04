@@ -27,6 +27,12 @@ public partial class BitPdfViewer : BitComponentBase
     private int _renderEpoch; // bumped whenever page slots are rebuilt (load, rotation, mode change)
     private string _status = string.Empty;
     private bool _loading;
+    // How far the work behind the loading bar has got, from 0 to 1, when that is known (a
+    // download that declared its length, a print catching up on its pages); null leaves
+    // the bar indeterminate.
+    private double? _progress;
+    // The failure of the last load, as OnError reported it; null while there is none.
+    private string? _errorMessage;
 
     // Serializes page/thumbnail renders so a BackgroundRendering build (which may run
     // on a worker thread) never runs concurrently with another render against the
@@ -283,6 +289,19 @@ public partial class BitPdfViewer : BitComponentBase
     /// the toolbar or through <see cref="ShowSidebar"/>.
     /// </summary>
     [Parameter] public BitPdfSidebar DefaultSidebar { get; set; } = BitPdfSidebar.None;
+
+    /// <summary>
+    /// Custom content shown in place of the pages while no document is loaded - a hint that a file can be
+    /// dropped or picked, say. Defaults to the <see cref="BitPdfViewerTexts.NoDocument"/> text.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// Custom content shown in place of the pages when a document fails to load, with the same message
+    /// <see cref="OnError"/> receives. It is announced to assistive technology as an alert, as the default
+    /// message is.
+    /// </summary>
+    [Parameter] public RenderFragment<string>? ErrorTemplate { get; set; }
 
     /// <summary>
     /// The focused page (1-based), two-way bindable. Reading it gives the page the
@@ -1177,6 +1196,17 @@ public partial class BitPdfViewer : BitComponentBase
 
             _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
             _loading = false;
+            _progress = null;
+            // With no document on screen the failure takes its place, as a load's does; with one,
+            // the document stays and only the live region can say the pick went wrong.
+            if (_pages.Count == 0)
+            {
+                _errorMessage = ex.Message;
+            }
+            else
+            {
+                _announcement = _status;
+            }
             await OnError.InvokeAsync(ex.Message);
         }
     }
@@ -1286,7 +1316,8 @@ public partial class BitPdfViewer : BitComponentBase
                     if (!rendered)
                     {
                         _loading = true;
-                        _status = ActiveTexts.PreparingPrint;
+                        _progress = 0;
+                        _announcement = ActiveTexts.PreparingPrint;
                         StateHasChanged();
                         await Task.Delay(1);
                         if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
@@ -1305,14 +1336,17 @@ public partial class BitPdfViewer : BitComponentBase
                     // lazy pump is fine - only a still-empty slot means a real failure.
                     if (!ok && _pages[i] is null)
                     {
-                        _status = ActiveTexts.PrintAborted;
+                        _announcement = ActiveTexts.PrintAborted;
                         return;
                     }
+                    _progress = (i - from + 2) / (double)(to - from + 1);
+                    StateHasChanged();
                 }
             }
             if (rendered)
             {
                 _loading = false;
+                _progress = null;
                 int paintTarget = _canvasDirtyGen;
                 if (RenderMode == BitPdfRenderMode.Canvas && _canvasPaintedGen < paintTarget)
                 {
@@ -1354,6 +1388,7 @@ public partial class BitPdfViewer : BitComponentBase
             if (version == _loadVersion)
             {
                 _loading = false;
+                _progress = null;
                 StateHasChanged();
             }
         }
@@ -2553,7 +2588,7 @@ public partial class BitPdfViewer : BitComponentBase
         response.EnsureSuccessStatusCode();
 
         long? length = response.Content.Headers.ContentLength;
-        if (OnProgress.HasDelegate is false || length is not > 0)
+        if (length is not > 0)
         {
             // Nothing to report against (a chunked response declares no length), so
             // take the simple path.
@@ -2591,7 +2626,18 @@ public partial class BitPdfViewer : BitComponentBase
             read += got;
             if (IsDisposed || version != _loadVersion) return null;
             // A body longer than it declared must not report past 100%.
-            await OnProgress.InvokeAsync(Math.Min(1d, read / (double)declared));
+            double fraction = Math.Min(1d, read / (double)declared);
+            // The bar moves a whole percent at a time: a render per chunk would cost more
+            // than the chunk did on a fast link.
+            if (_progress is not double shown || (int)(fraction * 100) != (int)(shown * 100))
+            {
+                _progress = fraction;
+                StateHasChanged();
+            }
+            if (OnProgress.HasDelegate)
+            {
+                await OnProgress.InvokeAsync(fraction);
+            }
             if (IsDisposed || version != _loadVersion) return null;
         }
         return read == buffer.Length ? buffer : buffer[..read];
@@ -2646,6 +2692,8 @@ public partial class BitPdfViewer : BitComponentBase
             _collapsedOutline.Clear(); // fold state belongs to the old document's bookmarks
             _focusedOutline = null;    // and so does the tree's tab stop
             _announcement = string.Empty;
+            _errorMessage = null;      // a failure belonged to the old load
+            _progress = null;
             _showProperties = false;   // the dialog described the old document
             // A superseded load's finally won't clear the progress bar (it no longer
             // owns _loadVersion); reset it here so e.g. Source = null while a load is
@@ -2681,6 +2729,7 @@ public partial class BitPdfViewer : BitComponentBase
             if (_services.GetService(typeof(HttpClient)) is not HttpClient http)
             {
                 _status = ActiveTexts.HttpClientRequired;
+                _errorMessage = _status;
                 _loading = false;
                 await OnError.InvokeAsync(_status);
                 return;
@@ -2689,6 +2738,7 @@ public partial class BitPdfViewer : BitComponentBase
             {
                 bytes = await FetchAsync(http, _source, version);
                 if (bytes is null) return; // superseded while fetching
+                _progress = null; // the parse that follows has no measure of its own
             }
             catch (Exception ex)
             {
@@ -2697,7 +2747,9 @@ public partial class BitPdfViewer : BitComponentBase
                 // error or hide the newer load's progress bar (mirrors the parse catch).
                 if (version != _loadVersion) return;
                 _status = string.Format(ActiveTexts.FetchFailedFormat, ex.Message);
+                _errorMessage = _status;
                 _loading = false;
+                _progress = null;
                 await OnError.InvokeAsync(_status);
                 return;
             }
@@ -2815,6 +2867,7 @@ public partial class BitPdfViewer : BitComponentBase
             // publish a stale error over the newer load's state.
             if (version != _loadVersion) return;
             _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
+            _errorMessage = ex.Message;
             await OnError.InvokeAsync(ex.Message);
         }
         finally
@@ -2824,6 +2877,7 @@ public partial class BitPdfViewer : BitComponentBase
             if (version == _loadVersion)
             {
                 _loading = false;
+                _progress = null;
             }
         }
     }
@@ -2897,7 +2951,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// passed in as a UI-thread snapshot so a background build reads a consistent set
     /// even if the component's state changes while it runs.
     /// </summary>
-    private BitPdfPageBuild BuildPage(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode)
+    private BitPdfPageBuild BuildPage(int index, int rotation, BitPdfTextCoalescing textCoalescing, BitPdfRenderMode renderMode, bool thumbnail = false)
     {
         var doc = _document;
         if (doc is null || index < 0 || index >= doc.Pages.Count)
@@ -2916,6 +2970,9 @@ public partial class BitPdfViewer : BitComponentBase
             DestinationInfoResolver = dest => doc.ResolveDestination(dest),
             TextCoalescing = textCoalescing,
             EmitCanvasOps = renderMode == BitPdfRenderMode.Canvas,
+            // A thumbnail is one option of a listbox: a link inside it would be a tab stop nobody can see.
+            EmitLinks = thumbnail is false,
+            InternalLinkLabelFormat = ActiveTexts.LinkAriaLabelFormat,
             // The frozen snapshot, never the live set: a background build must not read
             // it while the UI thread is switching a layer.
             HiddenLayers = _hiddenLayersView,
@@ -3189,7 +3246,7 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (renderMode != BitPdfRenderMode.Canvas)
         {
-            return BuildPage(index, rotation, textCoalescing, renderMode);
+            return BuildPage(index, rotation, textCoalescing, renderMode, thumbnail: true);
         }
 
         var doc = _document;
@@ -3201,6 +3258,7 @@ public partial class BitPdfViewer : BitComponentBase
         var renderer = new BitPdfHtmlRenderer(doc.Pages[index], doc.XRef, store, rotation)
         {
             TextCoalescing = BitPdfTextCoalescing.Compact,
+            EmitLinks = false,
             HiddenLayers = _hiddenLayersView,
         };
         return new BitPdfPageBuild(renderer.Render(), null);
@@ -4246,6 +4304,19 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>The accessible name of a thumbnail: "Page iv", not a bare "iv" a screen reader cannot place.</summary>
     private string ThumbAriaLabel(int index) => string.Format(ActiveTexts.ThumbnailAriaLabelFormat, ThumbLabel(index));
+
+    /// <summary>The accessible name of a page on the surface: "Page iv", by the label the document gives it.</summary>
+    private string PageAriaLabel(int index) => string.Format(ActiveTexts.PageAriaLabelFormat, ThumbLabel(index));
+
+    /// <summary>The loading bar's position as a whole percent, or null while it is indeterminate.</summary>
+    private string? ProgressPercent => _progress is double p
+        ? ((int)Math.Round(Math.Clamp(p, 0, 1) * 100)).ToString(System.Globalization.CultureInfo.InvariantCulture)
+        : null;
+
+    /// <summary>A determinate bar is the track filled to the fraction; an indeterminate one has no style of its own.</summary>
+    private string? ProgressBarStyle => _progress is double p
+        ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"transform:scaleX({Math.Clamp(p, 0, 1):0.###})")
+        : null;
 
     /// <summary>The accessible name of the document surface: the host's, then the document's, then a generic one.</summary>
     private string SurfaceAriaLabel => AriaLabel.HasValue() ? AriaLabel! : DocumentTitle ?? ActiveTexts.DocumentAriaLabel;

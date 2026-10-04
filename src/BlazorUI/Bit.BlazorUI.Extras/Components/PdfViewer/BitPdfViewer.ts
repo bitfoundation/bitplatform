@@ -424,11 +424,22 @@
             const pinch = { active: false, distance: 0, scale: 1 };
             const spread = (t: TouchList) => Math.hypot(
                 t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+            // One page (or spread) at a time, a horizontal swipe turns the page - on a phone
+            // the surface then has nothing to scroll sideways, and the toolbar's arrows are
+            // the only other way on. A page zoomed wider than the surface keeps the swipe
+            // for panning it.
+            const swipe = { x: 0, y: 0, time: 0, tracking: false };
             const onTouchStart = (e: TouchEvent) => {
                 if (e.touches.length === 2) {
                     pinch.active = true;
                     pinch.distance = spread(e.touches);
                     pinch.scale = 1;
+                }
+                swipe.tracking = e.touches.length === 1;
+                if (swipe.tracking) {
+                    swipe.x = e.touches[0].clientX;
+                    swipe.y = e.touches[0].clientY;
+                    swipe.time = Date.now();
                 }
             };
             const onTouchMove = (e: TouchEvent) => {
@@ -455,6 +466,24 @@
                 if (e.touches.length < 2) {
                     pinch.active = false;
                 }
+                if (!swipe.tracking || e.type !== "touchend" || e.changedTouches.length !== 1) {
+                    swipe.tracking = false;
+                    return;
+                }
+                swipe.tracking = false;
+                const root = container.closest(".bit-pdv") as HTMLElement | null;
+                if (!root || !PdfViewer.isPaged(root) || container.scrollWidth > container.clientWidth + 1) {
+                    return;
+                }
+                const dx = e.changedTouches[0].clientX - swipe.x;
+                const dy = e.changedTouches[0].clientY - swipe.y;
+                if (Math.abs(dx) < 50 || Math.abs(dx) < 2 * Math.abs(dy) || Date.now() - swipe.time > 800) {
+                    return;
+                }
+                // The pages run the way the reading direction does, so a right-to-left
+                // viewer turns forward on a swipe to the right.
+                const forward = getComputedStyle(root).direction === "rtl" ? dx > 0 : dx < 0;
+                dotnetRef.invokeMethodAsync("OnShortcut", forward ? "next" : "prev");
             };
             container.addEventListener("touchstart", onTouchStart, { passive: true });
             container.addEventListener("touchmove", onTouchMove, { passive: false });

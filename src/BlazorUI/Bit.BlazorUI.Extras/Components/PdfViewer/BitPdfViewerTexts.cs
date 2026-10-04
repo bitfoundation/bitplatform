@@ -9,7 +9,7 @@ public class BitPdfViewerTexts
     /// <summary>The accessible name of the toolbar.</summary>
     public string ToolbarAriaLabel { get; set; } = "PDF viewer toolbar";
 
-    /// <summary>The accessible name of the indeterminate loading bar.</summary>
+    /// <summary>The accessible name of the loading bar.</summary>
     public string LoadingAriaLabel { get; set; } = "Loading document";
 
     /// <summary>The accessible name of the scrollable document surface while no file name is known
@@ -163,6 +163,12 @@ public class BitPdfViewerTexts
     /// <summary>The accessible name of a page thumbnail ({0} = the page label, or its number).</summary>
     public string ThumbnailAriaLabelFormat { get; set; } = "Page {0}";
 
+    /// <summary>The accessible name of a page on the document surface ({0} = the page label, or its number).</summary>
+    public string PageAriaLabelFormat { get; set; } = "Page {0}";
+
+    /// <summary>The accessible name of a link that goes to another page of the document ({0} = the page number).</summary>
+    public string LinkAriaLabelFormat { get; set; } = "Go to page {0}";
+
     /// <summary>The label of any close button.</summary>
     public string Close { get; set; } = "Close";
 
@@ -187,10 +193,10 @@ public class BitPdfViewerTexts
     /// <summary>The message shown when nothing is loaded.</summary>
     public string NoDocument { get; set; } = "No document loaded.";
 
-    /// <summary>Shown while all pages are being rendered for printing.</summary>
+    /// <summary>Announced while all pages are being rendered for printing.</summary>
     public string PreparingPrint { get; set; } = "Preparing all pages for printing...";
 
-    /// <summary>Shown when a page fails to render during a print pass.</summary>
+    /// <summary>Announced when a page fails to render during a print pass.</summary>
     public string PrintAborted { get; set; } = "Printing aborted: a page failed to render.";
 
     /// <summary>Shown when a URL source is used without a registered HttpClient.</summary>

@@ -1,11 +1,11 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitPdfViewer"/> component.
 /// </summary>
 /// <remarks>
 /// What belongs here is what the viewers of an application agree on: their texts (which is where a localized app
-/// sets them once), their toolbar and its custom content, their size, how they lay out, zoom and paint pages, which
+/// sets them once), their toolbar and its custom content, what they show with no document or a failed one, their size, how they lay out, zoom and paint pages, which
 /// of the reader's conveniences they offer (shortcuts, dropping a file, the password prompt) and how they look.
 /// The document, the page, zoom and rotation the reader is on and the events are left out on purpose: they are
 /// what makes one viewer the one it is.
@@ -54,9 +54,19 @@ public class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
     public BitPdfSidebar? DefaultSidebar { get; set; }
 
     /// <summary>
+    /// Custom content shown in place of the pages while no document is loaded.
+    /// </summary>
+    public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
     /// Whether the viewer handles keyboard shortcuts while it has focus.
     /// </summary>
     public bool? EnableKeyboardShortcuts { get; set; }
+
+    /// <summary>
+    /// Custom content shown in place of the pages when a document fails to load, with the error message.
+    /// </summary>
+    public RenderFragment<string>? ErrorTemplate { get; set; }
 
     /// <summary>
     /// The CSS height of the viewer.
@@ -222,9 +232,19 @@ public class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
             bitPdfViewer.DefaultSidebar = DefaultSidebar.Value;
         }
 
+        if (EmptyTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(EmptyTemplate)))
+        {
+            bitPdfViewer.EmptyTemplate = EmptyTemplate;
+        }
+
         if (EnableKeyboardShortcuts.HasValue && bitPdfViewer.HasNotBeenSet(nameof(EnableKeyboardShortcuts)))
         {
             bitPdfViewer.EnableKeyboardShortcuts = EnableKeyboardShortcuts.Value;
+        }
+
+        if (ErrorTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(ErrorTemplate)))
+        {
+            bitPdfViewer.ErrorTemplate = ErrorTemplate;
         }
 
         if (Height is not null && bitPdfViewer.HasNotBeenSet(nameof(Height)) && bitPdfViewer.Height != Height)

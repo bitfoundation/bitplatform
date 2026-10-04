@@ -10,8 +10,12 @@
      dir="@Dir?.ToString().ToLower()">
     @if (_loading)
     {
-        <div class="bit-pdv-progress @Classes?.ProgressBar" style="@Styles?.ProgressBar" role="progressbar" aria-label="@ActiveTexts.LoadingAriaLabel">
-            <div class="bit-pdv-progress-bar"></div>
+        @* Determinate while the work has a measure (a download of declared length, a print
+           catching up on its pages), indeterminate otherwise - and then it carries no value
+           at all, which is how assistive technology tells the two apart. *@
+        <div class="bit-pdv-progress @Classes?.ProgressBar" style="@Styles?.ProgressBar" role="progressbar" aria-label="@ActiveTexts.LoadingAriaLabel"
+             aria-valuemin="@(_progress is null ? null : "0")" aria-valuemax="@(_progress is null ? null : "100")" aria-valuenow="@ProgressPercent">
+            <div class="bit-pdv-progress-bar @(_progress is null ? null : "bit-pdv-det")" style="@ProgressBarStyle"></div>
         </div>
     }
     @if (ShowToolbar)
@@ -365,7 +369,10 @@
                     <div class="bit-pdv-thumb @(pageNo == CurrentPage ? "bit-pdv-act" : "") @Classes?.Thumbnail" style="@Styles?.Thumbnail" data-thumb="@pageNo"
                          role="option" tabindex="@(pageNo == CurrentPage ? 0 : -1)" aria-label="@ThumbAriaLabel(index)" aria-selected="@AriaBool(pageNo == CurrentPage)"
                          @onclick="() => GoToPage(pageNo)" @onkeydown="e => OnThumbKeyDown(e, pageNo)">
-                        <div class="bit-pdv-thumb-svg" style="@ThumbStyle(i)">
+                        @* Inert: the picture of the page is all an option shows. A thumbnail can
+                           reuse the page's own markup, links included, and a link inside an
+                           option would be a tab stop nobody can see - and a second name for it. *@
+                        <div class="bit-pdv-thumb-svg" style="@ThumbStyle(i)" inert>
                             @if (_thumbs[i] is { } thumb)
                             {
                                 @thumb
@@ -395,9 +402,34 @@
             @* Document-wide @@font-face rules, kept here (not per page) so they
                survive page eviction while scrolling. *@
             @FontFaceStyleMarkup
-            @if (_source is null)
+            @if (_errorMessage is not null && _pages.Count == 0 && _loading is false)
             {
-                <div class="bit-pdv-empty">@ActiveTexts.NoDocument</div>
+                @* An alert, so a failure is heard the moment it replaces the pages - a status
+                   line nobody is told about is one a screen-reader user never finds. *@
+                <div class="bit-pdv-empty bit-pdv-error" role="alert">
+                    @if (ErrorTemplate is not null)
+                    {
+                        @ErrorTemplate(_errorMessage)
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+                        <span>@_status</span>
+                    }
+                </div>
+            }
+            else if (_source is null)
+            {
+                <div class="bit-pdv-empty">
+                    @if (EmptyTemplate is not null)
+                    {
+                        @EmptyTemplate
+                    }
+                    else
+                    {
+                        @ActiveTexts.NoDocument
+                    }
+                </div>
             }
             else if (_pages.Count == 0)
             {
@@ -538,9 +570,13 @@
 
     @* A failed page carries NO .bit-pdv-page-placeholder: that class is what the
        browser-side pass looks for when it asks .NET to render a page, so leaving it on
-       would have the pump re-run the same failing build on every scroll. *@
+       would have the pump re-run the same failing build on every scroll. Each page is a
+       named group, not a landmark: a long document would bury the viewer's own regions
+       under hundreds of them, and the name alone is what tells a reader where one page's
+       text ends and the next one's begins. *@
     private RenderFragment RenderPage(int index, bool isCurrent) =>
-    @<div class="bit-pdv-page @(isCurrent ? "bit-pdv-cur" : "") @Classes?.Page" data-page="@(index + 1)" style="@PageStyle(index)">
+    @<div class="bit-pdv-page @(isCurrent ? "bit-pdv-cur" : "") @Classes?.Page" data-page="@(index + 1)" style="@PageStyle(index)"
+          role="group" aria-label="@PageAriaLabel(index)">
         @if (_pages[index] is { } content)
         {
             @content
