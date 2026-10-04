@@ -15,6 +15,12 @@ public class BitErrorBoundaryClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the header of the BitErrorBoundary, holding the icon, the title and the message,
+    /// which is the part that is announced as the error appears.
+    /// </summary>
+    public string? Header { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the icon of the BitErrorBoundary.
     /// </summary>
     public string? Icon { get; set; }

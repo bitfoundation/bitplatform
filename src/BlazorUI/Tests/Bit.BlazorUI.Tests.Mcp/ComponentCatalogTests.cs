@@ -375,6 +375,8 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitInfiniteScrolling", "BitInfiniteScrollingParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
+    [DataRow("BitFlag", "BitFlagParams")]
+    [DataRow("BitErrorBoundary", "BitErrorBoundaryParams")]
     [DataRow("BitChart", "BitChartParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {

@@ -1,5 +1,23 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Public CSS variables, read here with a fallback and never declared, so they inherit: set one on :root to
+// restyle every flag, on an ancestor for every flag inside it, or on the Style of a single flag:
+//   --bit-Flag-size                 size of a flag with no Size, Width or Height     (default: $siz-icon-md)
+//   --bit-Flag-radius               corner radius of a Rounded flag                  (default: $shp-radius-surface, at most 1/8 of the size)
+//   --bit-Flag-border-width         border width of a Bordered flag                  (default: $shp-border-width)
+//   --bit-Flag-border-color         border color of a Bordered flag                  (default: $clr-brd-sec)
+//   --bit-Flag-shadow               elevation of a Shadow flag                       (default: $box-shadow-card)
+//   --bit-Flag-grayscale-filter     filter of a Grayscale flag                       (default: grayscale(1))
+//   --bit-Flag-hover-opacity        opacity of a clickable flag under the pointer    (default: 0.8)
+//   --bit-Flag-active-opacity       opacity of a clickable flag while pressed        (default: 0.6)
+//   --bit-Flag-focus-color          color of the keyboard focus ring                 (default: $clr-pri-focus)
+//   --bit-Flag-emoji-font-family    font stack the Emoji flag is drawn in            (default: the platform emoji fonts)
+//
+// The shape, elevation and filter variables only take effect where the parameter asks for the feature, and the
+// hover and press ones where OnClick makes the flag a control, so a global value restyles those flags without
+// rounding, bordering or dimming every other one. The size is the default under the parameters: Size, Width and
+// Height still win over it.
+
 // The frame. It is the box the flag is drawn in, and everything the component offers is a property of
 // it rather than of the picture inside: the size, the shape, the border and the shadow.
 //
@@ -8,10 +26,13 @@
 // medium icon size of the theme, which is the 16 pixels the packaged flag images are drawn at and the
 // size a flag has always been.
 .bit-flg {
-    --bit-flg-siz: #{$siz-icon-md};
-    // The corner and the border of the frame, which a picture cut to the flag clips itself to.
+    --bit-flg-siz: var(--bit-Flag-size, #{$siz-icon-md});
+    // The corner of the frame, which a picture cut to the flag clips itself to.
     --bit-flg-rad: 0px;
-    --bit-flg-bdw: 0px;
+    // The elevation of the frame, which the focus ring is drawn on top of rather than in place of. A
+    // transparent shadow of no size is what a flag without a Shadow has, so the ring always has a layer to
+    // keep beside it.
+    --bit-flg-elv: 0 0 #0000;
 
     padding: 0;
     flex-shrink: 0;
@@ -36,8 +57,12 @@
 
     // The ring is drawn on the frame, which is also the element that takes the focus: only a flag with
     // a click handler or a tab index of its own is focusable at all, so nothing else ever draws it.
+    //
+    // It is the shared ring of the library, but the box-shadow it is drawn with is also the frame's
+    // Shadow, and one declaration replaces the other: a focused raised flag would lose its elevation for
+    // as long as it is focused. So the elevation is handed to the mixin as a layer to keep under the ring.
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));
     }
 }
 
@@ -66,8 +91,9 @@
     font-size: inherit;
     // The emoji fonts of the platform, ahead of whatever the page is set in: a page whose own font
     // happens to carry the regional indicator letters would otherwise draw those two letters rather
-    // than the flag they compose to.
-    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif;
+    // than the flag they compose to. A page that loads a flag emoji font of its own - the platform's
+    // emoji font on Windows draws letters instead of flags - puts it first through the variable.
+    font-family: var(--bit-Flag-emoji-font-family, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif);
 }
 
 // A frame that was given a shape, a border or a ratio is not let out around the glyph - a circle drawn
@@ -127,10 +153,14 @@
 // of the packaged image unless the image of a set says otherwise), the frame takes its proportions from
 // the height, and the picture is blown up and moved so that box lands exactly on the frame.
 //
-// The picture overhangs the frame and is clipped back to it, corner included, with a clip-path rather
-// than an overflow of the frame's own: that would also clip the hit box that grows a clickable flag to
-// a real target. A flag that is not a button has no such box, so it clips the overhang as well, which
-// keeps it out of the scrollable overflow of whatever the flag sits in.
+// The picture overhangs the frame and is clipped back to it, corner included. A flag that is not a button
+// clips it with an overflow of the frame's own, which follows the inside of the border at whatever corners
+// the frame has and keeps the overhang out of the scrollable overflow of whatever the flag sits in. A
+// clickable one cannot: the overflow would also clip the hit box that grows it to a real target. So its
+// picture clips itself, with a clip-path rounded by the corner of the frame. That corner is taken whole,
+// as any border-radius - "0.75rem 0" included - since the inner corner of a border cannot be worked out
+// of it in CSS; the curve inside a border is then rounded a little more than the border is, which leaves
+// a sliver of at most four tenths of the border's width between the two.
 .bit-flg-crp {
     --bit-flg-crp-s: 16;
 
@@ -154,7 +184,11 @@
                          calc(100% * (var(--bit-flg-crp-s) - var(--bit-flg-crp-x) - var(--bit-flg-crp-w)) / var(--bit-flg-crp-s))
                          calc(100% * (var(--bit-flg-crp-s) - var(--bit-flg-crp-y) - var(--bit-flg-crp-h)) / var(--bit-flg-crp-s))
                          calc(100% * var(--bit-flg-crp-x) / var(--bit-flg-crp-s))
-                         round max(0px, calc(var(--bit-flg-rad) - var(--bit-flg-bdw))));
+                         round var(--bit-flg-rad));
+    }
+
+    &:not(.bit-flg-clk) > .bit-flg-img {
+        clip-path: none;
     }
 }
 
@@ -201,8 +235,12 @@
     object-fit: scale-down;
 }
 
+// The theme's surface corner is sized for cards, and a preset that rounds them generously - 12px for Material,
+// 10px for Cupertino - would turn a 16px flag into a pill. So the default is capped at an eighth of the flag's
+// size, which keeps the corner in proportion to the flag at every size while a theme with smaller corners than
+// that keeps its own. A --bit-Flag-radius of the page's own is taken as given.
 .bit-flg-rnd {
-    --bit-flg-rad: #{$shp-radius-surface};
+    --bit-flg-rad: var(--bit-Flag-radius, min(#{$shp-radius-surface}, calc(var(--bit-flg-siz) / 8)));
     border-radius: var(--bit-flg-rad);
 }
 
@@ -215,18 +253,18 @@
 // flag takes exactly as much room as one without. This is what keeps a mostly white flag off a white
 // surface.
 .bit-flg-brd {
-    --bit-flg-bdw: #{$shp-border-width};
-    border-width: var(--bit-flg-bdw);
+    border-width: var(--bit-Flag-border-width, #{$shp-border-width});
     border-style: $shp-border-style;
-    border-color: $clr-brd-sec;
+    border-color: var(--bit-Flag-border-color, #{$clr-brd-sec});
 }
 
 .bit-flg-shd {
-    box-shadow: $box-shadow-card;
+    --bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});
+    box-shadow: var(--bit-flg-elv);
 }
 
 .bit-flg-gry {
-    filter: grayscale(1);
+    filter: var(--bit-Flag-grayscale-filter, grayscale(1));
 }
 
 // A flag given a click handler is announced and operated as a button, so it also has to look and feel
@@ -265,11 +303,11 @@
     // not left with the hover state stuck on after a tap.
     @media (hover: hover) {
         &:not(.bit-dis):hover {
-            opacity: 0.8;
+            opacity: var(--bit-Flag-hover-opacity, 0.8);
         }
     }
 
     &:not(.bit-dis):active {
-        opacity: 0.6;
+        opacity: var(--bit-Flag-active-opacity, 0.6);
     }
 }
