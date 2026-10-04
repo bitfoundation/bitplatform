@@ -11,6 +11,13 @@ public class BitInfiniteScrollingClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the element that wraps each item of the BitInfiniteScrolling: the focusable
+    /// article of the Feed mode, or the element that carries the key of a keyed item (which is laid out with
+    /// display:contents, so only what it passes down to the item takes effect there).
+    /// </summary>
+    public string? Item { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the sentinel (last) element of the BitInfiniteScrolling that triggers the loading.
     /// </summary>
     public string? LastElement { get; set; }
@@ -19,6 +26,11 @@ public class BitInfiniteScrollingClassStyles
     /// Custom CSS classes/styles for the loading container of the BitInfiniteScrolling.
     /// </summary>
     public string? Loading { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner of the default loading container of the BitInfiniteScrolling.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the empty container of the BitInfiniteScrolling.
