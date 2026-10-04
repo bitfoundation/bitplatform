@@ -20,6 +20,24 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the fill of the phone input. The --bit-PhoneInput-background variable wins over it.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
+            Name = "Border",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the frame of the phone input, winning over the main color of Color (which keeps the focus ring). The --bit-PhoneInput-border-color variable wins over it.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitPhoneInputClassStyles?",
             DefaultValue = "null",
@@ -57,10 +75,17 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "ClearedAnnouncement",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "What a screen reader announces once the number has been emptied, in place of the default \"Cleared\". An empty string keeps the clearing from being announced.",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the phone input.",
+            Description = "The general color of the phone input: the frame takes its main color and the focus ring its focus color.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -390,6 +415,7 @@ public partial class BitPhoneInputDemo
         {
             Name = "OnEscape",
             Type = "EventCallback<KeyboardEventArgs>",
+            DefaultValue = "",
             Description = "The callback that is invoked when the Escape key is pressed in the number input.",
         },
         new()
@@ -627,6 +653,28 @@ public partial class BitPhoneInputDemo
                 new() { Name = "Warning", Value = "5" },
                 new() { Name = "SevereWarning", Value = "6" },
                 new() { Name = "Error", Value = "7" },
+                new() { Name = "PrimaryBackground", Value = "8" },
+                new() { Name = "SecondaryBackground", Value = "9" },
+                new() { Name = "TertiaryBackground", Value = "10" },
+                new() { Name = "PrimaryForeground", Value = "11" },
+                new() { Name = "SecondaryForeground", Value = "12" },
+                new() { Name = "TertiaryForeground", Value = "13" },
+                new() { Name = "PrimaryBorder", Value = "14" },
+                new() { Name = "SecondaryBorder", Value = "15" },
+                new() { Name = "TertiaryBorder", Value = "16" },
+            ]
+        },
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Value = "0" },
+                new() { Name = "Secondary", Value = "1" },
+                new() { Name = "Tertiary", Value = "2" },
+                new() { Name = "Transparent", Value = "3" },
             ]
         },
         new()
@@ -708,11 +756,11 @@ public partial class BitPhoneInputDemo
 
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
-        new() { Name = "--bit-PhoneInput-background", DefaultValue = "--bit-clr-bg-pri", Description = "Fill of the field." },
+        new() { Name = "--bit-PhoneInput-background", DefaultValue = "The Background kind, --bit-clr-bg-pri", Description = "Fill of the field." },
         new() { Name = "--bit-PhoneInput-color", DefaultValue = "--bit-clr-fg-pri", Description = "Text of the number." },
         new() { Name = "--bit-PhoneInput-placeholder-color", DefaultValue = "--bit-clr-fg-ter", Description = "Placeholder of the number input, of the country selector and of the search box." },
-        new() { Name = "--bit-PhoneInput-border-color", DefaultValue = "The Color role, --bit-clr-brd-pri", Description = "Frame at rest." },
-        new() { Name = "--bit-PhoneInput-hover-border-color", DefaultValue = "The Color role, --bit-clr-brd-pri-hover", Description = "Frame under a pointer, on devices that can hover." },
+        new() { Name = "--bit-PhoneInput-border-color", DefaultValue = "The Border kind, the Color role, --bit-clr-brd-pri", Description = "Frame at rest." },
+        new() { Name = "--bit-PhoneInput-hover-border-color", DefaultValue = "The Border kind, the Color role, --bit-clr-brd-pri-hover", Description = "Frame under a pointer, on devices that can hover." },
         new() { Name = "--bit-PhoneInput-border-width", DefaultValue = "--bit-shp-brd-width", Description = "Thickness of the frame and of the rule between the selector and the number." },
         new() { Name = "--bit-PhoneInput-radius", DefaultValue = "--bit-shp-radius-control", Description = "Corner radius of the frame." },
         new() { Name = "--bit-PhoneInput-min-height", DefaultValue = "Per Size, --bit-siz-ctrl-*", Description = "Smallest height of the frame." },
@@ -914,7 +962,7 @@ private static string? GetFlagUrl(BitCountry country)
 <BitPhoneInput ShowClearButton
                DefaultCountry=""BitCountries.Italy""
                Placeholder=""Enter your number""
-               OnClear=""() => clearedAt = DateTime.Now.ToLongTimeString()"" />
+               OnClear='() => clearedAt = DateTimeOffset.Now.ToString(""T"")' />
 
 <div>Last cleared at: @clearedAt</div>";
     private readonly string example8CsharpCode = @"
@@ -930,7 +978,14 @@ private string? clearedAt;";
 
 <BitPhoneInput Underlined DefaultCountry=""BitCountries.Sweden"" Placeholder=""Underlined"" />
 
-<BitPhoneInput FullWidth DefaultCountry=""BitCountries.Sweden"" Placeholder=""FullWidth"" />";
+<BitPhoneInput FullWidth DefaultCountry=""BitCountries.Sweden"" Placeholder=""FullWidth"" />
+
+<BitPhoneInput Background=""BitColorKind.Primary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Primary"" />
+<BitPhoneInput Background=""BitColorKind.Secondary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Secondary"" />
+<BitPhoneInput Background=""BitColorKind.Tertiary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Tertiary"" />
+<BitPhoneInput Background=""BitColorKind.Transparent"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Background Transparent"" />
+<BitPhoneInput Border=""BitColorKind.Tertiary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Border Tertiary"" />
+<BitPhoneInput Border=""BitColorKind.Transparent"" Background=""BitColorKind.Secondary"" DefaultCountry=""BitCountries.Sweden"" Placeholder=""Border Transparent"" />";
 
     private readonly string example11RazorCode = @"
 <BitPhoneInput Immediate
@@ -1199,7 +1254,9 @@ private readonly BitPhoneInputParams[] phoneInputParams =
 <BitPhoneInput Color=""BitColor.Success"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Success"" />
 <BitPhoneInput Color=""BitColor.Warning"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Warning"" />
 <BitPhoneInput Color=""BitColor.SevereWarning"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""SevereWarning"" />
-<BitPhoneInput Color=""BitColor.Error"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Error"" />";
+<BitPhoneInput Color=""BitColor.Error"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Error"" />
+<BitPhoneInput Color=""BitColor.PrimaryForeground"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""PrimaryForeground"" />
+<BitPhoneInput Color=""BitColor.TertiaryBorder"" DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""TertiaryBorder"" />";
 
     private readonly string example25RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

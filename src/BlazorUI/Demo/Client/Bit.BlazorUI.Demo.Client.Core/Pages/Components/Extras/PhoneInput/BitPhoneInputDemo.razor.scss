@@ -5,6 +5,12 @@
     flex-direction: column;
 }
 
+// A surface other than the primary one, which is what the Background kinds are for.
+.phi-kind-box {
+    padding: 1rem;
+    background: var(--bit-clr-bg-dis);
+}
+
 // The public custom properties are inherited, so one scope re-skins every field inside it
 // without a rule naming a part of the component.
 .phi-brand-scope {

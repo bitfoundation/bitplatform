@@ -106,7 +106,8 @@
                 The search matches names (accents folded, word starts), ISO codes and dialing codes (<code>+44</code>,
                 <code>0044</code> and <code>44</code> alike), and the result count is announced to screen readers.
                 <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and <b>NoResultsMessage</b> set its texts.
-                <b>NoSearchBox</b> removes it; the list then answers to type-ahead.
+                <b>NoSearchBox</b> removes it; the selector then answers to type-ahead, open or closed
+                (<code>united s</code> reaches the United States).
             </div>
             <br />
             <div class="example-box">
@@ -147,14 +148,15 @@
         <DemoExample Title="Clear button" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>ShowClearButton</b> adds a button that empties the number (keeping the country), returns the focus to
-                the input and raises <b>OnClear</b>. Its icon comes from <b>ClearButtonIconName</b>, its content from
-                <b>ClearButtonTemplate</b>.
+                the input, raises <b>OnClear</b> and tells a screen reader "Cleared" (<b>ClearedAnnouncement</b>
+                rephrases it; an empty string silences it). Its icon comes from <b>ClearButtonIconName</b>, its content
+                from <b>ClearButtonTemplate</b>.
             </div>
             <br />
             <BitPhoneInput ShowClearButton
                            DefaultCountry="BitCountries.Italy"
                            Placeholder="Enter your number"
-                           OnClear="() => clearedAt = DateTime.Now.ToLongTimeString()" />
+                           OnClear='() => clearedAt = DateTimeOffset.Now.ToString("T")' />
             <br />
             <div>Last cleared at: @clearedAt</div>
         </DemoExample>
@@ -177,7 +179,9 @@
         <DemoExample Title="Variants" RazorCode="@example10RazorCode" Id="example10">
             <div>
                 <b>FullWidth</b> stretches the field to its container, <b>NoBorder</b> removes the frame, and
-                <b>Underlined</b> keeps only a bottom rule that thickens on focus.
+                <b>Underlined</b> keeps only a bottom rule that thickens on focus. <b>Background</b> and <b>Border</b>
+                take the fill and the frame from the neutral color kinds, for a field on a surface other than the
+                primary one.
             </div>
             <br />
             <div class="example-box">
@@ -186,6 +190,15 @@
             </div>
             <br />
             <BitPhoneInput FullWidth DefaultCountry="BitCountries.Sweden" Placeholder="FullWidth" />
+            <br />
+            <div class="example-box phi-kind-box">
+                <BitPhoneInput Background="BitColorKind.Primary" DefaultCountry="BitCountries.Sweden" Placeholder="Background Primary" />
+                <BitPhoneInput Background="BitColorKind.Secondary" DefaultCountry="BitCountries.Sweden" Placeholder="Background Secondary" />
+                <BitPhoneInput Background="BitColorKind.Tertiary" DefaultCountry="BitCountries.Sweden" Placeholder="Background Tertiary" />
+                <BitPhoneInput Background="BitColorKind.Transparent" DefaultCountry="BitCountries.Sweden" Placeholder="Background Transparent" />
+                <BitPhoneInput Border="BitColorKind.Tertiary" DefaultCountry="BitCountries.Sweden" Placeholder="Border Tertiary" />
+                <BitPhoneInput Border="BitColorKind.Transparent" Background="BitColorKind.Secondary" DefaultCountry="BitCountries.Sweden" Placeholder="Border Transparent" />
+            </div>
         </DemoExample>
 
         <DemoExample Title="Immediate" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
@@ -331,7 +344,7 @@
             <div>
                 <b>DropDirection</b> (<code>TopAndBottom</code> by default, or <code>All</code>) and <b>MaxHeight</b> place
                 and size the list. The arrow keys wrap at its ends unless <b>NoWrapNavigation</b> is set; Home, End,
-                Page Up and Page Down move through it too. <b>Responsive</b> turns it into a full-height side panel on
+                Page Up and Page Down move through it too, and Escape or Alt+Up close it. <b>Responsive</b> turns it into a full-height side panel on
                 small screens, with the Label and a close button (<b>ResponsiveCloseIconName</b>,
                 <b>ResponsiveCloseButtonAriaLabel</b>) - narrow the window to see it.
             </div>
@@ -486,7 +499,8 @@
         <DemoExample Title="Cascading parameters" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
                 <b>BitParams</b> hands a <b>BitPhoneInputParams</b> to every phone input under it - the app's market,
-                country list, look and translated texts, set once. A field keeps any parameter it sets itself. What
+                country list, look and translated texts, set once. The visitor's own country is
+                <code>BitCountries.FindByIso2(RegionInfo.CurrentRegion.TwoLetterISORegionName)</code>. A field keeps any parameter it sets itself. What
                 belongs to one field only (Value, Number, Country, IsOpen, Name, CountryName, Invalid, ErrorMessage,
                 AutoFocus and the events) is not cascaded.
             </div>
@@ -504,7 +518,8 @@
 
         <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
             <div>
-                <b>Color</b> paints the frame and the focus ring in one of the general colors.
+                <b>Color</b> paints the frame and the focus ring in one of the general colors - a semantic one or a
+                neutral family. A <b>Border</b> kind, when set, takes the frame back and leaves Color the ring.
             </div>
             <br />
             <div class="example-box">
@@ -516,6 +531,8 @@
                 <BitPhoneInput Color="BitColor.Warning" DefaultCountry="BitCountries.UnitedStates" Placeholder="Warning" />
                 <BitPhoneInput Color="BitColor.SevereWarning" DefaultCountry="BitCountries.UnitedStates" Placeholder="SevereWarning" />
                 <BitPhoneInput Color="BitColor.Error" DefaultCountry="BitCountries.UnitedStates" Placeholder="Error" />
+                <BitPhoneInput Color="BitColor.PrimaryForeground" DefaultCountry="BitCountries.UnitedStates" Placeholder="PrimaryForeground" />
+                <BitPhoneInput Color="BitColor.TertiaryBorder" DefaultCountry="BitCountries.UnitedStates" Placeholder="TertiaryBorder" />
             </div>
         </DemoExample>
 
