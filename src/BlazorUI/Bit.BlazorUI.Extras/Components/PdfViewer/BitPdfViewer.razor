@@ -71,7 +71,10 @@
 
             @if (HasToolbarItem(BitPdfToolbarItems.Navigation) || HasToolbarItem(BitPdfToolbarItems.FirstLastPage))
             {
-                <div class="bit-pdv-group">
+                @* Page numbers run left to right in any script, so the controls that step through
+                   them do too: first and previous on the left, next and last on the right, in a
+                   right-to-left toolbar as well. *@
+                <div class="bit-pdv-group bit-pdv-ltr">
                     @if (HasToolbarItem(BitPdfToolbarItems.FirstLastPage))
                     {
                         <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
@@ -125,15 +128,19 @@
             @if (HasToolbarItem(BitPdfToolbarItems.Zoom))
             {
                 <div class="bit-pdv-group">
-                    <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.ZoomOut" aria-label="@ActiveTexts.ZoomOut" aria-keyshortcuts="@Shortcut("Control+Minus")" @onclick="ZoomOut" disabled="@(_pages.Count == 0)">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
-                    </button>
-                    <span class="bit-pdv-zoom" aria-live="polite">@ZoomPresetLabel(Zoom)</span>
-                    <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.ZoomIn" aria-label="@ActiveTexts.ZoomIn" aria-keyshortcuts="@Shortcut("Control+Plus Control+Equal")" @onclick="ZoomIn" disabled="@(_pages.Count == 0)">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-                    </button>
+                    @* Zoom is a magnitude, not a reading direction: smaller stays on the left and
+                       larger on the right whichever way the toolbar runs. *@
+                    <div class="bit-pdv-ltr">
+                        <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
+                                title="@ActiveTexts.ZoomOut" aria-label="@ActiveTexts.ZoomOut" aria-keyshortcuts="@Shortcut("Control+Minus")" @onclick="ZoomOut" disabled="@(_pages.Count == 0)">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                        </button>
+                        <span class="bit-pdv-zoom" aria-live="polite">@ZoomPresetLabel(Zoom)</span>
+                        <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
+                                title="@ActiveTexts.ZoomIn" aria-label="@ActiveTexts.ZoomIn" aria-keyshortcuts="@Shortcut("Control+Plus Control+Equal")" @onclick="ZoomIn" disabled="@(_pages.Count == 0)">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                        </button>
+                    </div>
                     <select class="bit-pdv-select" aria-label="@ActiveTexts.ZoomLevel" @onchange="OnFitChanged"
                             @onkeydown:stopPropagation="true" disabled="@(_pages.Count == 0)">
                         @if (_zoomMode == BitPdfZoomMode.Custom)

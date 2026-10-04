@@ -324,6 +324,15 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     color: $clr-fg-sec;
 }
 
+// The page navigation and zoom out / the level / zoom in step through numbers, which read left to right, in a
+// right-to-left viewer too.
+.bit-pdv-ltr {
+    display: flex;
+    direction: ltr;
+    gap: spacing(0.5);
+    align-items: center;
+}
+
 .bit-pdv-zoom {
     text-align: center;
     min-width: spacing(5.5);

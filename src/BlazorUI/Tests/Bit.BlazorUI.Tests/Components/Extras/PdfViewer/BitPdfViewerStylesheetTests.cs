@@ -100,6 +100,14 @@ public partial class BitPdfViewerStylesheetTests
     }
 
     [TestMethod]
+    public void BitPdfViewerRtlToolbarShouldKeepThePageAndZoomStepsLeftToRight()
+    {
+        // Page navigation and the zoom pair step through numbers, which read left to right in either direction:
+        // previous and zoom out on the left, next and zoom in on the right.
+        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-pdv-ltr {"), "direction: ltr;");
+    }
+
+    [TestMethod]
     public void BitPdfViewerShouldKeepThePagesAndTheStatesUnderAForcedPalette()
     {
         var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
