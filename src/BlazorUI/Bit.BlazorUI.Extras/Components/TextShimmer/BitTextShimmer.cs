@@ -37,6 +37,10 @@ public partial class BitTextShimmer : BitComponentBase
     private const string DefaultElement = "p";
     private const double DefaultSpread = 2;
 
+    // Whether the Spread was asked for, by the markup or by a BitParams, rather than left at its default value -
+    // which a value equal to that default cannot say on its own.
+    private bool _isSpreadAssigned;
+
 
 
     /// <summary>
@@ -246,8 +250,8 @@ public partial class BitTextShimmer : BitComponentBase
     /// the content is supplied using <see cref="ChildContent"/>. A negative value is treated as zero, which draws a
     /// hard edged band, and a value that is not a finite number is ignored. <see cref="SpreadLength"/> wins over it.
     /// <br />
-    /// Left at the default, the computed spread gives way to a "--bit-TextShimmer-spread" set by a class, an ancestor
-    /// or ":root"; any other value wins over that variable.
+    /// Left unset, the computed spread gives way to a "--bit-TextShimmer-spread" set by a class, an ancestor or
+    /// ":root"; any value that is set, directly or through <see cref="BitParams"/>, wins over that variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public double Spread { get; set; } = DefaultSpread;
@@ -330,14 +334,16 @@ public partial class BitTextShimmer : BitComponentBase
             var length = ChildContent is null && Text is not null ? new StringInfo(Text).LengthInTextElements : ContentLength;
             // A spread that is not a finite number would write a length the browser refuses, and a gradient with an
             // invalid stop is no gradient at all - so it falls back to the default multiplier instead.
-            var multiplier = double.IsFinite(Spread) ? Spread : DefaultSpread;
+            var isFinite = double.IsFinite(Spread);
+            var multiplier = isFinite ? Spread : DefaultSpread;
             var spread = Math.Max(0, Math.Max(0, length) * multiplier);
 
-            // The spread the default multiplier computes is only the fallback of the public variable, which a class
-            // or an ancestor may set to restyle every shimmer at once; a multiplier that was asked for wins over it.
-            return multiplier == DefaultSpread
-                ? $"--bit-tsh-auto-spread:{Format(spread)}px"
-                : $"--bit-tsh-spread:{Format(spread)}px";
+            // The spread of an unset multiplier is only the fallback of the public variable, which a class or an
+            // ancestor may set to restyle every shimmer at once; a multiplier that was asked for wins over it, even
+            // one equal to the default. One that is ignored for not being finite counts as unset.
+            return _isSpreadAssigned && isFinite
+                ? $"--bit-tsh-spread:{Format(spread)}px"
+                : $"--bit-tsh-auto-spread:{Format(spread)}px";
         });
 
         StyleBuilder.Register(() => Duration.HasValue ? $"--bit-tsh-duration:{Ms(Duration.Value)}" : string.Empty);
@@ -366,6 +372,16 @@ public partial class BitTextShimmer : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // A BitParams supplies the Spread whenever it holds one the markup did not set, even when it equals the value
+        // the shimmer already has - in which case nothing else resets the style for it.
+        var isSpreadAssigned = HasNotBeenSet(nameof(Spread)) is false || CascadingParameters?.Spread.HasValue is true;
+        if (_isSpreadAssigned != isSpreadAssigned)
+        {
+            _isSpreadAssigned = isSpreadAssigned;
+
+            StyleBuilder.Reset();
+        }
 
         base.OnParametersSet();
     }

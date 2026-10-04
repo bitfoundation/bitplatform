@@ -110,6 +110,24 @@ public class BitTextShimmerParamsTests : BunitTestContext
         StringAssert.Contains(style, "--bit-tsh-spread:15px");
     }
 
+    // A cascaded Spread was asked for, so it wins over --bit-TextShimmer-spread even when it equals the default, and
+    // the computed spread goes back to being a fallback once the cascade stops supplying it.
+    [TestMethod]
+    public void BitTextShimmerShouldPublishACascadedDefaultSpreadOverThePublicVariable()
+    {
+        var component = RenderWithParams(new BitTextShimmerParams { Spread = 2 });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitTextShimmerParams() });
+            parameters.AddChildContent(builder => BuildShimmer(builder, null));
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+    }
+
     [TestMethod]
     public void BitTextShimmerShouldTakeTheCascadedSpreadLength()
     {

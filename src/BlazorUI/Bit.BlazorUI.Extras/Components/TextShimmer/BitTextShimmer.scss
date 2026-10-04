@@ -13,7 +13,7 @@
 //   --bit-TextShimmer-disabled-opacity  opacity of a shimmer whose IsEnabled is false   (default: $opa-dis)
 // A parameter written on the shimmer itself (BaseColor, GradientColor, Color, Spread, SpreadLength, Angle, Duration,
 // Delay, RepeatDelay, Iterations) wins over its variable: the variable restyles the default, not a choice. That is
-// why a Spread left at its default publishes the spread it computes as a fallback only (--bit-tsh-auto-spread).
+// why a Spread left unset publishes the spread it computes as a fallback only (--bit-tsh-auto-spread).
 
 // The text drawn in one flat color instead of the shimmer: the glyphs are painted by the color itself rather than
 // by a background clipped to them. It is what every place the shimmer is not animated, or cannot be painted at all,

@@ -208,7 +208,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-auto-spread:10px"));
+        Assert.IsTrue(style.Contains("--bit-tsh-spread:10px"));
     }
 
     [TestMethod]
@@ -315,10 +315,10 @@ public class BitTextShimmerTests : BunitTestContext
         }
     }
 
-    // The spread the default multiplier computes is published as the fallback of --bit-TextShimmer-spread only, so a
-    // class or an ancestor can restyle the band of every shimmer; a multiplier that was asked for wins over it.
+    // The spread of an unset multiplier is published as the fallback of --bit-TextShimmer-spread only, so a class or
+    // an ancestor can restyle the band of every shimmer; a multiplier that was asked for wins over it, even the default.
     [TestMethod,
-        DataRow(2.0, "--bit-tsh-auto-spread:10px"),
+        DataRow(2.0, "--bit-tsh-spread:10px"),
         DataRow(2.5, "--bit-tsh-spread:12.5px"),
         DataRow(1.0, "--bit-tsh-spread:5px")]
     public void BitTextShimmerShouldPublishOnlyAnExplicitSpreadOverThePublicVariable(double spread, string expected)

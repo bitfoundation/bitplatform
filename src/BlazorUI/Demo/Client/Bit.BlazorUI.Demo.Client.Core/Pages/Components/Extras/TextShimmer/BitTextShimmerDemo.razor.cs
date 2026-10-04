@@ -116,7 +116,7 @@ public partial class BitTextShimmerDemo
             Name = "Spread",
             Type = "double",
             DefaultValue = "2",
-            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it; left at the default, --bit-TextShimmer-spread does too.",
+            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it; left unset, --bit-TextShimmer-spread does too.",
         },
         new()
         {
