@@ -58,6 +58,7 @@
 }
 
 .real-project {
+    flex: 1 1 20rem;
     display: flex;
     flex-direction: column;
     gap: rem2(2px);
@@ -134,7 +135,6 @@
     .grid-item {
         overflow: auto;
         width: rem2(550px);
-        min-height: 21rem;
         position: relative;
         padding: rem2(28px);
         word-wrap: break-word;
@@ -142,34 +142,6 @@
         background-clip: padding-box;
         box-shadow: $bit-box-shadow-callout;
         background-color: $bit-color-background-primary;
-
-        &.md {
-            min-height: 24rem;
-        }
-
-        &.lg {
-            min-height: 28rem;
-        }
-
-        @include lt-xl {
-            &.md {
-                min-height: 27rem;
-            }
-
-            &.lg {
-                min-height: 33rem;
-            }
-        }
-
-        @include lt-lg {
-            &.md {
-                min-height: 30rem;
-            }
-
-            &.lg {
-                min-height: 37rem;
-            }
-        }
     }
 
     .video-container {

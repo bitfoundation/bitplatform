@@ -93,8 +93,9 @@
 
     <BitGrid Columns="2"
              VerticalSpacing="1rem"
-             HorizontalSpacing="1rem">
-        <BitGridItem Class="grid-item md">
+             HorizontalSpacing="1rem"
+             VerticalAlign="BitAlignment.Stretch">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
                 <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
@@ -107,7 +108,7 @@
             It is required to specify a name for your project.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Platforms to set up on this machine now</BitText>
             </div>
@@ -123,14 +124,14 @@
             </CodeBox>
             <BitMessage Color="BitColor.Info" Multiline>
                 This only decides what <code>bit new</code> installs and builds on this machine right now.
-                Every project has the web, Android, iOS, Windows and macOS apps, whatever you tick here.
+                Every project has the web, Android, iOS, Windows and macOS apps.
             </BitMessage>
             <br />
             The web app is always set up. Each native app needs several GB of extra build tools and makes the first build minutes longer, so the fewer you tick, the sooner the project is ready.
             Add one any time later from the project folder, e.g. <code>bit setup --platforms android</code>.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Open in</BitText>
                 <BitDropdown Placeholder="Choose an IDE" Items="@ide.Items" @bind-Value="@ide.Value" />
@@ -143,7 +144,7 @@
             so it opens without prompts. If VS Code is missing, it's installed for you.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
@@ -201,7 +202,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Multi-tenancy</BitText>
                 <BitToggle @bind-Value="multiTenant.Value" OnText="true" OffText="false" />
@@ -220,7 +221,7 @@
             </BitText>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
@@ -259,7 +260,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
                 <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
@@ -290,7 +291,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Redis</BitText>
                 <BitToggle @bind-Value="redis.Value" OnText="true" OffText="false" />
@@ -316,7 +317,7 @@
             </BitText>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Aspire</BitText>
                 <BitToggle @bind-Value="aspire.Value" OnText="true" OffText="false" />
@@ -336,7 +337,7 @@
             </BitText>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>API</BitText>
                 <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
@@ -371,7 +372,7 @@
 
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Module</BitText>
                 <BitDropdown Placeholder="Choose module" Items="@module.Items" @bind-Value="@module.Value" />
@@ -384,7 +385,7 @@
             The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank" rel="noopener">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank" rel="noopener">Sales</a>.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
@@ -411,7 +412,7 @@
             </div>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
                 <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
@@ -423,7 +424,7 @@
             Setting this parameter to True enables native push notification using firebase and APN for Androiod, iOS and macOS apps alongside with Web Push for Web Browsers.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
                 <BitToggle @bind-Value="sample.Value" OnText="true" OffText="false" />
@@ -436,7 +437,7 @@
             Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank" rel="noopener">Todo</a>.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sentry</BitText>
                 <BitToggle @bind-Value="sentry.Value" OnText="true" OffText="false" />
@@ -449,7 +450,7 @@
             seamlessly across all supported platforms.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
                 <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
@@ -463,7 +464,7 @@
             errors and informational messages.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
                 <BitToggle @bind-Value="signalR.Value" OnText="true" OffText="false" />
@@ -480,7 +481,7 @@
             Disabling this feature will affect AI Chatbot features.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
@@ -496,7 +497,7 @@
             Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Cloudflare</BitText>
                 <BitToggle @bind-Value="cloudflare.Value" OnText="true" OffText="false" />
@@ -508,7 +509,7 @@
             Integrating Cloudflare and placing your backend behind the Cloudflare CDN will significantly enhance the app's performance while reducing server load.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Google Ads</BitText>
                 <BitToggle @bind-Value="googleAds.Value" OnText="true" OffText="false" />
@@ -520,7 +521,7 @@
             Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank" rel="noopener">Demo</a>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>bit Brouter</BitText>
                 <BitToggle @bind-Value="brouter.Value" OnText="true" OffText="false" />
@@ -535,7 +536,7 @@
             It stays a drop-in replacement, so your existing <b>@@page</b> routes, layouts and authorization keep working unchanged while you opt into the advanced features where you need them.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Theme</BitText>
                 <BitDropdown Placeholder="Choose theme" Items="@theme.Items" @bind-Value="@theme.Value" />
