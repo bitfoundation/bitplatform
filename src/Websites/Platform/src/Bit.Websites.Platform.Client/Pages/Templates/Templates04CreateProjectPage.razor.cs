@@ -16,7 +16,7 @@ public partial class Templates04CreateProjectPage
     private string? lastAssistantReply;
     private bool isAssistantBusy;
     private string? copiedCommand;
-    private bool realProject;
+    private Parameter<bool> realProject = new() { Value = false, Default = false };
     private readonly List<Action> realProjectUndo = [];
 
     private string CopyButtonText => copiedCommand == GetFinalCommand().Trim() ? "Copied" : "Copy";
@@ -237,6 +237,11 @@ public partial class Templates04CreateProjectPage
             finalCommand.Append(GetThemeCommand());
         }
 
+        if (realProject.IsModified)
+        {
+            finalCommand.Append(GetRealProjectCommand());
+        }
+
         if (android || ios || macOS || windows)
         {
             finalCommand.Append(GetPlatformsCommand());
@@ -387,7 +392,7 @@ public partial class Templates04CreateProjectPage
 
     private void SetRealProject(bool value)
     {
-        realProject = value;
+        realProject.Value = value;
 
         if (value)
         {
@@ -543,6 +548,11 @@ public partial class Templates04CreateProjectPage
     private string GetThemeCommand()
     {
         return $"--theme {theme.Value} ";
+    }
+
+    private string GetRealProjectCommand()
+    {
+        return $"--realProject{(realProject.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>

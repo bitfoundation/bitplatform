@@ -61,7 +61,7 @@ source ~/.bashrc</CodeBox>
             if the machine has less than 24 GB of memory, or if the project's drive is a hard disk rather than an SSD.
             <br />
             <br />
-            Then it creates the project with a certificate of its own, initializes git with <b>develop</b> and <b>main</b>, installs the .NET workloads,
+            Then it creates the project with a certificate of its own, initializes git with <b>develop</b> and <b>main</b>, installs the build tools the apps need,
             restores the packages, builds, installs the Chromium the UI tests run in, formats the code, adds the initial EF Core migration,
             trusts the folder for VS Code and the AI coding tools, installs the VS Code extensions the project recommends, and opens it in VS Code.
             All that's left is signing in to Claude or GitHub Copilot.
@@ -77,7 +77,7 @@ source ~/.bashrc</CodeBox>
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Android, iOS, macOS and Windows apps</BitText>
-            The web app is always set up. Native apps need several GB of .NET workloads and make the first run much longer,
+            The web app is always set up. Native apps need several GB of extra build tools and make the first run much longer,
             so <code>bit new</code> asks whether to set them up now. You can add them any time later from the project folder:
             <CodeBox>bit setup --platforms android</CodeBox>
             iOS and macOS apps need a Mac with Xcode, and the Windows app needs Windows.
@@ -129,4 +129,4 @@ source ~/.bashrc</CodeBox>
     </section>
 </div>
 
-<NavigationButtons Prev="Overview" PrevUrl="/templates/overview" Next="Project structure" NextUrl="/templates/project-structure" />
+<NavigationButtons Prev="Overview" PrevUrl="/templates/overview" Next="Create project" NextUrl="/templates/create-project" />

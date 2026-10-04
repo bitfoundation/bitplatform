@@ -68,8 +68,8 @@
                       Placeholder="@(assistantMessages.Count == 0 ? "e.g. A booking app for my clinic: patients book on the web and on Android, the staff manage the calendar." : "Answer, or tell it anything else that matters.")" />
         <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Start" Wrap Class="assistant-actions">
             <div class="real-project">
-                <BitCheckbox Label="This isn't a test project, I'm creating my real one" Value="realProject" ValueChanged="(bool value) => SetRealProject(value)" />
-                <BitText Typography="BitTypography.Body2" Class="real-project-hint">Switches to PostgreSQL, S3 file storage, Redis and SignalR, wherever you haven't picked something else.</BitText>
+                <BitCheckbox Label="This isn't a test project, I'm creating my real one" Value="realProject.Value" ValueChanged="(bool value) => SetRealProject(value)" />
+                <BitText Typography="BitTypography.Body2" Class="real-project-hint">Adds <code>--realProject</code>, which keeps the project's containers running between runs so debugging starts fast, and switches to PostgreSQL, S3, Redis and SignalR (AI Chatbot) wherever you haven't picked something else.</BitText>
             </div>
             <BitButton IsEnabled="@(isAssistantBusy is false && string.IsNullOrWhiteSpace(assistantInput) is false)" OnClick="WrapHandled(SendToAssistant)">Send</BitButton>
         </BitStack>
@@ -126,7 +126,7 @@
                 Every project has the web, Android, iOS, Windows and macOS apps, whatever you tick here.
             </BitMessage>
             <br />
-            The web app is always set up. Each native app adds several GB of .NET workloads and minutes of build, so the fewer you tick, the sooner the project is ready.
+            The web app is always set up. Each native app needs several GB of extra build tools and makes the first build minutes longer, so the fewer you tick, the sooner the project is ready.
             Add one any time later from the project folder, e.g. <code>bit setup --platforms android</code>.
         </BitGridItem>
 
@@ -559,4 +559,4 @@
     </BitGrid>
 </div>
 
-<NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" Next="Run project" NextUrl="/templates/run-project" />
+<NavigationButtons Prev="Getting started" PrevUrl="/templates/getting-started" Next="Project structure" NextUrl="/templates/project-structure" />
