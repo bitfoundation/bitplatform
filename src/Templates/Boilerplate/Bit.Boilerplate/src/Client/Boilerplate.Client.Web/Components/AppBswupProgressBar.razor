@@ -56,26 +56,9 @@
                 content: var(--bit-bswup-percent-text, "");
             }
 
-    /* BswupProgress renders its update-ready button outside #bit-bswup, and Bit.Bswup positions it in
-       bit-bswup.progress.css - which this app does not load, since the splash above is its own. Without this rule the
-       button lands in the page flow under the fold once an update is waiting (AutoReload is false), where nobody sees it
-       and it adds a second scrollbar. Its visibility stays with Bswup (an inline display style), so none is set here. */
-    #bit-bswup-reload {
-        left: 50%;
-        border: none;
-        cursor: pointer;
-        position: fixed;
-        z-index: 999999999;
-        padding: 0.375rem 1rem;
-        transform: translateX(-50%);
-        top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
-        font-size: 0.875rem;
-        font-weight: 600;
-        font-family: var(--bit-tpg-font-family, "Segoe UI", sans-serif);
-        color: var(--bit-clr-pri-text, #FFFFFF);
-        background-color: var(--bit-clr-pri, #0F6CBD);
-        border-radius: var(--bit-shp-radius-button, 0.25rem);
-        box-shadow: var(--bit-shd-popup, 0 8px 16px rgba(0, 0, 0, 0.14));
+    #bit-bswup-reload,
+    #bit-bswup-reload-status {
+        display: none !important;
     }
 </style>
 

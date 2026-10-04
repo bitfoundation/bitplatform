@@ -163,7 +163,7 @@ public partial class MainLayout
             [
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell" },
-                new() { Text = "Chart", Url = "/components/chart" },
+                new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },

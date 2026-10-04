@@ -18,7 +18,7 @@ public partial class BitErrorBoundaryDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the browser focus to the error UI as it appears, once per error. An error UI drawn by ErrorTemplate or ErrorContent has no element of the boundary's to move it to.",
+            Description = "Moves the browser focus to the error UI as it appears, once per error, which then announces it in place of the alert. An error UI drawn by ErrorTemplate or ErrorContent has no element of the boundary's to move it to.",
         },
         new()
         {
@@ -105,6 +105,13 @@ public partial class BitErrorBoundaryDemo
         },
         new()
         {
+            Name = "HeadingLevel",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The heading level (1 to 6) of the title, so it fits the outline of the page while its look stays the same. Defaults to 3.",
+        },
+        new()
+        {
             Name = "HideHomeButton",
             Type = "bool",
             DefaultValue = "false",
@@ -136,7 +143,7 @@ public partial class BitErrorBoundaryDemo
             Name = "HomeText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the Home button.",
+            Description = "The text of the Home button. Defaults to \"Home\".",
         },
         new()
         {
@@ -236,14 +243,14 @@ public partial class BitErrorBoundaryDemo
             Name = "RecoverText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the Recover button.",
+            Description = "The text of the Recover button. Defaults to \"Recover\".",
         },
         new()
         {
             Name = "RefreshText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the Refresh button.",
+            Description = "The text of the Refresh button. Defaults to \"Refresh\".",
         },
         new()
         {
@@ -257,7 +264,7 @@ public partial class BitErrorBoundaryDemo
             Name = "ShowException",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the actual exception information should be shown or not.",
+            Description = "Renders the full text of the caught exception, stack trace included, in a scrolling block that can receive the keyboard focus.",
         },
         new()
         {
@@ -280,7 +287,7 @@ public partial class BitErrorBoundaryDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The header title of the boundary. Defaults to \"Oops, Something went wrong...\".",
+            Description = "The title of the default error UI. Defaults to \"Oops, Something went wrong...\", and an empty value drops the heading.",
         },
     ];
 
@@ -340,6 +347,13 @@ public partial class BitErrorBoundaryDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the root element of the BitErrorBoundary's error UI.",
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header of the BitErrorBoundary, holding the icon, the title and the message, which is the part announced as the error appears.",
                 },
                 new()
                 {
@@ -443,6 +457,102 @@ public partial class BitErrorBoundaryDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ErrorBoundary-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the error UI.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-border",
+            DefaultValue = "none",
+            Description = "Border of the error UI.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-radius",
+            DefaultValue = "--bit-shp-radius-none",
+            Description = "Corner radius of the error UI.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-padding",
+            DefaultValue = "spacing(3)",
+            Description = "Padding of the error UI.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-gap",
+            DefaultValue = "spacing(2)",
+            Description = "Room between the parts of the error UI.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-align",
+            DefaultValue = "center",
+            Description = "start, center or end: aligns the parts, their text and the footer buttons together.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-icon-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Color of the built-in illustration or of the icon.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-icon-size",
+            DefaultValue = "64px (illustration) / --bit-siz-icon-lg (icon)",
+            Description = "Size of the built-in illustration or of the icon.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-title-color",
+            DefaultValue = "--bit-clr-err-fg",
+            Description = "Color of the title.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-message-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the message.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-message-max-width",
+            DefaultValue = "560px",
+            Description = "Longest line of the message.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-exception-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the exception details block.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-exception-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of the exception details block.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-exception-font-family",
+            DefaultValue = "--bit-tpg-font-family-mono",
+            Description = "Font family of the exception details block.",
+        },
+        new()
+        {
+            Name = "--bit-ErrorBoundary-exception-max-height",
+            DefaultValue = "320px",
+            Description = "Tallest the exception details block gets before it scrolls.",
+        },
+    ];
+
+
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -486,6 +596,19 @@ public partial class BitErrorBoundaryDemo
     private BitErrorBoundary? footerBoundary;
     private BitErrorBoundary? captureBoundary;
 
+    private readonly BitErrorBoundaryParams[] errorBoundaryParams =
+    [
+        new()
+        {
+            HideIcon = true,
+            HideHomeButton = true,
+            HideRefreshButton = true,
+            Title = "This widget could not be loaded",
+            Message = "The rest of the page still works.",
+            RecoverText = "Reload the widget",
+        }
+    ];
+
 
 
     private void ThrowException()
@@ -513,348 +636,6 @@ public partial class BitErrorBoundaryDemo
     private void NavigateInPlace()
     {
         navigateCount++;
-        NavManager.NavigateTo($"/components/errorboundary?nav={navigateCount}#example11");
+        NavManager.NavigateTo($"/components/errorboundary?nav={navigateCount}#example9");
     }
-
-
-
-    private readonly string example1RazorCode = @"
-<BitErrorBoundary>
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>";
-    private readonly string example1CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example2RazorCode = @"
-<BitErrorBoundary Title=""This report could not be built""
-                  Message=""The numbers behind it are still being imported. Try again in a minute, or head back to the dashboard."">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>";
-    private readonly string example2CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example3RazorCode = @"
-<BitErrorBoundary ShowException ShowCopyButton>
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>";
-    private readonly string example3CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example4RazorCode = @"
-<BitErrorBoundary IconName=""@BitIconName.ErrorBadge"" Title=""Something went wrong"">
-    <BitButton OnClick=""ThrowException"">Throw (IconName)</BitButton>
-</BitErrorBoundary>
-
-<BitErrorBoundary Title=""Something went wrong"">
-    <ChildContent>
-        <BitButton OnClick=""ThrowException"">Throw (IconTemplate)</BitButton>
-    </ChildContent>
-    <IconTemplate>
-        <BitText Typography=""BitTypography.H2"">🛠️</BitText>
-    </IconTemplate>
-</BitErrorBoundary>
-
-<BitErrorBoundary HideIcon Title=""Something went wrong"">
-    <BitButton OnClick=""ThrowException"">Throw (HideIcon)</BitButton>
-</BitErrorBoundary>";
-    private readonly string example4CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example5RazorCode = @"
-<BitErrorBoundary HideRefreshButton
-                  HomeUrl=""/components/errorboundary""
-                  HomeText=""Back to the docs""
-                  RecoverText=""Try again"">
-    <ChildContent>
-        <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-    </ChildContent>
-    <AdditionalButtons>
-        <BitButton Variant=""BitVariant.Text"" OnClick=""() => reportedCount++"">
-            Report (@reportedCount)
-        </BitButton>
-    </AdditionalButtons>
-</BitErrorBoundary>";
-    private readonly string example5CsharpCode = @"
-private int reportedCount;
-
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example6RazorCode = @"
-<BitErrorBoundary @ref=""footerBoundary"" Title=""The upload failed"">
-    <ChildContent>
-        <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-    </ChildContent>
-    <Footer>
-        <BitButton Size=""BitSize.Small"" OnClick=""() => footerBoundary?.Recover()"">Try again</BitButton>
-        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""() => reportedCount++"">
-            Report (@reportedCount)
-        </BitButton>
-    </Footer>
-</BitErrorBoundary>";
-    private readonly string example6CsharpCode = @"
-private int reportedCount;
-private BitErrorBoundary? footerBoundary;
-
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example7RazorCode = @"
-<BitErrorBoundary>
-    <ChildContent>
-        <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-    </ChildContent>
-    <ErrorTemplate Context=""error"">
-        <BitMessage Color=""BitColor.Error"" Multiline>
-            <b>@error.Exception.Message</b>
-            <br />
-            <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""error.Recover"">Try again</BitButton>
-        </BitMessage>
-    </ErrorTemplate>
-</BitErrorBoundary>";
-    private readonly string example7CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example8RazorCode = @"
-<BitErrorBoundary OnError=""HandleError"" OnRecover=""HandleRecover"">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>
-
-<div>
-    Caught: @errorCount &nbsp;|&nbsp; Recovered: @recoverCount &nbsp;|&nbsp;
-    Last error: @(lastError ?? ""-"") &nbsp;|&nbsp; Last recovery: @(lastRecoverReason?.ToString() ?? ""-"")
-</div>";
-    private readonly string example8CsharpCode = @"
-private int errorCount;
-private int recoverCount;
-private string? lastError;
-private BitErrorBoundaryRecoverReason? lastRecoverReason;
-
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}
-
-private void HandleError(Exception exception)
-{
-    errorCount++;
-    lastError = exception.Message;
-}
-
-private void HandleRecover(BitErrorBoundaryRecoverReason reason)
-{
-    recoverCount++;
-    lastRecoverReason = reason;
-}";
-
-    private readonly string example9RazorCode = @"
-<BitErrorBoundary @ref=""captureBoundary"" ShowException>
-    <BitButton OnClick=""CaptureFromReference"">Capture through @@ref</BitButton>
-    <_BitErrorBoundaryCaptureDemo />
-</BitErrorBoundary>";
-    private readonly string example9CsharpCode = @"
-private BitErrorBoundary? captureBoundary;
-
-private void CaptureFromReference()
-{
-    captureBoundary?.Capture(new InvalidOperationException(""Captured through a component reference.""));
-}";
-    private const string example9ChildCode = @"@* A component sitting inside a BitErrorBoundary. It never holds a reference to the boundary: the
-   boundary cascades itself to its content, so a cascading parameter is all it takes to hand it an
-   exception the renderer would never have seen. *@
-
-<BitButton Variant=""BitVariant.Outline"" OnClick=""Load"">Capture through the cascade</BitButton>
-
-@code {
-    [CascadingParameter] private BitErrorBoundary? errorBoundary { get; set; }
-
-    private void Load()
-    {
-        // Nothing awaits this task, so nothing routes what it throws to the boundary above - which is
-        // exactly the case Capture exists for.
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(500);
-
-            try
-            {
-                throw new InvalidOperationException(""The data could not be loaded in the background."");
-            }
-            catch (Exception ex)
-            {
-                if (errorBoundary is not null)
-                {
-                    // Off the renderer's thread, so CaptureAsync rather than Capture.
-                    await errorBoundary.CaptureAsync(ex);
-                }
-            }
-        });
-    }
-}";
-    private readonly DemoCodeFile[] example9CodeFiles =
-    [
-        new("_BitErrorBoundaryCaptureDemo.razor", example9ChildCode),
-    ];
-
-    private readonly string example10RazorCode = @"
-<BitErrorBoundary RecoverKeys=""@(new object?[] { selectedRecord })"" HideRefreshButton HideHomeButton HideRecoverButton
-                  Title=""This record could not be shown""
-                  Message=""Pick another one and the boundary clears itself."">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>
-
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => selectedRecord = 1"">Record 1</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => selectedRecord = 2"">Record 2</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => selectedRecord = 3"">Record 3</BitButton>
-
-<div>Selected record: @selectedRecord</div>";
-    private readonly string example10CsharpCode = @"
-private int selectedRecord = 1;
-
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example11RazorCode = @"
-<BitErrorBoundary RecoverOnNavigation HideRefreshButton HideHomeButton HideRecoverButton
-                  Title=""Something went wrong""
-                  Message=""Navigate anywhere and this clears itself."">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>
-
-<BitButton Variant=""BitVariant.Outline"" OnClick=""NavigateInPlace"">Navigate</BitButton>";
-    private readonly string example11CsharpCode = @"
-[Inject] private NavigationManager NavManager { get; set; } = default!;
-
-private int navigateCount;
-
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}
-
-private void NavigateInPlace()
-{
-    navigateCount++;
-    NavManager.NavigateTo($""/components/errorboundary?nav={navigateCount}#example11"");
-}";
-
-    private readonly string example12RazorCode = @"
-<BitErrorBoundary AutoFocus ShowException
-                  ExceptionLabel=""What the server said""
-                  aria-atomic=""false""
-                  Title=""This page could not be shown""
-                  Message=""The focus is moved here as the error appears, so a keyboard is already where the way out is."">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>";
-    private readonly string example12CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example13RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<BitErrorBoundary Icon=""@BitIconInfo.Fa(""solid triangle-exclamation"")"" Title=""FontAwesome"">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>
-
-<BitErrorBoundary Icon=""@BitIconInfo.Bi(""exclamation-octagon-fill"")"" Title=""Bootstrap Icons"">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>";
-    private readonly string example13CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-
-    private readonly string example14RazorCode = @"
-<BitErrorBoundary Title=""Styles""
-                  Message=""Every part reached by name.""
-                  Styles=""@(new() { Root = ""background: linear-gradient(180deg, #7c1d1d, transparent) #240a0a; border-radius: 0.5rem"",
-                                    Title = ""color: #ffd9d9"",
-                                    Message = ""color: #ffb4b4"",
-                                    RecoverButton = new() { Root = ""border-radius: 1rem"" } })"">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>
-
-<BitErrorBoundary Title=""Classes""
-                  Message=""Every part reached by name.""
-                  Classes=""@(new() { Root = ""custom-erb"", Title = ""custom-erb-ttl"", RecoverButton = new() { Root = ""custom-erb-btn"" } })"">
-    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
-</BitErrorBoundary>";
-    private readonly string example14CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
-    private const string example14ScssCode = @"::deep {
-    .custom-erb {
-        border-radius: 0.5rem;
-        background: linear-gradient(180deg, #3e0f0f, transparent) #000;
-    }
-
-    .custom-erb-ttl {
-        color: #ff9d9d;
-        letter-spacing: 0.05rem;
-    }
-
-    .custom-erb-btn {
-        color: #fff;
-        border-radius: 1rem;
-        border-color: #8f0101;
-        transition: background-color 1s;
-        background: linear-gradient(90deg, #d10000, transparent) #8f0101;
-    }
-
-    .custom-erb-btn:hover {
-        color: #fff;
-        border-color: #8f0101;
-        background-color: #8f0101;
-    }
-}";
-    private readonly DemoCodeFile[] example14CodeFiles =
-    [
-        new("BitErrorBoundaryDemo.razor.scss", example14ScssCode),
-    ];
-
-    private readonly string example15RazorCode = @"
-<div dir=""rtl"">
-    <BitErrorBoundary Dir=""BitDir.Rtl""
-                      Title=""اوه، مشکلی پیش آمد...""
-                      Message=""لطفاً دوباره تلاش کنید یا به صفحه اصلی بازگردید.""
-                      HomeText=""خانه""
-                      RefreshText=""بارگذاری مجدد""
-                      RecoverText=""تلاش دوباره""
-                      HomeUrl=""/components/errorboundary"">
-        <BitButton OnClick=""ThrowException"">ایجاد خطا</BitButton>
-    </BitErrorBoundary>
-</div>";
-    private readonly string example15CsharpCode = @"
-private void ThrowException()
-{
-    throw new Exception(""This is an exception!"");
-}";
 }

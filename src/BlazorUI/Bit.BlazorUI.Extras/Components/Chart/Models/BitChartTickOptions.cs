@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 public sealed class BitChartTickOptions
 {
     public bool Display { get; set; } = true;
-    public string Color { get; set; } = "var(--bit-clr-fg-sec, #525252)";
+    public string Color { get; set; } = "var(--bit-Chart-tick-color, var(--bit-clr-fg-sec))";
     public BitChartFont Font { get; set; } = new();
     public double Padding { get; set; } = 3;
     public double? StepSize { get; set; }

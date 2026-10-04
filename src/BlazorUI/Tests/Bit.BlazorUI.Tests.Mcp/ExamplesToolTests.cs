@@ -66,6 +66,28 @@ public class ExamplesToolTests : McpTestBase
         Assert.DoesNotContain("## Custom · ", answer, "The Custom tab came back uninvited.");
     }
 
+    /// <summary>
+    /// BitChart's tabs are features (Line, Bar, Legend, ...), not one feature set in three APIs: answering with the
+    /// first one alone would hide every other feature behind a sentence claiming the tabs are the same code.
+    /// </summary>
+    [TestMethod]
+    public async Task A_page_with_a_tab_per_feature_is_not_answered_as_a_multi_api_component()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponentExamples", new { name = "BitChart" });
+
+        using var scope = Assert.Scope();
+
+        Assert.DoesNotContain("multi-API component", answer);
+        StringAssert.Contains(answer, "## Line · ");
+        StringAssert.Contains(answer, "## Bar · ", "Only the first feature tab was answered.");
+
+        // A feature tab is still reachable by name, like an API tab is.
+        var legend = await CallAsync("GetBitBlazorUIComponentExamples", new { name = "BitChart", example = "Legend" });
+
+        StringAssert.Contains(legend, "## Legend · ");
+        Assert.DoesNotContain("## Line · ", legend);
+    }
+
     [TestMethod]
     public async Task A_tab_name_wins_over_a_section_whose_title_contains_it()
     {
