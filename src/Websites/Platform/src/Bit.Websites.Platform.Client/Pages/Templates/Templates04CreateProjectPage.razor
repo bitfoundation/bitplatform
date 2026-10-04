@@ -66,7 +66,11 @@
                       MaxLength="4000"
                       @bind-Value="assistantInput"
                       Placeholder="@(assistantMessages.Count == 0 ? "e.g. A booking app for my clinic: patients book on the web and on Android, the staff manage the calendar." : "Answer, or tell it anything else that matters.")" />
-        <BitStack Horizontal HorizontalAlign="BitAlignment.End" Class="assistant-actions">
+        <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Start" Wrap Class="assistant-actions">
+            <div class="real-project">
+                <BitCheckbox Label="This isn't a test project, I'm creating my real one" Value="realProject" ValueChanged="(bool value) => SetRealProject(value)" />
+                <BitText Typography="BitTypography.Body2" Class="real-project-hint">Switches to PostgreSQL, S3 file storage, Redis and SignalR, wherever you haven't picked something else.</BitText>
+            </div>
             <BitButton IsEnabled="@(isAssistantBusy is false && string.IsNullOrWhiteSpace(assistantInput) is false)" OnClick="WrapHandled(SendToAssistant)">Send</BitButton>
         </BitStack>
     </section>
@@ -124,7 +128,6 @@
             <br />
             The web app is always set up. Each native app adds several GB of .NET workloads and minutes of build, so the fewer you tick, the sooner the project is ready.
             Add one any time later from the project folder, e.g. <code>bit setup --platforms android</code>.
-            iOS and macOS apps need a Mac, and the Windows app needs Windows.
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">

@@ -16,6 +16,8 @@ public partial class Templates04CreateProjectPage
     private string? lastAssistantReply;
     private bool isAssistantBusy;
     private string? copiedCommand;
+    private bool realProject;
+    private readonly List<Action> realProjectUndo = [];
 
     private string CopyButtonText => copiedCommand == GetFinalCommand().Trim() ? "Copied" : "Copy";
 
@@ -381,6 +383,42 @@ public partial class Templates04CreateProjectPage
             macOS = platforms.Contains("macos");
             windows = platforms.Contains("windows");
         }
+    }
+
+    private void SetRealProject(bool value)
+    {
+        realProject = value;
+
+        if (value)
+        {
+            UseForRealProject(database, "PostgreSQL");
+            UseForRealProject(fileStorage, "S3");
+            UseForRealProject(redis, true);
+            UseForRealProject(signalR, true);
+            return;
+        }
+
+        foreach (var undo in realProjectUndo)
+        {
+            undo();
+        }
+
+        realProjectUndo.Clear();
+    }
+
+    private void UseForRealProject<T>(Parameter<T> parameter, T value)
+    {
+        if (parameter.IsModified)
+            return;
+
+        parameter.Value = value;
+        realProjectUndo.Add(() =>
+        {
+            if (EqualityComparer<T>.Default.Equals(parameter.Value, value))
+            {
+                parameter.Value = parameter.Default;
+            }
+        });
     }
 
     private sealed record AssistantMessage(bool FromUser, string Text);
