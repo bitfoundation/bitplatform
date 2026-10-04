@@ -35,7 +35,8 @@ public partial class AppJsBridge
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(disposing);
         dotnetObj?.Dispose();
+
+        await base.DisposeAsync(disposing);
     }
 }

@@ -9,6 +9,8 @@ public sealed class BitChartLegendModel
     public BitChartLegendLabelOptions Labels { get; set; } = new();
     public string? Title { get; set; }
     public bool OnClickToggle { get; set; } = true;
+    /// <summary>Whether hovering or focusing an item fades every series but its own.</summary>
+    public bool HighlightOnHover { get; set; } = true;
     /// <summary>Height cap in pixels past which the legend scrolls.</summary>
     public double? MaxHeight { get; set; }
 }

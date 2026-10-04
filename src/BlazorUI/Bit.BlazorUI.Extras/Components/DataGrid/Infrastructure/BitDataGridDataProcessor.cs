@@ -306,6 +306,23 @@ public static class BitDataGridDataProcessor
                 return value is null || string.IsNullOrEmpty(value.ToString());
             case BitDataGridFilterOperator.IsNotEmpty:
                 return value is not null && !string.IsNullOrEmpty(value.ToString());
+            case BitDataGridFilterOperator.In:
+            case BitDataGridFilterOperator.NotIn:
+            {
+                // A set operand is a list of equality criteria OR-ed together; each member goes through
+                // the same Equals path as a single value, so it is coerced and day-compared identically.
+                if (!TryGetSetMembers(filter.Value, out var members) || members.Count == 0) return true;
+                var any = false;
+                foreach (var member in members)
+                {
+                    if (Matches(value, new BitDataGridFilterDescriptor { ColumnId = filter.ColumnId, Operator = BitDataGridFilterOperator.Equals, Value = member }))
+                    {
+                        any = true;
+                        break;
+                    }
+                }
+                return filter.Operator is BitDataGridFilterOperator.In ? any : !any;
+            }
         }
 
         // An empty or whitespace-only string filter value carries no criteria, so treat it like an
@@ -392,6 +409,23 @@ public static class BitDataGridDataProcessor
             BitDataGridFilterOperator.EndsWith => text.EndsWith(term, StringComparison.OrdinalIgnoreCase),
             _ => true
         };
+    }
+
+    /// <summary>
+    /// Reads the members of a set operand (<see cref="BitDataGridFilterOperator.In"/> /
+    /// <see cref="BitDataGridFilterOperator.NotIn"/>): any enumerable other than a string. Blank string
+    /// members are dropped - like a blank single value, they carry no criterion.
+    /// </summary>
+    internal static bool TryGetSetMembers(object? value, out List<object?> members)
+    {
+        members = [];
+        if (value is null or string || value is not System.Collections.IEnumerable items) return false;
+        foreach (var item in items)
+        {
+            if (item is string s && string.IsNullOrWhiteSpace(s)) continue;
+            members.Add(item);
+        }
+        return true;
     }
 
     // Returns true (via <paramref name="equal"/>) when a DateTime/DateTimeOffset row value falls on the

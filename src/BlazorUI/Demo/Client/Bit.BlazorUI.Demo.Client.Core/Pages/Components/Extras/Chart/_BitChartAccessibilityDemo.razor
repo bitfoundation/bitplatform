@@ -1,0 +1,27 @@
+﻿@namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart
+
+<DemoExample Title="Keyboard and screen readers" RazorCode="@keyboardRazorCode" CsharpCode="@keyboardCsharpCode" Id="accessibility-keyboard">
+    <div class="example-desc">
+        Tab into the plot, then walk it: <b>Left/Right</b> move through a series, <b>Up/Down</b> between series,
+        <b>Home/End</b> jump to the ends, <b>Enter</b> raises <code>OnElementClick</code> and <b>Escape</b> leaves
+        (it also closes a tooltip the mouse opened). Each step is announced. <code>AriaLabel</code> names the chart
+        (falling back to its title), <code>Description</code> sums it up, <code>NavigationHint</code> says how to walk
+        it, and a hidden data table (<code>GenerateTable</code>) holds every value. <code>IsEnabled="false"</code>
+        takes the chart out of the tab order.
+    </div>
+    <div class="controls">
+        <BitCheckbox Label="IsEnabled" @bind-Value="_enabled" />
+    </div>
+    <div class="linked-readout">@(_selected ?? "Press Enter on a bar")</div>
+    <div class="chart-wrapper">
+        <div class="chart-container">
+            <BitChart Type="BitChartType.Bar"
+                      Data="_data"
+                      IsEnabled="_enabled"
+                      AriaLabel="Quarterly revenue by region"
+                      Description="North leads every quarter and both regions peak in Q4."
+                      NavigationHint="Use the arrow keys to compare regions and quarters, Enter to select one."
+                      OnElementClick="Select" />
+        </div>
+    </div>
+</DemoExample>

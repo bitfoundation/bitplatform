@@ -13,10 +13,16 @@ public sealed class BitChartTooltipOptions
 
     /// <summary>Where the tooltip is anchored when multiple items are active.</summary>
     public BitChartTooltipPositioner Position { get; set; } = BitChartTooltipPositioner.Average;
-    public string BackgroundColor { get; set; } = "rgba(0,0,0,0.8)";
-    public string TitleColor { get; set; } = "#fff";
-    public string BodyColor { get; set; } = "#fff";
-    public string FooterColor { get; set; } = "#fff";
+    /// <summary>Fill of the tooltip box (and its caret). Defaults to the theme's tooltip surface.</summary>
+    public string BackgroundColor { get; set; } = "var(--bit-Chart-tooltip-background, var(--bit-clr-tooltip-bg))";
+    /// <summary>Color of the tooltip title. Defaults to the theme's tooltip text color.</summary>
+    public string TitleColor { get; set; } = DefaultTextColor;
+    /// <summary>Color of the tooltip body lines. Defaults to the theme's tooltip text color.</summary>
+    public string BodyColor { get; set; } = DefaultTextColor;
+    /// <summary>Color of the tooltip footer. Defaults to the theme's tooltip text color.</summary>
+    public string FooterColor { get; set; } = DefaultTextColor;
+
+    private const string DefaultTextColor = "var(--bit-Chart-tooltip-color, var(--bit-clr-tooltip-fg))";
     public BitChartFont TitleFont { get; set; } = new() { Weight = "bold" };
     public BitChartFont BodyFont { get; set; } = new();
     public BitChartFont FooterFont { get; set; } = new() { Weight = "bold" };
@@ -28,7 +34,11 @@ public sealed class BitChartTooltipOptions
     /// returns prose wants a width here.
     /// </summary>
     public double? MaxWidth { get; set; }
-    public double CornerRadius { get; set; } = 6;
+    /// <summary>
+    /// Corner radius of the tooltip box in pixels. Null (the default) follows the theme's popup radius,
+    /// read through the public <c>--bit-Chart-tooltip-radius</c> custom property.
+    /// </summary>
+    public double? CornerRadius { get; set; }
     public bool DisplayColors { get; set; } = true;
     /// <summary>Render the color swatch using the dataset point style instead of a square.</summary>
     public bool UsePointStyle { get; set; }

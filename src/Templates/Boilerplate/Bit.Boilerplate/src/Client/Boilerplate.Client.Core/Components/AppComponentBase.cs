@@ -274,16 +274,16 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         if (disposed) return;
         disposed = true;
 
+        using var currentCts = cts;
+        cts = null;
+
         try
         {
-            if (cts != null)
-            {
-                using var currentCts = cts;
-                cts = null;
-                await currentCts.TryCancel();
-            }
+            var cancellation = currentCts?.TryCancel() ?? Task.CompletedTask;
 
             await DisposeAsync(true);
+
+            await cancellation;
         }
         finally
         {
