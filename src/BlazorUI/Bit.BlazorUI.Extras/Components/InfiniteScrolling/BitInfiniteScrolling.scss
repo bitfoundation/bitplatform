@@ -44,10 +44,6 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     > .bit-isc-btn {
         order: -1;
     }
-
-    > .bit-isc-btn {
-        align-self: center;
-    }
 }
 
 // The horizontal mode scrolls sideways, so the list lays its items out in a row and the sentinel becomes a
@@ -76,9 +72,15 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
         margin-inline: $isc-ring-room;
     }
 
-    // An article is as wide as its content, like any other item of a row.
-    > .bit-isc-art {
-        flex: 0 0 auto;
+    // The box of a feed lays its articles out in the same row, and each article is as wide as its content, like
+    // any other item of a row.
+    > .bit-isc-fed {
+        display: flex;
+        flex-direction: row;
+
+        > .bit-isc-art {
+            flex: 0 0 auto;
+        }
     }
 
     // The sentinel is as tall as the row, and never thinner than the pixel the observer needs to see.
@@ -100,24 +102,28 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     display: contents;
 }
 
+// The box of the Feed mode's role, which holds the articles and nothing else. Like the articles it has to be a
+// box rather than display:contents, which cannot be relied on to keep a role; it is never squeezed by the flex
+// line of a reversed or horizontal list either.
+.bit-isc-fed {
+    flex: 0 0 auto;
+}
+
 // The article of the Feed mode. It has to be a box: an element laid out with display:contents can neither
-// take the focus nor be relied on to keep its role. The indicator is drawn inside the article, since the
-// scroller around it would clip a ring drawn outside.
+// take the focus nor be relied on to keep its role. The indicator is an outline drawn inside the article, since
+// the scroller around it would clip a ring drawn outside - and an outline, unlike an inset box-shadow, is painted
+// above the article's content, so an item whose root fills the article with a background cannot hide it.
 .bit-isc-art {
     display: block;
     box-sizing: border-box;
 
-    &:focus {
-        outline: none;
-    }
-
     &:focus-visible {
-        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus});
+        outline: #{$shp-focus-ring-width} solid var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus});
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
-        // Box-shadows are stripped in forced-colors mode, so the ring becomes a real outline there.
+        // The forced palette turns the ring into the system's own focus color.
         @media (forced-colors: active) {
             outline: #{$shp-focus-ring-width} solid Highlight;
-            outline-offset: calc(-1 * #{$shp-focus-ring-width});
         }
     }
 }
@@ -161,18 +167,13 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     color: var(--bit-InfiniteScrolling-status-color, #{$clr-fg-sec});
 }
 
-// The spinner sits beside the loading text, so the block lays its two parts out on one line, aligned the
-// same way as the text of every other status block.
-.bit-isc-ldg {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--bit-InfiniteScrolling-status-gap, #{spacing(1)});
-    justify-content: var(--bit-InfiniteScrolling-status-text-align, center);
-}
-
+// The spinner sits inline before the loading text, so the loading block wraps and aligns its two parts as text,
+// the way every other status block does - under any value of the text-align variable, which is not always one
+// that a flex alignment would take.
 .bit-isc-spn {
-    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: var(--bit-InfiniteScrolling-status-gap, #{spacing(1)});
     border-radius: 50%;
     box-sizing: border-box;
     width: var(--bit-InfiniteScrolling-spinner-size, #{$siz-icon-md});
@@ -273,8 +274,13 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
         overflow: visible !important;
     }
 
-    .bit-isc-hor {
+    .bit-isc-hor,
+    .bit-isc-hor > .bit-isc-fed {
         flex-wrap: wrap;
+    }
+
+    .bit-isc-hor > .bit-isc-fed {
+        flex-shrink: 1;
     }
 
     .bit-isc-ldg,

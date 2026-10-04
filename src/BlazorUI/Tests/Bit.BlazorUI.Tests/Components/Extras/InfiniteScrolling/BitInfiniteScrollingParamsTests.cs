@@ -119,7 +119,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        Assert.AreEqual("feed", root.GetAttribute("role"));
+        Assert.AreEqual("feed", component.Find(".bit-isc-fed").GetAttribute("role"));
         Assert.AreEqual(4, requests[0].Count);
 
         var button = component.Find(".bit-isc-btn");

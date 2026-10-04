@@ -82,6 +82,9 @@ namespace BitBlazorUI {
         // the whole document at all times, so every page would be requested at once.
         private static readonly VIEWPORT_SELECTORS = ['window', 'document', 'body', 'html', ':root'];
 
+        // The input types that hold no text to edit. Every other one has a caret its own Ctrl+Home / Ctrl+End move.
+        private static readonly NON_TEXT_INPUTS = ['button', 'checkbox', 'color', 'file', 'image', 'radio', 'range', 'reset', 'submit'];
+
         private static readonly FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), iframe, summary, [contenteditable=""], [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
 
         private _observer: IntersectionObserver;
@@ -308,15 +311,24 @@ namespace BitBlazorUI {
 
         // The keyboard of the WAI-ARIA feed pattern. Page Down / Page Up move between the articles from wherever
         // the focus is inside one, and Ctrl+End / Ctrl+Home leave the feed for the first focusable element after
-        // or before it - the way out of a list that may never end.
+        // or before it - the way out of a list that may never end. A key an inner handler has already used (the
+        // feed nested in an article of this one, above all) is left alone.
         private _onFeedKeydown(e: KeyboardEvent) {
-            if (this._disposed || e.altKey || e.metaKey) return;
+            if (this._disposed || e.defaultPrevented || e.altKey || e.metaKey) return;
 
             const articles = this._articles();
             if (articles.length === 0) return;
 
             const target = e.target as Element | null;
+
+            // Every one of these keys belongs to a control that edits text of its own: Ctrl+Home / Ctrl+End move its
+            // caret to the start or the end, Page Up / Page Down scroll it.
+            if (InfiniteScrollingInstance._editsText(target)) return;
+
+            // The keys belong to the feed only while the focus is in one of its articles: the button beside them is
+            // already outside it, and Ctrl+End there would only find the button itself.
             const current = articles.findIndex(a => a === target || a.contains(target));
+            if (current < 0) return;
 
             if (e.ctrlKey && (e.key === 'End' || e.key === 'Home')) {
                 const outside = this._focusableOutside(e.key === 'End');
@@ -327,10 +339,7 @@ namespace BitBlazorUI {
                 return;
             }
 
-            if (e.ctrlKey || e.shiftKey || current < 0) return;
-
-            // Page Up / Page Down belong to a control that scrolls text of its own.
-            if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || (target as HTMLElement | null)?.isContentEditable) return;
+            if (e.ctrlKey || e.shiftKey) return;
 
             let next = -1;
             if (e.key === 'PageDown') {
@@ -350,15 +359,36 @@ namespace BitBlazorUI {
             }
         }
 
-        private _articles(): HTMLElement[] {
-            return Array.from(this._rootElement.children).filter(c => c.classList.contains('bit-isc-art')) as HTMLElement[];
+        private static _editsText(target: Element | null): boolean {
+            if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true;
+
+            if (target instanceof HTMLInputElement) return InfiniteScrollingInstance.NON_TEXT_INPUTS.indexOf(target.type) < 0;
+
+            return (target as HTMLElement | null)?.isContentEditable === true;
         }
 
-        private _focusableOutside(after: boolean): HTMLElement | null {
-            const all = Array.from(document.querySelectorAll<HTMLElement>(InfiniteScrollingInstance.FOCUSABLE))
-                .filter(el => !this._rootElement.contains(el) && el.getClientRects().length > 0);
+        // The box of the feed role, which holds the articles and nothing else.
+        private _feedElement(): HTMLElement | null {
+            return Array.from(this._rootElement.children).find(c => c.classList.contains('bit-isc-fed')) as HTMLElement | undefined ?? null;
+        }
 
-            const position = (el: HTMLElement) => this._rootElement.compareDocumentPosition(el);
+        private _articles(): HTMLElement[] {
+            const feed = this._feedElement();
+            if (!feed) return [];
+
+            return Array.from(feed.children).filter(c => c.classList.contains('bit-isc-art')) as HTMLElement[];
+        }
+
+        // What is outside the feed is outside the box of its role, so the Load more / Retry button the root renders
+        // after the articles is the first stop after them rather than skipped over.
+        private _focusableOutside(after: boolean): HTMLElement | null {
+            const feed = this._feedElement();
+            if (!feed) return null;
+
+            const all = Array.from(document.querySelectorAll<HTMLElement>(InfiniteScrollingInstance.FOCUSABLE))
+                .filter(el => !feed.contains(el) && el.getClientRects().length > 0);
+
+            const position = (el: HTMLElement) => feed.compareDocumentPosition(el);
 
             if (after) {
                 return all.find(el => (position(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) ?? null;

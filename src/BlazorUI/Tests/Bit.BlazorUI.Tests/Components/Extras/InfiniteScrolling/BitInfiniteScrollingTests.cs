@@ -1036,6 +1036,48 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitInfiniteScrollingReversedShouldAnchorTheScrollBeforeTheAutoLoadLimitRebuildsTheObserver()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.AutoLoadLimit, 2);
+        });
+
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.scrollTo"));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count);
+
+        // Held open, so what has run by the time the scroll is restored can be told apart from what runs after.
+        var restore = Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.restoreScroll", _ => true);
+
+        // The page that uses up the limit is prepended AND switches the list to its button, which rebuilds the
+        // JS instance - the one holding the geometry recorded before the prepend.
+        _ = component.InvokeAsync(() => component.Instance._LoadMoreItems());
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, restore.Invocations.Count));
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.prepareScroll");
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count,
+                        "The rebuild drops the geometry before the scroll is restored from it.");
+
+        await component.InvokeAsync(() => restore.SetVoidResult());
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(10, component.Instance.Items.Count);
+            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Count);
+        });
+
+        // The rebuilt instance does not watch the sentinel of a list that now waits for its button.
+        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.InfiniteScrolling.setup"].Last().Arguments[7]);
+    }
+
+    [TestMethod]
     public void BitInfiniteScrollingShouldKeepLoadingWhenTheProviderResultSaysThereIsMore()
     {
         // The page is shorter than the requested count, which would end the list on its own; the result says

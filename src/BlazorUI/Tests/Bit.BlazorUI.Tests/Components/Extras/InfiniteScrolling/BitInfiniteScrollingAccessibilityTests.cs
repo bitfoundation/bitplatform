@@ -56,7 +56,8 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll("article").Count));
 
-        Assert.AreEqual("feed", component.Find(".bit-isc").GetAttribute("role"));
+        Assert.AreEqual("feed", component.Find(".bit-isc > .bit-isc-fed").GetAttribute("role"));
+        Assert.AreEqual(5, component.FindAll(".bit-isc-fed > article").Count);
 
         var articles = component.FindAll("article");
 
@@ -69,6 +70,35 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
             Assert.AreEqual("-1", articles[i].GetAttribute("aria-setsize"));
             Assert.AreEqual($"Item {i}", articles[i].TextContent.Trim());
         }
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingFeedShouldOwnNothingButItsArticles()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Manual, true);
+            parameters.Add(p => p.Feed, true);
+            parameters.Add(p => p.AriaLabel, "Products");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.FindAll("article").Count));
+
+        var root = component.Find(".bit-isc");
+        var feed = component.Find(".bit-isc-fed");
+
+        // The AriaLabel names the feed, and the root - a generic again - is left without a name of its own.
+        Assert.AreEqual("Products", feed.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+
+        // The button sits beside the feed, never inside it, where ARIA expects nothing but articles.
+        Assert.IsTrue(feed.Children.All(c => c.TagName == "ARTICLE"));
+        Assert.AreEqual(0, feed.QuerySelectorAll(".bit-isc-btn").Length);
+        Assert.AreEqual(1, component.FindAll(".bit-isc > .bit-isc-btn").Count);
     }
 
     [TestMethod]
@@ -395,8 +425,32 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.AppendItemsAsync([100]));
 
+        // The edit is the last thing that happened to the list, so the page before it is not announced again.
         Assert.AreEqual(6, component.Instance.Items.Count);
-        Assert.AreEqual("5 more items, 5 in all", component.Find(".bit-isc-sts").TextContent);
+        Assert.AreEqual("", component.Find(".bit-isc-sts").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingShouldNotReannounceALoadedPageWhenAnEditReopensTheList()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 10);
+            parameters.Add(p => p.MaxItems, 10);
+            parameters.Add(p => p.Manual, true);
+            parameters.Add(p => p.LoadedMessage, "{0} more items loaded.");
+            parameters.Add(p => p.EndMessage, "No more items.");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("10 more items loaded. No more items.", component.Find(".bit-isc-sts").TextContent));
+
+        await component.InvokeAsync(() => component.Instance.RemoveItemAsync(0));
+
+        // The removal reopens the capped list, so the end message goes - and nothing was fetched to announce.
+        Assert.IsTrue(component.Instance.HasMore);
+        Assert.AreEqual("", component.Find(".bit-isc-sts").TextContent);
     }
 
     [TestMethod]

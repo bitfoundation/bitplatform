@@ -72,8 +72,29 @@ public partial class BitInfiniteScrollingStylesheetTests
         // A button with no box of its own would read as plain text in a forced palette.
         StringAssert.Contains(forced, "border: $shp-border-width $shp-border-style ButtonText;");
 
-        // The ring of a feed's article is a box-shadow, which forced colors strip.
+        // The ring of a feed's article becomes the system's own focus color.
         StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-isc-art {"), "outline: #{$shp-focus-ring-width} solid Highlight;");
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingFeedArticleShouldDrawItsRingAboveItsContent()
+    {
+        var article = Block(ReadStylesheet(), "\n.bit-isc-art {");
+
+        // An inset box-shadow is painted under the article's children, so an item with a background would hide it.
+        Assert.IsFalse(article.Contains("box-shadow"), "The ring of an article is a box-shadow, which its content covers.");
+        StringAssert.Contains(article, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldAlignTheLoadingBlockAsText()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The text-align variable takes values (justify, match-parent) that a flex alignment rejects.
+        Assert.IsFalse(stylesheet.Contains("justify-content: var(--bit-InfiniteScrolling-status-text-align"),
+                       "The text-align variable is read as a flex alignment.");
+        StringAssert.Contains(Block(stylesheet, "\n.bit-isc-spn {"), "display: inline-block;");
     }
 
     [TestMethod]

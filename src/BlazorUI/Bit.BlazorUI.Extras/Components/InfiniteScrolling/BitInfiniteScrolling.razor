@@ -18,7 +18,7 @@
    plain attribute wins over them - and a null name never removes the one it wrote. *@
 <div @ref="RootElement"
      role="@_Role"
-     aria-label="@AriaLabel"
+     aria-label="@(Feed ? null : AriaLabel)"
      @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -29,27 +29,22 @@
     @if (template is not null && Feed)
     {
         @* The feed pattern of WAI-ARIA: every item is an article the keyboard can land on, placed in the set it
-           belongs to - whose size is unknown (-1) for as long as more of it can still arrive. *@
+           belongs to - whose size is unknown (-1) for as long as more of it can still arrive. A feed owns nothing
+           but its articles, so the role is carried by a box of its own that the status blocks and the button stay
+           out of. A null key is no key at all, so one article serves both the keyed and the unkeyed feed. *@
         var setSize = _feedSetSize;
         var offset = _feedPositionOffset;
-        for (var i = 0; i < _items.Count; i++)
-        {
-            var item = _items[i];
-            if (ItemKey is null)
+        var itemClass = GetItemClass();
+        <div class="bit-isc-fed" role="feed" aria-label="@AriaLabel" aria-busy="@(_isLoading ? "true" : "false")">
+            @for (var i = 0; i < _items.Count; i++)
             {
-                <article class="@GetItemClass()" style="@Styles?.Item" tabindex="0" aria-label="@ItemAriaLabel?.Invoke(item)"
+                var item = _items[i];
+                <article @key="ItemKey?.Invoke(item)" class="@itemClass" style="@Styles?.Item" tabindex="0" aria-label="@ItemAriaLabel?.Invoke(item)"
                          aria-posinset="@(offset + i + 1)" aria-setsize="@setSize">
                     @template(item)
                 </article>
             }
-            else
-            {
-                <article @key="ItemKey(item)" class="@GetItemClass()" style="@Styles?.Item" tabindex="0" aria-label="@ItemAriaLabel?.Invoke(item)"
-                         aria-posinset="@(offset + i + 1)" aria-setsize="@setSize">
-                    @template(item)
-                </article>
-            }
-        }
+        </div>
     }
     else if (template is not null)
     {
