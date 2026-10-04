@@ -704,10 +704,14 @@ namespace BitBlazorUI {
             // behavior is preserved because preventDefault is intentionally not called. This is checked
             // before the cell-target branch below, which only matches when the cell itself is focused.
             // The grid's own editors (.bit-dtg-editor) are the exception: their Enter commits and their other
-            // keys are ignored by the editing cell, so they bubble on to it.
+            // keys are ignored by the editing cell, so they bubble on to it. So is a row's reorder handle for
+            // ArrowUp/ArrowDown: they are its own keys, handled by its @onkeydown (BitDataGridRow's
+            // HandleReorderKeyDown), which stopping them here would never reach; their scrolling default is
+            // cancelled by the reorder guard above, and the row's own handler takes only Enter/Space.
             const ownerCell = target.closest('.bit-dtg-cell') as HTMLElement | null;
             if (ownerCell && ownerCell !== target && nestedControlKeys.has(e.key) && isSelfManagedCellKeyControl(target)
-                && !target.classList.contains('bit-dtg-editor')) {
+                && !target.classList.contains('bit-dtg-editor')
+                && !((e.key === 'ArrowUp' || e.key === 'ArrowDown') && target.classList.contains('bit-dtg-drag-handle'))) {
                 e.stopPropagation();
                 return;
             }
