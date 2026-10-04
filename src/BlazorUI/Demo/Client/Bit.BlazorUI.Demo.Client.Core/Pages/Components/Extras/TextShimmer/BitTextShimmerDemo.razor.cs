@@ -123,7 +123,7 @@ public partial class BitTextShimmerDemo
             Name = "SpreadLength",
             Type = "string?",
             DefaultValue = "null",
-            Description = "An explicit CSS length for the spread of the band, which replaces the one computed from Spread and the character count. A font-relative length (em, ch) follows the size of the text without counting its characters.",
+            Description = "An explicit CSS length for the spread of the band, which replaces the one computed from Spread and the character count. A font-relative length (em, ch) follows the size of the text without counting its characters, which is also what a text wrapping over several lines needs.",
         },
         new()
         {
