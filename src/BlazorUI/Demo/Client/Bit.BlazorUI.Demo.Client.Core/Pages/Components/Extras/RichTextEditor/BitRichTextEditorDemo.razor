@@ -7,7 +7,7 @@
 
 <div>
     <DemoPage Name="RichTextEditor"
-              Description="A native WYSIWYG editor whose HTML you two-way bind with Value. Its toolbar is a flags enum of groups you can reorder and extend; every byte in and out passes an allowlist sanitizer; and markdown typing rules, a slash menu, mentions, keyboard chords, counting, localization and EditForm validation are built in. The toolbar, panels and menus follow the keyboard and ARIA patterns of their roles."
+              Description="A native WYSIWYG editor whose HTML you two-way bind with Value. Its toolbar is a flags enum of groups you can reorder and extend; every byte in and out passes an allowlist sanitizer; and markdown typing rules, a slash menu, mentions, keyboard chords, counting, localization and EditForm validation are built in. The toolbar, panels and menus follow the keyboard and ARIA patterns of their roles, and Alt+0 lists every shortcut."
               Parameters="componentParameters"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
@@ -86,7 +86,8 @@
             <DemoExample Title="Custom toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>
                     <b>ToolbarConfig.CustomItems</b> adds your own buttons (an Id, a Label or Icon, and an
-                    <b>OnActivate</b> that receives the editor); a throwing one is reported through <b>OnError</b>.
+                    <b>OnActivate</b> that receives the editor); <b>IsActive</b> gives one a pressed state read off the
+                    caret, and a throwing one is reported through <b>OnError</b>.
                     <b>ToolbarConfig.Order</b> pulls the listed ids (<b>BitRichTextEditorToolbarConfig.GroupIds</b> or
                     yours) to the front.
                 </div>
@@ -128,7 +129,8 @@
             <DemoExample Title="Images" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>
                     Insert by URL with alternative text, or drop and paste files. <b>OnImageUpload</b> persists the bytes and
-                    returns the URL (null cancels); without it images are inlined as data URLs. Types and size
+                    returns the URL (null cancels), the editor showing and announcing the upload meanwhile; without it images
+                    are inlined as data URLs. Types and size
                     (<b>MaxImageSize</b>, 10 MB by default; 2 MB here) are checked on both sides. A dropped image arrives with
                     empty alt text (a file name describes nothing) and the editor says so; select it and the panel edits its
                     source, alt text and width. It also floats left, center or right and resizes by its handle.
@@ -229,7 +231,9 @@
                 <div>
                     Built in: Ctrl/Cmd+B, I, U, E (code), K (link), Shift+X (strike), Shift+7/8/9 (lists), Z/Y (history)
                     and \ (clear formatting). <b>KeyboardShortcuts</b> maps more chords (use "ctrl" for the primary key) to
-                    a command or a paragraph format; what a chord is bound to is what its button announces.
+                    a command or a paragraph format; what a chord is bound to is what its button announces. Alt+0 (or the
+                    <b>Help</b> group) lists every key the editor answers to, custom chords included, and the surface tells a
+                    screen reader so.
                 </div>
                 <br />
                 <div>
@@ -243,7 +247,7 @@
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="shortcutHtml" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
+                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link | BitRichTextEditorToolbar.Help"
                                    KeyboardShortcuts="shortcuts" />
             </DemoExample>
 

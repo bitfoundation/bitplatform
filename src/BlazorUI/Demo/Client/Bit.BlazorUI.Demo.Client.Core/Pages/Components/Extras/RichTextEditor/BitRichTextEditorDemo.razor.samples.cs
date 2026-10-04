@@ -31,11 +31,11 @@ private int changeCount;";
     private readonly string example5RazorCode = @"
 <BitRichTextEditor @bind-Value=""customHtml"" ToolbarConfig=""customConfig"" Height=""8rem"" />";
     private readonly string example5CsharpCode = @"
-private string? customHtml = ""<p>The inline group comes first, and the custom 'Today' button inserts the date.</p>"";
+private string? customHtml = ""<p>The inline group comes first, 'Today' inserts the date and 'Callout' toggles a quote.</p>"";
 
 private readonly BitRichTextEditorToolbarConfig customConfig = new()
 {
-    Order = [BitRichTextEditorToolbarConfig.GroupIds.Inline, ""insert-date""],
+    Order = [BitRichTextEditorToolbarConfig.GroupIds.Inline, ""insert-date"", ""callout""],
     CustomItems =
     [
         new()
@@ -44,6 +44,13 @@ private readonly BitRichTextEditorToolbarConfig customConfig = new()
             Label = ""Today"",
             AriaLabel = ""Insert today's date"",
             OnActivate = editor => editor.InsertTextAsync(DateTime.Now.ToString(""yyyy-MM-dd""))
+        },
+        new()
+        {
+            Id = ""callout"",
+            Label = ""Callout"",
+            IsActive = state => state.Block == ""blockquote"",
+            OnActivate = editor => editor.ExecuteCommandAsync(""formatBlock"", editor.SelectionState.Block == ""blockquote"" ? ""p"" : ""blockquote"")
         }
     ]
 };";
@@ -92,12 +99,13 @@ private void HandleLinkHtmlChanged(string? value)
 private string? imageHtml = ""<p>Images can sit inline with text.</p>"";
 private string? lastUpload;
 
-private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
+private async Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
 {
     lastUpload = $""{image.FileName} ({image.ContentType}, {image.Content.Length:N0} bytes)"";
-    // Upload the bytes to your storage here and return the public URL (or null to cancel).
-    var dataUrl = $""data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}"";
-    return Task.FromResult<string?>(dataUrl);
+    // Upload the bytes to your storage here and return the public URL (or null to cancel);
+    // the delay stands in for that round trip, while the editor shows it is uploading.
+    await Task.Delay(1500);
+    return $""data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}"";
 }";
 
     private readonly string example9RazorCode = @"
@@ -163,10 +171,10 @@ private readonly BitRichTextEditorSanitizationPolicy sanitizationPolicy = new()
 
     private readonly string example15RazorCode = @"
 <BitRichTextEditor @bind-Value=""shortcutHtml"" Height=""8rem""
-                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
+                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link | BitRichTextEditorToolbar.Help""
                    KeyboardShortcuts=""shortcuts"" />";
     private readonly string example15CsharpCode = @"
-private string? shortcutHtml = ""<p>Press Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L or Ctrl/Cmd+Shift+1.</p>"";
+private string? shortcutHtml = ""<p>Press Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L or Ctrl/Cmd+Shift+1, and Alt+0 to list them all.</p>"";
 
 private readonly Dictionary<string, string> shortcuts = new()
 {

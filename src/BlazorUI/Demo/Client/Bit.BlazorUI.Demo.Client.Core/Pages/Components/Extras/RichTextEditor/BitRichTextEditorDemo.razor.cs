@@ -184,7 +184,7 @@ public partial class BitRichTextEditorDemo
             Name = "OnImageUpload",
             Type = "Func<BitRichTextEditorImageUpload, Task<string?>>?",
             DefaultValue = "null",
-            Description = "Invoked to persist an image binary, returning the URL to embed. When null, dropped or pasted images are embedded as inline data URLs.",
+            Description = "Invoked to persist an image binary, returning the URL to embed. While it runs the editor shows and announces the upload (aria-busy on the surface). When null, dropped or pasted images are embedded as inline data URLs.",
             LinkType = LinkType.Link,
             Href = "#image-upload"
         },
@@ -389,6 +389,14 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "SelectionState",
+            Type = "BitRichTextEditorSelectionState",
+            Description = "The formatting under the current selection, the snapshot the toolbar highlights itself from.",
+            LinkType = LinkType.Link,
+            Href = "#selection-state"
+        },
+        new()
+        {
             Name = "SelectAllAsync",
             Type = "ValueTask",
             Description = "Selects the whole editor content."
@@ -463,13 +471,14 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Toolbar", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditor." },
                 new() { Name = "Group", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar groups of the BitRichTextEditor." },
                 new() { Name = "Button", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar buttons of the BitRichTextEditor." },
-                new() { Name = "Panel", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the tool panels (link, image, media, table, find and emoji) of the BitRichTextEditor." },
+                new() { Name = "Panel", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the tool panels (link, image, media, table, find, emoji, color and keyboard help) of the BitRichTextEditor." },
                 new() { Name = "QuickToolbar", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the floating selection toolbar of the BitRichTextEditor." },
                 new() { Name = "Menu", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the slash command and mention menus of the BitRichTextEditor." },
                 new() { Name = "Error", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the inline error banner (a failed command, link or upload) of the BitRichTextEditor." },
                 new() { Name = "Editor", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the editor (content) area of the BitRichTextEditor." },
                 new() { Name = "Source", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the HTML source view textarea of the BitRichTextEditor." },
                 new() { Name = "ErrorMessage", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the error message (the ErrorMessage parameter) of the BitRichTextEditor." },
+                new() { Name = "Footer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the footer row (holding the description and the counts) of the BitRichTextEditor." },
                 new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the description (helper text) in the footer of the BitRichTextEditor." },
                 new() { Name = "Count", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the character/word counts in the footer of the BitRichTextEditor." },
             ]
@@ -496,6 +505,7 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Text label shown when no icon is provided." },
                 new() { Name = "Icon", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional icon content." },
                 new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "Optional accessible label / tooltip. When omitted, Label is used as the accessible name." },
+                new() { Name = "IsActive", Type = "Func<BitRichTextEditorSelectionState, bool>?", DefaultValue = "null", Description = "Whether the item shows as pressed (and reports aria-pressed) for the formatting at the caret. Null makes a plain action button." },
                 new() { Name = "OnActivate", Type = "Func<BitRichTextEditor, Task>", DefaultValue = "", Description = "Action invoked when the item is activated; receives the editor instance." },
             ]
         },
@@ -645,27 +655,28 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Find", Value = "262144" },
                 new() { Name = "FullScreen", Value = "524288" },
                 new() { Name = "Direction", Value = "1048576" },
+                new() { Name = "Help", Value = "2097152" },
                 new() { Name = "All", Value = "255" },
-                new() { Name = "AllExtended", Value = "2097151" },
+                new() { Name = "AllExtended", Value = "4194303" },
             ]
         }
     ];
 
 
 
-    private readonly string readOnlyHtml = "<p>This instance is <strong>read-only</strong> with the toolbar hidden - useful for displaying stored content.</p>";
+    private readonly string readOnlyHtml = "<p>This instance is <strong>read-only</strong>.</p>";
 
-    private readonly string disabledHtml = "<p>This instance is <strong>disabled</strong>: the toolbar and the surface both refuse input.</p>";
+    private readonly string disabledHtml = "<p>This instance is <strong>disabled</strong>.</p>";
 
     private string? bindingHtml = "<p>The bound value is just a <strong>string</strong> you own.</p>";
     private int changeCount;
 
     private string? toolbarHtml = "<h2>Every group</h2><p>Scroll the page while this editor is in view: the toolbar stays pinned to the top.</p><ul class=\"bit-rte-tasks\"><li data-checked=\"true\">Try the table, emoji and find buttons</li><li data-checked=\"false\">Toggle full screen</li></ul>";
 
-    private string? customHtml = "<p>The inline group comes first, and the custom 'Today' button inserts the date.</p>";
+    private string? customHtml = "<p>The inline group comes first, 'Today' inserts the date and 'Callout' toggles a quote.</p>";
     private readonly BitRichTextEditorToolbarConfig customConfig = new()
     {
-        Order = [BitRichTextEditorToolbarConfig.GroupIds.Inline, "insert-date"],
+        Order = [BitRichTextEditorToolbarConfig.GroupIds.Inline, "insert-date", "callout"],
         CustomItems =
         [
             new()
@@ -674,6 +685,13 @@ public partial class BitRichTextEditorDemo
                 Label = "Today",
                 AriaLabel = "Insert today's date",
                 OnActivate = editor => editor.InsertTextAsync(DateTime.Now.ToString("yyyy-MM-dd"))
+            },
+            new()
+            {
+                Id = "callout",
+                Label = "Callout",
+                IsActive = state => state.Block == "blockquote",
+                OnActivate = editor => editor.ExecuteCommandAsync("formatBlock", editor.SelectionState.Block == "blockquote" ? "p" : "blockquote")
             }
         ]
     };
@@ -689,11 +707,12 @@ public partial class BitRichTextEditorDemo
 
     private string? imageHtml = "<p>Images can sit inline with text.</p>";
     private string? lastUpload;
-    private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
+    private async Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
     {
         lastUpload = $"{image.FileName} ({image.ContentType}, {image.Content.Length:N0} bytes)";
-        var dataUrl = $"data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}";
-        return Task.FromResult<string?>(dataUrl);
+        // Stands in for the round trip to a storage service, while the editor shows it is uploading.
+        await Task.Delay(1500);
+        return $"data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}";
     }
 
     private string? colorHtml = "<p>Make words <span style=\"color:#5b3df5\">colorful</span> or <span style=\"background-color:#fff3a3\">highlighted</span>, then pick a typeface.</p>";
@@ -733,7 +752,7 @@ public partial class BitRichTextEditorDemo
 
     private string? typingHtml = "<p>Type \"quotes\" -- an ellipsis... or (c) 2026, and start a new line with / or [] .</p>";
 
-    private string? shortcutHtml = "<p>Press Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L or Ctrl/Cmd+Shift+1.</p>";
+    private string? shortcutHtml = "<p>Press Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L or Ctrl/Cmd+Shift+1, and Alt+0 to list them all.</p>";
     private readonly Dictionary<string, string> shortcuts = new()
     {
         ["ctrl+shift+s"] = "strikeThrough",
