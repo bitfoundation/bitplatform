@@ -95,7 +95,8 @@ public partial class BitPdfViewerStylesheetTests
         var bar = Block(stylesheet, "\n.bit-pdv-progress-bar.bit-pdv-det {");
         StringAssert.Contains(bar, "animation: none;");
         StringAssert.Contains(bar, "transform-origin: left center;");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-rtl .bit-pdv-progress-bar.bit-pdv-det {"), "transform-origin: right center;");
+        // Mirroring the track, rather than the determinate bar's origin alone, turns the indeterminate sweep too.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-rtl .bit-pdv-progress {"), "transform: scaleX(-1);");
     }
 
     [TestMethod]

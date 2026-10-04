@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
@@ -405,5 +410,100 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         Assert.IsNotNull(empty.QuerySelector(".custom-empty"));
         Assert.IsFalse(empty.TextContent.Contains("No document loaded."));
         Assert.AreEqual(0, component.FindAll(".bit-pdv-error").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerLoadingTemplateShouldReplaceThePlaceholderWhileTheDocumentLoads()
+    {
+        // A response held open keeps the viewer loading for as long as the test needs.
+        var response = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Services.AddSingleton(new HttpClient(new HeldHandler(response.Task)) { BaseAddress = new Uri("https://localhost/") });
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromUrl("doc.pdf"));
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder =>
+                builder.AddMarkupContent(0, "<span class=\"custom-loading\">Opening</span>")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".custom-loading").Count));
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-page-loading").Count);
+        // The template replaces the placeholder, not the loading bar or the busy state.
+        Assert.AreEqual(1, component.FindAll(".bit-pdv-progress").Count);
+        Assert.AreEqual("true", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
+
+        response.SetResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(TestPdf.HelloWorld()) });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        Assert.AreEqual(0, component.FindAll(".custom-loading").Count);
+    }
+
+    private sealed class HeldHandler(Task<HttpResponseMessage> response) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => response;
+    }
+
+    [TestMethod]
+    [DataRow(true, 1)]
+    [DataRow(false, 0)]
+    public async Task BitPdfViewerShouldMoveFocusOntoTheSurfaceWhenTheFocusedSidebarCloses(bool sidebarHasFocus, int focusCalls)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.PdfViewer.sidebarHasFocus", _ => true).SetResult(sidebarHasFocus);
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        await component.InvokeAsync(() => component.Instance.OnShortcut("sidebar"));
+        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
+
+        // F4 from a thumbnail takes the panel - and the focus inside it - out of the DOM.
+        await component.InvokeAsync(() => component.Instance.OnShortcut("sidebar"));
+
+        Assert.AreEqual(BitPdfSidebar.None, component.Instance.Sidebar);
+        // Focus the reader had elsewhere (a host button, say) is not taken from them.
+        component.WaitForAssertion(() =>
+            Assert.AreEqual(before + focusCalls, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerToolbarShouldExposeTheShortcutsItHandles()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        Assert.AreEqual("Control+F", component.Find("button[aria-label='Find in document']").GetAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("Control+P", component.Find("button[aria-label='Print document']").GetAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("N J PageDown", component.Find("button[aria-label='Next page']").GetAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("F4", component.Find("button[aria-label='Page thumbnails']").GetAttribute("aria-keyshortcuts"));
+
+        // A key the viewer no longer answers to is not announced.
+        component.Render(parameters => parameters.Add(p => p.EnableKeyboardShortcuts, false));
+
+        Assert.AreEqual(0, component.FindAll("[aria-keyshortcuts]").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerPageBoxShouldBeDescribedByThePageCountInWords()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+
+        var box = component.Find(".bit-pdv-page-input");
+        var description = component.Find($"#{box.GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("3 page(s).", description.TextContent);
+        // The visible "/ 3" would be read again, as "slash three".
+        Assert.AreEqual("true", component.Find(".bit-pdv-page-total").GetAttribute("aria-hidden"));
     }
 }
