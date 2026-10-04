@@ -172,6 +172,84 @@ public class ProjectStepTests
         StringAssert.Contains(byId["restore"].FollowUp, "dotnet restore Contoso.Web.slnf");
     }
 
+    [TestMethod]
+    public void RecommendedExtensions_Should_BeReadDespiteCommentsAndRepeats()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csdevkit");
+
+        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csdevkit", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
+    }
+
+    [TestMethod]
+    public async Task VsCode_Should_GetOnlyTheExtensionsItLacks()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var code = typeof(ProjectStepTests).Assembly.Location;
+        host.Runner.Executables["code"] = code;
+        var project = CreateFakeProject(host, "Contoso");
+        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "GitHub.copilot");
+        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "github.copilot\nms-dotnettools.csdevkit\n");
+
+        var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("Installed 1 VS Code extension", result.Title);
+        var install = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "--install-extension");
+        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, install.Arguments.ToArray());
+
+        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "anthropic.claude-code\ngithub.copilot\nms-dotnettools.csdevkit\n");
+        var done = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual("Extensions already installed", done.Title);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_InstallChromiumWithTheTestsOwnDriver()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateFakeProject(host, "Contoso");
+        var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
+        Directory.CreateDirectory(Path.Combine(playwright, "package"));
+        File.WriteAllText(Path.Combine(playwright, "package", "cli.js"), "");
+        File.WriteAllText(Path.Combine(playwright, "package", "package.json"), "{ \"name\": \"playwright-core\", \"version\": \"1.57.0\" }");
+        var nodeDirectory = Directory.CreateDirectory(Path.Combine(playwright, "node", "win32_x64")).FullName;
+        File.WriteAllText(Path.Combine(nodeDirectory, "node.exe"), "");
+
+        var result = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("Playwright 1.57.0", result.Detail);
+        var call = host.Runner.Calls.Single();
+        Assert.AreEqual(Path.Combine(nodeDirectory, "node.exe"), call.FileName);
+        CollectionAssert.AreEqual(new[] { Path.Combine(playwright, "package", "cli.js"), "install", "chromium" }, call.Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_BeSkippedWithoutBuiltTestsAndInCi()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+
+        var notBuilt = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Skipped, notBuilt.Status);
+        StringAssert.Contains(notBuilt.Detail, "weren't built");
+
+        using var ci = new TestHost(variables: new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        var inCi = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).PlaywrightAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Skipped, inCi.Status);
+        Assert.IsEmpty(ci.Runner.Calls);
+    }
+
+    private static void WriteRecommendations(ProjectContext project, params string[] extensions)
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(project.Directory, ".vscode")).FullName;
+        var list = string.Join(", ", extensions.Select(e => $"\"{e}\""));
+        File.WriteAllText(Path.Combine(folder, "extensions.json"), "{\n    // the project's picks\n    \"recommendations\": [ " + list + ", ],\n}\n");
+    }
+
     private static ProjectContext CreateFakeProject(TestHost host, string name, TemplateSelection? template = null)
     {
         var directory = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, name)).FullName;

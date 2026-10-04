@@ -1,11 +1,14 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Templates;
 using Bit.Cli.Tools;
 using Bit.Cli.Trust;
 
 namespace Bit.Cli.Projects;
+
+public sealed record PlaywrightDriver(string Node, string Cli, string? Version);
 
 public sealed class ProjectSteps(CliServices cli, ProjectContext project)
 {
@@ -228,6 +231,125 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
             : StepResult.Warning(title, string.Join("; ", notes), hint: outcomes.Any(o => o.Tool is "VS Code" && o.Kind is not (TrustResultKind.Trusted or TrustResultKind.AlreadyTrusted))
                 ? "Close VS Code and run bit trust in the project folder, or answer VS Code's trust prompt."
                 : null));
+    }
+
+    public async Task<StepResult> PlaywrightAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        const string title = "Installed Chromium for UI tests";
+
+        if (cli.Environment.IsCI)
+            return StepResult.Skipped("Skipped Playwright's browser", "CI installs the browsers it tests with");
+
+        if (FindPlaywrightDriver(project.Directory, cli.Environment.Os) is not { } driver)
+            return StepResult.Skipped("Skipped Playwright's browser", "the UI tests weren't built");
+
+        var install = new ProcessSpec { FileName = driver.Node, Arguments = [driver.Cli, "install", "chromium"], WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(30) };
+        var result = await Runner.RunAsync(install, cancellationToken);
+        var detail = driver.Version is null ? null : $"Playwright {driver.Version}";
+
+        if (result.Succeeded is false)
+            return StepResult.FromProcess(result, "", "Couldn't install Playwright's Chromium", install.CommandLine);
+
+        if (cli.Environment.IsLinux is false)
+            return StepResult.Succeeded(title, detail);
+
+        var dependencies = install with { Arguments = [driver.Cli, "install-deps", "chromium"], OnOutputLine = progress };
+        var followUp = "sudo " + dependencies.CommandLine;
+
+        if (cli.Environment.IsElevated is false)
+        {
+            if (Runner.FindExecutable("sudo") is null || (await Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "true"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken)).Succeeded is false)
+                return StepResult.Warning(title, "its system libraries need sudo", followUp);
+
+            dependencies = dependencies with { FileName = "sudo", Arguments = ["-n", driver.Node, .. dependencies.Arguments] };
+        }
+
+        var installed = await Runner.RunAsync(dependencies, cancellationToken);
+        return installed.Succeeded ? StepResult.Succeeded(title, detail) : StepResult.Warning(title, "its system libraries weren't installed", followUp);
+    }
+
+    public static PlaywrightDriver? FindPlaywrightDriver(string projectDirectory, HostOs os)
+    {
+        var bin = Path.Combine(projectDirectory, "src", "Tests", "bin");
+
+        if (System.IO.Directory.Exists(bin) is false)
+            return null;
+
+        foreach (var playwright in System.IO.Directory.EnumerateDirectories(bin, ".playwright", SearchOption.AllDirectories).OrderByDescending(System.IO.Directory.GetLastWriteTimeUtc))
+        {
+            var cliScript = Path.Combine(playwright, "package", "cli.js");
+            var nodeDirectory = Path.Combine(playwright, "node");
+
+            if (File.Exists(cliScript) is false || System.IO.Directory.Exists(nodeDirectory) is false)
+                continue;
+
+            var node = System.IO.Directory.EnumerateFiles(nodeDirectory, os is HostOs.Windows ? "node.exe" : "node", SearchOption.AllDirectories).FirstOrDefault();
+
+            if (node is not null)
+                return new PlaywrightDriver(node, cliScript, ReadPackageVersion(Path.Combine(playwright, "package", "package.json")));
+        }
+
+        return null;
+    }
+
+    public async Task<StepResult> VsCodeExtensionsAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        var recommended = ReadRecommendedExtensions(project.Directory);
+
+        if (recommended.Count == 0)
+            return StepResult.Skipped("Skipped VS Code extensions", "the project recommends none");
+
+        if (IdeLocator.FindVsCode(cli.Environment, Runner) is not { } code)
+            return StepResult.Skipped("Skipped VS Code extensions", "VS Code isn't installed");
+
+        var listed = await Runner.RunAsync(new ProcessSpec { FileName = code.Executable, Arguments = ["--list-extensions"], Timeout = TimeSpan.FromMinutes(2) }, cancellationToken);
+        var installed = listed.Succeeded ? listed.OutputLines.Select(l => l.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+        var missing = recommended.Where(id => installed.Contains(id) is false).ToList();
+
+        if (listed.Succeeded && missing.Count == 0)
+            return StepResult.Succeeded("Extensions already installed", $"{recommended.Count} recommended for VS Code");
+
+        string[] arguments = [.. missing.SelectMany(id => new[] { "--install-extension", id })];
+        var install = new ProcessSpec { FileName = code.Executable, Arguments = arguments, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(15) };
+        var result = await Runner.RunAsync(install, cancellationToken);
+        var names = string.Join(", ", missing.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (missing.Count > 3 ? $" and {missing.Count - 3} more" : "");
+
+        return StepResult.FromProcess(result, $"Installed {missing.Count} VS Code extension{(missing.Count == 1 ? "" : "s")}", "Couldn't install the VS Code extensions",
+            $"code {string.Join(' ', arguments)}", names);
+    }
+
+    public static IReadOnlyList<string> ReadRecommendedExtensions(string projectDirectory)
+    {
+        var path = Path.Combine(projectDirectory, ".vscode", "extensions.json");
+
+        if (File.Exists(path) is false)
+            return [];
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            return document.RootElement.ValueKind is JsonValueKind.Object && document.RootElement.TryGetProperty("recommendations", out var recommendations) && recommendations.ValueKind is JsonValueKind.Array
+                ? [.. recommendations.EnumerateArray().Where(e => e.ValueKind is JsonValueKind.String).Select(e => e.GetString()!.Trim()).Where(id => id.Contains('.')).Distinct(StringComparer.OrdinalIgnoreCase)]
+                : [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private static string? ReadPackageVersion(string packageJson)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(packageJson));
+            return document.RootElement.TryGetProperty("version", out var version) ? version.GetString() : null;
+        }
+        catch (Exception exp) when (exp is IOException or JsonException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public async Task<StepResult> OpenIdeAsync(string ide, Action<string> progress, CancellationToken cancellationToken)

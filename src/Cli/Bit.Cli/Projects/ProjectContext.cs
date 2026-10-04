@@ -98,6 +98,22 @@ public sealed partial class ProjectContext
         }
     }
 
+    public static bool UsesNativeWebAssembly(string directory)
+    {
+        try
+        {
+            return System.IO.Directory.EnumerateFiles(Path.Combine(directory, "src", "Client"), "*.Client.Web.csproj", SearchOption.AllDirectories)
+                .Any(csproj => NativeWebAssemblyRegex().IsMatch(File.ReadAllText(csproj)));
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
     [GeneratedRegex(@"<TargetFramework>(?<tfm>net\d+\.\d+)</TargetFramework>")]
     private static partial Regex TargetFrameworkRegex();
+
+    [GeneratedRegex(@"<WasmBuildNative[^>]*>\s*true\s*</WasmBuildNative>", RegexOptions.IgnoreCase)]
+    private static partial Regex NativeWebAssemblyRegex();
 }

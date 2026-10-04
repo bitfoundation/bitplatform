@@ -12,6 +12,14 @@ public static class IdeLocator
     public const string Rider = "rider";
     public const string None = "none";
 
+    public static string Title(string id) => id switch
+    {
+        VsCode => "VS Code",
+        VisualStudio => "Visual Studio",
+        Rider => "Rider",
+        _ => id
+    };
+
     public static IReadOnlyList<Ide> FindAll(CliEnvironment environment, IProcessRunner runner)
     {
         return new[] { FindVsCode(environment, runner), FindVisualStudio(environment, runner), FindRider(environment, runner) }

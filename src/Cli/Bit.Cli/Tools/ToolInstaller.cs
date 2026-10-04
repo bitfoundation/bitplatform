@@ -335,7 +335,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
     private static string DoneTitle(string title)
     {
-        foreach (var (present, past) in new[] { ("Install ", "Installed "), ("Update ", "Updated "), ("Start ", "Started "), ("Enable ", "Enabled "), ("Trust ", "Trusted ") })
+        foreach (var (present, past) in new[] { ("Install ", "Installed "), ("Update ", "Updated "), ("Start ", "Started "), ("Enable ", "Enabled "), ("Trust ", "Trusted "), ("Turn on ", "Turned on ") })
         {
             if (title.StartsWith(present, StringComparison.Ordinal))
                 return past + title[present.Length..];

@@ -25,7 +25,9 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
 
             var stamp = $"{fullPath}|{File.GetLastWriteTimeUtc(fullPath).Ticks}";
             var localHive = Path.Combine(TemplatesDirectory, "local-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(stamp)))[..12]);
-            var localResult = await InstallAsync(fullPath, localHive, onOutput, cancellationToken);
+            var localResult = FindPackage(localHive) is not null
+                ? new ProcessResult { ExitCode = 0, Output = "Already installed." }
+                : await InstallAsync(fullPath, localHive, onOutput, cancellationToken);
 
             return localResult.Succeeded
                 ? (new TemplatePackage(ReadPackageVersion(fullPath) ?? "0.0.0", fullPath, localHive), localResult)

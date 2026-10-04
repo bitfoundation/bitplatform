@@ -44,12 +44,15 @@ public static class DoctorCommand
             var needs = new ToolNeeds
             {
                 Aspire = aspire,
+                NativeWebAssembly = projectName is not null && ProjectContext.UsesNativeWebAssembly(cli.Environment.CurrentDirectory),
                 Platforms = platforms,
+                Ide = IdeLocator.FindAll(cli.Environment, cli.Runner).FirstOrDefault()?.Id,
                 MinimumSdk = projectName is null ? null : SetupCommand.ReadMinimumSdk(cli.Environment.CurrentDirectory)
             };
 
             var context = NewWorkflow.CreateToolContext(cli, needs);
-            var checks = await cli.Console.RunWithStatusAsync("Checking this machine", _ => ToolCatalog.CheckAsync(context, cancellationToken));
+            var hardware = NewWorkflow.ProbeHardwareAsync(cli, cli.Environment.CurrentDirectory, cancellationToken);
+            var (checks, facts) = await cli.Console.RunWithStatusAsync("Checking this machine", async _ => (await ToolCatalog.CheckAsync(context, cancellationToken), hardware is null ? null : await hardware));
 
             cli.Console.Out.MarkupLine(projectName is null
                 ? "[grey]Checked for a new project with Aspire and the web app. Run it in a project folder to check that project's own needs.[/]"
@@ -76,6 +79,12 @@ public static class DoctorCommand
             }
 
             cli.Console.Out.Write(table);
+
+            if (facts is not null)
+            {
+                WriteHardware(cli, facts, needs);
+                cli.Console.Out.WriteLine();
+            }
 
             var missingNeeded = checks.Where(c => c.Status.IsSatisfied is false && c.Needed).ToList();
 
@@ -106,5 +115,27 @@ public static class DoctorCommand
         });
 
         return command;
+    }
+
+    private static void WriteHardware(CliServices cli, HardwareFacts facts, ToolNeeds needs)
+    {
+        var warnings = Hardware.Evaluate(facts, needs, cli.Environment.Os);
+
+        if (facts.MemoryBytes is { } memory && warnings.Any(w => w.Id is "memory") is false)
+        {
+            cli.Console.Step(StepStatus.Succeeded, $"{Math.Round(memory / (1024d * 1024 * 1024))} GB of memory");
+        }
+
+        if (facts.VirtualizationEnabled is true)
+        {
+            cli.Console.Step(StepStatus.Succeeded, "Virtualization is on");
+        }
+
+        if (facts.OnHardDisk is false)
+        {
+            cli.Console.Step(StepStatus.Succeeded, "This folder's drive is an SSD");
+        }
+
+        NewWorkflow.WriteHardwareWarnings(cli, facts, needs);
     }
 }

@@ -49,6 +49,16 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
     public void Warn(string text) => Out.MarkupLine($"[yellow]{WarnSymbol}[/] {Markup.Escape(text)}");
 
+    public void StepWarning(string text, string? nextLine = null)
+    {
+        var grid = new Grid { Width = Width }
+            .AddColumn(new GridColumn().NoWrap().PadLeft(2).PadRight(1))
+            .AddColumn(new GridColumn().PadLeft(0).PadRight(0));
+
+        grid.AddRow(new Markup($"[yellow]{WarnSymbol}[/]"), new Markup(nextLine is null ? Markup.Escape(text) : $"{Markup.Escape(text)}\n{Markup.Escape(nextLine)}"));
+        Out.Write(grid);
+    }
+
     public void Fail(string text) => Error.MarkupLine($"[red]{FailSymbol}[/] {Markup.Escape(text)}");
 
     public void Step(StepStatus status, string title, string? detail = null, TimeSpan? duration = null)

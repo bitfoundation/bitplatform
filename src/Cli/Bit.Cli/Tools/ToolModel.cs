@@ -26,6 +26,8 @@ public sealed record ToolNeeds
 
     public IReadOnlyList<string> Containers { get; init; } = [];
 
+    public bool NativeWebAssembly { get; init; }
+
     public IReadOnlySet<Platform> Platforms { get; init; } = new HashSet<Platform> { Platform.Web };
 
     public string? Ide { get; init; }

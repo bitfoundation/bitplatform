@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using Bit.Cli.Infrastructure;
+using Bit.Cli.Templates;
 using Bit.Cli.Tests.Infrastructure;
 
 namespace Bit.Cli.Tests;
@@ -59,6 +60,31 @@ public class NewWorkflowTests
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
         StringAssert.Contains(host.Output, "Contoso wasn't created");
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "format" or "dnx"), Calls(host));
+    }
+
+    [TestMethod]
+    public async Task ALocalTemplatePackage_Should_BeInstalledOnceUntilItChanges()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var package = FakeTemplatePackage(host);
+        host.Runner.On("dotnet", "new install", spec =>
+        {
+            var arguments = spec.Arguments.ToList();
+            var packages = Directory.CreateDirectory(Path.Combine(arguments[arguments.IndexOf("--debug:custom-hive") + 1], "packages")).FullName;
+            File.Copy(arguments[2], Path.Combine(packages, Path.GetFileName(arguments[2])), overwrite: true);
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var source = new TemplateSource(host.Environment, host.Runner);
+        var first = await source.EnsureInstalledAsync(null, package, null, CancellationToken.None);
+        var again = await source.EnsureInstalledAsync(null, package, null, CancellationToken.None);
+        File.SetLastWriteTimeUtc(package, File.GetLastWriteTimeUtc(package).AddMinutes(1));
+        var changed = await source.EnsureInstalledAsync(null, package, null, CancellationToken.None);
+
+        Assert.IsNotNull(first.Package);
+        Assert.AreEqual(first.Package.HiveDirectory, again.Package?.HiveDirectory);
+        Assert.AreNotEqual(first.Package.HiveDirectory, changed.Package?.HiveDirectory);
+        Assert.AreEqual(2, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
     }
 
     private static string FakeTemplatePackage(TestHost host)

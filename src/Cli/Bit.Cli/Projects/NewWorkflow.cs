@@ -73,10 +73,16 @@ public sealed class NewWorkflow(CliServices cli)
         }
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request) };
-        var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, cancellationToken);
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request) };
+        var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
+        var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
-        ide ??= interactive ? AskIde(selectedTools) : IdeLocator.None;
+        if (request.NoTools && hardware is not null)
+        {
+            WriteHardwareWarnings(cli, await hardware, needs);
+        }
+
+        ide ??= interactive ? AskIde(selectedTools) : DefaultIde(selectedTools);
 
         if (interactive)
         {
@@ -138,6 +144,11 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "trust", "Trusting the folder", projectSteps.TrustAsync, cancellationToken);
         }
 
+        if (ide is IdeLocator.VsCode)
+        {
+            await RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
+        }
+
         if (ide is not IdeLocator.None)
         {
             await RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct), cancellationToken);
@@ -170,6 +181,8 @@ public sealed class NewWorkflow(CliServices cli)
             {
                 await RunProjectStepAsync(steps, context, $"build-{Platforms.Name(target.Platform)}", $"Building the {Platforms.Title(target.Platform)} app", (progress, ct) => projectSteps.BuildAsync(target, progress, ct), cancellationToken);
             }
+
+            await RunProjectStepAsync(steps, context, "playwright", "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
         }
     }
 
@@ -189,10 +202,43 @@ public sealed class NewWorkflow(CliServices cli)
         return new ToolContext(cli.Environment, cli.Runner, needs, PackageManagers.Detect(cli.Environment, cli.Runner));
     }
 
-    public static async Task<IReadOnlyList<ToolCheck>> ChooseToolsAsync(CliServices cli, ToolNeeds needs, IReadOnlyList<string> requested, bool requestedGiven, bool interactive, CancellationToken cancellationToken)
+    public static Task<HardwareFacts>? ProbeHardwareAsync(CliServices cli, string directory, CancellationToken cancellationToken)
+    {
+        if (cli.Environment.IsCI)
+            return null;
+
+        var existing = new DirectoryInfo(directory);
+
+        while (existing is { Exists: false } && existing.Parent is not null)
+        {
+            existing = existing.Parent;
+        }
+
+        return Hardware.ProbeAsync(cli.Environment, cli.Runner, existing.FullName, cancellationToken);
+    }
+
+    public static void WriteHardwareWarnings(CliServices cli, HardwareFacts facts, ToolNeeds needs)
+    {
+        var warnings = Hardware.Evaluate(facts, needs, cli.Environment.Os);
+        cli.Log.Write($"Hardware: {Hardware.Describe(facts)}");
+        cli.Telemetry.SetTag(TelemetryFields.Hardware, string.Join(',', warnings.Select(w => w.Id)));
+
+        foreach (var warning in warnings)
+        {
+            cli.Console.StepWarning(warning.Text, warning.Link is null ? null : $"How to turn it on: {warning.Link}");
+        }
+    }
+
+    public static async Task<IReadOnlyList<ToolCheck>> ChooseToolsAsync(CliServices cli, ToolNeeds needs, IReadOnlyList<string> requested, bool requestedGiven, bool interactive, Task<HardwareFacts>? hardware, CancellationToken cancellationToken)
     {
         var context = CreateToolContext(cli, needs);
-        var checks = await cli.Console.RunWithStatusAsync("Checking this machine", _ => ToolCatalog.CheckAsync(context, cancellationToken));
+        var (checks, facts) = await cli.Console.RunWithStatusAsync("Checking this machine", async _ => (await ToolCatalog.CheckAsync(context, cancellationToken), hardware is null ? null : await hardware));
+
+        if (facts is not null)
+        {
+            WriteHardwareWarnings(cli, facts, needs);
+        }
+
         var missing = checks.Where(c => c.Status.IsSatisfied is false).ToList();
 
         cli.Log.Write("Tools: " + string.Join(", ", checks.Select(c => $"{c.Tool.Id}={c.Status.State}{(c.Status.Version is null ? "" : " " + c.Status.Version)}")));
@@ -359,10 +405,20 @@ public sealed class NewWorkflow(CliServices cli)
         if (native.Count == 0)
             return current;
 
-        cli.Console.Out.MarkupLine($"[grey]Native apps need extra .NET workloads (several GB) and make this run much longer. You can add them any time later from the project folder, e.g.[/] bit setup --platforms {Platforms.Name(native[0])}");
+        cli.Console.Out.MarkupLine($"[grey]Every project has the web, Android, iOS, Windows and macOS apps. Pick only the native apps to set up on this machine now: each adds .NET workloads (several GB) and minutes of build, so fewer is faster. Add one any time later from the project folder, e.g.[/] bit setup --platforms {Platforms.Name(native[0])}");
 
-        var chosen = cli.Prompter.MultiSelect("Set up native apps now too?", native, native.Where(current.Contains), Platforms.Title);
+        var chosen = cli.Prompter.MultiSelect("Set up native apps on this machine now too?", native, native.Where(current.Contains), Platforms.Title);
         return [Platform.Web, .. chosen];
+    }
+
+    private string DefaultIde(IReadOnlyList<ToolCheck> selectedTools)
+    {
+        if (cli.Environment.IsCI)
+            return IdeLocator.None;
+
+        return IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null || selectedTools.Any(t => t.Tool.Id is "vscode")
+            ? IdeLocator.VsCode
+            : IdeLocator.None;
     }
 
     private string AskIde(IReadOnlyList<ToolCheck> selectedTools)
@@ -467,7 +523,7 @@ public sealed class NewWorkflow(CliServices cli)
             tokens.AddRange(["--platforms", string.Join(',', platforms.Order().Select(Platforms.Name))]);
         }
 
-        if (ide is not IdeLocator.None)
+        if (ide is not IdeLocator.VsCode)
         {
             tokens.AddRange(["--ide", ide]);
         }
@@ -506,10 +562,12 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoWorkloads is false) stepsList.Add("workloads");
         if (request.NoRestore is false) stepsList.Add("restore");
         if (request.NoBuild is false) stepsList.Add("build");
+        if (request.NoBuild is false && cli.Environment.IsCI is false) stepsList.Add("Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
-        if (ide is not IdeLocator.None) stepsList.Add($"open in {ide}");
+        if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
+        if (ide is not IdeLocator.None) stepsList.Add($"open in {IdeLocator.Title(ide)}");
         Row("Then", string.Join(", ", stepsList));
 
         cli.Console.Out.WriteLine();

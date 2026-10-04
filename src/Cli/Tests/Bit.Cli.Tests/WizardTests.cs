@@ -59,11 +59,12 @@ public class WizardTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
 
-        var platforms = prompter.Find("Set up native apps now too?");
+        var platforms = prompter.Find("Set up native apps on this machine now too?");
         Assert.IsNotNull(platforms, host.Output);
         CollectionAssert.AreEqual(expected, platforms.Choices.ToArray());
         Assert.IsEmpty(platforms.Preselected);
-        StringAssert.Contains(host.Output, "much longer");
+        StringAssert.Contains(host.Output, "Every project has the web, Android, iOS, Windows and macOS apps.");
+        StringAssert.Contains(host.Output, "so fewer is faster");
     }
 
     [TestMethod]
@@ -77,7 +78,7 @@ public class WizardTests
 
         Assert.IsNull(prompter.Find("Database"));
         Assert.IsNull(prompter.Find(".NET Aspire?"));
-        Assert.IsNull(prompter.Find("Set up native apps now too?"));
+        Assert.IsNull(prompter.Find("Set up native apps on this machine now too?"));
         Assert.IsNull(prompter.Find("Open it in"));
         Assert.IsNotNull(prompter.Find("Features"));
         Assert.IsNull(prompter.Find("Install these?"), "every tool is installed");
@@ -88,14 +89,14 @@ public class WizardTests
     {
         var prompter = new ScriptedPrompter()
             .On("Database", "PostgreSQL")
-            .On("Set up native apps now too?", new[] { "Android" })
+            .On("Set up native apps on this machine now too?", new[] { "Android" })
             .On("Create it?", false);
         using var host = new TestHost(HostOs.Linux, prompter: prompter);
         host.AllToolsInstalled();
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
 
-        StringAssert.Contains(host.Output, "bit new Contoso --database PostgreSQL --platforms web,android --ide code --yes");
+        StringAssert.Contains(host.Output, "bit new Contoso --database PostgreSQL --platforms web,android --yes");
     }
 
     [TestMethod]
@@ -127,6 +128,24 @@ public class WizardTests
         Assert.IsNotNull(ide, host.Output);
         CollectionAssert.AreEqual(new[] { "VS Code" }, ide.Preselected.ToArray());
         Assert.AreEqual("Don't open it", ide.Choices[^1]);
+    }
+
+    [TestMethod]
+    public async Task WithoutQuestions_VsCode_Should_BeTheIdeOutsideCi()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.Output, "VS Code extensions, open in VS Code");
+
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        ci.AllToolsInstalled();
+
+        Assert.AreEqual(0, await ci.RunAsync("new", "Contoso", "--dry-run", "--yes"), ci.Output);
+        Assert.IsFalse(ci.Output.Contains("open in", StringComparison.Ordinal), ci.Output);
+        Assert.IsFalse(ci.Output.Contains("Chromium", StringComparison.Ordinal), ci.Output);
+        StringAssert.Contains(ci.Output, "--ide none");
     }
 
     private static TestHost MissingDocker(ScriptedPrompter prompter)

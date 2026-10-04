@@ -183,6 +183,67 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task TheHypervisorPlatform_Should_BeCheckedOnWindowsForTheAndroidEmulator()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        var android = new ToolNeeds { Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } };
+
+        host.Runner.On("powershell", "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature", 0, "2\r\n");
+        var hypervisor = (await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform");
+        Assert.IsTrue(hypervisor.Needed);
+        Assert.AreEqual(Elevation.Admin, hypervisor.Action!.Elevation);
+        CollectionAssert.Contains(hypervisor.Action.Commands[0].Arguments.ToArray(), "/featurename:HypervisorPlatform");
+
+        host.Runner.On("powershell", "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature", 0, "1\r\n");
+        Assert.IsTrue((await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform").Status.IsSatisfied);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "hypervisor-platform"));
+    }
+
+    [TestMethod]
+    public async Task DeveloperMode_Should_BeOfferedForMauiWithoutBeingNeeded()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+
+        var maui = await CheckAsync(host, new ToolNeeds { Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
+        Assert.IsFalse(maui.Single(c => c.Tool.Id == "developer-mode").Needed);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "developer-mode"));
+    }
+
+    [TestMethod]
+    public async Task Python_Should_BeNeededOnLinuxForTheNativeWebAssemblyBuild()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.NotFound("python3");
+
+        var python = (await CheckAsync(host, new ToolNeeds { NativeWebAssembly = true })).Single(c => c.Tool.Id == "python");
+        Assert.IsTrue(python.Needed);
+        Assert.AreEqual("apt-get install -y python3", python.Action!.Commands[1].CommandLine);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "python"));
+    }
+
+    [TestMethod]
+    public async Task VsCode_Should_BeNeededUnlessAnotherIdeIsChosenOrItRunsInCi()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed);
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Ide = IdeLocator.Rider })).Single(c => c.Tool.Id == "vscode").Needed);
+
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        AllInstalled(ci.Runner);
+
+        Assert.IsFalse((await CheckAsync(ci, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed);
+    }
+
+    [TestMethod]
     public void DescribeTool_Should_SayWhyAndHow()
     {
         var check = new ToolCheck(ToolCatalog.Find("node")!, new ToolStatus(ToolState.Outdated, "18.0.0", "20 or later is needed"), true, "the build runs npm",

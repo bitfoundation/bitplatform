@@ -27,6 +27,7 @@ public static class TelemetryFields
     public const string Platforms = "bit.platforms";
     public const string Tools = "bit.tools";
     public const string Ide = "bit.ide";
+    public const string Hardware = "bit.hardware";
     public const string TemplatePrefix = "bit.template.";
     public const string TranslateLanguages = "bit.translate.languages";
     public const string TranslateKeys = "bit.translate.keys";
@@ -43,7 +44,7 @@ public static class TelemetryFields
     [
         Command, ExitCode, FirstRun, CliVersion, TemplateVersion, InstallMethod, Ci, Interactive, Terminal, CodingAgent,
         OsType, OsVersion, Architecture, RuntimeVersion, SdkVersion, Step, StepOutcome, ErrorCode, ResultCode, ProblemId,
-        UserId, SessionId, Platforms, Tools, Ide, TranslateLanguages, TranslateKeys, TranslateBatches, TranslateInputTokens,
+        UserId, SessionId, Platforms, Tools, Ide, Hardware, TranslateLanguages, TranslateKeys, TranslateBatches, TranslateInputTokens,
         TranslateOutputTokens, TranslateProvider, HttpStatus
     ];
 

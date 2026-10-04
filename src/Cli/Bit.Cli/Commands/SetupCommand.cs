@@ -58,10 +58,16 @@ public static class SetupCommand
 
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms };
             var aspire = Directory.Exists(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost"));
-            var needs = new ToolNeeds { Aspire = aspire, Platforms = platforms, Ide = IdeLocator.None, MinimumSdk = ReadMinimumSdk(directory) };
+            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, MinimumSdk = ReadMinimumSdk(directory) };
+            var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var tools = parseResult.GetValue(shared.NoTools)
                 ? []
-                : await NewWorkflow.ChooseToolsAsync(cli, needs, SharedOptions.SplitList(parseResult.GetValue(shared.Tools)), parseResult.GetResult(shared.Tools) is not null, interactive, cancellationToken);
+                : await NewWorkflow.ChooseToolsAsync(cli, needs, SharedOptions.SplitList(parseResult.GetValue(shared.Tools)), parseResult.GetResult(shared.Tools) is not null, interactive, hardware, cancellationToken);
+
+            if (parseResult.GetValue(shared.NoTools) && hardware is not null)
+            {
+                NewWorkflow.WriteHardwareWarnings(cli, await hardware, needs);
+            }
 
             cli.Telemetry.SetTag(Telemetry.TelemetryFields.Platforms, string.Join(',', platforms.Order().Select(Platforms.Name)));
             cli.Console.Out.WriteLine();
@@ -74,7 +80,13 @@ public static class SetupCommand
                 await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
             }
 
-            await NewWorkflow.RunSetupStepsAsync(cli, steps, context, new ProjectSteps(cli, context), parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), cancellationToken);
+            var projectSteps = new ProjectSteps(cli, context);
+            await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), cancellationToken);
+
+            if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
+            {
+                await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
+            }
 
             cli.Console.Out.WriteLine();
             cli.Console.Out.MarkupLine(steps.AnyFailed

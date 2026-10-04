@@ -18,6 +18,9 @@ public static partial class ToolCatalog
         new AspireCliTool(),
         new DevCertificateTool(),
         new LongPathsTool(),
+        new HypervisorPlatformTool(),
+        new DeveloperModeTool(),
+        new PythonTool(),
         new XcodeTool(),
         new VsCodeTool(),
         new VisualStudioTool()
@@ -399,6 +402,93 @@ public static partial class ToolCatalog
         };
     }
 
+    private sealed class HypervisorPlatformTool : Tool
+    {
+        public override string Id => "hypervisor-platform";
+
+        public override string Name => "Windows Hypervisor Platform";
+
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Platforms.Contains(Platform.Android);
+
+        public override string Why(ToolContext context) => "lets the Android emulator run with hardware acceleration next to WSL and Docker";
+
+        public override bool IsNeeded(ToolContext context) => true;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            var result = await context.RunAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "(Get-CimInstance Win32_OptionalFeature -Filter \"Name='HypervisorPlatform'\").InstallState"], cancellationToken);
+            return result.Succeeded && result.Output.Trim() == "1" ? ToolStatus.Installed() : ToolStatus.Missing();
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
+        {
+            ToolId = Id,
+            Title = "Turn on the Windows Hypervisor Platform",
+            Elevation = Elevation.Admin,
+            AfterInstall = "Restart Windows to finish turning on the Windows Hypervisor Platform.",
+            SuccessExitCodes = [0, 3010],
+            Commands = [new ProcessSpec { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", "/featurename:HypervisorPlatform", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) }]
+        };
+
+        public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/dotnet/maui/android/emulator/hardware-acceleration";
+    }
+
+    private sealed class DeveloperModeTool : Tool
+    {
+        private const string Key = @"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock";
+
+        public override string Id => "developer-mode";
+
+        public override string Name => "Windows developer mode";
+
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.NeedsMaui;
+
+        public override string Why(ToolContext context) => "runs the Windows version of the MAUI app from VS and VS Code";
+
+        public override Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(OperatingSystem.IsWindows() && IsEnabled() ? ToolStatus.Installed() : ToolStatus.Missing());
+        }
+
+        [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+        private static bool IsEnabled()
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(Key);
+            return key?.GetValue("AllowDevelopmentWithoutDevLicense") is int value && value == 1;
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
+        {
+            ToolId = Id,
+            Title = "Turn on Windows developer mode",
+            Elevation = Elevation.Admin,
+            Commands = [new ProcessSpec { FileName = "reg.exe", Arguments = ["add", $@"HKLM\{Key}", "/v", "AllowDevelopmentWithoutDevLicense", "/t", "REG_DWORD", "/d", "1", "/f"] }]
+        };
+    }
+
+    private sealed class PythonTool : Tool
+    {
+        public override string Id => "python";
+
+        public override string Name => "Python 3";
+
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsLinux && context.Needs.NativeWebAssembly;
+
+        public override string Why(ToolContext context) => "the native WebAssembly build of the offline database runs Emscripten, which needs it";
+
+        public override bool IsNeeded(ToolContext context) => true;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            var result = await context.RunAsync("python3", ["--version"], cancellationToken);
+            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.PackageManagers.LinuxInstall(Id, "Install Python 3", "python3", "python3", "python");
+
+        public override string? ManualInstructions(ToolContext context) => "https://www.python.org/downloads/";
+    }
+
     private sealed class XcodeTool : Tool
     {
         public override string Id => "xcode";
@@ -431,7 +521,7 @@ public static partial class ToolCatalog
         public override string Why(ToolContext context) => "a code editor with the C#, Aspire and AI extensions the project recommends";
 
         public override bool IsNeeded(ToolContext context) => context.Needs.Ide is IdeLocator.VsCode
-            || (context.Needs.Ide is null && IdeLocator.FindAll(context.Environment, context.Runner).Count == 0);
+            || (context.Needs.Ide is null && context.Environment.IsCI is false);
 
         public override Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
