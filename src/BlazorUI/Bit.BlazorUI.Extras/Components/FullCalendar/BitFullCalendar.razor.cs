@@ -363,6 +363,7 @@ public partial class BitFullCalendar
     private BitFullCalendarChangeNotifier _changeNotifier = default!;
     private BitFullCalendarColorScheme _colorScheme = new(null);
     private BitFcCalendarToast? _toast;
+    private bool _rootSetUp;
     private SettingsSnapshot? _appliedSettings;
     private bool _defaultViewApplied;
     private bool _defaultModeApplied;
@@ -579,12 +580,14 @@ public partial class BitFullCalendar
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The key defaults the calendar handles and the focus a re-render removes are DOM concerns Blazor's events
-        // cannot reach, so the root hands them to the script once.
+        // cannot reach, so the root hands them to the script once - keyed by the component's unique id, which is what
+        // takes them off again on dispose, once the root itself may already have left the DOM.
         if (firstRender)
         {
             try
             {
-                await _js.InvokeVoidAsync("BitBlazorUI.FullCalendar.setupRoot", RootElement);
+                await _js.InvokeVoidAsync("BitBlazorUI.FullCalendar.setupRoot", RootElement, UniqueId);
+                _rootSetUp = true;
             }
             catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
             {
@@ -1015,15 +1018,29 @@ public partial class BitFullCalendar
 
 
 
-    protected override ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
             State.OnStateChanged -= HandleStateChanged;
             State.OnDateRangeChanged -= HandleDateRangeChanged;
+
+            if (_rootSetUp)
+            {
+                _rootSetUp = false;
+                try
+                {
+                    // The document listener and the observer setupRoot added would otherwise keep the root alive.
+                    await _js.InvokeVoidAsync("BitBlazorUI.FullCalendar.disposeRoot", UniqueId);
+                }
+                catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or ObjectDisposedException)
+                {
+                    // A circuit already gone took the page, and everything set up on it, with it.
+                }
+            }
         }
 
-        return base.DisposeAsync(disposing);
+        await base.DisposeAsync(disposing);
     }
 
     /// <summary>

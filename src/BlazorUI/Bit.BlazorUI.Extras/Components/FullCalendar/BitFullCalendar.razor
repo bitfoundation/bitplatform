@@ -10,7 +10,7 @@
          @attributes="HtmlAttributes"
          id="@_Id"
          style="@StyleBuilder.Value"
-         class="@ClassBuilder.Value @(State.ReadOnly ? "bit-bfc-readonly" : null) @(State.CanAdd ? null : "bit-bfc-no-add")"
+         class="@ClassBuilder.Value @(State.ReadOnly ? "bit-bfc-readonly" : null) @(State.CanAdd ? null : "bit-bfc-no-add") @(State.IsRtl ? "bit-bfc-rtl" : null)"
          dir="@ResolvedDir.ToString().ToLowerInvariant()">
         @if (HideHeader is false)
         {

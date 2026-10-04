@@ -79,7 +79,8 @@ public sealed class BitFullCalendarChangeNotifier
     public Task DispatchAsync(BitFullCalendarChangeEventArgs args) => _dispatch(args);
 
     // Every mutation path commits to the state before it reports, so a refused change is undone from what the report
-    // carries: an add is removed again, an edit gets its previous snapshot back, and a delete is put back in place.
+    // carries: an add is removed again, an edit gets its previous snapshot back, and a delete is put back in place -
+    // unless it is back already, from a consumer list re-synced while an asynchronous OnChanging was awaited.
     private void Revert(BitFullCalendarChangeEventArgs args)
     {
         switch (args.Kind)
@@ -91,7 +92,7 @@ public sealed class BitFullCalendarChangeNotifier
                 _state.UpdateEvent(CloneEvent(args.OldEvent));
                 break;
             case BitFullCalendarChangeKind.Delete:
-                _state.AddEvent(CloneEvent(args.OldEvent ?? args.Event));
+                _state.RestoreEvent(CloneEvent(args.OldEvent ?? args.Event));
                 break;
         }
     }
@@ -176,23 +177,36 @@ public sealed class BitFullCalendarChangeNotifier
         if (_state.DetachOccurrence(original, start, end, resource) is not { } detach)
             return false;
 
+        return await CommitDetachAsync(detach.Master, detach.Skipped, detach.Detached, source);
+    }
+
+    /// <summary>
+    /// Reports an occurrence the state has already detached from its series - <paramref name="skipped"/> (the series
+    /// <paramref name="master"/> with the occurrence's date skipped) in place of the master, and the one-off
+    /// <paramref name="detached"/> added - as an edit of the master and an add, which stand or fall together: both are
+    /// approved before either is dispatched, and a refusal of either puts the state back and reports nothing.
+    /// Returns <c>false</c> when <c>OnChanging</c> refused it.
+    /// </summary>
+    internal async Task<bool> CommitDetachAsync(BitFullCalendarEvent master, BitFullCalendarEvent skipped, BitFullCalendarEvent detached, BitFullCalendarChangeSource source)
+    {
         void Undo()
         {
-            _state.ClearLastDetach();
-            _state.RemoveEvent(detach.Detached.Id);
-            _state.UpdateEvent(detach.Master);
+            if (_state.LastDetach?.To == detached.Id)
+                _state.ClearLastDetach();
+            _state.RemoveEvent(detached.Id);
+            _state.UpdateEvent(master);
         }
 
         var skip = new BitFullCalendarChangeEventArgs
         {
-            Event = CloneEvent(detach.Skipped),
-            OldEvent = CloneEvent(detach.Master),
+            Event = CloneEvent(skipped),
+            OldEvent = CloneEvent(master),
             Kind = BitFullCalendarChangeKind.Edit,
             Source = source
         };
         var add = new BitFullCalendarChangeEventArgs
         {
-            Event = CloneEvent(detach.Detached),
+            Event = CloneEvent(detached),
             Kind = BitFullCalendarChangeKind.Add,
             Source = source
         };
@@ -213,8 +227,8 @@ public sealed class BitFullCalendarChangeNotifier
         }
         catch
         {
-            // Once the first half has reached the consumer, taking the move back here would leave the calendar and the
-            // consumer disagreeing; the state keeps what was reported and the failure surfaces to the caller.
+            // Once the first half has reached the consumer, taking the change back here would leave the calendar and
+            // the consumer disagreeing; the state keeps what was reported and the failure surfaces to the caller.
             if (dispatched is false)
                 Undo();
             throw;

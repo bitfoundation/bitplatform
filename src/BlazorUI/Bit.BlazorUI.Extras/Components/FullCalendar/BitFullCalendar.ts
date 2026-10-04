@@ -378,7 +378,10 @@ namespace BitBlazorUI {
 
         private static readonly ROVING_STOP = '.bit-bfc-body [data-bit-bfc-roving][tabindex="0"]';
         private static readonly GRID_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End'];
-        private static roots = new WeakSet<HTMLElement>();
+        // The teardown of every root set up, by the key the component disposes it with. A key rather than the element,
+        // because by the time a disposed component's call arrives its root has usually left the DOM, where an element
+        // reference no longer resolves.
+        private static roots = new Map<string, () => void>();
 
         /**
          * What the calendar's root needs from the DOM that Blazor's own events cannot give it:
@@ -387,33 +390,36 @@ namespace BitBlazorUI {
          *   scroll the grid before the roving focus catches up with it;
          * - the focus is recovered when a re-render removes the element that held it (an event moved from the
          *   keyboard, a view switched from a nav link, an event deleted), instead of dropping onto the page.
+         * Everything it adds is taken off again by disposeRoot with the same key.
          */
-        public static setupRoot(root: HTMLElement): void {
-            if (!root || FullCalendar.roots.has(root)) return;
-            FullCalendar.roots.add(root);
+        public static setupRoot(root: HTMLElement, key: string): void {
+            if (!root || !key || FullCalendar.roots.has(key)) return;
 
             let lastFocused: HTMLElement | null = null;
             let scheduled = false;
 
-            root.addEventListener('focusin', e => {
+            const onFocusIn = (e: FocusEvent) => {
                 const target = e.target as HTMLElement;
                 lastFocused = target;
                 // After the frame, so whatever scrolled the element into view (the browser on Tab, focusElement on
                 // an arrow key) has already done so.
                 requestAnimationFrame(() => FullCalendar.revealFromStickies(target));
-            });
+            };
             // Tabbing (or a script moving the focus) out of the calendar is leaving it, not losing the focus.
-            root.addEventListener('focusout', e => {
+            const onFocusOut = (e: FocusEvent) => {
                 const next = e.relatedTarget as Node | null;
                 if (next && root.contains(next) === false) lastFocused = null;
-            });
+            };
+            root.addEventListener('focusin', onFocusIn);
+            root.addEventListener('focusout', onFocusOut);
             root.addEventListener('keydown', FullCalendar.preventHandledKeyDefaults);
 
             // A press outside the calendar is the user taking the focus elsewhere: whatever it closes on its way
-            // out (the settings popup, a picker) must not pull the focus back in.
+            // out (the settings popup, a picker) must not pull the focus back in. A root found gone without having
+            // been disposed (a circuit that never got to say so) tears itself down here.
             const onOutsidePress = (e: PointerEvent) => {
                 if (root.isConnected === false) {
-                    document.removeEventListener('pointerdown', onOutsidePress, true);
+                    FullCalendar.disposeRoot(key);
                     return;
                 }
                 if (root.contains(e.target as Node) === false) lastFocused = null;
@@ -431,6 +437,24 @@ namespace BitBlazorUI {
                 });
             });
             observer.observe(root, { childList: true, subtree: true });
+
+            FullCalendar.roots.set(key, () => {
+                root.removeEventListener('focusin', onFocusIn);
+                root.removeEventListener('focusout', onFocusOut);
+                root.removeEventListener('keydown', FullCalendar.preventHandledKeyDefaults);
+                document.removeEventListener('pointerdown', onOutsidePress, true);
+                observer.disconnect();
+                lastFocused = null;
+            });
+        }
+
+        /** Takes off everything setupRoot added for the calendar with this key, so a disposed calendar keeps nothing alive. */
+        public static disposeRoot(key: string): void {
+            const teardown = FullCalendar.roots.get(key);
+            if (!teardown) return;
+
+            FullCalendar.roots.delete(key);
+            teardown();
         }
 
         /**
@@ -468,10 +492,12 @@ namespace BitBlazorUI {
             const target = e.target as HTMLElement | null;
             if (!target || typeof target.matches !== 'function') return;
 
-            // Only the axes an event says it edits on (data-bit-bfc-move: "x", "y" or "xy"), so Alt+Left still goes
-            // Back from an event that does nothing with it.
+            // Only the axes an event says it edits on - data-bit-bfc-move (Alt+Arrow) and data-bit-bfc-resize
+            // (Shift+Arrow), each "x", "y" or "xy" - so Alt+Left still goes Back from an event that does nothing with
+            // it, and Shift+Arrow still extends a selection on one that cannot be resized.
             if ((e.altKey || e.shiftKey) && e.key.startsWith('Arrow')) {
-                const axes = target.getAttribute('data-bit-bfc-move') ?? '';
+                const axes = (e.altKey ? target.getAttribute('data-bit-bfc-move') ?? '' : '')
+                    + (e.shiftKey ? target.getAttribute('data-bit-bfc-resize') ?? '' : '');
                 const axis = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? 'x' : 'y';
                 if (axes.includes(axis)) {
                     e.preventDefault();
@@ -484,9 +510,11 @@ namespace BitBlazorUI {
                 return;
             }
 
-            // A grid that does not page (data-bit-bfc-roving="nopage") leaves PageUp/PageDown to the page.
-            if (e.altKey === false && target.hasAttribute('data-bit-bfc-roving') && FullCalendar.GRID_KEYS.includes(e.key)
-                && (e.key.startsWith('Page') === false || target.getAttribute('data-bit-bfc-roving') !== 'nopage')) {
+            // A grid that does not page (data-bit-bfc-roving="nopage") leaves PageUp/PageDown to the page, and a group
+            // walked by the arrows alone (data-bit-bfc-roving="arrows", a radio group) every key but those.
+            const roving = target.getAttribute('data-bit-bfc-roving');
+            if (e.altKey === false && roving !== null && FullCalendar.GRID_KEYS.includes(e.key)
+                && (roving === 'arrows' ? e.key.startsWith('Arrow') : e.key.startsWith('Page') === false || roving !== 'nopage')) {
                 e.preventDefault();
             }
         }

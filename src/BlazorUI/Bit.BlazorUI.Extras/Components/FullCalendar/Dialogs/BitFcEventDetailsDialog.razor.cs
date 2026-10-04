@@ -205,7 +205,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                 {
                     // Restore the removed event so the calendar doesn't show it gone while consumers
                     // were never notified; the next attempt will remove and notify again.
-                    State.AddEvent(snapshot);
+                    State.RestoreEvent(snapshot);
                     throw;
                 }
                 // Mark committed only after the notification has succeeded.

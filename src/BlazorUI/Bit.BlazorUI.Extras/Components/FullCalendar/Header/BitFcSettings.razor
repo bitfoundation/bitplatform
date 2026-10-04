@@ -91,7 +91,7 @@
             <div class="bit-bfc-dropdown-sep" role="separator"></div>
             <div role="radiogroup" aria-labelledby="@_groupById">
                 <div class="bit-bfc-dropdown-label" id="@_groupById">@Texts.AgendaGroupByLabel</div>
-                <button type="button" class="bit-bfc-dropdown-item bit-bfc-dropdown-choice" role="radio"
+                <button type="button" class="bit-bfc-dropdown-item bit-bfc-dropdown-choice" role="radio" data-bit-bfc-roving="arrows"
                         id="@ChoiceId(BitFullCalendarAgendaGroupBy.Date)"
                         aria-checked="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "true" : "false")"
                         tabindex="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "0" : "-1")"
@@ -99,7 +99,7 @@
                         @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Date)">
                     @Texts.AgendaGroupByDate
                 </button>
-                <button type="button" class="bit-bfc-dropdown-item bit-bfc-dropdown-choice" role="radio"
+                <button type="button" class="bit-bfc-dropdown-item bit-bfc-dropdown-choice" role="radio" data-bit-bfc-roving="arrows"
                         id="@ChoiceId(BitFullCalendarAgendaGroupBy.Color)"
                         aria-checked="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "true" : "false")"
                         tabindex="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "0" : "-1")"

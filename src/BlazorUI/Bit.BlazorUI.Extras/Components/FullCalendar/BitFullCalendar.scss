@@ -2561,8 +2561,10 @@ button.bit-bfc-cell-add-hint:focus-visible {
 /* ===== RTL (Right-to-Left) support ===== */
 
 /* The prev/next chevrons are drawn pointing back and forward in a left-to-right reading, and mirrored
-   here - the one place that flips them, so a right-to-left culture and an explicit Dir agree. */
-[dir="rtl"] .bit-bfc-btn-nav svg {
+   here - the one place that flips them, so a right-to-left culture and an explicit Dir agree. Keyed on the
+   calendar's own direction (bit-bfc-rtl, what the keyboard reads too), never on a [dir] ancestor: an
+   ltr calendar on an rtl page keeps its chevrons, and a Dir="auto" one in an rtl culture mirrors them. */
+.bit-bfc-rtl .bit-bfc-btn-nav svg {
     transform: scaleX(-1);
 }
 

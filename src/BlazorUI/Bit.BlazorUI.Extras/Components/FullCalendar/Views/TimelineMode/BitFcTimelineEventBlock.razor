@@ -45,6 +45,7 @@
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
      data-bit-bfc-event="@Event.Id"
      data-bit-bfc-move="@(CanMove ? "x" : null)"
+     data-bit-bfc-resize="@(CanResize ? "x" : null)"
      role="button"
      tabindex="0"
      aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"

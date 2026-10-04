@@ -26,6 +26,10 @@ public class BitFullCalendarState
     // The events as the grids see them: every recurring master replaced by the occurrences that fall
     // inside the visible range, before the colour/attendee filters narrow them further.
     private List<BitFullCalendarEvent> _expandedEvents = [];
+    // The window _expandedEvents was expanded over (inclusive dates), or null when nothing recurs and it is every event.
+    private (DateTime Start, DateTime End)? _expansionWindow;
+    // The expanded events less the background ones: what the filters narrow, and what the attendee filter offers.
+    private List<BitFullCalendarEvent> _foregroundEvents = [];
     private List<BitFullCalendarEvent> _filteredEvents = [];
     // The IsBackground events of the visible range: drawn as bands behind the grids, never as cards, and never
     // narrowed by the filters - they are the context the other events are read against.
@@ -306,8 +310,13 @@ public class BitFullCalendarState
         timeProvider ??= TimeProvider.System;
         if (ReferenceEquals(timeProvider, TimeProvider)) return;
 
-        var wasOnToday = SelectedDate == Today;
+        var oldNow = Now;
+        var wasOnToday = SelectedDate == oldNow.Date;
         TimeProvider = timeProvider;
+        // A provider created anew on every render (an inline `new`) reads the same clock as the one it replaces: nothing
+        // on screen changes, so nothing is recomputed or re-rendered for it.
+        if (Math.Abs((Now - oldNow).TotalMinutes) < 1) return;
+
         var moved = wasOnToday && SelectedDate != Today;
         if (moved)
             SelectedDate = ClampToAllowedRange(Today);
@@ -893,7 +902,7 @@ public class BitFullCalendarState
     {
         // A zero-length range still occupies its instant, so it is measured as one tick long.
         var rangeEnd = end > start ? end : start.AddTicks(1);
-        foreach (var other in _expandedEvents)
+        foreach (var other in GetEventsOccupying(start, rangeEnd))
         {
             if (other.IsBlocking is false)
                 continue;
@@ -962,15 +971,33 @@ public class BitFullCalendarState
         => string.Equals(other.Id, eventId, StringComparison.Ordinal)
            || string.Equals(other.SeriesId, eventId, StringComparison.Ordinal);
 
+    /// <summary>
+    /// The events occupying any part of <paramref name="start"/>..<paramref name="end"/>, occurrences included: the
+    /// expanded events when the range lies inside the window they were expanded over, else every series expanded over
+    /// the range itself - an add or a move can target a date the visible range never reaches, and a recurring
+    /// blocker or booking there still counts.
+    /// </summary>
+    private List<BitFullCalendarEvent> GetEventsOccupying(DateTime start, DateTime end)
+    {
+        if (_expansionWindow is not { } window)
+            return _expandedEvents;
+
+        var lastDay = (end > start ? end.AddTicks(-1) : end).Date;
+        if (start.Date >= window.Start.Date && lastDay <= window.End.Date)
+            return _expandedEvents;
+
+        return BitFullCalendarHelpers.ExpandRecurrences(_allEvents, start, lastDay);
+    }
+
     public bool IsRangeAvailable(string eventId, DateTime start, DateTime end, string? resourceId)
     {
         if (AllowEventOverlap)
             return true;
 
         var candidate = new BitFullCalendarEvent { StartDate = start, EndDate = end };
-        // Measured against what actually occupies the visible range, so a recurring occurrence blocks
-        // its slot just like a one-off event does.
-        foreach (var other in _expandedEvents)
+        // Measured against what actually occupies the range, so a recurring occurrence blocks its slot just like a
+        // one-off event does.
+        foreach (var other in GetEventsOccupying(start, end))
         {
             // A background event is context, not a booking: it only keeps others out when it is blocking.
             if (other.IsBackground)
@@ -1173,6 +1200,21 @@ public class BitFullCalendarState
         UpdateUI();
     }
 
+    /// <summary>
+    /// Puts back an event a refused or failed change had removed, unless one with its id is already there - a consumer
+    /// list re-synced while the change was awaited brings it back on its own, and adding it again would show it twice.
+    /// </summary>
+    internal void RestoreEvent(BitFullCalendarEvent ev)
+    {
+        if (_allEvents.Exists(e => e.Id == ev.Id))
+        {
+            UpdateUI();
+            return;
+        }
+
+        AddEvent(ev);
+    }
+
     public void RemoveEvent(string eventId)
     {
         _allEvents.RemoveAll(e => e.Id == eventId);
@@ -1217,7 +1259,7 @@ public class BitFullCalendarState
     /// <summary>Distinct attendees on events visible in the current view/date range.</summary>
     public IReadOnlyList<(string Key, string DisplayName)> GetAttendeesInCurrentView(string unnamedAttendeeText = "(Unnamed)")
     {
-        var viewEvents = BitFullCalendarHelpers.GetEventsForView(GetForegroundEvents(), View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays);
+        var viewEvents = BitFullCalendarHelpers.GetEventsForView(_foregroundEvents, View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays);
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var ev in viewEvents)
         {
@@ -1245,9 +1287,8 @@ public class BitFullCalendarState
     {
         _selectedColors.Clear();
         SelectedAttendeeKey = null;
-        _expandedEvents = ExpandForCurrentRange();
-        _backgroundEvents = _expandedEvents.Where(e => e.IsBackground).ToList();
-        _filteredEvents = _expandedEvents.Where(e => e.IsBackground is false).ToList();
+        SplitExpandedEvents();
+        _filteredEvents = _foregroundEvents;
         NotifyStateChanged();
     }
 
@@ -1267,23 +1308,46 @@ public class BitFullCalendarState
     {
         // Nothing to expand is the common case, so the walk is skipped entirely then.
         if (_allEvents.All(e => e.Recurrence is null))
+        {
+            _expansionWindow = null;
             return _allEvents;
+        }
 
         var (start, end) = GetExpansionRange();
+        _expansionWindow = (start, end);
         return BitFullCalendarHelpers.ExpandRecurrences(_allEvents, start, end);
+    }
+
+    // Expands the current range and splits it into the background bands and the foreground events, in one pass.
+    private void SplitExpandedEvents()
+    {
+        _expandedEvents = ExpandForCurrentRange();
+        _backgroundEvents = [];
+        _foregroundEvents = new(_expandedEvents.Count);
+        foreach (var ev in _expandedEvents)
+            (ev.IsBackground ? _backgroundEvents : _foregroundEvents).Add(ev);
     }
 
     private void ApplyFilters()
     {
-        _expandedEvents = ExpandForCurrentRange();
+        SplitExpandedEvents();
 
         PruneInvalidAttendeeFilter();
 
-        _backgroundEvents = _expandedEvents.Where(e => e.IsBackground).ToList();
-        var result = _expandedEvents.Where(e => e.IsBackground is false);
+        if (_selectedColors.Count == 0 && SelectedAttendeeKey is null)
+        {
+            _filteredEvents = _foregroundEvents;
+            return;
+        }
+
+        IEnumerable<BitFullCalendarEvent> result = _foregroundEvents;
 
         if (_selectedColors.Count > 0)
-            result = result.Where(e => _selectedColors.Any(c => string.Equals(c, CanonicalColorId?.Invoke(e.Color) ?? e.Color, StringComparison.OrdinalIgnoreCase)));
+            result = result.Where(e =>
+            {
+                var colorId = CanonicalColorId?.Invoke(e.Color) ?? e.Color;
+                return _selectedColors.Any(c => string.Equals(c, colorId, StringComparison.OrdinalIgnoreCase));
+            });
 
         if (SelectedAttendeeKey is not null)
             result = result.Where(e => e.Attendees.Any(a => BitFullCalendarHelpers.AttendeeFilterKey(a) == SelectedAttendeeKey));
@@ -1291,17 +1355,13 @@ public class BitFullCalendarState
         _filteredEvents = result.ToList();
     }
 
-    // The expanded events less the background ones, which carry no attendees anyone filters by.
-    private List<BitFullCalendarEvent> GetForegroundEvents()
-        => _expandedEvents.Where(e => e.IsBackground is false).ToList();
-
     private void PruneInvalidAttendeeFilter()
     {
         if (SelectedAttendeeKey is null)
             return;
 
         var validKeys = BitFullCalendarHelpers
-            .GetEventsForView(GetForegroundEvents(), View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays)
+            .GetEventsForView(_foregroundEvents, View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays)
             .SelectMany(e => e.Attendees)
             .Select(BitFullCalendarHelpers.AttendeeFilterKey)
             .Where(k => k.Length > 0)

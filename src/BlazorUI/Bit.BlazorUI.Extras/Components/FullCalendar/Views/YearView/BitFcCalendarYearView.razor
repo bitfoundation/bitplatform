@@ -90,21 +90,25 @@
         }
     }
 
+    // Each month's cells are built once, for both the roving walk below and the grid that renders them.
+    var monthCells = months
+        .Select(m => (Month: m, Cells: BitFullCalendarHelpers.GetCalendarCells(m, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays)))
+        .ToList();
+
     // The days the arrow keys walk, in date order: every day of the year that has events, one tab stop among them.
-    _eventDays = months
-        .SelectMany(m => BitFullCalendarHelpers.GetCalendarCells(m, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays)
-            .Where(c => cal.GetMonth(c.Date) == cal.GetMonth(m) && cal.GetYear(c.Date) == culturalYear && eventsByDay.ContainsKey(c.Date.Date))
+    // A day is a current-month cell of its own month only, and the months and their cells run in date order, so the
+    // walk comes out in order without sorting.
+    _eventDays = monthCells
+        .SelectMany(mc => mc.Cells
+            .Where(c => cal.GetMonth(c.Date) == cal.GetMonth(mc.Month) && cal.GetYear(c.Date) == culturalYear && eventsByDay.ContainsKey(c.Date.Date))
             .Select(c => c.Date.Date))
-        .Distinct()
-        .Order()
         .ToList();
     var rovingDate = RovingDate;
 }
 
 <div class="bit-bfc-year">
-    @foreach (var monthDate in months)
+    @foreach (var (monthDate, cells) in monthCells)
     {
-        var cells = BitFullCalendarHelpers.GetCalendarCells(monthDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
         var monthIndex = cal.GetMonth(monthDate);
         var monthName = dtf.GetMonthName(monthIndex);
         var yearGridTemplate = $"grid-template-columns:repeat({yearColumnCount}, minmax(0, 1fr));";

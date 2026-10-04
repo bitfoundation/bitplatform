@@ -82,6 +82,20 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
         component.WaitForAssertion(() => Assert.IsTrue(ranges.Any(r => r.Start <= Anchor.AddMonths(1) && r.End >= Anchor.AddMonths(1))));
     }
 
+    [TestMethod]
+    public void BitFullCalendarShouldNotRecomputeForANewProviderReadingTheSameClock()
+    {
+        var component = RenderCalendar();
+        var notified = 0;
+        component.Instance.State.OnStateChanged += () => notified++;
+
+        // A provider created inline is a new instance on every render, though it reads the same clock.
+        component.Render(p => p.Add(x => x.TimeProvider, new FixedTimeProvider(Anchor.AddHours(11))));
+
+        Assert.AreEqual(0, notified);
+        Assert.AreEqual(Anchor, component.Instance.State.SelectedDate);
+    }
+
     #endregion
 
     #region Background events
@@ -201,6 +215,37 @@ public class BitFullCalendarBackgroundAndClockTests : BunitTestContext
 
         Assert.AreEqual(BitFullCalendarChangeRefusal.Blocked, refusal);
         Assert.AreEqual(Anchor.AddHours(9), state.Events.Single(e => e.Id == "1").StartDate, "the event stays where it was");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldRefuseARangeOnARecurringBlockerOutsideTheVisibleRange()
+    {
+        var state = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new()
+                {
+                    Id = "break", Title = "Break", StartDate = Anchor.AddHours(12), EndDate = Anchor.AddHours(13), IsBlocking = true,
+                    Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily }
+                },
+                new()
+                {
+                    Id = "sync", Title = "Sync", StartDate = Anchor.AddHours(9), EndDate = Anchor.AddHours(10),
+                    Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily }
+                },
+            ]);
+            parameters.Add(p => p.CultureName, "en-US");
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.DefaultDate, Anchor);
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { AllowEventOverlap = false });
+        }).Instance.State;
+
+        // Ten days ahead lies beyond the week of padding the day view expands its series over.
+        var later = Anchor.AddDays(10);
+        Assert.AreEqual(BitFullCalendarChangeRefusal.Blocked, state.ValidateRange("new", later.AddHours(12).AddMinutes(15), later.AddHours(12).AddMinutes(45), null));
+        Assert.AreEqual(BitFullCalendarChangeRefusal.Overlap, state.ValidateRange("new", later.AddHours(9), later.AddHours(10), null));
+        Assert.AreEqual(BitFullCalendarChangeRefusal.None, state.ValidateRange("new", later.AddHours(14), later.AddHours(15), null));
     }
 
     #endregion

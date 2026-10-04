@@ -63,6 +63,20 @@ public class BitFullCalendarPermissionsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFullCalendarShouldNameTheAxesItsKeyboardEditsUse()
+    {
+        // The script cancels Alt+Arrow (data-bit-bfc-move) and Shift+Arrow (data-bit-bfc-resize) defaults on these
+        // axes only, so a resize still claims its key when moving is off, and the reverse.
+        var noDrag = RenderCalendar(new() { AllowDrag = false }).Find("[data-bit-bfc-event='1']");
+        Assert.IsNull(noDrag.GetAttribute("data-bit-bfc-move"));
+        Assert.AreEqual("y", noDrag.GetAttribute("data-bit-bfc-resize"));
+
+        var noResize = RenderCalendar(new() { AllowResize = false }).Find("[data-bit-bfc-event='1']");
+        Assert.AreEqual("xy", noResize.GetAttribute("data-bit-bfc-move"));
+        Assert.IsNull(noResize.GetAttribute("data-bit-bfc-resize"));
+    }
+
+    [TestMethod]
     public void BitFullCalendarShouldTurnOffDragAndResizeWithEditing()
     {
         var component = RenderCalendar(new() { AllowEdit = false });

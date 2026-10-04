@@ -196,6 +196,28 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarView.Month, component.Instance.State.View);
     }
 
+    [TestMethod]
+    public void BitFullCalendarShouldMarkItsOwnDirectionForTheChevrons()
+    {
+        // The chevrons mirror off the calendar's own direction, never a [dir] ancestor: an auto-directed calendar in
+        // a right-to-left culture is right-to-left, a left-to-right one on any page is not.
+        var auto = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.CultureName, "fa-IR");
+            parameters.Add(p => p.Dir, BitDir.Auto);
+        });
+        Assert.AreEqual("auto", auto.Find(".bit-bfc").GetAttribute("dir"));
+        Assert.IsTrue(auto.Find(".bit-bfc").ClassList.Contains("bit-bfc-rtl"));
+
+        var ltr = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.CultureName, "en-US");
+        });
+        Assert.IsFalse(ltr.Find(".bit-bfc").ClassList.Contains("bit-bfc-rtl"));
+    }
+
     #endregion
 
     #region Settings panel
@@ -220,6 +242,8 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         var radios = component.FindAll(".bit-bfc-dropdown-menu [role='radiogroup'] [role='radio']");
         Assert.AreEqual(2, radios.Count);
         Assert.AreEqual("true", radios[0].GetAttribute("aria-checked"));
+        // The script cancels the arrows' default (a page scroll) on these, and only the arrows.
+        Assert.IsTrue(radios.All(r => r.GetAttribute("data-bit-bfc-roving") == "arrows"));
 
         radios[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 

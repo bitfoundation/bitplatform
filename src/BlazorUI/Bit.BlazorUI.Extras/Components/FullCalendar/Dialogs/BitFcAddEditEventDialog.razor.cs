@@ -655,7 +655,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// <summary>
     /// Saves an occurrence edited on its own, leaving the rest of its series as it was: the series
     /// skips the occurrence's date (an Edit of the master) and a one-off event carrying the edited
-    /// fields takes its place (an Add). Both are rolled back if either notification throws.
+    /// fields takes its place (an Add). The two are approved together and reported the way a drag reports a
+    /// detached occurrence (<see cref="BitFullCalendarChangeNotifier.CommitDetachAsync"/>).
     /// </summary>
     private async Task<bool> SaveOccurrenceAsync(string? resourceId)
     {
@@ -665,48 +666,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         if (master is null || occurrence.OccurrenceDate is not { } occurrenceDate)
             return true;
 
-        var masterSnapshot = BitFullCalendarChangeNotifier.CloneEvent(master);
         var updatedMaster = BitFullCalendarHelpers.SkipOccurrence(master, occurrenceDate);
         var detached = BuildEvent(Guid.NewGuid().ToString("N"), resourceId);
 
         State.UpdateEvent(updatedMaster);
         State.AddEvent(detached);
 
-        try
-        {
-            var skip = new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(updatedMaster),
-                OldEvent = masterSnapshot,
-                Kind = BitFullCalendarChangeKind.Edit,
-                Source = BitFullCalendarChangeSource.Dialog
-            };
-            var add = new BitFullCalendarChangeEventArgs
-            {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(detached),
-                Kind = BitFullCalendarChangeKind.Add,
-                Source = BitFullCalendarChangeSource.Dialog
-            };
-
-            // The two halves stand or fall together, so both are approved before either is reported: a refusal of
-            // one puts both back and reports nothing.
-            if (await Notifier.ApproveAsync(skip) is false || await Notifier.ApproveAsync(add) is false)
-            {
-                State.RemoveEvent(detached.Id);
-                State.UpdateEvent(master);
-                return false;
-            }
-
-            await Notifier.DispatchAsync(skip);
-            await Notifier.DispatchAsync(add);
-            return true;
-        }
-        catch
-        {
-            State.RemoveEvent(detached.Id);
-            State.UpdateEvent(master);
-            throw;
-        }
+        return await Notifier.CommitDetachAsync(master, updatedMaster, detached, BitFullCalendarChangeSource.Dialog);
     }
 
     public async ValueTask DisposeAsync()
