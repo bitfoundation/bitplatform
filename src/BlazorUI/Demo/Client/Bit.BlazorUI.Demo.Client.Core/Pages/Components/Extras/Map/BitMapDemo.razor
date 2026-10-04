@@ -33,7 +33,7 @@
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
                 A Leaflet map with the default OpenStreetMap tiles. Leaflet ships inside the package, so it needs no token
-                and no CDN. The map fills its container: give that container a height.
+                and no CDN. The map fills its container: give that container a height, or set <b>--bit-Map-height</b>.
             </div>
             <br />
             <div class="map-container">
@@ -45,7 +45,8 @@
             <div>
                 Add, move and remove markers by id once <b>OnReady</b> has fired. <b>Alt</b> is the accessible name,
                 <b>PopupText</b> is escaped (<b>PopupHtml</b> is not - never pass user data to it), and a tooltip shows on
-                hover and on keyboard focus. <b>SyncMarkers</b> replaces the whole set in one interop call.
+                hover and on keyboard focus. <b>OpenMarkerPopup</b> / <b>CloseMarkerPopup</b> drive the popup, which Escape
+                also closes. <b>SyncMarkers</b> replaces the whole set in one interop call.
             </div>
             <br />
             <div class="map-container">
@@ -60,6 +61,7 @@
             <div class="map-actions">
                 <BitButton OnClick="AddRandomMarker">Add a marker</BitButton>
                 <BitButton OnClick="OpenLondonPopup" Variant="BitVariant.Outline">Open London's popup</BitButton>
+                <BitButton OnClick="ClosePopup" Variant="BitVariant.Outline">Close the popup</BitButton>
                 <BitButton OnClick="FitToMarkers" Variant="BitVariant.Outline">Fit to markers</BitButton>
                 <BitButton OnClick="ClearMarkers" Variant="BitVariant.Outline">Clear</BitButton>
             </div>
@@ -91,9 +93,10 @@
 
         <DemoExample Title="Marker icons" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                <b>IconUrl</b> replaces the pin, sized by <b>IconWidth</b>/<b>IconHeight</b>. <b>IconAnchorX</b>/<b>IconAnchorY</b>
-                name the pixel that sits on the coordinate; the default is the bottom centre, right for a pin and wrong for
-                a disc. The ring marks the true coordinate.
+                Every provider draws the same pin, in the theme's primary color or the marker's <b>Color</b> - any CSS color,
+                a theme variable included. <b>IconUrl</b> replaces it, sized by <b>IconWidth</b>/<b>IconHeight</b>;
+                <b>IconAnchorX</b>/<b>IconAnchorY</b> name the pixel that sits on the coordinate - the bottom centre by
+                default, right for a pin and wrong for a disc. The ring marks the true coordinate.
             </div>
             <br />
             <BitToggle Value="iconCentreAnchor" ValueChanged="ToggleIconAnchor" Text="Anchor the disc at its centre" />
@@ -156,7 +159,8 @@
         <DemoExample Title="Vector layers" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 Polylines, polygons, circles (radius in metres), rectangles and GeoJSON, each under an id and styled by
-                <b>BitMapVectorPathStyle</b>. A click raises <b>OnVectorClick</b>, or <b>OnGeoJsonFeatureClick</b> with the
+                <b>BitMapVectorPathStyle</b> - any CSS color, a theme variable included, or the theme's primary when unset.
+                A click raises <b>OnVectorClick</b>, or <b>OnGeoJsonFeatureClick</b> with the
                 feature's properties - treat those as untrusted data.
             </div>
             <br />
@@ -415,6 +419,8 @@
                 <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part by name. The
                 <BitLink Href="#css-variables-section">CSS variables</BitLink> inherit, so one set on <code>:root</code> or an
                 ancestor restyles every map below it - the popups and tooltips of the providers and the cluster bubbles too.
+                <b>--bit-Map-tile-filter</b> filters the raster tiles alone (the second map mutes them, its bubbles stay
+                vivid); <code>invert(1) hue-rotate(180deg)</code> under a dark theme gives a dark basemap.
             </div>
             <br />
             <div class="map-row">

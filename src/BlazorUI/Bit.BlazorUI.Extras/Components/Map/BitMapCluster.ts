@@ -1,7 +1,7 @@
 ﻿namespace BitBlazorUI {
 
     type ClusterOptions = {
-        /** Grid size in screen pixels. Points that land in the same cell become one cluster. */
+        /** Screen distance, in pixels, within which markers are gathered into one cluster. */
         radius: number;
         /** Above this zoom every marker is drawn individually. */
         maxZoom: number;
@@ -128,7 +128,7 @@
             // any open popup and the keyboard focus along with it.
             //
             // The count and the centroid are part of the signature, not just the id: a bubble's id
-            // is its grid cell, which does not change as markers enter and leave that cell during a
+            // is the marker that seeded it, which does not change as others join and leave it during a
             // pan - so an id-only signature would leave a bubble labelled with a count it no longer
             // stands for, and a count-only one would leave it at the centroid of a membership it has
             // since swapped (one marker out, another in, the count unchanged).
@@ -158,7 +158,7 @@
          * Zooms to fit the members of a cluster. Returns the number of markers it contained, or 0
          * when the id is unknown - which is how the caller tells a cluster click from a real one.
          */
-        public static expand(id: string, clusterId: string, paddingPixels: number, zoom: boolean = true): number {
+        public static expand(id: string, clusterId: string, paddingPixels: number, zoom: boolean = true, animate: boolean = true): number {
             const s = BitMapCluster._maps[id];
             const members = s?.clusters[clusterId];
             if (!s || !members || members.length === 0) return 0;
@@ -185,7 +185,7 @@
                 const epsilon = 1e-4;
                 if (neLat - swLat < epsilon) { swLat -= epsilon; neLat += epsilon; }
                 if (neLng - swLng < epsilon) { swLng -= epsilon; neLng += epsilon; }
-                provider?.fitBounds?.(id, swLat, swLng, neLat, neLng, paddingPixels);
+                provider?.fitBounds?.(id, swLat, swLng, neLat, neLng, paddingPixels, undefined, animate);
             } catch { /* ignore */ }
 
             return members.length;
@@ -254,38 +254,75 @@
          */
         private static _colors(id: string, options: ClusterOptions): BubbleColors {
             let fill = '#3388ff', text = '#ffffff', ring = '#ffffff';
-            try {
-                const probe = document.getElementById(id)?.querySelector(':scope > .bit-map-cluster-probe');
-                if (probe) {
+            const probe = BitMapHelpers.probe(id);
+            if (probe) {
+                try {
                     const style = getComputedStyle(probe);
                     fill = style.backgroundColor || fill;
                     text = style.color || text;
                     ring = style.borderTopColor || ring;
-                }
-            } catch { /* no DOM to read - keep the defaults */ }
-            return { fill: options.color || fill, text: options.textColor || text, ring };
+                } catch { /* keep the defaults */ }
+            }
+            // .NET's colors are resolved too: an image is painted in plain colors, so a theme variable
+            // such as var(--bit-clr-sec) has to be computed before it can reach one.
+            return {
+                fill: BitMapHelpers.resolveColor(id, options.color) ?? fill,
+                text: BitMapHelpers.resolveColor(id, options.textColor) ?? text,
+                ring,
+            };
         }
 
+        /**
+         * Greedy distance clustering, the approach of Leaflet.markercluster and supercluster: each marker
+         * not yet taken gathers every untaken marker within the radius of it. Cutting the screen into a
+         * fixed grid instead splits a dense spot along the cell lines into several bubbles drawn on top of
+         * one another. A grid of radius-sized cells is still used, but only as the index that keeps the
+         * neighbour search to the 3x3 cells around a marker.
+         *
+         * The markers are visited in their own order, so a bubble is seeded - and named - by the same
+         * marker from one render to the next, which keeps its id stable while the map pans.
+         */
         private static _cluster(markers: SourceMarker[], zoom: number, options: ClusterOptions, colors: BubbleColors): any[] {
-            const cells: { [key: string]: SourceMarker[] } = {};
             const radius = Math.max(1, options.radius);
+            const minPoints = Math.max(2, options.minPoints);
 
+            const points: { marker: SourceMarker, x: number, y: number, taken: boolean }[] = [];
+            const index: { [cell: string]: number[] } = {};
             for (const marker of markers) {
                 const lat = marker.payload?.lat;
                 const lng = marker.payload?.lng;
                 if (typeof lat !== 'number' || typeof lng !== 'number') continue;
                 const [x, y] = BitMapCluster._project(lat, lng, zoom);
-                const key = `${Math.floor(x / radius)}:${Math.floor(y / radius)}`;
-                (cells[key] ??= []).push(marker);
+                (index[`${Math.floor(x / radius)}:${Math.floor(y / radius)}`] ??= []).push(points.length);
+                points.push({ marker, x, y, taken: false });
             }
 
             const result: any[] = [];
-            for (const key of Object.keys(cells)) {
-                const members = cells[key];
-                if (members.length < Math.max(2, options.minPoints)) {
-                    for (const member of members) result.push(member);
+            for (const seed of points) {
+                if (seed.taken) continue;
+
+                const near: typeof points = [];
+                const cx = Math.floor(seed.x / radius), cy = Math.floor(seed.y / radius);
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (const i of index[`${cx + dx}:${cy + dy}`] ?? []) {
+                            const p = points[i];
+                            if (!p.taken && Math.hypot(p.x - seed.x, p.y - seed.y) <= radius) near.push(p);
+                        }
+                    }
+                }
+
+                // Too few to be worth a bubble: the seed is drawn as itself, and its neighbours stay free
+                // to join a bubble seeded by someone else.
+                if (near.length < minPoints) {
+                    seed.taken = true;
+                    result.push(seed.marker);
                     continue;
                 }
+
+                for (const p of near) p.taken = true;
+                const members = near.map(p => p.marker);
+                const key = seed.marker.id;
 
                 let latSum = 0, lngSum = 0;
                 for (const member of members) {
@@ -352,9 +389,9 @@
                 `<text x="${half}" y="${half}" fill="${colors.text}" font-family="sans-serif" font-size="${fontSize}" ` +
                 `font-weight="600" text-anchor="middle" dominant-baseline="central">${label}</text>` +
                 `</svg>`;
-            // encodeURIComponent rather than btoa: the colours come from .NET and may be any CSS
-            // colour, including non-Latin-1 characters that btoa refuses.
-            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+            // URI-encoded rather than btoa, which refuses non-Latin-1 characters, and safe inside an
+            // unquoted CSS url() too - which is how the GL providers paint a custom icon.
+            return BitMapHelpers.svgDataUri(svg);
         }
     }
 }

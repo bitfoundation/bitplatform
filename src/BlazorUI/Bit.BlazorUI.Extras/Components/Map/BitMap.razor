@@ -17,12 +17,15 @@
        one tab stop on every backend.
        A disabled map is inert rather than merely dimmed: the provider's markers and controls live
        inside the canvas, and inert is what takes every one of them out of the tab order and away
-       from the pointer at once. *@
+       from the pointer at once.
+       While the map is being created the region is busy, so a screen reader entering it waits for
+       the map rather than reading out a half-built one. *@
     <div id="@_canvasId"
          @ref="_mapElement"
          class="bit-map-canvas @Classes?.Canvas"
          style="@Styles?.Canvas"
          role="region"
+         aria-busy="@(_loadState == BitMapLoadState.Loading ? "true" : null)"
          aria-roledescription="@RoleDescription"
          tabindex="@(TabIndex ?? "0")"
          inert="@(IsEnabled is false)"
@@ -47,11 +50,12 @@
         </div>
     }
 
-    @* The cluster bubbles are drawn as images, which a stylesheet cannot reach, so their colors are
-       resolved off this probe instead - the same --bit-Map-cluster-* variables and theme tokens every
-       other part of the map reads, so a bubble follows the theme and the scheme too. Always rendered:
-       clustering turned on after the first render is configured before the next render lands. *@
-    <span class="bit-map-cluster-probe" aria-hidden="true"></span>
+    @* The pins and the cluster bubbles are drawn as images and the shapes by the provider's own
+       renderer, none of which a stylesheet can reach, so their colors are resolved off this probe
+       instead - the same --bit-Map-* variables and theme tokens every other part of the map reads, so
+       they follow the theme and the scheme too. A color the caller gives, a theme variable included,
+       is computed on it as well. Always rendered: it is read from the first marker on. *@
+    <span class="bit-map-probe" aria-hidden="true"></span>
 
     @if (_loadState == BitMapLoadState.Loading && ShowLoading)
     {

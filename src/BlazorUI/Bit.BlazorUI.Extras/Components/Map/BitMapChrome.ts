@@ -216,7 +216,7 @@
             BitMapChrome._applyAutoResize(id, state);
             BitMapChrome._applyCooperativeGestures(state);
             BitMapChrome._applyKeyboardNavigation(id, state);
-            BitMapChrome._applyEscapeToExit(state);
+            BitMapChrome._applyEscapeToExit(id, state);
             BitMapChrome._applyContextLossReporting(state);
             BitMapChrome._applyFullscreenReporting(id, state);
         }
@@ -526,9 +526,13 @@
          * WCAG 2.1.2 (No Keyboard Trap): a focused map consumes the arrow keys, so there
          * has to be a documented way out that is not "keep pressing Tab past every marker".
          * Escape returns focus to the document flow.
+         *
+         * Escape dismisses the innermost thing first, though: while one of the provider's own marker
+         * popups is open, the first press closes it and the second leaves the map. Only Leaflet does
+         * that by itself, and the capture below would keep the key from it - so it is done here, for
+         * every provider, and with or without EscapeToExit.
          */
-        private static _applyEscapeToExit(s: ChromeState) {
-            if (!s.options.escapeToExit) return;
+        private static _applyEscapeToExit(id: string, s: ChromeState) {
             const keydown = (e: KeyboardEvent) => {
                 if (e.key !== 'Escape') return;
                 // Stopping propagation during the CAPTURE phase keeps the event from reaching the
@@ -538,6 +542,21 @@
                 // the keyboard trap this exists for: focus there is already out of the canvas.
                 const target = e.target;
                 if (target instanceof Element && target.closest('.bit-map-popup, .bit-map-overlay')) return;
+
+                let closed = false;
+                try { closed = (globalThis as any).BitBlazorUI?.[s.options.jsObjectName]?.closeMarkerPopup?.(id) === true; } catch { /* ignore */ }
+                if (closed) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    // Focus inside the popup - its close button, a link - went with it, and would
+                    // otherwise drop to the body. The canvas is where the popup was opened from.
+                    if (!s.root.contains(document.activeElement)) {
+                        try { s.canvas.focus({ preventScroll: true }); } catch { /* ignore */ }
+                    }
+                    return;
+                }
+
+                if (!s.options.escapeToExit) return;
                 e.stopPropagation();
                 try {
                     // Focus may be on any focusable descendant - a marker button, a provider's own

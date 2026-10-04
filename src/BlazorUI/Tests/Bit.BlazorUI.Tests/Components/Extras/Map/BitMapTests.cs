@@ -919,6 +919,41 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(false, style["fill"]);
     }
 
+    // A color is handed to the script as written - a theme variable included - and resolved there, on the map's probe;
+    // a missing one is null, which is what makes the script take the theme's --bit-Map-* color instead.
+    [TestMethod]
+    public async Task BitMapShouldSendTheColorsOfMarkersAndShapesAsWritten()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(ADD_MARKER);
+        Context.JSInterop.SetupVoid(ADD_POLYLINE);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(1, 2), Color = "var(--bit-clr-sec)" });
+        await component.Instance.AddMarker(new BitMapMarker { Id = "b", Position = new(1, 2) });
+        await component.Instance.AddPolyline("themed", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Weight = 5 });
+        await component.Instance.AddPolyline("red", [new(0, 0), new(1, 1)], new BitMapVectorPathStyle { Color = "red" });
+
+        var markers = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_MARKER)
+            .Select(i => (Dictionary<string, object?>)i.Arguments[2]!).ToList();
+        var styles = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_POLYLINE)
+            .Select(i => (Dictionary<string, object?>)i.Arguments[3]!).ToList();
+
+        Assert.AreEqual("var(--bit-clr-sec)", markers[0]["color"]);
+        Assert.IsNull(markers[1]["color"]);
+        Assert.IsNull(styles[0]["color"]);
+        Assert.AreEqual("red", styles[1]["color"]);
+    }
+
+    [TestMethod]
+    public void BitMapMarkersShouldDifferByColor()
+    {
+        var plain = new BitMapMarker { Id = "a", Position = new(1, 2) };
+
+        Assert.AreNotEqual(plain, plain with { Color = "red" }, "A recolored marker must be redrawn by the Markers reconciliation.");
+    }
+
     [TestMethod]
     public async Task BitMapShouldExposeTheIdsOfWhatIsOnTheMap()
     {
@@ -1496,6 +1531,23 @@ public class BitMapTests : BunitTestContext
         var expand = Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND);
         Assert.AreEqual(24, expand.Arguments[2]);
         Assert.AreEqual(true, expand.Arguments[3]);
+        Assert.AreEqual(true, expand.Arguments[4], "Without a reduced-motion preference the zoom into a bubble animates.");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldJumpIntoAClusterUnderReducedMotion()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(true);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        await component.Instance._OnMarkerClick(CLUSTER_ID);
+
+        Assert.AreEqual(false, Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND).Arguments[4]);
     }
 
     [TestMethod]
@@ -2514,6 +2566,58 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup"));
     }
 
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public async Task BitMapCloseMarkerPopupShouldReportWhetherAPopupWasOpen(bool wasOpen)
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>("BitBlazorUI.BitMapLeaflet.closeMarkerPopup", _ => true).SetResult(wasOpen);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var closed = await component.Instance.CloseMarkerPopup();
+
+        Assert.AreEqual(wasOpen, closed);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.closeMarkerPopup"));
+    }
+
+    [TestMethod]
+    public async Task BitMapCloseMarkerPopupShouldReportAFailingProviderAsNothingClosed()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>("BitBlazorUI.BitMapLeaflet.closeMarkerPopup", _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var errors = new List<BitMapInteropErrorArgs>();
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnInteropError,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapInteropErrorArgs>(this, e => errors.Add(e)));
+        });
+
+        Assert.IsFalse(await component.Instance.CloseMarkerPopup());
+        Assert.AreEqual(nameof(BitMap<BitLeafletMapProvider>.CloseMarkerPopup), errors.Single().Context);
+    }
+
+    // A screen reader entering the region while the map is being built waits for it rather than reading a half-built one.
+    [TestMethod]
+    public void BitMapShouldMarkTheCanvasBusyOnlyWhileLoading()
+    {
+        Context.JSInterop.Setup<bool>(CHROME_HAS_WEBGL, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(false);
+        var init = Context.JSInterop.SetupVoid(INIT, _ => true);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        Assert.AreEqual(BitMapLoadState.Loading, component.Instance.LoadState);
+        Assert.AreEqual("true", component.Find(".bit-map-canvas").GetAttribute("aria-busy"));
+
+        init.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual(BitMapLoadState.Ready, component.Instance.LoadState));
+        Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("aria-busy"));
+    }
+
     // ---------------------------------------------------------------- geographic helpers
 
     [TestMethod]
@@ -2749,6 +2853,28 @@ public class BitMapTests : BunitTestContext
         var call = Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS_TO_MARKERS);
         Assert.AreEqual(16, call.Arguments[1]);
         Assert.AreEqual(9d, call.Arguments[2]);
+    }
+
+    // A fit is a camera move like any other: under reduced motion it jumps, unless the move is marked essential.
+    [TestMethod,
+        DataRow(false, false, false, true),
+        DataRow(true, false, false, false),
+        DataRow(true, true, false, true),
+        DataRow(false, false, true, false)]
+    public async Task BitMapFitBoundsShouldHonourReducedMotion(bool reduced, bool essential, bool jump, bool animates)
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(reduced);
+        Context.JSInterop.SetupVoid(FIT_BOUNDS);
+        Context.JSInterop.SetupVoid(FIT_BOUNDS_TO_MARKERS);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance.FitBounds(new BitMapLatLngBounds(new(0, 0), new(10, 10)), animate: jump is false, essential: essential);
+        await component.Instance.FitBoundsToMarkers(animate: jump is false, essential: essential);
+
+        Assert.AreEqual(animates, Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS).Arguments[7]);
+        Assert.AreEqual(animates, Context.JSInterop.Invocations.Single(i => i.Identifier == FIT_BOUNDS_TO_MARKERS).Arguments[3]);
     }
 
     [TestMethod]
@@ -3354,7 +3480,7 @@ public class BitMapTests : BunitTestContext
         Assert.IsNull(options["color"]);
         Assert.IsNull(options["textColor"]);
 
-        var probe = component.Find(".bit-map > .bit-map-cluster-probe");
+        var probe = component.Find(".bit-map > .bit-map-probe");
         Assert.AreEqual("true", probe.GetAttribute("aria-hidden"));
     }
 

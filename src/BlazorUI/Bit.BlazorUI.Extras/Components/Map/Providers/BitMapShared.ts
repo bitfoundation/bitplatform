@@ -13,14 +13,119 @@ namespace BitBlazorUI {
          */
         static readonly viewNotifyDebounceMs = 80;
 
-        /** Convert a CSS hex color + alpha (0..1) to an rgba() string. */
-        static hexToRgba(hex: string | undefined, alpha: number): string {
-            if (!hex || typeof hex !== 'string') return `rgba(51,136,255,${alpha})`;
-            let h = hex.replace('#', '');
-            if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-            const n = parseInt(h, 16);
-            if (Number.isNaN(n)) return `rgba(51,136,255,${alpha})`;
-            return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+        /**
+         * The element a map's theme colors are read off (.bit-map-probe in BitMap.scss): its fill is the
+         * marker color, its stroke the shape color, and a color of the caller's is resolved on it.
+         */
+        static probe(mapId: string): HTMLElement | null {
+            try {
+                return document.getElementById(mapId)?.querySelector(':scope > .bit-map-probe') as HTMLElement | null ?? null;
+            } catch {
+                return null;
+            }
+        }
+
+        /**
+         * Resolves any CSS color - a name, hex, rgb(), hsl(), a theme variable such as var(--bit-clr-pri) - to
+         * the rgb() / rgba() form that a canvas, an SVG attribute and a WebGL style all accept, by letting the
+         * browser compute it on the map's probe. The libraries each parse colors their own way, several only
+         * hex, so nothing reaches them unresolved. Null when there is no color, or the browser rejects it.
+         */
+        static resolveColor(mapId: string, color: string | null | undefined): string | null {
+            if (!color || typeof color !== 'string') return null;
+            const probe = BitMapHelpers.probe(mapId);
+            if (!probe) return color; // no DOM to resolve against - hand it on as given
+            try {
+                if (globalThis.CSS?.supports && !CSS.supports('color', color)) return null;
+                probe.style.outlineColor = color;
+                return getComputedStyle(probe).outlineColor || color;
+            } catch {
+                return color;
+            } finally {
+                probe.style.outlineColor = '';
+            }
+        }
+
+        /** The theme's colors for markers and shapes, as the --bit-Map-marker-color / -vector-color variables say. */
+        static themeColors(mapId: string): { marker: string, vector: string } {
+            let marker = '#3388ff', vector = '#3388ff'; // reached only without a DOM to read
+            const probe = BitMapHelpers.probe(mapId);
+            if (probe) {
+                try {
+                    const style = getComputedStyle(probe);
+                    marker = style.fill || marker;
+                    vector = style.stroke || vector;
+                } catch { /* keep the defaults */ }
+            }
+            return { marker, vector };
+        }
+
+        /** Parses a hex or rgb() / rgba() color into its channels (0-255) and alpha (0-1). */
+        static parseColor(color: string | null | undefined): [number, number, number, number] | null {
+            if (!color || typeof color !== 'string') return null;
+            const c = color.trim();
+            if (c.startsWith('#')) {
+                let h = c.slice(1);
+                if (h.length === 3 || h.length === 4) h = [...h].map(x => x + x).join('');
+                if (h.length !== 6 && h.length !== 8) return null;
+                const n = parseInt(h, 16);
+                if (Number.isNaN(n)) return null;
+                return h.length === 8
+                    ? [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, (n & 255) / 255]
+                    : [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1];
+            }
+            const m = /^rgba?\(([^)]+)\)$/i.exec(c);
+            if (!m) return null;
+            const parts = m[1].split(/[\s,/]+/).filter(p => p.length > 0);
+            if (parts.length < 3) return null;
+            const channel = (p: string) => p.endsWith('%') ? parseFloat(p) * 2.55 : parseFloat(p);
+            const [r, g, b] = parts.slice(0, 3).map(channel);
+            const a = parts.length > 3 ? (parts[3].endsWith('%') ? parseFloat(parts[3]) / 100 : parseFloat(parts[3])) : 1;
+            if (![r, g, b, a].every(Number.isFinite)) return null;
+            return [Math.round(r), Math.round(g), Math.round(b), Math.min(1, Math.max(0, a))];
+        }
+
+        /** A color with an opacity applied on top of its own, as rgba(); blue when it cannot be parsed. */
+        static toRgba(color: string | null | undefined, alpha: number): string {
+            const [r, g, b, a] = BitMapHelpers.parseColor(color) ?? [51, 136, 255, 1];
+            return `rgba(${r},${g},${b},${a * alpha})`;
+        }
+
+        /**
+         * A path style with its colors resolved: the caller's, or the theme's shape color when none was given.
+         * Called first thing by every method that draws a shape, so what follows only ever sees plain rgb().
+         */
+        static resolvePathStyle(mapId: string, style: any): any {
+            const color = BitMapHelpers.resolveColor(mapId, style?.color) ?? BitMapHelpers.themeColors(mapId).vector;
+            const fillColor = BitMapHelpers.resolveColor(mapId, style?.fillColor) ?? color;
+            return { ...(style ?? {}), color, fillColor };
+        }
+
+        /**
+         * The pin every provider draws for a marker without an IconUrl - the same one on all seven, in the
+         * marker's Color or the theme's --bit-Map-marker-color, where each library would draw a pin of its own
+         * in a fixed color of its own. It is handed back as the icon fields of the marker, so each provider
+         * draws it down the path it already has for a custom icon.
+         */
+        static withDefaultIcon(mapId: string, opts: any): any {
+            if (!opts || opts.iconUrl) return opts;
+            const fill = BitMapHelpers.resolveColor(mapId, opts.color) ?? BitMapHelpers.themeColors(mapId).marker;
+            const width = opts.iconWidth ?? 25;
+            const height = opts.iconHeight ?? 41;
+            const svg =
+                `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="-1 -1 27 43">` +
+                `<path d="M12.5 0C5.6 0 0 5.6 0 12.5 0 21.9 12.5 41 12.5 41S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z" fill="${fill}" stroke="rgba(0,0,0,0.35)" stroke-width="1"/>` +
+                `<circle cx="12.5" cy="12.5" r="4.5" fill="#fff"/>` +
+                `</svg>`;
+            return { ...opts, iconUrl: BitMapHelpers.svgDataUri(svg), iconWidth: width, iconHeight: height };
+        }
+
+        /**
+         * An SVG as a data URI that also survives an unquoted CSS url(): encodeURIComponent leaves the
+         * parentheses of an rgb() and the apostrophe alone, and either one would end the url() early.
+         */
+        static svgDataUri(svg: string): string {
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg).replace(/[()']/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
         }
 
         /** Default stroke + fill payload used when style is null. */
@@ -99,6 +204,31 @@ namespace BitBlazorUI {
                 ? opts.iconAnchorY
                 : height;
             return [Math.round(x), Math.round(y)];
+        }
+
+        /**
+         * Where a popup or tooltip opened on a marker should point from, relative to the coordinate: the
+         * icon's top edge for one above it, its bottom edge below, and beside its head - the top square of
+         * the icon, a pin's round part - to either side. A popup aimed at the coordinate itself would sit
+         * over the icon it belongs to. In the anchor names the GL libraries use, which say what side of
+         * the popup touches the point: 'bottom' is a popup above the marker.
+         */
+        static popupOffsets(opts: any, width: number, height: number): { [anchor: string]: [number, number] } {
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, width, height);
+            const cx = Math.round(width / 2 - ax);
+            const top = -ay, bottom = height - ay, left = -ax, right = width - ax;
+            const head = Math.round(-ay + Math.min(width, height) / 2);
+            return {
+                'center': [cx, Math.round(height / 2 - ay)],
+                'bottom': [cx, top],
+                'top': [cx, bottom],
+                'left': [right, head],
+                'right': [left, head],
+                'bottom-left': [right, top],
+                'bottom-right': [left, top],
+                'top-left': [right, bottom],
+                'top-right': [left, bottom],
+            };
         }
 
         /** Split a subdomains option ("abc" or "a,b,c") into its individual values. */

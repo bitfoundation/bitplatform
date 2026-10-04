@@ -222,7 +222,7 @@ namespace BitBlazorUI {
             s.view.goTo({ center: target }, animate === false ? { animate: false } : {}).catch(() => {});
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, _maxZoom?: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, _maxZoom?: number, animate: boolean = true) {
             const s = BitMapArcGis._require(id);
             const pad = paddingPx ?? 48;
             const latFrac = ((neLat - swLat) * pad) / 300;
@@ -232,28 +232,33 @@ namespace BitBlazorUI {
                 xmax: neLng + lngFrac, ymax: neLat + latFrac,
                 spatialReference: { wkid: 4326 },
             });
-            s.view.goTo(ext).catch(() => {});
+            s.view.goTo(ext, { animate }).catch(() => {});
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number, _maxZoom?: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, _maxZoom?: number, animate: boolean = true) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
             const geoms = s.markerLayer.graphics.toArray().map((g: any) => g.geometry).filter(Boolean);
             if (geoms.length === 0) return;
             const pad = paddingPx ?? 48;
-            s.view.goTo(geoms, { padding: { top: pad, right: pad, bottom: pad, left: pad } }).catch(() => {});
+            s.view.goTo(geoms, { padding: { top: pad, right: pad, bottom: pad, left: pad }, animate }).catch(() => {});
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
+            opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
-            const sym = opts.iconUrl
-                ? new esri.PictureMarkerSymbol({ url: opts.iconUrl, width: opts.iconWidth || 32, height: opts.iconHeight || 32 })
-                : new esri.SimpleMarkerSymbol({
-                    color: [51, 136, 255, 255],
-                    outline: { color: [255, 255, 255, 255], width: 2 },
-                    size: 14,
-                });
+            // A picture symbol is centred on its point; the offsets move the icon's anchor - a pin's tip by
+            // default - onto the coordinate instead, as on every other provider. Pixels, not ArcGIS' points.
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            const sym = new esri.PictureMarkerSymbol({
+                url: BitMapArcGis._base64DataUri(opts.iconUrl),
+                width: `${w}px`,
+                height: `${h}px`,
+                xoffset: `${w / 2 - ax}px`,
+                yoffset: `${ay - h / 2}px`,
+            });
             const graphic = new esri.Graphic({
                 geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
                 symbol: sym,
@@ -310,15 +315,53 @@ namespace BitBlazorUI {
             const html = g.attributes?.popupHtml;
             const text = g.attributes?.popupText;
             if (html) {
-                s.view.popup.open({ content: html, title: g.attributes?.title || '', location: g.geometry });
+                BitMapArcGis._openPopup(s.view, { content: html, title: g.attributes?.title || '', location: g.geometry });
             } else if (text) {
                 const el = document.createElement('span');
                 el.textContent = text;
-                s.view.popup.open({ content: el, title: g.attributes?.title || '', location: g.geometry });
+                BitMapArcGis._openPopup(s.view, { content: el, title: g.attributes?.title || '', location: g.geometry });
             }
         }
 
+        /** Closes the view's popup, if it is open. Returns whether it was. */
+        public static closeMarkerPopup(id: string): boolean {
+            const view = BitMapArcGis._maps[id]?.view;
+            if (!view?.popup?.visible) return false;
+            if (typeof view.closePopup === 'function') view.closePopup();
+            else view.popup.close?.();
+            return true;
+        }
+
+        /**
+         * A picture symbol reads the payload of a data URI as base64 whatever the URI says, so a
+         * URI-encoded one - the default pin, a cluster bubble, most inline SVG icons - draws nothing.
+         * Re-encoded as base64; any other URL is left alone.
+         */
+        private static _base64DataUri(url: string): string {
+            const m = /^data:([^;,]+)(;charset=[^;,]+)?,(.*)$/is.exec(url ?? '');
+            if (!m) return url;
+            try {
+                const bytes = new TextEncoder().encode(decodeURIComponent(m[3]));
+                let binary = '';
+                for (const b of bytes) binary += String.fromCharCode(b);
+                return `data:${m[1]};base64,${btoa(binary)}`;
+            } catch {
+                return url;
+            }
+        }
+
+        /**
+         * Opens the view's popup. ArcGIS 4.27 moved this to the view itself and 5.0 dropped the popup's
+         * own open(): the popup is created on demand now, so before the first open there is no widget
+         * to call it on.
+         */
+        private static _openPopup(view: any, options: any) {
+            if (typeof view.openPopup === 'function') view.openPopup(options);
+            else view.popup?.open?.(options);
+        }
+
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
             const g = new esri.Graphic({
@@ -333,6 +376,7 @@ namespace BitBlazorUI {
         }
 
         public static addPolygon(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
             const ring = latlngs.map(p => [p.lng, p.lat]);
@@ -350,6 +394,7 @@ namespace BitBlazorUI {
         }
 
         public static addCircle(id: string, layerId: string, lat: number, lng: number, radiusMeters: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
             const ring = BitMapHelpers.circleRingLngLat(lat, lng, radiusMeters);
@@ -362,6 +407,7 @@ namespace BitBlazorUI {
         }
 
         public static addRectangle(id: string, layerId: string, swLat: number, swLng: number, neLat: number, neLng: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
             const ring = [
@@ -376,6 +422,7 @@ namespace BitBlazorUI {
         }
 
         public static addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
             let gj: any;
@@ -542,19 +589,8 @@ namespace BitBlazorUI {
             });
         }
 
-        /**
-         * Build a point symbol from a BitMap path style. Falls back to the legacy
-         * blue SimpleMarkerSymbol only when no style at all is supplied so callers
-         * that pass a custom color/outline/opacity see them honored on point features.
-         */
+        /** Build a point symbol from a BitMap path style, so point features take the shape colors too. */
         private static _pointSym(esri: any, style: any) {
-            if (!style) {
-                return new esri.SimpleMarkerSymbol({
-                    color: [51, 136, 255, 255],
-                    outline: { color: [255, 255, 255, 255], width: 2 },
-                    size: 8,
-                });
-            }
             const st = BitMapHelpers.readPathStyle(style);
             return new esri.SimpleMarkerSymbol({
                 color: BitMapArcGis._rgbaArr(st.fillColor, st.fillOpacity),
@@ -566,14 +602,10 @@ namespace BitBlazorUI {
             });
         }
 
-        private static _rgbaArr(hex: string, alpha: number): number[] {
-            const a = Math.round(alpha * 255);
-            if (!hex) return [51, 136, 255, a];
-            let h = hex.replace('#', '');
-            if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-            const n = parseInt(h, 16);
-            if (Number.isNaN(n)) return [51, 136, 255, a];
-            return [(n >> 16) & 255, (n >> 8) & 255, n & 255, a];
+        /** An esri color array; its alpha is 0-1, the color's own multiplied by the opacity. */
+        private static _rgbaArr(color: string, alpha: number): number[] {
+            const [r, g, b, a] = BitMapHelpers.parseColor(color) ?? [51, 136, 255, 1];
+            return [r, g, b, a * alpha];
         }
 
         private static _ensureScaleBar(s: any, show: boolean) {
@@ -752,11 +784,11 @@ namespace BitBlazorUI {
                             hit = true;
                             dn()?.invokeMethodAsync('OnMarkerClick', a.markerId);
                             if (a.popupHtml) {
-                                view.popup.open({ content: a.popupHtml, title: a.title || '', location: g.geometry });
+                                BitMapArcGis._openPopup(view, { content: a.popupHtml, title: a.title || '', location: g.geometry });
                             } else if (a.popupText) {
                                 const el = document.createElement('span');
                                 el.textContent = a.popupText;
-                                view.popup.open({ content: el, title: a.title || '', location: g.geometry });
+                                BitMapArcGis._openPopup(view, { content: el, title: a.title || '', location: g.geometry });
                             }
                             break;
                         }

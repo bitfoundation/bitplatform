@@ -3,8 +3,11 @@
 // Public CSS variables, read off the map and never declared here, so a value set on :root re-skins every map of the
 // app and one set on the Style of a map - or of any element around a group of them - re-skins those alone. Styles and
 // Classes still reach each part by name and win over these.
+//   --bit-Map-height                 height of the map; a percentage needs a container with a height   (default: 100%)
 //   --bit-Map-background             what shows where no tile is drawn: before the tiles load, behind the
 //                                    loading / error cover, and around a fullscreen map                (default: $clr-bg-sec)
+//   --bit-Map-tile-filter            CSS filter on the raster tiles of Leaflet and OpenLayers, never on
+//                                    the vectors and markers - e.g. a dark scheme's inverted basemap   (default: none)
 //   --bit-Map-border                 border of the map                                                 (default: none)
 //   --bit-Map-radius                 corner radius of the map, which clips the tiles too               (default: $shp-radius-none)
 //   --bit-Map-focus-color            focus outline of the map canvas                                   (default: $clr-pri-focus)
@@ -19,12 +22,15 @@
 //   --bit-Map-tooltip-color          text color of the marker tooltips                                 (default: $clr-tooltip-fg)
 //   --bit-Map-hint-background        backdrop of the cooperative-gestures hint                         (default: $clr-bg-overlay)
 //   --bit-Map-hint-color             text color of the cooperative-gestures hint                       (default: $clr-ntr-white)
+//   --bit-Map-marker-color           pin of a marker with no IconUrl and no Color of its own           (default: $clr-pri)
+//   --bit-Map-vector-color           stroke and fill of a shape with no Color of its own               (default: $clr-pri)
 //   --bit-Map-cluster-background     fill of the cluster bubbles                                       (default: $clr-pri)
 //   --bit-Map-cluster-color          count drawn inside the cluster bubbles                            (default: $clr-pri-text)
 //   --bit-Map-cluster-border-color   ring around the cluster bubbles                                   (default: $clr-ntr-white)
 //
 // The popup and tooltip variables reach the providers' own popups and tooltips too (Leaflet, MapLibre, Mapbox and
-// OpenLayers), so a marker's PopupText looks like the MarkerPopupTemplate popup next to it, in both schemes.
+// OpenLayers), so a marker's PopupText looks like the MarkerPopupTemplate popup next to it, in both schemes. The marker,
+// vector and cluster colors reach every provider, but are read as each marker, shape or bubble is drawn.
 
 // The map's layer stack, bottom to top. The root is a stacking context of its own, so these
 // numbers order the layers against each other and never against the page around the map.
@@ -59,7 +65,7 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 
 .bit-map {
     width: 100%;
-    height: 100%;
+    height: var(--bit-Map-height, 100%);
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
@@ -108,6 +114,13 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 
     .leaflet-map-pane {
         z-index: $map-z-content;
+    }
+
+    // The raster tiles only - the base layer and the tile overlays - never the vectors and markers drawn
+    // on them. Leaflet keeps every tile layer in its tile pane; OpenLayers gets its own canvas for them.
+    .leaflet-tile-pane,
+    .bit-map-ol-tiles {
+        filter: var(--bit-Map-tile-filter, none);
     }
 
     .leaflet-top,
@@ -376,9 +389,10 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     text-align: center;
 }
 
-// The colors of the cluster bubbles, which are images a stylesheet cannot reach: the clustering layer reads them off
-// this probe and paints them in. Never seen - the computed colors are all it is there for.
-.bit-map-cluster-probe {
+// The colors of what the map draws as images or through the provider's own renderer - the pins, the cluster bubbles,
+// the shapes - none of which a stylesheet can reach: the script reads them off this probe and paints them in. Never
+// seen - the computed colors are all it is there for.
+.bit-map-probe {
     position: absolute;
     width: 0;
     height: 0;
@@ -388,6 +402,8 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     color: var(--bit-Map-cluster-color, #{$clr-pri-text});
     background-color: var(--bit-Map-cluster-background, #{$clr-pri});
     border: 0 solid var(--bit-Map-cluster-border-color, #{$clr-ntr-white});
+    fill: var(--bit-Map-marker-color, #{$clr-pri});
+    stroke: var(--bit-Map-vector-color, #{$clr-pri});
 }
 
 // Loading / error / unsupported states. They sit above the canvas but below the consumer's

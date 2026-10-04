@@ -17,8 +17,8 @@ namespace Bit.BlazorUI;
 public sealed class BitMapClustering
 {
     /// <summary>
-    /// Grid size in screen pixels. Markers landing in the same cell become one cluster, so a
-    /// larger radius means fewer, denser bubbles.
+    /// How close, in screen pixels, markers have to be to join one cluster, so a larger radius means
+    /// fewer, denser bubbles.
     /// </summary>
     public int RadiusPixels { get; set; } = 60;
 
@@ -29,13 +29,13 @@ public sealed class BitMapClustering
     public double MaxZoom { get; set; } = 16;
 
     /// <summary>
-    /// Fewest markers a cell needs before it is drawn as a bubble. Below this the markers are drawn
+    /// Fewest markers a cluster needs before it is drawn as a bubble. Below this the markers are drawn
     /// as themselves - a "cluster of 2" is rarely worth the extra click. Values below 2 are treated as 2.
     /// </summary>
     public int MinPoints { get; set; } = 2;
 
     /// <summary>
-    /// Fill colour of the cluster bubble. Any CSS colour.
+    /// Fill colour of the cluster bubble. Any CSS colour, a theme variable such as <c>var(--bit-clr-sec)</c> included.
     /// <para>
     /// Null, the default, takes the theme's: the <c>--bit-Map-cluster-background</c> CSS variable,
     /// which falls back to the primary colour - so the bubbles follow the theme and the colour scheme

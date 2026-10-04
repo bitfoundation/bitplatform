@@ -19,6 +19,7 @@ public partial class BitMapDemo
 
 <BitButton OnClick=""AddRandomMarker"">Add a marker</BitButton>
 <BitButton OnClick=""OpenLondonPopup"" Variant=""BitVariant.Outline"">Open London's popup</BitButton>
+<BitButton OnClick=""ClosePopup"" Variant=""BitVariant.Outline"">Close the popup</BitButton>
 <BitButton OnClick=""FitToMarkers"" Variant=""BitVariant.Outline"">Fit to markers</BitButton>
 <BitButton OnClick=""ClearMarkers"" Variant=""BitVariant.Outline"">Clear</BitButton>
 
@@ -61,6 +62,8 @@ private async Task AddRandomMarker()
 }
 
 private async Task OpenLondonPopup() => await markersMapRef.OpenMarkerPopup(""london"");
+
+private async Task ClosePopup() => markersLog = await markersMapRef.CloseMarkerPopup() ? ""Popup closed."" : ""No popup was open."";
 
 private async Task FitToMarkers() => await markersMapRef.FitBoundsToMarkers();
 
@@ -141,9 +144,6 @@ private static readonly BitMapLatLng iconProbe = new(51.5045, -0.0865);
 private static string DiscIcon(string fill) => ""data:image/svg+xml;charset=utf-8,"" + Uri.EscapeDataString(
     $""""""<svg xmlns=""http://www.w3.org/2000/svg"" width=""28"" height=""28"" viewBox=""0 0 28 28""><circle cx=""14"" cy=""14"" r=""11"" fill=""{fill}"" stroke=""#fff"" stroke-width=""3""/></svg>"""""");
 
-private static string PinIcon(string fill) => ""data:image/svg+xml;charset=utf-8,"" + Uri.EscapeDataString(
-    $""""""<svg xmlns=""http://www.w3.org/2000/svg"" width=""24"" height=""36"" viewBox=""0 0 24 36""><path d=""M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"" fill=""{fill}"" stroke=""#fff"" stroke-width=""2""/><circle cx=""12"" cy=""12"" r=""4.5"" fill=""#fff""/></svg>"""""");
-
 private async Task OnIconsReady()
 {
     await iconsMapRef.AddCircle(""probe"", iconProbe, 12, new() { Color = ""#111"", Weight = 2, Fill = false });
@@ -157,12 +157,9 @@ private void ToggleIconAnchor(bool centred)
 
 private static List<BitMapMarker> BuildIconMarkers(bool centred) =>
 [
-    // A pin's tip is at its bottom centre, which is what the default anchor assumes.
-    new()
-    {
-        Id = ""pin"", Position = iconProbe.Offset(90, 270), Alt = ""Pin, anchored at its tip"",
-        IconUrl = PinIcon(""#d13438""), IconWidth = 24, IconHeight = 36,
-    },
+    // The default pin, in the theme's primary color - or any other, a theme variable included.
+    new() { Id = ""pin"", Position = iconProbe.Offset(110, 300), Alt = ""Pin in the primary color"" },
+    new() { Id = ""pin-sec"", Position = iconProbe.Offset(110, 240), Alt = ""Pin in the secondary color"", Color = ""var(--bit-clr-sec)"" },
     // A disc stands for the coordinate at its centre, so it has to say so.
     new()
     {
@@ -749,7 +746,7 @@ private readonly List<BitMapMarker> styleMarkers =
     }
 
     .custom-map-canvas {
-        filter: saturate(0.3);
+        --bit-Map-tile-filter: saturate(0.3);
     }
 }";
     private readonly DemoCodeFile[] example17CodeFiles =

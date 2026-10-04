@@ -17,7 +17,9 @@ public class BitMapStylesheetTests
 {
     private static readonly string[] PublicVariables =
     [
+        "--bit-Map-height",
         "--bit-Map-background",
+        "--bit-Map-tile-filter",
         "--bit-Map-border",
         "--bit-Map-radius",
         "--bit-Map-focus-color",
@@ -32,6 +34,8 @@ public class BitMapStylesheetTests
         "--bit-Map-tooltip-color",
         "--bit-Map-hint-background",
         "--bit-Map-hint-color",
+        "--bit-Map-marker-color",
+        "--bit-Map-vector-color",
         "--bit-Map-cluster-background",
         "--bit-Map-cluster-color",
         "--bit-Map-cluster-border-color",
@@ -109,19 +113,56 @@ public class BitMapStylesheetTests
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"rgba?\(", RegexOptions.IgnoreCase), "A literal color is used instead of a theme token.");
     }
 
-    // The cluster bubbles are images, so their colors are read off a probe the clustering layer queries; the probe has
-    // to carry all three of them.
+    // The pins and the cluster bubbles are images and the shapes are drawn by the provider, so their colors are read off
+    // a probe the script queries; the probe has to carry all five of them.
     [TestMethod]
-    public void BitMapShouldResolveTheClusterColorsOffItsProbe()
+    public void BitMapShouldResolveTheDrawnColorsOffItsProbe()
     {
-        var block = ReadBlock(".bit-map-cluster-probe");
+        var block = ReadBlock(".bit-map-probe");
 
         StringAssert.Contains(block, "color: var(--bit-Map-cluster-color, ");
         StringAssert.Contains(block, "background-color: var(--bit-Map-cluster-background, ");
         StringAssert.Contains(block, "border: 0 solid var(--bit-Map-cluster-border-color, ");
+        StringAssert.Contains(block, "fill: var(--bit-Map-marker-color, ");
+        StringAssert.Contains(block, "stroke: var(--bit-Map-vector-color, ");
     }
 
 
+
+    // The tile filter is what turns a light basemap dark, so it must reach the raster tiles alone: on the whole canvas
+    // it would invert the markers, the shapes and the cluster bubbles drawn on top of them too.
+    [TestMethod]
+    public void BitMapShouldFilterTheRasterTilesAlone()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(stylesheet, ".leaflet-tile-pane,\n    .bit-map-ol-tiles {\n        filter: var(--bit-Map-tile-filter, none);");
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-Map-tile-filter").Count);
+
+        var openLayers = ReadFile("Bit.BlazorUI.Extras", "Components", "Map", "Providers", "BitMapOpenLayers.ts");
+
+        Assert.AreEqual(3, Regex.Matches(openLayers, @"_tileClassName\b").Count, "Both the base layer and the tile overlays must render into the filtered canvas.");
+        StringAssert.Contains(openLayers, "_tileClassName = 'ol-layer bit-map-ol-tiles'");
+    }
+
+    // The script half of the probe: every provider draws a marker without an icon as the same themed pin, and resolves a
+    // shape's colors - the theme's, or any CSS color the caller wrote - before its library sees them, so none of them
+    // falls back to a fixed color of its own or misreads a color that is not hex.
+    [TestMethod,
+        DataRow("BitMapLeaflet.ts"),
+        DataRow("BitMapGlBase.ts"),
+        DataRow("BitMapOpenLayers.ts"),
+        DataRow("BitMapArcGis.ts"),
+        DataRow("BitMapAzureMaps.ts"),
+        DataRow("BitMapCesium.ts")]
+    public void BitMapProvidersShouldDrawInTheThemesColors(string file)
+    {
+        var script = ReadFile("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
+
+        Assert.AreEqual(1, Regex.Matches(script, @"opts = BitMapHelpers\.withDefaultIcon\(id, opts\);").Count);
+        Assert.AreEqual(5, Regex.Matches(script, @"style = BitMapHelpers\.resolvePathStyle\(id, style\);").Count);
+        Assert.IsFalse(script.Contains("hexToRgba", StringComparison.Ordinal), "A hex-only parser misreads every other CSS color.");
+    }
 
     private static string ReadBlock(string selector)
     {

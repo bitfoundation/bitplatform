@@ -90,7 +90,7 @@ public partial class BitMapDemo
             Name = "EscapeToExit",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Moves the focus out of the canvas on Escape, so a focused map is never a keyboard trap.",
+            Description = "Moves the focus out of the canvas on Escape, so a focused map is never a keyboard trap. An open marker popup is closed first.",
         },
         new()
         {
@@ -362,7 +362,7 @@ public partial class BitMapDemo
             Name = "RespectReducedMotion",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Makes FlyTo, an animated SetView and the keyboard's pan and zoom jump under a reduced-motion preference, unless the move is essential or ForceAnimation is set.",
+            Description = "Makes every camera move - FlyTo, SetView, FitBounds, a cluster's zoom, the keyboard - jump under a reduced-motion preference, unless the move is essential or ForceAnimation is set.",
         },
         new()
         {
@@ -620,6 +620,13 @@ public partial class BitMapDemo
                 },
                 new()
                 {
+                    Name = "Color",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The color of the default pin - any CSS color, a theme variable included. Null takes --bit-Map-marker-color.",
+                },
+                new()
+                {
                     Name = "IconUrl",
                     Type = "string?",
                     DefaultValue = "null",
@@ -630,14 +637,14 @@ public partial class BitMapDemo
                     Name = "IconWidth",
                     Type = "int?",
                     DefaultValue = "null",
-                    Description = "The width of the icon in pixels. Null takes the provider's default.",
+                    Description = "The width of the icon in pixels. Null takes 25 for the pin, 32 for an IconUrl.",
                 },
                 new()
                 {
                     Name = "IconHeight",
                     Type = "int?",
                     DefaultValue = "null",
-                    Description = "The height of the icon in pixels. Null takes the provider's default.",
+                    Description = "The height of the icon in pixels. Null takes 41 for the pin, 32 for an IconUrl.",
                 },
                 new()
                 {
@@ -687,7 +694,7 @@ public partial class BitMapDemo
                     Name = "RadiusPixels",
                     Type = "int",
                     DefaultValue = "60",
-                    Description = "The grid size in screen pixels: a larger radius gives fewer, denser bubbles.",
+                    Description = "How close, in screen pixels, markers have to be to join one bubble: a larger radius gives fewer, denser bubbles.",
                 },
                 new()
                 {
@@ -763,9 +770,9 @@ public partial class BitMapDemo
                 new()
                 {
                     Name = "Color",
-                    Type = "string",
-                    DefaultValue = "#3388ff",
-                    Description = "The stroke color.",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The stroke color - any CSS color, a theme variable included. Null takes --bit-Map-vector-color.",
                 },
                 new()
                 {
@@ -1052,7 +1059,9 @@ public partial class BitMapDemo
 
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
+        new() { Name = "--bit-Map-height", DefaultValue = "100%", Description = "Height of the map. A percentage needs a container with a height of its own." },
         new() { Name = "--bit-Map-background", DefaultValue = "--bit-clr-bg-sec", Description = "What shows where no tile is drawn: before the tiles load, behind the loading cover and around a fullscreen map." },
+        new() { Name = "--bit-Map-tile-filter", DefaultValue = "none", Description = "CSS filter on the raster tiles of Leaflet and OpenLayers - never the vectors and markers on them. invert(1) hue-rotate(180deg) is a dark basemap." },
         new() { Name = "--bit-Map-border", DefaultValue = "none", Description = "Border of the map." },
         new() { Name = "--bit-Map-radius", DefaultValue = "--bit-shp-radius-none", Description = "Corner radius of the map, which clips the tiles too." },
         new() { Name = "--bit-Map-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focus outline of the map canvas." },
@@ -1067,6 +1076,8 @@ public partial class BitMapDemo
         new() { Name = "--bit-Map-tooltip-color", DefaultValue = "--bit-clr-tooltip-fg", Description = "Text color of the marker tooltips." },
         new() { Name = "--bit-Map-hint-background", DefaultValue = "--bit-clr-bg-overlay", Description = "Backdrop of the cooperative-gestures hint." },
         new() { Name = "--bit-Map-hint-color", DefaultValue = "--bit-clr-ntr-white", Description = "Text color of the cooperative-gestures hint." },
+        new() { Name = "--bit-Map-marker-color", DefaultValue = "--bit-clr-pri", Description = "The default pin, on every provider, unless BitMapMarker.Color is set." },
+        new() { Name = "--bit-Map-vector-color", DefaultValue = "--bit-clr-pri", Description = "Stroke and fill of the shapes, on every provider, unless BitMapVectorPathStyle.Color is set." },
         new() { Name = "--bit-Map-cluster-background", DefaultValue = "--bit-clr-pri", Description = "Fill of the cluster bubbles, unless BitMapClustering.Color is set." },
         new() { Name = "--bit-Map-cluster-color", DefaultValue = "--bit-clr-pri-text", Description = "Count inside the cluster bubbles, unless BitMapClustering.TextColor is set." },
         new() { Name = "--bit-Map-cluster-border-color", DefaultValue = "--bit-clr-ntr-white", Description = "Ring around the cluster bubbles." },
@@ -1224,16 +1235,16 @@ public partial class BitMapDemo
          new()
          {
             Name = "FitBounds",
-            Type = "Func<BitMapLatLngBounds, int, double, ValueTask>",
+            Type = "Func<BitMapLatLngBounds, int, double, bool, bool, ValueTask>",
             DefaultValue = "",
-            Description = "Fit the view to the given bounding box, with a pixel padding and a maxZoom ceiling (default 18) so framing a box around a single place does not drop to street level.",
+            Description = "Fit the view to the given bounding box (bounds, padding, maxZoom, animate, essential); the maxZoom ceiling (default 18) keeps a box around a single place from dropping to street level.",
          },
          new()
          {
             Name = "FitBoundsToMarkers",
-            Type = "Func<int, double, ValueTask>",
+            Type = "Func<int, double, bool, bool, ValueTask>",
             DefaultValue = "",
-            Description = "Fit the view to include every marker currently drawn, with the same padding and maxZoom ceiling as FitBounds.",
+            Description = "Fit the view to include every marker currently drawn, with the same arguments as FitBounds.",
          },
          new()
          {
@@ -1276,6 +1287,13 @@ public partial class BitMapDemo
             Type = "Func<string, ValueTask>",
             DefaultValue = "",
             Description = "Open a marker's popup.",
+         },
+         new()
+         {
+            Name = "CloseMarkerPopup",
+            Type = "Func<ValueTask<bool>>",
+            DefaultValue = "",
+            Description = "Close the provider's open marker popup; true when one was open. ClosePopup closes the MarkerPopupTemplate one.",
          },
          new()
          {
@@ -1468,6 +1486,8 @@ public partial class BitMapDemo
 
     private async Task OpenLondonPopup() => await markersMapRef.OpenMarkerPopup("london");
 
+    private async Task ClosePopup() => markersLog = await markersMapRef.CloseMarkerPopup() ? "Popup closed." : "No popup was open.";
+
     private async Task FitToMarkers() => await markersMapRef.FitBoundsToMarkers();
 
     private async Task ClearMarkers()
@@ -1525,9 +1545,6 @@ public partial class BitMapDemo
     private static string DiscIcon(string fill) => "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
         $"""<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="{fill}" stroke="#fff" stroke-width="3"/></svg>""");
 
-    private static string PinIcon(string fill) => "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(
-        $"""<svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox="0 0 24 36"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z" fill="{fill}" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>""");
-
     private async Task OnIconsReady()
     {
         await iconsMapRef.AddCircle("probe", iconProbe, 12, new() { Color = "#111", Weight = 2, Fill = false });
@@ -1541,12 +1558,9 @@ public partial class BitMapDemo
 
     private static List<BitMapMarker> BuildIconMarkers(bool centred) =>
     [
-        // A pin's tip is at its bottom centre, which is what the default anchor assumes.
-        new()
-        {
-            Id = "pin", Position = iconProbe.Offset(90, 270), Alt = "Pin, anchored at its tip",
-            IconUrl = PinIcon("#d13438"), IconWidth = 24, IconHeight = 36,
-        },
+        // The default pin, in the theme's primary color - or any other, a theme variable included.
+        new() { Id = "pin", Position = iconProbe.Offset(110, 300), Alt = "Pin in the primary color" },
+        new() { Id = "pin-sec", Position = iconProbe.Offset(110, 240), Alt = "Pin in the secondary color", Color = "var(--bit-clr-sec)" },
         // A disc stands for the coordinate at its centre, so it has to say so.
         new()
         {

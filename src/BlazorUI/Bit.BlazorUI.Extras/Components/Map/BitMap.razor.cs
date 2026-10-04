@@ -264,6 +264,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Move focus out of the map canvas when Escape is pressed. A focused map consumes the arrow
     /// keys, so leaving it has to be possible without tabbing past every marker
     /// (WCAG 2.1.2, No Keyboard Trap).
+    /// <para>
+    /// While a provider's marker popup is open, Escape closes it first, on every provider and
+    /// whatever this is set to; the next press leaves the map.
+    /// </para>
     /// </summary>
     [Parameter] public bool EscapeToExit { get; set; } = true;
 
@@ -299,10 +303,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Honour the operating system's reduced-motion preference: <see cref="FlyTo"/>, an animated
-    /// <see cref="SetView"/> and the keyboard's pan and zoom jump straight to the destination instead
-    /// of animating.
+    /// <see cref="SetView"/>, <see cref="FitBounds"/>, the zoom into a cluster bubble and the keyboard's
+    /// pan and zoom jump straight to the destination instead of animating.
     /// <para>
-    /// Both methods take an <c>essential</c> argument to opt a specific move back into animating
+    /// The camera methods take an <c>essential</c> argument to opt a specific move back into animating
     /// (a "locate me" recentre, say, where the motion carries the meaning), and
     /// <see cref="BitComponentBase.ForceAnimation"/> opts every move of the map back in.
     /// </para>
@@ -708,7 +712,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <para><b>Provider support:</b> Leaflet, MapLibre, Mapbox, OpenLayers and Azure Maps.
     /// ArcGIS and Cesium have no equivalent and ignore it.</para>
     /// </param>
-    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48, double maxZoom = 18)
+    /// <param name="animate">Animate the move. Ignored when the user prefers reduced motion, unless <paramref name="essential"/> is true.</param>
+    /// <param name="essential">Marks the move as essential, so it animates even under a reduced-motion preference.</param>
+    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48, double maxZoom = 18, bool animate = true, bool essential = false)
     {
         EnsureReady();
         BitMapValidation.ValidatePadding(paddingPixels, nameof(paddingPixels));
@@ -716,24 +722,26 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         await SafeInvokeAsync(_js.BitMapFitBounds(JsObject, _Id,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
-            paddingPixels, maxZoom), nameof(FitBounds));
+            paddingPixels, maxZoom, ShouldAnimate(animate, essential)), nameof(FitBounds));
     }
 
     /// <summary>Fit the view to include all currently rendered markers.</summary>
     /// <param name="paddingPixels">Breathing room, in screen pixels, left on every side.</param>
     /// <param name="maxZoom">Ceiling on how far the fit may zoom in. See <see cref="FitBounds"/>.</param>
+    /// <param name="animate">Animate the move. Ignored when the user prefers reduced motion, unless <paramref name="essential"/> is true.</param>
+    /// <param name="essential">Marks the move as essential, so it animates even under a reduced-motion preference.</param>
     /// <remarks>
     /// While <see cref="Clustering"/> is on this fits what is drawn - the cluster bubbles - rather
     /// than every source marker, so a marker culled as offscreen is not accounted for. Fit the box
     /// from <see cref="BitMapLatLngBounds.FromMarkers"/> over <see cref="OrderedMarkers"/> when you
     /// need every source marker framed regardless.
     /// </remarks>
-    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48, double maxZoom = 18)
+    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48, double maxZoom = 18, bool animate = true, bool essential = false)
     {
         EnsureReady();
         BitMapValidation.ValidatePadding(paddingPixels, nameof(paddingPixels));
         BitMapValidation.ValidateZoom(maxZoom, nameof(maxZoom));
-        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels, maxZoom), nameof(FitBoundsToMarkers));
+        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels, maxZoom, ShouldAnimate(animate, essential)), nameof(FitBoundsToMarkers));
     }
 
     /// <summary>
@@ -969,6 +977,17 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
         await SafeInvokeAsync(_js.BitMapOpenMarkerPopup(JsObject, _Id, markerId), nameof(OpenMarkerPopup));
+    }
+
+    /// <summary>
+    /// Closes the provider's own marker popup - the counterpart of <see cref="OpenMarkerPopup"/>. Use
+    /// <see cref="ClosePopup"/> for the <see cref="MarkerPopupTemplate"/> one.
+    /// </summary>
+    /// <returns><c>true</c> when a popup was open and has been closed.</returns>
+    public async ValueTask<bool> CloseMarkerPopup()
+    {
+        EnsureReady();
+        return await SafeInvokeAsync(_js.BitMapCloseMarkerPopup(JsObject, _Id), nameof(CloseMarkerPopup)) ?? false;
     }
 
     /// <summary>Replace all markers in a single batch operation.</summary>
@@ -1418,8 +1437,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // expand() reports how many markers the bubble stood for either way, and only zooms
             // when asked to - so the count costs no second round-trip, and a consumer who handles
             // the click themselves still learns how big the bubble was.
+            // The zoom into a bubble is a camera move like any other, so it honours reduced motion too.
             count = await _js.BitMapClusterExpand(_Id, clusterId,
-                Clustering!.ExpandPaddingPixels, Clustering!.ZoomOnClick);
+                Clustering!.ExpandPaddingPixels, Clustering!.ZoomOnClick, ShouldAnimate(true, false));
         }
         catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, nameof(OnClusterClick)); }
 
@@ -2447,6 +2467,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ["tooltipDirection"] = m.TooltipDirection.ToString().ToLowerInvariant(),
         ["focusable"] = m.Focusable,
         ["draggable"] = m.Draggable,
+        ["color"] = m.Color,
         ["iconUrl"] = m.IconUrl,
         ["iconWidth"] = m.IconWidth,
         ["iconHeight"] = m.IconHeight,
