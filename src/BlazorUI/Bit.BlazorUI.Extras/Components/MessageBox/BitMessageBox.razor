@@ -42,12 +42,12 @@
                     @if (Title.HasValue())
                     {
                         @* The id is what the modal around it points its aria-labelledby at, so the message box
-                           names the dialog it is the content of instead of leaving it nameless. It is a heading,
-                           but not the theme's h5 heading type: its size follows the size of the message box. *@
-                        <h5 id="@_TitleId" style="@Styles?.Title" class="@_TitleClass">@Title</h5>
+                           names the dialog it is the content of instead of leaving it nameless. It is a heading
+                           (TitleElement picks the level), but its type is the theme's dialog title. *@
+                        @_renderTitle
                     }
 
-                    <BitSpacer Style="@(Styles?.Spacer)" Class="@(Classes?.Spacer)" />
+                    <BitSpacer Style="@(Styles?.Spacer)" Class="@($"bit-msb-spc {Classes?.Spacer}")" />
 
                     @if (ShowCloseButton)
                     {

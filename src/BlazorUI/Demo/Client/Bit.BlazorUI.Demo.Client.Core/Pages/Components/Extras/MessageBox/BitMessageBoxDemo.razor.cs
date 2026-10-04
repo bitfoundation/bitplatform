@@ -9,7 +9,7 @@ public partial class BitMessageBoxDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the focus onto the default action button once the message box is rendered, and marks it with the autofocus attribute the surrounding layer reads, so a message box kept mounted between showings lands the focus on it on every opening. The BitMessageBoxService defaults it to true for the message boxes it shows.",
+            Description = "Moves the focus onto the default action button (see DefaultButton) once the message box is rendered, and on every opening of a modal it stays mounted in. The BitMessageBoxService turns it on for the boxes it shows.",
         },
         new()
         {
@@ -23,7 +23,7 @@ public partial class BitMessageBoxDemo
             Name = "Body",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The body of the message box. Line breaks in it are kept and long lines wrap.",
+            Description = "The body of the message box. Line breaks in it are kept and long lines wrap. Its id is {Id}-bdy, for the aria-describedby of a modal around it.",
         },
         new()
         {
@@ -274,7 +274,14 @@ public partial class BitMessageBoxDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The title of the message box.",
+            Description = "The title of the message box. Its id is {Id}-ttl, for the aria-labelledby of a modal around it.",
+        },
+        new()
+        {
+            Name = "TitleElement",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The HTML element the title is rendered as (h5 by default). Pick the heading level that fits the page outline - h2 is usual for a dialog; the look does not change.",
         },
         new()
         {
@@ -310,6 +317,25 @@ public partial class BitMessageBoxDemo
             DefaultValue = "",
             Description = "Moves the focus onto the default action button of the message box, or onto its close button where it renders no action buttons of its own.",
         },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-MessageBox-padding", DefaultValue = "var(--bit-spa-dialog)", Description = "Inset of the message box (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-gap", DefaultValue = "spacing(2)", Description = "Room between the header, the body and the footer." },
+        new() { Name = "--bit-MessageBox-min-width", DefaultValue = "spacing(40)", Description = "Width the message box does not shrink below (scaled by Size, never past the max width, unset on small screens)." },
+        new() { Name = "--bit-MessageBox-max-width", DefaultValue = "var(--bit-siz-dialog-max-width)", Description = "Width the message box stops growing at; 100% lets it fill its container." },
+        new() { Name = "--bit-MessageBox-max-height", DefaultValue = "the screen height a modal leaves", Description = "Height past which the body scrolls (header and footer stay put)." },
+        new() { Name = "--bit-MessageBox-text-align", DefaultValue = "var(--bit-layout-dialog-text-align)", Description = "Alignment of the title and the body." },
+        new() { Name = "--bit-MessageBox-icon-color", DefaultValue = "the main color of Color", Description = "Color of the leading icon." },
+        new() { Name = "--bit-MessageBox-icon-size", DefaultValue = "var(--bit-siz-icon-md)", Description = "Size of the leading icon (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-title-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Color of the title." },
+        new() { Name = "--bit-MessageBox-title-font-size", DefaultValue = "var(--bit-tpg-dialog-title-font-size)", Description = "Size of the title (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-title-font-weight", DefaultValue = "var(--bit-tpg-dialog-title-font-weight)", Description = "Weight of the title." },
+        new() { Name = "--bit-MessageBox-body-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the body." },
+        new() { Name = "--bit-MessageBox-body-font-size", DefaultValue = "var(--bit-tpg-fs-md)", Description = "Size of the body (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-actions-gap", DefaultValue = "spacing(2)", Description = "Room between the action buttons." },
+        new() { Name = "--bit-MessageBox-actions-justify", DefaultValue = "var(--bit-layout-dialog-actions-justify)", Description = "How the action buttons sit along the footer." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -718,6 +744,13 @@ public partial class BitMessageBoxDemo
                 },
                 new()
                 {
+                    Name = "TitleElement",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The HTML element the title is rendered as (h5 by default)."
+                },
+                new()
+                {
                     Name = "YesText",
                     Type = "string?",
                     DefaultValue = "null",
@@ -782,6 +815,27 @@ public partial class BitMessageBoxDemo
     private BitMessageBoxResult buttonsResult;
     private BitMessageBoxResult modalServiceResult;
     private bool? confirmResult;
+    private BitMessageBoxResult serviceResult;
+
+    private readonly BitMessageBoxParams[] messageBoxParams =
+    [
+        new()
+        {
+            Size = BitSize.Small,
+            YesText = "Save",
+            NoText = "Don't save",
+            CancelText = "Go back",
+            CloseButtonTitle = "Dismiss",
+            PrimaryButtonColor = BitColor.Primary,
+            DefaultButton = BitMessageBoxResult.Cancel
+        }
+    ];
+
+    private const string cssVariablesStyle = "--bit-MessageBox-text-align:center;" +
+                                             "--bit-MessageBox-actions-justify:center;" +
+                                             "--bit-MessageBox-icon-size:2rem;" +
+                                             "--bit-MessageBox-title-color:var(--bit-clr-suc);" +
+                                             "--bit-MessageBox-padding:2rem;";
 
     private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
     {
@@ -818,32 +872,40 @@ public partial class BitMessageBoxDemo
     [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
     private async Task ShowMessageBoxService()
     {
-        await messageBoxService.Show("TITLE", "BODY");
+        serviceResult = await messageBoxService.Show("TITLE", "BODY", BitMessageBoxButtons.OkCancel);
     }
 
     private async Task ShowInfoMessageBox()
     {
-        await messageBoxService.ShowInfo("Information", "The export finished in 4 seconds.");
+        serviceResult = await messageBoxService.ShowInfo("Information", "The export finished in 4 seconds.");
     }
 
     private async Task ShowSuccessMessageBox()
     {
-        await messageBoxService.ShowSuccess("Success", "Your changes are saved.");
+        serviceResult = await messageBoxService.ShowSuccess("Success", "Your changes are saved.");
     }
 
     private async Task ShowWarningMessageBox()
     {
-        await messageBoxService.ShowWarning("Warning", "This workspace is almost out of space.");
+        serviceResult = await messageBoxService.ShowWarning("Warning", "This workspace is almost out of space.");
     }
 
     private async Task ShowSevereWarningMessageBox()
     {
-        await messageBoxService.ShowSevereWarning("Severe warning", "This workspace is out of space.");
+        serviceResult = await messageBoxService.ShowSevereWarning("Severe warning", "This workspace is out of space.");
     }
 
     private async Task ShowErrorMessageBox()
     {
-        await messageBoxService.ShowError("Error", "The file could not be uploaded.");
+        serviceResult = await messageBoxService.ShowError("Error", "The file could not be uploaded.");
+    }
+
+    private async Task ShowTimedMessageBox()
+    {
+        // The token takes the box back off the screen; a cancelled showing answers None.
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        serviceResult = await messageBoxService.Show(new() { Title = "Saved", Body = "This closes itself in 5 seconds." }, cts.Token);
     }
 
     private async Task ShowConfirm()

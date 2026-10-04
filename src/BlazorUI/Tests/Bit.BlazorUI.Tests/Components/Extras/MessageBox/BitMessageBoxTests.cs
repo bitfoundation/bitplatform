@@ -1116,4 +1116,60 @@ public class BitMessageBoxTests : BunitTestContext
 
         Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
     }
+
+    [TestMethod]
+    public void BitMessageBoxTitleShouldBeAnH5ByDefault()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "box");
+            parameters.Add(p => p.Title, "The title");
+        });
+
+        var title = component.Find(".bit-msb-ttl");
+
+        Assert.AreEqual("H5", title.TagName);
+        Assert.AreEqual("box-ttl", title.Id);
+        Assert.AreEqual("The title", title.TextContent);
+    }
+
+    [TestMethod]
+    [DataRow("h2", "H2")]
+    [DataRow("div", "DIV")]
+    [DataRow("img", "H5")]
+    [DataRow("not an element", "H5")]
+    public void BitMessageBoxTitleShouldBeRenderedAsTheTitleElement(string element, string expected)
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "box");
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.TitleElement, element);
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles { Title = "own-title" });
+            parameters.Add(p => p.Styles, new BitMessageBoxClassStyles { Title = "color:red" });
+        });
+
+        var title = component.Find(".bit-msb-ttl");
+
+        Assert.AreEqual(expected, title.TagName);
+        Assert.AreEqual("box-ttl", title.Id);
+        Assert.IsTrue(title.ClassList.Contains("own-title"));
+        Assert.AreEqual("color:red", title.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxSpacerShouldCarryItsOwnClassAndTheConsumers()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles { Spacer = "own-spacer" });
+        });
+
+        var spacer = component.Find(".bit-msb-hdr .bit-spc");
+
+        // The class is what the stylesheet collapses the spacer by where a title fills the header itself.
+        Assert.IsTrue(spacer.ClassList.Contains("bit-msb-spc"));
+        Assert.IsTrue(spacer.ClassList.Contains("own-spacer"));
+    }
 }

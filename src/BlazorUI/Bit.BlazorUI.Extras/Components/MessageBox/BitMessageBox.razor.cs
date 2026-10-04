@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitMessageBox is a pre-implemented box for showing messages with title and body.
@@ -13,6 +15,30 @@ public partial class BitMessageBox : BitComponentBase
     private bool _answering;
     private BitButton? _closeButtonRef;
     private readonly Dictionary<BitMessageBoxResult, BitButton> _buttonRefs = [];
+    private readonly RenderFragment _renderTitle;
+
+
+
+    public BitMessageBox()
+    {
+        // Held in a field rather than created per render, so the diff keeps being handed the same delegate.
+        _renderTitle = RenderTitle;
+    }
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the message box component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple message box components
+    /// through the <see cref="BitParams"/> component - the words on their buttons above all, which is one place to
+    /// localize every message box of an app, the ones the <see cref="BitMessageBoxService"/> shows included.
+    /// </remarks>
+    [CascadingParameter(Name = BitMessageBoxParams.ParamName)]
+    public BitMessageBoxParams? CascadingParameters { get; set; }
 
 
 
@@ -258,6 +284,16 @@ public partial class BitMessageBox : BitComponentBase
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
+    /// The HTML element the title of the message box is rendered as. The default is an <c>h5</c>.
+    /// </summary>
+    /// <remarks>
+    /// Pick the heading level that fits the outline of the page around the message box - an <c>h2</c> is the usual
+    /// one for the title of a dialog - rather than the look: the title keeps the type of the message box whatever
+    /// element it is rendered as. A void element (<c>img</c>, <c>br</c>, ...) or a malformed name falls back to the default.
+    /// </remarks>
+    [Parameter] public string? TitleElement { get; set; }
+
+    /// <summary>
     /// The text of the Yes button.
     /// </summary>
     [Parameter] public string? YesText { get; set; }
@@ -458,6 +494,14 @@ public partial class BitMessageBox : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMessageBoxParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && AutoFocus)
@@ -501,6 +545,18 @@ public partial class BitMessageBox : BitComponentBase
         BitMessageBoxResult.No => Classes?.NoButton,
         _ => Classes?.OkButton
     }) ?? Classes?.ActionButton;
+
+    // The title is written out by hand rather than in the markup because the element it is rendered as is the
+    // consumer's to choose.
+    private void RenderTitle(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, ResolveContentElement(TitleElement, "h5"));
+        builder.AddAttribute(1, "id", _TitleId);
+        builder.AddAttribute(2, "style", Styles?.Title);
+        builder.AddAttribute(3, "class", _TitleClass);
+        builder.AddContent(4, Title);
+        builder.CloseElement();
+    }
 
     private Task HandleOnCloseClick() => HandleAction(BitMessageBoxResult.None);
 

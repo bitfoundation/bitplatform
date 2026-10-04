@@ -15,6 +15,12 @@
 /// <see cref="BitModalServiceBase{TReference, TParameters}.IsContainerAvailable"/> to check for one before showing.
 /// A showing that never renders answers with <see cref="BitMessageBoxResult.None"/> rather than waiting
 /// forever on a box that is not on the screen.
+/// <br/>
+/// A message box that asks something - a Confirm, or any set of buttons beyond a lone Ok - is shown as an
+/// <c>alertdialog</c>, the role the WAI-ARIA pattern gives a dialog that interrupts to get a response, and so is
+/// one whose <see cref="BitMessageBoxParameters.Color"/> is Warning, SevereWarning or Error. A notice that is only
+/// acknowledged stays a plain <c>dialog</c>. <see cref="BitModalParameters.IsAlert"/> on
+/// <see cref="BitMessageBoxParameters.Modal"/> has the last word.
 /// </remarks>
 public class BitMessageBoxService(BitModalService modalService)
 {
@@ -91,12 +97,21 @@ public class BitMessageBoxService(BitModalService modalService)
     /// <summary>
     /// Shows a <see cref="BitMessageBox"/> asking for a confirmation, and reports whether it was given.
     /// </summary>
-    public async Task<bool> Confirm(BitMessageBoxParameters parameters)
+    public Task<bool> Confirm(BitMessageBoxParameters parameters) => Confirm(parameters, CancellationToken.None);
+
+    /// <summary>
+    /// Shows a <see cref="BitMessageBox"/> asking for a confirmation, and reports whether it was given - or
+    /// <c>false</c> once the <paramref name="cancellationToken"/> takes the question back.
+    /// </summary>
+    /// <remarks>
+    /// A cancellation closes the message box the way the page closing its modal does, so it is a refusal like any
+    /// other dismissal rather than an exception: the destructive branch is still never the one taken by default.
+    /// </remarks>
+    public async Task<bool> Confirm(BitMessageBoxParameters parameters, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(parameters);
 
-
-        var result = await Show(parameters, BitMessageBoxButtons.OkCancel);
+        var result = await Show(parameters, BitMessageBoxButtons.OkCancel, isQuestion: true, cancellationToken);
 
         return result is BitMessageBoxResult.Ok or BitMessageBoxResult.Yes;
     }
@@ -104,11 +119,33 @@ public class BitMessageBoxService(BitModalService modalService)
     /// <summary>
     /// Shows a <see cref="BitMessageBox"/> inside a <see cref="BitModal"/> using the <see cref="BitModalService"/>.
     /// </summary>
-    public Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters) => Show(parameters, null);
+    public Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters) => Show(parameters, CancellationToken.None);
 
-    private async Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters, BitMessageBoxButtons? fallbackButtons)
+    /// <summary>
+    /// Shows a <see cref="BitMessageBox"/> inside a <see cref="BitModal"/>, and closes it again if the
+    /// <paramref name="cancellationToken"/> is cancelled before it is answered.
+    /// </summary>
+    /// <remarks>
+    /// This is how a message box is taken back off the screen by the page rather than by the user - a time limit
+    /// (<c>new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token</c>), a navigation, the state it asked about
+    /// changing elsewhere. A cancelled showing answers with <see cref="BitMessageBoxResult.None"/>, the answer of a
+    /// message box the page closed, rather than throwing; one cancelled before it was shown is never shown.
+    /// </remarks>
+    public Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters, CancellationToken cancellationToken)
+    {
+        return Show(parameters, null, isQuestion: false, cancellationToken);
+    }
+
+    private async Task<BitMessageBoxResult> Show(BitMessageBoxParameters parameters,
+                                                 BitMessageBoxButtons? fallbackButtons,
+                                                 bool isQuestion,
+                                                 CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(parameters);
+
+        if (cancellationToken.IsCancellationRequested) return BitMessageBoxResult.None;
+
+        var buttons = parameters.Buttons ?? fallbackButtons ?? BitMessageBoxButtons.Ok;
 
         // The id is what the ids of the title and the body are derived from, and those are what the modal
         // points its accessible name and description at - so one is made up front rather than left to the
@@ -119,8 +156,11 @@ public class BitMessageBoxService(BitModalService modalService)
         // this very modal without a window where the reference isn't assigned yet.
         var modalRef = await modalService.Show<BitMessageBox>(
             mr => BuildParameters(parameters, id, mr, fallbackButtons),
-            BuildModalParameters(parameters, id),
+            BuildModalParameters(parameters, id, isQuestion || buttons is not (BitMessageBoxButtons.Ok or BitMessageBoxButtons.None)),
             parameters.Persistent ?? false);
+
+        // Close rather than Dismiss: this is the page taking the box back, which a CanClose guard has no say over.
+        using var registration = cancellationToken.Register(() => _ = modalRef.Close());
 
         // A modal shown with no container mounted is never rendered and never closed, so its result would
         // never arrive: whoever asked the question is let go with no answer instead of left waiting.
@@ -131,7 +171,7 @@ public class BitMessageBoxService(BitModalService modalService)
 
 
 
-    private static BitModalParameters BuildModalParameters(BitMessageBoxParameters parameters, string id)
+    private static BitModalParameters BuildModalParameters(BitMessageBoxParameters parameters, string id, bool asksAQuestion)
     {
         // A HeaderTemplate takes the title off the message box, so an aria-labelledby pointing at it would
         // name the dialog after an element that was never rendered - the words themselves stand in for it.
@@ -150,9 +190,10 @@ public class BitMessageBoxService(BitModalService modalService)
             // The body is the prompt, which is what the pattern asks an alert dialog to be described by.
             SubtitleAriaId = hasBody ? $"{id}-bdy" : null,
 
-            // The colors that carry urgency are the ones the alertdialog role exists for; everything else
-            // is left to the Modal's own decision.
-            IsAlert = parameters.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error ? true : null,
+            // The alertdialog role is for a dialog that interrupts to get a response - a question, which is what
+            // the WAI-ARIA pattern's own example (a confirmation) is - and for the colors that carry urgency.
+            // A notice that is only acknowledged is left to the Modal's own decision.
+            IsAlert = asksAQuestion || parameters.Color is BitColor.Warning or BitColor.SevereWarning or BitColor.Error ? true : null,
         };
 
         // Precedence to what the caller asked for: these are only the values the service works out on its own.
@@ -211,6 +252,7 @@ public class BitMessageBoxService(BitModalService modalService)
         Add(nameof(BitMessageBox.Size), parameters.Size);
         Add(nameof(BitMessageBox.Styles), parameters.Styles);
         Add(nameof(BitMessageBox.Title), parameters.Title);
+        Add(nameof(BitMessageBox.TitleElement), parameters.TitleElement);
         Add(nameof(BitMessageBox.YesText), parameters.YesText);
 
         return result;

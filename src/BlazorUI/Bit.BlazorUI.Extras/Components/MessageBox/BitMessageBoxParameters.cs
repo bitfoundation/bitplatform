@@ -199,6 +199,11 @@ public class BitMessageBoxParameters
     public string? Title { get; set; }
 
     /// <summary>
+    /// The HTML element the title of the message box is rendered as.
+    /// </summary>
+    public string? TitleElement { get; set; }
+
+    /// <summary>
     /// The text of the Yes button.
     /// </summary>
     public string? YesText { get; set; }

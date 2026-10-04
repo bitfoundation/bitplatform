@@ -172,7 +172,7 @@ public partial class MainLayout
                 new() { Text = "Map", Url = "/components/map" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
-                new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox" },
+                new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox", Data = "Confirmation dialog, Alert dialog, Yes No, Ok Cancel, Are you sure, Question" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
