@@ -763,9 +763,10 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
     }
 
-    // Without a Duration the pause follows the default sweep, which the loop factor of the theme retunes.
+    // Without a Duration the pause is written as the literal time the public variable takes - the stylesheet takes it
+    // as a ratio of the default sweep, which is what lets the loop factor of the theme retune the two together.
     [TestMethod]
-    public void BitTextShimmerShouldScaleRepeatDelayByTheLoopFactorWithoutADuration()
+    public void BitTextShimmerShouldWriteRepeatDelayAsALiteralTimeWithoutADuration()
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
         {
@@ -774,8 +775,24 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        CollectionAssert.Contains(style.Split(';'), "--bit-tsh-repeat-delay:calc(1000ms * var(--bit-mot-loop-factor, 1))");
+        CollectionAssert.Contains(style.Split(';'), "--bit-tsh-repeat-delay:1000ms");
         Assert.IsFalse(style.Contains("--bit-tsh-duration"));
+        Assert.IsFalse(style.Contains("--bit-tsh-sweep"));
+    }
+
+    // A Duration is the sweep the rest is a ratio of, as well as the duration of the animation.
+    [TestMethod]
+    public void BitTextShimmerShouldWriteTheDurationAsTheSweep()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 3000);
+        });
+
+        var style = component.Find(".bit-tsh").GetAttribute("style")!.Split(';');
+
+        CollectionAssert.Contains(style, "--bit-tsh-duration:3000ms");
+        CollectionAssert.Contains(style, "--bit-tsh-sweep:3000ms");
     }
 
     // A pause of nothing, or a sweep of no length to pause between, leaves the stylesheet's defaults alone.
@@ -964,7 +981,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Style, "font-size:2rem");
         });
 
-        Assert.AreEqual("--bit-tsh-auto-spread:10px;--bit-tsh-duration:1000ms;font-size:2rem",
+        Assert.AreEqual("--bit-tsh-auto-spread:10px;--bit-tsh-duration:1000ms;--bit-tsh-sweep:1000ms;font-size:2rem",
                         component.Find(".bit-tsh").GetAttribute("style"));
     }
 
