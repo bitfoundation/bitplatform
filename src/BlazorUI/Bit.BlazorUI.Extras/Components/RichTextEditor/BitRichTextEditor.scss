@@ -143,6 +143,10 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 
 .bit-rte-req::after {
     content: " *";
+    // The same asterisk with empty alternative text, so it is not read out as part of the label beside
+    // the aria-required the editing surface already reports. Declared second, and left out by an
+    // engine that does not know the syntax, which keeps the plain asterisk above.
+    content: " *" / "";
     color: $rte-error;
 }
 
