@@ -13,7 +13,7 @@ Or run it without installing anything:
 dnx Bit.Cli --prerelease -- new MyApp
 ```
 
-It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
+It needs a .NET 11 SDK or later. `dnx` asks once before it downloads the package.
 
 ## bit new
 
@@ -246,7 +246,7 @@ bit about
 shows the version, the commit and the GitHub Actions run that built it. Release packages are built from this repository by GitHub Actions, which signs the bit assemblies inside them, `bit.dll` included, and attests the provenance and the SBOM of every package and of those assemblies. On Windows, `bit about` says who signed the `bit.dll` it runs once Windows has checked the signature. For a release, it also asks GitHub whether it holds a build attestation for that exact `bit.dll`, and prints the command that verifies it fully:
 
 ```bash
-gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>/tools/net10.0/any/bit.dll --repo bitfoundation/bitplatform
+gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>/tools/net11.0/any/bit.dll --repo bitfoundation/bitplatform
 ```
 
 ## Exit codes

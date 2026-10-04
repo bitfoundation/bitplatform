@@ -8,9 +8,9 @@ public static class E2EEnvironment
 {
     /// <summary>
     /// <c>BROUTER_E2E_FRAMEWORK</c>: the target framework the web harness host runs on
-    /// (net10.0, net9.0 or net8.0). Defaults to net10.0. The hybrid host is always net10.0-windows.
+    /// (net11.0, net10.0, net9.0 or net8.0). Defaults to net11.0. The hybrid host is always net11.0-windows.
     /// </summary>
-    public static string Framework { get; } = Read("BROUTER_E2E_FRAMEWORK") ?? "net10.0";
+    public static string Framework { get; } = Read("BROUTER_E2E_FRAMEWORK") ?? "net11.0";
 
     /// <summary>
     /// <c>BROUTER_E2E_CONFIGURATION</c>: the build configuration of the harness hosts. Defaults to the

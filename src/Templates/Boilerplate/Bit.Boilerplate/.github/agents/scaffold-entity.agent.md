@@ -74,7 +74,7 @@ Generate a complete CRUD implementation for an entity including:
   - Configure unique indexes and relationships
   - Automatically registered in `AppDbContext` via `modelBuilder.ApplyConfigurationsFromAssembly()`
 - **Migration**: 
-  - Run: `dnx dotnet-ef@10.0.12 -- migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
+  - Run: `dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
 
 ### DTO
 - **Location**: `src/Shared/Features/{FeatureName}/`

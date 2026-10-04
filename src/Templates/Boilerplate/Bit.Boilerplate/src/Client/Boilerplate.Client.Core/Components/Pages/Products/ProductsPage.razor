@@ -57,14 +57,14 @@
                                        Width="200px" />
 
                     <BitDataGridColumn Title="@($"{Localizer[nameof(AppStrings.Price)]} ({CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol})")"
-                                       Align="BitDataGridColumnAlign.Right"
+                                       Align="BitTextAlign.End"
                                        Property="p => p.Price"
                                        Width="160px"
                                        Filterable="false"
                                        Format="@($"N{CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalDigits}")" />
 
                     <BitDataGridColumn Title="@Localizer[(nameof(AppStrings.Action))]"
-                                       Align="BitDataGridColumnAlign.Center"
+                                       Align="BitTextAlign.Center"
                                        Width="110px"
                                        Sortable="false"
                                        Filterable="false">

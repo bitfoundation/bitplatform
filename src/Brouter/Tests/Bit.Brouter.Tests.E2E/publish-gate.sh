@@ -21,10 +21,10 @@ here="$(cd "$(dirname "$0")" && pwd)"
 project="$here/../Bit.Brouter.Tests.Harness.Web/Bit.Brouter.Tests.Harness.Web.csproj"
 log="$(mktemp)"
 
-# TargetFrameworks=net10.0 on top of -f: -f alone does not reach project references, which then still
+# TargetFrameworks=net11.0 on top of -f: -f alone does not reach project references, which then still
 # evaluate every framework they target - and with RunAOTCompilation each of those demands its own
 # wasm-tools workload.
-dotnet publish "$project" -c Release -f net10.0 -p:TargetFrameworks=net10.0 -o "$output" \
+dotnet publish "$project" -c Release -f net11.0 -p:TargetFrameworks=net11.0 -o "$output" \
     -p:SuppressTrimAnalysisWarnings=false -p:TrimmerSingleWarn=false "$@" 2>&1 | tee "$log"
 
 # The origin member follows the warning code, so "IL2069: Bit.Brouter.X" is raised inside the library
