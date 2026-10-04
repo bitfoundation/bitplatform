@@ -271,17 +271,17 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var describedBy = component.Find(".bit-rte-edt").GetAttribute("aria-describedby");
         Assert.IsFalse(string.IsNullOrEmpty(describedBy));
-        Assert.AreEqual(describedBy, component.Find(".bit-rte-cnt").GetAttribute("id"));
+        Assert.AreEqual($"{component.Find(".bit-rte-cnt").GetAttribute("id")} {component.Find(".bit-rte-hint").Id}", describedBy);
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldNotDescribeTheSurfaceWithoutACountFooter()
+    public void BitRichTextEditorShouldDescribeTheSurfaceByTheHelpHintAloneWithoutAFooter()
     {
         SetupJsInterop();
 
         var component = RenderComponent<BitRichTextEditor>();
 
-        Assert.IsNull(component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
+        Assert.AreEqual(component.Find(".bit-rte-hint").Id, component.Find(".bit-rte-edt").GetAttribute("aria-describedby"));
     }
 
 
@@ -527,6 +527,44 @@ public class BitRichTextEditorTests : BunitTestContext
         var last = component.FindAll(".bit-rte-tlb .bit-rte-btn").Last();
         Assert.AreEqual("Insert today", last.GetAttribute("aria-label"));
         Assert.AreEqual("Today", last.TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorCustomToolbarItemShouldReflectIsActiveAndKeepTheSelection()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
+            parameters.Add(p => p.ToolbarConfig, new BitRichTextEditorToolbarConfig
+            {
+                CustomItems =
+                [
+                    new() { Id = "callout", Label = "Callout", IsActive = s => s.Block == "blockquote", OnActivate = _ => Task.CompletedTask },
+                    new() { Id = "today", Label = "Today", OnActivate = _ => Task.CompletedTask }
+                ]
+            });
+        });
+
+        var callout = ButtonByLabel(component, "Callout");
+        Assert.AreEqual("false", callout.GetAttribute("aria-pressed"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-rte-act"));
+        // A plain action has no pressed state to announce.
+        Assert.IsFalse(ButtonByLabel(component, "Today").HasAttribute("aria-pressed"));
+
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(new BitRichTextEditorSelectionState { Block = "blockquote" }));
+
+        callout = ButtonByLabel(component, "Callout");
+        Assert.AreEqual("true", callout.GetAttribute("aria-pressed"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-rte-act"));
+        Assert.AreEqual("blockquote", component.Instance.SelectionState.Block);
+
+        // Pressing it must not take the focus and the selection out of the text, like every built-in button.
+        static string[] Prevented(AngleSharp.Dom.IElement e)
+            => e.Attributes.Select(a => a.Name).Where(n => n.Contains("preventdefault", StringComparison.OrdinalIgnoreCase)).ToArray();
+        Assert.AreNotEqual(0, Prevented(callout).Length);
+        CollectionAssert.AreEqual(Prevented(ButtonByLabel(component, "Bold")), Prevented(callout));
     }
 
     [TestMethod]
@@ -907,6 +945,30 @@ public class BitRichTextEditorTests : BunitTestContext
             component.Instance._ResolveImageUrl("a.png", "image/png", "AAAA"));
 
         Assert.AreEqual("data:image/png;base64,AAAA", url);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldShowAndAnnounceAnUploadWhileItRuns()
+    {
+        SetupJsInterop();
+
+        var upload = new TaskCompletionSource<string?>();
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+            parameters.Add(p => p.OnImageUpload, _ => upload.Task));
+
+        Assert.AreEqual(0, component.FindAll(".bit-rte-upl").Count);
+
+        var resolving = component.InvokeAsync(() => component.Instance._ResolveImageUrl("a.png", "image/png", "AAAA"));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Uploading image…", component.Find(".bit-rte-upl").TextContent));
+        Assert.AreEqual("true", component.Find(".bit-rte-edt").GetAttribute("aria-busy"));
+        Assert.AreEqual("Uploading image…", component.Find(".bit-rte-ann").TextContent);
+
+        upload.SetResult("https://cdn.example.com/a.png");
+        Assert.AreEqual("https://cdn.example.com/a.png", await resolving);
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-rte-upl").Count));
+        Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("aria-busy"));
     }
 
     [TestMethod]
