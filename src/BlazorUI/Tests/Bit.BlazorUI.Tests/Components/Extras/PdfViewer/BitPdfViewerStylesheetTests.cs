@@ -83,6 +83,19 @@ public partial class BitPdfViewerStylesheetTests
         StringAssert.Contains(Block(stylesheet, "\n.bit-pdv-outline-node {"), "@include pdv-inset-ring;");
         StringAssert.Contains(Block(stylesheet, "\n.bit-pdv-attachment {"), "@include pdv-inset-ring;");
         StringAssert.Contains(Block(stylesheet, "\n.bit-pdv-layer {"), "@include pdv-inset-ring;");
+        // A link of the document is transparent, and the page clips anything drawn outside it.
+        StringAssert.Contains(Block(stylesheet, "\n.bit-pdv-page .bit-pdv-html-page a:focus-visible {"), "@include pdv-inset-ring;");
+    }
+
+    [TestMethod]
+    public void BitPdfViewerDeterminateProgressShouldFillFromTheInlineStart()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var bar = Block(stylesheet, "\n.bit-pdv-progress-bar.bit-pdv-det {");
+        StringAssert.Contains(bar, "animation: none;");
+        StringAssert.Contains(bar, "transform-origin: left center;");
+        StringAssert.Contains(Block(stylesheet, "\n.bit-rtl .bit-pdv-progress-bar.bit-pdv-det {"), "transform-origin: right center;");
     }
 
     [TestMethod]

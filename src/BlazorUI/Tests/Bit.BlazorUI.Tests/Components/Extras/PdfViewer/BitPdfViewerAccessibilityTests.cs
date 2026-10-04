@@ -1,3 +1,6 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -229,5 +232,178 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         StringAssert.Contains(style, "--bit-PdfViewer-height:300px");
         StringAssert.Contains(style, "--bit-PdfViewer-width:50%");
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldHideThePaintedLayerAndKeepTheTextLayerReadable()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count));
+
+        // The painted glyphs are a picture of the words the selection layer holds, so only one of the two is read.
+        var painted = component.Find(".bit-pdv-html-page > [aria-hidden='true']");
+        Assert.IsTrue(painted.QuerySelectorAll("span").Length > 0);
+        Assert.AreEqual(0, painted.QuerySelectorAll("[data-bit-pdv-sel]").Length);
+
+        var text = component.Find(".bit-pdv-text-layer [data-bit-pdv-sel]");
+        Assert.IsNull(text.Closest("[aria-hidden='true']"));
+        StringAssert.Contains(text.TextContent, "Hello");
+    }
+
+    [TestMethod]
+    public void BitPdfViewerPagesShouldBeNamedGroups()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.RichDocument()));
+            parameters.Add(p => p.Texts, new BitPdfViewerTexts { PageAriaLabelFormat = "Seite {0}" });
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+
+        var pages = component.FindAll(".bit-pdv-page[data-page]");
+
+        // A group, not a region: hundreds of landmarks would bury the viewer's own. Named by the document's labels.
+        Assert.AreEqual("group", pages[0].GetAttribute("role"));
+        Assert.AreEqual("Seite i", pages[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Seite ii", pages[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerInternalLinksShouldBeNamedLinksTheKeyboardReaches()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithInternalLink()));
+            parameters.Add(p => p.Texts, new BitPdfViewerTexts { LinkAriaLabelFormat = "Zu Seite {0}" });
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        var link = component.Find("[data-bit-pdv-page]");
+
+        Assert.AreEqual("A", link.TagName);
+        Assert.AreEqual("#page=2", link.GetAttribute("href"));
+        Assert.AreEqual("Zu Seite 2", link.GetAttribute("aria-label"));
+        Assert.IsNull(link.GetAttribute("tabindex"));
+        // The hotspot sits outside the hidden painted layer, or nothing could reach it.
+        Assert.IsNull(link.Closest("[aria-hidden='true']"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerExternalLinksShouldBeNamedByTheirAddressAndWrappedOnesReachedOnce()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R /Annots [5 0 R] >>",
+            TestPdf.Stream("BT ET"),
+            // A link wrapped across two lines: one link, two quads.
+            "<< /Type /Annot /Subtype /Link /Rect [10 10 190 60] " +
+                "/QuadPoints [10 60 190 60 10 40 190 40 10 30 100 30 10 10 100 10] " +
+                "/A << /S /URI /URI (https://bitplatform.dev) >> >>",
+        };
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Build(bodies, rootObjNum: 1)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count));
+
+        var links = component.FindAll(".bit-pdv-html-page a[href='https://bitplatform.dev']");
+
+        Assert.AreEqual(2, links.Count);
+        Assert.AreEqual("https://bitplatform.dev", links[0].GetAttribute("title"));
+        Assert.IsNull(links[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", links[1].GetAttribute("tabindex"));
+        Assert.AreEqual("true", links[1].GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerThumbnailsShouldHoldNoLinks()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithInternalLink()));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[data-thumb]").Count));
+
+        // The sidebar's spy asks for the thumbnails it scrolls into view; there is no browser here to ask.
+        await component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([1]));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-thumb='1'] .bit-pdv-html-page").Count));
+
+        // An option of a listbox with a tab stop inside it is a tab stop nobody can see: what the thumbnail shows is
+        // inert, whether it was built for the sidebar or reused from the page.
+        Assert.IsTrue(component.FindAll("[data-thumb] a").All(a => a.Closest("[inert]") is not null));
+        Assert.IsNotNull(component.Find("[data-thumb='1'] .bit-pdv-thumb-svg").GetAttribute("inert"));
+        Assert.AreEqual(1, component.FindAll(".bit-pdv-surface a[data-bit-pdv-page]").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldAnnounceAFailedLoadAsAnAlert()
+    {
+        var errors = new List<string>();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes("%PDF-1.7 this is not a pdf"u8.ToArray(), "broken.pdf"));
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, e => errors.Add(e)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+
+        var alert = component.Find(".bit-pdv-error");
+        Assert.AreEqual("alert", alert.GetAttribute("role"));
+        StringAssert.Contains(alert.TextContent, errors[0]);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerErrorTemplateShouldReceiveTheMessageOnErrorReceives()
+    {
+        var errors = new List<string>();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes("%PDF-1.7 this is not a pdf"u8.ToArray()));
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, e => errors.Add(e)));
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment<string>)(message => builder =>
+                builder.AddMarkupContent(0, $"<span class=\"custom-error\">{message}</span>")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+
+        var alert = component.Find(".bit-pdv-error");
+        Assert.AreEqual("alert", alert.GetAttribute("role"));
+        Assert.AreEqual(errors[0], alert.QuerySelector(".custom-error")!.TextContent);
+
+        // A document that does open takes the failure's place.
+        component.Render(parameters => parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld())));
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-error").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerEmptyTemplateShouldReplaceTheNoDocumentText()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.EmptyTemplate, (RenderFragment)(builder =>
+                builder.AddMarkupContent(0, "<span class=\"custom-empty\">Drop a pdf here</span>")));
+        });
+
+        var empty = component.Find(".bit-pdv-empty");
+
+        Assert.IsNotNull(empty.QuerySelector(".custom-empty"));
+        Assert.IsFalse(empty.TextContent.Contains("No document loaded."));
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-error").Count);
     }
 }
