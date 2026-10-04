@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -1022,6 +1023,72 @@ public class BitMessageBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMessageBoxShouldLetTheCloseButtonTakeBackAnAnswerItsGuardIsStillWorkingOut()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var token = CancellationToken.None;
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is not BitMessageBoxResult.Ok) return;
+
+                token = args.CancellationToken;
+                await gate.Task;
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var answering = component.FindAll(".bit-msb-ftr .bit-btn")[0].ClickAsync(new MouseEventArgs());
+
+        // A guard waiting on a server the user has given up on does not hold the box open.
+        await component.Find(".bit-msb-hdr .bit-btn").ClickAsync(new MouseEventArgs());
+
+        Assert.IsTrue(token.IsCancellationRequested);
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+
+        // The answer taken back is never handed over, whatever its guard goes on to decide.
+        gate.SetResult();
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None }, results);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxShouldNotLetAnotherAnswerTakeBackOneItsGuardIsStillWorkingOut()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var results = new List<BitMessageBoxResult>();
+
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.YesNo);
+            parameters.Add(p => p.OnBeforeResult, async (BitMessageBoxBeforeResultArgs args) =>
+            {
+                if (args.Result is BitMessageBoxResult.Yes) await gate.Task;
+            });
+            parameters.Add(p => p.OnResult, r => results.Add(r));
+        });
+
+        var buttons = component.FindAll(".bit-msb-ftr .bit-btn");
+
+        var answering = buttons[0].ClickAsync(new MouseEventArgs());
+
+        // No is an answer rather than a dismissal, so it waits its turn like any other.
+        await buttons[1].ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual(0, results.Count);
+
+        gate.SetResult();
+        await answering;
+
+        CollectionAssert.AreEqual(new[] { BitMessageBoxResult.Yes }, results);
+    }
+
+    [TestMethod]
     public async Task BitMessageBoxShouldTakeNoSecondAnswerWhileTheFirstOneIsStillRunning()
     {
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1115,5 +1182,61 @@ public class BitMessageBoxTests : BunitTestContext
         });
 
         Assert.AreEqual(1, component.FindAll(".bit-msb-hdr .bit-btn[autofocus]").Count);
+    }
+
+    [TestMethod]
+    public void BitMessageBoxTitleShouldBeAnH5ByDefault()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "box");
+            parameters.Add(p => p.Title, "The title");
+        });
+
+        var title = component.Find(".bit-msb-ttl");
+
+        Assert.AreEqual("H5", title.TagName);
+        Assert.AreEqual("box-ttl", title.Id);
+        Assert.AreEqual("The title", title.TextContent);
+    }
+
+    [TestMethod]
+    [DataRow("h2", "H2")]
+    [DataRow("div", "DIV")]
+    [DataRow("img", "H5")]
+    [DataRow("not an element", "H5")]
+    public void BitMessageBoxTitleShouldBeRenderedAsTheTitleElement(string element, string expected)
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Id, "box");
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.TitleElement, element);
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles { Title = "own-title" });
+            parameters.Add(p => p.Styles, new BitMessageBoxClassStyles { Title = "color:red" });
+        });
+
+        var title = component.Find(".bit-msb-ttl");
+
+        Assert.AreEqual(expected, title.TagName);
+        Assert.AreEqual("box-ttl", title.Id);
+        Assert.IsTrue(title.ClassList.Contains("own-title"));
+        Assert.AreEqual("color:red", title.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxSpacerShouldCarryItsOwnClassAndTheConsumers()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "The title");
+            parameters.Add(p => p.Classes, new BitMessageBoxClassStyles { Spacer = "own-spacer" });
+        });
+
+        var spacer = component.Find(".bit-msb-hdr .bit-spc");
+
+        // The class is what the stylesheet collapses the spacer by where a title fills the header itself.
+        Assert.IsTrue(spacer.ClassList.Contains("bit-msb-spc"));
+        Assert.IsTrue(spacer.ClassList.Contains("own-spacer"));
     }
 }

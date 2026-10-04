@@ -32,4 +32,15 @@ public class BitMessageBoxBeforeResultArgs
     /// Set to <c>true</c> to keep the message box open and hand over no answer.
     /// </summary>
     public bool Cancel { get; set; }
+
+    /// <summary>
+    /// Cancelled when the answer is taken back while the guard is still working it out: the close button or the Cancel
+    /// button pressed in the meantime, which is never kept waiting on a guard the user has given up on.
+    /// </summary>
+    /// <remarks>
+    /// Hand it to whatever slow work the guard does - a server call - so that work stops with the answer. An answer that
+    /// was taken back is never handed over, whatever the guard decides, and an <see cref="OperationCanceledException"/>
+    /// of this token thrown out of the guard is not an error.
+    /// </remarks>
+    public CancellationToken CancellationToken { get; init; }
 }
