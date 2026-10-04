@@ -1069,18 +1069,6 @@
         }
     }
 
-    // The rejection is carried by a color alone everywhere else, so here it is carried by the stroke itself:
-    // a dashed frame is the one difference from an accepted field that the forced palette cannot flatten.
-    .bit-tfl.bit-inv {
-        .bit-tfl-fgp {
-            border-style: dashed;
-        }
-
-        &.bit-tfl-und .bit-tfl-wrp {
-            border-bottom-style: dashed;
-        }
-    }
-
     // The suggestion is faded text behind the input; painted in the same CanvasText as the value it trails,
     // it would read as something that has already been accepted.
     .bit-tfl-gho {
@@ -1098,5 +1086,18 @@
     .bit-tfl-brn.bit-tfl-und .bit-tfl-wrp,
     .bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
         border-bottom: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // The rejection is carried by a color alone everywhere else, so here it is carried by the stroke itself:
+    // a dashed frame is the one difference from an accepted field that the forced palette cannot flatten. It
+    // comes after the frame handed back to a borderless field above, which would otherwise repaint it solid.
+    .bit-tfl.bit-inv {
+        .bit-tfl-fgp {
+            border-style: dashed;
+        }
+
+        &.bit-tfl-und .bit-tfl-wrp {
+            border-bottom-style: dashed;
+        }
     }
 }

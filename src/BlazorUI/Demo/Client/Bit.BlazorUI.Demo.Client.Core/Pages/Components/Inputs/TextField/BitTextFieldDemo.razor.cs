@@ -2060,6 +2060,7 @@ private static int CountTextElements(string? value) => new StringInfo(value ?? s
               Label=""Basic Multiline""
               GhostText=""@ghostBasicMultilineSuggestion""
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              AriaDescription=""A completion may be suggested as you type. Press Tab to accept it.""
               OnGhostTextAccepted=""(_ => ghostBasicMultilineSuggestion = null)""
               OnChange=""(v => ghostBasicMultilineSuggestion = GetGhostSuggestion(v))"" />
 <div>Value: [@ghostBasicMultilineValue]</div>
@@ -2070,6 +2071,7 @@ private static int CountTextElements(string? value) => new StringInfo(value ?? s
               Label=""Single-line""
               GhostText=""@ghostSuggestion""
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              AriaDescription=""A completion may be suggested as you type. Press Tab to accept it.""
               OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: false))""
               OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: false))"" />
 <div>Value: [@ghostTextValue]</div>
@@ -2083,6 +2085,7 @@ private static int CountTextElements(string? value) => new StringInfo(value ?? s
               Label=""Multiline""
               GhostText=""@ghostMultilineSuggestion""
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              AriaDescription=""A completion may be suggested as you type. Press Tab to accept it.""
               OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: true))""
               OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: true))"" />
 <div>Value: [@ghostMultilineValue]</div>";

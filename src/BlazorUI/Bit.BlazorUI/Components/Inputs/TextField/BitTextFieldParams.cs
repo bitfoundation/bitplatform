@@ -605,12 +605,16 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                foreach (var attribute in InputHtmlAttributes)
-                {
-                    if (bitTextField.InputHtmlAttributes.ContainsKey(attribute.Key)) continue;
+                // A new dictionary rather than the field's own: that one is the consumer's, and writing the
+                // cascaded attributes into it would leak them into every other place it is passed.
+                var merged = new Dictionary<string, object>(InputHtmlAttributes);
 
-                    bitTextField.InputHtmlAttributes[attribute.Key] = attribute.Value;
+                foreach (var attribute in bitTextField.InputHtmlAttributes)
+                {
+                    merged[attribute.Key] = attribute.Value;
                 }
+
+                bitTextField.InputHtmlAttributes = merged;
             }
         }
 
