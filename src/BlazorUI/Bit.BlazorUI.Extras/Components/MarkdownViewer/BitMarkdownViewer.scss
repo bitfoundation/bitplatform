@@ -376,7 +376,7 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
             }
         }
 
-        > :not(summary):first-of-type {
+        > summary + * {
             margin-top: 0.5em;
         }
     }

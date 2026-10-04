@@ -1028,8 +1028,15 @@ And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
 
     private async Task CopyCodeAsync(BitMarkdownCodeBlockNode block)
     {
-        await js.InvokeVoidAsync("navigator.clipboard.writeText", block.Content);
-        copiedBlock = block;
+        try
+        {
+            await js.InvokeVoidAsync("navigator.clipboard.writeText", block.Content);
+            copiedBlock = block;
+        }
+        catch (JSException)
+        {
+            // The clipboard can be denied (no permission, an insecure origin); the button just stays as it was.
+        }
     }
 
 

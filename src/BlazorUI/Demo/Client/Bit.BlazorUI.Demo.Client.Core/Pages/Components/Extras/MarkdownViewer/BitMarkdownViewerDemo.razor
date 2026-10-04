@@ -247,7 +247,7 @@
                         </div>
                     </CodeBlockTemplate>
                     <LinkTemplate>
-                        <BitLink Href="@context.Url" Target="_blank">
+                        <BitLink Href="@context.Url" Target="_blank" Rel="BitLinkRels.NoReferrer">
                             @BitMarkdownInlineHelpers.PlainText(context.Children)
                             <BitIcon IconName="@BitIconName.NavigateExternalInline" AriaLabel="opens in a new tab" />
                         </BitLink>

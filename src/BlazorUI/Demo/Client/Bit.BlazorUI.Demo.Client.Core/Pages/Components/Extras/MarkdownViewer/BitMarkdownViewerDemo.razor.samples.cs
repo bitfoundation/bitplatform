@@ -427,7 +427,7 @@ The image is written with a relative path, the way a README writes one.
         </div>
     </CodeBlockTemplate>
     <LinkTemplate>
-        <BitLink Href=""@context.Url"" Target=""_blank"">
+        <BitLink Href=""@context.Url"" Target=""_blank"" Rel=""BitLinkRels.NoReferrer"">
             @BitMarkdownInlineHelpers.PlainText(context.Children)
             <BitIcon IconName=""@BitIconName.NavigateExternalInline"" AriaLabel=""opens in a new tab"" />
         </BitLink>
@@ -454,8 +454,15 @@ private BitMarkdownCodeBlockNode? copiedBlock;
 
 private async Task CopyCodeAsync(BitMarkdownCodeBlockNode block)
 {
-    await js.InvokeVoidAsync(""navigator.clipboard.writeText"", block.Content);
-    copiedBlock = block;
+    try
+    {
+        await js.InvokeVoidAsync(""navigator.clipboard.writeText"", block.Content);
+        copiedBlock = block;
+    }
+    catch (JSException)
+    {
+        // The clipboard can be denied (no permission, an insecure origin); the button just stays as it was.
+    }
 }";
 
     private readonly string example14ScssCode = @"
