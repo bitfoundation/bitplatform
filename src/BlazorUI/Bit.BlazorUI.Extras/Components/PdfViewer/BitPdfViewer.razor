@@ -19,8 +19,14 @@
         @* role="group", not "toolbar": an aria toolbar is ONE tab stop whose arrow keys
            move between its controls, and this bar holds a text box and three dropdowns
            whose own arrow keys must keep working. Claiming the pattern without
-           implementing it tells assistive technology something untrue. *@
-        <div class="bit-pdv-toolbar @Classes?.Toolbar" style="@Styles?.Toolbar" role="group" aria-label="@ActiveTexts.ToolbarAriaLabel">
+           implementing it tells assistive technology something untrue. A disabled viewer
+           makes it inert: nothing in it can be focused, clicked or typed into. *@
+        <div class="bit-pdv-toolbar @Classes?.Toolbar" style="@Styles?.Toolbar" role="group" aria-label="@ActiveTexts.ToolbarAriaLabel"
+             inert="@(IsEnabled is false)">
+            @if (ToolbarStartTemplate is not null)
+            {
+                <div class="bit-pdv-group bit-pdv-custom">@ToolbarStartTemplate(this)</div>
+            }
             @if (HasToolbarItem(BitPdfToolbarItems.Thumbnails) || HasToolbarItem(BitPdfToolbarItems.Bookmarks) || HasToolbarItem(BitPdfToolbarItems.Attachments) || HasToolbarItem(BitPdfToolbarItems.Layers))
             {
                 <div class="bit-pdv-group bit-pdv-panels">
@@ -159,7 +165,7 @@
 
             @if (HasToolbarItem(BitPdfToolbarItems.Title))
             {
-                <div class="bit-pdv-title @Classes?.Title" style="@Styles?.Title" title="@_source?.FileName">@_source?.FileName</div>
+                <div class="bit-pdv-title @Classes?.Title" style="@Styles?.Title" title="@DocumentTitle">@DocumentTitle</div>
             }
 
             <div class="bit-pdv-group bit-pdv-right">
@@ -281,6 +287,10 @@
                     </button>
                 }
             </div>
+            @if (ToolbarEndTemplate is not null)
+            {
+                <div class="bit-pdv-group bit-pdv-custom">@ToolbarEndTemplate(this)</div>
+            }
         </div>
     }
 
@@ -302,14 +312,16 @@
     <div class="bit-pdv-body @Classes?.Body" style="@Styles?.Body">
         @if (_showOutline && HasOutline)
         {
-            <div class="bit-pdv-outline @Classes?.Outline" style="@Styles?.Outline" role="tree" aria-label="@ActiveTexts.Bookmarks">
+            <div class="bit-pdv-outline @Classes?.Outline" style="@Styles?.Outline" role="tree" aria-label="@ActiveTexts.Bookmarks"
+                 inert="@(IsEnabled is false)">
                 @{ _outlineOrdinal = 0; }
                 @RenderOutline(_outline)
             </div>
         }
         @if (_showLayers && HasLayers)
         {
-            <div class="bit-pdv-layers @Classes?.Layers" style="@Styles?.Layers" role="group" aria-label="@ActiveTexts.Layers">
+            <div class="bit-pdv-layers @Classes?.Layers" style="@Styles?.Layers" role="group" aria-label="@ActiveTexts.Layers"
+                 inert="@(IsEnabled is false)">
                 @foreach (var layer in _layers)
                 {
                     var item = layer;
@@ -322,7 +334,8 @@
         }
         @if (_showAttachments && HasAttachments)
         {
-            <div class="bit-pdv-attachments @Classes?.Attachments" style="@Styles?.Attachments" role="list" aria-label="@ActiveTexts.Attachments">
+            <div class="bit-pdv-attachments @Classes?.Attachments" style="@Styles?.Attachments" role="list" aria-label="@ActiveTexts.Attachments"
+                 inert="@(IsEnabled is false)">
                 @foreach (var attachment in _attachments)
                 {
                     var item = attachment;
@@ -343,13 +356,14 @@
         }
         @if (_showThumbnails && _thumbs.Count > 0)
         {
-            <div class="bit-pdv-thumbs @Classes?.Thumbnails" style="@Styles?.Thumbnails" role="listbox" aria-label="@ActiveTexts.Thumbnails" @ref="_thumbsRef">
+            <div class="bit-pdv-thumbs @Classes?.Thumbnails" style="@Styles?.Thumbnails" role="listbox" aria-label="@ActiveTexts.Thumbnails"
+                 inert="@(IsEnabled is false)" @ref="_thumbsRef">
                 @for (int i = 0; i < _thumbs.Count; i++)
                 {
                     int index = i;
                     int pageNo = i + 1;
                     <div class="bit-pdv-thumb @(pageNo == CurrentPage ? "bit-pdv-act" : "") @Classes?.Thumbnail" style="@Styles?.Thumbnail" data-thumb="@pageNo"
-                         role="option" tabindex="@(pageNo == CurrentPage ? 0 : -1)" aria-label="@ThumbLabel(index)" aria-selected="@AriaBool(pageNo == CurrentPage)"
+                         role="option" tabindex="@(pageNo == CurrentPage ? 0 : -1)" aria-label="@ThumbAriaLabel(index)" aria-selected="@AriaBool(pageNo == CurrentPage)"
                          @onclick="() => GoToPage(pageNo)" @onkeydown="e => OnThumbKeyDown(e, pageNo)">
                         <div class="bit-pdv-thumb-svg" style="@ThumbStyle(i)">
                             @if (_thumbs[i] is { } thumb)
@@ -365,7 +379,7 @@
                                 <div class="bit-pdv-page-placeholder"></div>
                             }
                         </div>
-                        <span class="bit-pdv-thumb-label">@ThumbLabel(index)</span>
+                        <span class="bit-pdv-thumb-label" aria-hidden="true">@ThumbLabel(index)</span>
                     </div>
                 }
             </div>
@@ -373,10 +387,11 @@
 
         @* tabindex makes the scrollable document region reachable by keyboard - it is
            what lets arrow keys scroll it and what puts focus inside the viewer, where
-           the shortcut listener on the root element can see the key events. *@
+           the shortcut listener on the root element can see the key events. aria-busy
+           tells assistive technology the region is still being filled. *@
         <div class="bit-pdv-surface @(_cursorTool == BitPdfCursorTool.Pan ? "bit-pdv-pan" : "") @(CanCopy ? "" : "bit-pdv-nocopy") @Classes?.Surface"
              style="@Styles?.Surface" @ref="_containerRef" data-bit-pdv-axis="@PagesAxis"
-             tabindex="0" role="region" aria-label="@(_source?.FileName ?? ActiveTexts.ToolbarAriaLabel)">
+             tabindex="0" role="region" aria-label="@SurfaceAriaLabel" aria-busy="@AriaBool(_loading)">
             @* Document-wide @@font-face rules, kept here (not per page) so they
                survive page eviction while scrolling. *@
             @FontFaceStyleMarkup
@@ -429,18 +444,23 @@
         @if (_passwordRequest is not null)
         {
             <div class="bit-pdv-dialog-overlay">
-                <div class="bit-pdv-dialog bit-pdv-password" role="dialog" aria-modal="true" aria-label="@ActiveTexts.PasswordTitle"
+                <div class="bit-pdv-dialog bit-pdv-password @Classes?.PasswordDialog" style="@Styles?.PasswordDialog"
+                     role="dialog" aria-modal="true" aria-labelledby="@PasswordTitleId" aria-describedby="@PasswordPromptId"
                      tabindex="-1" @ref="_passwordDialogRef" @onkeydown="OnPasswordDialogKeyDown">
                     <div class="bit-pdv-dialog-head">
-                        <span>@ActiveTexts.PasswordTitle</span>
+                        <span id="@PasswordTitleId">@ActiveTexts.PasswordTitle</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="CancelPassword">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
                         </button>
                     </div>
                     <div class="bit-pdv-dialog-body">
-                        <div>@(_passwordRejected ? ActiveTexts.PasswordRejected : ActiveTexts.PasswordPrompt)</div>
-                        <input class="bit-pdv-password-input" type="password" @ref="_passwordInputRef"
-                               aria-label="@ActiveTexts.PasswordTitle" aria-invalid="@AriaBool(_passwordRejected)"
+                        @* The prompt describes both the dialog and the box, so a rejected password is
+                           read out with the box it is retyped into. *@
+                        <div id="@PasswordPromptId" class="@(_passwordRejected ? "bit-pdv-password-error" : null)">
+                            @(_passwordRejected ? ActiveTexts.PasswordRejected : ActiveTexts.PasswordPrompt)
+                        </div>
+                        <input class="bit-pdv-password-input" type="password" autocomplete="current-password" @ref="_passwordInputRef"
+                               aria-label="@ActiveTexts.PasswordTitle" aria-describedby="@PasswordPromptId" aria-invalid="@AriaBool(_passwordRejected)"
                                value="@_passwordInput" @oninput="OnPasswordInput"
                                @onkeydown="OnPasswordKeyDown" @onkeydown:stopPropagation="true" />
                         <div class="bit-pdv-dialog-actions">
@@ -456,10 +476,10 @@
         {
             <div class="bit-pdv-dialog-overlay" @onclick="() => _showProperties = false">
                 <div class="bit-pdv-dialog @Classes?.PropertiesDialog" style="@Styles?.PropertiesDialog"
-                     role="dialog" aria-modal="true" aria-label="@ActiveTexts.Properties" tabindex="-1" @ref="_propertiesRef"
+                     role="dialog" aria-modal="true" aria-labelledby="@PropertiesTitleId" tabindex="-1" @ref="_propertiesRef"
                      @onclick:stopPropagation="true" @onkeydown="OnPropertiesKeyDown">
                     <div class="bit-pdv-dialog-head">
-                        <span>@ActiveTexts.Properties</span>
+                        <span id="@PropertiesTitleId">@ActiveTexts.Properties</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="() => _showProperties = false">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
                         </button>
@@ -505,6 +525,11 @@
     // consumed) while the tree renders, which is depth-first in exactly that order.
     private int _outlineOrdinal;
 
+    // The ids that name and describe the two dialogs, unique per viewer.
+    private string PasswordTitleId => $"{_Id}-pwd-title";
+    private string PasswordPromptId => $"{_Id}-pwd-desc";
+    private string PropertiesTitleId => $"{_Id}-props-title";
+
     /// <summary>The fullscreen button says which way it goes, not just that it toggles.</summary>
     private string FullscreenLabel => _fullscreen ? ActiveTexts.ExitFullscreen : ActiveTexts.Fullscreen;
 
@@ -547,6 +572,7 @@
                 tabindex="@(IsOutlineTabStop(item) ? 0 : -1)"
                 aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
                 aria-selected="@AriaBool(item.PageNumber == CurrentPage)"
+                aria-disabled="@(item.PageNumber is null ? "true" : null)"
                 title="@item.Title" @onclick="@(() => OnOutlineClick(item))" @onclick:stopPropagation="true"
                 @onkeydown="@(e => OnOutlineKeyDown(e, item))" @onkeydown:stopPropagation="true">
                 <div class="bit-pdv-outline-row">

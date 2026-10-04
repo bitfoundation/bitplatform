@@ -12,6 +12,10 @@ public class BitPdfViewerTexts
     /// <summary>The accessible name of the indeterminate loading bar.</summary>
     public string LoadingAriaLabel { get; set; } = "Loading document";
 
+    /// <summary>The accessible name of the scrollable document surface while no file name is known
+    /// (and the viewer's own <c>AriaLabel</c> is not set).</summary>
+    public string DocumentAriaLabel { get; set; } = "Document";
+
     /// <summary>The label of the page-thumbnails toggle.</summary>
     public string Thumbnails { get; set; } = "Page thumbnails";
 
@@ -155,6 +159,9 @@ public class BitPdfViewerTexts
 
     /// <summary>The screen-reader announcement of the focused page ({0} = the page, {1} = the page count).</summary>
     public string PageAnnouncementFormat { get; set; } = "Page {0} of {1}";
+
+    /// <summary>The accessible name of a page thumbnail ({0} = the page label, or its number).</summary>
+    public string ThumbnailAriaLabelFormat { get; set; } = "Page {0}";
 
     /// <summary>The label of any close button.</summary>
     public string Close { get; set; } = "Close";

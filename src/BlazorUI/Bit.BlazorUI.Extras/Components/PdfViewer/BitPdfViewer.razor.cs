@@ -201,6 +201,20 @@ public partial class BitPdfViewer : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the pdf viewer component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the texts of a localized app, its toolbar and
+    /// its size, above all) to be applied to multiple viewers through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitPdfViewerParams.ParamName)]
+    public BitPdfViewerParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// The document to display.
     /// </summary>
     [Parameter] public BitPdfSource? Source { get; set; }
@@ -249,6 +263,19 @@ public partial class BitPdfViewer : BitComponentBase
     /// <see cref="BitPdfToolbarItems.All"/>.
     /// </summary>
     [Parameter] public BitPdfToolbarItems ToolbarItems { get; set; } = BitPdfToolbarItems.All;
+
+    /// <summary>
+    /// Custom content rendered at the start of the toolbar, before the built-in controls - an app's own
+    /// actions (share, annotate, sign) beside the viewer's. The context is the viewer itself, so the content
+    /// can drive it through its public API.
+    /// </summary>
+    [Parameter] public RenderFragment<BitPdfViewer>? ToolbarStartTemplate { get; set; }
+
+    /// <summary>
+    /// Custom content rendered at the end of the toolbar, after the built-in controls. The context is the
+    /// viewer itself, so the content can drive it through its public API.
+    /// </summary>
+    [Parameter] public RenderFragment<BitPdfViewer>? ToolbarEndTemplate { get; set; }
 
     /// <summary>
     /// The side panel open when a document first loads. Default is
@@ -2099,13 +2126,19 @@ public partial class BitPdfViewer : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
+        // Through the public variables rather than the properties themselves, so the stylesheet's own rules - the
+        // fullscreen one above all - still outrank a size the host gave.
+        StyleBuilder.Register(() => Height.HasValue() ? $"--bit-PdfViewer-height:{Height}" : string.Empty);
 
-        StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+        StyleBuilder.Register(() => Width.HasValue() ? $"--bit-PdfViewer-width:{Width}" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPdfViewerParams))]
     protected override void OnInitialized()
     {
+        // The initial layout is seeded below, and the parameters a BitParams fills in are already in place for it.
+        CascadingParameters?.UpdateParameters(this);
+
         _zoomMode = InitialZoomMode;
         _scrollMode = ScrollMode;
         _spreadMode = SpreadMode;
@@ -2116,6 +2149,15 @@ public partial class BitPdfViewer : BitComponentBase
         _showLayers = DefaultSidebar == BitPdfSidebar.Layers;
 
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Before anything below reads the parameters it may fill in. A BitParams that has gone away takes what it
+        // had cascaded with it, which the base class has already put back by now.
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -4200,6 +4242,31 @@ public partial class BitPdfViewer : BitComponentBase
             await _js.BitPdfViewerFocusOutlineItem(RootElement, index);
         }
         catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>The accessible name of a thumbnail: "Page iv", not a bare "iv" a screen reader cannot place.</summary>
+    private string ThumbAriaLabel(int index) => string.Format(ActiveTexts.ThumbnailAriaLabelFormat, ThumbLabel(index));
+
+    /// <summary>The accessible name of the document surface: the host's, then the document's, then a generic one.</summary>
+    private string SurfaceAriaLabel => AriaLabel.HasValue() ? AriaLabel! : DocumentTitle ?? ActiveTexts.DocumentAriaLabel;
+
+    /// <summary>What the document is called: its file name, or - for a source that carries none (a buffer,
+    /// a stream) - the title its own metadata declares.</summary>
+    private string? DocumentTitle
+    {
+        get
+        {
+            if (_source?.FileName is { Length: > 0 } fileName) return fileName;
+
+            try
+            {
+                return _document?.Metadata.Title is { Length: > 0 } title ? title : null;
+            }
+            catch
+            {
+                return null; // a damaged /Info dictionary names nothing
+            }
+        }
     }
 
     private string ThumbStyle(int index)

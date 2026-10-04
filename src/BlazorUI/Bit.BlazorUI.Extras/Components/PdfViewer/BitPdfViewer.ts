@@ -1576,18 +1576,6 @@
 
         // ----- Text search (CSS Custom Highlight API) -----
 
-        private static ensureSearchStyles() {
-            if (document.getElementById("bit-pdv-search-style")) {
-                return;
-            }
-            const style = document.createElement("style");
-            style.id = "bit-pdv-search-style";
-            style.textContent =
-                "::highlight(bit-pdv-search){background:var(--bit-clr-wrn,#EDAE12);color:var(--bit-clr-wrn-text,#141414)}" +
-                "::highlight(bit-pdv-search-current){background:var(--bit-clr-swr,#CE4207);color:var(--bit-clr-swr-text,#FFFFFF)}";
-            document.head.appendChild(style);
-        }
-
         private static searchSupported() {
             return typeof (globalThis as any).Highlight !== "undefined" && typeof CSS !== "undefined" && !!(CSS as any).highlights;
         }
@@ -1704,7 +1692,6 @@
             if (!container || !query || !PdfViewer.searchSupported()) {
                 return;
             }
-            PdfViewer.ensureSearchStyles();
 
             let needle = PdfViewer.canonical(query, matchDiacritics).text;
             needle = matchCase ? needle : needle.toLowerCase();

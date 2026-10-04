@@ -66,7 +66,7 @@ public partial class BitPdfViewerDemo
             Name = "Height",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS height of the viewer container. When not set, the viewer height is responsive: capped at 780px and shrinking to fit the viewport on small screens.",
+            Description = "The CSS height of the viewer (sets --bit-PdfViewer-height on the instance). When not set, the viewer height is responsive: capped at 780px and shrinking to fit the viewport on small screens.",
         },
         new()
         {
@@ -253,7 +253,7 @@ public partial class BitPdfViewerDemo
             Name = "Width",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS width of the viewer container. When not set, the viewer fills the width its host gives it.",
+            Description = "The CSS width of the viewer (sets --bit-PdfViewer-width on the instance). When not set, the viewer fills the width its host gives it.",
         },
         new()
         {
@@ -297,6 +297,20 @@ public partial class BitPdfViewerDemo
             Description = "Which controls the toolbar offers. Combine the flags to build a reduced toolbar (e.g. navigation and zoom only).",
             LinkType = LinkType.Link,
             Href = "#pdf-toolbar-items-enum"
+        },
+        new()
+        {
+            Name = "ToolbarStartTemplate",
+            Type = "RenderFragment<BitPdfViewer>?",
+            DefaultValue = "null",
+            Description = "Custom content rendered at the start of the toolbar, before the built-in controls. The context is the viewer itself, so the content can drive it through its public API.",
+        },
+        new()
+        {
+            Name = "ToolbarEndTemplate",
+            Type = "RenderFragment<BitPdfViewer>?",
+            DefaultValue = "null",
+            Description = "Custom content rendered at the end of the toolbar, after the built-in controls. The context is the viewer itself.",
         },
         new()
         {
@@ -499,7 +513,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "SearchMatchCount",
             Type = "int",
-            Description = "The number of matches of the current find query (0 when there is no query or no match, -1 when the browser cannot highlight matches).",
+            Description = "The number of matches of the current find query, counted over the whole document (0 when there is no query or no match).",
         },
         new()
         {
@@ -607,7 +621,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "GoToDestination",
             Type = "Task GoToDestination(BitPdfDestination? destination)",
-            Description = "Navigates to a destination: its page, and - when the destination names a vertical position - that position within the page. The in-page offset is applied only while the pages are unrotated.",
+            Description = "Navigates to a destination: its page, and - when the destination names a vertical position - that position within the page, whatever the rotation. A destination that names a zoom applies it too.",
         },
         new()
         {
@@ -773,6 +787,48 @@ public partial class BitPdfViewerDemo
             Type = "Task ZoomOut()",
             Description = "Zooms out by one ZoomStep (20% by default).",
         },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-PdfViewer-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Text and glyphs of the chrome." },
+        new() { Name = "--bit-PdfViewer-background", DefaultValue = "var(--bit-clr-bg-sec-dark)", Description = "Backdrop behind the pages." },
+        new() { Name = "--bit-PdfViewer-border-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Color of the outer border." },
+        new() { Name = "--bit-PdfViewer-border-width", DefaultValue = "var(--bit-shp-brd-width)", Description = "Width of the outer border." },
+        new() { Name = "--bit-PdfViewer-border-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the viewer." },
+        new() { Name = "--bit-PdfViewer-divider-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Lines between the toolbar, the sidebars and the pages." },
+        new() { Name = "--bit-PdfViewer-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the viewer, and the drop-target frame." },
+        new() { Name = "--bit-PdfViewer-font-family", DefaultValue = "var(--bit-tpg-font-family)", Description = "Font of the chrome (page text keeps the document's own fonts)." },
+        new() { Name = "--bit-PdfViewer-height", DefaultValue = "min(780px, 85dvh)", Description = "Height of the viewer (the Height parameter sets it on the instance)." },
+        new() { Name = "--bit-PdfViewer-width", DefaultValue = "auto", Description = "Width of the viewer (the Width parameter sets it on the instance)." },
+        new() { Name = "--bit-PdfViewer-toolbar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the toolbar." },
+        new() { Name = "--bit-PdfViewer-button-size", DefaultValue = "spacing(3.75)", Description = "Width and height of a toolbar button." },
+        new() { Name = "--bit-PdfViewer-button-radius", DefaultValue = "var(--bit-shp-radius-button)", Description = "Corner radius of a toolbar button and a find option." },
+        new() { Name = "--bit-PdfViewer-button-hover-background", DefaultValue = "var(--bit-clr-bg-sec-hover)", Description = "Background of a toolbar button under the pointer." },
+        new() { Name = "--bit-PdfViewer-button-active-color", DefaultValue = "var(--bit-clr-pri-text)", Description = "Glyph of a toggle that is on (an open sidebar, the find box, a find option)." },
+        new() { Name = "--bit-PdfViewer-button-active-background", DefaultValue = "var(--bit-clr-pri)", Description = "Background of a toggle that is on." },
+        new() { Name = "--bit-PdfViewer-button-active-hover-background", DefaultValue = "var(--bit-clr-pri-hover)", Description = "Background of a toggle that is on, under the pointer." },
+        new() { Name = "--bit-PdfViewer-field-background", DefaultValue = "var(--bit-clr-bg-pri)", Description = "Background of the page box, the find box and the dropdowns." },
+        new() { Name = "--bit-PdfViewer-field-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Border of the page box, the find box, the dropdowns and the find options." },
+        new() { Name = "--bit-PdfViewer-sidebar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the side panels." },
+        new() { Name = "--bit-PdfViewer-sidebar-width", DefaultValue = "spacing(29)", Description = "Width of the bookmarks, attachments and layers panels (at most half the viewer)." },
+        new() { Name = "--bit-PdfViewer-item-hover-background", DefaultValue = "var(--bit-clr-bg-sec-hover)", Description = "A bookmark, attachment or layer row under the pointer." },
+        new() { Name = "--bit-PdfViewer-selection-color", DefaultValue = "var(--bit-clr-pri)", Description = "The current thumbnail's frame, the current bookmark and a checked layer." },
+        new() { Name = "--bit-PdfViewer-surface-padding", DefaultValue = "spacing(2)", Description = "Space around the pages." },
+        new() { Name = "--bit-PdfViewer-page-gap", DefaultValue = "spacing(2)", Description = "Space between the pages." },
+        new() { Name = "--bit-PdfViewer-page-background", DefaultValue = "#fff", Description = "Paper of a page and a thumbnail." },
+        new() { Name = "--bit-PdfViewer-page-shadow", DefaultValue = "var(--bit-shd-card)", Description = "Elevation of a page." },
+        new() { Name = "--bit-PdfViewer-page-filter", DefaultValue = "none", Description = "A CSS filter over every page and thumbnail - invert(1) hue-rotate(180deg) is a dark reading mode." },
+        new() { Name = "--bit-PdfViewer-placeholder-background", DefaultValue = "#f0f0f0", Description = "A page that has not painted yet (its shimmer is derived from it)." },
+        new() { Name = "--bit-PdfViewer-progress-color", DefaultValue = "var(--bit-clr-pri)", Description = "The loading bar." },
+        new() { Name = "--bit-PdfViewer-progress-track-color", DefaultValue = "var(--bit-clr-pri-light)", Description = "The track under the loading bar." },
+        new() { Name = "--bit-PdfViewer-progress-height", DefaultValue = "var(--bit-siz-track-sm)", Description = "Thickness of the loading bar." },
+        new() { Name = "--bit-PdfViewer-text-selection-background", DefaultValue = "color-mix(in srgb, var(--bit-clr-pri) 35%, transparent)", Description = "Selected document text." },
+        new() { Name = "--bit-PdfViewer-search-match-background", DefaultValue = "var(--bit-clr-wrn)", Description = "A find match." },
+        new() { Name = "--bit-PdfViewer-search-match-color", DefaultValue = "var(--bit-clr-wrn-text)", Description = "Text of a find match." },
+        new() { Name = "--bit-PdfViewer-search-current-background", DefaultValue = "var(--bit-clr-swr)", Description = "The find match being walked to." },
+        new() { Name = "--bit-PdfViewer-search-current-color", DefaultValue = "var(--bit-clr-swr-text)", Description = "Text of the find match being walked to." },
+        new() { Name = "--bit-PdfViewer-presentation-background", DefaultValue = "#000", Description = "Backdrop of presentation mode." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -1012,6 +1068,13 @@ public partial class BitPdfViewerDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the document properties dialog of the BitPdfViewer.",
                 },
+                new()
+                {
+                    Name = "PasswordDialog",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the password dialog of the BitPdfViewer.",
+                },
             ]
         },
         new()
@@ -1053,10 +1116,10 @@ public partial class BitPdfViewerDemo
             [
                 new()
                 {
-                    Name = "ToolbarAriaLabel, LoadingAriaLabel",
+                    Name = "ToolbarAriaLabel, LoadingAriaLabel, DocumentAriaLabel, ThumbnailAriaLabelFormat, PageAnnouncementFormat",
                     Type = "string",
-                    DefaultValue = "\"PDF viewer toolbar\", \"Loading document\"",
-                    Description = "The accessible names of the toolbar and of the indeterminate loading bar.",
+                    DefaultValue = "\"PDF viewer toolbar\", \"Loading document\", \"Document\", \"Page {0}\", \"Page {0} of {1}\"",
+                    Description = "The accessible names of the toolbar, the loading bar, the document surface (when no file name is known) and each thumbnail, and the announcement of a page move.",
                 },
                 new()
                 {
@@ -1074,14 +1137,14 @@ public partial class BitPdfViewerDemo
                 },
                 new()
                 {
-                    Name = "ZoomIn, ZoomOut, ZoomLevel, FitWidth, FitPage, ActualSize",
+                    Name = "ZoomIn, ZoomOut, ZoomLevel, Automatic, FitWidth, FitPage, FitHeight, ActualSize",
                     Type = "string",
                     DefaultValue = "\"Zoom in\", \"Zoom out\", ...",
                     Description = "The labels of the zoom group and of the zoom dropdown options.",
                 },
                 new()
                 {
-                    Name = "Find, FindPlaceholder, PreviousMatch, NextMatch, MatchCase, WholeWord, MatchCountFormat",
+                    Name = "Find, FindPlaceholder, PreviousMatch, NextMatch, MatchCase, WholeWord, MatchDiacritics, HighlightAll, PhraseNotFound, MatchCountFormat",
                     Type = "string",
                     DefaultValue = "\"Find in document\", ..., \"{0}/{1}\"",
                     Description = "The labels of the find box. MatchCountFormat receives the current match and the total.",
@@ -1095,14 +1158,14 @@ public partial class BitPdfViewerDemo
                 },
                 new()
                 {
-                    Name = "RotateClockwise, RotateCounterClockwise, Download, Print, Fullscreen, Presentation, Properties, Close",
+                    Name = "RotateClockwise, RotateCounterClockwise, Download, Print, Fullscreen, ExitFullscreen, Presentation, Properties, OpenFile, Close",
                     Type = "string",
                     DefaultValue = "\"Rotate clockwise\", ...",
                     Description = "The labels of the remaining toolbar actions.",
                 },
                 new()
                 {
-                    Name = "NoDocument, PreparingPrint, PrintAborted, HttpClientRequired, FetchFailedFormat, ErrorFormat, PageCountFormat",
+                    Name = "NoDocument, PageRenderFailed, PreparingPrint, PrintAborted, HttpClientRequired, FetchFailedFormat, ErrorFormat, PageCountFormat",
                     Type = "string",
                     DefaultValue = "\"No document loaded.\", ...",
                     Description = "The status messages shown on the surface. The *Format strings receive the underlying error or the page count.",
@@ -1478,26 +1541,26 @@ public partial class BitPdfViewerDemo
     private BitPdfSource? zoomSource;
     private BitPdfSource? layoutSource;
     private BitPdfSource? searchSource;
-    private BitPdfSource? keyboardSource;
-    private BitPdfSource? canvasSource;
-    private BitPdfSource? coalescingSource;
+    private BitPdfSource? renderingSource;
     private BitPdfSource? infoSource;
     private BitPdfSource? passwordSource;
     private BitPdfSource? eventsSource;
     private BitPdfSource? bindingSource;
     private BitPdfSource? publicApiSource;
     private BitPdfSource? localizedSource;
-    private BitPdfSource? printSource;
     private BitPdfSource? a11ySource;
+    private BitPdfSource? cascadeSource;
     private BitPdfSource? styleSource;
     private BitPdfSource? rtlSource;
 
+    private string? toolbarMessage;
     private string searchTerm = "the";
     private string? passwordError;
     private int boundPage = 1;
     private double boundZoom = 1;
     private int boundRotation;
     private bool panTool;
+    private bool a11yEnabled = true;
     private BitPdfScrollMode scrollMode = BitPdfScrollMode.Vertical;
     private BitPdfSpreadMode spreadMode = BitPdfSpreadMode.None;
     private BitPdfRenderMode renderMode = BitPdfRenderMode.Html;
@@ -1507,13 +1570,21 @@ public partial class BitPdfViewerDemo
 
     private BitPdfViewer pdfViewerRef = default!;
     private BitPdfViewer searchViewerRef = default!;
-    private BitPdfViewer printViewerRef = default!;
     private BitPdfViewer? infoViewerRef;
 
     // The zoom dropdown's percentages, replacing the defaults for the zoom example.
     private readonly double[] zoomPresets = [0.5, 1, 1.5, 2];
 
     private string? selectedText;
+
+    // The reference is only set once the viewer has rendered.
+    private string PublicApiPosition => $"{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}";
+
+    /// <summary>The custom toolbar button of the toolbar example, handed the viewer as its context.</summary>
+    private void Share(BitPdfViewer viewer)
+    {
+        toolbarMessage = viewer.PageCount == 0 ? null : $"Link to page {viewer.CurrentPage} copied";
+    }
 
     /// <summary>Reads back what the reader has highlighted in the document, which is
     /// the starting point of any "quote this" or "look this up" action.</summary>
@@ -1528,44 +1599,74 @@ public partial class BitPdfViewerDemo
     private BitPdfDestination? FirstBookmarkDestination()
         => pdfViewerRef?.Outline.FirstOrDefault()?.Destination;
 
-    private readonly BitPdfViewerTexts persianTexts = new()
+    private readonly BitPdfViewerTexts germanTexts = new()
     {
-        Thumbnails = "بندانگشتی صفحات",
-        Bookmarks = "نشانک‌ها",
-        FirstPage = "صفحه اول",
-        PreviousPage = "صفحه قبل",
-        NextPage = "صفحه بعد",
-        LastPage = "صفحه آخر",
-        PageNumber = "شماره صفحه",
-        ZoomIn = "بزرگ‌نمایی",
-        ZoomOut = "کوچک‌نمایی",
-        ZoomLevel = "میزان بزرگ‌نمایی",
-        FitWidth = "اندازه عرض",
-        FitPage = "اندازه صفحه",
-        FitHeight = "اندازه ارتفاع",
-        Automatic = "بزرگ‌نمایی خودکار",
-        ActualSize = "اندازه واقعی",
-        Find = "جستجو در سند",
-        FindPlaceholder = "جستجو در سند",
-        PreviousMatch = "مورد قبلی",
-        NextMatch = "مورد بعدی",
-        MatchCase = "حساس به حروف",
-        WholeWord = "کلمه کامل",
-        MatchDiacritics = "حساس به اعراب",
-        HighlightAll = "برجسته‌سازی همه",
-        PhraseNotFound = "موردی یافت نشد",
-        RotateClockwise = "چرخش ساعتگرد",
-        RotateCounterClockwise = "چرخش پادساعتگرد",
-        Download = "دانلود سند",
-        Print = "چاپ سند",
-        Fullscreen = "تمام صفحه",
-        ExitFullscreen = "خروج از تمام صفحه",
-        OpenFile = "باز کردن فایل",
-        Properties = "مشخصات سند",
-        Close = "بستن",
-        NoDocument = "سندی بارگذاری نشده است.",
-        PageCountFormat = "{0} صفحه",
+        ToolbarAriaLabel = "PDF-Werkzeugleiste",
+        DocumentAriaLabel = "Dokument",
+        Thumbnails = "Seitenminiaturen",
+        Bookmarks = "Lesezeichen",
+        Attachments = "Anhänge",
+        Layers = "Ebenen",
+        FirstPage = "Erste Seite",
+        PreviousPage = "Vorherige Seite",
+        NextPage = "Nächste Seite",
+        LastPage = "Letzte Seite",
+        PageNumber = "Seitenzahl",
+        ThumbnailAriaLabelFormat = "Seite {0}",
+        PageAnnouncementFormat = "Seite {0} von {1}",
+        ZoomIn = "Vergrößern",
+        ZoomOut = "Verkleinern",
+        ZoomLevel = "Zoomstufe",
+        Automatic = "Automatischer Zoom",
+        FitWidth = "Seitenbreite",
+        FitPage = "Ganze Seite",
+        FitHeight = "Seitenhöhe",
+        ActualSize = "Originalgröße",
+        Find = "Im Dokument suchen",
+        FindPlaceholder = "Im Dokument suchen",
+        PreviousMatch = "Vorheriger Treffer",
+        NextMatch = "Nächster Treffer",
+        MatchCase = "Groß-/Kleinschreibung",
+        WholeWord = "Ganze Wörter",
+        MatchDiacritics = "Akzente beachten",
+        HighlightAll = "Alle hervorheben",
+        PhraseNotFound = "Nicht gefunden",
+        MatchCountFormat = "{0} von {1}",
+        RotateClockwise = "Im Uhrzeigersinn drehen",
+        RotateCounterClockwise = "Gegen den Uhrzeigersinn drehen",
+        Download = "Herunterladen",
+        Print = "Drucken",
+        Fullscreen = "Vollbild",
+        ExitFullscreen = "Vollbild beenden",
+        Presentation = "Präsentationsmodus",
+        Properties = "Dokumenteigenschaften",
+        OpenFile = "Datei öffnen",
+        Close = "Schließen",
+        NoDocument = "Kein Dokument geladen.",
+        PageCountFormat = "{0} Seite(n).",
     };
+
+    // Shared by every viewer under the BitParams of the cascading parameters example.
+    private readonly BitPdfViewerParams[] pdfViewerParams =
+    [
+        new()
+        {
+            Height = "300px",
+            InitialZoomMode = BitPdfZoomMode.FitPage,
+            ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.Search,
+            Texts = new() { NoDocument = "Both viewers share their defaults - load a document." },
+        }
+    ];
+
+    private const string cssVariablesStyle = "--bit-PdfViewer-border-radius:1rem;" +
+                                             "--bit-PdfViewer-border-color:var(--bit-clr-pri);" +
+                                             "--bit-PdfViewer-background:var(--bit-clr-bg-pri);" +
+                                             "--bit-PdfViewer-toolbar-background:var(--bit-clr-pri-light);" +
+                                             "--bit-PdfViewer-button-radius:999px;" +
+                                             "--bit-PdfViewer-page-shadow:none;" +
+                                             "--bit-PdfViewer-page-gap:0.5rem;" +
+                                             "--bit-PdfViewer-page-filter:invert(1) hue-rotate(180deg);" +
+                                             "--bit-PdfViewer-search-match-background:gold;";
 
     private static BitPdfSource CreateSampleSource()
         => BitPdfSource.FromUrl("/_content/Bit.BlazorUI.Demo.Client.Core/samples/sample-pdf.pdf", "sample.pdf");
@@ -1576,11 +1677,6 @@ public partial class BitPdfViewerDemo
     private async Task OnBasicFileChange(InputFileChangeEventArgs e)
     {
         basicSource = await ReadFileSource(e) ?? basicSource;
-    }
-
-    private async Task OnCanvasFileChange(InputFileChangeEventArgs e)
-    {
-        canvasSource = await ReadFileSource(e) ?? canvasSource;
     }
 
     private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
