@@ -47,7 +47,7 @@
                                                      Label="@Localizer[nameof(AppStrings.EmailToken)]" />
                                         <ValidationMessage For="@(() => emailModel.Token)" />
 
-                                        <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                                        <BitButton IsLoading="isWaiting" Class="identity-main-action" ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
                                         </BitButton>
                                     </BitStack>
@@ -118,7 +118,7 @@
                                                      Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                                         <ValidationMessage For="@(() => phoneModel.Token)" />
 
-                                        <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                                        <BitButton IsLoading="isWaiting" Class="identity-main-action" ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
                                         </BitButton>
                                     </BitStack>

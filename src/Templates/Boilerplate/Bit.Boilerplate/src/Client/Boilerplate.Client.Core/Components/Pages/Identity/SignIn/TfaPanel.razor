@@ -28,7 +28,7 @@
                       AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                       Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
 
-        <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
+        <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" Class="identity-main-action" ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Continue)]
         </BitButton>
 

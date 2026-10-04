@@ -11,6 +11,7 @@ public partial class Header : AppComponentBase
     private string? pageTitle;
     private string? pageSubtitle;
     private bool showGoBackButton;
+    private ElementReference headerRef;
     private Action unsubscribePageTitleChanged = default!;
 
 
@@ -24,6 +25,13 @@ public partial class Header : AppComponentBase
 
             StateHasChanged();
         });
+    }
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        await JSRuntime.InvokeVoidAsync("App.trackHeight", headerRef, "--app-header-height");
     }
 
 

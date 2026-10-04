@@ -78,9 +78,9 @@
                                     @bind-Value="editUserDto.Gender"
                                     TItem="BitChoiceGroupOption<Gender?>" TValue="Gender?"
                                     Label="@Localizer[nameof(AppStrings.Gender)]">
-                        <BitChoiceGroupOption Value="@Gender.Male" Text="@Localizer[nameof(AppStrings.GenderMale)]" />
-                        <BitChoiceGroupOption Value="@Gender.Female" Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
-                        <BitChoiceGroupOption Value="@Gender.Other" Text="@Localizer[nameof(AppStrings.GenderOther)]" />
+                        <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Male" Text="@Localizer[nameof(AppStrings.GenderMale)]" />
+                        <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Female" Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                        <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Other" Text="@Localizer[nameof(AppStrings.GenderOther)]" />
                     </BitChoiceGroup>
 
                     <BitButton IsLoading="isSaving"

@@ -67,7 +67,7 @@
                                                           Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
                                                 <LabelTemplate>
                                                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                                        <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                                        <BitText Element="span" Typography="BitTypography.Inherit">@Localizer[nameof(AppStrings.Password)]</BitText>
                                                         <BitSpacer />
                                                         <BitLink Href="@($"{PageUrls.ForgotPassword}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
                                                     </BitStack>
@@ -110,6 +110,7 @@
                                         }
                                         <BitButton IsLoading="isWaiting"
                                                    IsEnabled="isWaiting is false"
+                                                   Class="identity-main-action"
                                                    ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.Continue)]
                                         </BitButton>
@@ -121,6 +122,7 @@
                                     <BitButton IsLoading="isWaiting"
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(() => SendOtp(resend: true))"
+                                               Class="@(internalSignInPanelType is SignInPanelType.Otp ? "identity-main-action" : null)"
                                                Variant="@(internalSignInPanelType is SignInPanelType.Otp ? BitVariant.Fill : BitVariant.Outline)"
                                                IsEnabled="@(isWaiting is false && (model.Email is not null || model.PhoneNumber is not null))">
                                         @(currentTab == SignInPanelTab.Email ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])

@@ -18,6 +18,7 @@ main {
     .main-body {
         display: flex;
         width: calc(100% - 280px);
+        padding-bottom: var(--app-consent-banner-height, 0px);
 
         @include lt-md {
             width: 100%;
@@ -111,6 +112,7 @@ main {
 
     .nav-panel {
         width: 280px;
+        scroll-padding-bottom: var(--app-consent-banner-height, 0px);
 
         @include lt-md {
             width: 210px;
@@ -119,6 +121,7 @@ main {
 
     .footer-stack {
         position: relative;
+        margin-bottom: var(--app-consent-banner-height, 0px);
     }
 
     .app-version {

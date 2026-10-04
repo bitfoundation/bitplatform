@@ -23,6 +23,8 @@ public partial class AppShell
     [AutoInject] private SignInModalService signInModalService = default!;
 
 
+    private const string ScrollPadding = "calc(var(--app-header-height, 0px) + 0.5rem) 0 calc(var(--app-nav-bar-height, 0px) + var(--app-consent-banner-height, 0px) + 0.5rem)";
+
     private bool isNavPanelOpen;
     private bool isNavPanelToggled;
     private readonly List<Action> unsubscribers = [];

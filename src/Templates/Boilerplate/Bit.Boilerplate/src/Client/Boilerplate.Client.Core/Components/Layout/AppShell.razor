@@ -1,13 +1,14 @@
 @*+:cnd:noEmit*@
 @inherits AppComponentBase
 
-<BitAppShell PersistScroll>
+<BitAppShell PersistScroll ScrollPadding="@ScrollPadding">
     <main class="@GetMainCssClass()">
         <div class="main-container">
             @if (IsIdentityPage is not true)
             {
                 <BitNavPanel @bind-IsOpen="isNavPanelOpen"
                              @bind-IsToggled="isNavPanelToggled"
+                             AutoFocus
                              IconNavUrl="/"
                              Class="nav-panel"
                              Items="NavPanelItems"

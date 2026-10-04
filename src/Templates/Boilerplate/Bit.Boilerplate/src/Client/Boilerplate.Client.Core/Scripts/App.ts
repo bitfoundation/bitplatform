@@ -16,6 +16,31 @@ export class App {
         return App.jsBridgeObj?.invokeMethodAsync('PublishMessage', message, payload);
     }
 
+    private static readonly heightObservers: Record<string, ResizeObserver> = {};
+
+    public static trackHeight(element: HTMLElement, cssVariable: string) {
+        if (!element) return;
+
+        App.heightObservers[cssVariable]?.disconnect();
+
+        const observer = new ResizeObserver(() => {
+            if (element.isConnected) {
+                document.documentElement.style.setProperty(cssVariable, `${element.offsetHeight}px`);
+                return;
+            }
+
+            observer.disconnect();
+
+            if (App.heightObservers[cssVariable] !== observer) return;
+
+            delete App.heightObservers[cssVariable];
+            document.documentElement.style.removeProperty(cssVariable);
+        });
+
+        App.heightObservers[cssVariable] = observer;
+        observer.observe(element);
+    }
+
     private static readonly erudaUrl = 'https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js';
     private static readonly erudaIntegrity = 'sha384-F7xQBvh3l6dG/mMD6QPIeVmXtzWT4Ce3ZDu8ysPuzMWMx9bFOIMGnRPUhLuQipss';
     private static readonly erudaScriptId = 'app-eruda-script';

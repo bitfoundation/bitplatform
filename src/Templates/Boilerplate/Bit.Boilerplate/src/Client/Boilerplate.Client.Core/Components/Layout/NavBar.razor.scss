@@ -7,11 +7,12 @@ section {
     height: 3.5rem;
     position: fixed;
     align-items: center;
-    bottom: $bit-env-inset-bottom;
+    z-index: $bit-zindex-base;
     justify-content: space-around;
     max-width: $bit-env-width-available;
     background-color: $bit-color-background-primary;
     border-top: 1px solid $bit-color-border-tertiary;
+    bottom: max(#{$bit-env-inset-bottom}, var(--app-consent-banner-height, 0px));
 
     @include gt-sm {
         display: none;
