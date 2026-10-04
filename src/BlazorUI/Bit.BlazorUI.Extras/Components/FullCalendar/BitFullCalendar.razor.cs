@@ -231,6 +231,13 @@ public partial class BitFullCalendar
     [Parameter] public EventCallback<BitFullCalendarChangeRefusal> OnRefused { get; set; }
 
     /// <summary>
+    /// Raised after the user changes a preference from the built-in settings panel, once the new values
+    /// have been written back onto the <see cref="Settings"/> instance (which the callback receives). Use it
+    /// to re-render anything else that reads that instance, or to persist the user's preferences.
+    /// </summary>
+    [Parameter] public EventCallback<BitFullCalendarSettings> OnSettingsChange { get; set; }
+
+    /// <summary>
     /// Raised when the active view changes - for example when the user selects a view tab or
     /// navigates from the year overview into a month. The callback receives the new <see cref="BitFullCalendarView"/>.
     /// </summary>
@@ -726,10 +733,11 @@ public partial class BitFullCalendar
     /// would overwrite that pending edit with the value the calendar still holds.
     /// </para>
     /// </summary>
-    private void SyncSettingsFromState()
+    private bool SyncSettingsFromState()
     {
-        if (Settings is null) return;
+        if (Settings is null) return false;
 
+        var before = SettingsSnapshot.From(Settings);
         var previous = _appliedSettings;
 
         if (previous is null || previous.Use24HourFormat != State.Use24HourFormat)
@@ -780,6 +788,8 @@ public partial class BitFullCalendar
         // The new baseline is what the STATE now holds, not what Settings holds: a pending consumer
         // edit has to stay "different" so the next ApplySettings still pushes it.
         _appliedSettings = SettingsSnapshot.FromState(State, previous);
+
+        return SettingsSnapshot.From(Settings) != before;
     }
 
     private void HandleStateChanged()
@@ -789,10 +799,12 @@ public partial class BitFullCalendar
         var applyingParameters = _applyingParameters;
         InvokeAsync(async () =>
         {
-            if (applyingParameters is false)
-                SyncSettingsFromState();
+            var settingsChanged = applyingParameters is false && SyncSettingsFromState();
 
             await ReconcileBoundState(raiseEvents: !applyingParameters);
+
+            if (settingsChanged)
+                await OnSettingsChange.InvokeAsync(Settings);
             StateHasChanged();
         });
     }

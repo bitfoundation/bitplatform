@@ -67,7 +67,8 @@
             <div>
                 <b>Settings</b> holds the preferences: time format, badge style, the hour the grid scrolls to, how
                 overlapping events are laid out (<b>EventLayout</b>), and more. What the user changes from the settings
-                gear is written back onto the same instance, so a re-render never reverts it.
+                gear is written back onto the same instance, so a re-render never reverts it, and <b>OnSettingsChange</b>
+                reports it so whatever else reads that instance can re-render too.
             </div>
             <br />
             <BitChoiceGroup Horizontal
@@ -79,7 +80,10 @@
                 <BitChoiceGroupOption Text="Stack" Value="BitFullCalendarEventLayout.Stack" />
             </BitChoiceGroup>
             <br />
-            <BitFullCalendar Events="settingsEvents" Settings="settings" DefaultView="BitFullCalendarView.Week" />
+            <BitFullCalendar Events="settingsEvents"
+                             Settings="settings"
+                             DefaultView="BitFullCalendarView.Week"
+                             OnSettingsChange="HandleSettingsChange" />
         </DemoExample>
 
         <DemoExample Title="Time grid" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">

@@ -229,6 +229,15 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "OnSettingsChange",
+            Type = "EventCallback<BitFullCalendarSettings>",
+            DefaultValue = "",
+            Description = "Raised after the user changes a preference from the built-in settings panel, once the new values have been written back onto the Settings instance (which the callback receives).",
+            LinkType = LinkType.Link,
+            Href = "#settings-class",
+        },
+        new()
+        {
             Name = "OnViewChange",
             Type = "EventCallback<BitFullCalendarView>",
             DefaultValue = "",
@@ -948,6 +957,9 @@ public partial class BitFullCalendarDemo
         set => settings.EventLayout = value;
     }
 
+    // The callback re-renders this page, so the choice group above shows a layout picked from the gear.
+    private void HandleSettingsChange(BitFullCalendarSettings changed) { }
+
 
     // Time grid
     private readonly BitFullCalendarSettings gridSettings = new()
@@ -1155,12 +1167,19 @@ public partial class BitFullCalendarDemo
     private List<BitFullCalendarEvent> loadedEvents = [];
     private bool isLoading;
     private string? loadedRange;
+    private int loadRequest;
 
     private async Task LoadRange(BitFullCalendarDateChangeEventArgs args)
     {
+        // The range can move again before this load returns: only the latest request is applied, and only it ends
+        // the loading state.
+        var request = ++loadRequest;
         isLoading = true;
         await Task.Delay(800); // stands in for the call to your API
-        loadedEvents = CreateEventsBetween(args.Start, args.End);
+        var rangeEvents = CreateEventsBetween(args.Start, args.End);
+        if (request != loadRequest) return;
+
+        loadedEvents = rangeEvents;
         loadedRange = $"{args.Start:yyyy-MM-dd} → {args.End:yyyy-MM-dd} ({loadedEvents.Count} events)";
         isLoading = false;
     }

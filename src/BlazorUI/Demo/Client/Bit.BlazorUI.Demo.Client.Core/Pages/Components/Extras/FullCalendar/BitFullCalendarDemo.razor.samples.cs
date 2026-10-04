@@ -88,7 +88,10 @@ private BitFullCalendarView[] SelectedViews => viewsPreset switch
     <BitChoiceGroupOption Text=""Stack"" Value=""BitFullCalendarEventLayout.Stack"" />
 </BitChoiceGroup>
 
-<BitFullCalendar Events=""events"" Settings=""settings"" DefaultView=""BitFullCalendarView.Week"" />";
+<BitFullCalendar Events=""events""
+                 Settings=""settings""
+                 DefaultView=""BitFullCalendarView.Week""
+                 OnSettingsChange=""HandleSettingsChange"" />";
     private readonly string example3CsharpCode = @"
 // Mutated in place: the calendar diffs it against the values it last applied.
 private readonly BitFullCalendarSettings settings = new()
@@ -104,6 +107,9 @@ private BitFullCalendarEventLayout layoutMode
     get => settings.EventLayout;
     set => settings.EventLayout = value;
 }
+
+// The callback re-renders this component, so the choice group above shows a layout picked from the gear.
+private void HandleSettingsChange(BitFullCalendarSettings changed) { }
 " + eventsCode;
 
     private readonly string example4RazorCode = @"
@@ -633,12 +639,19 @@ private void HandleDateChange(BitFullCalendarDateChangeEventArgs args)
 private List<BitFullCalendarEvent> events = [];
 private bool isLoading;
 private string? loadedRange;
+private int loadRequest;
 
 private async Task LoadRange(BitFullCalendarDateChangeEventArgs args)
 {
+    // The range can move again before this load returns: only the latest request is applied, and only it ends
+    // the loading state.
+    var request = ++loadRequest;
     isLoading = true;
     await Task.Delay(800); // stands in for the call to your API
-    events = CreateEventsBetween(args.Start, args.End);
+    var rangeEvents = CreateEventsBetween(args.Start, args.End);
+    if (request != loadRequest) return;
+
+    events = rangeEvents;
     loadedRange = $""{args.Start:yyyy-MM-dd} → {args.End:yyyy-MM-dd} ({events.Count} events)"";
     isLoading = false;
 }
