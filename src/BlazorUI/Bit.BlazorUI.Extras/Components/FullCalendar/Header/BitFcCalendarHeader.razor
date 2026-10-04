@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 @implements IDisposable
 
-<div class="bit-bfc-header">
+<div class="bit-bfc-header @Parts.Classes?.Header" style="@Parts.Styles?.Header">
     <div class="bit-bfc-header-left">
         <BitFcTodayButton />
         <BitFcDateNavigator />

@@ -1,13 +1,24 @@
 namespace BitBlazorUI {
     export class FullCalendar {
+        /**
+         * The rendered height of one hour of a time grid. The stylesheet sizes every hour row from
+         * --bit-bfc-hour-height, which a consumer may set in any unit (4rem, 5em, a calc()), so the height
+         * is measured off a rendered row rather than parsed out of the property or assumed to be the
+         * 96px default .NET compiles against.
+         */
+        private static hourHeightOf(el: Element, fallback: number | null): number {
+            const scope = el.closest(".bit-bfc") ?? el;
+            const row = (el.querySelector(".bit-bfc-hour-row") ?? scope.querySelector(".bit-bfc-hour-row")) as HTMLElement | null;
+            const measured = row ? row.getBoundingClientRect().height : NaN;
+            if (Number.isFinite(measured) && measured > 0) return measured;
+            const declared = parseFloat(getComputedStyle(el).getPropertyValue("--bit-bfc-hour-height"));
+            return Number.isFinite(declared) && declared > 0 ? declared : (fallback ?? 96);
+        }
+
         public static scrollToHour(elementId: string, hour: number, pixelsPerHour: number | null): boolean {
             const el = document.getElementById(elementId);
             if (!el) return false;
-            // The stylesheet sizes every hour row from --bit-bfc-hour-height, and a consumer may
-            // redeclare it to re-scale the grid, so the row height is read back from the element
-            // rather than assumed to be the value .NET compiled against.
-            const declared = parseFloat(getComputedStyle(el).getPropertyValue("--bit-bfc-hour-height"));
-            const pxPerHour = Number.isFinite(declared) && declared > 0 ? declared : (pixelsPerHour ?? 96);
+            const pxPerHour = FullCalendar.hourHeightOf(el, pixelsPerHour);
             const top = hour * pxPerHour;
             if (typeof el.scrollTo === "function") {
                 el.scrollTo({ top: top, behavior: "auto" });
@@ -86,9 +97,6 @@ namespace BitBlazorUI {
             if ((el as any)[boundKey]) return;
             (el as any)[boundKey] = true;
 
-            const pixelsPerHour = 96;
-            const minPerPixel = 60 / pixelsPerHour;
-
             // A resize is serialized per event (per dotNetRef), not per handle: the C# event block
             // wires both resize handles (top/bottom) to the same dotNetRef, so this shared flag
             // ensures only one resize runs at a time across both handles. Cleared on end/cancel/abort.
@@ -101,7 +109,11 @@ namespace BitBlazorUI {
                 e.stopPropagation();
 
                 (dotNetRef as any)[activeKey] = true;
+                // Measured when the drag starts, so a grid re-scaled through --bit-bfc-hour-height (or
+                // zoomed) converts the pointer travel at the scale it is actually drawn at.
+                const minPerPixel = 60 / FullCalendar.hourHeightOf(el, 96);
                 const startY = e.clientY;
+
                 let latestY = startY;
                 let rafId: number | null = null;
                 let activePointerId: number | null = e.pointerId;

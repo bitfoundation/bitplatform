@@ -30,13 +30,14 @@ else
     @if (State.NavLinks && isOutOfRange is false)
     {
         <button type="button" class="bit-bfc-month-cell-day bit-bfc-navlink @(isToday ? "today" : "")"
+                aria-current="@(isToday ? "date" : null)"
                 aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))"
                 @onclick="GoToDayView"
                 @onclick:stopPropagation="true">@Cell.Day</button>
     }
     else
     {
-        <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
+        <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")" aria-hidden="true">@Cell.Day</div>
     }
     @if (!State.ReadOnly && !isOutOfRange)
     {
@@ -45,11 +46,12 @@ else
         <button type="button" class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month"
                 id="@AddButtonId"
                 tabindex="@(IsRovingCell ? "0" : "-1")"
-                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("d", State.Culture)}")"
+                aria-current="@(isToday ? "date" : null)"
+                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}")"
                 @onclick="() => OnCellClick()"
                 @onkeydown="args => OnCellKeyDown.InvokeAsync((Cell.Date, args))"
                 @onclick:stopPropagation="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             @Texts.AddEventHoverHint
         </button>
     }

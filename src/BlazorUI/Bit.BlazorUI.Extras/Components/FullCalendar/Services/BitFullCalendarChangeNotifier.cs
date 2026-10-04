@@ -35,9 +35,66 @@ public sealed class BitFullCalendarChangeNotifier
     }
 
     /// <summary>
-    /// Dispatches a change payload to the component's <c>OnChange</c> callback.
+    /// Asked before a change is reported, with the change the state already holds. Returning <c>false</c> refuses
+    /// it: the notifier puts the state back the way it was and the change is never dispatched. The component wires
+    /// this to its <c>OnChanging</c> callback.
     /// </summary>
-    public Task NotifyAsync(BitFullCalendarChangeEventArgs args) => _dispatch(args);
+    public Func<BitFullCalendarChangeEventArgs, Task<bool>>? ApprovalHandler { get; set; }
+
+    /// <summary>
+    /// Dispatches a change payload to the component's <c>OnChange</c> callback, unless the
+    /// <see cref="ApprovalHandler"/> refuses it.
+    /// </summary>
+    public Task NotifyAsync(BitFullCalendarChangeEventArgs args) => TryNotifyAsync(args);
+
+    /// <summary>
+    /// Dispatches a change payload to the component's <c>OnChange</c> callback, unless the
+    /// <see cref="ApprovalHandler"/> refuses it - in which case the state is put back the way it was before the
+    /// change and <c>false</c> is returned, so a caller (a dialog) can stay open instead of acting as if it saved.
+    /// </summary>
+    public async Task<bool> TryNotifyAsync(BitFullCalendarChangeEventArgs args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+
+        if (ApprovalHandler is { } approve && await approve(args) is false)
+        {
+            Revert(args);
+            return false;
+        }
+
+        await _dispatch(args);
+        return true;
+    }
+
+    /// <summary>
+    /// Asks the <see cref="ApprovalHandler"/> about a change without dispatching it or undoing anything, for a caller
+    /// that reports several changes as one and has to know all of them are allowed before reporting any.
+    /// </summary>
+    public async Task<bool> ApproveAsync(BitFullCalendarChangeEventArgs args)
+        => ApprovalHandler is not { } approve || await approve(args);
+
+    /// <summary>
+    /// Dispatches a change that was already approved (see <see cref="ApproveAsync"/>) to the <c>OnChange</c> callback.
+    /// </summary>
+    public Task DispatchAsync(BitFullCalendarChangeEventArgs args) => _dispatch(args);
+
+    // Every mutation path commits to the state before it reports, so a refused change is undone from what the report
+    // carries: an add is removed again, an edit gets its previous snapshot back, and a delete is put back in place.
+    private void Revert(BitFullCalendarChangeEventArgs args)
+    {
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                _state.RemoveEvent(args.Event.Id);
+                break;
+            case BitFullCalendarChangeKind.Edit when args.OldEvent is not null:
+                _state.UpdateEvent(CloneEvent(args.OldEvent));
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                _state.AddEvent(CloneEvent(args.OldEvent ?? args.Event));
+                break;
+        }
+    }
 
     /// <summary>
     /// Applies drop logic through <see cref="BitFullCalendarState.HandleDrop"/> and emits

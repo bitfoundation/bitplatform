@@ -3,6 +3,7 @@ namespace Bit.BlazorUI;
 public partial class BitFcMonthEventBadge
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
@@ -16,13 +17,14 @@ public partial class BitFcMonthEventBadge
     {
         get
         {
-            var isRtl = State.IsRtl;
+            // Logical margins, so a bar joined across cells overlaps its neighbour on the side it continues
+            // to in either direction - whether the direction comes from the culture or from Dir.
             return Position switch
             {
-                "first"  => isRtl ? "margin-left:-4px; margin-right:2px;" : "margin-left:2px; margin-right:-4px;",
-                "middle" => "margin-left:-4px; margin-right:-4px;",
-                "last"   => isRtl ? "margin-left:2px; margin-right:-4px;" : "margin-left:-4px; margin-right:2px;",
-                _        => "margin:0 2px;"
+                "first"  => "margin-inline:2px -4px;",
+                "middle" => "margin-inline:-4px;",
+                "last"   => "margin-inline:-4px 2px;",
+                _        => "margin-inline:2px;"
             };
         }
     }

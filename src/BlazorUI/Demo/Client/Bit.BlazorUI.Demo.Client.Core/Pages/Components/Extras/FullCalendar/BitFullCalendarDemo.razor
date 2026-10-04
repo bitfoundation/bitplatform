@@ -5,78 +5,91 @@
             Description="BitFullCalendar is a full-featured scheduling calendar with day, week, month, year, agenda, and resource timeline views, recurring and all-day events, business hours, event editing, drag-and-drop, and resizing." />
 
 <DemoPage Name="FullCalendar"
-          Description="BitFullCalendar is a full-featured scheduling calendar: day, week, month, year, agenda, and resource timeline views; recurring and all-day events; built-in create, edit and delete; drag-and-drop, edge resizing, and range selection; a configurable time grid with business hours, a work week, and booking rules; filtering, templating, keyboard navigation, and culture-aware, right-to-left-ready date rendering."
-          SecondaryNames="@(["Scheduler"])"
+          Description="BitFullCalendar is a full-featured scheduling calendar: day, week, month, year, agenda and resource timeline views; recurring and all-day events; built-in create, edit and delete; drag-and-drop, resizing and range selection; business hours and booking rules; templates, keyboard navigation, theming, and culture-aware, right-to-left-ready rendering."
+          SecondaryNames="@(["Scheduler", "EventCalendar", "Planner"])"
           Parameters="componentParameters"
+          CssVariables="componentCssVariables"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="FullCalendar/BitFullCalendar.razor"
           GitHubDemoUrl="Extras/FullCalendar/BitFullCalendarDemo.razor">
     <NotesTemplate>
         <BitText>
-            To use this component, you need to install the
+            Ships in the
             <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
                 <BitTag Reversed
                         Text="Bit.BlazorUI.Extras"
                         Color="BitColor.SecondaryBackground"
                         IconName="@BitIconName.NavigateExternalInline" />
             </BitLink>
-            nuget package, as described in the Optional steps of the
-            <BitLink Href="/getting-started">Getting started</BitLink> page.
+            nuget package (see the Optional steps of <BitLink Href="/getting-started">Getting started</BitLink>).
         </BitText>
     </NotesTemplate>
     <IntroductionTemplate>
         <BitText>
-            The BitFullCalendar brings a complete scheduling experience to Blazor: six layouts
-            (day, week, month, year, agenda, and a resource timeline), built-in event create/edit/delete,
-            drag-and-drop, edge resizing, and press-and-drag range selection, a time grid you can narrow
-            to the hours you schedule and split into slots of any length, business hours you can shade
-            or enforce, a work week that hides the days you do not schedule, recurring and all-day
-            events, booking rules, colour and attendee filters, per-view templates, and culture-aware
-            date rendering that follows the Bit theme in both light and dark mode.
-            Every date grid is a single tab stop that the arrow keys walk, so a keyboard reaches any
-            day or time slot without paging through hundreds of them.
-            Explore a live calendar below - switch views, add events, and drag them around.
+            A complete scheduler: six layouts (day, week, month, year, agenda and a resource timeline), built-in
+            create/edit/delete dialogs, drag-and-drop, resizing and range selection, recurring and all-day events,
+            business hours and booking rules. It follows the Bit theme in light and dark mode, and every date grid
+            is a single tab stop the arrow keys walk.
         </BitText>
     </IntroductionTemplate>
     <Examples>
-        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                The simplest usage of a BitFullCalendar is passing a list of events. Everything else comes
-                with defaults: the month view opens first, the toolbar navigates and switches views, and
-                clicking a day - or an event - opens the built-in add and details dialogs. Tab reaches the
-                grid once and the arrow keys walk it from there; Enter or Space on a day (or a time slot
-                in the day and week views) starts a new event, Alt and Shift with an arrow key move and
-                resize a focused event, and Escape closes any dialog.
+                Pass <b>Events</b>. The month view opens first, the toolbar navigates and switches views, and a click on a
+                day or an event opens the built-in add and details dialogs.
             </div>
             <br />
             <BitFullCalendar Events="basicEvents" />
         </DemoExample>
 
-        <DemoExample Title="Settings" RazorCode="@example2RazorCode" Id="example2">
+        <DemoExample Title="Views" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                <code>Settings</code> carries the calendar's preferences: the time format, the hour the
-                grid scrolls to, the month badge style, the agenda grouping, and everything the sections
-                below configure. The user can change most of them from the settings gear, and those
-                choices are written back onto the same instance - so a re-render of your page never
-                reverts what they picked.
+                <b>Views</b> sets which views are offered and in which order. Excluded views are unreachable, and a single
+                view hides the tab strip.
             </div>
             <br />
-            <BitFullCalendar Events="settingsEvents" Settings="settings" />
+            <BitChoiceGroup Horizontal
+                            Label="Available views"
+                            TItem="BitChoiceGroupOption<string>"
+                            TValue="string"
+                            @bind-Value="viewsPreset">
+                <BitChoiceGroupOption Text="Week and Day" Value="@("week-day")" />
+                <BitChoiceGroupOption Text="Month and Agenda" Value="@("month-agenda")" />
+                <BitChoiceGroupOption Text="Month only" Value="@("month")" />
+            </BitChoiceGroup>
+            <br />
+            <BitFullCalendar Events="viewsEvents" Views="SelectedViews" />
         </DemoExample>
 
-        <DemoExample Title="Time grid" RazorCode="@example3RazorCode" Id="example3">
+        <DemoExample Title="Settings" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                Narrow the day and week grids to the hours you actually schedule with
-                <code>Settings.VisibleStartHour</code> and <code>Settings.VisibleEndHour</code>, and choose
-                how finely each hour is divided - and how far drags and resizes snap - with
-                <code>Settings.SlotDurationMinutes</code> (any divisor of 60). The same window and slot
-                size drive the Timeline day and week layouts. Press and drag down a column to select a
-                range - the new event opens already spanning it - or turn that off with
-                <code>Settings.AllowRangeSelection</code>. Switch to the Day or Week view to see it.
+                <b>Settings</b> holds the preferences: time format, badge style, the hour the grid scrolls to, how
+                overlapping events are laid out (<b>EventLayout</b>), and more. What the user changes from the settings
+                gear is written back onto the same instance, so a re-render never reverts it.
             </div>
             <br />
-            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+            <BitChoiceGroup Horizontal
+                            Label="Event layout"
+                            TItem="BitChoiceGroupOption<BitFullCalendarEventLayout>"
+                            TValue="BitFullCalendarEventLayout"
+                            @bind-Value="layoutMode">
+                <BitChoiceGroupOption Text="Overlap" Value="BitFullCalendarEventLayout.Overlap" />
+                <BitChoiceGroupOption Text="Stack" Value="BitFullCalendarEventLayout.Stack" />
+            </BitChoiceGroup>
+            <br />
+            <BitFullCalendar Events="settingsEvents" Settings="settings" DefaultView="BitFullCalendarView.Week" />
+        </DemoExample>
+
+        <DemoExample Title="Time grid" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>VisibleStartHour</b>/<b>VisibleEndHour</b> narrow the day, week and timeline grids, and
+                <b>SlotDurationMinutes</b> sets how each hour is split and what drags snap to. Press and drag down a column to
+                create an event spanning a range (<b>AllowRangeSelection</b>).
+            </div>
+            <br />
+            <div class="example-row">
                 <BitChoiceGroup Horizontal
                                 Label="Visible hours"
                                 TItem="BitChoiceGroupOption<string>"
@@ -100,16 +113,13 @@
             <BitFullCalendar Events="gridEvents" Settings="gridSettings" DefaultView="BitFullCalendarView.Week" />
         </DemoExample>
 
-        <DemoExample Title="Work week" RazorCode="@example4RazorCode" Id="example4">
+        <DemoExample Title="Work week" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                <code>Settings.HiddenDays</code> removes weekdays from every date grid - the week, month
-                and year views and the Timeline week layout - which is all it takes to render a work week.
-                <code>Settings.FirstDayOfWeek</code> overrides the day the week starts on when the culture's
-                own answer is not the one you want, and <code>Settings.ShowWeekNumbers</code> adds the
-                ISO-8601 week number to the month grid and the week view's time gutter.
+                <b>HiddenDays</b> removes weekdays from every date grid, <b>FirstDayOfWeek</b> overrides the culture's first
+                day, and <b>ShowWeekNumbers</b> adds ISO-8601 week numbers.
             </div>
             <br />
-            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+            <div class="example-row">
                 <BitChoiceGroup Horizontal
                                 Label="Days"
                                 TItem="BitChoiceGroupOption<string>"
@@ -125,45 +135,48 @@
             <BitFullCalendar Events="workWeekEvents" Settings="workWeekSettings" DefaultView="BitFullCalendarView.Week" />
         </DemoExample>
 
-        <DemoExample Title="All-day events" RazorCode="@example5RazorCode" Id="example5">
+        <DemoExample Title="Month grid" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                Set <code>IsAllDay</code> on an event to take it off the hour axis: it moves into the
-                all-day row above the day and week grids, its badge shows the "All day" label instead of a
-                clock time, and the details dialog reports the dates it covers rather than a time range.
-                Events spanning more than one date already land in that row; the flag is what lets a
-                single-date event join them. The built-in add/edit dialog offers the same switch.
+                <b>FixedWeekCount</b> always draws six rows, <b>ShowNonCurrentDates</b> blanks the days borrowed from the
+                neighbouring months, <b>MaxEventsPerDayCell</b> sets when the "+N more" link appears, and <b>NavLinks</b>
+                turns day numbers, week headers and week numbers into links to that day or week.
+            </div>
+            <br />
+            <div class="example-row">
+                <BitToggle @bind-Value="fixedWeeks" Text="Fixed six weeks" />
+                <BitToggle @bind-Value="showOtherMonthDays" Text="Show neighbouring days" />
+                <BitToggle @bind-Value="navLinks" Text="Navigation links" />
+            </div>
+            <br />
+            <BitFullCalendar Events="monthGridEvents" Settings="monthGridSettings" />
+        </DemoExample>
+
+        <DemoExample Title="All-day events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>IsAllDay</b> takes an event off the hour axis into the all-day row above the day and week grids; its badge
+                and details show the dates instead of a time.
             </div>
             <br />
             <BitFullCalendar Events="allDayEvents" DefaultView="BitFullCalendarView.Week" />
         </DemoExample>
 
-        <DemoExample Title="Event layout" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="Recurring events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
-                Choose how overlapping event cards are arranged in the day and week views with
-                <code>Settings.EventLayout</code>. <b>Overlap</b> (default) cascades the cards on top of
-                each other, while <b>Stack</b> places them side by side in equal-width columns.
-                Switch to the Day or Week view to see the difference - pick a layout below, or toggle it
-                from the settings gear ("Stack overlapping events").
+                A <b>Recurrence</b> repeats an event daily, weekly (on <b>DaysOfWeek</b>), monthly or yearly, every
+                <b>Interval</b> units, ending after a <b>Count</b>, on an <b>Until</b> date, or never. <b>WeekOfMonth</b>
+                lands it on "the third Tuesday"; <b>ExceptionDates</b> and <b>AdditionalDates</b> skip or add single dates.
+                Only the visible range is expanded. The dialogs edit the rule too, and ask whether an edit means this
+                occurrence or the whole series.
             </div>
             <br />
-            <BitChoiceGroup Horizontal
-                            Label="Event layout"
-                            TItem="BitChoiceGroupOption<BitFullCalendarEventLayout>"
-                            TValue="BitFullCalendarEventLayout"
-                            @bind-Value="layoutMode">
-                <BitChoiceGroupOption Text="Overlap" Value="BitFullCalendarEventLayout.Overlap" />
-                <BitChoiceGroupOption Text="Stack" Value="BitFullCalendarEventLayout.Stack" />
-            </BitChoiceGroup>
-            <br />
-            <BitFullCalendar Events="layoutEvents" Settings="layoutSettings" />
+            <BitFullCalendar Events="recurringEvents" />
         </DemoExample>
 
-        <DemoExample Title="Event templates" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Event templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
-                Replace the content of an event card per layout with <code>DayEventTemplate</code>,
-                <code>WeekEventTemplate</code>, <code>MonthEventTemplate</code>, and
-                <code>TimelineEventTemplate</code>. The calendar keeps owning the card's placement, colour
-                and drag/resize behaviour - the template only fills it.
+                <b>DayEventTemplate</b>, <b>WeekEventTemplate</b>, <b>MonthEventTemplate</b> and <b>TimelineEventTemplate</b>
+                replace the content of an event per layout. The calendar keeps its placement, colour, accessible name and
+                drag/resize behaviour.
             </div>
             <br />
             <BitFullCalendar Events="templateEvents"
@@ -172,78 +185,83 @@
                              MonthEventTemplate="MonthBadge" />
         </DemoExample>
 
-        <DemoExample Title="Resource timeline" RazorCode="@example8RazorCode" Id="example8">
+        <DemoExample Title="Resource timeline" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                Supply <code>Resources</code> to enable Timeline mode, where rows are resources (rooms,
-                machines, people) and columns are time. Events are matched to a row through their
-                <code>Resource</code> id, anything unmatched falls into a trailing "Unassigned" row, and
-                dragging a block between rows reassigns it. The add/edit dialog gains a resource picker
-                as soon as the calendar has resources to choose from.
+                <b>Resources</b> enables Timeline mode: rows are resources, columns are time. Events join a row through their
+                <b>Resource</b> id, unmatched ones fall into "Unassigned", and dragging a block between rows reassigns it.
+                <b>ResourceTemplate</b> replaces a row's header; <b>TimelineEventTemplate</b> its events.
             </div>
             <br />
             <BitFullCalendar Events="resourceEvents"
                              Resources="resources"
+                             ResourceTemplate="ResourceHeader"
                              DefaultMode="BitFullCalendarMode.Timeline" />
         </DemoExample>
 
-        <DemoExample Title="Date bounds" RazorCode="@example9RazorCode" Id="example9">
+        <DemoExample Title="Date bounds" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
-                <code>MinDate</code> and <code>MaxDate</code> fence in the dates the calendar can reach.
-                The prev/next buttons disable at the edges, out-of-range days are dimmed and inert, a
-                bound <code>Date</code> outside the window is pulled back in, and a drag or a save that
-                would land outside it is refused with a notice instead of moving the event out of sight.
+                <b>MinDate</b> and <b>MaxDate</b> fence in the reachable dates: prev/next disable at the edges, days outside
+                are dimmed and inert, and a drag or save that would land outside is refused.
             </div>
             <br />
-            <BitFullCalendar Events="boundsEvents"
-                             MinDate="boundsMin"
-                             MaxDate="boundsMax"
-                             DefaultView="BitFullCalendarView.Month" />
+            <BitFullCalendar Events="boundsEvents" MinDate="boundsMin" MaxDate="boundsMax" />
             <br />
             <BitText>Allowed range: <b>@boundsMin.ToString("yyyy-MM-dd")</b> to <b>@boundsMax.ToString("yyyy-MM-dd")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Booking rules" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="Booking rules" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                Turn <code>Settings.AllowEventOverlap</code> off to prevent double booking: a drag, a
-                resize, or a dialog save that would put two events on the same resource at the same time
-                is refused, the calendar shows a notice, and <code>OnRefused</code> reports why. Individual
-                events can also be frozen with <code>IsReadOnly</code> - they stay readable but cannot be
-                dragged, resized, edited or deleted, whatever the rest of the calendar allows.
+                <b>AllowEventOverlap</b> off prevents double booking; <b>BusinessDays</b>/<b>BusinessStartHour</b>/<b>BusinessEndHour</b>
+                describe the working week, <b>HighlightBusinessHours</b> shades the rest and <b>RestrictToBusinessHours</b>
+                enforces it. A single event can be frozen with <b>IsReadOnly</b> (the "Payroll run" below). A refused drag,
+                resize or save shows a notice and raises <b>OnRefused</b>.
             </div>
             <br />
-            <BitToggle @bind-Value="allowOverlap" Text="Allow overlapping events" />
+            <div class="example-row">
+                <BitToggle @bind-Value="allowOverlap" Text="Allow overlapping events" />
+                <BitToggle @bind-Value="highlightBusiness" Text="Highlight business hours" />
+                <BitToggle @bind-Value="restrictBusiness" Text="Restrict to business hours" />
+            </div>
             <br />
-            <BitFullCalendar Events="rulesEvents" Settings="rulesSettings" OnRefused="HandleRefused" DefaultView="BitFullCalendarView.Day" />
+            <BitFullCalendar Events="rulesEvents" Settings="rulesSettings" OnRefused="HandleRefused" DefaultView="BitFullCalendarView.Week" />
             <br />
             <BitText>Last refusal: <b>@(lastRefusal ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="OnChange" RazorCode="@example11RazorCode" Id="example11">
+        <DemoExample Title="Read-only" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                <code>OnChange</code> is raised whenever a user adds, edits, or deletes an event, with the
-                new snapshot, the previous one (for edits and deletes), the <code>Kind</code> of change,
-                and the <code>Source</code> it came from - a dialog, a drag, or a resize. Apply it to your
-                own store in the handler so the change survives the next render.
+                <b>ReadOnly</b> removes the add affordances, dragging, resizing and the edit/delete actions; navigation,
+                filtering and reading details keep working. <b>IsEnabled="false"</b> takes the same path.
             </div>
             <br />
-            <BitFullCalendar Events="changeEvents" OnChange="HandleChange" />
+            <BitToggle @bind-Value="isReadOnly" Text="Read-only" />
+            <br />
+            <BitFullCalendar Events="readOnlyEvents" ReadOnly="isReadOnly" />
+        </DemoExample>
+
+        <DemoExample Title="OnChange & OnChanging" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>OnChange</b> reports every add, edit and delete with the new and previous snapshots, the <b>Kind</b> and
+                the <b>Source</b> (dialog, drag or resize) - apply it to your own store so it survives the next render.
+                <b>OnChanging</b> comes first and can <b>Cancel</b> a change for rules only your app knows: the event goes
+                back and the dialog stays open. Here, nothing may start in the past.
+            </div>
+            <br />
+            <BitToggle @bind-Value="refusePast" Text="Refuse changes that start in the past" />
+            <br />
+            <BitFullCalendar Events="changeEvents" OnChanging="HandleChanging" OnChange="HandleChange" />
             <br />
             <BitText>Last change: <b>@(lastChange ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Binding" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Binding" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
-                The <code>View</code>, <code>Mode</code>, and <code>Date</code> parameters are two-way bound,
-                so you can drive the calendar from outside and react to user-driven changes through
-                <code>OnViewChange</code>, <code>OnModeChange</code>, and <code>OnDateChange</code> - the last
-                of which also fires once on the first render, carrying the range you need to fetch events for,
-                and only again when that range really moves, so picking another day of the week already on
-                screen never asks you to re-fetch what you already have.
-                The <code>DefaultView</code>, <code>DefaultMode</code>, and <code>DefaultDate</code> parameters
-                set the initial values that are used when their two-way counterparts are not bound.
+                <b>View</b>, <b>Mode</b> and <b>Date</b> are two-way bound; <b>OnViewChange</b>, <b>OnModeChange</b> and
+                <b>OnDateChange</b> report user-driven changes. <b>DefaultView</b>, <b>DefaultMode</b> and <b>DefaultDate</b>
+                set the start without taking control.
             </div>
             <br />
-            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+            <div class="example-row">
                 <BitChoiceGroup Horizontal
                                 Label="View"
                                 TItem="BitChoiceGroupOption<BitFullCalendarView>"
@@ -252,11 +270,8 @@
                     <BitChoiceGroupOption Text="Day" Value="BitFullCalendarView.Day" />
                     <BitChoiceGroupOption Text="Week" Value="BitFullCalendarView.Week" />
                     <BitChoiceGroupOption Text="Month" Value="BitFullCalendarView.Month" />
-                    @if (bindingMode == BitFullCalendarMode.Event)
-                    {
-                        <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" />
-                        <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" />
-                    }
+                    <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" IsEnabled="@(bindingMode == BitFullCalendarMode.Event)" />
+                    <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" IsEnabled="@(bindingMode == BitFullCalendarMode.Event)" />
                 </BitChoiceGroup>
                 <BitChoiceGroup Horizontal
                                 Label="Mode"
@@ -266,10 +281,10 @@
                     <BitChoiceGroupOption Text="Event" Value="BitFullCalendarMode.Event" />
                     <BitChoiceGroupOption Text="Timeline" Value="BitFullCalendarMode.Timeline" />
                 </BitChoiceGroup>
-                <div style="display:flex;gap:4px;align-items:center">
-                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => bindingDate = bindingDate.AddDays(-1)">Prev day</BitButton>
-                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => bindingDate = DateTime.Today">Today</BitButton>
-                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => bindingDate = bindingDate.AddDays(1)">Next day</BitButton>
+                <div class="example-buttons">
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => bindingDate = bindingDate.AddDays(-1)">Prev day</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => bindingDate = DateTime.Today">Today</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => bindingDate = bindingDate.AddDays(1)">Next day</BitButton>
                 </div>
             </div>
             <br />
@@ -286,209 +301,113 @@
             <BitText>Last calendar event: <b>@(bindingLog ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Programmatic control" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="Loading" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
-                Capture the component with <code>@@ref</code> to drive it from code without binding a
-                parameter: <code>GoToDate</code>, <code>GoToToday</code>, <code>NavigateNext</code>,
-                <code>NavigatePrevious</code>, <code>ChangeView</code>, and <code>ChangeMode</code> do exactly
-                what the toolbar does - navigation is clamped into the allowed date window and a view is
-                clamped into the allowed set - while <code>GetVisibleRange</code> reports the inclusive
-                start and end dates currently on screen.
+                <b>OnDateChange</b> fires on the first render and whenever the visible range moves - fetch that range there,
+                and set <b>IsLoading</b> meanwhile: a progress bar runs across the top and the body is marked busy for screen
+                readers, without blocking the calendar.
             </div>
             <br />
-            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => apiCalendar?.NavigatePrevious()">Previous</BitButton>
-                <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => apiCalendar?.GoToToday()">Today</BitButton>
-                <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => apiCalendar?.NavigateNext()">Next</BitButton>
-                <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => apiCalendar?.ChangeView(BitFullCalendarView.Day)">Day view</BitButton>
-                <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => apiCalendar?.ChangeView(BitFullCalendarView.Month)">Month view</BitButton>
-                <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="ShowVisibleRange">Read visible range</BitButton>
-            </div>
+            <BitFullCalendar Events="loadedEvents" IsLoading="isLoading" OnDateChange="LoadRange" />
             <br />
-            <BitFullCalendar @ref="apiCalendar" Events="apiEvents" />
-            <br />
-            <BitText>Visible range: <b>@(apiRange ?? "-")</b></BitText>
+            <BitText>Loaded: <b>@(loadedRange ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Localization" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="Custom toolbar" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
-                Render the calendar with a localized culture (here Persian, <code>fa-IR</code>) and
-                override the UI strings through a customized <code>BitFullCalendarTexts</code> instance.
-                The culture decides the calendar system, the month and day names, the first day of the
-                week, and the writing direction - a right-to-left culture flips the whole layout on its
-                own. This example translates most of the available strings: toolbar, view/mode tabs,
-                filters, settings panel, search/agenda, dialogs, form fields, validation messages, and
-                resource labels.
+                <b>HideFilters</b>, <b>HideSettings</b> and <b>HideHeader</b> trim the toolbar. Drive the calendar from your own
+                chrome with <b>GoToDate</b>, <b>GoToToday</b>, <b>NavigateNext</b>, <b>NavigatePrevious</b>, <b>ChangeView</b>
+                and <b>ChangeMode</b>, which obey the same date window and view set as the toolbar; <b>GetVisibleRange</b>
+                reads what is on screen.
+            </div>
+            <br />
+            <BitToggle @bind-Value="hideHeader" Text="Hide the whole toolbar" />
+            <div class="example-buttons">
+                <BitButton Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.NavigatePrevious()">Previous</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.GoToToday()">Today</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.NavigateNext()">Next</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.ChangeView(BitFullCalendarView.Day)">Day view</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.ChangeView(BitFullCalendarView.Month)">Month view</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ShowVisibleRange">Read visible range</BitButton>
+            </div>
+            <br />
+            <BitFullCalendar @ref="toolbarCalendar" Events="toolbarEvents" HideFilters HideSettings HideHeader="hideHeader" />
+            <br />
+            <BitText>Visible range: <b>@(visibleRange ?? "-")</b></BitText>
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                <b>CultureName</b> (or <b>Culture</b>) decides the calendar system, the names, the first day of the week and
+                the direction - a right-to-left culture flips the layout on its own. <b>Texts</b> translates every string,
+                including the accessible names. Here: Persian (<code>fa-IR</code>).
             </div>
             <br />
             <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />
         </DemoExample>
 
-        <DemoExample Title="Toolbar" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
-                Trim the built-in toolbar down to what you want to keep. <code>HideFilters</code> drops
-                the colour and attendee dropdowns, <code>HideSettings</code> drops the settings gear, and
-                <code>HideHeader</code> removes the whole bar - navigation, tabs, filters, the "Add Event"
-                button and all - so you can put your own chrome around the grid. None of them takes a
-                feature away: pass pre-filtered events, drive every preference through the
-                <code>Settings</code> object, and steer the calendar with the two-way bound
-                <code>View</code>, <code>Mode</code> and <code>Date</code> parameters or the navigation
-                methods shown in the sections below.
+                <b>AriaLabel</b> names the calendar and makes it a page region. Tab reaches each grid once and the arrow keys
+                walk it (Home/End, PageUp/PageDown too); Enter or Space on a day or slot adds an event; Alt+Arrow moves and
+                Shift+Arrow resizes a focused event; Escape closes any dialog and returns the focus. Dialog errors are tied to
+                their fields, and refusals, ranges and search results are announced.
             </div>
             <br />
-            <BitToggle @bind-Value="hideHeader" Text="Hide the whole toolbar" />
+            <BitFullCalendar Events="accessibilityEvents" AriaLabel="Team schedule" />
+        </DemoExample>
+
+        <DemoExample Title="CSS variables" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                The public <b>--bit-FullCalendar-*</b> variables re-skin the calendar without overriding its selectors. They
+                inherit, so set them on <code>:root</code>, on a wrapper (as here) or on one calendar's <b>Style</b>.
+                <b>--bit-FullCalendar-hour-height</b> re-scales the time grids, events and resizing included.
+            </div>
             <br />
-            @if (hideHeader)
-            {
-                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.NavigatePrevious()">Previous</BitButton>
-                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.GoToToday()">Today</BitButton>
-                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => toolbarCalendar?.NavigateNext()">Next</BitButton>
+            <div style="--bit-FullCalendar-accent-color:#0f766e;
+                        --bit-FullCalendar-accent-hover-color:#115e59;
+                        --bit-FullCalendar-today-background:rgba(15, 118, 110, 0.08);
+                        --bit-FullCalendar-selection-background:rgba(15, 118, 110, 0.2);
+                        --bit-FullCalendar-now-indicator-color:#f59e0b;
+                        --bit-FullCalendar-border-radius:16px;
+                        --bit-FullCalendar-event-border-radius:999px;
+                        --bit-FullCalendar-hour-height:64px;
+                        --bit-FullCalendar-height:480px;">
+                <BitFullCalendar Events="cssVarsEvents" DefaultView="BitFullCalendarView.Week" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                <b>BitParams</b> with a <b>BitFullCalendarParams</b> sets defaults for every calendar under it - here the views,
+                a hidden filter bar and one shared <b>Settings</b> object (a preference changed in one calendar's gear reaches
+                the other). A calendar's own value wins: the second one keeps the full set of views.
+            </div>
+            <br />
+            <BitParams Parameters="calendarParams">
+                <div class="cascade-pair">
+                    <BitFullCalendar Events="cascadeEvents1" />
+                    <BitFullCalendar Events="cascadeEvents2" Views="null" />
                 </div>
-                <br />
-            }
-            <BitFullCalendar @ref="toolbarCalendar" Events="basicEvents" HideFilters HideSettings HideHeader="hideHeader" />
+            </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Views" RazorCode="@example16RazorCode" Id="example16">
+        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
-                Restrict which views the calendar offers - and in which order they appear - with the
-                <code>Views</code> parameter. Excluded views become unreachable: their tabs are gone,
-                and the active view is clamped into the list no matter how it was requested. A single
-                allowed view collapses the tab strip altogether.
+                <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part: <b>Root</b>,
+                <b>Header</b>, <b>Body</b>, <b>Event</b> (every event surface, beside its own <b>CssClass</b>) and
+                <b>Dialog</b>.
             </div>
             <br />
-            <BitChoiceGroup Horizontal
-                            Label="Available views"
-                            TItem="BitChoiceGroupOption<string>"
-                            TValue="string"
-                            @bind-Value="viewsPreset">
-                <BitChoiceGroupOption Text="Week and Day" Value="@("week-day")" />
-                <BitChoiceGroupOption Text="Month and Agenda" Value="@("month-agenda")" />
-                <BitChoiceGroupOption Text="Month only" Value="@("month")" />
-            </BitChoiceGroup>
-            <br />
-            <BitFullCalendar Events="viewsEvents" Views="SelectedViews" />
+            <BitFullCalendar Events="styleEvents"
+                             Style="border: 2px dashed var(--bit-clr-pri)"
+                             Styles="calendarStyles" />
         </DemoExample>
 
-        <DemoExample Title="Read-only" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
-                Present the calendar without letting anyone change it. <code>ReadOnly</code> hides the
-                "Add Event" button and the per-cell add affordances, stops events from being dragged or
-                resized, and drops the edit and delete actions from the event details dialog.
-                Navigating dates, switching views, filtering, the settings panel, and opening an event
-                to read its details all keep working. Setting <code>IsEnabled</code> to <code>false</code>
-                does the same and dims the calendar.
-            </div>
-            <br />
-            <BitToggle @bind-Value="isReadOnly" Text="Read-only" />
-            <br />
-            <BitFullCalendar Events="readOnlyEvents" ReadOnly="isReadOnly" />
-        </DemoExample>
-
-        <DemoExample Title="Recurring events" RazorCode="@example18RazorCode" Id="example18">
-            <div>
-                Give an event a <code>Recurrence</code> rule and the calendar repeats it: daily, weekly
-                (on the non-consecutive weekdays you list in <code>DaysOfWeek</code>), monthly, or yearly,
-                every <code>Interval</code> units - every 15 days, every other week - ending after a
-                <code>Count</code> of occurrences or on an <code>Until</code> date, or never. A monthly or
-                yearly rule with a <code>WeekOfMonth</code> lands on a weekday of the month instead of a
-                day number: the third Tuesday, the last Friday. <code>ExceptionDates</code> skips the
-                occurrences that were cancelled and <code>AdditionalDates</code> adds ones outside the
-                pattern, without disturbing it. Only the visible range is expanded, so an open-ended series
-                costs nothing to keep, and each occurrence carries the master's <code>SeriesId</code> and
-                its own <code>OccurrenceDate</code>.
-                <br />
-                The user manages all of this from the dialogs too: the add/edit dialog has a Repeat section
-                for the rule and its skipped and added dates, and opening an occurrence asks whether Edit
-                or Delete means <em>this event</em> - which skips its date, and for an edit puts a one-off
-                event in its place - or <em>all events in the series</em>. Occurrences cannot be dragged.
-            </div>
-            <br />
-            <BitFullCalendar Events="recurringEvents" DefaultView="BitFullCalendarView.Month" />
-        </DemoExample>
-
-        <DemoExample Title="Business hours" RazorCode="@example19RazorCode" Id="example19">
-            <div>
-                Mark the part of the week you actually schedule in.
-                <code>Settings.BusinessDays</code> (Monday to Friday by default),
-                <code>Settings.BusinessStartHour</code> and <code>Settings.BusinessEndHour</code> describe
-                the window; <code>Settings.HighlightBusinessHours</code> shades everything outside it on
-                the day, week and timeline grids and on the non-business month cells - the user can
-                toggle that from the settings gear too. <code>Settings.RestrictToBusinessHours</code>
-                goes further and turns the window into a rule: a drag, a resize, or a dialog save that
-                would land outside it is refused with a notice, and <code>OnRefused</code> reports
-                <code>OutsideBusinessHours</code>. Switch to the Week view to see it.
-            </div>
-            <br />
-            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
-                <BitToggle @bind-Value="highlightBusiness" Text="Highlight business hours" />
-                <BitToggle @bind-Value="restrictBusiness" Text="Restrict events to business hours" />
-            </div>
-            <br />
-            <BitFullCalendar Events="businessEvents"
-                             Settings="businessSettings"
-                             OnRefused="HandleBusinessRefused"
-                             DefaultView="BitFullCalendarView.Week" />
-            <br />
-            <BitText>Last refusal: <b>@(lastBusinessRefusal ?? "-")</b></BitText>
-        </DemoExample>
-
-        <DemoExample Title="Month grid" RazorCode="@example20RazorCode" Id="example20">
-            <div>
-                Two knobs shape the month grid. <code>Settings.FixedWeekCount</code> always renders six
-                week rows, so the calendar keeps its height as the user walks from a five-row month to a
-                six-row one instead of jumping. <code>Settings.ShowNonCurrentDates</code> decides whether
-                the days the grid borrows from the neighbouring months are drawn at all - turn it off and
-                those cells stay blank and inert, keeping the eye inside the month.
-                <code>Settings.MaxEventsPerDayCell</code> sets how many badges a cell shows before the
-                rest collapse behind the "+N more" affordance.
-            </div>
-            <br />
-            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
-                <BitToggle @bind-Value="fixedWeeks" Text="Fixed six weeks" />
-                <BitToggle @bind-Value="showOtherMonthDays" Text="Show neighbouring days" />
-            </div>
-            <br />
-            <BitFullCalendar Events="monthGridEvents" Settings="monthGridSettings" />
-        </DemoExample>
-
-        <DemoExample Title="Navigation links" RazorCode="@example21RazorCode" Id="example21">
-            <div>
-                <code>Settings.NavLinks</code> turns the dates the grids print into links: a month day
-                number and a week-view column header open that single day, and a week number on the
-                month rail opens that week. A link whose target view the <code>Views</code> parameter
-                excluded only moves the date, and one outside the <code>MinDate</code>/<code>MaxDate</code>
-                window is disabled. Turn it off (the default) and the same numbers stay plain labels.
-            </div>
-            <br />
-            <BitToggle @bind-Value="navLinks" Text="Navigation links" />
-            <br />
-            <BitFullCalendar Events="navLinkEvents" Settings="navLinkSettings" />
-        </DemoExample>
-
-        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" Id="example22">
-            <div>
-                The calendar's root element takes the usual <code>Style</code> and <code>Class</code>
-                parameters, plus <code>Id</code>, <code>Visibility</code>, and any extra HTML attribute you
-                splat onto it. Its own look is driven by <code>--bit-bfc-*</code> custom properties - set
-                them in a style or a class to re-skin the surface without overriding component selectors.
-                <code>--bit-bfc-height</code> sizes the calendar and <code>--bit-bfc-hour-height</code>
-                re-scales the day and week time grids: the event blocks and the current-time marker are
-                measured against that same property, so they stay on the hours they belong to.
-            </div>
-            <br />
-            <BitFullCalendar Events="basicEvents"
-                             Style="--bit-bfc-height:420px;--bit-bfc-hour-height:64px;border:2px dashed var(--bit-clr-pri);border-radius:8px" />
-        </DemoExample>
-
-        <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
-            <div>
-                Use <code>Dir="BitDir.Rtl"</code> to render the calendar right-to-left. Everything follows:
-                the toolbar order, the navigation chevrons, the weekday columns, the month and year grids,
-                the dialogs, and the resource timeline - whose gutter pins to the leading edge and whose
-                blocks run right to left along the time axis. A right-to-left <em>culture</em> flips the
-                layout on its own, so this parameter is only needed when the two differ.
+                <b>Dir="BitDir.Rtl"</b> renders right-to-left - toolbar, chevrons, grids, dialogs and the timeline - and the arrow
+                keys and resizing follow. Only needed when the direction differs from the culture's.
             </div>
             <br />
             <BitFullCalendar Dir="BitDir.Rtl" Events="rtlEvents" />
@@ -498,13 +417,22 @@
 
 @code {
     private RenderFragment<BitFullCalendarEvent> EventCard => ev =>
-        @<div style="display:flex;flex-direction:column;gap:2px">
+        @<div class="event-card">
             <strong>@ev.Title</strong>
             @if (!string.IsNullOrWhiteSpace(ev.Description))
             {
-                <span style="font-size:11px;opacity:.8">@ev.Description</span>
+                <span>@ev.Description</span>
             }
         </div>;
 
     private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span>📌 @ev.Title</span>;
+
+    private RenderFragment<BitFullCalendarResource> ResourceHeader => resource =>
+        @<div class="resource-header">
+            <span class="resource-avatar" aria-hidden="true">@resource.Title[..1]</span>
+            <span>
+                <strong>@resource.Title</strong>
+                <small>@resource.Subtitle</small>
+            </span>
+        </div>;
 }

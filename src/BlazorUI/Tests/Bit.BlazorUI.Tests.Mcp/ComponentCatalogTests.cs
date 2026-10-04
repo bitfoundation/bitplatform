@@ -372,6 +372,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitSeparator", "BitSeparatorParams")]
     [DataRow("BitOverlay", "BitOverlayParams")]
     [DataRow("BitAppShell", "BitAppShellParams")]
+    [DataRow("BitFullCalendar", "BitFullCalendarParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)

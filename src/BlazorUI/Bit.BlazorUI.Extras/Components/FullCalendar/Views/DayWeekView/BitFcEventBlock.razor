@@ -33,11 +33,12 @@
     }
 }
 
-<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Event.CssClass"
-     style="@blockStyle"
+<div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
+     style="@($"{blockStyle}{Parts.Styles?.Event}")"
      title="@tooltip"
      role="button"
      tabindex="0"
+     aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
      draggable="@(CanEdit ? "true" : "false")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
@@ -61,7 +62,7 @@
     }
     else
     {
-        <div style="display:flex;align-items:center;gap:4px;">
+        <div class="bit-bfc-event-block-head">
             @if (isDotVariant)
             {
                 <BitFcEventBullet Color="Event.Color" />
@@ -88,7 +89,7 @@
 
     @if (_isResizing)
     {
-        <div class="bit-bfc-resize-preview" role="status" aria-live="polite" aria-label="@Texts.ResizePreviewAriaLabel">
+        <div class="bit-bfc-resize-preview" role="status" aria-label="@Texts.ResizePreviewAriaLabel">
             <svg class="bit-bfc-resize-preview-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span class="bit-bfc-resize-preview-time">@BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)</span>
         </div>

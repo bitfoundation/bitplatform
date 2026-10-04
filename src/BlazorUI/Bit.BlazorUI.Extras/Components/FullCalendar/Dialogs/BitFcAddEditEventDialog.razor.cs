@@ -8,6 +8,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
@@ -45,6 +46,39 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private readonly string _positionSelectId = $"bfc-position-{Guid.NewGuid():N}";
     private readonly string _daysLabelId = $"bfc-days-{Guid.NewGuid():N}";
     private readonly string _endsSelectId = $"bfc-ends-{Guid.NewGuid():N}";
+    private readonly string _endTriggerId = $"bfc-end-{Guid.NewGuid():N}";
+    private readonly string _untilTriggerId = $"bfc-until-{Guid.NewGuid():N}";
+    private readonly string _countInputId = $"bfc-count-{Guid.NewGuid():N}";
+    private readonly string _attendeesLabelId = $"bfc-attendees-{Guid.NewGuid():N}";
+    private readonly string _firstNameInputId = $"bfc-first-name-{Guid.NewGuid():N}";
+
+    // A field's validation message is tied to it (aria-describedby) and the field is marked invalid, so
+    // the message is read with the field rather than only shown below it.
+    private string ErrorId(string key) => $"{_dialogTitleId}-error-{key}";
+    private string? Invalid(string key) => _errors.ContainsKey(key) ? "true" : null;
+    private string? DescribedBy(string key) => _errors.ContainsKey(key) ? ErrorId(key) : null;
+
+    // Where the focus goes when a save is refused: the first field, in reading order, whose value is wrong.
+    private string? _pendingFocusId;
+
+    private string? FirstInvalidFieldId()
+    {
+        foreach (var (key, id) in new (string, string)[]
+        {
+            ("title", _titleInputId),
+            ("endDate", _endTriggerId),
+            ("interval", _intervalInputId),
+            ("until", _untilTriggerId),
+            ("count", _countInputId),
+            ("description", _descriptionInputId),
+        })
+        {
+            if (_errors.ContainsKey(key))
+                return id;
+        }
+
+        return null;
+    }
 
     private ElementReference _dialogRef;
 
@@ -381,6 +415,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // BitFcEventDetailsDialog so the add/edit dialog behaves like a true modal.
         if (firstRender)
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+
+        // A refused save sends the focus to the field it has to be fixed in, once the message is rendered.
+        if (_pendingFocusId is { } id)
+        {
+            _pendingFocusId = null;
+            await BitFcFocusInterop.TryFocusAsync(JS, id);
+        }
     }
 
     private void AddAttendee()
@@ -390,6 +431,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         if (string.IsNullOrWhiteSpace(_newFirstName) && string.IsNullOrWhiteSpace(_newLastName))
         {
             _errors["attendee"] = Texts.ValidationAttendeeNameRequired;
+            _pendingFocusId = _firstNameInputId;
             return;
         }
 
@@ -492,15 +534,23 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             }
         }
 
-        if (_errors.Count > 0) return;
+        if (_errors.Count > 0)
+        {
+            _pendingFocusId = FirstInvalidFieldId();
+            return;
+        }
 
         _isSubmitting = true;
         try
         {
-            if (_isOccurrenceEdit)
-                await SaveOccurrenceAsync(resourceId);
-            else
-                await SaveEventAsync(resourceId);
+            var committed = _isOccurrenceEdit
+                ? await SaveOccurrenceAsync(resourceId)
+                : await SaveEventAsync(resourceId);
+
+            // Refused by OnChanging: the state is already back where it was, and the dialog stays open with what
+            // the user typed so it can be corrected rather than retyped.
+            if (committed is false)
+                return;
 
             // Notification succeeded and the change is committed; post-notify callbacks run outside
             // the compensation scope so an OnSaved/OnClose exception does not roll back the change.
@@ -535,7 +585,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         Recurrence = BuildRecurrence()
     };
 
-    private async Task SaveEventAsync(string? resourceId)
+    private async Task<bool> SaveEventAsync(string? resourceId)
     {
         var oldSnapshot = _isEditing && ExistingEvent is not null
             ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent)
@@ -550,7 +600,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         try
         {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            return await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
             {
                 Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
                 OldEvent = oldSnapshot,
@@ -583,13 +633,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     /// skips the occurrence's date (an Edit of the master) and a one-off event carrying the edited
     /// fields takes its place (an Add). Both are rolled back if either notification throws.
     /// </summary>
-    private async Task SaveOccurrenceAsync(string? resourceId)
+    private async Task<bool> SaveOccurrenceAsync(string? resourceId)
     {
         var occurrence = ExistingEvent!;
         var master = State.AllEvents.FirstOrDefault(e => string.Equals(e.Id, occurrence.SeriesId, StringComparison.Ordinal));
         // The series was removed while the dialog was open, so there is no occurrence left to change.
         if (master is null || occurrence.OccurrenceDate is not { } occurrenceDate)
-            return;
+            return true;
 
         var masterSnapshot = BitFullCalendarChangeNotifier.CloneEvent(master);
         var updatedMaster = BitFullCalendarHelpers.SkipOccurrence(master, occurrenceDate);
@@ -600,19 +650,32 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
         try
         {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            var skip = new BitFullCalendarChangeEventArgs
             {
                 Event = BitFullCalendarChangeNotifier.CloneEvent(updatedMaster),
                 OldEvent = masterSnapshot,
                 Kind = BitFullCalendarChangeKind.Edit,
                 Source = BitFullCalendarChangeSource.Dialog
-            });
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            };
+            var add = new BitFullCalendarChangeEventArgs
             {
                 Event = BitFullCalendarChangeNotifier.CloneEvent(detached),
                 Kind = BitFullCalendarChangeKind.Add,
                 Source = BitFullCalendarChangeSource.Dialog
-            });
+            };
+
+            // The two halves stand or fall together, so both are approved before either is reported: a refusal of
+            // one puts both back and reports nothing.
+            if (await Notifier.ApproveAsync(skip) is false || await Notifier.ApproveAsync(add) is false)
+            {
+                State.RemoveEvent(detached.Id);
+                State.UpdateEvent(master);
+                return false;
+            }
+
+            await Notifier.DispatchAsync(skip);
+            await Notifier.DispatchAsync(add);
+            return true;
         }
         catch
         {

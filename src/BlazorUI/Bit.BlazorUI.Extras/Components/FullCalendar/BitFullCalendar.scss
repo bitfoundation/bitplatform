@@ -2,46 +2,95 @@
 
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
+// The public custom properties of the calendar. Each is read below with a fallback and never declared, so it
+// inherits - set one on :root, on any ancestor, or on one calendar's Style:
+//
+// --bit-FullCalendar-background               surface of the calendar, its dialogs and popups
+// --bit-FullCalendar-secondary-background     tab strips, the day-view sidebar, sticky titles, the timeline gutter
+// --bit-FullCalendar-hover-background         a hovered cell, slot, row or control
+// --bit-FullCalendar-color                    text
+// --bit-FullCalendar-secondary-color          weekday headers, group titles, descriptions
+// --bit-FullCalendar-muted-color              hour labels, week numbers, days of the neighbouring months
+// --bit-FullCalendar-border-color             grid lines and the borders of the calendar and its controls
+// --bit-FullCalendar-accent-color             today, the primary button, selected choices, slot focus
+// --bit-FullCalendar-accent-hover-color       a hovered primary button
+// --bit-FullCalendar-accent-text-color        text on the accent
+// --bit-FullCalendar-event-color              an event whose Color matches no color option
+// --bit-FullCalendar-event-border-radius      corners of the event badges and blocks
+// --bit-FullCalendar-today-background         today's column in the week grid
+// --bit-FullCalendar-selection-background     the slots a range selection covers
+// --bit-FullCalendar-off-hours-background     shading outside the business hours
+// --bit-FullCalendar-now-indicator-color      the current-time line
+// --bit-FullCalendar-border-radius            corners of the calendar and the year-view months
+// --bit-FullCalendar-height                   height of the calendar
+// --bit-FullCalendar-hour-height              height of one hour of the time grids
+// --bit-FullCalendar-time-gutter-width        width of the hour-label gutter
+// --bit-FullCalendar-week-number-width        width of the month grid's week-number rail
+// --bit-FullCalendar-month-cell-min-height    minimum height of a month-grid day
+// --bit-FullCalendar-dialog-max-width         maximum width of the built-in dialogs
+
 /* ===== CSS Variables =====
    The calendar maps its internal --bit-bfc-* custom properties onto the Bit BlazorUI theme tokens
    (--bit-clr-*, shape and shadow tokens). Because those tokens are redefined by the active Bit
    theme (including dark mode via :root[bit-theme="dark"]), the calendar follows the application
-   theme automatically without any component-level theme or dark-mode switch. */
+   theme automatically without any component-level theme or dark-mode switch.
+
+   The public --bit-FullCalendar-* properties are READ here with a fallback and never declared, so
+   they inherit: :root, any ancestor, and an instance's Style are all places to set one. The private
+   --bit-bfc-* names are what the rules below consume; they stay settable on the root itself (an inline
+   style or a class on the calendar outranks this block) for the apps that already re-skin through them. */
 .bit-bfc {
-    --bit-bfc-bg: #{$clr-bg-pri};
-    --bit-bfc-bg-secondary: #{$clr-bg-sec};
-    --bit-bfc-bg-hover: #{$clr-bg-pri-hover};
-    --bit-bfc-border: #{$clr-brd-ter};
-    --bit-bfc-text: #{$clr-fg-pri};
-    --bit-bfc-text-secondary: #{$clr-fg-sec};
-    --bit-bfc-text-muted: #{$clr-fg-ter};
-    --bit-bfc-primary: #{$clr-pri};
-    --bit-bfc-primary-hover: #{$clr-pri-hover};
-    --bit-bfc-primary-text: #{$clr-pri-text};
+    --bit-bfc-bg: var(--bit-FullCalendar-background, #{$clr-bg-pri});
+    --bit-bfc-bg-secondary: var(--bit-FullCalendar-secondary-background, #{$clr-bg-sec});
+    --bit-bfc-bg-hover: var(--bit-FullCalendar-hover-background, #{$clr-bg-pri-hover});
+    --bit-bfc-border: var(--bit-FullCalendar-border-color, #{$clr-brd-ter});
+    --bit-bfc-text: var(--bit-FullCalendar-color, #{$clr-fg-pri});
+    --bit-bfc-text-secondary: var(--bit-FullCalendar-secondary-color, #{$clr-fg-sec});
+    --bit-bfc-text-muted: var(--bit-FullCalendar-muted-color, #{$clr-fg-ter});
+    --bit-bfc-primary: var(--bit-FullCalendar-accent-color, #{$clr-pri});
+    --bit-bfc-primary-hover: var(--bit-FullCalendar-accent-hover-color, #{$clr-pri-hover});
+    --bit-bfc-primary-text: var(--bit-FullCalendar-accent-text-color, #{$clr-pri-text});
     --bit-bfc-danger: #{$clr-err};
     --bit-bfc-danger-hover: #{$clr-err-hover};
-    --bit-bfc-radius: #{$shp-radius-surface};
+    --bit-bfc-danger-text: #{$clr-err-text};
+    --bit-bfc-radius: var(--bit-FullCalendar-border-radius, #{$shp-radius-surface});
     --bit-bfc-radius-sm: #{$shp-radius-control};
-    --bit-bfc-shadow: #{$box-shadow-sm};
-    --bit-bfc-shadow-lg: #{$box-shadow-md};
-    --bit-bfc-hour-height: 96px;
+    --bit-bfc-event-radius: var(--bit-FullCalendar-event-border-radius, #{$shp-radius-control});
+    /* The colour an event is drawn in when it names no colour of its own (or one the color options
+       do not know). Every event surface derives its chip, swatch and bullet from this one value. */
+    --bit-bfc-event-default: var(--bit-FullCalendar-event-color, var(--bit-bfc-primary));
+    --bit-bfc-shadow: #{$box-shadow-card};
+    --bit-bfc-shadow-lg: #{$box-shadow-popup};
+    --bit-bfc-hour-height: var(--bit-FullCalendar-hour-height, 96px);
     /* Number of hour rows the time grids render. The day/week views override it per grid so a
        narrowed visible-hour window is exactly as tall as the hours it shows. */
     --bit-bfc-visible-hours: 24;
     /* Width of the leading week-number rail in the month grid and the week view's time gutter. */
-    --bit-bfc-weeknum-width: 34px;
-    --bit-bfc-height: 600px;
-    --bit-bfc-timeline-color: #{$clr-err};
-    --bit-bfc-resize-ring: color-mix(in srgb, #{$clr-pri} 65%, transparent);
-    --bit-bfc-resize-glow: color-mix(in srgb, #{$clr-pri} 22%, transparent);
-    --bit-bfc-resize-preview-bg: #{$clr-bg-pri};
-    --bit-bfc-resize-preview-border: color-mix(in srgb, #{$clr-pri} 45%, transparent);
-    --bit-bfc-resize-handle-line: #{$clr-pri};
+    --bit-bfc-weeknum-width: var(--bit-FullCalendar-week-number-width, 34px);
+    /* Width of the hour-label gutter beside the day and week time grids; the headers and the
+       all-day row above them indent by the same amount so their columns stay aligned. */
+    --bit-bfc-time-gutter: var(--bit-FullCalendar-time-gutter-width, #{rem2(60px)});
+    --bit-bfc-month-cell-min-height: var(--bit-FullCalendar-month-cell-min-height, #{rem2(100px)});
+    --bit-bfc-height: var(--bit-FullCalendar-height, 600px);
+    --bit-bfc-timeline-color: var(--bit-FullCalendar-now-indicator-color, #{$clr-err});
+    --bit-bfc-today-tint: var(--bit-FullCalendar-today-background, color-mix(in srgb, var(--bit-bfc-primary) 6%, transparent));
+    /* Everything outside the business hours is shaded so the schedulable part of the week reads at a
+       glance. The tint is derived from the theme's secondary text, so it darkens with the rest of the
+       calendar in a dark scheme instead of being a fixed grey. */
+    --bit-bfc-off-hours: var(--bit-FullCalendar-off-hours-background, color-mix(in srgb, #{$clr-fg-sec} 7%, transparent));
+    /* The slots an in-progress range selection covers, and the slot a drag is about to drop on. */
+    --bit-bfc-selection: var(--bit-FullCalendar-selection-background, color-mix(in srgb, var(--bit-bfc-primary) 22%, transparent));
+    --bit-bfc-resize-ring: color-mix(in srgb, var(--bit-bfc-primary) 65%, transparent);
+    --bit-bfc-resize-glow: color-mix(in srgb, var(--bit-bfc-primary) 22%, transparent);
+    --bit-bfc-resize-preview-bg: var(--bit-bfc-bg);
+    --bit-bfc-resize-preview-border: color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+    --bit-bfc-resize-handle-line: var(--bit-bfc-primary);
 }
 
 /* ===== Base ===== */
 .bit-bfc {
     font-family: #{$tg-font-family};
+    font-size: $tg-fs-sm;
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
@@ -49,11 +98,43 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
     /* A definite default height keeps the day/week time grids from expanding to their full
        (24 * hour-height) intrinsic height when the host doesn't constrain the calendar. This makes
        the views scrollable (so "scroll to start of day" works) out of the box. Override via the
-       --bit-bfc-height custom property, e.g. style="--bit-bfc-height: 100%" inside a sized container. */
+       --bit-FullCalendar-height custom property (100% inside a sized container). */
     height: var(--bit-bfc-height, 600px);
+}
+
+/* The calendar's own controls are plain HTML buttons, inputs and selects. A browser draws those in its
+   system font and colours (buttontext, field) rather than inheriting them, which in a dark scheme puts
+   black text on the dark surface - so every one of them inherits the calendar's type and colour. */
+.bit-bfc button,
+.bit-bfc input,
+.bit-bfc select,
+.bit-bfc textarea {
+    font-family: inherit;
+    color: inherit;
+}
+
+.bit-bfc *,
+.bit-bfc *::before,
+.bit-bfc *::after {
+    box-sizing: border-box;
+}
+
+/* One focus indicator for every control the calendar draws, the theme's own ring - the time-grid and
+   timeline slots, which are flush with each other, draw an inset outline of their own further down.
+   :where() keeps the rule at the weight of one class, so any part that needs its own treatment wins. */
+.bit-bfc :where(button, [role="button"], [role="tab"], a[href], input, select, textarea, [tabindex="0"]):focus-visible {
+    @include focus-ring;
+}
+
+/* The ring is drawn outside the element, so a control that sits flush against a clipping edge (the
+   month events, the tab strips) is lifted above its neighbours while it is focused. */
+.bit-bfc :is(.bit-bfc-event-badge, .bit-bfc-event-block, .bit-bfc-timeline-event):focus-visible {
+    z-index: 21;
 }
 
 /* ===== Header ===== */
@@ -92,20 +173,32 @@
     justify-content: center;
     gap: spacing(0.75);
     padding: spacing(0.75) spacing(1.5);
+    min-height: $siz-ctrl-md;
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: var(--bit-bfc-radius-sm);
+    border-radius: $shp-radius-button;
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     cursor: pointer;
-    transition: all $mot-duration-short $mot-easing;
+    transition: background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
     white-space: nowrap;
-    line-height: 1.817;
+    line-height: 1.25;
 }
 
-.bit-bfc-btn:hover {
+.bit-bfc-btn:hover:not(:disabled) {
     background: var(--bit-bfc-bg-hover);
+}
+
+/* A step past MinDate/MaxDate, a Today outside the window, a save in flight: the control says it is
+   unavailable instead of keeping the pointer and hover of one that still does something. */
+.bit-bfc-btn:disabled {
+    cursor: default;
+    color: $clr-fg-dis;
+    background: $clr-bg-dis;
+    border-color: $clr-brd-dis;
 }
 
 .bit-bfc-btn-primary {
@@ -114,58 +207,64 @@
     border-color: var(--bit-bfc-primary);
 }
 
-.bit-bfc-btn-primary:hover {
+.bit-bfc-btn-primary:hover:not(:disabled) {
     background: var(--bit-bfc-primary-hover);
 }
 
 .bit-bfc-btn-danger {
     background: var(--bit-bfc-danger);
-    color: #fff;
+    color: var(--bit-bfc-danger-text);
     border-color: var(--bit-bfc-danger);
 }
 
-.bit-bfc-btn-danger:hover {
+.bit-bfc-btn-danger:hover:not(:disabled) {
     background: var(--bit-bfc-danger-hover);
 }
 
+.bit-bfc-btn-primary:disabled,
+.bit-bfc-btn-danger:disabled {
+    color: $clr-fg-dis;
+    background: $clr-bg-dis;
+    border-color: $clr-brd-dis;
+}
+
+.bit-bfc-btn-sm {
+    min-height: $siz-ctrl-sm;
+    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
+    font-size: $tg-fs-xs;
+}
+
 .bit-bfc-btn-icon {
-    padding: spacing(0.75);
+    padding: 0;
     width: $siz-ctrl-md;
     height: $siz-ctrl-md;
 }
 
-.bit-bfc-btn-sm {
-    padding: spacing(0.5) spacing(1);
-    font-size: $tg-fs-xs;
+.bit-bfc-btn-icon.bit-bfc-btn-sm {
+    width: $siz-ctrl-sm;
+    height: $siz-ctrl-sm;
 }
 
-.bit-bfc-btn-group {
-    display: inline-flex;
-    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: var(--bit-bfc-radius-sm);
-    overflow: hidden;
+/* The prev/next pair and the range they step through. */
+.bit-bfc-date-nav {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.5);
 }
 
-.bit-bfc-btn-group .bit-bfc-btn {
-    border: none;
-    border-radius: 0;
-    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
-}
-
-.bit-bfc-btn-group .bit-bfc-btn:last-child {
-    border-inline-end: none;
-}
-
-.bit-bfc-btn-group .bit-bfc-btn.active {
-    background: var(--bit-bfc-primary);
-    color: var(--bit-bfc-primary-text);
+.bit-bfc-header-title {
+    margin: 0;
+    min-width: rem2(180px);
+    text-align: center;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
 }
 
 /* ===== View Tabs ===== */
 .bit-bfc-view-tabs {
     display: inline-flex;
     background: var(--bit-bfc-bg-secondary);
-    border-radius: var(--bit-bfc-radius-sm);
+    border-radius: $shp-radius-button;
     padding: spacing(0.25);
     gap: spacing(0.25);
 }
@@ -173,13 +272,15 @@
 .bit-bfc-view-tab {
     padding: spacing(0.625) spacing(1.5);
     border: none;
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-button;
     background: transparent;
     color: var(--bit-bfc-text-secondary);
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     cursor: pointer;
-    transition: all $mot-duration-short $mot-easing;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-view-tab:hover {
@@ -260,7 +361,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-muted);
     border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
@@ -294,14 +395,7 @@
     font-weight: $tg-fw-semibold;
 }
 
-/* ===== Business hours =====
-   Everything outside them is shaded so the schedulable part of the week reads at a glance. The tint
-   is derived from the theme's secondary surface, so it darkens with the rest of the calendar in a
-   dark scheme instead of being a fixed grey. */
-.bit-bfc {
-    --bit-bfc-off-hours: color-mix(in srgb, #{$clr-fg-sec} 7%, transparent);
-}
-
+/* ===== Business hours ===== */
 .bit-bfc-slot-off,
 .bit-bfc-day-off {
     background-color: var(--bit-bfc-off-hours);
@@ -309,10 +403,6 @@
 
 /* Today's column in the week grid, tinted so the eye finds it without reading the header. Sits
    under the off-hours shading, which is the more specific statement about a given slot. */
-.bit-bfc {
-    --bit-bfc-today-tint: color-mix(in srgb, #{$clr-pri} 6%, transparent);
-}
-
 .bit-bfc-today-col {
     background-color: var(--bit-bfc-today-tint);
 }
@@ -364,11 +454,11 @@
     border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     padding: spacing(0.5);
-    min-height: rem2(100px);
+    min-height: var(--bit-bfc-month-cell-min-height);
     min-width: 0;
     position: relative;
     cursor: pointer;
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
     overflow: clip;
     overflow-clip-margin: 4px;
 }
@@ -384,8 +474,14 @@
     border-inline-end: none;
 }
 
+/* A day borrowed from a neighbouring month says so through its number, which is drawn in the muted
+   text colour. Fading the whole cell would take its events below a readable contrast with it. */
 .bit-bfc-month-cell.other-month {
-    opacity: 0.4;
+    background: color-mix(in srgb, var(--bit-bfc-bg-secondary) 50%, transparent);
+}
+
+.bit-bfc-month-cell.other-month .bit-bfc-month-cell-day:not(.today) {
+    color: var(--bit-bfc-text-muted);
 }
 
 .bit-bfc-month-cell-day {
@@ -395,7 +491,7 @@
     width: rem2(28px);
     height: rem2(28px);
     border-radius: 50%;
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
     margin-bottom: spacing(0.25);
 }
@@ -420,7 +516,7 @@
 }
 
 .bit-bfc-month-more {
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-secondary);
     padding: spacing(0.25) spacing(0.5);
     cursor: pointer;
@@ -449,13 +545,13 @@
     max-width: 100%;
     min-width: 0;
     padding: 0 spacing(0.75);
-    border-radius: $shp-radius-control;
-    font-size: rem2(11px);
+    border-radius: var(--bit-bfc-event-radius);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
     cursor: grab;
     overflow: hidden;
     border: $shp-border-width $shp-border-style transparent;
-    transition: filter $mot-duration-short;
+    transition: filter $mot-duration-short $mot-easing;
     user-select: none;
 }
 
@@ -472,23 +568,23 @@
     filter: brightness(0.95);
 }
 
+/* Logical corners and edges, so a bar joined across cells needs no right-to-left twin. */
 .bit-bfc-event-badge.position-first {
-    border-radius: $shp-radius-control 0 0 $shp-radius-control;
-    margin-right: 0;
-    border-right: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-inline-end: none;
 }
 
 .bit-bfc-event-badge.position-middle {
     border-radius: 0;
     margin: 0 !important;
-    border-left: none;
-    border-right: none;
+    border-inline: none;
 }
 
 .bit-bfc-event-badge.position-last {
-    border-radius: 0 $shp-radius-control $shp-radius-control 0;
-    margin-left: 0;
-    border-left: none;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border-inline-start: none;
 }
 
 .bit-bfc-event-badge-title {
@@ -499,9 +595,11 @@
     min-width: 0;
 }
 
+/* Event times are told apart from the title by size and weight, never by fading: the chip text is already
+   tinted, and a fade would take a light colour (yellow, green) below a readable contrast. */
 .bit-bfc-event-badge-time {
     font-size: $tg-fs-2xs;
-    opacity: 0.8;
+    font-weight: $tg-fw-regular;
     flex-shrink: 0;
     white-space: nowrap;
 }
@@ -513,7 +611,7 @@
     height: rem2(7px);
     border-radius: 50%;
     flex-shrink: 0;
-    background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
+    background: var(--bit-bfc-evt-color, var(--bit-bfc-event-default));
 }
 
 /* ===== Color Classes =====
@@ -522,13 +620,15 @@
    (bit-bfc-color) and a solid swatch (bit-bfc-bg) from that single value using color-mix(), so any CSS
    color works without authoring extra rules. */
 .bit-bfc-color {
-    background: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-primary)) 18%, var(--bit-bfc-bg));
-    color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-primary)) 75%, var(--bit-bfc-text));
-    border-color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-primary)) 32%, var(--bit-bfc-bg));
+    background: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-event-default)) 18%, var(--bit-bfc-bg));
+    /* Half event colour, half text colour: every default colour clears 4.5:1 against its chip in both schemes,
+       where three quarters left yellow, green, orange and blue short of it on a light surface. */
+    color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-event-default)) 50%, var(--bit-bfc-text));
+    border-color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-event-default)) 32%, var(--bit-bfc-bg));
 }
 
 .bit-bfc-bg {
-    background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
+    background: var(--bit-bfc-evt-color, var(--bit-bfc-event-default));
 }
 
 /* Dot-variant badge (neutral background, colored dot) */
@@ -549,7 +649,7 @@
 
 .bit-bfc-time-column {
     flex-shrink: 0;
-    width: rem2(60px);
+    width: var(--bit-bfc-time-gutter);
     border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
@@ -559,7 +659,7 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 0;
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-muted);
     font-weight: $tg-fw-medium;
     position: relative;
@@ -582,6 +682,15 @@
     flex: 1;
     position: relative;
     min-height: calc(var(--bit-bfc-visible-hours, 24) * var(--bit-bfc-hour-height));
+}
+
+/* The full-hour rule drawn across every row after the first. */
+.bit-bfc-hour-line {
+    position: absolute;
+    top: 0;
+    inset-inline: 0;
+    border-top: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    pointer-events: none;
 }
 
 .bit-bfc-hour-row {
@@ -619,7 +728,7 @@
     position: relative;
     z-index: 2;
     padding: spacing(0.5) spacing(1);
-    border-radius: var(--bit-bfc-radius-sm);
+    border-radius: var(--bit-bfc-event-radius);
     font-size: $tg-fs-xs;
     cursor: grab;
     width: 100%;
@@ -633,7 +742,7 @@
     /* A very short event still has to be readable: a five-minute block is eight pixels tall on the
        default hour height, which is not enough to show its own title. */
     min-height: rem2(16px);
-    transition: box-shadow $mot-duration-short, filter $mot-duration-short;
+    transition: box-shadow $mot-duration-short $mot-easing, filter $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-event-block:hover {
@@ -655,7 +764,7 @@
 }
 
 .bit-bfc-event-stack-item .bit-bfc-event-block {
-    box-shadow: -1px 0 0 0 var(--bit-bfc-bg, #fff);
+    box-shadow: -1px 0 0 0 var(--bit-bfc-bg);
 }
 
 .bit-bfc-event-stack-item .bit-bfc-event-block:hover {
@@ -665,7 +774,7 @@
 /* Side-by-side stacked layout: equal-width lanes placed next to each other. A small right gap and
    a flat left edge (no diagonal separator shadow) keep the cards close together yet distinct. */
 .bit-bfc-event-stack-item-side-by-side {
-    padding-right: spacing(0.25);
+    padding-inline-end: spacing(0.25);
     box-sizing: border-box;
 }
 
@@ -686,9 +795,15 @@
     box-shadow:
         0 0 0 2px var(--bit-bfc-resize-ring),
         0 0 0 5px var(--bit-bfc-resize-glow),
-        0 12px 28px rgba(15, 23, 42, 0.18),
-        var(--bit-bfc-shadow);
+        var(--bit-bfc-shadow-lg);
     transition: box-shadow $mot-duration $mot-easing, filter $mot-duration $mot-easing, border-color $mot-duration $mot-easing;
+}
+
+.bit-bfc-event-block-head {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.5);
+    min-width: 0;
 }
 
 .bit-bfc-event-block-title {
@@ -699,8 +814,7 @@
 }
 
 .bit-bfc-event-block-time {
-    font-size: rem2(11px);
-    opacity: 0.8;
+    font-size: $tg-fs-xs;
     white-space: nowrap;
 }
 
@@ -728,11 +842,12 @@
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
     transition: opacity $mot-duration-short $mot-easing, width $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
+/* The handles sit inside the block's edge: the block clips its overflow, so a handle hanging past the edge
+   would lose half of its grab area to the clip. */
 .bit-bfc-resize-handle-top {
-    top: -5px;
+    top: 0;
 }
 
 .bit-bfc-resize-handle-top::after {
@@ -740,7 +855,7 @@
 }
 
 .bit-bfc-resize-handle-bottom {
-    bottom: -5px;
+    bottom: 0;
 }
 
 .bit-bfc-resize-handle-bottom::after {
@@ -779,14 +894,14 @@
 
 .bit-bfc-resize-preview {
     position: absolute;
-    right: 6px;
+    inset-inline-end: 6px;
     bottom: 6px;
-    left: auto;
     top: auto;
     display: inline-flex;
     align-items: center;
     gap: spacing(0.75);
-    padding: spacing(0.75) spacing(1.25) spacing(0.75) spacing(1);
+    padding-block: spacing(0.75);
+    padding-inline: spacing(1) spacing(1.25);
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     font-variant-numeric: tabular-nums;
@@ -795,10 +910,7 @@
     background: var(--bit-bfc-resize-preview-bg);
     border: $shp-border-width $shp-border-style var(--bit-bfc-resize-preview-border);
     border-radius: var(--bit-bfc-radius-sm);
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
-        0 4px 14px color-mix(in srgb, var(--bit-bfc-primary) 20%, transparent),
-        var(--bit-bfc-shadow);
+    box-shadow: var(--bit-bfc-shadow-lg);
     z-index: 14;
     white-space: nowrap;
     pointer-events: none;
@@ -858,7 +970,7 @@
 
 .bit-bfc-timeline-label {
     position: absolute;
-    left: -54px;
+    inset-inline-start: -54px;
     font-size: $tg-fs-2xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-timeline-color);
@@ -898,9 +1010,9 @@
     font-weight: $tg-fw-semibold;
 }
 
-/* Aligns with .bit-bfc-time-column (60px) so the time-axis border continues through the header in LTR and RTL */
+/* Aligns with .bit-bfc-time-column (--bit-bfc-time-gutter) so the time-axis border continues through the header in LTR and RTL */
 .bit-bfc-day-header-time-gutter {
-    width: rem2(60px);
+    width: var(--bit-bfc-time-gutter);
     flex-shrink: 0;
     box-sizing: border-box;
     border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
@@ -934,7 +1046,7 @@
 /* Multi-day row above time grid */
 .bit-bfc-multiday-row {
     padding: spacing(0.5) 0;
-    padding-inline-start: rem2(60px);
+    padding-inline-start: var(--bit-bfc-time-gutter);
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     display: flex;
     flex-direction: column;
@@ -976,7 +1088,7 @@
 }
 
 .bit-bfc-week-header-time {
-    width: rem2(60px);
+    width: var(--bit-bfc-time-gutter);
     flex-shrink: 0;
     border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
@@ -985,12 +1097,12 @@
     flex: 1;
     text-align: center;
     padding: spacing(1) spacing(0.5);
-    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    font-size: rem2(13px);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    font-size: $tg-fs-sm;
 }
 
 .bit-bfc-week-header-day:last-child {
-    border-right: none;
+    border-inline-end: none;
 }
 
 .bit-bfc-week-header-day-name {
@@ -1006,7 +1118,7 @@
     height: rem2(28px);
     border-radius: 50%;
     font-weight: $tg-fw-bold;
-    font-size: rem2(15px);
+    font-size: $tg-fs-md;
 }
 
 .bit-bfc-week-header-day-num.today {
@@ -1017,13 +1129,13 @@
 .bit-bfc-week-day-col {
     flex: 1;
     position: relative;
-    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     min-height: calc(var(--bit-bfc-visible-hours, 24) * var(--bit-bfc-hour-height));
     overflow: hidden;
 }
 
 .bit-bfc-week-day-col:last-child {
-    border-right: none;
+    border-inline-end: none;
 }
 
 /* ===== Year View ===== */
@@ -1058,7 +1170,7 @@
     font-size: $tg-fs-sm;
     margin-bottom: spacing(1);
     cursor: pointer;
-    transition: color $mot-duration-short;
+    transition: color $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-year-month-title:hover {
@@ -1088,14 +1200,14 @@
 .bit-bfc-year-day {
     text-align: center;
     padding: spacing(0.375) 0;
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     border-radius: $shp-radius-control;
     cursor: default;
     position: relative;
 }
 
 .bit-bfc-year-day.other-month {
-    opacity: 0.3;
+    color: var(--bit-bfc-text-muted);
 }
 
 .bit-bfc-year-day-number {
@@ -1114,9 +1226,15 @@
     font-weight: $tg-fw-bold;
 }
 
+/* The days that hold events are buttons, so the button chrome is stripped here. */
 .bit-bfc-year-day.has-events {
-    cursor: pointer;
+    appearance: none;
+    border: none;
+    background: none;
+    font: inherit;
     font-weight: $tg-fw-semibold;
+    color: inherit;
+    cursor: pointer;
 }
 
 .bit-bfc-year-day.has-events:hover {
@@ -1150,13 +1268,12 @@
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     outline: none;
 }
 
 .bit-bfc-agenda-search input:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
 .bit-bfc-agenda-group {
@@ -1164,6 +1281,7 @@
 }
 
 .bit-bfc-agenda-group-title {
+    margin: 0;
     padding: spacing(1) spacing(2);
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
@@ -1176,13 +1294,20 @@
     z-index: 1;
 }
 
+/* Agenda and event-list rows are buttons, so the button chrome is stripped here. */
 .bit-bfc-agenda-item {
     display: flex;
     align-items: center;
     gap: spacing(1.5);
+    width: 100%;
     padding: spacing(1.25) spacing(2);
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: start;
     cursor: pointer;
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-agenda-item:hover {
@@ -1198,24 +1323,27 @@
     justify-content: center;
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-bold;
-    color: #fff;
+    color: $clr-ntr-white;
     flex-shrink: 0;
 }
 
 .bit-bfc-agenda-info {
+    display: block;
     flex: 1;
     min-width: 0;
 }
 
 .bit-bfc-agenda-title {
+    display: block;
     font-weight: $tg-fw-semibold;
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .bit-bfc-agenda-desc {
+    display: block;
     font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-secondary);
     white-space: nowrap;
@@ -1251,13 +1379,20 @@
 
 .bit-bfc-dialog {
     background: var(--bit-bfc-bg);
-    border-radius: var(--bit-bfc-radius);
-    box-shadow: var(--bit-bfc-shadow-lg);
-    width: 100%;
-    max-width: rem2(480px);
+    color: var(--bit-bfc-text);
+    border-radius: $shp-radius-dialog;
+    box-shadow: $box-shadow-dialog;
+    width: calc(100% - #{spacing(4)});
+    max-width: var(--bit-FullCalendar-dialog-max-width, #{rem2(480px)});
     max-height: 90vh;
+    max-height: 90dvh;
     overflow-y: auto;
+    overscroll-behavior: contain;
     animation: bit-bfc-slide-up $mot-duration $mot-easing-decelerate;
+}
+
+.bit-bfc-dialog:focus-visible {
+    outline: none;
 }
 
 @keyframes bit-bfc-slide-up {
@@ -1273,19 +1408,20 @@
 }
 
 .bit-bfc-dialog-header {
-    padding: spacing(2) spacing(2.5);
+    padding: $spa-dialog;
+    padding-block: spacing(2);
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-dialog-header h3 {
     margin: 0;
-    font-size: $tg-fs-md;
-    font-weight: $tg-fw-semibold;
+    font-size: $tg-dialog-title-font-size;
+    font-weight: $tg-dialog-title-font-weight;
 }
 
 .bit-bfc-dialog-header p {
     margin: spacing(0.5) 0 0;
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     color: var(--bit-bfc-text-secondary);
 }
 
@@ -1314,7 +1450,7 @@
     color: var(--bit-bfc-text-muted);
     cursor: pointer;
     flex-shrink: 0;
-    transition: background $mot-duration-short, color $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-dialog-close-btn:hover {
@@ -1323,15 +1459,39 @@
 }
 
 .bit-bfc-dialog-body {
-    padding: spacing(2) spacing(2.5);
+    padding: $spa-dialog;
+    padding-block: spacing(2);
+}
+
+/* The event list dialog scrolls its own list, so a long day keeps the header and the footer in view. */
+.bit-bfc-dialog-body-scroll {
+    max-height: rem2(400px);
+    overflow-y: auto;
 }
 
 .bit-bfc-dialog-footer {
-    padding: spacing(1.5) spacing(2.5);
+    padding: $spa-dialog;
+    padding-block: spacing(1.5);
     border-top: $shp-border-width $shp-border-style var(--bit-bfc-border);
     display: flex;
+    flex-wrap: wrap;
+    flex-direction: $layout-dialog-actions-direction;
     justify-content: $layout-dialog-actions-justify;
+    align-items: $layout-dialog-actions-align;
     gap: spacing(1);
+}
+
+/* The editing actions of the details dialog are one group, kept apart from Close. */
+.bit-bfc-dialog-footer-group {
+    display: flex;
+    flex-direction: $layout-dialog-actions-direction;
+    gap: spacing(1);
+    margin-inline-end: auto;
+}
+
+.bit-bfc-dialog-footer .bit-bfc-field-error {
+    flex-basis: 100%;
+    margin: 0;
 }
 
 /* ===== Form fields ===== */
@@ -1339,12 +1499,19 @@
     margin-bottom: spacing(1.75);
 }
 
-.bit-bfc-field label {
+.bit-bfc-field label,
+.bit-bfc-field-label {
     display: block;
-    font-size: rem2(13px);
-    font-weight: $tg-fw-medium;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-field-label-font-weight;
     margin-bottom: spacing(0.5);
     color: var(--bit-bfc-text);
+}
+
+/* A required field says so next to its label, not only in the error it raises once it is submitted. */
+.bit-bfc-field-required::after {
+    content: " *";
+    color: $clr-req;
 }
 
 .bit-bfc-field input,
@@ -1356,7 +1523,7 @@
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     outline: none;
     box-sizing: border-box;
 }
@@ -1365,7 +1532,10 @@
 .bit-bfc-field select:focus,
 .bit-bfc-field textarea:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+}
+
+.bit-bfc-field [aria-invalid="true"] {
+    border-color: var(--bit-bfc-danger);
 }
 
 .bit-bfc-field textarea {
@@ -1391,7 +1561,7 @@
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     text-align: start;
     cursor: pointer;
     display: flex;
@@ -1412,11 +1582,10 @@
 .bit-bfc-dtp-panel {
     position: absolute;
     top: calc(100% + 6px);
-    left: 0;
-    right: 0;
+    inset-inline: 0;
     z-index: 20;
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: var(--bit-bfc-radius-sm);
+    border-radius: $shp-radius-popup;
     background: var(--bit-bfc-bg);
     padding: spacing(1);
     box-shadow: var(--bit-bfc-shadow-lg);
@@ -1459,7 +1628,7 @@
 
 .bit-bfc-dtp-weekdays span {
     text-align: center;
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-muted);
 }
 
@@ -1473,14 +1642,19 @@
     border: $shp-border-width $shp-border-style transparent;
     background: transparent;
     color: var(--bit-bfc-text);
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-sm;
     height: rem2(28px);
     font-size: $tg-fs-xs;
     cursor: pointer;
 }
 
-.bit-bfc-dtp-day:hover {
+.bit-bfc-dtp-day:hover:not(:disabled) {
     background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-dtp-day:disabled {
+    cursor: default;
+    color: $clr-fg-dis;
 }
 
 .bit-bfc-dtp-day-muted {
@@ -1516,13 +1690,14 @@
 }
 
 .bit-bfc-color-swatch {
+    padding: 0;
     width: rem2(28px);
     height: rem2(28px);
     border-radius: 50%;
     border: $shp-border-width-thick $shp-border-style transparent;
     cursor: pointer;
-    transition: transform $mot-duration-short, border-color $mot-duration-short;
-    background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
+    transition: transform $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+    background: var(--bit-bfc-evt-color, var(--bit-bfc-event-default));
 }
 
 .bit-bfc-color-swatch:hover {
@@ -1546,17 +1721,18 @@
     display: inline-flex;
     align-items: center;
     gap: spacing(0.75);
-    padding: spacing(0.375) spacing(1) spacing(0.375) spacing(0.5);
+    padding-block: spacing(0.375);
+    padding-inline: spacing(0.5) spacing(1);
     background: var(--bit-bfc-bg-hover);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: $shp-radius-full;
+    border-radius: $shp-radius-chip;
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
     color: var(--bit-bfc-text);
 }
 
 .bit-bfc-attendee-chip-readonly {
-    padding: spacing(0.375) spacing(1.25) spacing(0.375) spacing(0.5);
+    padding-inline-end: spacing(1.25);
 }
 
 .bit-bfc-attendee-chip-avatar {
@@ -1564,7 +1740,7 @@
     height: rem2(22px);
     border-radius: 50%;
     background: var(--bit-bfc-primary);
-    color: #fff;
+    color: var(--bit-bfc-primary-text);
     font-size: $tg-fs-2xs;
     font-weight: $tg-fw-bold;
     display: flex;
@@ -1580,18 +1756,18 @@
     background: none;
     border: none;
     padding: 0;
-    margin-left: spacing(0.25);
+    margin-inline-start: spacing(0.25);
     cursor: pointer;
     color: var(--bit-bfc-text-muted);
     border-radius: 50%;
     width: rem2(16px);
     height: rem2(16px);
-    transition: background $mot-duration-short, color $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-attendee-chip-remove:hover {
     background: var(--bit-bfc-danger);
-    color: #fff;
+    color: var(--bit-bfc-danger-text);
 }
 
 /* Attendee add row */
@@ -1616,7 +1792,6 @@
 
 .bit-bfc-attendee-add-row input:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
 /* Repeat rule */
@@ -1652,7 +1827,7 @@
     height: $siz-ctrl-sm;
     padding: 0 spacing(0.75);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: $shp-radius-full;
+    border-radius: $shp-radius-chip;
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
     font-size: $tg-fs-xs;
@@ -1720,7 +1895,20 @@
 }
 
 .bit-bfc-event-detail-value {
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
+}
+
+.bit-bfc-event-detail-grow {
+    flex: 1;
+    min-width: 0;
+}
+
+.bit-bfc-event-detail-empty {
+    color: var(--bit-bfc-text-muted);
+}
+
+.bit-bfc-event-detail-chips {
+    margin-top: spacing(0.75);
 }
 
 .bit-bfc-event-detail-swatch {
@@ -1729,7 +1917,7 @@
     border-radius: 50%;
     flex-shrink: 0;
     margin-top: 1px;
-    border: $shp-border-width $shp-border-style rgba(0, 0, 0, 0.12);
+    border: $shp-border-width $shp-border-style color-mix(in srgb, var(--bit-bfc-text) 12%, transparent);
     box-sizing: border-box;
 }
 
@@ -1737,7 +1925,7 @@
     display: inline-block;
     margin-top: spacing(0.5);
     padding: spacing(0.5) spacing(1.25);
-    border-radius: var(--bit-bfc-radius-sm);
+    border-radius: var(--bit-bfc-event-radius);
     border: $shp-border-width $shp-border-style transparent;
     font-weight: $tg-fw-medium;
 }
@@ -1750,16 +1938,23 @@
 
 .bit-bfc-dropdown-menu {
     position: absolute;
-    right: 0;
+    inset-inline-end: 0;
     top: calc(100% + 4px);
     background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: var(--bit-bfc-radius);
+    border-radius: $shp-radius-popup;
     box-shadow: var(--bit-bfc-shadow-lg);
     min-width: rem2(240px);
+    max-height: $siz-popup-max-height;
+    overflow-y: auto;
     z-index: 50;
     padding: spacing(0.75);
     animation: bit-bfc-slide-up $mot-duration-short $mot-easing-decelerate;
+}
+
+.bit-bfc-dropdown-menu:focus {
+    outline: none;
 }
 
 .bit-bfc-dropdown-label {
@@ -1776,12 +1971,51 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
+    min-height: $siz-item-md;
     padding: spacing(1) spacing(1.25);
+    border: none;
     border-radius: $shp-radius-sm;
-    font-size: rem2(13px);
-    cursor: pointer;
-    transition: background $mot-duration-short;
+    font-size: $tg-fs-sm;
+    text-align: start;
+    transition: background $mot-duration-short $mot-easing;
     background: transparent;
+}
+
+button.bit-bfc-dropdown-item {
+    cursor: pointer;
+}
+
+button.bit-bfc-dropdown-item:hover,
+.bit-bfc-dropdown-item[aria-checked="true"].bit-bfc-dropdown-choice {
+    background: var(--bit-bfc-bg-hover);
+}
+
+/* The chosen grouping carries a check, so it does not read as merely hovered. */
+.bit-bfc-dropdown-choice[aria-checked="true"]::after {
+    content: "\2713";
+    color: var(--bit-bfc-primary);
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-bfc-dropdown-field {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.5);
+    font-size: $tg-fs-xs;
+}
+
+.bit-bfc-dropdown-field input,
+.bit-bfc-dropdown-field select {
+    padding: spacing(0.5);
+    font-size: $tg-fs-xs;
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-radius: $shp-radius-control;
+    background: var(--bit-bfc-bg);
+}
+
+.bit-bfc-dropdown-field input {
+    width: rem2(56px);
 }
 
 .bit-bfc-dropdown-sep {
@@ -1794,9 +2028,9 @@
 .bit-bfc-toggle {
     position: relative;
     display: inline-flex;
-    width: rem2(36px);
-    height: rem2(20px);
-    cursor: pointer;
+    flex-shrink: 0;
+    width: $siz-switch-w-sm;
+    height: $siz-switch-h-sm;
 }
 
 .bit-bfc-toggle-track {
@@ -1804,7 +2038,7 @@
     height: 100%;
     border-radius: $shp-radius-full;
     background: var(--bit-bfc-border);
-    transition: background $mot-duration;
+    transition: background $mot-duration $mot-easing;
 }
 
 .bit-bfc-toggle.checked .bit-bfc-toggle-track {
@@ -1813,18 +2047,22 @@
 
 .bit-bfc-toggle-thumb {
     position: absolute;
-    top: 2px;
-    left: 2px;
-    width: rem2(16px);
-    height: rem2(16px);
+    top: calc((#{$siz-switch-h-sm} - #{$siz-switch-thumb-sm}) / 2);
+    inset-inline-start: calc((#{$siz-switch-h-sm} - #{$siz-switch-thumb-sm}) / 2);
+    width: $siz-switch-thumb-sm;
+    height: $siz-switch-thumb-sm;
     border-radius: 50%;
-    background: #fff;
-    transition: transform $mot-duration;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    background: $clr-bg-pri;
+    transition: transform $mot-duration $mot-easing;
+    box-shadow: $box-shadow-card;
 }
 
 .bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
-    transform: translateX(rem2(16px));
+    transform: translateX(calc(#{$siz-switch-w-sm} - #{$siz-switch-h-sm}));
+}
+
+[dir="rtl"] .bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
+    transform: translateX(calc(#{$siz-switch-h-sm} - #{$siz-switch-w-sm}));
 }
 
 /* ===== Filter row ===== */
@@ -1855,55 +2093,15 @@
 
 .bit-bfc-filter-select:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
-/* ===== User Select ===== */
-.bit-bfc-user-select {
-    position: relative;
-}
-
-.bit-bfc-user-select-menu {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 4px);
-    background: var(--bit-bfc-bg);
-    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: var(--bit-bfc-radius);
-    box-shadow: var(--bit-bfc-shadow-lg);
-    min-width: rem2(200px);
-    z-index: 50;
-    padding: spacing(0.5);
-    animation: bit-bfc-slide-up $mot-duration-short $mot-easing-decelerate;
-}
-
-.bit-bfc-user-option {
-    display: flex;
-    align-items: center;
-    gap: spacing(1);
-    padding: spacing(1) spacing(1.25);
-    border-radius: $shp-radius-sm;
-    font-size: rem2(13px);
-    cursor: pointer;
-    transition: background $mot-duration-short;
-}
-
-.bit-bfc-user-option:hover {
-    background: var(--bit-bfc-bg-hover);
-}
-
-.bit-bfc-user-option.active {
-    background: var(--bit-bfc-primary);
-    color: var(--bit-bfc-primary-text);
+.bit-bfc-filter-select:hover {
+    border-color: var(--bit-bfc-text-secondary);
 }
 
 /* ===== Drag feedback ===== */
 .bit-bfc-dragging {
     opacity: 0.5;
-}
-
-.bit-bfc-drop-target {
-    background: color-mix(in srgb, var(--bit-bfc-primary) 8%, transparent) !important;
 }
 
 /* ===== Mini calendar (day picker sidebar) ===== */
@@ -1917,7 +2115,7 @@
 }
 
 .bit-bfc-mini-calendar th {
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-muted);
     padding: spacing(0.5);
@@ -1935,15 +2133,34 @@
     justify-content: center;
     width: rem2(28px);
     height: rem2(28px);
+    padding: 0;
+    border: none;
     border-radius: 50%;
     font-size: $tg-fs-xs;
     cursor: pointer;
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
     background: transparent;
 }
 
-.bit-bfc-mini-calendar-day:hover {
+.bit-bfc-mini-calendar-day:hover:not(:disabled) {
     background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-mini-calendar-day:disabled {
+    cursor: default;
+    color: $clr-fg-dis;
+}
+
+.bit-bfc-mini-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: spacing(1);
+}
+
+.bit-bfc-mini-calendar-title {
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
 }
 
 .bit-bfc-mini-calendar-day.today {
@@ -1951,14 +2168,13 @@
     color: var(--bit-bfc-primary-text);
 }
 
+/* The selected day is ringed rather than faded, so it stays legible and still reads apart from today. */
 .bit-bfc-mini-calendar-day.selected {
-    background: var(--bit-bfc-primary);
-    color: var(--bit-bfc-primary-text);
-    opacity: 0.8;
+    box-shadow: inset 0 0 0 $shp-border-width-thick var(--bit-bfc-primary);
 }
 
 .bit-bfc-mini-calendar-day.other-month {
-    opacity: 0.3;
+    color: var(--bit-bfc-text-muted);
 }
 
 /* ===== Happening Now (Day view sidebar) ===== */
@@ -1970,7 +2186,8 @@
 }
 
 .bit-bfc-happening-now-title {
-    font-size: rem2(13px);
+    margin-top: 0;
+    font-size: $tg-fs-sm;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-primary);
     margin-bottom: spacing(1);
@@ -1996,7 +2213,7 @@
     font: inherit;
     text-align: start;
     cursor: pointer;
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-happening-event:hover {
@@ -2007,13 +2224,10 @@
     @include focus-ring;
 }
 
-[dir="rtl"] .bit-bfc-happening-event {
-    text-align: right;
-}
-
 .bit-bfc-happening-event-title {
+    display: block;
     font-weight: $tg-fw-semibold;
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     margin-bottom: spacing(0.5);
 }
 
@@ -2028,9 +2242,9 @@
 /* ===== Toast ===== */
 .bit-bfc-toast-container {
     position: fixed;
-    bottom: 16px;
-    right: 16px;
-    z-index: 200;
+    bottom: spacing(2);
+    inset-inline-end: spacing(2);
+    z-index: $zindex-snackbar;
     display: flex;
     flex-direction: column;
     gap: spacing(1);
@@ -2039,10 +2253,11 @@
 .bit-bfc-toast {
     padding: spacing(1.5) spacing(2);
     background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    border-radius: var(--bit-bfc-radius);
-    box-shadow: var(--bit-bfc-shadow-lg);
-    font-size: rem2(13px);
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-snackbar;
+    font-size: $tg-fs-sm;
     animation: bit-bfc-slide-up $mot-duration $mot-easing-decelerate;
     display: flex;
     align-items: center;
@@ -2051,25 +2266,11 @@
 }
 
 .bit-bfc-toast.success {
-    border-inline-start: rem2(3px) $shp-border-style $clr-suc;
+    border-inline-start: $shp-border-width-thick $shp-border-style $clr-suc;
 }
 
 .bit-bfc-toast.error {
-    border-inline-start: rem2(3px) $shp-border-style $clr-err;
-}
-
-/* ===== SVG Icon sizes ===== */
-.bit-bfc-icon {
-    width: $siz-icon-md;
-    height: $siz-icon-md;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.bit-bfc-icon svg {
-    width: 100%;
-    height: 100%;
+    border-inline-start: $shp-border-width-thick $shp-border-style $clr-err;
 }
 
 /* ===== Responsive ===== */
@@ -2115,15 +2316,21 @@
 .bit-bfc-week-mobile-warning {
     padding: spacing(1.5) spacing(2);
     background: color-mix(in srgb, #{$clr-wrn} 18%, var(--bit-bfc-bg));
-    color: #{$clr-wrn-dark};
-    font-size: rem2(13px);
+    color: #{$clr-wrn-fg};
+    font-size: $tg-fs-sm;
     text-align: center;
     border-bottom: $shp-border-width $shp-border-style color-mix(in srgb, #{$clr-wrn} 35%, var(--bit-bfc-bg));
 }
 
+/* ===== Day view header ===== */
+.bit-bfc-day-header-weekday {
+    color: var(--bit-bfc-text-secondary);
+    font-size: $tg-fs-sm;
+}
+
 /* ===== Droppable area hover states ===== */
 .bit-bfc-droppable {
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-droppable.drag-over {
@@ -2152,7 +2359,7 @@
 /* ===== Cell "add event" hover hint ===== */
 .bit-bfc-hour-row {
     cursor: pointer;
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-hour-row:hover {
@@ -2161,13 +2368,13 @@
 
 .bit-bfc-cell-add-hint {
     opacity: 0;
-    transition: opacity $mot-duration-short;
+    transition: opacity $mot-duration-short $mot-easing;
     pointer-events: none;
     display: flex;
     align-items: center;
     gap: spacing(0.375);
     color: var(--bit-bfc-text-muted);
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
     user-select: none;
 }
@@ -2197,7 +2404,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 /* The slots covered by an in-progress range selection (press and drag across the time grid). */
 .bit-bfc-slot-selected {
-    background: color-mix(in srgb, var(--bit-bfc-primary) 22%, transparent);
+    background: var(--bit-bfc-selection);
     opacity: 1;
 }
 
@@ -2209,6 +2416,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-tl-cell-half:focus-visible {
     outline: $shp-border-width-thick $shp-border-style var(--bit-bfc-primary);
     outline-offset: -2px;
+    box-shadow: none;
     background: var(--bit-bfc-resize-glow);
     opacity: 1;
     z-index: 4;
@@ -2217,24 +2425,14 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-cell-add-hint-month {
     position: absolute;
     top: 5px;
-    right: 6px;
+    inset-inline-end: 6px;
 }
 
 .bit-bfc-cell-add-hint-hour {
     position: absolute;
     top: 4px;
-    right: 8px;
+    inset-inline-end: 8px;
     z-index: 0;
-}
-
-[dir="rtl"] .bit-bfc-cell-add-hint-month {
-    right: auto;
-    left: 6px;
-}
-
-[dir="rtl"] .bit-bfc-cell-add-hint-hour {
-    right: auto;
-    left: 8px;
 }
 
 /* ===== Read-only mode ===== */
@@ -2283,15 +2481,11 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 /* ===== RTL (Right-to-Left) support ===== */
 
-/* Flip horizontal navigation arrows (prev/next) for RTL */
+/* The prev/next chevrons are drawn pointing back and forward in a left-to-right reading, and mirrored
+   here - the one place that flips them, so a right-to-left culture and an explicit Dir agree. */
 [dir="rtl"] .bit-bfc-btn-nav svg {
     transform: scaleX(-1);
 }
-
-/* Header zones: reverse the logical order of sections */
-/* [dir="rtl"] .bit-bfc-header { flex-direction: row-reverse; }
-[dir="rtl"] .bit-bfc-header-left  { flex: 1; justify-content: flex-end; }
-[dir="rtl"] .bit-bfc-header-right { flex: 1; justify-content: flex-start; } */
 
 /* Month grid: columns flow right-to-left */
 [dir="rtl"] .bit-bfc-month-header {
@@ -2317,37 +2511,6 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 [dir="rtl"] .bit-bfc-timegrid-days {
     direction: rtl;
-}
-
-/* Multi-day badge joins need mirrored corners/borders in RTL */
-[dir="rtl"] .bit-bfc-event-badge.position-first {
-    border-radius: 0 $shp-radius-control $shp-radius-control 0;
-    border-left: none;
-    border-right: $shp-border-width $shp-border-style transparent;
-}
-
-[dir="rtl"] .bit-bfc-event-badge.position-last {
-    border-radius: $shp-radius-control 0 0 $shp-radius-control;
-    border-right: none;
-    border-left: $shp-border-width $shp-border-style transparent;
-}
-
-/* The month cells draw their separator with border-inline-end and mark their own last column, so
-   there is nothing left to flip here. */
-[dir="rtl"] .bit-bfc-week-header-day:last-child {
-    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
-}
-
-[dir="rtl"] .bit-bfc-week-header-day:first-child {
-    border-right: none;
-}
-
-[dir="rtl"] .bit-bfc-week-day-col:last-child {
-    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
-}
-
-[dir="rtl"] .bit-bfc-week-day-col:first-child {
-    border-right: none;
 }
 
 /* Day view: sidebar moves to the left side */
@@ -2377,32 +2540,6 @@ button.bit-bfc-cell-add-hint:focus-visible {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-agenda-time {
-    margin-left: 0;
-    margin-right: auto;
-}
-
-[dir="rtl"] .bit-bfc-agenda-info {
-    text-align: right;
-}
-
-[dir="rtl"] .bit-bfc-timeline-label {
-    left: auto;
-    right: -54px;
-}
-
-/* Settings dropdown should open toward the viewport in RTL */
-[dir="rtl"] .bit-bfc-dropdown-menu {
-    right: auto;
-    left: 0;
-}
-
-/* User-select dropdown should mirror like the settings dropdown in RTL */
-[dir="rtl"] .bit-bfc-user-select-menu {
-    right: auto;
-    left: 0;
-}
-
 /* Mini-calendar */
 [dir="rtl"] .bit-bfc-mini-calendar {
     direction: rtl;
@@ -2426,12 +2563,11 @@ button.bit-bfc-cell-add-hint:focus-visible {
     direction: rtl;
 }
 
-
 /* ===== Mode Tabs (Event ⇄ Timeline) ===== */
 .bit-bfc-mode-tabs {
     display: inline-flex;
     background: var(--bit-bfc-bg-secondary);
-    border-radius: var(--bit-bfc-radius-sm);
+    border-radius: $shp-radius-button;
     padding: spacing(0.25);
     gap: spacing(0.25);
     margin-inline-end: spacing(1);
@@ -2440,13 +2576,15 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-mode-tab {
     padding: spacing(0.625) spacing(1.5);
     border: none;
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-button;
     background: transparent;
     color: var(--bit-bfc-text-secondary);
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     cursor: pointer;
-    transition: all $mot-duration-short $mot-easing;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-mode-tab:hover {
@@ -2508,7 +2646,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-tl-corner {
     position: sticky;
-    left: 0;
+    inset-inline-start: 0;
     z-index: 6;
     background: var(--bit-bfc-bg-secondary);
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
@@ -2594,7 +2732,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-time-cell-label {
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
     color: var(--bit-bfc-text-muted);
     white-space: nowrap;
@@ -2602,7 +2740,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-tl-resource-cell {
     position: sticky;
-    left: 0;
+    inset-inline-start: 0;
     z-index: 4;
     background: var(--bit-bfc-bg);
     border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
@@ -2622,7 +2760,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-resource-title {
-    font-size: rem2(13px);
+    font-size: $tg-fs-sm;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
     white-space: nowrap;
@@ -2631,7 +2769,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-resource-subtitle {
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -2653,7 +2791,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     box-sizing: border-box;
     border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     cursor: pointer;
-    transition: background $mot-duration-short;
+    transition: background $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-tl-cell:hover {
@@ -2717,7 +2855,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     height: 100%;
     box-sizing: border-box;
     padding: spacing(0.5) spacing(1);
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-bfc-event-radius);
     border: $shp-border-width $shp-border-style transparent;
     font-size: $tg-fs-xs;
     cursor: grab;
@@ -2728,7 +2866,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     justify-content: center;
     gap: spacing(0.25);
     line-height: 1.2;
-    transition: filter $mot-duration-short, box-shadow $mot-duration-short;
+    transition: filter $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-timeline-event:hover {
@@ -2766,11 +2904,10 @@ button.bit-bfc-cell-add-hint:focus-visible {
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
     transition: opacity $mot-duration-short $mot-easing, height $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .bit-bfc-resize-handle-start {
-    inset-inline-start: -5px;
+    inset-inline-start: 0;
 }
 
 .bit-bfc-resize-handle-start::after {
@@ -2778,7 +2915,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-resize-handle-end {
-    inset-inline-end: -5px;
+    inset-inline-end: 0;
 }
 
 .bit-bfc-resize-handle-end::after {
@@ -2803,8 +2940,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     box-shadow:
         0 0 0 2px var(--bit-bfc-resize-ring),
         0 0 0 5px var(--bit-bfc-resize-glow),
-        0 12px 28px rgba(15, 23, 42, 0.18),
-        var(--bit-bfc-shadow);
+        var(--bit-bfc-shadow-lg);
     transition: box-shadow $mot-duration $mot-easing, filter $mot-duration $mot-easing, border-color $mot-duration $mot-easing;
 }
 
@@ -2846,8 +2982,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-timeline-event-time {
-    font-size: rem2(11px);
-    opacity: 0.85;
+    font-size: $tg-fs-xs;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2859,9 +2994,8 @@ button.bit-bfc-cell-add-hint:focus-visible {
     border-color: var(--bit-bfc-border);
 }
 
-/* RTL: keep the resource gutter on the leading edge.
-   With direction:rtl on the flex rows, the inline-start edge maps to the right side of
-   the scroll container, so the corner and resource cells must pin to right:0 instead of left:0. */
+/* RTL: the resource gutter stays on the leading edge - the corner and the resource cells pin to
+   inset-inline-start, which the right-to-left rows below map to the right side of the scroller. */
 [dir="rtl"] .bit-bfc-tl-grid {
     direction: rtl;
 }
@@ -2874,17 +3008,41 @@ button.bit-bfc-cell-add-hint:focus-visible {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-tl-corner {
-    left: auto;
-    right: 0;
+/* ===== Loading =====
+   While IsLoading is set an indeterminate bar runs along the top of the body. It is drawn over the
+   grid rather than above it, so turning it on and off never shifts the layout. */
+.bit-bfc-loading {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 30;
+    height: $shp-border-width-thick;
+    overflow: hidden;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--bit-bfc-primary) 20%, transparent);
 }
 
-[dir="rtl"] .bit-bfc-tl-resource-cell {
-    left: auto;
-    right: 0;
+.bit-bfc-loading::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    width: 40%;
+    background: var(--bit-bfc-primary);
+    animation: bit-bfc-loading calc(1.2s * #{$mot-loop-factor}) linear infinite;
+}
+
+@keyframes bit-bfc-loading {
+    from {
+        inset-inline-start: -40%;
+    }
+
+    to {
+        inset-inline-start: 100%;
+    }
 }
 
 /* Responsive: shrink resource gutter on small screens */
+
 @media (max-width: 768px) {
 
     .bit-bfc-tl-corner,
@@ -2894,5 +3052,141 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
     .bit-bfc-tl-resource-title {
         font-size: $tg-fs-xs;
+    }
+}
+
+/* Read by assistive technology, never drawn: the live count of the agenda search. */
+.bit-bfc-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ===== Forced colors (Windows High Contrast) =====
+
+   Backgrounds are replaced by the system palette, which takes away everything the calendar draws
+   with a fill alone: the event chips, today's marker, the selected tab, the selection and the
+   current-time rule. Each is given a system-coloured edge or fill so it stays perceivable. */
+@media (forced-colors: active) {
+    .bit-bfc-event-badge,
+    .bit-bfc-event-block,
+    .bit-bfc-timeline-event,
+    .bit-bfc-event-detail-color {
+        border-color: CanvasText;
+    }
+
+    .bit-bfc-month-cell-day.today,
+    .bit-bfc-week-header-day-num.today,
+    .bit-bfc-day-header-date.today,
+    .bit-bfc-year-day-number.today,
+    .bit-bfc-mini-calendar-day.today,
+    .bit-bfc-dtp-day-selected,
+    .bit-bfc-repeat-day[aria-pressed="true"] {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+
+    .bit-bfc-view-tab.active,
+    .bit-bfc-mode-tab.active {
+        outline: $shp-border-width-thick solid Highlight;
+        outline-offset: -2px;
+    }
+
+    .bit-bfc-mini-calendar-day.selected {
+        outline: $shp-border-width-thick solid Highlight;
+    }
+
+    .bit-bfc-slot-selected,
+    .bit-bfc-droppable.drag-over,
+    .bit-bfc-droppable.bit-bfc-drop-preview-hour,
+    .bit-bfc-droppable.bit-bfc-drop-preview-half,
+    .bit-bfc-tl-drop-preview {
+        forced-color-adjust: none;
+        background: Highlight;
+    }
+
+    .bit-bfc-timeline-dot,
+    .bit-bfc-timeline-line,
+    .bit-bfc-tl-now,
+    .bit-bfc-tl-now-dot,
+    .bit-bfc-loading::after {
+        forced-color-adjust: none;
+        background: Highlight;
+    }
+
+    .bit-bfc-toggle.checked .bit-bfc-toggle-track {
+        forced-color-adjust: none;
+        background: Highlight;
+    }
+
+    .bit-bfc-bullet,
+    .bit-bfc-color-swatch,
+    .bit-bfc-event-detail-swatch {
+        forced-color-adjust: none;
+        border: $shp-border-width solid CanvasText;
+    }
+}
+
+/* ===== Print =====
+   A printed calendar is the whole period on paper: the fixed height and the inner scrollers would
+   otherwise cut it at whatever the screen happened to show. The chrome that only works on screen -
+   the toolbar's controls, the hover hints, the toasts and an open dialog - is left out. */
+@media print {
+    .bit-bfc {
+        height: auto;
+        overflow: visible;
+        border-color: currentColor;
+    }
+
+    .bit-bfc-body,
+    .bit-bfc-month,
+    .bit-bfc-week-scroll,
+    .bit-bfc-timegrid-wrapper,
+    .bit-bfc-day-main,
+    .bit-bfc-year,
+    .bit-bfc-agenda,
+    .bit-bfc-tl-layout,
+    .bit-bfc-tl-scroll {
+        height: auto;
+        overflow: visible;
+        animation: none;
+    }
+
+    .bit-bfc-week-header,
+    .bit-bfc-tl-header-row,
+    .bit-bfc-agenda-group-title {
+        position: static;
+    }
+
+    .bit-bfc-header button,
+    .bit-bfc-header select,
+    .bit-bfc-dropdown,
+    .bit-bfc-agenda-search,
+    .bit-bfc-cell-add-hint,
+    .bit-bfc-day-sidebar,
+    .bit-bfc-week-mobile-warning,
+    .bit-bfc-toast-container,
+    .bit-bfc-overlay,
+    .bit-bfc-loading,
+    .bit-bfc-resize-handle,
+    .bit-bfc-resize-handle-h {
+        display: none !important;
+    }
+
+    .bit-bfc-event-badge,
+    .bit-bfc-event-block,
+    .bit-bfc-timeline-event,
+    .bit-bfc-month-cell,
+    .bit-bfc-agenda-item {
+        break-inside: avoid;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
 }

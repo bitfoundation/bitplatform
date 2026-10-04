@@ -5,6 +5,7 @@ public partial class BitFcCalendarHeader
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarSettings Settings { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter(Name = "HideFilters")] public bool HideFilters { get; set; }
     [CascadingParameter(Name = "HideSettings")] public bool HideSettings { get; set; }
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }

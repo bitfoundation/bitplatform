@@ -1,6 +1,9 @@
 @namespace Bit.BlazorUI
 
-<div class="bit-bfc-toast-container" aria-live="polite">
+@* The container is always in the DOM, so a notice added to it is announced: a refusal interrupts (alert),
+   anything else waits its turn (status). The role sits on the notice, never on the container as well, or
+   the same message would be read twice. *@
+<div class="bit-bfc-toast-container">
     @foreach (var toast in _toasts)
     {
         <div @key="toast.Id" class="bit-bfc-toast @(toast.IsError ? "error" : "success")" role="@(toast.IsError ? "alert" : "status")">

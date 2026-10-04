@@ -147,7 +147,33 @@ public class BitFullCalendarState
     public DateTime? MaxDate { get; private set; }
 
     public CultureInfo Culture { get; private set; } = CultureInfo.CurrentUICulture;
-    public bool IsRtl => Culture.TextInfo.IsRightToLeft;
+
+    /// <summary>
+    /// Whether the calendar is laid out right-to-left: the explicit direction of the component when one was given,
+    /// otherwise the writing direction of the active culture. Everything that maps a physical key or pointer
+    /// movement onto earlier/later reads this, so it agrees with what is actually rendered.
+    /// </summary>
+    public bool IsRtl => _dir switch
+    {
+        BitDir.Rtl => true,
+        BitDir.Ltr => false,
+        _ => Culture.TextInfo.IsRightToLeft
+    };
+
+    private BitDir? _dir;
+
+    /// <summary>
+    /// Sets the explicit layout direction of the calendar; <c>null</c> (or <see cref="BitDir.Auto"/>) follows the
+    /// writing direction of the culture.
+    /// </summary>
+    public void SetDirection(BitDir? dir)
+    {
+        if (_dir == dir)
+            return;
+
+        _dir = dir;
+        NotifyStateChanged();
+    }
 
     // Drag state. The setter is private so all drag mutations go through StartDrag/EndDrag,
     // which keeps the OnStateChanged notification consistent.

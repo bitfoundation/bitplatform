@@ -8,6 +8,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
@@ -184,13 +185,15 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                 State.RemoveEvent(target.Id);
                 try
                 {
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    // Refused by OnChanging: the event is already back, and the dialog stays open on it.
+                    if (await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
                     {
                         Event = snapshot,
                         OldEvent = snapshot,
                         Kind = BitFullCalendarChangeKind.Delete,
                         Source = BitFullCalendarChangeSource.Dialog
-                    });
+                    }) is false)
+                        return;
                 }
                 catch
                 {
@@ -233,13 +236,14 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                 State.UpdateEvent(updated);
                 try
                 {
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    if (await Notifier.TryNotifyAsync(new BitFullCalendarChangeEventArgs
                     {
                         Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
                         OldEvent = snapshot,
                         Kind = BitFullCalendarChangeKind.Edit,
                         Source = BitFullCalendarChangeSource.Dialog
-                    });
+                    }) is false)
+                        return;
                 }
                 catch
                 {

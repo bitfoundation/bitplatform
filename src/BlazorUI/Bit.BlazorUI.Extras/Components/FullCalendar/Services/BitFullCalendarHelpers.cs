@@ -949,6 +949,21 @@ public static class BitFullCalendarHelpers
     }
 
     /// <summary>
+    /// The accessible name of an event surface: its title and the span it covers, on one line. A block's
+    /// visible content may be a template, or a title cut short by a narrow column, so the name is written out
+    /// rather than left to whatever text the block happens to render.
+    /// </summary>
+    public static string BuildEventAriaLabel(
+        BitFullCalendarEvent ev, bool use24Hour, CultureInfo? culture = null, string? allDayLabel = null)
+    {
+        if (ev is null)
+            return string.Empty;
+
+        var time = BuildEventRangeText(ev, use24Hour, culture, allDayLabel);
+        return string.IsNullOrWhiteSpace(ev.Title) ? time : $"{ev.Title.Trim()}, {time}";
+    }
+
+    /// <summary>
     /// The span an event covers, written the way the event is actually scheduled: a clock range for
     /// a timed event inside one day, the dates as well once it crosses one, and the covered dates
     /// plus <paramref name="allDayLabel"/> for an all-day event, which has no clock time to show.

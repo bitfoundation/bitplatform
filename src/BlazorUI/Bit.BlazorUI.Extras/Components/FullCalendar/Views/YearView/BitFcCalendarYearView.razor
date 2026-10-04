@@ -101,7 +101,7 @@
             <button type="button" class="bit-bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
                 @monthName
             </button>
-            <div class="bit-bfc-year-weekdays" style="@yearGridTemplate">
+            <div class="bit-bfc-year-weekdays" style="@yearGridTemplate" aria-hidden="true">
                 @foreach (var wd in yearWeekDayHeaders)
                 {
                     <div class="bit-bfc-year-weekday">@(wd.Length > 2 ? wd[..2] : wd)</div>
@@ -120,11 +120,11 @@
                     @if (hasEvents)
                     {
                         <button type="button" class="bit-bfc-year-day has-events"
-                                style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
-                                aria-label="@cell.Date.ToString("D", State.Culture)"
+                                aria-label="@($"{cell.Date.ToString("D", State.Culture)}, {string.Format(State.Culture, Texts.EventListCountFormat, dayEvents.Count)}")"
+                                aria-current="@(isToday ? "date" : null)"
                                 @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
-                            <span class="bit-bfc-year-day-bullets">
+                            <span class="bit-bfc-year-day-bullets" aria-hidden="true">
                                 @foreach (var ev in dayEvents.Take(3))
                                 {
                                     <BitFcEventBullet Color="ev.Color" />
@@ -134,7 +134,7 @@
                     }
                     else
                     {
-                        <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "")">
+                        <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "")" aria-hidden="@(isCurrentMonth ? null : "true")">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                         </div>
                     }

@@ -33,8 +33,8 @@
 
 @* A badge is the narrowest surface an event is drawn on - the title alone rarely survives the cell
    width - so the full title, span, and description are offered on hover as well. *@
-<div class="bit-bfc-event-badge @colorClass @positionClass @(Event.IsAllDay ? "bit-bfc-event-allday" : null) @Event.CssClass"
-     style="@($"{colorStyleVar}{MarginStyle}")"
+<div class="bit-bfc-event-badge @colorClass @positionClass @(Event.IsAllDay ? "bit-bfc-event-allday" : null) @Parts.Classes?.Event @Event.CssClass"
+     style="@($"{colorStyleVar}{MarginStyle}{Parts.Styles?.Event}")"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
      role="button"
      tabindex="0"

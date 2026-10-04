@@ -1,9 +1,29 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
 
 public partial class BitFullCalendar
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the calendar component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to the calendars of an
+    /// application through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitFullCalendarParams.ParamName)]
+    public BitFullCalendarParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the calendar.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public BitFullCalendarClassStyles? Classes { get; set; }
+
     /// <summary>
     /// Culture for the calendar. Accepts any CultureInfo, e.g. new CultureInfo("fa-IR").
     /// NOTE: do NOT use this parameter when the component is rendered with
@@ -104,6 +124,13 @@ public partial class BitFullCalendar
     [Parameter] public bool HideSettings { get; set; }
 
     /// <summary>
+    /// When <c>true</c>, an indeterminate progress bar runs along the top of the calendar body and the body is
+    /// marked busy for assistive technology. Set it while the events of a newly reported range (see
+    /// <see cref="OnDateChange"/>) are being fetched; the calendar stays fully interactive meanwhile.
+    /// </summary>
+    [Parameter] public bool IsLoading { get; set; }
+
+    /// <summary>
     /// The latest date the calendar can navigate to and display. Navigation past it is refused, the
     /// "next" button is disabled, and a bound <see cref="Date"/> beyond it is pulled back.
     /// <c>null</c> (the default) leaves the calendar unbounded.
@@ -150,6 +177,15 @@ public partial class BitFullCalendar
     /// Raised when a user adds, edits, or deletes an event in the calendar UI.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarChangeEventArgs> OnChange { get; set; }
+
+    /// <summary>
+    /// Raised before a user-driven add, edit, or delete is committed - from a dialog, a drag, a resize, or their
+    /// keyboard equivalents - after the built-in rules (date window, business hours, overlap) have passed it. Set
+    /// <see cref="BitFullCalendarChangingEventArgs.Cancel"/> to refuse it: the event goes back to where it was, no
+    /// <see cref="OnChange"/> is raised, and the add/edit dialog stays open with what the user typed. Use it for the
+    /// rules only your application knows (no bookings in the past, a room someone else holds).
+    /// </summary>
+    [Parameter] public EventCallback<BitFullCalendarChangingEventArgs> OnChanging { get; set; }
 
     /// <summary>
     /// Raised when the visible date range changes - on first render, and afterwards whenever the user
@@ -199,6 +235,13 @@ public partial class BitFullCalendar
     [Parameter] public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// Optional template for the header cell of a resource row in the timeline view (the sticky gutter on the
+    /// leading side). When provided, it replaces the default title and subtitle - an avatar, a capacity, a status.
+    /// The "Unassigned" row keeps its built-in label.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarResource>? ResourceTemplate { get; set; }
+
+    /// <summary>
     /// Resources displayed as rows in the resource timeline view. When <c>null</c> or empty,
     /// the resource timeline tab is hidden from the header. Each event's
     /// <see cref="BitFullCalendarEvent.Resource"/> is matched against the resource <c>Id</c>.
@@ -213,6 +256,11 @@ public partial class BitFullCalendar
     /// onto this instance so a parent re-render never reverts them.
     /// </summary>
     [Parameter] public BitFullCalendarSettings Settings { get; set; } = new();
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the calendar.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitFullCalendarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Localized strings for calendar UI labels, buttons, dialogs, filters, and accessibility text.
@@ -296,7 +344,13 @@ public partial class BitFullCalendar
     /// otherwise the direction of the active culture, so a right-to-left culture flips the layout
     /// without the consumer having to say so twice.
     /// </summary>
-    private BitDir ResolvedDir => Dir ?? (State.IsRtl ? BitDir.Rtl : BitDir.Ltr);
+    private BitDir ResolvedDir => Dir is BitDir.Auto ? BitDir.Auto : State.IsRtl ? BitDir.Rtl : BitDir.Ltr;
+
+    // A named calendar is a region of the page a screen reader can jump to; an unnamed one stays a plain
+    // container, since a region without a name is not exposed as a landmark anyway.
+    private string? _Role => AriaLabel.HasValue()
+                             || GetSplattedAttribute("aria-label").HasValue()
+                             || GetSplattedAttribute("aria-labelledby").HasValue() ? "region" : null;
 
     private BitCascadingValueList BuildCascadingValues() => new()
     {
@@ -305,11 +359,22 @@ public partial class BitFullCalendar
         { _changeNotifier },
         { _colorScheme },
         { Settings },
+        { new BitFcParts(Classes, Styles, _Id, HideHeader, ResourceTemplate) },
         { HideFilters, "HideFilters" },
         { HideSettings, "HideSettings" },
         { OnAddClick, "OnAddClick" },
         { OnEventClick, "OnEventClick" },
     };
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     private CultureInfo ResolveCulture()
     {
@@ -328,19 +393,26 @@ public partial class BitFullCalendar
         return Culture ?? CultureInfo.CurrentUICulture;
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFullCalendarParams))]
     protected override void OnInitialized()
     {
+        // The cascaded defaults are applied before anything below reads the parameters they fill in: the
+        // culture, the date bounds and the settings the state is initialized from.
+        CascadingParameters?.UpdateParameters(this);
+
         // Settings/Texts have default instances but can be set to null when bound externally.
         // Normalize before any downstream use (ApplySettings, cascaded Texts) to avoid NREs.
         Settings ??= new();
         Texts ??= new();
 
         State.Initialize(Events ?? [], ResolveCulture());
+        State.SetDirection(Dir);
         State.SetDateBounds(MinDate, MaxDate);
         ApplySettings();
         _changeNotifier = new BitFullCalendarChangeNotifier(State, args => OnChange.InvokeAsync(args))
         {
-            RefusalReporter = ReportRefusal
+            RefusalReporter = ReportRefusal,
+            ApprovalHandler = ApproveChangeAsync
         };
         State.OnStateChanged += HandleStateChanged;
         State.OnDateRangeChanged += HandleDateRangeChanged;
@@ -356,7 +428,10 @@ public partial class BitFullCalendar
 
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // A null Settings/Texts can arrive from external binding, overriding the default instances;
+
         // restore valid defaults before ApplySettings and the cascaded Texts are consumed downstream.
         Settings ??= new();
         Texts ??= new();
@@ -376,6 +451,10 @@ public partial class BitFullCalendar
             if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal)
                 || resolved.Calendar.GetType() != State.Culture.Calendar.GetType())
                 State.SetCulture(resolved);
+
+            // The keyboard and pointer handlers map a physical direction onto earlier/later through the state,
+            // so it has to know the direction the calendar is rendered in, not only the culture's.
+            State.SetDirection(Dir);
 
             if (Events is not null)
                 State.SyncEvents(Events);
@@ -736,6 +815,25 @@ public partial class BitFullCalendar
 
         _initialDateChangeRaised = true;
         InvokeAsync(() => OnDateChange.InvokeAsync(args));
+    }
+
+    private async Task<bool> ApproveChangeAsync(BitFullCalendarChangeEventArgs change)
+    {
+        if (OnChanging.HasDelegate is false)
+            return true;
+
+        // Snapshots, so a handler that edits what it is handed cannot reach the event the calendar holds.
+        var args = new BitFullCalendarChangingEventArgs
+        {
+            Event = BitFullCalendarChangeNotifier.CloneEvent(change.Event),
+            OldEvent = change.OldEvent is null ? null : BitFullCalendarChangeNotifier.CloneEvent(change.OldEvent),
+            Kind = change.Kind,
+            Source = change.Source
+        };
+
+        await OnChanging.InvokeAsync(args);
+
+        return args.Cancel is false;
     }
 
     private void ReportRefusal(BitFullCalendarChangeRefusal refusal)

@@ -1891,7 +1891,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Countdown");
         component.Find("select[id^='bfc-repeat-']").Change("Weekly");
         component.Find("select[id^='bfc-ends-']").Change("AfterCount");
-        component.Find(".bit-bfc-repeat-row input[type=number]:not([id])").Change("0");
+        component.Find("input[id^='bfc-count-']").Change("0");
         component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
 
         Assert.AreEqual(0, changes.Count);
@@ -2150,7 +2150,8 @@ public class BitFullCalendarTests : BunitTestContext
         var toggles = OpenSettingsMenu(component);
         var businessToggle = toggles.Single(t => t.TextContent.Contains("business hours", StringComparison.OrdinalIgnoreCase));
 
-        Assert.AreEqual("false", businessToggle.GetAttribute("aria-pressed"));
+        Assert.AreEqual("switch", businessToggle.GetAttribute("role"));
+        Assert.AreEqual("false", businessToggle.GetAttribute("aria-checked"));
 
         businessToggle.Click();
 

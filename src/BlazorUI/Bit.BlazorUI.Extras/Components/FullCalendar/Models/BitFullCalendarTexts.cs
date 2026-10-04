@@ -11,6 +11,12 @@ public class BitFullCalendarTexts
     public string ModeEvent { get; set; } = "Events";
     public string ModeTimeline { get; set; } = "Timeline";
 
+    /// <summary>Accessible name of the view tab strip (day, week, month, year, agenda).</summary>
+    public string ViewTabsAriaLabel { get; set; } = "Views";
+
+    /// <summary>Accessible name of the mode tab strip (events, timeline).</summary>
+    public string ModeTabsAriaLabel { get; set; } = "Modes";
+
     /// <summary>Label of the "today" navigation button.</summary>
     public string TodayButton { get; set; } = "Today";
 

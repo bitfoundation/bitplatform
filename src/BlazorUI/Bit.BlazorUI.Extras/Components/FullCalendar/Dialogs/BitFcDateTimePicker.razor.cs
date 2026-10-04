@@ -40,6 +40,15 @@ public partial class BitFcDateTimePicker : IDisposable
     /// </summary>
     [Parameter] public string? TriggerAriaLabel { get; set; }
 
+    /// <summary>The id of the trigger button, so a form can move the focus onto a field it found invalid.</summary>
+    [Parameter] public string? TriggerId { get; set; }
+
+    /// <summary>Whether the field the picker edits failed validation (aria-invalid on the trigger).</summary>
+    [Parameter] public bool Invalid { get; set; }
+
+    /// <summary>The id of the element describing the field, typically its validation message.</summary>
+    [Parameter] public string? DescribedBy { get; set; }
+
     private DateTime _visibleMonthAnchor;
     private int _hour;
     private int _minute;

@@ -11,6 +11,7 @@ public partial class BitFcMiniCalendar
     private Type? _lastSyncedCalendarType;
 
     private readonly string _gridId = "bit-bfc-mini-cal-" + Guid.NewGuid().ToString("N");
+    private string _titleId => $"{_gridId}-title";
 
     // Roving tabindex: the mini calendar is a single tab stop the arrow keys walk, rather than one
     // stop per rendered day sitting between the day view and whatever follows it.

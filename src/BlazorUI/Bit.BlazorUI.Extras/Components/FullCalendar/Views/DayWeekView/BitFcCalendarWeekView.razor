@@ -43,6 +43,7 @@
                     @if (State.NavLinks)
                     {
                         <button type="button" class="bit-bfc-navlink bit-bfc-week-header-day-link"
+                                aria-current="@(isToday ? "date" : null)"
                                 aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))"
                                 disabled="@(State.IsDateInAllowedRange(d) is false)"
                                 @onclick="() => GoToDayView(d)">
@@ -89,7 +90,7 @@
                             <div class="bit-bfc-hour-row">
                                 @if (hour > State.VisibleStartHour)
                                 {
-                                    <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>
+                                    <div class="bit-bfc-hour-line" aria-hidden="true"></div>
                                 }
                                 @for (var si = 0; si < slotMinutes.Length; si++)
                                 {
