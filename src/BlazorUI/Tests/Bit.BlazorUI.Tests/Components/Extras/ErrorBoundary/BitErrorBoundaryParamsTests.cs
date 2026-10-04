@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,30 +27,44 @@ public partial class BitErrorBoundaryTests
         Assert.AreEqual(BitErrorBoundaryParams.ParamName, @params.Name);
     }
 
-    // Every settable property of the params object is one the boundary can take from it, so a property added to one
-    // and not wired to the other fails here rather than going silently unapplied.
+    // Every settable property of the params object is one the boundary takes from it, so a property added to one and
+    // not wired to the other - or wired to the wrong parameter - fails here rather than going silently unapplied.
     [TestMethod]
     public void BitErrorBoundaryParamsShouldSupplyEveryOneOfItsProperties()
     {
-        var properties = typeof(BitErrorBoundaryParams).GetProperties()
-                                                       .Where(p => p.CanWrite)
-                                                       .Select(p => p.Name)
-                                                       .Order()
-                                                       .ToArray();
+        var @params = new BitErrorBoundaryParams();
+        var supplied = new Dictionary<string, object>();
 
-        // The table is internal to the library, so it is read the way a test outside it can.
-        var table = (IEnumerable<object>)typeof(BitErrorBoundaryParams).GetField("Parameters", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-        var supplied = table.Select(p => (string)p.GetType().GetProperty("Name")!.GetValue(p)!).Order().ToArray();
+        foreach (var property in typeof(BitErrorBoundaryParams).GetProperties().Where(p => p.CanWrite))
+        {
+            var value = SampleValue(property.PropertyType);
 
-        CollectionAssert.AreEqual(properties, supplied);
+            property.SetValue(@params, value);
+            supplied.Add(property.Name, value);
+        }
 
-        foreach (var name in supplied)
+        var boundary = new BitErrorBoundary();
+
+        @params.UpdateParameters(boundary);
+
+        foreach (var (name, value) in supplied)
         {
             var parameter = typeof(BitErrorBoundary).GetProperty(name);
 
             Assert.IsNotNull(parameter, $"{name} is not a property of BitErrorBoundary.");
             Assert.IsTrue(parameter.IsDefined(typeof(ParameterAttribute), true), $"{name} is not a parameter of BitErrorBoundary.");
+            Assert.AreEqual(value, parameter.GetValue(boundary), $"{name} is not applied by UpdateParameters.");
         }
+    }
+
+    // An empty text is a value, not an absence: an empty Title is how the heading is dropped, so a params object that
+    // supplies one drops it on every boundary under it.
+    [TestMethod]
+    public void BitErrorBoundaryShouldTakeAnEmptyTitleFromBitParams()
+    {
+        var component = RenderInBitParams(new BitErrorBoundaryParams { Title = string.Empty });
+
+        Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-ttl"));
     }
 
     [TestMethod]
@@ -162,6 +177,41 @@ public partial class BitErrorBoundaryTests
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-svg"));
     }
 
+    // The markup taking a parameter over and letting it go again leaves the params object supplying it once more,
+    // rather than leaving behind the value the markup last gave it.
+    [TestMethod]
+    public void BitErrorBoundaryShouldGoBackToTheCascadedValueOnceTheMarkupLetsGo()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitErrorBoundaryParams { Title = "Cascaded title" } });
+            parameters.AddChildContent(builder => RenderBoundary(builder, withOwnTitle: true));
+        });
+
+        Assert.AreEqual("Own title", component.Find(".bit-erb-ttl").TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitErrorBoundaryParams { Title = "Cascaded title" } });
+            parameters.AddChildContent(builder => RenderBoundary(builder, withOwnTitle: false));
+        });
+
+        Assert.AreEqual("Cascaded title", component.Find(".bit-erb-ttl").TextContent.Trim());
+
+        static void RenderBoundary(RenderTreeBuilder builder, bool withOwnTitle)
+        {
+            builder.OpenComponent<BitErrorBoundary>(0);
+
+            if (withOwnTitle)
+            {
+                builder.AddAttribute(1, nameof(BitErrorBoundary.Title), "Own title");
+            }
+
+            builder.AddAttribute(2, nameof(BitErrorBoundary.ChildContent), ThrowingContent("err"));
+            builder.CloseComponent();
+        }
+    }
+
     [TestMethod]
     public void BitErrorBoundaryShouldRecoverOnNavigationFromACascadedParameter()
     {
@@ -192,6 +242,22 @@ public partial class BitErrorBoundaryTests
     }
 
 
+
+    private static object SampleValue(Type type)
+    {
+        var valueType = Nullable.GetUnderlyingType(type) ?? type;
+
+        // Each value differs from the boundary's default, so a parameter left unapplied cannot pass for an applied one.
+        if (valueType == typeof(bool)) return true;
+        if (valueType == typeof(int)) return 5;
+        if (valueType == typeof(string)) return "sample";
+        if (valueType == typeof(BitDir)) return BitDir.Rtl;
+        if (valueType == typeof(BitIconInfo)) return BitIconInfo.Css("sample-icon");
+        if (valueType == typeof(RenderFragment)) return (RenderFragment)(_ => { });
+        if (valueType == typeof(RenderFragment<BitErrorBoundaryContext>)) return (RenderFragment<BitErrorBoundaryContext>)(_ => _ => { });
+
+        return Activator.CreateInstance(valueType)!;
+    }
 
     private IRenderedComponent<BitParams> RenderInBitParams(BitErrorBoundaryParams @params, params (string Name, object? Value)[] ownParameters)
     {

@@ -85,8 +85,26 @@ public class BitErrorBoundaryStylesheetTests
         var block = stylesheet[stylesheet.IndexOf("\n.bit-erb {", StringComparison.Ordinal)..];
         block = block[..block.IndexOf("\n}", StringComparison.Ordinal)];
 
-        StringAssert.Contains(block, "&[tabindex=\"-1\"] {");
+        StringAssert.Contains(block, "&.bit-erb-anc {");
         StringAssert.Contains(block, "@include focus-anchor;");
+    }
+
+    // One class each, so that a Classes.Title or Classes.Message rule of the app's wins over them, and the color handed
+    // to BitText through its own variable rather than fought over with the color BitText sets.
+    [TestMethod,
+        DataRow("bit-erb-ttl", "--bit-ErrorBoundary-title-color"),
+        DataRow("bit-erb-msg", "--bit-ErrorBoundary-message-color")]
+    public void BitErrorBoundaryShouldStyleTheTitleAndTheMessageWithOneClassEach(string part, string variable)
+    {
+        var stylesheet = ReadStylesheet();
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, $@"\S[ \t]+\.{part}\b"), $".{part} is styled through a descendant selector.");
+
+        var block = stylesheet[stylesheet.IndexOf($"\n.{part} {{", StringComparison.Ordinal)..];
+        block = block[..block.IndexOf("\n}", StringComparison.Ordinal)];
+
+        StringAssert.Contains(block, $"--bit-Text-color: var({variable}, ");
+        Assert.IsFalse(Regex.IsMatch(block, @"^\s*color\s*:", RegexOptions.Multiline), $".{part} sets the color BitText sets.");
     }
 
     // A design-system decision is read off the theme, never typed into the component.

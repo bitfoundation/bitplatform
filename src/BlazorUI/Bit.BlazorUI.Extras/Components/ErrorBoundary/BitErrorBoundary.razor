@@ -31,7 +31,7 @@ else
 {
     @* The root is a group named by the title and described by the message, so whatever lands in it - the focus
        AutoFocus moves to it, or a Tab to one of its buttons - is told which error it belongs to. What announces
-       the error is the header alone (see _HeaderRole).
+       the error is the header alone (see _HeaderRole), or the root where the header has no text (see _RootRole).
        An attribute written after the splat wins over the one the page passed in through HtmlAttributes,
        so every attribute below reads what came in with them and resolves against it rather than writing
        its own value over it - a null written after the splat does not leave the splatted attribute alone,
@@ -45,7 +45,7 @@ else
     <div @ref="_rootRef"
          @attributes="HtmlAttributes"
          id="@(Id ?? _Splat("id"))"
-         role="@(_Splat("role") ?? (titled ? "group" : null))"
+         role="@_RootRole"
          aria-labelledby="@(_Splat("aria-labelledby") ?? (titled ? _TitleId : null))"
          aria-describedby="@(_Splat("aria-describedby") ?? (described ? _MessageId : null))"
          autofocus="@AutoFocus"

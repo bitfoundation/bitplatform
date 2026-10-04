@@ -188,79 +188,176 @@ public class BitErrorBoundaryParams : IBitComponentParams
 
 
     /// <summary>
-    /// Every parameter a params object can supply: how it is read off the params object, and how it is read off and
-    /// written onto the boundary, which is what lets the boundary put back the value a parameter held before once the
-    /// params object stops supplying it.
-    /// </summary>
-    internal static readonly CascadedParameter[] Parameters =
-    [
-        new(nameof(AdditionalButtons), p => p.AdditionalButtons, b => b.AdditionalButtons, (b, v) => b.AdditionalButtons = (RenderFragment?)v),
-        new(nameof(AutoFocus), p => p.AutoFocus, b => b.AutoFocus, (b, v) => b.AutoFocus = (bool)v!),
-        new(nameof(Class), p => p.Class, b => b.Class, (b, v) => b.Class = (string?)v),
-        new(nameof(Classes), p => p.Classes, b => b.Classes, (b, v) => b.Classes = (BitErrorBoundaryClassStyles?)v),
-        new(nameof(CopiedText), p => p.CopiedText, b => b.CopiedText, (b, v) => b.CopiedText = (string?)v),
-        new(nameof(CopyText), p => p.CopyText, b => b.CopyText, (b, v) => b.CopyText = (string?)v),
-        // Dir reads through to the direction cascaded from above while it is not set, so what the boundary holds of
-        // its own is the backing field, which is what has to be put back rather than the direction it happens to show.
-        new(nameof(Dir), p => p.Dir, b => b.OwnDir, (b, v) => b.OwnDir = (BitDir?)v),
-        new(nameof(ExceptionLabel), p => p.ExceptionLabel, b => b.ExceptionLabel, (b, v) => b.ExceptionLabel = (string?)v),
-        new(nameof(ErrorTemplate), p => p.ErrorTemplate, b => b.ErrorTemplate, (b, v) => b.ErrorTemplate = (RenderFragment<BitErrorBoundaryContext>?)v),
-        new(nameof(Footer), p => p.Footer, b => b.Footer, (b, v) => b.Footer = (RenderFragment?)v),
-        new(nameof(HeadingLevel), p => p.HeadingLevel, b => b.HeadingLevel, (b, v) => b.HeadingLevel = (int?)v),
-        new(nameof(HideHomeButton), p => p.HideHomeButton, b => b.HideHomeButton, (b, v) => b.HideHomeButton = (bool)v!),
-        new(nameof(HideIcon), p => p.HideIcon, b => b.HideIcon, (b, v) => b.HideIcon = (bool)v!),
-        new(nameof(HideRecoverButton), p => p.HideRecoverButton, b => b.HideRecoverButton, (b, v) => b.HideRecoverButton = (bool)v!),
-        new(nameof(HideRefreshButton), p => p.HideRefreshButton, b => b.HideRefreshButton, (b, v) => b.HideRefreshButton = (bool)v!),
-        new(nameof(HomeText), p => p.HomeText, b => b.HomeText, (b, v) => b.HomeText = (string?)v),
-        new(nameof(HomeUrl), p => p.HomeUrl, b => b.HomeUrl, (b, v) => b.HomeUrl = (string?)v),
-        new(nameof(Icon), p => p.Icon, b => b.Icon, (b, v) => b.Icon = (BitIconInfo?)v),
-        new(nameof(IconName), p => p.IconName, b => b.IconName, (b, v) => b.IconName = (string?)v),
-        new(nameof(IconTemplate), p => p.IconTemplate, b => b.IconTemplate, (b, v) => b.IconTemplate = (RenderFragment?)v),
-        new(nameof(MaximumErrorCount), p => p.MaximumErrorCount, b => b.MaximumErrorCount, (b, v) => b.MaximumErrorCount = (int)v!),
-        new(nameof(Message), p => p.Message, b => b.Message, (b, v) => b.Message = (string?)v),
-        new(nameof(NoLogging), p => p.NoLogging, b => b.NoLogging, (b, v) => b.NoLogging = (bool)v!),
-        new(nameof(RecoverOnNavigation), p => p.RecoverOnNavigation, b => b.RecoverOnNavigation, (b, v) => b.RecoverOnNavigation = (bool)v!),
-        new(nameof(RecoverText), p => p.RecoverText, b => b.RecoverText, (b, v) => b.RecoverText = (string?)v),
-        new(nameof(RefreshText), p => p.RefreshText, b => b.RefreshText, (b, v) => b.RefreshText = (string?)v),
-        new(nameof(ShowCopyButton), p => p.ShowCopyButton, b => b.ShowCopyButton, (b, v) => b.ShowCopyButton = (bool)v!),
-        new(nameof(ShowException), p => p.ShowException, b => b.ShowException, (b, v) => b.ShowException = (bool)v!),
-        new(nameof(Style), p => p.Style, b => b.Style, (b, v) => b.Style = (string?)v),
-        new(nameof(Styles), p => p.Styles, b => b.Styles, (b, v) => b.Styles = (BitErrorBoundaryClassStyles?)v),
-        new(nameof(Title), p => p.Title, b => b.Title, (b, v) => b.Title = (string?)v),
-    ];
-
-
-
-    /// <summary>
     /// Updates the parameters of the specified <see cref="BitErrorBoundary"/> instance with every value that has
     /// been set on this object, wherever the boundary's own markup has not set that parameter.
     /// </summary>
     /// <remarks>
     /// This does not overwrite a value the markup of <paramref name="bitErrorBoundary"/> set. A boundary under a
-    /// <see cref="BitParams"/> calls it on its own as its parameters are set.
+    /// <see cref="BitParams"/> calls it on its own as its parameters are set, and is what puts back a value this
+    /// object stops supplying; a value written by calling this directly is the boundary's own from then on, exactly
+    /// as with the params object of every other component.
+    /// <br />
+    /// A text is applied whenever it is not null, so an empty one is supplied too: an empty <see cref="Title"/> is
+    /// how the heading is dropped.
     /// </remarks>
     /// <param name="bitErrorBoundary">The <see cref="BitErrorBoundary"/> instance whose parameters will be updated.</param>
     public void UpdateParameters(BitErrorBoundary bitErrorBoundary)
     {
         if (bitErrorBoundary is null) return;
 
-        foreach (var parameter in Parameters)
+        if (AdditionalButtons is not null && bitErrorBoundary.HasNotBeenSet(nameof(AdditionalButtons)))
         {
-            var value = parameter.FromParams(this);
+            bitErrorBoundary.AdditionalButtons = AdditionalButtons;
+        }
 
-            if (value is null || bitErrorBoundary.IsSetByMarkup(parameter.Name)) continue;
+        if (AutoFocus.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(AutoFocus)))
+        {
+            bitErrorBoundary.AutoFocus = AutoFocus.Value;
+        }
 
-            parameter.SetOnBoundary(bitErrorBoundary, value);
+        if (Class is not null && bitErrorBoundary.HasNotBeenSet(nameof(Class)))
+        {
+            bitErrorBoundary.Class = Class;
+        }
+
+        if (Classes is not null && bitErrorBoundary.HasNotBeenSet(nameof(Classes)))
+        {
+            bitErrorBoundary.Classes = Classes;
+        }
+
+        if (CopiedText is not null && bitErrorBoundary.HasNotBeenSet(nameof(CopiedText)))
+        {
+            bitErrorBoundary.CopiedText = CopiedText;
+        }
+
+        if (CopyText is not null && bitErrorBoundary.HasNotBeenSet(nameof(CopyText)))
+        {
+            bitErrorBoundary.CopyText = CopyText;
+        }
+
+        if (Dir.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(Dir)))
+        {
+            bitErrorBoundary.Dir = Dir;
+        }
+
+        if (ExceptionLabel is not null && bitErrorBoundary.HasNotBeenSet(nameof(ExceptionLabel)))
+        {
+            bitErrorBoundary.ExceptionLabel = ExceptionLabel;
+        }
+
+        if (ErrorTemplate is not null && bitErrorBoundary.HasNotBeenSet(nameof(ErrorTemplate)))
+        {
+            bitErrorBoundary.ErrorTemplate = ErrorTemplate;
+        }
+
+        if (Footer is not null && bitErrorBoundary.HasNotBeenSet(nameof(Footer)))
+        {
+            bitErrorBoundary.Footer = Footer;
+        }
+
+        if (HeadingLevel.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(HeadingLevel)))
+        {
+            bitErrorBoundary.HeadingLevel = HeadingLevel;
+        }
+
+        if (HideHomeButton.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(HideHomeButton)))
+        {
+            bitErrorBoundary.HideHomeButton = HideHomeButton.Value;
+        }
+
+        if (HideIcon.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(HideIcon)))
+        {
+            bitErrorBoundary.HideIcon = HideIcon.Value;
+        }
+
+        if (HideRecoverButton.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(HideRecoverButton)))
+        {
+            bitErrorBoundary.HideRecoverButton = HideRecoverButton.Value;
+        }
+
+        if (HideRefreshButton.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(HideRefreshButton)))
+        {
+            bitErrorBoundary.HideRefreshButton = HideRefreshButton.Value;
+        }
+
+        if (HomeText is not null && bitErrorBoundary.HasNotBeenSet(nameof(HomeText)))
+        {
+            bitErrorBoundary.HomeText = HomeText;
+        }
+
+        if (HomeUrl is not null && bitErrorBoundary.HasNotBeenSet(nameof(HomeUrl)))
+        {
+            bitErrorBoundary.HomeUrl = HomeUrl;
+        }
+
+        if (Icon is not null && bitErrorBoundary.HasNotBeenSet(nameof(Icon)))
+        {
+            bitErrorBoundary.Icon = Icon;
+        }
+
+        if (IconName is not null && bitErrorBoundary.HasNotBeenSet(nameof(IconName)))
+        {
+            bitErrorBoundary.IconName = IconName;
+        }
+
+        if (IconTemplate is not null && bitErrorBoundary.HasNotBeenSet(nameof(IconTemplate)))
+        {
+            bitErrorBoundary.IconTemplate = IconTemplate;
+        }
+
+        if (MaximumErrorCount.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(MaximumErrorCount)))
+        {
+            bitErrorBoundary.MaximumErrorCount = MaximumErrorCount.Value;
+        }
+
+        if (Message is not null && bitErrorBoundary.HasNotBeenSet(nameof(Message)))
+        {
+            bitErrorBoundary.Message = Message;
+        }
+
+        if (NoLogging.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(NoLogging)))
+        {
+            bitErrorBoundary.NoLogging = NoLogging.Value;
+        }
+
+        if (RecoverOnNavigation.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(RecoverOnNavigation)))
+        {
+            bitErrorBoundary.RecoverOnNavigation = RecoverOnNavigation.Value;
+        }
+
+        if (RecoverText is not null && bitErrorBoundary.HasNotBeenSet(nameof(RecoverText)))
+        {
+            bitErrorBoundary.RecoverText = RecoverText;
+        }
+
+        if (RefreshText is not null && bitErrorBoundary.HasNotBeenSet(nameof(RefreshText)))
+        {
+            bitErrorBoundary.RefreshText = RefreshText;
+        }
+
+        if (ShowCopyButton.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(ShowCopyButton)))
+        {
+            bitErrorBoundary.ShowCopyButton = ShowCopyButton.Value;
+        }
+
+        if (ShowException.HasValue && bitErrorBoundary.HasNotBeenSet(nameof(ShowException)))
+        {
+            bitErrorBoundary.ShowException = ShowException.Value;
+        }
+
+        if (Style is not null && bitErrorBoundary.HasNotBeenSet(nameof(Style)))
+        {
+            bitErrorBoundary.Style = Style;
+        }
+
+        if (Styles is not null && bitErrorBoundary.HasNotBeenSet(nameof(Styles)))
+        {
+            bitErrorBoundary.Styles = Styles;
+        }
+
+        if (Title is not null && bitErrorBoundary.HasNotBeenSet(nameof(Title)))
+        {
+            bitErrorBoundary.Title = Title;
         }
     }
-
-
-
-    /// <summary>
-    /// One parameter a <see cref="BitErrorBoundaryParams"/> can supply to a <see cref="BitErrorBoundary"/>.
-    /// </summary>
-    internal sealed record CascadedParameter(string Name,
-                                             Func<BitErrorBoundaryParams, object?> FromParams,
-                                             Func<BitErrorBoundary, object?> FromBoundary,
-                                             Action<BitErrorBoundary, object?> SetOnBoundary);
 }
