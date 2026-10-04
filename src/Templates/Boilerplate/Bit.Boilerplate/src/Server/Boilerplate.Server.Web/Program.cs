@@ -39,14 +39,7 @@ public static partial class Program
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            //#if (IsInsideProjectTemplate == true)
-            await dbContext.Database.EnsureCreatedAsync();
-            /*
-            //#endif
             await dbContext.Database.MigrateAsync();
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
         }
         //#endif
 

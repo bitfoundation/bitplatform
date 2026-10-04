@@ -129,14 +129,7 @@ public partial class TestsAssemblyInitializer
             }
             //#endif
             //#endif
-            //#if (IsInsideProjectTemplate == true)
-            await dbContext.Database.EnsureCreatedAsync();
-            /*
-            //#endif
             await dbContext.Database.MigrateAsync();
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
         }
     }
 
