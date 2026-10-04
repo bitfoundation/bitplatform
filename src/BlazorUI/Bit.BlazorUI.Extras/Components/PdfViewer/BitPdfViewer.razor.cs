@@ -68,6 +68,8 @@ public partial class BitPdfViewer : BitComponentBase
     private readonly Dictionary<int, LinkedListNode<int>> _renderQueued = new();
     private bool _renderPumpActive;
     private bool _printing; // suspends page eviction while Print() catches up all pages
+    private bool _printBusy; // a Print() call is running, OnPrinting included; a second one is ignored
+    private bool _downloading; // a Download() call is running, OnDownloading included; a second one is ignored
 
     // The thumbnail sidebar's counterpart of the render queue/pump.
     private readonly LinkedList<int> _thumbQueue = new();
@@ -164,6 +166,7 @@ public partial class BitPdfViewer : BitComponentBase
     // The polite live region's text. Screen readers announce page moves from here:
     // the page box is an <input>, and changing its value announces nothing.
     private string _announcement = string.Empty;
+    private string? _documentTitle; // the title the document's own metadata declares, read once per load
 
     // Presentation mode, and the layout it replaced so leaving restores it.
     private bool _presenting;
@@ -197,7 +200,7 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _dropZonePending = true; // (re)attach the drag-and-drop listeners after render
     private bool _dropZoneAttached;
     private bool _focusSearchPending; // focus the find box once it is in the DOM
-    private bool _focusSurfacePending; // focus the surface once the side panel that held focus has left the DOM
+    private bool _focusSurfacePending; // a side panel closed; the surface takes focus if the panel held it
 
 
 
@@ -1215,17 +1218,16 @@ public partial class BitPdfViewer : BitComponentBase
             if (IsDisposed) return;
 
             _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
-            _loading = false;
-            _progress = null;
-            // With no document on screen the failure takes its place, as a load's does; with one,
-            // the document stays and only the live region can say the pick went wrong.
-            if (_pages.Count == 0)
+            // With no document on screen the failure takes its place, as a load's does. With
+            // one - or with a load still on its way (a URL Source downloading, say), which owns
+            // the surface and its progress bar - only the live region says the pick went wrong.
+            if (_pages.Count == 0 && _loading is false)
             {
                 _errorMessage = ex.Message;
             }
             else
             {
-                _announcement = _status;
+                Announce(_status);
             }
             await OnError.InvokeAsync(ex.Message);
         }
@@ -1250,55 +1252,49 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     public async Task Download()
     {
-        if (CanDownload is false) return;
+        // A Ctrl+S (or a toolbar click) while the host's OnDownloading is still deciding
+        // - an async rename prompt, say - is not a second download.
+        if (CanDownload is false || _downloading) return;
 
         // _bytes holds whatever the current document was parsed from, whether it
         // came in as a buffer or was fetched from a URL.
         byte[]? bytes = _bytes ?? _source?.Bytes;
         if (bytes is null) return;
 
-        string fileName = DownloadFileName;
-        if (OnDownloading.HasDelegate)
+        _downloading = true;
+        try
         {
-            int version = _loadVersion;
-            var args = new BitPdfDownloadArgs(fileName);
-            await OnDownloading.InvokeAsync(args);
-            // A document replaced while the handler ran is not the one it agreed to save.
-            if (args.Cancel || IsDisposed || version != _loadVersion) return;
-
-            if (string.IsNullOrWhiteSpace(args.FileName) is false)
+            string fileName = DownloadFileName;
+            if (OnDownloading.HasDelegate)
             {
-                fileName = args.FileName;
-            }
-        }
+                int version = _loadVersion;
+                var args = new BitPdfDownloadArgs(fileName);
+                await OnDownloading.InvokeAsync(args);
+                // A document replaced while the handler ran is not the one it agreed to save.
+                if (args.Cancel || IsDisposed || version != _loadVersion) return;
 
-        // Stream the bytes as a Blob rather than pushing a base64 data: URI (which
-        // on Blazor Server would traverse SignalR as one huge string).
-        using var stream = new MemoryStream(bytes, writable: false);
-        using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
-        await _js.BitPdfViewerDownload(fileName, streamRef);
+                if (string.IsNullOrWhiteSpace(args.FileName) is false)
+                {
+                    fileName = args.FileName;
+                }
+            }
+
+            // Stream the bytes as a Blob rather than pushing a base64 data: URI (which
+            // on Blazor Server would traverse SignalR as one huge string).
+            using var stream = new MemoryStream(bytes, writable: false);
+            using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
+            await _js.BitPdfViewerDownload(fileName, streamRef);
+        }
+        finally
+        {
+            _downloading = false;
+        }
     }
 
     /// <summary>The file name a download is offered under: the source's own name,
     /// then the document title, then a generic fallback.</summary>
-    private string DownloadFileName
-    {
-        get
-        {
-            string? name = _source?.FileName;
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                string? title = null;
-                try
-                {
-                    title = _document?.Metadata.Title;
-                }
-                catch { /* a damaged /Info dictionary must not break downloading */ }
-                name = string.IsNullOrWhiteSpace(title) ? null : $"{title}.pdf";
-            }
-            return string.IsNullOrWhiteSpace(name) ? "document.pdf" : name;
-        }
-    }
+    private string DownloadFileName => SourceFileName
+        ?? (_documentTitle is { } title ? $"{title}.pdf" : "document.pdf");
 
     /// <summary>
     /// Opens the browser print dialog with all pages of the document.
@@ -1326,9 +1322,10 @@ public partial class BitPdfViewer : BitComponentBase
         }
         from = Math.Clamp(from, 1, _pages.Count);
         to = Math.Clamp(to, 1, _pages.Count);
-        // A print pass is already catching up (its yields let this reentrant call
-        // in); a second one would race it and clear _printing while it still runs.
-        if (_printing) return;
+        // A print is already running - catching up pages (its yields let this reentrant
+        // call in) or waiting on the host's OnPrinting; a second one would race it and
+        // clear _printing while it still runs.
+        if (_printBusy) return;
 
         // Render every page before printing so the output includes all pages, not
         // just the ones scrolled into view. Show progress while catching up. A new
@@ -1340,20 +1337,24 @@ public partial class BitPdfViewer : BitComponentBase
         // the print rather than letting it render into - or print - cleared slots.
         int epoch = _renderEpoch;
         bool rendered = false;
-        // Suspend eviction while catching up: the lazy-render pump can run during
-        // the yields below and would otherwise evict pages this pass has already
-        // rendered (the loop only moves forward), printing placeholders.
-        _printing = true;
+        _printBusy = true;
         try
         {
-            // Asked before any page is rendered for it, and inside the guard so a second
-            // Ctrl+P while the host decides is not a second print.
+            // Asked before any page is rendered for it, and inside the busy guard so a
+            // second Ctrl+P while the host decides is not a second print. Eviction stays
+            // on meanwhile: a handler awaiting a confirm dialog must not leave every page
+            // the reader scrolls past in the DOM.
             if (OnPrinting.HasDelegate)
             {
                 var args = new BitPdfPrintArgs(from, to);
                 await OnPrinting.InvokeAsync(args);
                 if (args.Cancel || IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
             }
+
+            // Suspend eviction while catching up: the lazy-render pump can run during
+            // the yields below and would otherwise evict pages this pass has already
+            // rendered (the loop only moves forward), printing placeholders.
+            _printing = true;
 
             for (int i = from - 1; i < to; i++)
             {
@@ -1363,7 +1364,7 @@ public partial class BitPdfViewer : BitComponentBase
                     {
                         _loading = true;
                         _progress = 0;
-                        _announcement = ActiveTexts.PreparingPrint;
+                        Announce(ActiveTexts.PreparingPrint);
                         StateHasChanged();
                         await Task.Delay(1);
                         if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
@@ -1382,7 +1383,7 @@ public partial class BitPdfViewer : BitComponentBase
                     // lazy pump is fine - only a still-empty slot means a real failure.
                     if (!ok && _pages[i] is null)
                     {
-                        _announcement = ActiveTexts.PrintAborted;
+                        Announce(ActiveTexts.PrintAborted);
                         return;
                     }
                     _progress = (i - from + 2) / (double)(to - from + 1);
@@ -1421,6 +1422,7 @@ public partial class BitPdfViewer : BitComponentBase
         }
         finally
         {
+            _printBusy = false;
             // Resume eviction even for superseded or failed prints.
             _printing = false;
             // Print rendered ALL pages with eviction suspended; trim them back to the
@@ -1636,15 +1638,11 @@ public partial class BitPdfViewer : BitComponentBase
 
         // The open panel leaves the DOM with this change. A reader inside it (F4 from a
         // thumbnail, say) would be dropped onto the body - outside the viewer and its
-        // shortcuts - so focus moves to the surface once the panel is gone.
-        if (Sidebar != BitPdfSidebar.None && _dotnetObj is not null)
+        // shortcuts - so once the panel is gone the script, which knows where focus was,
+        // moves it to the surface.
+        if (Sidebar != BitPdfSidebar.None)
         {
-            try
-            {
-                _focusSurfacePending = await _js.BitPdfViewerSidebarHasFocus(RootElement);
-            }
-            catch (JSDisconnectedException) { }
-            if (IsDisposed || sidebar == Sidebar) return;
+            _focusSurfacePending = true;
         }
 
         bool wasThumbnails = _showThumbnails;
@@ -2191,6 +2189,14 @@ public partial class BitPdfViewer : BitComponentBase
         _announcement = string.Format(ActiveTexts.PageAnnouncementFormat, CurrentPage, _pages.Count);
     }
 
+    /// <summary>Puts a message into the polite live region. The region speaks only when its
+    /// text changes, so the same message twice in a row (a second print, a second abort)
+    /// toggles a trailing no-break space on to differ from the first.</summary>
+    private void Announce(string message)
+    {
+        _announcement = message == _announcement ? message + "\u00A0" : message;
+    }
+
     /// <summary>Whether this page's build threw, so its slot will stay empty.</summary>
     private bool HasPageFailed(int index) => _failedPages.Contains(index);
 
@@ -2353,6 +2359,7 @@ public partial class BitPdfViewer : BitComponentBase
             try
             {
                 await _js.BitPdfViewerRegisterFullscreenSpy(RootElement, _dotnetObj);
+                await _js.BitPdfViewerRegisterFocusTracker(RootElement);
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
         }
@@ -2395,7 +2402,7 @@ public partial class BitPdfViewer : BitComponentBase
             _focusSurfacePending = false;
             try
             {
-                await _js.BitPdfViewerFocus(_containerRef, preventScroll: true);
+                await _js.BitPdfViewerRestorePanelFocus(RootElement, _containerRef);
             }
             catch (JSDisconnectedException) { }
         }
@@ -2685,13 +2692,22 @@ public partial class BitPdfViewer : BitComponentBase
         long declared = Math.Min(length.Value, int.MaxValue);
         var buffer = new byte[(int)Math.Min(declared, initialCap)];
         int read = 0;
+        long lastPaint = 0;
         while (true)
         {
             if (read == buffer.Length)
             {
-                int grown = buffer.Length >= Array.MaxLength / 2
-                    ? Array.MaxLength
-                    : Math.Max(buffer.Length * 2, chunk);
+                // Doubling, but never past the declared length while the body is still short
+                // of it: an honest server's body then fills a buffer of exactly its size, with
+                // no trimming copy at the end, and the last step stops at the declared size
+                // rather than overshooting to twice the buffer. Only a body that runs past
+                // what it declared doubles beyond it.
+                long target = (long)buffer.Length * 2;
+                if (read < declared)
+                {
+                    target = Math.Min(target, declared);
+                }
+                int grown = (int)Math.Min(Math.Max(target, chunk), Array.MaxLength);
                 if (grown <= buffer.Length) break; // a PDF that no array can hold
 
                 Array.Resize(ref buffer, grown);
@@ -2704,11 +2720,15 @@ public partial class BitPdfViewer : BitComponentBase
             if (IsDisposed || version != _loadVersion) return null;
             // A body longer than it declared must not report past 100%.
             double fraction = Math.Min(1d, read / (double)declared);
-            // The bar moves a whole percent at a time: a render per chunk would cost more
-            // than the chunk did on a fast link.
-            if (_progress is not double shown || (int)(fraction * 100) != (int)(shown * 100))
+            // The bar moves a whole percent at a time, at most every 100 ms: a render per
+            // chunk would cost more than the chunk did on a fast link, and on Blazor Server
+            // each render is a diff of the whole viewer sent over the circuit.
+            long now = Environment.TickCount64;
+            if (_progress is not double shown
+                || (now - lastPaint >= 100 && (int)(fraction * 100) != (int)(shown * 100)))
             {
                 _progress = fraction;
+                lastPaint = now;
                 StateHasChanged();
             }
             if (OnProgress.HasDelegate)
@@ -2769,6 +2789,7 @@ public partial class BitPdfViewer : BitComponentBase
             _collapsedOutline.Clear(); // fold state belongs to the old document's bookmarks
             _focusedOutline = null;    // and so does the tree's tab stop
             _announcement = string.Empty;
+            _documentTitle = null;     // the title named the old document
             _errorMessage = null;      // a failure belonged to the old load
             _progress = null;
             _showProperties = false;   // the dialog described the old document
@@ -2878,6 +2899,10 @@ public partial class BitPdfViewer : BitComponentBase
             // A password prompt (or the parse itself) may have awaited long enough
             // for a newer Source; don't clobber the newer load's document.
             if (version != _loadVersion) return;
+            // Read once, here, while nothing else holds the document: the toolbar and the
+            // surface's accessible name ask for it on every render, and with background
+            // rendering a page build may be fetching from the same xref at that moment.
+            _documentTitle = ReadTitle(document);
             _document = document;
             // Keep the bytes this document was parsed from: Download and the
             // properties dialog then work for URL sources without re-fetching.
@@ -4400,20 +4425,21 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>What the document is called: its file name, or - for a source that carries none (a buffer,
     /// a stream) - the title its own metadata declares.</summary>
-    private string? DocumentTitle
-    {
-        get
-        {
-            if (_source?.FileName is { Length: > 0 } fileName) return fileName;
+    private string? DocumentTitle => SourceFileName ?? _documentTitle;
 
-            try
-            {
-                return _document?.Metadata.Title is { Length: > 0 } title ? title : null;
-            }
-            catch
-            {
-                return null; // a damaged /Info dictionary names nothing
-            }
+    /// <summary>The file name the source carries, or null for one that names none.</summary>
+    private string? SourceFileName => _source?.FileName is { } name && string.IsNullOrWhiteSpace(name) is false ? name : null;
+
+    /// <summary>The title a freshly parsed document's metadata declares, or null.</summary>
+    private static string? ReadTitle(BitPdfDocument document)
+    {
+        try
+        {
+            return document.Metadata.Title is { } title && string.IsNullOrWhiteSpace(title) is false ? title : null;
+        }
+        catch
+        {
+            return null; // a damaged /Info dictionary names nothing
         }
     }
 
@@ -4478,6 +4504,7 @@ public partial class BitPdfViewer : BitComponentBase
             await _js.BitPdfViewerDisposeKeyboard(RootElement);
             await _js.BitPdfViewerDisposeDropZone(RootElement);
             await _js.BitPdfViewerDisposeFullscreenSpy(RootElement);
+            await _js.BitPdfViewerDisposeFocusTracker(RootElement);
         }
         catch (JSDisconnectedException) { } // Circuit already gone; nothing to clean up.
         catch (TaskCanceledException) { } // Disposal raced an in-flight interop call; safe to ignore.
