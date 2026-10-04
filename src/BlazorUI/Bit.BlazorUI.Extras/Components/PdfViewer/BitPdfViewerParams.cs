@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 /// What belongs here is what the viewers of an application agree on: their texts (which is where a localized app
-/// sets them once), their toolbar and its custom content, what they show with no document or a failed one, their size, how they lay out, zoom and paint pages, which
+/// sets them once), their toolbar and its custom content, what they show while loading, with no document or with a failed one, their size, how they lay out, zoom and paint pages, which
 /// of the reader's conveniences they offer (shortcuts, dropping a file, the password prompt) and how they look.
 /// The document, the page, zoom and rotation the reader is on and the events are left out on purpose: they are
 /// what makes one viewer the one it is.
@@ -77,6 +77,11 @@ public class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
     /// The initial zoom behavior.
     /// </summary>
     public BitPdfZoomMode? InitialZoomMode { get; set; }
+
+    /// <summary>
+    /// Custom content shown in place of the pages while a document is being fetched and parsed.
+    /// </summary>
+    public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// The largest file (in bytes) the open-file button and a drop accept.
@@ -257,6 +262,11 @@ public class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
         if (InitialZoomMode.HasValue && bitPdfViewer.HasNotBeenSet(nameof(InitialZoomMode)))
         {
             bitPdfViewer.InitialZoomMode = InitialZoomMode.Value;
+        }
+
+        if (LoadingTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(LoadingTemplate)))
+        {
+            bitPdfViewer.LoadingTemplate = LoadingTemplate;
         }
 
         if (MaxOpenFileSize.HasValue && bitPdfViewer.HasNotBeenSet(nameof(MaxOpenFileSize)))

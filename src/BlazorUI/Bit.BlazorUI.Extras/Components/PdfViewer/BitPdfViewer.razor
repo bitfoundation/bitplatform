@@ -37,7 +37,7 @@
                     @if (HasToolbarItem(BitPdfToolbarItems.Thumbnails))
                     {
                         <button type="button" class="bit-pdv-btn @(_showThumbnails ? "bit-pdv-act" : "") @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                title="@ActiveTexts.Thumbnails" aria-label="@ActiveTexts.Thumbnails" aria-pressed="@AriaBool(_showThumbnails)"
+                                title="@ActiveTexts.Thumbnails" aria-label="@ActiveTexts.Thumbnails" aria-pressed="@AriaBool(_showThumbnails)" aria-keyshortcuts="@Shortcut("F4")"
                                 @onclick="ToggleThumbnails" disabled="@(_pages.Count == 0)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></svg>
                         </button>
@@ -75,26 +75,31 @@
                     @if (HasToolbarItem(BitPdfToolbarItems.FirstLastPage))
                     {
                         <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                title="@ActiveTexts.FirstPage" aria-label="@ActiveTexts.FirstPage" @onclick="FirstPage" disabled="@(CurrentPage <= 1)">
+                                title="@ActiveTexts.FirstPage" aria-label="@ActiveTexts.FirstPage" aria-keyshortcuts="@Shortcut("Home")" @onclick="FirstPage" disabled="@(CurrentPage <= 1)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 18l-6-6 6-6M8 6v12" /></svg>
                         </button>
                     }
                     @if (HasToolbarItem(BitPdfToolbarItems.Navigation))
                     {
                         <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                title="@ActiveTexts.PreviousPage" aria-label="@ActiveTexts.PreviousPage" @onclick="PrevPage" disabled="@(CurrentPage <= 1)">
+                                title="@ActiveTexts.PreviousPage" aria-label="@ActiveTexts.PreviousPage" aria-keyshortcuts="@Shortcut("P K PageUp")" @onclick="PrevPage" disabled="@(CurrentPage <= 1)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
                         </button>
                         @* A number box while the pages are plain numbers - it brings its own
-                           spinner, range and numeric keypad - and a text box once the
-                           document labels them, because "iv" is not a number. *@
+                           spinner, range and numeric keypad - and a text box with a full
+                           keyboard once the document labels them, because "iv" is not a number.
+                           No autocomplete: a list of pages typed in other documents is noise. *@
                         <input @ref="_pageInputRef" class="bit-pdv-page-input"
-                               type="@(HasPageLabels ? "text" : "number")" inputmode="numeric"
+                               type="@(HasPageLabels ? "text" : "number")" inputmode="@(HasPageLabels ? null : "numeric")"
+                               autocomplete="off" enterkeyhint="go"
                                min="@(HasPageLabels ? null : "1")" max="@(HasPageLabels ? null : _pages.Count.ToString())"
-                               aria-label="@ActiveTexts.PageNumber"
+                               aria-label="@ActiveTexts.PageNumber" aria-describedby="@PageCountId"
                                value="@(CurrentPageLabel ?? CurrentPage.ToString())" @onchange="OnPageInput" @onkeydown:stopPropagation="true"
                                disabled="@(_pages.Count == 0)" />
-                        <span class="bit-pdv-page-total">/ @_pages.Count</span>
+                        @* The "/ 12" beside the box is read as "slash twelve", and only by a reader who
+                           goes looking for it; the box is described by the page count in words instead. *@
+                        <span class="bit-pdv-page-total" aria-hidden="true">/ @_pages.Count</span>
+                        <span id="@PageCountId" class="bit-pdv-sr">@string.Format(ActiveTexts.PageCountFormat, _pages.Count)</span>
                         @if (CurrentPageLabel is not null)
                         {
                             @* The box holds the document's own label for this page, so the
@@ -103,14 +108,14 @@
                             <span class="bit-pdv-page-label" title="@ActiveTexts.PageNumber">(@CurrentPage)</span>
                         }
                         <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                title="@ActiveTexts.NextPage" aria-label="@ActiveTexts.NextPage" @onclick="NextPage" disabled="@(CurrentPage >= _pages.Count)">
+                                title="@ActiveTexts.NextPage" aria-label="@ActiveTexts.NextPage" aria-keyshortcuts="@Shortcut("N J PageDown")" @onclick="NextPage" disabled="@(CurrentPage >= _pages.Count)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
                         </button>
                     }
                     @if (HasToolbarItem(BitPdfToolbarItems.FirstLastPage))
                     {
                         <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                title="@ActiveTexts.LastPage" aria-label="@ActiveTexts.LastPage" @onclick="LastPage" disabled="@(CurrentPage >= _pages.Count)">
+                                title="@ActiveTexts.LastPage" aria-label="@ActiveTexts.LastPage" aria-keyshortcuts="@Shortcut("End")" @onclick="LastPage" disabled="@(CurrentPage >= _pages.Count)">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6l6 6-6 6M16 6v12" /></svg>
                         </button>
                     }
@@ -121,12 +126,12 @@
             {
                 <div class="bit-pdv-group">
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.ZoomOut" aria-label="@ActiveTexts.ZoomOut" @onclick="ZoomOut" disabled="@(_pages.Count == 0)">
+                            title="@ActiveTexts.ZoomOut" aria-label="@ActiveTexts.ZoomOut" aria-keyshortcuts="@Shortcut("Control+Minus")" @onclick="ZoomOut" disabled="@(_pages.Count == 0)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
                     </button>
                     <span class="bit-pdv-zoom" aria-live="polite">@ZoomPresetLabel(Zoom)</span>
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.ZoomIn" aria-label="@ActiveTexts.ZoomIn" @onclick="ZoomIn" disabled="@(_pages.Count == 0)">
+                            title="@ActiveTexts.ZoomIn" aria-label="@ActiveTexts.ZoomIn" aria-keyshortcuts="@Shortcut("Control+Plus Control+Equal")" @onclick="ZoomIn" disabled="@(_pages.Count == 0)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                     </button>
                     <select class="bit-pdv-select" aria-label="@ActiveTexts.ZoomLevel" @onchange="OnFitChanged"
@@ -178,7 +183,7 @@
                     @if (_showSearch)
                     {
                         <div class="bit-pdv-search-box @Classes?.SearchBox" style="@Styles?.SearchBox" role="search">
-                            <input class="bit-pdv-search-input" type="search" placeholder="@ActiveTexts.FindPlaceholder"
+                            <input class="bit-pdv-search-input" type="search" autocomplete="off" placeholder="@ActiveTexts.FindPlaceholder"
                                    aria-label="@ActiveTexts.FindPlaceholder" @ref="_searchInputRef"
                                    value="@_searchBoxValue" @oninput="OnSearchInput" @onkeydown="OnSearchKeyDown" @onkeydown:stopPropagation="true"
                                    disabled="@(_pages.Count == 0)" />
@@ -198,17 +203,17 @@
                             </button>
                             <span class="bit-pdv-search-count" aria-live="polite">@SearchLabel</span>
                             <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                    title="@ActiveTexts.PreviousMatch" aria-label="@ActiveTexts.PreviousMatch" @onclick="SearchPrev" disabled="@(_searchTotal <= 0)">
+                                    title="@ActiveTexts.PreviousMatch" aria-label="@ActiveTexts.PreviousMatch" aria-keyshortcuts="@Shortcut("Control+Shift+G")" @onclick="SearchPrev" disabled="@(_searchTotal <= 0)">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
                             </button>
                             <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                                    title="@ActiveTexts.NextMatch" aria-label="@ActiveTexts.NextMatch" @onclick="SearchNext" disabled="@(_searchTotal <= 0)">
+                                    title="@ActiveTexts.NextMatch" aria-label="@ActiveTexts.NextMatch" aria-keyshortcuts="@Shortcut("Control+G")" @onclick="SearchNext" disabled="@(_searchTotal <= 0)">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                             </button>
                         </div>
                     }
                     <button type="button" class="bit-pdv-btn @(_showSearch ? "bit-pdv-act" : "") @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Find" aria-label="@ActiveTexts.Find" aria-pressed="@AriaBool(_showSearch)"
+                            title="@ActiveTexts.Find" aria-label="@ActiveTexts.Find" aria-pressed="@AriaBool(_showSearch)" aria-keyshortcuts="@Shortcut("Control+F")"
                             @onclick="ToggleSearch" disabled="@(_pages.Count == 0)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M20 20l-4.9-4.9" /></svg>
                     </button>
@@ -224,12 +229,12 @@
                 @if (HasToolbarItem(BitPdfToolbarItems.Rotate))
                 {
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.RotateCounterClockwise" aria-label="@ActiveTexts.RotateCounterClockwise"
+                            title="@ActiveTexts.RotateCounterClockwise" aria-label="@ActiveTexts.RotateCounterClockwise" aria-keyshortcuts="@Shortcut("Shift+R")"
                             @onclick="RotateCounterClockwise" disabled="@(_pages.Count == 0)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" /></svg>
                     </button>
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.RotateClockwise" aria-label="@ActiveTexts.RotateClockwise"
+                            title="@ActiveTexts.RotateClockwise" aria-label="@ActiveTexts.RotateClockwise" aria-keyshortcuts="@Shortcut("R")"
                             @onclick="RotateClockwise" disabled="@(_pages.Count == 0)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" /></svg>
                     </button>
@@ -249,14 +254,14 @@
                 @if (HasToolbarItem(BitPdfToolbarItems.Download))
                 {
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Download" aria-label="@ActiveTexts.Download" @onclick="Download" disabled="@(_bytes is null || CanDownload is false)">
+                            title="@ActiveTexts.Download" aria-label="@ActiveTexts.Download" aria-keyshortcuts="@Shortcut("Control+S")" @onclick="Download" disabled="@(_bytes is null || CanDownload is false)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
                     </button>
                 }
                 @if (HasToolbarItem(BitPdfToolbarItems.Print))
                 {
                     <button type="button" class="bit-pdv-btn @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Print" aria-label="@ActiveTexts.Print" @onclick="Print" disabled="@(_pages.Count == 0 || CanPrint is false)">
+                            title="@ActiveTexts.Print" aria-label="@ActiveTexts.Print" aria-keyshortcuts="@Shortcut("Control+P")" @onclick="Print" disabled="@(_pages.Count == 0 || CanPrint is false)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z" /></svg>
                     </button>
                 }
@@ -271,7 +276,7 @@
                 @if (HasToolbarItem(BitPdfToolbarItems.Presentation))
                 {
                     <button type="button" class="bit-pdv-btn @(_presenting ? "bit-pdv-act" : "") @Classes?.ToolbarButton" style="@Styles?.ToolbarButton"
-                            title="@ActiveTexts.Presentation" aria-label="@ActiveTexts.Presentation" aria-pressed="@AriaBool(_presenting)"
+                            title="@ActiveTexts.Presentation" aria-label="@ActiveTexts.Presentation" aria-pressed="@AriaBool(_presenting)" aria-keyshortcuts="@Shortcut("Control+Alt+P")"
                             @onclick="TogglePresentationMode" disabled="@(_pages.Count == 0)">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v12H3zM12 16v4M8 20h8" /></svg>
                     </button>
@@ -433,7 +438,11 @@
             }
             else if (_pages.Count == 0)
             {
-                @if (_loading)
+                @if (_loading && LoadingTemplate is not null)
+                {
+                    <div class="bit-pdv-empty">@LoadingTemplate</div>
+                }
+                else if (_loading)
                 {
                     @* While fetching/parsing, show a page-shaped shimmer instead of a
                        status line, matching the per-page loading placeholder. *@
@@ -557,10 +566,15 @@
     // consumed) while the tree renders, which is depth-first in exactly that order.
     private int _outlineOrdinal;
 
-    // The ids that name and describe the two dialogs, unique per viewer.
+    // The ids that name and describe the page box and the two dialogs, unique per viewer.
+    private string PageCountId => $"{_Id}-page-count";
     private string PasswordTitleId => $"{_Id}-pwd-title";
     private string PasswordPromptId => $"{_Id}-pwd-desc";
     private string PropertiesTitleId => $"{_Id}-props-title";
+
+    /// <summary>The keys a toolbar control answers to, for aria-keyshortcuts - none while the viewer handles no
+    /// shortcuts, since announcing a key that does nothing is worse than announcing none.</summary>
+    private string? Shortcut(string keys) => EnableKeyboardShortcuts ? keys : null;
 
     /// <summary>The fullscreen button says which way it goes, not just that it toggles.</summary>
     private string FullscreenLabel => _fullscreen ? ActiveTexts.ExitFullscreen : ActiveTexts.Fullscreen;

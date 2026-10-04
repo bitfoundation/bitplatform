@@ -914,6 +914,17 @@
             }
         }
 
+        // Whether focus is inside the open side panel - which is about to leave the DOM,
+        // taking the focus with it unless it is moved first.
+        public static sidebarHasFocus(root: HTMLElement) {
+            const active = document.activeElement;
+            if (!root || !active) {
+                return false;
+            }
+            const panel = root.querySelector(".bit-pdv-thumbs,.bit-pdv-outline,.bit-pdv-attachments,.bit-pdv-layers");
+            return !!panel && panel.contains(active);
+        }
+
         // The text the reader has selected inside the document surface, or "" when the
         // selection is empty or lies outside it (a selection elsewhere on the hosting
         // page is not the document's).

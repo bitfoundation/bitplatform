@@ -197,6 +197,7 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _dropZonePending = true; // (re)attach the drag-and-drop listeners after render
     private bool _dropZoneAttached;
     private bool _focusSearchPending; // focus the find box once it is in the DOM
+    private bool _focusSurfacePending; // focus the surface once the side panel that held focus has left the DOM
 
 
 
@@ -304,6 +305,12 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public RenderFragment<string>? ErrorTemplate { get; set; }
 
     /// <summary>
+    /// Custom content shown in place of the pages while a document is being fetched and parsed, before its first page
+    /// is laid out. Defaults to a page-shaped placeholder; the loading bar above it shows either way.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
     /// The focused page (1-based), two-way bindable. Reading it gives the page the
     /// reader is on; assigning it navigates there.
     /// <br />
@@ -396,7 +403,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// (<c>Ctrl +</c>, <c>Ctrl -</c>, <c>Ctrl 0</c>), rotation (<c>r</c>,
     /// <c>Shift+r</c>), find (<c>Ctrl+F</c>, <c>Ctrl+G</c>, <c>Shift+Ctrl+G</c>),
     /// print (<c>Ctrl+P</c>), download (<c>Ctrl+S</c>), presentation mode (<c>Ctrl+Alt+P</c>)
-    /// and the sidebar (<c>F4</c>).
+    /// and the sidebar (<c>F4</c>). Find, print and download follow <see cref="ToolbarItems"/>: leaving
+    /// their control out of the toolbar leaves their shortcut out too.
     /// Default is <c>true</c>.
     /// </summary>
     [Parameter] public bool EnableKeyboardShortcuts { get; set; } = true;
@@ -442,6 +450,18 @@ public partial class BitPdfViewer : BitComponentBase
     /// reader reaches a page, not once per page up front.
     /// </summary>
     [Parameter] public EventCallback<int> OnPageRendered { get; set; }
+
+    /// <summary>
+    /// The callback raised before the document is downloaded - from the toolbar, the <c>Ctrl+S</c> shortcut or
+    /// <see cref="Download"/> - to rename the file or cancel the download.
+    /// </summary>
+    [Parameter] public EventCallback<BitPdfDownloadArgs> OnDownloading { get; set; }
+
+    /// <summary>
+    /// The callback raised before the document is printed - from the toolbar, the <c>Ctrl+P</c> shortcut or one of
+    /// the Print methods - with the page range, to cancel the print.
+    /// </summary>
+    [Parameter] public EventCallback<BitPdfPrintArgs> OnPrinting { get; set; }
 
     /// <summary>
     /// The callback for when the reader picks a file with the toolbar's open-file
@@ -1226,6 +1246,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// Downloads the original document bytes. Works for URL sources too: the bytes
     /// fetched for the current document are reused, so nothing is downloaded twice.
+    /// <see cref="OnDownloading"/> runs first and may rename or cancel it.
     /// </summary>
     public async Task Download()
     {
@@ -1236,11 +1257,26 @@ public partial class BitPdfViewer : BitComponentBase
         byte[]? bytes = _bytes ?? _source?.Bytes;
         if (bytes is null) return;
 
+        string fileName = DownloadFileName;
+        if (OnDownloading.HasDelegate)
+        {
+            int version = _loadVersion;
+            var args = new BitPdfDownloadArgs(fileName);
+            await OnDownloading.InvokeAsync(args);
+            // A document replaced while the handler ran is not the one it agreed to save.
+            if (args.Cancel || IsDisposed || version != _loadVersion) return;
+
+            if (string.IsNullOrWhiteSpace(args.FileName) is false)
+            {
+                fileName = args.FileName;
+            }
+        }
+
         // Stream the bytes as a Blob rather than pushing a base64 data: URI (which
         // on Blazor Server would traverse SignalR as one huge string).
         using var stream = new MemoryStream(bytes, writable: false);
         using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
-        await _js.BitPdfViewerDownload(DownloadFileName, streamRef);
+        await _js.BitPdfViewerDownload(fileName, streamRef);
     }
 
     /// <summary>The file name a download is offered under: the source's own name,
@@ -1277,7 +1313,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// Opens the browser print dialog with the pages from <paramref name="from"/> to
     /// <paramref name="to"/> inclusive (1-based). The range is clamped to the
-    /// document and reordered if it arrives backwards.
+    /// document and reordered if it arrives backwards. <see cref="OnPrinting"/> runs
+    /// first and may cancel it.
     /// </summary>
     public async Task Print(int from, int to)
     {
@@ -1309,6 +1346,15 @@ public partial class BitPdfViewer : BitComponentBase
         _printing = true;
         try
         {
+            // Asked before any page is rendered for it, and inside the guard so a second
+            // Ctrl+P while the host decides is not a second print.
+            if (OnPrinting.HasDelegate)
+            {
+                var args = new BitPdfPrintArgs(from, to);
+                await OnPrinting.InvokeAsync(args);
+                if (args.Cancel || IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
+            }
+
             for (int i = from - 1; i < to; i++)
             {
                 if (_pages[i] is null)
@@ -1587,6 +1633,19 @@ public partial class BitPdfViewer : BitComponentBase
             sidebar = BitPdfSidebar.None;
         }
         if (sidebar == Sidebar) return;
+
+        // The open panel leaves the DOM with this change. A reader inside it (F4 from a
+        // thumbnail, say) would be dropped onto the body - outside the viewer and its
+        // shortcuts - so focus moves to the surface once the panel is gone.
+        if (Sidebar != BitPdfSidebar.None && _dotnetObj is not null)
+        {
+            try
+            {
+                _focusSurfacePending = await _js.BitPdfViewerSidebarHasFocus(RootElement);
+            }
+            catch (JSDisconnectedException) { }
+            if (IsDisposed || sidebar == Sidebar) return;
+        }
 
         bool wasThumbnails = _showThumbnails;
         _showThumbnails = sidebar == BitPdfSidebar.Thumbnails;
@@ -2069,8 +2128,16 @@ public partial class BitPdfViewer : BitComponentBase
                 break;
             case "findNext": await FindNext(); break;
             case "findPrev": await FindPrevious(); break;
-            case "print": await Print(); break;
-            case "download": await Download(); break;
+            // Like find, the shortcuts that hand the document out stand in for a toolbar
+            // control, so a host that left the control out has left the shortcut out too.
+            case "print":
+                if (HasToolbarItem(BitPdfToolbarItems.Print) is false) return;
+                await Print();
+                break;
+            case "download":
+                if (HasToolbarItem(BitPdfToolbarItems.Download) is false) return;
+                await Download();
+                break;
             case "sidebar":
                 await ShowSidebar(Sidebar == BitPdfSidebar.None ? BitPdfSidebar.Thumbnails : BitPdfSidebar.None);
                 break;
@@ -2319,6 +2386,16 @@ public partial class BitPdfViewer : BitComponentBase
             try
             {
                 await _js.BitPdfViewerFocus(_searchInputRef);
+            }
+            catch (JSDisconnectedException) { }
+        }
+
+        if (_focusSurfacePending)
+        {
+            _focusSurfacePending = false;
+            try
+            {
+                await _js.BitPdfViewerFocus(_containerRef, preventScroll: true);
             }
             catch (JSDisconnectedException) { }
         }

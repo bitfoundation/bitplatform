@@ -87,6 +87,11 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.focus", element, preventScroll);
     }
 
+    public static ValueTask<bool> BitPdfViewerSidebarHasFocus(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.PdfViewer.sidebarHasFocus", root);
+    }
+
     public static ValueTask BitPdfViewerSetValue(this IJSRuntime jsRuntime, ElementReference element, string value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.setValue", element, value);
