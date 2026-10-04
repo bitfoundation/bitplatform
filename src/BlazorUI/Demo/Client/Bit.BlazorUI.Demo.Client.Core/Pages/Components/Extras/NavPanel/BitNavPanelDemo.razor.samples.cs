@@ -202,7 +202,7 @@ private List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
 
 <div style=""width:240px"">
     <BitNavPanel @bind-IsOpen=""searchIsOpen""
-                 Items=""basicNavItems""
+                 Items=""searchNavItems""
                  @bind-SearchText=""searchText""
                  SearchDebounceTime=""200""
                  OnSearch=""v => lastSearchedTerm = v""
@@ -214,7 +214,7 @@ private List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
 private bool searchIsOpen;
 private string? searchText;
 private string? lastSearchedTerm;
-" + basicNavItemsCsharpCode;
+" + basicNavItemsCsharpCode.Replace("basicNavItems", "searchNavItems");
 
     private readonly string example6RazorCode = @"
 <BitToggleButton @bind-IsChecked=""selectionIsOpen"" OnText=""Close"" OffText=""Open"" />
@@ -371,7 +371,7 @@ private List<BitNavItem> alwaysDrawerNavItems = CreateBasicNavItems();
     private readonly string example10RazorCode = @"
 <BitToggleButton @bind-IsChecked=""templateIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""basicNavItems"" FitWidth NoToggle>
+<BitNavPanel @bind-IsOpen=""templateIsOpen"" Items=""templateNavItems"" FitWidth NoToggle>
     <Header>
         <BitText Typography=""BitTypography.H5""><b>NavPanel</b> header</BitText>
     </Header>
@@ -389,7 +389,7 @@ private List<BitNavItem> alwaysDrawerNavItems = CreateBasicNavItems();
 </BitNavPanel>";
     private readonly string example10CsharpCode = @"
 private bool templateIsOpen;
-" + basicNavItemsCsharpCode;
+" + basicNavItemsCsharpCode.Replace("basicNavItems", "templateNavItems");
 
     private readonly string example11RazorCode = @"
 <BitToggleButton @bind-IsChecked=""eventIsOpen"" OnText=""Close"" OffText=""Open"" />
@@ -546,11 +546,11 @@ private List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
 <BitToggleButton @bind-IsChecked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""colorIsOpen"" Items=""basicNavItems"" Color=""BitColor.Secondary"" Accent=""BitColor.SecondaryBackground"" />
+    <BitNavPanel @bind-IsOpen=""colorIsOpen"" Items=""colorNavItems"" Color=""BitColor.Secondary"" Accent=""BitColor.SecondaryBackground"" />
 </div>";
     private readonly string example16CsharpCode = @"
 private bool colorIsOpen;
-" + basicNavItemsCsharpCode;
+" + basicNavItemsCsharpCode.Replace("basicNavItems", "colorNavItems");
 
     private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
