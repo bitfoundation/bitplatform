@@ -9,7 +9,7 @@ public partial class BitNavPanelDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The accent color of the nav.",
+            Description = "The accent color of the nav panel: it paints the background of the panel and of the hovered and the selected item.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -1257,6 +1257,88 @@ public partial class BitNavPanelDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-NavPanel-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of the panel. Accent paints its content over it.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-width",
+            DefaultValue = "auto",
+            Description = "Width of the open panel. The Width parameter wins; FitWidth and FullWidth ignore it.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-toggled-width",
+            DefaultValue = "96px (64px on the drawer, 48px with NoPad)",
+            Description = "Width of the rail. The ToggledWidth parameter wins.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-padding",
+            DefaultValue = "16px (0 on the drawer)",
+            Description = "Inset of the panel. NoPad removes it.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-container-padding",
+            DefaultValue = "8px",
+            Description = "Inset of the content inside the panel. NoPad removes it.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-gap",
+            DefaultValue = "16px",
+            Description = "Space between the header, the search box, the items and the footer.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-radius",
+            DefaultValue = "0",
+            Description = "Corner radius of the panel, for a floating sidebar.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-border-width",
+            DefaultValue = "0",
+            Description = "Width of the rule along the edge the panel turns to the page (the inline end, or the inline start with Position End). A forced-colors mode always draws it.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-border-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of that rule.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-header-icon-size",
+            DefaultValue = "38px",
+            Description = "Largest width and height of the logo of IconUrl.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-drawer-shadow",
+            DefaultValue = "--bit-shd-sheet",
+            Description = "Elevation of the drawer of a small screen.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-overlay-background",
+            DefaultValue = "--bit-clr-bg-overlay",
+            Description = "Fill of the overlay behind the drawer. The overlay sits beside the panel, so set it on an ancestor or :root.",
+        },
+        new()
+        {
+            Name = "--bit-NavPanel-overlay-backdrop-filter",
+            DefaultValue = "none",
+            Description = "Filter over the page behind the overlay, e.g. blur(4px). Set it on an ancestor or :root.",
+        },
+    ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -1561,10 +1643,7 @@ public partial class BitNavPanelDemo
     private bool expandOnHoverIsOpen;
     private bool noToggleIsOpen;
     private bool iconUrlIsOpen;
-    private bool searchBoxPlaceholderIsOpen;
-    private bool noSearchBoxIsOpen;
     private bool searchIsOpen;
-    private bool emptyListMessageIsOpen;
     private bool selectionIsOpen;
     private bool singleExpandIsOpen;
     private bool customIsOpen;
@@ -1575,10 +1654,25 @@ public partial class BitNavPanelDemo
     private bool externalIconIsOpen;
     private bool sizeIsOpen;
     private bool classStyleIsOpen;
+    private bool cssVariablesIsOpen;
     private bool rtlIsOpen;
     private bool groupedIsOpen;
     private bool drawerIsOpen;
     private bool stickyIsOpen;
+    private bool cascadeIsOpen;
+    private bool cascadeOwnIsOpen;
+
+    private readonly BitNavPanelParams[] navPanelParams =
+    [
+        new()
+        {
+            ExpandOnHover = true,
+            SearchBoxPlaceholder = "Find a page...",
+            EmptyListMessage = "No page matches.",
+            ToggleAriaLabel = "Collapse or expand the menu",
+            SearchAnnouncementProvider = count => count == 1 ? "One page matches." : $"{count} pages match.",
+        }
+    ];
 
     private bool publicApiIsOpen;
     private BitNavPanel<BitNavItem> navPanelRef = default!;

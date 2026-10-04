@@ -2,24 +2,50 @@
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 @import "../../../Bit.BlazorUI/Styles/media-queries.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a panel inherits down to whatever reads it. The overlay is rendered beside the
+// panel rather than inside it, so its two variables are only reached from an ancestor or from :root:
+//   --bit-NavPanel-background               fill of the panel                                   (default: $clr-bg-pri; Accent paints over it)
+//   --bit-NavPanel-width                    width of the open panel                             (default: auto; the Width parameter wins)
+//   --bit-NavPanel-toggled-width            width of the rail                                   (default: spacing(12), spacing(8) on the drawer, spacing(6) with NoPad; the ToggledWidth parameter wins)
+//   --bit-NavPanel-padding                  inset of the panel                                  (default: spacing(2), 0 on the drawer; NoPad removes it)
+//   --bit-NavPanel-container-padding        inset of the content inside the panel               (default: spacing(1); NoPad removes it)
+//   --bit-NavPanel-gap                      space between the header, the search box, the items and the footer (default: spacing(2))
+//   --bit-NavPanel-radius                   corner radius of the panel                          (default: 0)
+//   --bit-NavPanel-border-width             rule along the edge the panel turns to the page     (default: 0)
+//   --bit-NavPanel-border-color             color of that rule                                  (default: $clr-brd-sec)
+//   --bit-NavPanel-header-icon-size         largest width and height of the logo                (default: spacing(4.75))
+//   --bit-NavPanel-drawer-shadow            elevation of the drawer of a small screen           (default: $box-shadow-sheet)
+//   --bit-NavPanel-overlay-background       fill of the overlay behind the drawer               (default: $clr-bg-overlay)
+//   --bit-NavPanel-overlay-backdrop-filter  filter over the page behind the overlay, e.g. blur(4px) (default: none)
+
 .bit-npn {
     top: 0;
     position: sticky;
-    padding: spacing(2);
+    padding: var(--bit-NavPanel-padding, #{spacing(2)});
     overflow: hidden auto;
+    border-radius: var(--bit-NavPanel-radius, 0);
+    // The rule is drawn along the edge that faces the page: the inline end of a panel at the start of the
+    // layout, and the inline start of one docked to the end (see below).
+    border-inline-end: var(--bit-NavPanel-border-width, 0) $shp-border-style var(--bit-NavPanel-border-color, #{$clr-brd-sec});
     // The panel scrolls its own overflow without drawing a bar for it: the bar would sit between the items
     // and the edge of a surface that is already narrow, and the rail has no room for one at all.
     scrollbar-width: none;
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-NavPanel-background, #{$clr-bg-pri});
     height: $bit-env-height-available;
     // The Width parameter is a custom property rather than a width of its own, so the state-dependent widths
     // below (the rail, the small-screen drawer) keep deciding on their own and a panel that is given no width
     // still takes the one its container hands it.
-    width: var(--bit-npn-w, auto);
+    width: var(--bit-npn-w, var(--bit-NavPanel-width, auto));
+
+    &.bit-npn-end {
+        border-inline-end: none;
+        border-inline-start: var(--bit-NavPanel-border-width, 0) $shp-border-style var(--bit-NavPanel-border-color, #{$clr-brd-sec});
+    }
 
     &.bit-npn-tgl {
-        min-width: var(--bit-npn-tw, #{spacing(12)});
-        max-width: var(--bit-npn-tw, #{spacing(12)});
+        min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(12)}));
+        max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(12)}));
 
         .bit-npn-cnt {
             align-items: center;
@@ -42,7 +68,7 @@
         // Width travels to the width of its container, which is the width it takes anyway - so the cap
         // never changes what the panel is, only how it gets there.
         &:not(.bit-npn-tgl) {
-            max-width: var(--bit-npn-w, 100%);
+            max-width: var(--bit-npn-w, var(--bit-NavPanel-width, 100%));
         }
 
         // The two modes that size the panel themselves travel to the width of their container like a panel
@@ -83,8 +109,8 @@
         padding: 0;
 
         &.bit-npn-tgl {
-            min-width: var(--bit-npn-tw, #{spacing(6)});
-            max-width: var(--bit-npn-tw, #{spacing(6)});
+            min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
+            max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
         }
 
         .bit-npn-cnt {
@@ -104,7 +130,7 @@
     @include lt-md {
         left: 0;
         right: unset;
-        padding: 0;
+        padding: var(--bit-NavPanel-padding, 0);
         opacity: 1;
         position: fixed;
         visibility: visible;
@@ -112,7 +138,11 @@
         z-index: $zindex-callout;
         bottom: $bit-env-inset-bottom;
         top: $bit-env-inset-top !important;
-        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short $mot-easing;
+        // The drawer is a surface lifted over the page, so it casts the shadow of one.
+        box-shadow: var(--bit-NavPanel-drawer-shadow, #{$box-shadow-sheet});
+        // The drawer enters decelerating and leaves accelerating (see the closed state below): the transition
+        // that runs is the one of the state being entered.
+        transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-decelerate;
 
         // The drawer is docked to the edge it comes from, which the Position expresses in the text direction:
         // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
@@ -135,7 +165,7 @@
             // tree, so the closed one is hidden outright once it has finished sliding away.
             visibility: hidden;
             pointer-events: none;
-            transition: transform $mot-duration $mot-easing, opacity $mot-duration-short $mot-easing, visibility 0s linear $mot-duration;
+            transition: transform $mot-duration $mot-easing-accelerate, opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration;
 
             &.bit-rtl,
             &.bit-npn-end {
@@ -148,13 +178,13 @@
         }
 
         &.bit-npn-tgl {
-            min-width: var(--bit-npn-tw, #{spacing(8)});
-            max-width: var(--bit-npn-tw, #{spacing(8)});
+            min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));
+            max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));
         }
 
         &.bit-npn-npd.bit-npn-tgl {
-            min-width: var(--bit-npn-tw, #{spacing(6)});
-            max-width: var(--bit-npn-tw, #{spacing(6)});
+            min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
+            max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
         }
 
         .bit-npn-tbn {
@@ -197,7 +227,8 @@
     position: fixed;
     min-height: 100vh;
     z-index: $zindex-overlay;
-    background-color: $clr-bg-overlay;
+    background-color: var(--bit-NavPanel-overlay-background, #{$clr-bg-overlay});
+    backdrop-filter: var(--bit-NavPanel-overlay-backdrop-filter, none);
 
     @include gt-sm {
         display: none;
@@ -214,10 +245,10 @@
 .bit-npn-cnt {
     width: auto;
     display: flex;
-    gap: spacing(2);
+    gap: var(--bit-NavPanel-gap, #{spacing(2)});
     min-height: 100%;
     height: fit-content;
-    padding: spacing(1);
+    padding: var(--bit-NavPanel-container-padding, #{spacing(1)});
     flex-direction: column;
     background-color: var(--bit-npn-clr-bg);
 }
@@ -229,8 +260,8 @@
 }
 
 .bit-npn-img {
-    max-width: spacing(4.75);
-    max-height: spacing(4.75);
+    max-width: var(--bit-NavPanel-header-icon-size, #{spacing(4.75)});
+    max-height: var(--bit-NavPanel-header-icon-size, #{spacing(4.75)});
 }
 
 .bit-npn-spc {
@@ -322,4 +353,21 @@
 
 .bit-nav-atbr {
     --bit-npn-clr-bg: #{$clr-brd-ter};
+}
+
+
+// A forced-colors mode throws away the background, the shadow and the overlay tint, which between them are the
+// whole of what tells the panel apart from the page beside it - and, for the drawer, from the page under it.
+// The rule on the edge it turns towards the page is drawn instead, so the panel still reads as a surface.
+@media (forced-colors: active) {
+    .bit-npn {
+        border-inline-end-width: $shp-border-width;
+        border-inline-end-color: CanvasText;
+
+        &.bit-npn-end {
+            border-inline-end-width: 0;
+            border-inline-start-width: $shp-border-width;
+            border-inline-start-color: CanvasText;
+        }
+    }
 }

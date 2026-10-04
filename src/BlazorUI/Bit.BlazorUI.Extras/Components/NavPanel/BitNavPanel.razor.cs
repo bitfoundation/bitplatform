@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitNavPanel is a navigation component specialized to be rendered in a vertical panel.
@@ -60,10 +62,23 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the nav panel component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple nav panel
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitNavPanelParams.ParamName)]
+    public BitNavPanelParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
-    /// The accent color of the nav.
+    /// The accent color of the nav panel: it paints the background of the panel and of the hovered and the
+    /// selected item.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
@@ -666,8 +681,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         StyleBuilder.Register(() => ToggledWidth > 0 ? $"--bit-npn-tw:{ToggledWidth}px" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavPanelParams))]
     protected override async Task OnInitializedAsync()
     {
+        // The first pass runs before OnParametersSet, and it reads one of the parameters the cascade may fill in
+        // (the NavMode the initial selection depends on), so the cascade is applied here as well.
+        CascadingParameters?.UpdateParameters(this);
+
         _searchText = SearchText;
 
         SearchNavItems(_searchText);
@@ -685,8 +705,12 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNavPanelParams))]
     protected override void OnParametersSet()
     {
+        // The cascade is applied before anything reads the parameters it may fill in.
+        CascadingParameters?.UpdateParameters(this);
+
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) reaches
         // the filtered list a search is showing as well.
