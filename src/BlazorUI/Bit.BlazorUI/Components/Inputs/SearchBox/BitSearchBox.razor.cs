@@ -12,10 +12,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     // The number of suggest items the page up & page down keys jump over at once.
     private const int SuggestPageSize = 5;
 
+    // The public custom properties of the component, which are what its stylesheet reads with a fallback
+    // (see BitSearchBox.scss). Nothing else in a style string is copied to the callout.
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-SearchBox-";
+
     private bool _isOpen;
     private bool _isLoading;
     private bool _autoFilled;
     private bool _isDeleting;
+    private bool _isCommittingTypedText;
     private string? _inputMode;
     private bool _inputHasFocus;
     private bool _inputHasValue;
@@ -35,6 +40,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private string? _calloutColorClass;
     private string? _registeredShortcut;
     private string? _pendingAutoFillTerm;
+    private string? _publicCssVariables;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
@@ -783,6 +791,62 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         StyleBuilder.Register(() => _inputHasFocus ? Styles?.Focused : string.Empty);
     }
 
+    // The callout is rendered outside the root element - and reparented to the body while it is open - so it
+    // inherits nothing an author sets on the search box: neither the Style of the instance nor a custom
+    // property declared on an ancestor of it (only :root and body stay ancestors of it once it has moved). The
+    // public --bit-SearchBox-* declarations are therefore carried across by hand, so ONE Style on the component
+    // restyles the field and the suggest list it opens together.
+    private string? GetPublicCssVariables()
+    {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+
+        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
+        // re-rendered on every keystroke, and parsing two style strings per render for a result that almost
+        // never changes is work no one asked for.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
+        {
+            return _publicCssVariables;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+
+        StringBuilder? builder = null;
+
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+
+        _publicCssVariables = builder?.ToString();
+
+        return _publicCssVariables;
+    }
+
+    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
+    private string? GetCalloutStyles()
+    {
+        var variables = GetPublicCssVariables();
+        var stylesCallout = Styles?.Callout;
+
+        if (variables.HasNoValue()) return stylesCallout;
+        if (stylesCallout.HasNoValue()) return variables;
+
+        return variables + stylesCallout;
+    }
+
+    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+
+            (builder ??= new StringBuilder()).Append(declaration).Append(';');
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _calloutId = $"BitSearchBox-{UniqueId}-callout";
@@ -1014,6 +1078,22 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         await base.HandleOnStringValueInputAsync(e);
     }
 
+    protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
+    {
+        // The one path the text the user types is committed through (straight from the change event, or from
+        // the input event once Immediate's debounce or throttle lets it through), and so the only search that
+        // is allowed to complete the term inline: see SearchItems.
+        _isCommittingTypedText = true;
+        try
+        {
+            await base.HandleOnStringValueChangeAsync(e);
+        }
+        finally
+        {
+            _isCommittingTypedText = false;
+        }
+    }
+
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
@@ -1024,7 +1104,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         // Fire and forget on purpose: the value setter is synchronous, so the search cannot be
         // awaited here and its failures have to be observed by the wrapper instead.
-        _ = SearchItemsAndObserveFailures();
+        _ = SearchItemsAndObserveFailures(autoFill: _isCommittingTypedText);
     }
 
     /// <summary>
@@ -1032,11 +1112,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// cannot surface as an unobserved task exception, and so that everything else it may throw
     /// still reaches the error handling of Blazor instead of vanishing with the discarded task.
     /// </summary>
-    private async Task SearchItemsAndObserveFailures()
+    private async Task SearchItemsAndObserveFailures(bool autoFill)
     {
         try
         {
-            await SearchItems();
+            await SearchItems(autoFill: autoFill);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (ObjectDisposedException) { } // we can ignore this exception here
@@ -1124,6 +1204,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false) return;
 
+        await CommitInputElementValue();
+
         await CloseCallout();
 
         await OnSearch.InvokeAsync(CurrentValueAsString);
@@ -1198,6 +1280,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 break;
 
             case "Tab":
+                // An inline completion was only ever written into the input element, so no input or change
+                // event carries it to the bound value: tabbing out accepts it the way enter does.
+                if (_autoFilled)
+                {
+                    await CommitInputElementValue();
+                }
+
                 if (_isOpen)
                 {
                     _selectedIndex = -1;
@@ -1215,20 +1304,40 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             return;
         }
 
-        if (ReadOnly is false)
-        {
-            try
-            {
-                var inputValue = await _js.BitUtilsGetProperty(InputElement, "value");
-
-                await SetCurrentValueAsStringAsync(inputValue);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-        }
+        await CommitInputElementValue();
 
         await CloseCallout();
 
         await OnSearch.InvokeAsync(CurrentValueAsString);
+    }
+
+    /// <summary>
+    /// Commits whatever the input element shows: an inline completion the component wrote into it, which no
+    /// input event ever carries to the bound value, and text that is still waiting out the
+    /// <see cref="BitTextInputBase{TValue}.DebounceTime"/>, or is not committed at all yet without
+    /// <see cref="BitTextInputBase{TValue}.Immediate"/>. Enter, the search button and tabbing out after a
+    /// completion all accept what the field shows, so this is what they run first.
+    /// </summary>
+    private async Task CommitInputElementValue()
+    {
+        if (ReadOnly || IsDisposed) return;
+
+        try
+        {
+            var inputValue = await _js.BitUtilsGetProperty(InputElement, "value");
+
+            // The text is committed here, so an input event still waiting out its debounce or throttle must
+            // not land after it and put back the shorter term it was raised for.
+            ResetInputRateLimiter();
+
+            _autoFilled = false;
+
+            if (inputValue != CurrentValueAsString)
+            {
+                await SetCurrentValueAsStringAsync(inputValue);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleEscape()
@@ -1349,14 +1458,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// and the writing itself waits for the render this search queues, which patches the value attribute
     /// from the previous term to the new one and would wipe a completion applied before it.
     /// </summary>
-    private void AutoFillFirstSuggestItem(bool openCallout)
+    private void AutoFillFirstSuggestItem()
     {
-        if (AutoFillSuggestItem is false || openCallout is false) return;
+        if (AutoFillSuggestItem is false) return;
 
         if (IsEnabled is false || ReadOnly || IsDisposed) return;
 
-        // Deleting has to uncover the term rather than have it completed again on the spot, and a search
-        // nobody is typing into (one a bound value or ShowSuggestItems started) must not rewrite the field.
+        // Deleting has to uncover the term rather than have it completed again on the spot. Only a search the
+        // user's own typing started ever gets here (see SearchItems), and a field that has lost the focus
+        // since is no longer being typed into either.
         if (_isDeleting || _inputHasFocus is false) return;
 
         if (_viewSuggestedItems.Count == 0) return;
@@ -1395,20 +1505,24 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         // completion was worked out for, so writing it now would put back text the user has moved past.
         if (term != CurrentValueAsString || _inputHasFocus is false) return;
 
-        await FillInputElement(value, term!.Length);
+        await FillInputElement(value, term!);
     }
 
-    private async Task FillInputElement(string value, int selectionStart)
+    private async Task FillInputElement(string value, string term)
     {
-        SetInputHasValue(value);
-
         if (IsDisposed) return;
 
         try
         {
-            await _js.BitSearchBoxFillAndSelect(InputElement, value, selectionStart);
+            // The term is checked against the input element itself as well: under a DebounceTime or a
+            // ThrottleTime the committed value lags behind what is typed, and a keystroke that has not reached
+            // it yet would otherwise be overwritten by the completion of the term before it.
+            _autoFilled = await _js.BitSearchBoxFillAndSelect(InputElement, value, term);
 
-            _autoFilled = true;
+            if (_autoFilled)
+            {
+                SetInputHasValue(value);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1532,7 +1646,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         return remaining > 0 ? string.Format(MinSuggestTriggerCharsText, remaining) : null;
     }
 
-    private async Task SearchItems(bool openCallout = true, bool force = false)
+    /// <param name="openCallout">Whether the outcome opens the callout, or only refreshes the list behind it.</param>
+    /// <param name="force">Opens the callout even though the input does not have the focus.</param>
+    /// <param name="autoFill">
+    /// Whether the outcome may complete the term inline, which only a search the user's own typing started may:
+    /// one that a focus, a key opening the list or a replaced suggest list started must never rewrite the field.
+    /// </param>
+    private async Task SearchItems(bool openCallout = true, bool force = false, bool autoFill = false)
     {
         if (IsDisposed) return;
 
@@ -1631,7 +1751,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         _selectedIndex = AutoSelectSuggestItem && _viewSuggestedItems.Count > 0 ? 0 : -1;
 
-        AutoFillFirstSuggestItem(openCallout);
+        if (autoFill && openCallout)
+        {
+            AutoFillFirstSuggestItem();
+        }
 
         Announce(openCallout, force);
 

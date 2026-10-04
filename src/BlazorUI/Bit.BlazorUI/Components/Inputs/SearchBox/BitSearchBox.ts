@@ -66,12 +66,17 @@ namespace BitBlazorUI {
                 const parts = combo.split('+').filter(p => p.length > 0);
                 const key = (parts.pop() || '').toLowerCase();
                 const mods = parts.map(m => m.toLowerCase());
+                const shift = mods.indexOf('shift') > -1;
                 return {
                     key,
                     alt: mods.indexOf('alt') > -1,
                     ctrl: mods.indexOf('control') > -1 || mods.indexOf('ctrl') > -1,
                     meta: mods.indexOf('meta') > -1 || mods.indexOf('command') > -1 || mods.indexOf('cmd') > -1,
-                    shift: mods.indexOf('shift') > -1,
+                    shift,
+                    // A symbol or a digit is already told apart by the character itself, and which of them
+                    // need Shift depends on the keyboard layout ('/' is Shift+7 on a German one), so Shift is
+                    // only compared for a letter or a named key - or when the combination asks for it.
+                    anyShift: !shift && key.length === 1 && key.toLowerCase() === key.toUpperCase(),
                 };
             }).filter(c => c.key.length > 0);
 
@@ -82,7 +87,7 @@ namespace BitBlazorUI {
 
                 const key = (e.key || '').toLowerCase();
                 const match = combos.find(c => c.key === key &&
-                    c.alt === e.altKey && c.ctrl === e.ctrlKey && c.meta === e.metaKey && c.shift === e.shiftKey);
+                    c.alt === e.altKey && c.ctrl === e.ctrlKey && c.meta === e.metaKey && (c.anyShift || c.shift === e.shiftKey));
 
                 if (!match) return;
 
@@ -133,15 +138,19 @@ namespace BitBlazorUI {
         }
 
         // The inline completion: the whole term goes into the field and the part the user has not typed is
-        // left selected, so the very next keystroke replaces it and backspace takes it away again.
-        public static fillAndSelect(input: HTMLInputElement, value: string, selectionStart: number) {
-            if (!input) return;
+        // left selected, so the very next keystroke replaces it and backspace takes it away again. It is only
+        // written while the field still holds exactly the term it completes: under a debounce the committed
+        // value lags behind the field, and a keystroke made since must not be overwritten.
+        public static fillAndSelect(input: HTMLInputElement, value: string, term: string): boolean {
+            if (!input || input.value !== term) return false;
 
             input.value = value;
 
             try {
-                input.setSelectionRange(selectionStart, value.length);
+                input.setSelectionRange(term.length, value.length);
             } catch (e) { /* an input that does not support selection just keeps its caret */ }
+
+            return true;
         }
 
         public static moveCursorToEnd(inputElement: HTMLInputElement) {

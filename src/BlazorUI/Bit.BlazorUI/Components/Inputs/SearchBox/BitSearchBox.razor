@@ -151,14 +151,16 @@
         @if (ShowSearchButton)
         {
             @* A visible label already names the button, so repeating it in an aria-label would only
-               override what is written on it with a second, unrelated string. *@
+               override what is written on it with a second, unrelated string. A SearchButtonTemplate
+               replaces that label, so the button keeps its aria-label whenever there is one. *@
+            var hasSearchButtonLabel = SearchButtonTemplate is null && SearchButtonText.HasValue();
             <button @onclick="HandleOnSearchButtonClick"
                     type="button"
                     style="@Styles?.SearchButton"
                     disabled="@(IsEnabled is false)"
                     class="bit-srb-sbn @Classes?.SearchButton"
-                    title="@(SearchButtonText.HasValue() ? null : SearchButtonAriaLabel)"
-                    aria-label="@(SearchButtonText.HasValue() ? null : SearchButtonAriaLabel)">
+                    title="@(hasSearchButtonLabel ? null : SearchButtonAriaLabel)"
+                    aria-label="@(hasSearchButtonLabel ? null : SearchButtonAriaLabel)">
                 @if (SearchButtonTemplate is not null)
                 {
                     @SearchButtonTemplate
@@ -257,9 +259,10 @@
     }
 
     @* The callout is a sibling of the root element rather than a child of it, so it inherits neither
-       the direction nor the animation opt-out of the component and has to be given both by hand. *@
+       the direction, the animation opt-out nor the public custom properties set on the component and
+       has to be given all three by hand. *@
     <div id="@_calloutId"
-         style="@Styles?.Callout"
+         style="@GetCalloutStyles()"
          dir="@Dir?.ToString().ToLower()"
          class="bit-srb-cal @_calloutSizeClass @_calloutColorClass @(ReadOnly ? "bit-srb-rol" : null) @(DisableAnimation ? "bit-srb-nan" : null) @Classes?.Callout">
 

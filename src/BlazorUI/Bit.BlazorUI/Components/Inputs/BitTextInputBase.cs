@@ -40,14 +40,13 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
 
 
-    // See BitInputBase.HasNotBeenSetOnInputBase: the record of this class is kept apart from the one of
-    // the base so that neither has to know when the other runs.
-    internal override bool HasNotBeenSetOnInputBase(string name)
-    {
-        return _assignedTextInputParameters.Contains(name) is false && base.HasNotBeenSetOnInputBase(name);
-    }
-
-    private readonly HashSet<string> _assignedTextInputParameters = [];
+    /// <summary>
+    /// Whether the named parameter of <see cref="BitTextInputBase{TValue}"/> was left unset on this component,
+    /// which is what a <see cref="BitParams"/> cascade fills in: the text-input tier of
+    /// <see cref="BitInputBase{TValue}.HasNotBeenSetOnInput"/>, since the parameters of this class are taken
+    /// out of the ParameterView before either of the sets below it sees them.
+    /// </summary>
+    protected internal bool HasNotBeenSetOnTextInput(string name) => _assignedTextInputParameters.Contains(name) is false;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {

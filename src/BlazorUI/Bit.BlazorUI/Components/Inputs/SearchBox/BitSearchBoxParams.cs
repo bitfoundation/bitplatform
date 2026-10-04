@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 /// the strings that name its parts for a screen reader. What belongs to one search box alone - the value,
 /// the label, the suggest source, the templates and the callbacks - stays in the markup of that search box.
 /// </remarks>
-public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
+public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSearchBox"/> cascading parameters within <see cref="BitParams"/>.
@@ -226,11 +226,6 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     public string? NoResultsText { get; set; }
 
     /// <summary>
-    /// Opts the search box out of the validation of the cascading EditContext.
-    /// </summary>
-    public bool? NoValidate { get; set; }
-
-    /// <summary>
     /// Stops the up and down arrows from cycling between the two ends of the suggest list.
     /// </summary>
     public bool? NoWrapNavigation { get; set; }
@@ -239,16 +234,6 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     /// Placeholder for the search box.
     /// </summary>
     public string? Placeholder { get; set; }
-
-    /// <summary>
-    /// Keeps the value visible and selectable but blocks editing, clearing and picking suggestions.
-    /// </summary>
-    public bool? ReadOnly { get; set; }
-
-    /// <summary>
-    /// Renders the required html attribute on the input element and the required marker next to the label.
-    /// </summary>
-    public bool? Required { get; set; }
 
     /// <summary>
     /// The accessible label (aria-label) of the search button.
@@ -353,11 +338,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitSearchBox is null) return;
 
-        UpdateBaseParameters(bitSearchBox);
+        UpdateInputBaseParameters(bitSearchBox);
 
         // The parameters the search box declares itself are asked through the HasNotBeenSet the source
-        // generator writes for it; the ones it inherits from the input base classes have a record of
-        // their own, which is what HasNotBeenSetOnInputBase reads (see BitInputBase).
+        // generator writes for it; the ones it inherits from BitTextInputBase have a record of their own,
+        // which is what HasNotBeenSetOnTextInput reads (ReadOnly and Required are BitInputBaseParams').
 
         if (AnnouncementProvider is not null && bitSearchBox.HasNotBeenSet(nameof(AnnouncementProvider)))
         {
@@ -374,7 +359,7 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.AutoCapitalize = AutoCapitalize;
         }
 
-        if (AutoComplete.HasValue() && bitSearchBox.HasNotBeenSetOnInputBase(nameof(AutoComplete)))
+        if (AutoComplete.HasValue() && bitSearchBox.HasNotBeenSetOnTextInput(nameof(AutoComplete)))
         {
             bitSearchBox.AutoComplete = AutoComplete;
         }
@@ -384,7 +369,7 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.AutoCorrect = AutoCorrect.Value;
         }
 
-        if (AutoFocus.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(AutoFocus)))
+        if (AutoFocus.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(AutoFocus)))
         {
             bitSearchBox.AutoFocus = AutoFocus.Value;
         }
@@ -435,7 +420,7 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.ClassBuilder.Reset();
         }
 
-        if (DebounceTime.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(DebounceTime)))
+        if (DebounceTime.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(DebounceTime)))
         {
             bitSearchBox.DebounceTime = DebounceTime.Value;
         }
@@ -503,7 +488,7 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.IconName = IconName;
         }
 
-        if (Immediate.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(Immediate)))
+        if (Immediate.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(Immediate)))
         {
             bitSearchBox.Immediate = Immediate.Value;
         }
@@ -565,11 +550,6 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.NoResultsText = NoResultsText;
         }
 
-        if (NoValidate.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(NoValidate)))
-        {
-            bitSearchBox.NoValidate = NoValidate.Value;
-        }
-
         if (NoWrapNavigation.HasValue && bitSearchBox.HasNotBeenSet(nameof(NoWrapNavigation)))
         {
             bitSearchBox.NoWrapNavigation = NoWrapNavigation.Value;
@@ -578,18 +558,6 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
         if (Placeholder.HasValue() && bitSearchBox.HasNotBeenSet(nameof(Placeholder)))
         {
             bitSearchBox.Placeholder = Placeholder;
-        }
-
-        if (ReadOnly.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(ReadOnly)))
-        {
-            bitSearchBox.ReadOnly = ReadOnly.Value;
-        }
-
-        if (Required.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(Required)))
-        {
-            bitSearchBox.Required = Required.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
         }
 
         if (SearchButtonAriaLabel.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SearchButtonAriaLabel)))
@@ -670,7 +638,7 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.SuggestItemsAriaLabel = SuggestItemsAriaLabel!;
         }
 
-        if (ThrottleTime.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(ThrottleTime)))
         {
             bitSearchBox.ThrottleTime = ThrottleTime.Value;
         }
