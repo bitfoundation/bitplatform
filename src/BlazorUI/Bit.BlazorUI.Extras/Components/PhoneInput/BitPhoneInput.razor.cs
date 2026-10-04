@@ -129,6 +129,21 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public bool AutoPlaceholder { get; set; }
 
     /// <summary>
+    /// The color kind of the fill of the phone input, for a field that sits on a surface other than the
+    /// primary one. The --bit-PhoneInput-background variable still wins over it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Background { get; set; }
+
+    /// <summary>
+    /// The color kind of the frame of the phone input at rest and under a pointer, winning over the main color
+    /// of <see cref="Color"/>, which keeps the focus ring. The --bit-PhoneInput-border-color variable still
+    /// wins over it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Border { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitPhoneInput.
     /// </summary>
     [Parameter] public BitPhoneInputClassStyles? Classes { get; set; }
@@ -157,7 +172,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
-    /// The general color of the phone input.
+    /// What a screen reader announces once the number has been emptied - by the clear button or by
+    /// <see cref="ClearAsync"/> - in place of the default "Cleared". Emptying a field moves nothing and says
+    /// nothing on its own, so without it the one interaction that throws the whole number away is the one a
+    /// screen reader user gets no confirmation of. Set it to an empty string to keep the clearing from being
+    /// announced at all.
+    /// </summary>
+    [Parameter] public string? ClearedAnnouncement { get; set; }
+
+    /// <summary>
+    /// The general color of the phone input: the frame takes its main color and the focus ring its focus color.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -550,53 +574,53 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// Opens the country dropdown callout.
     /// </summary>
-    public async Task OpenAsync()
+    public Task OpenAsync() => InvokeAsync(async () =>
     {
         // Called from outside a Blazor event handler as well as from one, so the render the opened
-        // callout needs is asked for here rather than left to the caller.
+        // callout needs is asked for here rather than left to the caller - and on the renderer's own
+        // context, since the caller can be on any thread.
         if (IsEnabled is false || ReadOnly || NoDropdown || IsOpen) return;
 
         await OpenCallout();
 
         StateHasChanged();
-    }
+    });
 
     /// <summary>
     /// Closes the country dropdown callout.
     /// </summary>
-    public async Task CloseAsync()
+    public Task CloseAsync() => InvokeAsync(async () =>
     {
         if (IsOpen is false) return;
 
         await CloseCallout();
 
         StateHasChanged();
-    }
+    });
 
     /// <summary>
     /// Selects the given country exactly as picking it in the callout would, so the same events fire.
     /// </summary>
-    public Task SelectCountryAsync(BitCountry country) => HandleOnCountrySelect(country);
+    public Task SelectCountryAsync(BitCountry country) => InvokeAsync(async () =>
+    {
+        await HandleOnCountrySelect(country);
+
+        // Unlike a click in the list, this call does not arrive through an event handler of the component,
+        // so nothing re-renders it on its own.
+        StateHasChanged();
+    });
 
     /// <summary>
     /// Clears the number of the phone input, leaving the selected country as it is.
     /// </summary>
-    public async Task ClearAsync()
+    public Task ClearAsync() => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly) return;
+        await ClearNumber();
 
-        // An empty field has nothing to clear, and reporting a clear that changed nothing would have a
-        // consumer react to a number that was never there.
-        if (Number.HasNoValue()) return;
-
-        // AssignNumber returns false for a one-way controlled Number (set without NumberChanged).
-        // In that case the field cannot drop what it shows, so reporting a clear that never happened
-        // would have a consumer react to a number that is still there (see HandleOnCountrySelect).
-        if (await AssignNumber(null) is false) return;
-
-        await UpdateValueFromParts();
-        await OnClear.InvokeAsync();
-    }
+        // Unlike the clear button, this call does not arrive through an event handler of the component, so
+        // nothing re-renders it on its own.
+        StateHasChanged();
+    });
 
     /// <summary>
     /// Sets the local number of the phone input, laid out over the pattern of the selected country the
@@ -604,17 +628,30 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// international prefix ('+' or its "00" equivalent) selects the country that owns its dialing code,
     /// exactly as pasting it into the field does.
     /// </summary>
-    public async Task SetNumberAsync(string? number)
+    public Task SetNumberAsync(string? number) => InvokeAsync(async () =>
+    {
+        await SetNumber(number);
+
+        StateHasChanged();
+    });
+
+    private async Task SetNumber(string? number)
     {
         if (IsEnabled is false || ReadOnly) return;
 
         var (country, local) = ParseFullNumber(NormalizeTyped(number));
 
-        if (country is not null && country.Iso2 != Country?.Iso2 && await AssignCountry(country))
+        if (country is not null && country.Iso2 != Country?.Iso2)
         {
-            await AssignNumber(FormatNumber(local));
+            // The local part was cut off the dialing code of the parsed country, so it is only kept once that
+            // country is actually adopted: a one-way controlled Country would otherwise keep its own country
+            // under a number parsed for another one (see HandleOnStringValueChangeAsync).
+            if (await AssignCountry(country))
+            {
+                await AssignNumber(FormatNumber(local));
 
-            await OnCountryChange.InvokeAsync(country);
+                await OnCountryChange.InvokeAsync(country);
+            }
         }
         else
         {
@@ -923,6 +960,24 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         });
 
         ClassBuilder.Register(() => ColorClass ?? string.Empty);
+
+        ClassBuilder.Register(() => Background switch
+        {
+            BitColorKind.Primary => "bit-phi-bpr",
+            BitColorKind.Secondary => "bit-phi-bse",
+            BitColorKind.Tertiary => "bit-phi-btr",
+            BitColorKind.Transparent => "bit-phi-btn",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Border switch
+        {
+            BitColorKind.Primary => "bit-phi-brp",
+            BitColorKind.Secondary => "bit-phi-brs",
+            BitColorKind.Tertiary => "bit-phi-brt",
+            BitColorKind.Transparent => "bit-phi-brn",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -1218,6 +1273,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         BitColor.Warning => "bit-phi-wrn",
         BitColor.SevereWarning => "bit-phi-swr",
         BitColor.Error => "bit-phi-err",
+        BitColor.PrimaryBackground => "bit-phi-pbg",
+        BitColor.SecondaryBackground => "bit-phi-sbg",
+        BitColor.TertiaryBackground => "bit-phi-tbg",
+        BitColor.PrimaryForeground => "bit-phi-pfg",
+        BitColor.SecondaryForeground => "bit-phi-sfg",
+        BitColor.TertiaryForeground => "bit-phi-tfg",
+        BitColor.PrimaryBorder => "bit-phi-pbr",
+        BitColor.SecondaryBorder => "bit-phi-sbr",
+        BitColor.TertiaryBorder => "bit-phi-tbr",
         _ => null
     };
 
@@ -1586,6 +1650,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
                 await OpenCallout();
+
+                // Home and End say where in the list to land, the way they do on a native select.
+                if (key == "Home" && _viewItems.Count > 0) _activeIndex = 0;
+                if (key == "End" && _viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
+            }
+            else if (NoSearchBox && IsTypeAheadKey(e))
+            {
+                // A selector with no search box is a select-only combobox, and typing on one opens it on the
+                // country the letters start - there is no box for the letters to go into instead.
+                await OpenCallout();
+
+                HandleTypeAhead(key);
             }
 
             return;
@@ -1596,6 +1672,20 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             case "Escape":
                 await CloseCallout();
                 await FocusDropdown();
+                break;
+
+            case "ArrowUp" when e.AltKey:
+                // Alt+Up closes the list the way the combobox pattern has it: a select-only one takes the option
+                // the arrows are on, while one with a search box only gives the focus back to its button.
+                if (fromSearchBox is false && _activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                {
+                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                }
+                else
+                {
+                    await CloseCallout();
+                    await FocusDropdown();
+                }
                 break;
 
             case "Tab":
@@ -1641,7 +1731,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 // When the search box is visible the space key must remain available for
                 // typing, so it is only treated as a selection key when focus is on the
                 // dropdown button (i.e. there is no search box).
-                if (fromSearchBox is false && _activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                if (fromSearchBox) break;
+
+                // A space typed in the middle of a type-ahead term is part of the name being typed
+                // ("united s" for the United States), not a choice of the country the term has reached so far.
+                if (IsTypeAheadInProgress)
+                {
+                    HandleTypeAhead(" ");
+                }
+                else if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
                 {
                     await HandleOnCountrySelect(_viewItems[_activeIndex]);
                 }
@@ -1650,13 +1748,22 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             default:
                 // Without a search box to type into, the letters typed on the open list jump to the
                 // country whose name they start, the way a native select behaves.
-                if (fromSearchBox is false && key.Length == 1 && char.IsLetterOrDigit(key[0]))
+                if (fromSearchBox is false && IsTypeAheadKey(e))
                 {
                     HandleTypeAhead(key);
                 }
                 break;
         }
     }
+
+    // A printable character typed without a modifier: a shortcut (Ctrl+C, Alt+letter) is not a letter of a name.
+    private static bool IsTypeAheadKey(KeyboardEventArgs e) => e.Key.Length == 1
+                                                               && char.IsLetterOrDigit(e.Key[0])
+                                                               && e.CtrlKey is false
+                                                               && e.AltKey is false
+                                                               && e.MetaKey is false;
+
+    private bool IsTypeAheadInProgress => _typeAhead.Length > 0 && (DateTimeOffset.UtcNow - _typeAheadAt) <= _typeAheadTimeout;
 
     private void MoveActiveIndex(int offset, bool clamp = false)
     {
@@ -1938,9 +2045,36 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         catch (JSException) { } // the element might not be ready/visible yet
     }
 
+    private async Task ClearNumber()
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        // An empty field has nothing to clear, and reporting a clear that changed nothing would have a
+        // consumer react to a number that was never there.
+        if (Number.HasNoValue()) return;
+
+        // AssignNumber returns false for a one-way controlled Number (set without NumberChanged).
+        // In that case the field cannot drop what it shows, so reporting a clear that never happened
+        // would have a consumer react to a number that is still there (see HandleOnCountrySelect).
+        if (await AssignNumber(null) is false) return;
+
+        await UpdateValueFromParts();
+
+        // Emptying the field moves nothing and says nothing on its own, so the one interaction that throws
+        // the whole number away is announced explicitly. An empty announcement is how a consumer asks for
+        // silence.
+        var announcement = ClearedAnnouncement ?? "Cleared";
+        if (announcement.HasValue())
+        {
+            Announce(announcement);
+        }
+
+        await OnClear.InvokeAsync();
+    }
+
     private async Task HandleOnClearButtonClick()
     {
-        await ClearAsync();
+        await ClearNumber();
 
         try
         {

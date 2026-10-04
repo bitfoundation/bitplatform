@@ -46,6 +46,16 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     public bool? AutoPlaceholder { get; set; }
 
     /// <summary>
+    /// The color kind of the fill of the phone input.
+    /// </summary>
+    public BitColorKind? Background { get; set; }
+
+    /// <summary>
+    /// The color kind of the frame of the phone input, winning over the main color of <see cref="Color"/>.
+    /// </summary>
+    public BitColorKind? Border { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitPhoneInput.
     /// </summary>
     public BitPhoneInputClassStyles? Classes { get; set; }
@@ -69,6 +79,12 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     /// The custom template for the clear button of the number input.
     /// </summary>
     public RenderFragment? ClearButtonTemplate { get; set; }
+
+    /// <summary>
+    /// What a screen reader announces once the number has been emptied, in place of the default "Cleared".
+    /// An empty string keeps the clearing from being announced at all.
+    /// </summary>
+    public string? ClearedAnnouncement { get; set; }
 
     /// <summary>
     /// The general color of the phone input.
@@ -342,6 +358,20 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.AutoPlaceholder = AutoPlaceholder.Value;
         }
 
+        if (Background.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Background)))
+        {
+            bitPhoneInput.Background = Background.Value;
+
+            bitPhoneInput.ClassBuilder.Reset();
+        }
+
+        if (Border.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Border)))
+        {
+            bitPhoneInput.Border = Border.Value;
+
+            bitPhoneInput.ClassBuilder.Reset();
+        }
+
         if (Classes is not null && bitPhoneInput.HasNotBeenSet(nameof(Classes)))
         {
             bitPhoneInput.Classes = Classes;
@@ -367,6 +397,12 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
         if (ClearButtonTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(ClearButtonTemplate)))
         {
             bitPhoneInput.ClearButtonTemplate = ClearButtonTemplate;
+        }
+
+        // Null rather than empty is what leaves the field alone: an empty announcement is how silence is asked for.
+        if (ClearedAnnouncement is not null && bitPhoneInput.HasNotBeenSet(nameof(ClearedAnnouncement)))
+        {
+            bitPhoneInput.ClearedAnnouncement = ClearedAnnouncement;
         }
 
         if (Color.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Color)))

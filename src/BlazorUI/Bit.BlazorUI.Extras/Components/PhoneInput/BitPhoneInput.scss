@@ -8,12 +8,14 @@
 // onto both of them by hand - see GetPublicCssVariables.
 //
 //   FIELD
-//   --bit-PhoneInput-background              fill of the field                        (default: $clr-bg-pri)
+//   --bit-PhoneInput-background              fill of the field                        (default: the Background kind, $clr-bg-pri)
 //   --bit-PhoneInput-color                   text of the number                       (default: $clr-fg-pri)
 //   --bit-PhoneInput-placeholder-color       placeholder of the number input, of the
 //                                            selector and of the search box           (default: $clr-fg-ter)
-//   --bit-PhoneInput-border-color            frame at rest                            (default: the Color role, $clr-brd-pri)
-//   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: the Color role, $clr-brd-pri-hover)
+//   --bit-PhoneInput-border-color            frame at rest                            (default: the Border kind, the Color role,
+//                                                                                     $clr-brd-pri)
+//   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: the Border kind, the Color role,
+//                                                                                     $clr-brd-pri-hover)
 //   --bit-PhoneInput-border-width            thickness of the frame                   (default: $shp-border-width)
 //   --bit-PhoneInput-radius                  corner radius of the frame               (default: $shp-radius-control)
 //   --bit-PhoneInput-min-height              smallest height of the frame             (default: per Size, $siz-ctrl-*)
@@ -97,8 +99,9 @@
     --bit-phi-itm-h: var(--bit-PhoneInput-item-height, var(--bit-phi-sz-itm-h));
     --bit-phi-radius: var(--bit-PhoneInput-radius, #{$shp-radius-control});
     --bit-phi-brd-w: var(--bit-PhoneInput-border-width, #{$shp-border-width});
-    --bit-phi-brd: var(--bit-PhoneInput-border-color, var(--bit-phi-role-main, #{$clr-brd-pri}));
-    --bit-phi-brd-hover: var(--bit-PhoneInput-hover-border-color, var(--bit-phi-role-main, #{$clr-brd-pri-hover}));
+    --bit-phi-bg: var(--bit-PhoneInput-background, var(--bit-phi-kind-bg, #{$clr-bg-pri}));
+    --bit-phi-brd: var(--bit-PhoneInput-border-color, var(--bit-phi-kind-brd, var(--bit-phi-role-main, #{$clr-brd-pri})));
+    --bit-phi-brd-hover: var(--bit-PhoneInput-hover-border-color, var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, #{$clr-brd-pri-hover})));
     --bit-phi-focus: var(--bit-PhoneInput-focus-color, var(--bit-phi-role-focus, #{$clr-pri-focus}));
     --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
@@ -166,7 +169,7 @@
     box-sizing: border-box;
     min-height: var(--bit-phi-h);
     border-radius: var(--bit-phi-radius);
-    background-color: var(--bit-PhoneInput-background, #{$clr-bg-pri});
+    background-color: var(--bit-phi-bg);
     border: var(--bit-phi-brd-w) $shp-border-style var(--bit-phi-brd);
 
     @include phi-hover {
@@ -681,6 +684,10 @@
     // rendered through a LabelTemplate is just as required as any other one.
     & > label::after {
         content: "*";
+        // The same asterisk with empty alternative text, so it is not read out beside the aria-required that
+        // already says the same thing. Declared second, and left out by an engine that does not know the
+        // syntax, which keeps the plain asterisk above.
+        content: "*" / "";
         margin-inline-start: spacing(0.625);
         color: var(--bit-PhoneInput-required-color, #{$clr-req});
     }
@@ -701,43 +708,57 @@
 
 
 // The general color of the field: the frame takes the main color of the role at rest and under a pointer,
-// and the ring and the keyboard cues take its focus color. Both stay below the public variables.
-@mixin phi-color($main, $focus) {
-    --bit-phi-role-main: #{$main};
-    --bit-phi-role-focus: #{$focus};
+// and the ring and the keyboard cues take its focus color. Both stay below the public variables and below the
+// Border kind. The role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-phi-#{$role} {
+        --bit-phi-role-main: #{role($tokens, main)};
+        --bit-phi-role-focus: #{role($tokens, focus)};
+    }
 }
 
-.bit-phi-pri {
-    @include phi-color($clr-pri, $clr-pri-focus);
+
+// The surface the field sits on. Below the public --bit-PhoneInput-background variable.
+.bit-phi-bpr {
+    --bit-phi-kind-bg: #{$clr-bg-pri};
 }
 
-.bit-phi-sec {
-    @include phi-color($clr-sec, $clr-sec-focus);
+.bit-phi-bse {
+    --bit-phi-kind-bg: #{$clr-bg-sec};
 }
 
-.bit-phi-ter {
-    @include phi-color($clr-ter, $clr-ter-focus);
+.bit-phi-btr {
+    --bit-phi-kind-bg: #{$clr-bg-ter};
 }
 
-.bit-phi-inf {
-    @include phi-color($clr-inf, $clr-inf-focus);
+.bit-phi-btn {
+    --bit-phi-kind-bg: transparent;
 }
 
-.bit-phi-suc {
-    @include phi-color($clr-suc, $clr-suc-focus);
+
+// Each border kind carries the hover step of its own family, so a frame that is deliberately invisible
+// (Transparent) stays invisible under the pointer instead of appearing out of nowhere. It wins over the main
+// color of the Color role, which keeps the focus ring.
+.bit-phi-brp {
+    --bit-phi-kind-brd: #{$clr-brd-pri};
+    --bit-phi-kind-brd-hover: #{$clr-brd-pri-hover};
 }
 
-.bit-phi-wrn {
-    @include phi-color($clr-wrn, $clr-wrn-focus);
+.bit-phi-brs {
+    --bit-phi-kind-brd: #{$clr-brd-sec};
+    --bit-phi-kind-brd-hover: #{$clr-brd-sec-hover};
 }
 
-.bit-phi-swr {
-    @include phi-color($clr-swr, $clr-swr-focus);
+.bit-phi-brt {
+    --bit-phi-kind-brd: #{$clr-brd-ter};
+    --bit-phi-kind-brd-hover: #{$clr-brd-ter-hover};
 }
 
-.bit-phi-err {
-    @include phi-color($clr-err, $clr-err-focus);
+.bit-phi-brn {
+    --bit-phi-kind-brd: transparent;
+    --bit-phi-kind-brd-hover: transparent;
 }
+
 
 // A rejected value wins over the role and over the hover cue, whichever way it was rejected - by the
 // EditContext, by Invalid or by an ErrorMessage.
@@ -771,5 +792,35 @@
 
     @media (forced-colors: active) {
         outline: none;
+    }
+}
+
+
+// Windows High Contrast / forced-colors: the palette collapses to the system pair and every fill an author
+// paints is discarded, so the two states that are nothing but colors - the disabled field and the row under
+// the pointer - would read like the rest. The native controls inside the field turn GrayText on their own;
+// what the component draws around them is given the same color, and a hovered row an outline.
+@media (forced-colors: active) {
+    .bit-phi.bit-dis {
+        .bit-phi-lbl,
+        .bit-phi-fgp,
+        .bit-phi-des {
+            color: GrayText;
+        }
+
+        .bit-phi-fgp {
+            border-color: GrayText;
+        }
+
+        .bit-phi-car {
+            border-top-color: GrayText;
+        }
+    }
+
+    .bit-phi-itm {
+        @include phi-hover {
+            outline: $shp-border-width dashed Highlight;
+            outline-offset: calc(-1 * #{$shp-border-width});
+        }
     }
 }
