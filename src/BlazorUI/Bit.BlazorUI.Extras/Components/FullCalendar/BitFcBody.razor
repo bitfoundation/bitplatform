@@ -40,16 +40,16 @@
         switch (State.View)
         {
             case BitFullCalendarView.Month:
-                <BitFcCalendarMonthView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="MonthEventTemplate" />
+                <BitFcMonthView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="MonthEventTemplate" />
                 break;
             case BitFullCalendarView.Week:
-                <BitFcCalendarWeekView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="WeekEventTemplate" />
+                <BitFcWeekView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="WeekEventTemplate" />
                 break;
             case BitFullCalendarView.Day:
-                <BitFcCalendarDayView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="DayEventTemplate" />
+                <BitFcDayView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" EventTemplate="DayEventTemplate" />
                 break;
             case BitFullCalendarView.Year:
-                <BitFcCalendarYearView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" />
+                <BitFcYearView SingleDayEvents="_singleDayEvents" MultiDayEvents="_multiDayEvents" />
                 break;
             case BitFullCalendarView.Agenda:
                 <BitFcAgendaEvents />

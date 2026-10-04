@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarBody
+public partial class BitFcBody
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;

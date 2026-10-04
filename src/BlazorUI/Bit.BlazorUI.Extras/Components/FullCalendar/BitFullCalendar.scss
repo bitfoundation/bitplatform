@@ -1181,7 +1181,7 @@
 }
 
 .bit-bfc-year-month-title {
-    /* Rendered as a real <button> in BitFcCalendarYearView for native keyboard activation, so
+    /* Rendered as a real <button> in BitFcYearView for native keyboard activation, so
        strip the browser-default button chrome (border, background, padding, appearance, font and
        alignment) while keeping the title's own typography and cursor. */
     appearance: none;

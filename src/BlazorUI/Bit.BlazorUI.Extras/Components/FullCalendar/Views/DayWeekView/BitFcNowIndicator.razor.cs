@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarTimeline
+public partial class BitFcNowIndicator
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
 

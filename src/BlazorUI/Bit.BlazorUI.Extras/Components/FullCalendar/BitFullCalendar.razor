@@ -14,13 +14,13 @@
          dir="@ResolvedDir.ToString().ToLowerInvariant()">
         @if (HideHeader is false)
         {
-            <BitFcCalendarHeader />
+            <BitFcHeader />
         }
-        <BitFcCalendarBody MonthEventTemplate="MonthEventTemplate"
+        <BitFcBody MonthEventTemplate="MonthEventTemplate"
                            WeekEventTemplate="WeekEventTemplate"
                            DayEventTemplate="DayEventTemplate"
                            TimelineEventTemplate="TimelineEventTemplate"
                            IsLoading="IsLoading" />
-        <BitFcCalendarToast @ref="_toast" />
+        <BitFcToast @ref="_toast" />
     </div>
 </BitCascadingValueProvider>

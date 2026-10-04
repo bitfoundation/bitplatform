@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarToast : IAsyncDisposable
+public partial class BitFcToast : IAsyncDisposable
 {
     private readonly List<ToastItem> _toasts = [];
     private readonly List<CancellationTokenSource> _removalTokens = [];
