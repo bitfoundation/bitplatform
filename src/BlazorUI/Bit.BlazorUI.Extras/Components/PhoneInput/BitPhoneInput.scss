@@ -226,12 +226,19 @@
     }
 }
 
-.bit-phi-nod .bit-phi-drp {
+// A fixed country and the selector of a ReadOnly field answer no click, so they look like nothing that would.
+.bit-phi-nod .bit-phi-drp,
+.bit-phi-rdo .bit-phi-drp {
     cursor: default;
 
     @include phi-hover {
         background-color: var(--bit-PhoneInput-dropdown-background, transparent);
     }
+}
+
+// The caret promises a list that a ReadOnly field never opens.
+.bit-phi-rdo .bit-phi-car {
+    visibility: hidden;
 }
 
 .bit-phi-tcn {

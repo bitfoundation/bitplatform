@@ -313,6 +313,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     [Parameter] public RenderFragment<BitCountry>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// Keeps the national (trunk) prefix of a number in the composed <see cref="BitInputBase{T}.Value"/>. By
+    /// default the prefix a number is written with inside its own country - the 0 of "07911 123456" in the
+    /// United Kingdom, the 1 of "1 415 555 0123" in North America, the 8 of a Russian number - is dropped, since
+    /// an international caller never dials it, so the value is "+447911123456" rather than "+4407911123456". The
+    /// number input keeps showing it either way. The 0 that begins the numbers of Italy, San Marino, the Vatican,
+    /// Côte d'Ivoire, the Republic of the Congo, Benin and Gabon belongs to the number and is always kept.
+    /// </summary>
+    [Parameter] public bool KeepNationalPrefix { get; set; }
+
+    /// <summary>
     /// The label of the phone input shown above the field.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -364,6 +374,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     /// <summary>
     /// Removes the country dropdown, so the country of the phone input can only be set through its parameters.
+    /// A number typed or pasted with the international prefix of another country does not move it either: it is
+    /// kept whole, the way a number with a dialing code no country of the list claims is.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool NoDropdown { get; set; }
@@ -639,7 +651,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        var (country, local) = ParseFullNumber(NormalizeTyped(number));
+        var (country, local) = ParseFullNumber(NormalizeTyped(number), keepCountry: NoDropdown);
 
         if (country is not null && country.Iso2 != Country?.Iso2)
         {
@@ -810,7 +822,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // code and the local part are reduced to digits (any separator typed or pasted into the input is
     // dropped) so the result follows E.164. Returns null when there is no local number so an empty
     // input maps to an empty value.
-    private static string? ComposeFullNumber(BitCountry? country, string? number)
+    private static string? ComposeFullNumber(BitCountry? country, string? number, bool keepNationalPrefix = false)
     {
         var local = KeepDigits(number, keepLeadingPlus: true);
 
@@ -822,7 +834,58 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         if (country is null) return local;
 
+        if (keepNationalPrefix is false)
+        {
+            local = StripNationalPrefix(country, local);
+        }
+
         return $"+{country.DigitsCode}{local}";
+    }
+
+    // The countries whose numbers can begin with a 0 after the dialing code, where that 0 is part of the
+    // number rather than the trunk prefix a call inside the country is dialed with.
+    private static readonly HashSet<string> _significantLeadingZero = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "IT", "SM", "VA", // Italy, San Marino and the Vatican keep the 0 of a landline in international form
+        "CI", "CG", "BJ", "GA", // Côte d'Ivoire, the Republic of the Congo, Benin and Gabon number from 0
+    };
+
+    // Drops the national (trunk) prefix a number is written with inside its own country - the 0 of the
+    // "07911 123456" written in the United Kingdom, the 1 of "1 415 555 0123" in North America - which an
+    // international caller never dials, so the E.164 value of a number typed the way its owner writes it is
+    // "+447911123456" rather than "+4407911123456". Where the prefix is a digit a number can also begin with,
+    // it is only recognized at the length a number that carries it has.
+    private static string StripNationalPrefix(BitCountry country, string digits)
+    {
+        if (digits.Length < 2) return digits;
+
+        var code = country.DigitsCode;
+
+        // The North American Numbering Plan: no area code and no exchange code begins with 0 or 1.
+        if (code.StartsWith('1') && digits[0] == '1') return digits[1..];
+
+        switch (country.Iso2.ToUpperInvariant())
+        {
+            // A 10-digit number, dialed with 8 at home ("8 912 345-67-89").
+            case "RU" or "KZ" when digits.Length == 11 && digits[0] == '8':
+                return digits[1..];
+
+            // A 9-digit number, dialed with 80 at home ("8 029 123-45-67").
+            case "BY" when digits.Length == 11 && digits.StartsWith("80", StringComparison.Ordinal):
+                return digits[2..];
+
+            // An 8-digit number, dialed with 8 at home.
+            case "LT" or "TM" when digits.Length == 9 && digits[0] == '8':
+                return digits[1..];
+
+            // Hungary dials 06 at home ("06 30 123 4567").
+            case "HU" when digits.Length > 2 && digits.StartsWith("06", StringComparison.Ordinal):
+                return digits[2..];
+        }
+
+        if (digits[0] == '0' && _significantLeadingZero.Contains(country.Iso2) is false) return digits[1..];
+
+        return digits;
     }
 
     // Splits a full phone number into its country and local-number parts. A leading '+' (or its
@@ -830,7 +893,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // code wins; the current country is preferred to disambiguate shared codes like +1, then the
     // preferred countries, then BitCountry.Priority). Without such a prefix the whole input is
     // treated as the local number and the current country is kept.
-    private (BitCountry? Country, string? Number) ParseFullNumber(string? full)
+    // A field whose country is fixed (NoDropdown) is never moved by what is typed into it: keepCountry limits the
+    // lookup to the current country, so a number with the code of another one is kept whole instead.
+    private (BitCountry? Country, string? Number) ParseFullNumber(string? full, bool keepCountry = false)
     {
         if (string.IsNullOrWhiteSpace(full)) return (Country, null);
 
@@ -853,7 +918,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         BitCountry? best = null;
         var bestLength = 0;
         var bestRank = int.MinValue;
-        foreach (var country in _allItems)
+        IEnumerable<BitCountry> candidates = keepCountry && Country is not null ? [Country] : _allItems;
+
+        foreach (var country in candidates)
         {
             // A country can answer to several codes (+1-809, +1-829 and +1-849 are all the Dominican
             // Republic), so every one of them is measured against the number rather than the main one.
@@ -944,6 +1011,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         ClassBuilder.Register(() => Underlined ? "bit-phi-und" : string.Empty);
 
         ClassBuilder.Register(() => NoDropdown ? "bit-phi-nod" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-phi-rdo" : string.Empty);
 
         ClassBuilder.Register(() => HasError ? "bit-inv" : string.Empty);
 
@@ -1334,16 +1403,20 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // What is written under the field is what describes it, so both lines are pointed at rather than
     // one of them. A value the consumer put on the input itself is kept: a field with a description of
     // its own would otherwise lose it the moment the component has anything to reference.
+    // A selector the keyboard never reaches - a fixed country, or one a ReadOnly field takes out of the tab
+    // order - is pointed at as well, since the number means nothing without the country it is read with.
     private string? AriaDescribedBy
     {
         get
         {
-            if (HasErrorMessage is false && HasDescription is false && NoDropdown is false) return GetInputAttribute("aria-describedby");
+            var describesCountry = NoDropdown || ReadOnly;
+
+            if (HasErrorMessage is false && HasDescription is false && describesCountry is false) return GetInputAttribute("aria-describedby");
 
             var ids = string.Join(' ', new[]
             {
                 GetInputAttribute("aria-describedby"),
-                NoDropdown ? _dropdownId : null,
+                describesCountry ? _dropdownId : null,
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null
             }.Where(id => id.HasValue()));
@@ -1871,6 +1944,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         await OnClose.InvokeAsync();
     }
 
+    // Dismissing the callout by hand - a click outside it, or the close button of the responsive panel - hides
+    // whatever inside it had the focus, which would otherwise fall to the document body and strand a keyboard
+    // user at the top of the page, so it is given back to the selector the list was opened from.
+    private async Task CloseCalloutAndRestoreFocus()
+    {
+        if (IsOpen is false) return;
+
+        await CloseCallout();
+
+        await FocusDropdown();
+    }
+
     // Puts the active option on the current selection, or on the first country when nothing is
     // selected yet, so the list always opens with something for Enter to act on.
     private void ResetActiveIndexToSelection()
@@ -2093,7 +2178,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // country unchanged and the whole input as the local number.
         // The text is normalized first, because a value that only ever travels on the change event
         // (a paste followed by a blur, with Immediate off) has not been through the input handler.
-        var (country, number) = ParseFullNumber(NormalizeTyped(e.Value?.ToString()));
+        var (country, number) = ParseFullNumber(NormalizeTyped(e.Value?.ToString()), keepCountry: NoDropdown);
 
         // Only switch the country when parsing actually resolved a different one. AssignCountry
         // returns false for a one-way controlled Country (set without CountryChanged); in that
@@ -2163,7 +2248,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // the normal value pipeline so ValueChanged/OnChange and validation fire as expected.
     private async Task UpdateValueFromParts()
     {
-        var composed = ComposeFullNumber(Country, Number);
+        var composed = ComposeFullNumber(Country, Number, KeepNationalPrefix);
 
         _lastValue = composed;
         _lastNumber = Number;

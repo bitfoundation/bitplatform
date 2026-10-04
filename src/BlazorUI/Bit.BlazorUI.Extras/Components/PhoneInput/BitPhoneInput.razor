@@ -223,7 +223,7 @@
 
 @if (NoDropdown is false)
 {
-    <div @onclick="CloseCallout"
+    <div @onclick="CloseCalloutAndRestoreFocus"
          id="@_overlayId"
          style="@GetOverlayStyles()"
          class="bit-phi-ovl @Classes?.Overlay"></div>
@@ -244,7 +244,7 @@
                     <label style="@Styles?.ResponsiveLabel" class="bit-phi-rlb @Classes?.ResponsiveLabel">@Label</label>
                 }
 
-                <button @onclick="CloseCallout"
+                <button @onclick="CloseCalloutAndRestoreFocus"
                         type="button"
                         title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
                         aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"

@@ -172,6 +172,11 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     public RenderFragment<BitCountry>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// Keeps the national (trunk) prefix of a number in the composed value instead of dropping it.
+    /// </summary>
+    public bool? KeepNationalPrefix { get; set; }
+
+    /// <summary>
     /// The label of the phone input shown above the field.
     /// </summary>
     public string? Label { get; set; }
@@ -492,6 +497,11 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
         if (ItemTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(ItemTemplate)))
         {
             bitPhoneInput.ItemTemplate = ItemTemplate;
+        }
+
+        if (KeepNationalPrefix.HasValue && bitPhoneInput.HasNotBeenSet(nameof(KeepNationalPrefix)))
+        {
+            bitPhoneInput.KeepNationalPrefix = KeepNationalPrefix.Value;
         }
 
         if (Label.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(Label)))
