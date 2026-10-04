@@ -136,6 +136,79 @@ public class BitTextShimmerParamsTests : BunitTestContext
         StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:3em");
     }
 
+    // A cascaded SpreadLength is a default for the region, so it gives way to a Spread the shimmer sets for itself -
+    // and takes over again once the shimmer stops setting it.
+    [TestMethod]
+    public void BitTextShimmerShouldKeepItsOwnSpreadOverACascadedSpreadLength()
+    {
+        var shimmerParams = new BitTextShimmerParams { SpreadLength = "3em" };
+
+        var component = RenderWithParams(shimmerParams, builder => builder.AddAttribute(2, nameof(BitTextShimmer.Spread), 5d));
+
+        var style = component.Find(".bit-tsh").GetAttribute("style")!;
+        StringAssert.Contains(style, "--bit-tsh-spread:25px");
+        Assert.IsFalse(style.Contains("3em"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { shimmerParams });
+            parameters.AddChildContent(builder => BuildShimmer(builder, null));
+        });
+
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:3em");
+    }
+
+    // A cascaded GradientColor gives way to a Color role the shimmer asks for itself.
+    [TestMethod]
+    public void BitTextShimmerShouldKeepItsOwnColorOverACascadedGradientColor()
+    {
+        var component = RenderWithParams(new BitTextShimmerParams { GradientColor = "white" },
+                                         builder => builder.AddAttribute(2, nameof(BitTextShimmer.Color), BitColor.Error));
+
+        var root = component.Find(".bit-tsh");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tsh-err"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-tsh-gradient-clr"));
+    }
+
+    // A value of the shimmer's own wins over a cascaded rival of it, but not over one it sets itself.
+    [TestMethod]
+    public void BitTextShimmerShouldKeepItsOwnSpreadLengthAndGradientColorOverItsOwnSpreadAndColor()
+    {
+        var component = RenderWithParams(new BitTextShimmerParams(), builder =>
+        {
+            builder.AddAttribute(2, nameof(BitTextShimmer.Spread), 5d);
+            builder.AddAttribute(3, nameof(BitTextShimmer.SpreadLength), "3em");
+            builder.AddAttribute(4, nameof(BitTextShimmer.Color), BitColor.Error);
+            builder.AddAttribute(5, nameof(BitTextShimmer.GradientColor), "white");
+        });
+
+        var style = component.Find(".bit-tsh").GetAttribute("style")!;
+
+        StringAssert.Contains(style, "--bit-tsh-spread:3em");
+        StringAssert.Contains(style, "--bit-tsh-gradient-clr:white");
+    }
+
+    // A NaN is ignored by the shimmer, and it must not reset the style on every render for never equaling itself.
+    [TestMethod]
+    public void BitTextShimmerShouldNotReassignACascadedNaNOnEveryRender()
+    {
+        var shimmerParams = new BitTextShimmerParams { Angle = double.NaN, Spread = double.NaN };
+        var shimmer = new BitTextShimmer();
+        var builds = 0;
+        shimmer.StyleBuilder.Register(() => (++builds).ToString());
+
+        shimmerParams.UpdateParameters(shimmer);
+        _ = shimmer.StyleBuilder.Value;
+
+        shimmerParams.UpdateParameters(shimmer);
+        _ = shimmer.StyleBuilder.Value;
+
+        Assert.AreEqual(1, builds);
+        Assert.IsTrue(double.IsNaN(shimmer.Angle!.Value));
+        Assert.IsTrue(double.IsNaN(shimmer.Spread!.Value));
+    }
+
     [TestMethod]
     public void BitTextShimmerShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
