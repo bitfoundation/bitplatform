@@ -128,14 +128,16 @@
             <DemoExample Title="Images" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>
                     Insert by URL with alternative text, or drop and paste files. <b>OnImageUpload</b> persists the bytes and
-                    returns the URL (null cancels); without it images are inlined as data URLs. Types and size (10 MB) are
-                    checked on both sides. A selected image floats left, center or right, and is resized by its handle or
-                    by the panel's width field, which is also how its source and alt text are corrected later.
+                    returns the URL (null cancels); without it images are inlined as data URLs. Types and size
+                    (<b>MaxImageSize</b>, 10 MB by default; 2 MB here) are checked on both sides. A dropped image arrives with
+                    empty alt text (a file name describes nothing) and the editor says so; select it and the panel edits its
+                    source, alt text and width. It also floats left, center or right and resizes by its handle.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="imageHtml" Height="12rem"
                                    Toolbar="BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline"
                                    OnImageUpload="HandleImageUpload"
+                                   MaxImageSize="2 * 1024 * 1024"
                                    Placeholder="Drop or paste an image, or use the image button..." />
                 @if (lastUpload is not null)
                 {
@@ -146,13 +148,15 @@
 
             <DemoExample Title="Colors & fonts" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
                 <div>
-                    The <b>Color</b> group sets and removes the text and highlight colors; the <b>Font</b> group sets the
-                    family and size, offered from <b>FontFamilies</b> and <b>FontSizes</b> (or built-in defaults). Both
-                    reflect what is applied at the caret.
+                    The <b>Color</b> group sets and removes the text and highlight colors: <b>ColorPalette</b> offers your
+                    own swatches (arrow keys walk them, a custom field takes any other color); without it the browser's
+                    picker opens. The <b>Font</b> group sets the family and size from <b>FontFamilies</b> and
+                    <b>FontSizes</b> (or built-in defaults). Both reflect what is applied at the caret.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="colorHtml" Height="8rem"
                                    Toolbar="BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Font"
+                                   ColorPalette="palette"
                                    FontFamilies="fonts" FontSizes="sizes" />
             </DemoExample>
 
@@ -245,8 +249,9 @@
 
             <DemoExample Title="Selection toolbar" RazorCode="@example16RazorCode" Id="example16">
                 <div>
-                    <b>ShowQuickToolbar</b> floats a compact formatting bar over the selection. With <b>ShowToolbar</b> off it
-                    makes a chrome-free writing surface; Ctrl/Cmd+K still opens the link panel.
+                    <b>ShowQuickToolbar</b> floats a compact formatting bar over the selection; Alt+F10 moves the focus into
+                    it and Escape back. With <b>ShowToolbar</b> off it makes a chrome-free writing surface; Ctrl/Cmd+K
+                    still opens the link panel.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="quickHtml" ShowQuickToolbar ShowToolbar="false" Height="8rem" />
@@ -275,8 +280,9 @@
                 <div>
                     In an <b>EditForm</b>, <b>@@bind-Value</b> ties the editor to its field: a failing field gets the error
                     border and <code>aria-invalid</code>. <b>Label</b> names the editor (click it to focus), <b>Required</b>
-                    marks it, and <b>ShowCount</b> with <b>MaxLength</b> adds a counter that describes the field and caps
-                    typing, pasting and dropping alike.
+                    marks it, <b>Description</b> adds helper text, and <b>ShowCount</b> with <b>MaxLength</b> adds a counter
+                    that caps typing, pasting and dropping alike; the surface is described by all of them. Outside a form,
+                    <b>ErrorMessage</b> (or <b>Invalid</b> alone) reports a rejection of your own, announced as it appears.
                 </div>
                 <br />
                 <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit" novalidate>
@@ -284,6 +290,7 @@
                     <BitRichTextEditor @bind-Value="formModel.Body"
                                        Label="Description"
                                        Required
+                                       Description="Plain words work best: what changed and why."
                                        ShowCount
                                        MaxLength="500"
                                        Height="8rem"
@@ -297,6 +304,14 @@
                     <br />
                     <BitText Color="BitColor.Success">Submitted successfully!</BitText>
                 }
+                <br /><br />
+                <BitRichTextEditor @bind-Value="commentHtml" @bind-Value:after="() => commentError = null"
+                                   Label="Comment"
+                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
+                                   ErrorMessage="@commentError"
+                                   Height="6rem" />
+                <br />
+                <BitButton Variant="BitVariant.Outline" OnClick="SaveComment">Save comment</BitButton>
             </DemoExample>
 
             <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
@@ -354,7 +369,7 @@
             <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
                 <div>
                     <b>BitParams</b> with a <b>BitRichTextEditorParams</b> sets defaults - toolbar, localizer, policy,
-                    upload handler, sizes, styles - for every editor under it. An editor's own value wins (the second keeps
+                    upload handler, color palette, sizes, styles - for every editor under it. An editor's own value wins (the second keeps
                     its own placeholder).
                 </div>
                 <br />

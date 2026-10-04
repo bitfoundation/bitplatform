@@ -31,10 +31,33 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "ColorPalette",
+            Type = "IReadOnlyList<BitRichTextEditorColor>?",
+            DefaultValue = "null",
+            Description = "The colors the text and highlight color buttons offer as swatches (plus a custom field). Null or empty keeps the browser's color picker.",
+            LinkType = LinkType.Link,
+            Href = "#color"
+        },
+        new()
+        {
             Name = "DebounceMs",
             Type = "int",
             DefaultValue = "200",
             Description = "Debounce window (ms) for content-change notifications while typing. Negative values are treated as 0."
+        },
+        new()
+        {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The helper text shown in the footer of the editor; the editing surface is described by it."
+        },
+        new()
+        {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown under the editor when its content was rejected. It marks the editor invalid, describes the surface and is announced as it appears."
         },
         new()
         {
@@ -56,6 +79,13 @@ public partial class BitRichTextEditorDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The height the editing surface starts at (any CSS length); it grows with the content up to MaxHeight. Null leaves it to --bit-RichTextEditor-height (300px)."
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the content as invalid (error border and aria-invalid) for a rejection that does not come from the cascading EditContext."
         },
         new()
         {
@@ -86,6 +116,13 @@ public partial class BitRichTextEditorDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Maximum height of the editing surface (any CSS length); content beyond it scrolls inside the editor. Null leaves it to --bit-RichTextEditor-max-height (unbounded)."
+        },
+        new()
+        {
+            Name = "MaxImageSize",
+            Type = "long",
+            DefaultValue = "10485760",
+            Description = "The largest image, in bytes, that a drop or a paste may insert (10 MB). Checked in the browser and again before OnImageUpload; zero or less restores the default."
         },
         new()
         {
@@ -385,7 +422,7 @@ public partial class BitRichTextEditorDemo
         new() { Name = "--bit-RichTextEditor-border-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the editor." },
         new() { Name = "--bit-RichTextEditor-divider-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Lines between the toolbar, its panels, the surface and the footer, and between the toolbar groups." },
         new() { Name = "--bit-RichTextEditor-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the editor." },
-        new() { Name = "--bit-RichTextEditor-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Border of an invalid editor, the required asterisk, the inline error and the limit reached." },
+        new() { Name = "--bit-RichTextEditor-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Border of an invalid editor, the required asterisk, the error message, the inline error and the limit reached." },
         new() { Name = "--bit-RichTextEditor-height", DefaultValue = "spacing(37.5)", Description = "Height the editing surface starts at (the Height parameter sets it on the instance)." },
         new() { Name = "--bit-RichTextEditor-max-height", DefaultValue = "none", Description = "Height past which the surface scrolls (the MaxHeight parameter sets it on the instance)." },
         new() { Name = "--bit-RichTextEditor-padding", DefaultValue = "spacing(1.75) spacing(2)", Description = "Padding of the editing surface and the source view." },
@@ -405,11 +442,12 @@ public partial class BitRichTextEditorDemo
         new() { Name = "--bit-RichTextEditor-button-size", DefaultValue = "var(--bit-siz-ctrl-md)", Description = "Height (and minimum width) of a toolbar button and selector." },
         new() { Name = "--bit-RichTextEditor-button-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Glyph of a toolbar button." },
         new() { Name = "--bit-RichTextEditor-button-radius", DefaultValue = "var(--bit-shp-radius-button)", Description = "Corner radius of a toolbar button." },
-        new() { Name = "--bit-RichTextEditor-button-hover-background", DefaultValue = "var(--bit-clr-bg-sec-hover)", Description = "Background of a toolbar button under the pointer." },
+        new() { Name = "--bit-RichTextEditor-button-hover-background", DefaultValue = "var(--bit-clr-bg-sec-hover)", Description = "Background of a toolbar button, an emoji or a menu item under the pointer." },
         new() { Name = "--bit-RichTextEditor-button-active-color", DefaultValue = "var(--bit-clr-pri)", Description = "Glyph and border of a pressed button (the format at the caret, an open panel) and of the current menu item." },
         new() { Name = "--bit-RichTextEditor-button-active-background", DefaultValue = "var(--bit-clr-bg-pri-active)", Description = "Background of a pressed button and of the current menu item." },
-        new() { Name = "--bit-RichTextEditor-footer-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text of the count footer." },
-        new() { Name = "--bit-RichTextEditor-footer-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the count footer." },
+        new() { Name = "--bit-RichTextEditor-description-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Helper text (Description) in the footer." },
+        new() { Name = "--bit-RichTextEditor-footer-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text of the counts in the footer." },
+        new() { Name = "--bit-RichTextEditor-footer-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the footer that holds the description and the counts." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -428,10 +466,12 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Panel", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the tool panels (link, image, media, table, find and emoji) of the BitRichTextEditor." },
                 new() { Name = "QuickToolbar", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the floating selection toolbar of the BitRichTextEditor." },
                 new() { Name = "Menu", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the slash command and mention menus of the BitRichTextEditor." },
-                new() { Name = "Error", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the inline error message of the BitRichTextEditor." },
+                new() { Name = "Error", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the inline error banner (a failed command, link or upload) of the BitRichTextEditor." },
                 new() { Name = "Editor", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the editor (content) area of the BitRichTextEditor." },
                 new() { Name = "Source", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the HTML source view textarea of the BitRichTextEditor." },
-                new() { Name = "Count", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the character/word count footer of the BitRichTextEditor." },
+                new() { Name = "ErrorMessage", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the error message (the ErrorMessage parameter) of the BitRichTextEditor." },
+                new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the description (helper text) in the footer of the BitRichTextEditor." },
+                new() { Name = "Count", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the character/word counts in the footer of the BitRichTextEditor." },
             ]
         },
         new()
@@ -542,6 +582,17 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Id = "color",
+            Title = "BitRichTextEditorColor",
+            Description = "A color offered as a swatch by the text and highlight color panels.",
+            Parameters =
+            [
+                new() { Name = "Value", Type = "string", DefaultValue = "", Description = "The color applied, as a hex value (#2563eb); a hex value also lets the swatch show it is the color under the caret." },
+                new() { Name = "Name", Type = "string?", DefaultValue = "null", Description = "The accessible name and tooltip of the swatch (\"Brand blue\"). Without it the value is read out." },
+            ]
+        },
+        new()
+        {
             Id = "editor-error",
             Title = "BitRichTextEditorError",
             Description = "An error surfaced by the editor (e.g. invalid URL, failed upload, invalid HTML).",
@@ -648,6 +699,17 @@ public partial class BitRichTextEditorDemo
     private string? colorHtml = "<p>Make words <span style=\"color:#5b3df5\">colorful</span> or <span style=\"background-color:#fff3a3\">highlighted</span>, then pick a typeface.</p>";
     private readonly string[] fonts = ["Segoe UI", "Georgia", "Courier New", "Comic Sans MS"];
     private readonly string[] sizes = ["12px", "16px", "20px", "28px"];
+    private readonly BitRichTextEditorColor[] palette =
+    [
+        new("#1f2937", "Ink"),
+        new("#5b3df5", "Brand violet"),
+        new("#2563eb", "Blue"),
+        new("#059669", "Green"),
+        new("#d97706", "Amber"),
+        new("#dc2626", "Red"),
+        new("#fff3a3", "Soft yellow"),
+        new("#dbeafe", "Soft blue"),
+    ];
 
     private string? tableHtml = "<table><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Tables</td><td>Ready</td></tr><tr><td>Merge &amp; split cells</td><td>Ready</td></tr></tbody></table>";
 
@@ -726,7 +788,12 @@ public partial class BitRichTextEditorDemo
         }
     }
 
-    private string? eventsHtml = "<h2>A heading</h2><p>Some <strong>bold</strong> text with a <a href=\"https://example.com\">link</a> in it.</p>";
+    private string? commentHtml = "<p>Save this to see the server reject it, then edit it to clear the error.</p>";
+    private string? commentError;
+    // Stands in for a server round trip that refuses the content.
+    private void SaveComment() => commentError = "The server refused the comment: it reads like spam.";
+
+    private string? eventsHtml ="<h2>A heading</h2><p>Some <strong>bold</strong> text with a <a href=\"https://example.com\">link</a> in it.</p>";
     private string focusState = "blurred";
     private string selectionSummary = "nothing yet";
     private void HandleSelectionChange(BitRichTextEditorSelectionState state)

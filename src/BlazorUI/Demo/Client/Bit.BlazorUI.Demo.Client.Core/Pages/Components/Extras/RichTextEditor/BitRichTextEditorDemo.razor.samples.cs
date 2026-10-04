@@ -81,6 +81,7 @@ private void HandleLinkHtmlChanged(string? value)
 <BitRichTextEditor @bind-Value=""imageHtml"" Height=""12rem""
                    Toolbar=""BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline""
                    OnImageUpload=""HandleImageUpload""
+                   MaxImageSize=""2 * 1024 * 1024""
                    Placeholder=""Drop or paste an image, or use the image button..."" />
 
 @if (lastUpload is not null)
@@ -102,11 +103,23 @@ private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
     private readonly string example9RazorCode = @"
 <BitRichTextEditor @bind-Value=""colorHtml"" Height=""8rem""
                    Toolbar=""BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Font""
+                   ColorPalette=""palette""
                    FontFamilies=""fonts"" FontSizes=""sizes"" />";
     private readonly string example9CsharpCode = @"
 private string? colorHtml = ""<p>Make words <span style=\""color:#5b3df5\"">colorful</span> or <span style=\""background-color:#fff3a3\"">highlighted</span>, then pick a typeface.</p>"";
 private readonly string[] fonts = [""Segoe UI"", ""Georgia"", ""Courier New"", ""Comic Sans MS""];
-private readonly string[] sizes = [""12px"", ""16px"", ""20px"", ""28px""];";
+private readonly string[] sizes = [""12px"", ""16px"", ""20px"", ""28px""];
+private readonly BitRichTextEditorColor[] palette =
+[
+    new(""#1f2937"", ""Ink""),
+    new(""#5b3df5"", ""Brand violet""),
+    new(""#2563eb"", ""Blue""),
+    new(""#059669"", ""Green""),
+    new(""#d97706"", ""Amber""),
+    new(""#dc2626"", ""Red""),
+    new(""#fff3a3"", ""Soft yellow""),
+    new(""#dbeafe"", ""Soft blue""),
+];";
 
     private readonly string example10RazorCode = @"
 <BitRichTextEditor @bind-Value=""tableHtml"" Height=""12rem""
@@ -203,6 +216,7 @@ private Task<IReadOnlyList<BitRichTextEditorMention>> SearchMentions(string term
     <BitRichTextEditor @bind-Value=""formModel.Body""
                        Label=""Description""
                        Required
+                       Description=""Plain words work best: what changed and why.""
                        ShowCount
                        MaxLength=""500""
                        Height=""8rem""
@@ -214,7 +228,14 @@ private Task<IReadOnlyList<BitRichTextEditorMention>> SearchMentions(string term
 @if (formSubmitted)
 {
     <BitText Color=""BitColor.Success"">Submitted successfully!</BitText>
-}";
+}
+
+<BitRichTextEditor @bind-Value=""commentHtml"" @bind-Value:after=""() => commentError = null""
+                   Label=""Comment""
+                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
+                   ErrorMessage=""@commentError""
+                   Height=""6rem"" />
+<BitButton Variant=""BitVariant.Outline"" OnClick=""SaveComment"">Save comment</BitButton>";
     private readonly string example18CsharpCode = @"
 private readonly FormModel formModel = new();
 private bool formSubmitted;
@@ -243,7 +264,12 @@ public class FormModel : IValidatableObject
             yield return new ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
         }
     }
-}";
+}
+
+private string? commentHtml = ""<p>Save this to see the server reject it, then edit it to clear the error.</p>"";
+private string? commentError;
+// Stands in for a server round trip that refuses the content.
+private void SaveComment() => commentError = ""The server refused the comment: it reads like spam."";";
 
     private readonly string example19RazorCode = @"
 <BitRichTextEditor @bind-Value=""eventsHtml"" Height=""8rem""
