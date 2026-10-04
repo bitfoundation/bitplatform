@@ -165,6 +165,31 @@ public class BitPhoneInputParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldTakeTheCascadedColorKindsAndClearedAnnouncement()
+    {
+        var component = RenderWithParams(new BitPhoneInputParams
+        {
+            Background = BitColorKind.Secondary,
+            Border = BitColorKind.Transparent,
+            ClearedAnnouncement = "Gelöscht",
+            ShowClearButton = true,
+        }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitPhoneInput.DefaultCountry), BitCountries.Germany);
+        });
+
+        var root = component.Find(".bit-phi");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-phi-bse"));
+        Assert.IsTrue(root.ClassList.Contains("bit-phi-brn"));
+
+        component.Find("input.bit-phi-inp").Change("1701234567");
+        component.Find("button.bit-phi-cbt").Click();
+
+        StringAssert.StartsWith(component.Find(".bit-phi-lvr").TextContent, "Gelöscht");
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldTakeACascadedDefaultCountry()
     {
         // The default country is applied in the first pass of the field, before OnParametersSet, so the cascade

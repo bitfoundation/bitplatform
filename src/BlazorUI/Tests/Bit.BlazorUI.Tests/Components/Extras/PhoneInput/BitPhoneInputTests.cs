@@ -119,7 +119,16 @@ public class BitPhoneInputTests : BunitTestContext
         DataRow(BitColor.Success, "bit-phi-suc"),
         DataRow(BitColor.Warning, "bit-phi-wrn"),
         DataRow(BitColor.SevereWarning, "bit-phi-swr"),
-        DataRow(BitColor.Error, "bit-phi-err")]
+        DataRow(BitColor.Error, "bit-phi-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-phi-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-phi-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-phi-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-phi-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-phi-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-phi-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-phi-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-phi-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-phi-tbr")]
     public void BitPhoneInputShouldRespectColor(BitColor color, string cssClass)
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
@@ -911,6 +920,120 @@ public class BitPhoneInputTests : BunitTestContext
 
         var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
         Assert.AreEqual(BitCountries.Germany.Name, active.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepASpaceTypedInTheMiddleOfATypeAheadTerm()
+    {
+        BitCountry? changed = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.NoSearchBox, true);
+            parameters.Add(p => p.OnCountryChange, c => changed = c);
+        });
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.Click();
+
+        foreach (var key in new[] { "u", "n", "i", "t", "e", "d", " ", "s" })
+        {
+            dropdown.KeyDown(key);
+        }
+
+        // "united " has reached the United Kingdom, and the space is part of the name being typed rather than a
+        // choice of it, so "united s" goes on to the United States.
+        var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(BitCountries.UnitedStates.Name, active.GetAttribute("title"));
+        Assert.IsNull(changed);
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldOpenOnTheTypedCountryWithoutASearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-phi-drp").KeyDown("g");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(BitCountries.Germany.Name, active.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotOpenOnATypedLetterWithASearchBoxOrAModifier()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+        });
+
+        component.Find("button.bit-phi-drp").KeyDown("g");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        component.Render(parameters => parameters.Add(p => p.NoSearchBox, true));
+
+        component.Find("button.bit-phi-drp").KeyDown(new KeyboardEventArgs { Key = "c", CtrlKey = true });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod,
+        DataRow("Home", 0),
+        DataRow("End", 4)]
+    public void BitPhoneInputShouldOpenOnTheFirstOrLastCountryWithHomeOrEnd(string key, int expected)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedKingdom);
+        });
+
+        component.Find("button.bit-phi-drp").KeyDown(key);
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var active = component.FindAll("button.bit-phi-itm").First(i => i.ClassList.Contains("bit-phi-act"));
+        Assert.AreEqual(FiveCountries[expected].Name, active.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSelectWithAltArrowUpOnlyWithoutASearchBox()
+    {
+        BitCountry? changed = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.OnCountryChange, c => changed = c);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+        component.Find("input.bit-phi-srch").KeyDown("ArrowDown");
+        component.Find("input.bit-phi-srch").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        // With a search box Alt+Up only closes the list.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsNull(changed);
+
+        component.Render(parameters => parameters.Add(p => p.NoSearchBox, true));
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.Click();
+        dropdown.KeyDown("ArrowDown");
+        dropdown.KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        // A select-only list takes the option the arrows are on.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(FiveCountries[1].Iso2, changed?.Iso2);
     }
 
     [TestMethod]
@@ -2311,6 +2434,139 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("input.bit-phi-srch").Input("an");
 
         Assert.AreEqual(0, component.FindAll(".bit-phi-ilp").Count);
+    }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-phi-bpr"),
+        DataRow(BitColorKind.Secondary, "bit-phi-bse"),
+        DataRow(BitColorKind.Tertiary, "bit-phi-btr"),
+        DataRow(BitColorKind.Transparent, "bit-phi-btn")]
+    public void BitPhoneInputShouldRespectBackground(BitColorKind kind, string cssClass)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Background, kind);
+        });
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-phi-brp"),
+        DataRow(BitColorKind.Secondary, "bit-phi-brs"),
+        DataRow(BitColorKind.Tertiary, "bit-phi-brt"),
+        DataRow(BitColorKind.Transparent, "bit-phi-brn")]
+    public void BitPhoneInputShouldRespectBorder(BitColorKind kind, string cssClass)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Border, kind);
+        });
+
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderNoColorKindClassesByDefault()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var classes = component.Find(".bit-phi").ClassList;
+
+        foreach (var cssClass in new[] { "bit-phi-bpr", "bit-phi-bse", "bit-phi-btr", "bit-phi-btn", "bit-phi-brp", "bit-phi-brs", "bit-phi-brt", "bit-phi-brn" })
+        {
+            Assert.IsFalse(classes.Contains(cssClass), cssClass);
+        }
+    }
+
+    [TestMethod,
+        DataRow(null, "Cleared"),
+        DataRow("Nummer gelöscht", "Nummer gelöscht"),
+        DataRow("", "")]
+    public void BitPhoneInputShouldAnnounceAClear(string? announcement, string expected)
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+            parameters.Add(p => p.ClearedAnnouncement, announcement);
+        });
+
+        component.Find("input.bit-phi-inp").Change("1701234567");
+        component.Find("button.bit-phi-cbt").Click();
+
+        // The live region alternates an invisible marker with the text so a repeated one is still announced.
+        Assert.AreEqual(expected, component.Find(".bit-phi-lvr").TextContent.Replace("​", string.Empty));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderAClearMadeThroughItsPublicApi()
+    {
+        var cleared = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+            parameters.Add(p => p.OnClear, () => cleared++);
+        });
+
+        component.Find("input.bit-phi-inp").Change("1701234567");
+
+        // Called the way a consumer calls it - from outside any event handler of the component - so the
+        // component has to ask for its own render.
+        component.Instance.ClearAsync().GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, cleared);
+        Assert.IsTrue(string.IsNullOrEmpty(component.Find("input.bit-phi-inp").GetAttribute("value")));
+        StringAssert.StartsWith(component.Find(".bit-phi-lvr").TextContent, "Cleared");
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldRenderANumberSetThroughItsPublicApi()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        component.Instance.SetNumberAsync("+49 170 1234567").GetAwaiter().GetResult();
+
+        Assert.AreEqual("1701234567", component.Find("input.bit-phi-inp").GetAttribute("value"));
+        Assert.AreEqual("Country: Germany", component.Find("button.bit-phi-drp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotSetANumberOfAnotherCountryOnAOneWayBoundCountry()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Country, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        component.Instance.SetNumberAsync("+49 170 1234567").GetAwaiter().GetResult();
+
+        // The country cannot move, so the local part parsed for Germany must not end up under the United States.
+        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.IsNull(number);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheTextAidsOfTheKeyboardOffTheSearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // A country name is not prose: a spell checker would underline half of them and an autocorrect
+        // would rewrite them while they are being typed.
+        var search = component.Find("input.bit-phi-srch");
+        Assert.AreEqual("false", search.GetAttribute("spellcheck"));
+        Assert.AreEqual("off", search.GetAttribute("autocorrect"));
+        Assert.AreEqual("off", search.GetAttribute("autocapitalize"));
     }
 
     [TestMethod]
