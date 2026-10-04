@@ -77,6 +77,7 @@ internal static class BitRichTextEditorIcons
     public static readonly MarkupString RightToLeft = S("<path d=\"M10 3v9M14 3v9M16 3H9.5a3 3 0 0 0 0 6H10\"/><path d=\"M20 17H4M7 14l-3 3 3 3\"/>");
 
     public static readonly MarkupString Emoji = S("<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"/><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"/><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"/>");
+    public static readonly MarkupString Keyboard = S("<rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"/><path d=\"M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8\"/>");
     public static readonly MarkupString Find = S("<circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"16\" y1=\"16\" x2=\"21\" y2=\"21\"/>");
     public static readonly MarkupString Previous = S("<polyline points=\"18 15 12 9 6 15\"/>");
     public static readonly MarkupString Next = S("<polyline points=\"6 9 12 15 18 9\"/>");

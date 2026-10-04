@@ -11,6 +11,10 @@ public partial class BitRichTextEditor
     /// </summary>
     [Parameter] public Func<BitRichTextEditorImageUpload, Task<string?>>? OnImageUpload { get; set; }
 
+    // The OnImageUpload calls still running: a drop of several files runs one each. While any is, the editor shows
+    // and reports that it is busy, since an upload to a server can take long enough to look like nothing happened.
+    private int _uploadsInFlight;
+
     private long _maxImageSize = DefaultMaxImageSize;
     /// <summary>
     /// The largest image, in bytes, that a drop or a paste may insert (10 MB by default). It is checked in the browser
@@ -227,14 +231,34 @@ public partial class BitRichTextEditor
             return $"data:{mimeType};base64,{base64}";   // inline data URL fallback
         }
 
+        byte[] bytes;
         try
         {
-            var bytes = Convert.FromBase64String(base64);
-            if (bytes.Length > MaxImageSize)
-            {
-                await RaiseImageTooLargeAsync(fileName);
-                return null;
-            }
+            bytes = Convert.FromBase64String(base64);
+        }
+        catch (FormatException)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
+                string.Format(Loc("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
+            return null;
+        }
+        if (bytes.Length > MaxImageSize)
+        {
+            await RaiseImageTooLargeAsync(fileName);
+            return null;
+        }
+
+        if (_uploadsInFlight++ == 0)
+        {
+            Announce(Loc("image-uploading", "Uploading image…"));
+        }
+        else
+        {
+            StateHasChanged();
+        }
+
+        try
+        {
             var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, mimeType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -257,7 +281,16 @@ public partial class BitRichTextEditor
                 string.Format(Loc("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
             return null;
         }
+        finally
+        {
+            _uploadsInFlight--;
+            StateHasChanged();
+        }
     }
+
+    private string UploadingLabel => _uploadsInFlight == 1
+        ? Loc("image-uploading", "Uploading image…")
+        : string.Format(Loc("images-uploading", "Uploading {0} images…"), _uploadsInFlight);
 
     /// <summary>
     /// Reported by the bridge once dropped or pasted images are in. A file name is not a text alternative, so they go in

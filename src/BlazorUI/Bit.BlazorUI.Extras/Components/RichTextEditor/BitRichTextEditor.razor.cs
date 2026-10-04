@@ -281,6 +281,12 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
+    /// The formatting under the current selection - the snapshot the toolbar highlights itself from and
+    /// <see cref="OnSelectionChange"/> reports - so a custom toolbar item can act on what is at the caret.
+    /// </summary>
+    public BitRichTextEditorSelectionState SelectionState => _state;
+
+    /// <summary>
     /// Runs a raw editing command against the editor.
     /// </summary>
     public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
@@ -359,11 +365,13 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private string DescriptionId => $"{UniqueId}-description";
 
+    private string HintId => $"{UniqueId}-hint";
+
     /// <summary>
-    /// The ids the editing surface is described by, what is wrong first: the error message, the description, the
-    /// count footer, and the inline error while one is shown.
+    /// The ids the content is described by, what is wrong first: the error message, the description, the count footer,
+    /// and the inline error while one is shown. The source view reads them as they are.
     /// </summary>
-    private string? SurfaceDescribedBy
+    private string? FieldDescribedBy
     {
         get
         {
@@ -376,6 +384,12 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
+    /// What the editing surface is described by: <see cref="FieldDescribedBy"/>, then the hint that Alt+0 lists the
+    /// keyboard shortcuts - which only the surface answers to.
+    /// </summary>
+    private string SurfaceDescribedBy => FieldDescribedBy is { } ids ? $"{ids} {HintId}" : HintId;
+
+    /// <summary>
     /// Whether the floating selection toolbar should be on screen: it is opt-in, needs a real
     /// selection to anchor to, and never competes with the slash menu, an open tool panel (whose
     /// fields it would float over), or a disabled surface.
@@ -386,7 +400,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     /// <summary>Whether one of the inline tool bars under the toolbar is currently showing.</summary>
     private bool AnyPanelOpen
-        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji || _showColor;
+        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji || _showColor || _showHelp;
 
     /// <summary>
     /// Places the selection toolbar just above the selection, in the component root's coordinates.
@@ -600,6 +614,7 @@ public partial class BitRichTextEditor : BitComponentBase
         if (keep != "table") { _showTableInput = false; }
         if (keep != "emoji") { _showEmoji = false; _emojiSearch = ""; }
         if (keep != "color") { _showColor = false; }
+        if (keep != "help") { _showHelp = false; }
         if (keep != "find" && _showFind)
         {
             // The find panel is one of the same strip of bars, so opening another tool closes it -

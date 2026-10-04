@@ -230,6 +230,54 @@
         </div>
     }
 
+    @if (_showHelp && IsEnabled)
+    {
+        @* The list is a scrolling region that takes the focus as the panel opens: a screen reader starts reading it,
+           and the arrow keys scroll it. *@
+        <div class="bit-rte-help @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-help-panel")"
+             @onkeydown="e => OnPanelKeyDown(e, CloseHelp)">
+            <div class="bit-rte-help-head">
+                <span class="bit-rte-help-ttl" id="@($"{UniqueId}-help-title")">@Loc("keyboard-help", "Keyboard shortcuts")</span>
+                <button type="button" class="bit-rte-btn bit-rte-pbt @Classes?.Button" style="@Styles?.Button" @onclick="CloseHelp">@Loc("close", "Close")</button>
+            </div>
+            <div @ref="_helpListRef" class="bit-rte-help-scroll" tabindex="0" role="region" aria-labelledby="@($"{UniqueId}-help-title")">
+                <table class="bit-rte-help-tbl">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Loc("help-action", "Action")</th>
+                            <th scope="col">@Loc("help-keys", "Keys")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (action, keys) in HelpRows())
+                        {
+                            <tr>
+                                <th scope="row">@action</th>
+                                <td>
+                                    @for (var k = 0; k < keys.Count; k++)
+                                    {
+                                        if (k > 0)
+                                        {
+                                            <span class="bit-rte-help-sep">@Loc("help-or", "or")</span>
+                                        }
+                                        <kbd>@keys[k]</kbd>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="bit-rte-help-note">@Loc("help-mac", "On macOS, Ctrl is Cmd.")</p>
+            </div>
+        </div>
+    }
+
+    @if (_uploadsInFlight > 0)
+    {
+        @* Seen here; heard once through the status region as the first upload starts, and again as the images land. *@
+        <div class="bit-rte-upl">@UploadingLabel</div>
+    }
+
     @if (_inlineError is not null)
     {
         <div class="bit-rte-err @Classes?.Error" style="@Styles?.Error" id="@($"{UniqueId}-error")" role="alert">@_inlineError</div>
@@ -343,6 +391,7 @@
          aria-disabled="@(IsEnabled ? null : "true")"
          aria-required="@(Required ? "true" : null)"
          aria-invalid="@(IsInvalid ? "true" : null)"
+         aria-busy="@(_uploadsInFlight > 0 ? "true" : null)"
          aria-placeholder="@Placeholder"
          aria-describedby="@SurfaceDescribedBy"
          spellcheck="@SpellCheck.ToString().ToLowerInvariant()"
@@ -358,7 +407,7 @@
                   @ref="_sourceRef"
                   aria-label="@Loc("source-view", "HTML source")"
                   aria-invalid="@(IsInvalid ? "true" : null)"
-                  aria-describedby="@SurfaceDescribedBy"
+                  aria-describedby="@FieldDescribedBy"
                   spellcheck="false"
                   readonly="@EffectiveReadOnly"
                   disabled="@(IsEnabled is false)"
@@ -377,7 +426,7 @@
         @* One row for the helper text and the counts, the way a text field lays them out. Both describe the surface
            (read with it on focus) rather than being live regions, which would read the counts out after every pause in
            typing; only reaching the limit is announced. *@
-        <div class="bit-rte-ftr">
+        <div class="bit-rte-ftr @Classes?.Footer" style="@Styles?.Footer">
             @if (Description.HasValue())
             {
                 <div id="@DescriptionId" class="bit-rte-dsc @Classes?.Description" style="@Styles?.Description">@Description</div>
@@ -391,6 +440,9 @@
             }
         </div>
     }
+
+    @* Read with the surface on focus, last: the one place a screen reader user learns the help exists. *@
+    <span class="bit-rte-hint" id="@HintId">@Loc("help-hint", "Press Alt+0 for keyboard shortcuts.")</span>
 
     <span class="bit-rte-ann" role="status">@_announcement</span>
 </div>
@@ -421,6 +473,7 @@
             case "source": builder.AddContent(0, SourceGroup); break;
             case "fullscreen": builder.AddContent(0, FullScreenGroup); break;
             case "clear": builder.AddContent(0, ClearGroup); break;
+            case "help": builder.AddContent(0, HelpGroup); break;
             default: RenderCustomItem(builder, id); break;
         }
     };
@@ -636,5 +689,10 @@
     private RenderFragment ClearGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
         <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("clear-formatting", "Clear formatting")" aria-label="@Loc("clear-formatting", "Clear formatting")" aria-keyshortcuts="@ShortcutFor("removeFormat")" disabled="@ControlsDisabled"
                 @onmousedown:preventDefault="true" @onclick="ClearFormattingAsync">@BitRichTextEditorIcons.ClearFormatting</button>
+    </div>;
+
+    private RenderFragment HelpGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showHelp ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("keyboard-help-title", "Keyboard shortcuts (Alt+0)")" aria-label="@Loc("keyboard-help", "Keyboard shortcuts")" aria-keyshortcuts="Alt+0" aria-expanded="@(_showHelp ? "true" : "false")" aria-controls="@(_showHelp ? $"{UniqueId}-help-panel" : null)" disabled="@(IsEnabled is false)"
+                @onmousedown:preventDefault="true" @onclick="ToggleHelp">@BitRichTextEditorIcons.Keyboard</button>
     </div>;
 }

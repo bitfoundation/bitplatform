@@ -31,7 +31,7 @@ public class BitRichTextEditorClassStyles
     public string? Button { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the tool panels (link, image, media, table, find and emoji) of the BitRichTextEditor.
+    /// Custom CSS classes/styles for the tool panels (link, image, media, table, find, emoji, color and keyboard help) of the BitRichTextEditor.
     /// </summary>
     public string? Panel { get; set; }
 
@@ -64,6 +64,11 @@ public class BitRichTextEditorClassStyles
     /// Custom CSS classes/styles for the error message (the ErrorMessage parameter) of the BitRichTextEditor.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer row (holding the description and the counts) of the BitRichTextEditor.
+    /// </summary>
+    public string? Footer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the description (helper text) in the footer of the BitRichTextEditor.

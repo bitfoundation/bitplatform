@@ -413,6 +413,93 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     padding: spacing(0.5);
 }
 
+// The keyboard help: a title row, then the list, which scrolls inside the panel rather than pushing the text away.
+.bit-rte-help {
+    font-size: $tg-fs-sm;
+    padding: spacing(0.75) spacing(1);
+    background: $rte-bar-background;
+    border-bottom: $shp-border-width $shp-border-style $rte-divider;
+}
+
+.bit-rte-help-head {
+    display: flex;
+    gap: spacing(1);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bit-rte-help-ttl {
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-rte-help-scroll {
+    overflow-y: auto;
+    margin-top: spacing(0.75);
+    max-height: spacing(30);
+    border-radius: $shp-radius-control;
+
+    &:focus-visible {
+        @include focus-ring($rte-focus);
+    }
+}
+
+.bit-rte-help-tbl {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        text-align: start;
+        vertical-align: baseline;
+        padding: spacing(0.5) spacing(0.75);
+        border-bottom: $shp-border-width $shp-border-style $rte-divider;
+    }
+
+    thead th {
+        color: $clr-fg-sec;
+        font-size: $tg-fs-xs;
+        font-weight: $tg-fw-semibold;
+    }
+
+    tbody th {
+        font-weight: $tg-fw-regular;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+
+    kbd {
+        color: $clr-fg-pri;
+        font-size: $tg-fs-xs;
+        background: $rte-background;
+        padding: 0 spacing(0.5);
+        font-family: $tg-font-family-mono;
+        border-radius: $shp-radius-xs;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+}
+
+.bit-rte-help-sep {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    margin: 0 spacing(0.5);
+}
+
+.bit-rte-help-note {
+    margin: spacing(0.75) 0 0;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+}
+
+.bit-rte-upl {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    background: $rte-bar-background;
+    padding: spacing(0.75) spacing(1.25);
+    border-bottom: $shp-border-width $shp-border-style $rte-divider;
+}
+
 .bit-rte-err {
     color: $rte-error;
     font-size: $tg-fs-xs;
@@ -465,7 +552,8 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 }
 
 // Read by assistive technology only.
-.bit-rte-ann {
+.bit-rte-ann,
+.bit-rte-hint {
     width: 1px;
     height: 1px;
     margin: -1px;
@@ -534,12 +622,17 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
         resize: vertical;
     }
 
+    // Laid over the surface with the surface's own padding, so it starts where the first line of text does whatever
+    // --bit-RichTextEditor-padding says.
     &.bit-rte-edt-empty::before {
+        inset-inline: 0;
+        overflow: hidden;
         position: absolute;
         pointer-events: none;
+        inset-block-start: 0;
+        box-sizing: border-box;
+        padding: $rte-padding;
         content: attr(data-placeholder);
-        inset-inline-start: spacing(2);
-        inset-block-start: spacing(1.75);
         // The secondary foreground, not the tertiary one: a placeholder is text, held to the 4.5:1 contrast of text.
         color: var(--bit-RichTextEditor-placeholder-color, #{$clr-fg-sec});
     }

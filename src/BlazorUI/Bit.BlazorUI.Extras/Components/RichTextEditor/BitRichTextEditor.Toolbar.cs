@@ -34,6 +34,7 @@ public partial class BitRichTextEditor
         (BitRichTextEditorToolbarConfig.GroupIds.Source, BitRichTextEditorToolbar.Source),
         (BitRichTextEditorToolbarConfig.GroupIds.FullScreen, BitRichTextEditorToolbar.FullScreen),
         (BitRichTextEditorToolbarConfig.GroupIds.Clear, BitRichTextEditorToolbar.Clear),
+        (BitRichTextEditorToolbarConfig.GroupIds.Help, BitRichTextEditorToolbar.Help),
     ];
 
     /// <summary>
@@ -114,9 +115,12 @@ public partial class BitRichTextEditor
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", $"bit-rte-grp {Classes?.Group}");
         builder.AddAttribute(2, "style", Styles?.Group);
+        // A toggle reports its state the way the built-in ones do: the pressed look and aria-pressed.
+        var active = item.IsActive?.Invoke(_state);
+
         builder.OpenElement(3, "button");
         builder.AddAttribute(4, "type", "button");
-        builder.AddAttribute(5, "class", $"bit-rte-btn {Classes?.Button}");
+        builder.AddAttribute(5, "class", $"bit-rte-btn {Classes?.Button}{(active is true ? " bit-rte-act" : null)}");
         builder.AddAttribute(6, "style", Styles?.Button);
         // Icon-only items may omit a visible label; fall back through Label then Id so the
         // button always exposes a usable accessible name and tooltip. Treat whitespace-only
@@ -128,9 +132,12 @@ public partial class BitRichTextEditor
         builder.AddAttribute(7, "title", accessibleName);
         builder.AddAttribute(8, "aria-label", accessibleName);
         builder.AddAttribute(9, "disabled", ControlsDisabled);
-        builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => InvokeCustomItemAsync(item)));
-        if (item.Icon is not null) builder.AddContent(11, item.Icon);
-        else builder.AddContent(12, item.Label ?? item.Id);
+        if (active.HasValue) builder.AddAttribute(10, "aria-pressed", active.Value ? "true" : "false");
+        // Like every built-in button, a press leaves the focus and the selection in the text the action works on.
+        builder.AddEventPreventDefaultAttribute(11, "onmousedown", true);
+        builder.AddAttribute(12, "onclick", EventCallback.Factory.Create(this, () => InvokeCustomItemAsync(item)));
+        if (item.Icon is not null) builder.AddContent(13, item.Icon);
+        else builder.AddContent(14, item.Label ?? item.Id);
         builder.CloseElement();
         builder.CloseElement();
     }

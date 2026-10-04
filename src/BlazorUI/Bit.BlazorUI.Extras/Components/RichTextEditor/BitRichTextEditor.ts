@@ -2921,6 +2921,14 @@ namespace BitBlazorUI {
                 return;
             }
 
+            // Alt+0 lists the keyboard shortcuts, the chord other editors use for their help. Read off the
+            // physical digit key only: Alt with the numeric keypad is how Windows types a character by its code.
+            if (e.altKey && !primaryDown && !e.shiftKey && e.code === 'Digit0') {
+                e.preventDefault();
+                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnHelpRequested');
+                return;
+            }
+
             if (editor._readOnly) return;
 
             // Ctrl/Cmd+Shift+V is the universal "paste without formatting" chord. The browser
