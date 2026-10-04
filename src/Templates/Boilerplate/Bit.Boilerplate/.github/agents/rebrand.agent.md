@@ -67,6 +67,8 @@ Verify against the app while it runs under `dotnet watch` in `src/Server/Boilerp
 - Style and markup edits reach the open page on their own. Batch what needs a rebuild, such as native app icons, and
   stop the app before `dotnet test`, because the running app holds the build outputs.
 - The client build treats Sass warnings as errors.
+- When a style edit does not show up, check that the generated stylesheet contains it before you debug the rule. C#
+  that already ran, such as startup code and field initializers, changes only after a restart.
 - The Content Security Policy is off in Development and strict everywhere else
   (`Components/Layout/ContentSecurityPolicy.razor`), so an image or font loaded from another origin works locally and
   breaks in production. Self-host such assets, or use only what that policy allows.
@@ -224,15 +226,17 @@ component the app shows, decide all three, and their combinations with hover and
 one with its badge or featured treatment included), tabs, checkboxes and toggles, choice groups, pagination, tags,
 selected rows, the selected date.
 
-### 4.4 What the browser paints
+### 4.4 What bit does not paint
 
-Some pixels come from the browser, not from bit, and no token reaches them. Decide each, per scheme:
+Some pixels come from the browser or a third party, not from bit, and no token reaches them. Decide each, per scheme:
 
 - **Autofill**: browsers repaint autofilled fields with their own background and text colors; restyle them to the
   field's resting colors.
 - **Text selection**: give it the reference's treatment, with legible text.
 - **Native widgets** - scrollbars, native pickers, `<select>` lists - follow `color-scheme`. A surface painted in the
   opposite scheme (a dark hero in light mode) needs its own.
+- **Embedded widgets** - a captcha, a map, a video or payment frame - paint themselves, often in light only: match
+  each to the scheme around it through its own settings, or frame it so it does not clash.
 - **Forced colors**: make sure your own surfaces (gradients, images behind text, brand fills) don't hide content
   under `forced-colors: active`.
 
@@ -251,6 +255,12 @@ Some pixels come from the browser, not from bit, and no token reaches them. Deci
 | App icons and splash | the favicons, PWA icons, the MAUI app icon and splash | Only from an official asset; the native ones need a rebuild |
 | Emails | the identity email templates of `src/Server/Boilerplate.Server.Api` | Email clients can't read CSS variables: literal brand colors and a web-safe font stack. In scope for a real brand change, not for a look-alike demo |
 
+<!--#if (module == "Admin")-->
+**Charts**: give the Dashboard's charts a series palette drawn from the brand through the chart's per-component
+variables, with every series told apart from its neighbors and legible on both schemes' surfaces, and axes, grid lines
+and legend in the brand's neutrals.
+
+<!--#endif-->
 Then hunt for what is left of the old look rather than trusting this table: search the code for literal colors and
 font names outside the theme layer, and look on screen for the preset's accent color and typeface. Replace every hit,
 or list it as a follow-up.
@@ -274,7 +284,8 @@ Drive the running web app with your browser automation (AGENTS.md section 4), se
 ### 7.1 The state matrix
 
 Cover every row in both schemes at desktop (about 1440px) and phone (about 390px) widths, plus one pass at a tablet
-width and one in an RTL culture:
+width, one in an RTL culture, and one in the culture with the longest strings, where labels beside badges and inside
+buttons truncate first:
 
 | Axis | Cover |
 | --- | --- |
@@ -285,6 +296,7 @@ width and one in an RTL culture:
 | Input | empty (placeholder), filled, invalid (submit an empty form), required, disabled, read-only, autofilled |
 | Feedback | busy buttons, loaders, shimmers, progress, empty states, messages and snackbars of every severity |
 | Overlays | dropdowns, date pickers, callouts and menus, dialogs and modals, panels, tooltips |
+| First visit | empty storage: the consent banner and any other first-run UI, which a reused session never shows again |
 | Preferences | `prefers-reduced-motion: reduce` and `forced-colors: active`, once each |
 
 Real input - Tab, pointer, typing, submitting - is the most faithful way into a state. For a state that is awkward to
@@ -352,7 +364,10 @@ pass.
   opens the re-skinned not-found page.
 - Nothing of the old look remains, or every leftover is a listed follow-up.
 - The native chrome color equals the page background in both schemes.
-- The RTL culture and the phone and tablet widths hold up.
+- The RTL culture, the culture with the longest strings, and the phone and tablet widths hold up.
+<!--#if (module == "Admin")-->
+- The Dashboard's charts carry the brand's palette in both schemes.
+<!--#endif-->
 - Every hack is in `_brand-hacks.scss` or listed in the report, with its upstream issue offered.
 - Existing pages, items and actions work as before, the identity markup, the routes and the existing text are
   unchanged, the build is clean, and `dotnet test` passes.
