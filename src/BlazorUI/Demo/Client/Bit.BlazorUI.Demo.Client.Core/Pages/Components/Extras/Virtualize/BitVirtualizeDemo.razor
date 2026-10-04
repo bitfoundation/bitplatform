@@ -107,8 +107,8 @@
                 <div>
                     <b>Lanes</b> lays the items side by side in equal columns (rows when Horizontal), turning the list into a
                     virtualized grid; ItemSize is then the height of a row. <b>MinLaneSize</b> makes it responsive: as many
-                    lanes as fit at that minimum width (resize the window). The arrow keys move across and along the lanes,
-                    and in Dynamic mode each row is as tall as its tallest item.
+                    lanes as fit at that minimum width (resize the window). <b>Gap</b> spaces the rows and the lanes. The
+                    arrow keys move across and along the lanes, and in Dynamic mode each row is as tall as its tallest item.
                 </div>
                 <br />
                 <div class="toolbar">
@@ -116,10 +116,10 @@
                     <BitToggle @bind-Value="gridResponsive" Label="MinLaneSize = 200" Inline />
                 </div>
                 <br />
-                <BitVirtualize Items="gridItems" ItemSize="120" Lanes="gridLanes" MinLaneSize="@(gridResponsive ? 200 : null)"
+                <BitVirtualize Items="gridItems" ItemSize="120" Lanes="gridLanes" MinLaneSize="@(gridResponsive ? 200 : null)" Gap="8"
                                TItem="int" Context="item"
-                               Class="list">
-                    <div class="tile">
+                               Class="list grid-list">
+                    <div class="grid-tile">
                         <b>@item.ToString("N0")</b>
                     </div>
                 </BitVirtualize>
@@ -134,7 +134,7 @@
                 </div>
                 <br />
                 <div class="toolbar">
-                    <BitNumberField @bind-Value="scrollTargetIndex" Min="0" Max="99999" Style="max-width:9rem" />
+                    <BitNumberField @bind-Value="scrollTargetIndex" Min="0" Max="99999" Label="Index" LabelPosition="BitLabelPosition.Start" Style="max-width:12rem" />
                     <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.Start)">Start</BitButton>
                     <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.Center)">Center</BitButton>
                     <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.End)">End</BitButton>
@@ -182,7 +182,9 @@
                 <div>
                     Each item carries its position in the whole list (aria-posinset / aria-setsize), so a screen reader says
                     "article 12 of 10,000" with only a few items in the DOM. <b>Role</b> and <b>ItemRole</b> (list / listitem by
-                    default) are set here to a feed of articles, and <b>AriaLabel</b> names it.
+                    default) are set here to a feed of articles, and <b>AriaLabel</b> names it. <b>ItemAttributes</b> adds
+                    attributes to the element of each item, the one that takes the focus: here the aria-labelledby and
+                    aria-describedby a feed asks of its articles (an aria-selected would make a listbox of options).
                 </div>
                 <br />
                 <div>
@@ -194,10 +196,11 @@
                 <BitVirtualize Items="articles" ItemSize="72"
                                TItem="Article" Context="article"
                                Role="feed" ItemRole="article" AriaLabel="News feed"
+                               ItemAttributes="ArticleAttributes"
                                Class="list">
                     <div class="news-item">
-                        <b>@article.Title</b>
-                        <span>@article.Summary</span>
+                        <b id="article-title-@article.Id">@article.Title</b>
+                        <span id="article-summary-@article.Id">@article.Summary</span>
                     </div>
                 </BitVirtualize>
             </DemoExample>
@@ -373,9 +376,9 @@
                 <BitVirtualize Items="styleItems" ItemSize="48"
                                TItem="int"
                                IsStickyItem="i => i % 10 == 0"
-                               Styles="@(new() { Root = "height: 15rem; border: 1px solid tomato;",
-                                                 Header = "padding: 0.5rem 1rem; color: white; background: tomato;",
-                                                 Sticky = "color: white; background: darkorange;",
+                               Styles="@(new() { Root = "height: 15rem; border: 1px solid crimson;",
+                                                 Header = "padding: 0.5rem 1rem; color: white; background: crimson;",
+                                                 Sticky = "color: white; background: mediumvioletred;",
                                                  Item = "padding-inline-start: 1rem;" })">
                     <HeaderTemplate>Header</HeaderTemplate>
                     <ItemTemplate Context="item">

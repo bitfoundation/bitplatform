@@ -50,6 +50,13 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
+            Name = "Gap",
+            Type = "float",
+            DefaultValue = "0",
+            Description = "The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.",
+         },
+         new()
+         {
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -98,6 +105,13 @@ public partial class BitVirtualizeDemo
             Type = "ICollection<TItem>?",
             DefaultValue = "null",
             Description = "The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.",
+         },
+         new()
+         {
+            Name = "ItemAttributes",
+            Type = "Func<TItem, IReadOnlyDictionary<string, object>?>?",
+            DefaultValue = "null",
+            Description = "A function that returns extra HTML attributes for the element of an item, which is the one that takes the keyboard focus: an aria-selected, aria-labelledby or aria-describedby for assistive technologies, a class or a style for the whole slot of the item. A role or an aria attribute it returns overrides the default one, while a class or a style is appended to the ones of the component.",
          },
          new()
          {
@@ -213,7 +227,7 @@ public partial class BitVirtualizeDemo
             Name = "Role",
             Type = "string?",
             DefaultValue = "list",
-            Description = "The ARIA role of the root element.",
+            Description = "The ARIA role of the root element, which is a group instead while the loading or the empty content takes the place of the items.",
          },
          new()
          {
@@ -507,7 +521,7 @@ public partial class BitVirtualizeDemo
         await Task.Delay(500, request.CancellationToken); // simulate a network fetch
 
         var items = Enumerable.Range(request.StartIndex, Math.Min(request.Count, TotalProducts - request.StartIndex))
-                              .Select(i => new Product(i, $"Product {i:N0}", DateTime.Now.ToString("HH:mm:ss")))
+                              .Select(i => new Product(i, $"Product {i:N0}", DateTimeOffset.Now.ToString("HH:mm:ss")))
                               .ToList();
 
         return new(items, TotalProducts);
@@ -552,8 +566,14 @@ public partial class BitVirtualizeDemo
 
 
     private readonly Article[] articles = Enumerable.Range(1, 10_000)
-                                                    .Select(i => new Article($"Headline number {i:N0}", $"A short summary of the story number {i:N0}."))
+                                                    .Select(i => new Article(i, $"Headline number {i:N0}", $"A short summary of the story number {i:N0}."))
                                                     .ToArray();
+
+    private static Dictionary<string, object> ArticleAttributes(Article article) => new()
+    {
+        ["aria-labelledby"] = $"article-title-{article.Id}",
+        ["aria-describedby"] = $"article-summary-{article.Id}",
+    };
 
 
     private List<int> templateItems = [.. Enumerable.Range(0, 1_000)];
@@ -671,7 +691,7 @@ public partial class BitVirtualizeDemo
 
     private readonly int[] styleItems = Enumerable.Range(0, 1_000).ToArray();
 
-    private const string cssVariablesStyle = "--bit-Virtualize-focus-color:tomato;" +
+    private const string cssVariablesStyle = "--bit-Virtualize-focus-color:crimson;" +
                                              "--bit-Virtualize-sticky-background:var(--bit-clr-bg-sec);" +
                                              "--bit-Virtualize-sticky-shadow:0 2px 6px rgba(0, 0, 0, 0.2)";
 
@@ -686,7 +706,7 @@ public partial class BitVirtualizeDemo
 
     public record Product(int Id, string Name, string LoadedAt);
     public record Post(string Author, string Time, string Body);
-    public record Article(string Title, string Summary);
+    public record Article(int Id, string Title, string Summary);
     public record Contact(bool IsHeader, string Name, string Email);
     public record TaskItem(int Id, string Title);
     public record Message(int Id, bool Mine, string Text);

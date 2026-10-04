@@ -73,7 +73,7 @@ private async ValueTask<BitVirtualizeItemsProviderResult<Product>> LoadProducts(
     await Task.Delay(500, request.CancellationToken); // simulate a network fetch
 
     var items = Enumerable.Range(request.StartIndex, Math.Min(request.Count, TotalProducts - request.StartIndex))
-                          .Select(i => new Product(i, $""Product {i:N0}"", DateTime.Now.ToString(""HH:mm:ss"")))
+                          .Select(i => new Product(i, $""Product {i:N0}"", DateTimeOffset.Now.ToString(""HH:mm:ss"")))
                           .ToList();
 
     return new(items, TotalProducts);
@@ -158,17 +158,17 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
 <style>
     .list {
         height: 25rem;
+        padding: 0.5rem;
         border: 1px solid gray;
     }
 
-    .tile {
+    .grid-tile {
         display: flex;
-        margin: 0.5rem;
+        height: 100%;
         border-radius: 0.5rem;
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        height: calc(100% - 1rem);
         border: 1px solid lightgray;
     }
 </style>
@@ -178,10 +178,10 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
                 IsEnabled=""@(gridResponsive is false)"" Style=""max-width:12rem"" />
 <BitToggle @bind-Value=""gridResponsive"" Label=""MinLaneSize = 200"" Inline />
 
-<BitVirtualize Items=""gridItems"" ItemSize=""120"" Lanes=""gridLanes"" MinLaneSize=""@(gridResponsive ? 200 : null)""
+<BitVirtualize Items=""gridItems"" ItemSize=""120"" Lanes=""gridLanes"" MinLaneSize=""@(gridResponsive ? 200 : null)"" Gap=""8""
                TItem=""int"" Context=""item""
                Class=""list"">
-    <div class=""tile"">
+    <div class=""grid-tile"">
         <b>@item.ToString(""N0"")</b>
     </div>
 </BitVirtualize>";
@@ -221,7 +221,7 @@ private bool gridResponsive;";
 </style>
 
 <div class=""toolbar"">
-    <BitNumberField @bind-Value=""scrollTargetIndex"" Min=""0"" Max=""99999"" Style=""max-width:9rem"" />
+    <BitNumberField @bind-Value=""scrollTargetIndex"" Min=""0"" Max=""99999"" Label=""Index"" LabelPosition=""BitLabelPosition.Start"" Style=""max-width:12rem"" />
     <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Start)"">Start</BitButton>
     <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Center)"">Center</BitButton>
     <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.End)"">End</BitButton>
@@ -313,18 +313,25 @@ private readonly int[] pageItems = Enumerable.Range(0, 10_000).ToArray();";
 <BitVirtualize Items=""articles"" ItemSize=""72""
                TItem=""Article"" Context=""article""
                Role=""feed"" ItemRole=""article"" AriaLabel=""News feed""
+               ItemAttributes=""ArticleAttributes""
                Class=""list"">
     <div class=""news-item"">
-        <b>@article.Title</b>
-        <span>@article.Summary</span>
+        <b id=""article-title-@article.Id"">@article.Title</b>
+        <span id=""article-summary-@article.Id"">@article.Summary</span>
     </div>
 </BitVirtualize>";
     private readonly string example8CsharpCode = @"
 private readonly Article[] articles = Enumerable.Range(1, 10_000)
-                                                .Select(i => new Article($""Headline number {i:N0}"", $""A short summary of the story number {i:N0}.""))
+                                                .Select(i => new Article(i, $""Headline number {i:N0}"", $""A short summary of the story number {i:N0}.""))
                                                 .ToArray();
 
-public record Article(string Title, string Summary);";
+private static Dictionary<string, object> ArticleAttributes(Article article) => new()
+{
+    [""aria-labelledby""] = $""article-title-{article.Id}"",
+    [""aria-describedby""] = $""article-summary-{article.Id}"",
+};
+
+public record Article(int Id, string Title, string Summary);";
 
     private readonly string example9RazorCode = @"
 <style>
@@ -773,9 +780,9 @@ private readonly BitVirtualizeParams[] virtualizeParams =
 <BitVirtualize Items=""styleItems"" ItemSize=""48""
                TItem=""int""
                IsStickyItem=""i => i % 10 == 0""
-               Styles=""@(new() { Root = ""height: 15rem; border: 1px solid tomato;"",
-                                 Header = ""padding: 0.5rem 1rem; color: white; background: tomato;"",
-                                 Sticky = ""color: white; background: darkorange;"",
+               Styles=""@(new() { Root = ""height: 15rem; border: 1px solid crimson;"",
+                                 Header = ""padding: 0.5rem 1rem; color: white; background: crimson;"",
+                                 Sticky = ""color: white; background: mediumvioletred;"",
                                  Item = ""padding-inline-start: 1rem;"" })"">
     <HeaderTemplate>Header</HeaderTemplate>
     <ItemTemplate Context=""item"">
@@ -804,7 +811,7 @@ private readonly BitVirtualizeParams[] virtualizeParams =
     private readonly string example15CsharpCode = @"
 private readonly int[] styleItems = Enumerable.Range(0, 1_000).ToArray();
 
-private const string cssVariablesStyle = ""--bit-Virtualize-focus-color:tomato;"" +
+private const string cssVariablesStyle = ""--bit-Virtualize-focus-color:crimson;"" +
                                          ""--bit-Virtualize-sticky-background:var(--bit-clr-bg-sec);"" +
                                          ""--bit-Virtualize-sticky-shadow:0 2px 6px rgba(0, 0, 0, 0.2)"";";
 

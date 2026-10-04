@@ -75,6 +75,16 @@
     border: 1px solid $bit-color-border-secondary;
 }
 
+.grid-tile {
+    display: flex;
+    height: 100%;
+    border-radius: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 1px solid $bit-color-border-secondary;
+}
+
 .group-header {
     display: flex;
     height: 100%;
@@ -147,6 +157,10 @@
     .short-list,
     .cascaded-list {
         height: 15rem;
+    }
+
+    .grid-list {
+        padding: 0.5rem;
     }
 
     .horizontal-list {
