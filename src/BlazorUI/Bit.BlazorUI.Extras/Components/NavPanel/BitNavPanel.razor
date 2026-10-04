@@ -2,14 +2,16 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (IsOpen && NoOverlay is false && IsEnabled)
+@* Only the drawer has an overlay, so once the browser has reported a column there is none to render; until
+   then the stylesheet hides it on the screens the column is on. *@
+@if (IsOpen && NoOverlay is false && IsEnabled && (_screenChecked is false || _isDrawer))
 {
     @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
        of the accessibility tree instead of being announced as a control of its own. A disabled panel draws
        none at all: nothing of it answers a click while it is disabled, and an overlay over a page that
        nothing left can dismiss is a page that cannot be used any more. *@
     <div style="@Styles?.Overlay"
-         class="bit-npn-ovl @_BreakpointClass @Classes?.Overlay"
+         class="bit-npn-ovl @_ShapeClass @Classes?.Overlay"
          aria-hidden="true"
          @onclick="HandleOverlayClick"></div>
 }
@@ -258,8 +260,8 @@
 <div @ref="RootElement" @attributes="GetRootAttributes()"
      id="@_Id"
      role="@(isModal ? "dialog" : null)"
-     aria-modal="@(isModal && NoFocusTrap is false ? "true" : null)"
-     tabindex="@(isModal && NoFocusTrap is false ? "-1" : null)"
+     aria-modal="@(_IsTrappingDrawer ? "true" : null)"
+     tabindex="@(_IsTrappingDrawer ? "-1" : null)"
      aria-label="@(isModal ? (AriaLabel ?? DefaultPanelAriaLabel) : null)"
      style="@GetPanelStyle(isToggled)"
      class="@((ClassBuilder.Value + $"{(isToggled ? $" bit-npn-tgl {Classes?.Toggled}" : "")}").Trim())"
