@@ -31,11 +31,12 @@
 //   --bit-RichTextEditor-button-size               square of a toolbar button                      (default: $siz-ctrl-md)
 //   --bit-RichTextEditor-button-color              glyph of a toolbar button                       (default: $clr-fg-pri)
 //   --bit-RichTextEditor-button-radius             corner radius of a toolbar button               (default: $shp-radius-button)
-//   --bit-RichTextEditor-button-hover-background   ... under the pointer                           (default: $clr-bg-sec-hover)
+//   --bit-RichTextEditor-button-hover-background   ... and of a menu item under the pointer        (default: $clr-bg-sec-hover)
 //   --bit-RichTextEditor-button-active-color       glyph of a pressed button                       (default: $clr-pri)
 //   --bit-RichTextEditor-button-active-background  background of a pressed button                  (default: $clr-bg-pri-active)
-//   --bit-RichTextEditor-footer-color              text of the count footer                        (default: $clr-fg-sec)
-//   --bit-RichTextEditor-footer-background         background of the count footer                  (default: $clr-bg-sec)
+//   --bit-RichTextEditor-description-color         helper text in the footer                       (default: $clr-fg-sec)
+//   --bit-RichTextEditor-footer-color              text of the counts in the footer                (default: $clr-fg-sec)
+//   --bit-RichTextEditor-footer-background         background of the footer (description, counts)  (default: $clr-bg-sec)
 
 $rte-color: var(--bit-RichTextEditor-color, #{$clr-fg-pri});
 $rte-background: var(--bit-RichTextEditor-background, #{$clr-bg-pri});
@@ -118,7 +119,8 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 
     .bit-rte-edt,
     .bit-rte-cnt,
-    .bit-rte-lbl {
+    .bit-rte-lbl,
+    .bit-rte-dsc {
         color: $clr-fg-dis;
     }
 }
@@ -207,6 +209,11 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
         background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
+    // The press itself, so a click that only toggles a state elsewhere (a format applied to the selection) is felt.
+    &:active:not(:disabled) {
+        background: $clr-bg-sec-active;
+    }
+
     &.bit-rte-act {
         color: $rte-button-active-color;
         border-color: $rte-button-active-color;
@@ -285,6 +292,32 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     padding: spacing(0.75) spacing(1);
     background: $rte-bar-background;
     border-bottom: $shp-border-width $shp-border-style $rte-divider;
+}
+
+.bit-rte-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(0.5);
+}
+
+// A swatch is its color and nothing else, so it keeps a hairline that shows a white or a pale one against the panel.
+.bit-rte-swatch {
+    padding: 0;
+    cursor: pointer;
+    width: spacing(3);
+    height: spacing(3);
+    box-sizing: border-box;
+    border-radius: $shp-radius-sm;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:focus-visible {
+        @include focus-ring($rte-focus);
+    }
+
+    // The color under the caret: a ring in the active color, clear of the swatch so the swatch itself still shows.
+    &.bit-rte-swatch-cur {
+        box-shadow: 0 0 0 $shp-border-width-thick $rte-background, 0 0 0 calc(2 * #{$shp-border-width-thick}) $rte-button-active-color;
+    }
 }
 
 .bit-rte-inp {
@@ -384,14 +417,38 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     border-bottom: $shp-border-width $shp-border-style $rte-error;
 }
 
-.bit-rte-cnt {
-    text-align: end;
+// The lines under the surface: what is wrong with the content first, then one footer row holding the helper text at
+// the start and the counts at the end.
+.bit-rte-erm,
+.bit-rte-ftr {
     font-size: $tg-fs-xs;
     padding: spacing(0.5) spacing(1.25);
-    font-variant-numeric: tabular-nums;
     border-top: $shp-border-width $shp-border-style $rte-divider;
-    color: var(--bit-RichTextEditor-footer-color, #{$clr-fg-sec});
+}
+
+.bit-rte-erm {
+    color: $rte-error;
+}
+
+.bit-rte-ftr {
+    display: flex;
+    gap: spacing(1.5);
+    align-items: baseline;
     background: var(--bit-RichTextEditor-footer-background, #{$clr-bg-sec});
+}
+
+.bit-rte-dsc {
+    flex: 1;
+    min-width: 0;
+    color: var(--bit-RichTextEditor-description-color, #{$clr-fg-sec});
+}
+
+.bit-rte-cnt {
+    text-align: end;
+    white-space: nowrap;
+    margin-inline-start: auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--bit-RichTextEditor-footer-color, #{$clr-fg-sec});
 }
 
 .bit-rte-cnt-over {
@@ -504,6 +561,27 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     h3 {
         font-size: $tg-fs-lg;
         margin: spacing(1.75) 0 spacing(1);
+    }
+
+    // The lower levels stay on the type ramp too, rather than falling to the browser's shrinking defaults, which
+    // set an h6 below the body text.
+    h4,
+    h5,
+    h6 {
+        margin: spacing(1.5) 0 spacing(0.75);
+    }
+
+    h4 {
+        font-size: $tg-fs-md;
+    }
+
+    h5 {
+        font-size: $tg-fs-sm;
+    }
+
+    h6 {
+        font-size: $tg-fs-sm;
+        color: $clr-fg-sec;
     }
 
     p {
@@ -718,7 +796,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     border-radius: $shp-radius-control;
 
     &:hover {
-        background: $clr-bg-sec-hover;
+        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &.bit-rte-slash-item-sel {
@@ -768,6 +846,17 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 
     .bit-rte-btn:disabled {
         color: GrayText;
+    }
+
+    // A forced palette would paint every swatch the same; the swatch is the color it offers, so it keeps it.
+    .bit-rte-swatch {
+        forced-color-adjust: none;
+        border-color: CanvasText;
+
+        &.bit-rte-swatch-cur {
+            outline: $shp-border-width-thick solid Highlight;
+            outline-offset: $shp-border-width-thick;
+        }
     }
 
     .bit-rte-edt span.bit-rte-mention {

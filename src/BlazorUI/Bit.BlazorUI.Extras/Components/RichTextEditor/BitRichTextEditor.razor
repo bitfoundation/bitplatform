@@ -198,6 +198,38 @@
         </div>
     }
 
+    @if (_showColor && HasColorPalette && Has(BitRichTextEditorToolbar.Color) && ControlsDisabled is false)
+    {
+        <div @ref="_colorPanelRef" class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-color-panel")"
+             role="group" aria-label="@ColorPanelLabel"
+             @onkeydown="e => OnPanelKeyDown(e, CloseColor)">
+            <div class="bit-rte-swatches">
+                @* The first swatch is where the focus lands as the panel opens; only it is captured. *@
+                @for (var i = 0; i < ColorPalette!.Count; i++)
+                {
+                    var color = ColorPalette[i];
+                    if (i == 0)
+                    {
+                        <button @ref="_firstSwatchRef" @attributes="SwatchAttributes(color)"
+                                @onmousedown:preventDefault="true" @onclick="() => PickColorAsync(color.Value)"></button>
+                    }
+                    else
+                    {
+                        <button @attributes="SwatchAttributes(color)"
+                                @onmousedown:preventDefault="true" @onclick="() => PickColorAsync(color.Value)"></button>
+                    }
+                }
+            </div>
+            <label class="bit-rte-opt">
+                @Loc("custom-color", "Custom")
+                <input type="color" value="@(CurrentColor ?? (_colorKind == "back" ? "#ffff00" : "#000000"))"
+                       @onchange="e => PickColorAsync(e.Value?.ToString())" />
+            </label>
+            <button type="button" class="bit-rte-btn bit-rte-pbt @Classes?.Button" style="@Styles?.Button" @onclick="RemovePickedColorAsync">@Loc("remove", "Remove")</button>
+            <button type="button" class="bit-rte-btn bit-rte-pbt @Classes?.Button" style="@Styles?.Button" @onclick="CloseColor">@Loc("cancel", "Cancel")</button>
+        </div>
+    }
+
     @if (_inlineError is not null)
     {
         <div class="bit-rte-err @Classes?.Error" style="@Styles?.Error" id="@($"{UniqueId}-error")" role="alert">@_inlineError</div>
@@ -325,19 +357,38 @@
         <textarea class="bit-rte-src @Classes?.Source" style="@Styles?.Source"
                   @ref="_sourceRef"
                   aria-label="@Loc("source-view", "HTML source")"
+                  aria-invalid="@(IsInvalid ? "true" : null)"
+                  aria-describedby="@SurfaceDescribedBy"
                   spellcheck="false"
                   readonly="@EffectiveReadOnly"
                   disabled="@(IsEnabled is false)"
                   value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
     }
 
-    @if (ShowCount)
+    @if (ErrorMessage.HasValue())
     {
-        @* The footer describes the surface (read with it on focus) rather than being a live region, which would
-           read the counts out after every pause in typing; only reaching the limit is announced. *@
-        <div class="bit-rte-cnt @Classes?.Count" style="@Styles?.Count" id="@($"{UniqueId}-count")">
-            @CountLabel()
-            <span class="bit-rte-cnt-over" role="status">@(MaxLength is int m && _facts.CharacterCount >= m ? Loc("limit-reached", "limit reached") : null)</span>
+        @* No live role of its own: the status region at the end of the root says it once as it appears, and the
+           surface is described by it on every later focus, so it is never read out twice. *@
+        <div id="@ErrorMessageId" class="bit-rte-erm @Classes?.ErrorMessage" style="@Styles?.ErrorMessage">@ErrorMessage</div>
+    }
+
+    @if (Description.HasValue() || ShowCount)
+    {
+        @* One row for the helper text and the counts, the way a text field lays them out. Both describe the surface
+           (read with it on focus) rather than being live regions, which would read the counts out after every pause in
+           typing; only reaching the limit is announced. *@
+        <div class="bit-rte-ftr">
+            @if (Description.HasValue())
+            {
+                <div id="@DescriptionId" class="bit-rte-dsc @Classes?.Description" style="@Styles?.Description">@Description</div>
+            }
+            @if (ShowCount)
+            {
+                <div class="bit-rte-cnt @Classes?.Count" style="@Styles?.Count" id="@($"{UniqueId}-count")">
+                    @CountLabel()
+                    <span class="bit-rte-cnt-over" role="status">@(MaxLength is int m && _facts.CharacterCount >= m ? Loc("limit-reached", "limit reached") : null)</span>
+                </div>
+            }
         </div>
     }
 
@@ -428,7 +479,21 @@
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("inlineCode")'>@BitRichTextEditorIcons.InlineCode</button>
     </div>;
 
-    private RenderFragment ColorGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+    private RenderFragment ColorGroup => HasColorPalette ? PaletteColorGroup : NativeColorGroup;
+
+    // With a palette each color opens the panel of its swatches; the remove buttons stay beside them.
+    private RenderFragment PaletteColorGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showColor && _colorKind == "fore" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("text-color", "Text color")" aria-label="@Loc("text-color", "Text color")" aria-expanded="@(_showColor && _colorKind == "fore" ? "true" : "false")" aria-controls="@(_showColor && _colorKind == "fore" ? $"{UniqueId}-color-panel" : null)" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ToggleColor("fore")'>@BitRichTextEditorIcons.TextColor</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-text-color", "Remove text color")" aria-label="@Loc("remove-text-color", "Remove text color")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ClearColorAsync("fore")'>@BitRichTextEditorIcons.RemoveTextColor</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showColor && _colorKind == "back" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("highlight-color", "Highlight color")" aria-label="@Loc("highlight-color", "Highlight color")" aria-expanded="@(_showColor && _colorKind == "back" ? "true" : "false")" aria-controls="@(_showColor && _colorKind == "back" ? $"{UniqueId}-color-panel" : null)" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ToggleColor("back")'>@BitRichTextEditorIcons.Highlight</button>
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-highlight", "Remove highlight")" aria-label="@Loc("remove-highlight", "Remove highlight")" disabled="@ControlsDisabled"
+                @onmousedown:preventDefault="true" @onclick='() => ClearColorAsync("back")'>@BitRichTextEditorIcons.RemoveHighlight</button>
+    </div>;
+
+    private RenderFragment NativeColorGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
         <label class="bit-rte-color" title="@Loc("text-color", "Text color")">
             @BitRichTextEditorIcons.TextColor
             <input type="color" aria-label="@Loc("text-color", "Text color")" disabled="@ControlsDisabled"
@@ -560,7 +625,7 @@
 
     private RenderFragment SourceGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
         <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(IsEnabled is false || (EffectiveReadOnly && _inSourceView is false))"
-                @onmousedown:preventDefault="true" @onclick="ToggleSourceViewAsync">@BitRichTextEditorIcons.Source</button>
+                @onmousedown:preventDefault="true" @onclick="OnSourceToggleClick">@BitRichTextEditorIcons.Source</button>
     </div>;
 
     private RenderFragment FullScreenGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">

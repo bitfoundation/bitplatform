@@ -11,6 +11,19 @@ public partial class BitRichTextEditor
     /// </summary>
     [Parameter] public Func<BitRichTextEditorImageUpload, Task<string?>>? OnImageUpload { get; set; }
 
+    private long _maxImageSize = DefaultMaxImageSize;
+    /// <summary>
+    /// The largest image, in bytes, that a drop or a paste may insert (10 MB by default). It is checked in the browser
+    /// before the file is read and again here before it is decoded or handed to <see cref="OnImageUpload"/>. Zero or a
+    /// negative value restores the default.
+    /// </summary>
+    [Parameter]
+    public long MaxImageSize
+    {
+        get => _maxImageSize;
+        set => _maxImageSize = value > 0 ? value : DefaultMaxImageSize;
+    }
+
     /// <summary>Font families offered in the font-family selector. Null/empty uses defaults.</summary>
     [Parameter] public IReadOnlyList<string>? FontFamilies { get; set; }
 
@@ -109,9 +122,19 @@ public partial class BitRichTextEditor
     private static readonly string[] KnownImageMimeTypes =
         ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
 
-    // Maximum decoded image payload, mirroring the bridge's MAX_IMAGE_BYTES (10 MB). Enforced
-    // before decoding so an oversized base64 string cannot exhaust memory on the server side.
-    private const long MaxImageBytes = 10 * 1024 * 1024;
+    // The default of MaxImageSize, the decoded image payload past which a file is refused. Enforced before decoding so
+    // an oversized base64 string cannot exhaust memory on the server side.
+    private const long DefaultMaxImageSize = 10 * 1024 * 1024;
+
+    // How the limit is written in a message, the same way the bridge writes it ("10 MB", "512 KB").
+    private static string FormatSize(long bytes)
+        => bytes >= 1024 * 1024
+            ? $"{Math.Round(bytes / (1024d * 1024), 1).ToString(System.Globalization.CultureInfo.InvariantCulture)} MB"
+            : $"{Math.Max(1, (long)Math.Round(bytes / 1024d))} KB";
+
+    private Task RaiseImageTooLargeAsync(string fileName)
+        => RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
+            string.Format(Loc("image-too-large", "\"{0}\" exceeds the {1} limit."), fileName, FormatSize(MaxImageSize))));
 
     // data: image URIs are only honored when the active policy permits them (the default policy
     // allows them); a null policy maps to the bridge default which also permits them.
@@ -170,10 +193,9 @@ public partial class BitRichTextEditor
         // padding to avoid rejecting valid images that sit just under the limit.
         var padding = base64.EndsWith("==", StringComparison.Ordinal) ? 2 : base64.EndsWith("=", StringComparison.Ordinal) ? 1 : 0;
         var estimatedBytes = (long)base64.Length / 4 * 3 - padding;
-        if (estimatedBytes > MaxImageBytes)
+        if (estimatedBytes > MaxImageSize)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
-                string.Format(Loc("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
+            await RaiseImageTooLargeAsync(fileName);
             return null;
         }
 
@@ -208,10 +230,9 @@ public partial class BitRichTextEditor
         try
         {
             var bytes = Convert.FromBase64String(base64);
-            if (bytes.Length > MaxImageBytes)
+            if (bytes.Length > MaxImageSize)
             {
-                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
-                    string.Format(Loc("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
+                await RaiseImageTooLargeAsync(fileName);
                 return null;
             }
             var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, mimeType, bytes));
@@ -238,10 +259,48 @@ public partial class BitRichTextEditor
         }
     }
 
-    /// <summary>Called by the bridge to surface client-side validation errors (e.g. bad file).</summary>
+    /// <summary>
+    /// Reported by the bridge once dropped or pasted images are in. A file name is not a text alternative, so they go in
+    /// with an empty one, and the live region says so - with where to write a real one while the image group is there.
+    /// </summary>
+    [JSInvokable("OnImagesInserted")]
+    public void _OnImagesInserted(int count)
+    {
+        var message = count == 1
+            ? Loc("image-inserted", "Image inserted.")
+            : string.Format(Loc("images-inserted", "{0} images inserted."), count);
+
+        if (Has(BitRichTextEditorToolbar.Image))
+        {
+            message += " " + Loc("image-alt-hint", "Select an image and use the image button to describe it.");
+        }
+
+        Announce(message);
+    }
+
+    /// <summary>
+    /// Called by the bridge to surface client-side validation errors (e.g. bad file). The bridge says what went wrong
+    /// as a localization key with its English template and the values that fill it, so the message reaches the
+    /// reader through <see cref="Localizer"/> like every other one rather than in the bridge's English.
+    /// </summary>
     [JSInvokable("OnClientError")]
-    public Task _OnClientError(string code, string message)
-        => RaiseErrorAsync(new BitRichTextEditorError(code, message));
+    public Task _OnClientError(string code, string key, string template, string[]? args)
+    {
+        var text = Loc(key, template);
+        if (args is { Length: > 0 })
+        {
+            try
+            {
+                text = string.Format(text, (object[])args);
+            }
+            catch (FormatException)
+            {
+                // A translation whose placeholders do not match the values falls back to the English template.
+                text = string.Format(template, (object[])args);
+            }
+        }
+        return RaiseErrorAsync(new BitRichTextEditorError(code, text));
+    }
 
     /// <summary>
     /// The image alignment buttons only mean anything while an image is selected, so they stay

@@ -6,8 +6,8 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// What belongs here is what the editors of an application agree on: their localizer (which is where a localized app
 /// sets it once), their toolbar, their sanitization policy, how they take pasted content and uploaded images, their
-/// typing aids, their size and their look. The value and its events, the label and the auto-focus are left out on
-/// purpose: they are what makes one editor the one it is.
+/// typing aids, their size and their look. The value and its events, the label, the description, the validation state
+/// and the auto-focus are left out on purpose: they are what makes one editor the one it is.
 /// </remarks>
 public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -36,6 +36,11 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
     /// Custom CSS classes for different parts of the rich text editor.
     /// </summary>
     public BitRichTextEditorClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The colors the text and highlight color buttons offer as swatches.
+    /// </summary>
+    public IReadOnlyList<BitRichTextEditorColor>? ColorPalette { get; set; }
 
     /// <summary>
     /// Debounce window (ms) for content-change notifications while typing.
@@ -71,6 +76,11 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
     /// Maximum height of the editing surface (any CSS length).
     /// </summary>
     public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// The largest image, in bytes, that a drop or a paste may insert.
+    /// </summary>
+    public long? MaxImageSize { get; set; }
 
     /// <summary>
     /// Maximum plain-text character count.
@@ -193,6 +203,11 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
             bitRichTextEditor.ClassBuilder.Reset();
         }
 
+        if (ColorPalette is not null && bitRichTextEditor.HasNotBeenSet(nameof(ColorPalette)))
+        {
+            bitRichTextEditor.ColorPalette = ColorPalette;
+        }
+
         if (DebounceMs.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(DebounceMs)))
         {
             bitRichTextEditor.DebounceMs = DebounceMs.Value;
@@ -230,6 +245,11 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
             bitRichTextEditor.MaxHeight = MaxHeight;
 
             bitRichTextEditor.StyleBuilder.Reset();
+        }
+
+        if (MaxImageSize.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(MaxImageSize)))
+        {
+            bitRichTextEditor.MaxImageSize = MaxImageSize.Value;
         }
 
         if (MaxLength.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(MaxLength)))

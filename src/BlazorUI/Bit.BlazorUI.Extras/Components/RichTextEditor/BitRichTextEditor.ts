@@ -225,6 +225,7 @@ namespace BitBlazorUI {
             editor._quickToolbar = options.quickToolbar === true;
             editor._mentions = options.mentions === true;
             editor._smartTypography = options.smartTypography === true;
+            editor._maxImageBytes = (typeof options.maxImageBytes === 'number') ? options.maxImageBytes : RichTextEditor.MAX_IMAGE_BYTES;
             editor._shortcutKeys = new Set((Array.isArray(options.shortcutKeys) ? options.shortcutKeys : [])
                 .map((k: string) => (k || '').toLowerCase()));
         }
@@ -521,11 +522,11 @@ namespace BitBlazorUI {
         // allowlist and the policy must actually permit an anchor with an href.
         private static linkAllowed(editor: any, url: string): boolean {
             if (!RichTextEditor.isAllowedUri(editor, url, false)) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'link-url-not-allowed', 'That link URL is not allowed.');
                 return false;
             }
             if (!RichTextEditor.isTagAllowed(editor, 'a') || !RichTextEditor.isAttrAllowed(editor, 'a', 'href')) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'Links are not allowed by the current policy.');
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'links-not-allowed', 'Links are not allowed by the current policy.');
                 return false;
             }
             return true;
@@ -567,11 +568,11 @@ namespace BitBlazorUI {
         public static insertImageUrl(editor: any, url: string, alt?: string, width?: number | null) {
             if (!editor || !url) return;
             if (!RichTextEditor.isAllowedUri(editor, url, true)) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'image-url-not-allowed', 'That image URL is not allowed.');
                 return;
             }
             if (!RichTextEditor.isTagAllowed(editor, 'img') || !RichTextEditor.isAttrAllowed(editor, 'img', 'src')) {
-                RichTextEditor.reportClientError(editor, 'invalid-url', 'Images are not allowed by the current policy.');
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'images-not-allowed', 'Images are not allowed by the current policy.');
                 return;
             }
             const size = (width && width > 0 && RichTextEditor.isAttrAllowed(editor, 'img', 'width'))
@@ -593,7 +594,7 @@ namespace BitBlazorUI {
 
             if (url) {
                 if (!RichTextEditor.isAllowedUri(editor, url, true)) {
-                    RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
+                    RichTextEditor.reportClientError(editor, 'invalid-url', 'image-url-not-allowed', 'That image URL is not allowed.');
                     return;
                 }
                 img.setAttribute('src', url);
@@ -622,7 +623,7 @@ namespace BitBlazorUI {
             // formatting on the next sanitize roundtrip, so the live editor and persisted Value
             // would diverge. Gate on the allowlist and block with a client error instead.
             if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
-                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
+                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'format-not-allowed', 'That formatting is not allowed by the current policy.');
                 return;
             }
             RichTextEditor.dispatch(editor, kind === 'back' ? 'backColor' : 'foreColor', { value });
@@ -643,7 +644,7 @@ namespace BitBlazorUI {
 
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
-                RichTextEditor.reportClientError(editor, 'no-selection', 'Select the text to clear the color from.');
+                RichTextEditor.reportClientError(editor, 'no-selection', 'clear-color-no-selection', 'Select the text to clear the color from.');
                 return;
             }
             const range = sel.getRangeAt(0);
@@ -733,7 +734,7 @@ namespace BitBlazorUI {
             // Gate on the same allowlist as applyColor so formatting the sanitized snapshot would
             // strip is never applied only to be dropped from the persisted Value.
             if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
-                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'That formatting is not allowed by the current policy.');
+                RichTextEditor.reportClientError(editor, 'format-not-allowed', 'format-not-allowed', 'That formatting is not allowed by the current policy.');
                 return;
             }
             RichTextEditor.dispatch(editor, kind === 'size' ? 'fontSize' : 'fontName', { value });
@@ -765,7 +766,7 @@ namespace BitBlazorUI {
             // (iframe/video/audio/source with safe attributes and schemes) reaches the document.
             const safe = RichTextEditor.sanitizeMedia(editor, html);
             if (!safe) {
-                RichTextEditor.reportClientError(editor, 'media-not-allowed', 'That media could not be embedded.');
+                RichTextEditor.reportClientError(editor, 'media-not-allowed', 'media-embed-failed', 'That media could not be embedded.');
                 return false;
             }
             RichTextEditor.dispatch(editor, 'insertMedia', { html: safe });
@@ -885,7 +886,7 @@ namespace BitBlazorUI {
             // Refuse (rather than truncate) an insert that would break the cap: a half-inserted
             // fragment is worse than none, unlike a paste where trimming the tail is expected.
             if (!RichTextEditor.fitsWithinMaxLength(editor, safe)) {
-                RichTextEditor.reportClientError(editor, 'max-length', 'The content would exceed the maximum length.');
+                RichTextEditor.reportClientError(editor, 'max-length', 'max-length-exceeded', 'The content would exceed the maximum length.');
                 return;
             }
             RichTextEditor.dispatch(editor, 'insertHtml', { html: safe });
@@ -926,7 +927,7 @@ namespace BitBlazorUI {
             // Mirror the link/image inserts and block the operation with a client error instead.
             const requiredTags = ['table', 'tbody', 'tr', 'td'];
             if (!requiredTags.every(t => RichTextEditor.isTagAllowed(editor, t))) {
-                RichTextEditor.reportClientError(editor, 'table-not-allowed', 'Tables are not allowed by the current policy.');
+                RichTextEditor.reportClientError(editor, 'table-not-allowed', 'tables-not-allowed', 'Tables are not allowed by the current policy.');
                 return;
             }
             let html = '<table class="bit-rte-table">';
@@ -1484,7 +1485,8 @@ namespace BitBlazorUI {
         public static enableGridRoving(container: any) {
             if (!container || container._gridRoving) return;
             container._gridRoving = true;
-            const cells = () => Array.from(container.querySelectorAll('.bit-rte-emoji')) as HTMLElement[];
+            // The emoji picker's characters, or the color panel's swatches.
+            const cells = () => Array.from(container.querySelectorAll('.bit-rte-emoji, .bit-rte-swatch')) as HTMLElement[];
             const apply = (active: HTMLElement | null) => {
                 const list = cells();
                 const stop = active && list.includes(active) ? active : list[0];
@@ -2325,7 +2327,7 @@ namespace BitBlazorUI {
 
             // The trigger goes away with the insert, so its character is room the mention may use.
             if (!RichTextEditor.fitsWithinMaxLength(editor, html, trigger ? 1 : 0)) {
-                RichTextEditor.reportClientError(editor, 'max-length', 'The content would exceed the maximum length.');
+                RichTextEditor.reportClientError(editor, 'max-length', 'max-length-exceeded', 'The content would exceed the maximum length.');
                 return;
             }
 
@@ -2704,17 +2706,19 @@ namespace BitBlazorUI {
         private static async handleImageFiles(editor: any, files: File[]) {
             if (!editor || editor._readOnly) return;
             let accepted = 0;
+            let inserted = 0;
+            const maxBytes = editor._maxImageBytes > 0 ? editor._maxImageBytes : RichTextEditor.MAX_IMAGE_BYTES;
             for (const file of files) {
                 if (accepted >= 20) {
-                    RichTextEditor.reportClientError(editor, 'too-many-files', 'Only 20 images can be inserted per drop.');
+                    RichTextEditor.reportClientError(editor, 'too-many-files', 'too-many-images', 'Only {0} images can be inserted per drop.', '20');
                     break;
                 }
                 if (!RichTextEditor.IMAGE_MIME.includes(file.type)) {
-                    RichTextEditor.reportClientError(editor, 'invalid-file', `"${file.name}" is not a supported image type.`);
+                    RichTextEditor.reportClientError(editor, 'invalid-file', 'image-unsupported-type', '"{0}" is not a supported image type.', file.name);
                     continue;
                 }
-                if (file.size > RichTextEditor.MAX_IMAGE_BYTES) {
-                    RichTextEditor.reportClientError(editor, 'file-too-large', `"${file.name}" exceeds the 10 MB limit.`);
+                if (file.size > maxBytes) {
+                    RichTextEditor.reportClientError(editor, 'file-too-large', 'image-too-large', '"{0}" exceeds the {1} limit.', file.name, RichTextEditor.formatSize(maxBytes));
                     continue;
                 }
                 accepted++;
@@ -2729,17 +2733,20 @@ namespace BitBlazorUI {
                     // Enforce the active URI policy on the final image source (raw data URL or the
                     // resolved upload URL) so disallowed data URIs / schemes are not inserted.
                     if (!RichTextEditor.isAllowedUri(editor, url, true)) {
-                        RichTextEditor.reportClientError(editor, 'invalid-image-uri', `"${file.name}" has a disallowed image source.`);
+                        RichTextEditor.reportClientError(editor, 'invalid-image-uri', 'image-source-not-allowed', '"{0}" has a disallowed image source.', file.name);
                         continue;
                     }
-                    RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="${RichTextEditor.escapeAttr(file.name)}">` });
+                    // A file name is not a text alternative (WCAG F30: "IMG_2034.jpg" read out says nothing), so the
+                    // image goes in with an empty one and the component tells the author where to write a real one.
+                    if (RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="">` })) inserted++;
                 } catch {
                     // Fail this file only; keep processing the rest of the batch.
-                    RichTextEditor.reportClientError(editor, 'image-read-failed', `"${file.name}" could not be processed.`);
+                    RichTextEditor.reportClientError(editor, 'image-read-failed', 'image-read-failed', '"{0}" could not be processed.', file.name);
                     continue;
                 }
             }
             if (editor._notify) editor._notify();
+            if (inserted > 0 && editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnImagesInserted', inserted);
         }
 
         private static readAsDataUrl(file: File): Promise<string> {
@@ -2751,8 +2758,17 @@ namespace BitBlazorUI {
             });
         }
 
-        private static reportClientError(editor: any, code: string, message: string) {
-            if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', code, message);
+        // An error is sent as its localization key, its English template and the values that fill it, so the component
+        // can put it in the app's language before it is shown.
+        private static reportClientError(editor: any, code: string, key: string, template: string, ...args: string[]) {
+            if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', code, key, template, args);
+        }
+
+        // How a size limit is written in a message, the same way the component writes it ("10 MB", "512 KB").
+        private static formatSize(bytes: number): string {
+            return bytes >= 1024 * 1024
+                ? `${Math.round(bytes / (1024 * 1024) * 10) / 10} MB`
+                : `${Math.max(1, Math.round(bytes / 1024))} KB`;
         }
 
         // ====================================================================
@@ -3206,10 +3222,15 @@ namespace BitBlazorUI {
         // ====================================================================
         // Helpers
         // ====================================================================
-        // Moves keyboard focus to the first enabled control of this editor's toolbar (Alt+F10).
+        // Moves keyboard focus to the first enabled control of this editor's toolbar (Alt+F10). The selection toolbar,
+        // while it floats over a selection, is the one meant: it is what the selection is about to be formatted with,
+        // and without this it would be a toolbar only a pointer reaches - the only one there is when ShowToolbar is
+        // off. It is rendered afresh every time it shows, so it is given the same roving tab stop on the way in.
         private static focusToolbar(editor: any) {
-            const toolbar = editor?.closest('.bit-rte')?.querySelector('.bit-rte-tlb') as any;
+            const root = editor?.closest('.bit-rte');
+            const toolbar = (root?.querySelector('.bit-rte-quick') ?? root?.querySelector('.bit-rte-tlb')) as any;
             if (!toolbar) return;
+            if (!toolbar._roving) RichTextEditor.enableToolbarRoving(toolbar);
             // The control that holds the toolbar's tab stop, so Alt+F10 lands where Tab would.
             if (toolbar._rovingApply) toolbar._rovingApply();
             const controls = Array.from(toolbar.querySelectorAll('button,select,input')) as HTMLElement[];

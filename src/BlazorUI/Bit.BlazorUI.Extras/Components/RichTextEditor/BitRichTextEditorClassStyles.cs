@@ -46,7 +46,7 @@ public class BitRichTextEditorClassStyles
     public string? Menu { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the inline error message of the BitRichTextEditor.
+    /// Custom CSS classes/styles for the inline error banner (a failed command, link or upload) of the BitRichTextEditor.
     /// </summary>
     public string? Error { get; set; }
 
@@ -61,7 +61,17 @@ public class BitRichTextEditorClassStyles
     public string? Source { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the character/word count footer of the BitRichTextEditor.
+    /// Custom CSS classes/styles for the error message (the ErrorMessage parameter) of the BitRichTextEditor.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description (helper text) in the footer of the BitRichTextEditor.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the character/word counts in the footer of the BitRichTextEditor.
     /// </summary>
     public string? Count { get; set; }
 }

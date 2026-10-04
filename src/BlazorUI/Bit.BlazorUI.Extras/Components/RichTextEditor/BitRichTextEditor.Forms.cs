@@ -35,13 +35,15 @@ public partial class BitRichTextEditor
     private EditContext? _trackedEditContext;
 
     /// <summary>
-    /// Whether the bound field currently fails validation: the frame takes the error color and the editing surface
-    /// reports <c>aria-invalid</c>, the way every other input of an EditForm does.
+    /// Whether the content is invalid - marked so by <see cref="Invalid"/> or <see cref="ErrorMessage"/>, or failing
+    /// the validation of its bound field: the frame takes the error color and the editing surface reports
+    /// <c>aria-invalid</c>, the way every other input of an EditForm does.
     /// </summary>
     private bool IsInvalid
     {
         get
         {
+            if (Invalid || ErrorMessage.HasValue()) return true;
             if (CascadedEditContext is null || ValueExpression is null) return false;
             EnsureField();
             return _hasField && CascadedEditContext.GetValidationMessages(_fieldIdentifier).Any();

@@ -79,11 +79,38 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
+    /// The helper text shown in the footer of the editor (what to write, a format to follow). The editing surface is
+    /// described by it, so a screen reader reads it along with the name on focus.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// The message shown under the editor when its content was rejected, which turns a red frame into something the
+    /// reader can act on. Setting it marks the editor invalid on its own - the same look and aria-invalid that
+    /// <see cref="Invalid"/> gives it - describes the editing surface by it and announces it once as it appears.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two fields). An
+    /// editor inside an <c>EditForm</c> already gets its messages from the cascading EditContext through the
+    /// <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// The height the editing surface starts at (any CSS length); it grows with the content from there, up to
     /// <see cref="MaxHeight"/>. Null leaves it to the --bit-RichTextEditor-height CSS variable (300px by default).
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public string? Height { get; set; }
+
+    /// <summary>
+    /// Marks the content as invalid, which gives a rejection by something other than the cascading EditContext - a
+    /// server, a rule of the app - the same error border and aria-invalid a failing data annotation gives it. An
+    /// editor failing its own field validation stays invalid regardless of this parameter.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// The visible label of the editor, rendered above the toolbar. It also names the editing surface for assistive
@@ -328,14 +355,22 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private string LabelId => $"{UniqueId}-label";
 
+    private string ErrorMessageId => $"{UniqueId}-error-message";
+
+    private string DescriptionId => $"{UniqueId}-description";
+
     /// <summary>
-    /// The ids the editing surface is described by: the count footer, and the inline error while one is shown.
+    /// The ids the editing surface is described by, what is wrong first: the error message, the description, the
+    /// count footer, and the inline error while one is shown.
     /// </summary>
     private string? SurfaceDescribedBy
     {
         get
         {
-            var ids = (ShowCount ? $"{UniqueId}-count " : "") + (_inlineError is null ? "" : $"{UniqueId}-error");
+            var ids = (ErrorMessage.HasValue() ? $"{ErrorMessageId} " : "")
+                    + (Description.HasValue() ? $"{DescriptionId} " : "")
+                    + (ShowCount ? $"{UniqueId}-count " : "")
+                    + (_inlineError is null ? "" : $"{UniqueId}-error");
             return ids.Length == 0 ? null : ids.TrimEnd();
         }
     }
@@ -351,7 +386,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     /// <summary>Whether one of the inline tool bars under the toolbar is currently showing.</summary>
     private bool AnyPanelOpen
-        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji;
+        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji || _showColor;
 
     /// <summary>
     /// Places the selection toolbar just above the selection, in the component root's coordinates.
@@ -532,8 +567,24 @@ public partial class BitRichTextEditor : BitComponentBase
     // after the other) is told apart by an invisible character.
     private void Announce(string message)
     {
-        _announcement = _announcement == message ? message + "\u200B" : message;
+        SetAnnouncement(message);
         StateHasChanged();
+    }
+
+    private void SetAnnouncement(string message)
+        => _announcement = _announcement == message ? message + "\u200B" : message;
+
+    // The error message last said through the live region, so a message is announced once as it appears rather than
+    // on every render that keeps it.
+    private string? _announcedErrorMessage;
+
+    private void AnnounceErrorMessageIfNew()
+    {
+        if (_initialized && ErrorMessage.HasValue() && ErrorMessage != _announcedErrorMessage)
+        {
+            SetAnnouncement(ErrorMessage!);
+        }
+        _announcedErrorMessage = ErrorMessage;
     }
 
     /// <summary>
@@ -548,6 +599,7 @@ public partial class BitRichTextEditor : BitComponentBase
         if (keep != "media") { _showMediaInput = false; _mediaUrl = ""; }
         if (keep != "table") { _showTableInput = false; }
         if (keep != "emoji") { _showEmoji = false; _emojiSearch = ""; }
+        if (keep != "color") { _showColor = false; }
         if (keep != "find" && _showFind)
         {
             // The find panel is one of the same strip of bars, so opening another tool closes it -
@@ -630,6 +682,8 @@ public partial class BitRichTextEditor : BitComponentBase
 
         TrackEditContext();
 
+        AnnounceErrorMessageIfNew();
+
         base.OnParametersSet();
     }
 
@@ -676,6 +730,7 @@ public partial class BitRichTextEditor : BitComponentBase
         Debounce = DebounceMs,
         Policy = BuildPolicyPayload(),
         HasUpload = OnImageUpload is not null,
+        MaxImageBytes = MaxImageSize,
         PlainTextPaste = PasteAsPlainText,
         MaxLength = MaxLength,
         ShortcutKeys = BuildOwnedShortcutCombos(),
@@ -758,6 +813,7 @@ public partial class BitRichTextEditor : BitComponentBase
         await FocusMentionIfPendingAsync();
         await FocusPanelIfPendingAsync();
         await EnableEmojiGridIfPendingAsync();
+        await EnableColorGridIfPendingAsync();
         await FocusEditorIfPendingAsync();
     }
 
