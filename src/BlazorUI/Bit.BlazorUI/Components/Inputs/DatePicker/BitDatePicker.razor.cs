@@ -1281,9 +1281,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
 
-        // An error the app asserted itself; a failing EditContext validation already puts bit-inv on the root.
-        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtp-req" : string.Empty);
     }
 
@@ -1583,7 +1580,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     // A rejection the app decided on its own, which the EditContext knows nothing about. A message is one:
     // a field that says what is wrong with its value is a field saying the value is wrong.
-    private bool HasError => Invalid || HasErrorMessage;
+    protected override bool HasError => Invalid || HasErrorMessage;
 
     // Every piece of text that describes the field rather than names it, in reading order: what is wrong with
     // the value first, then the visible helper text, the text written for a screen reader alone, and last the
