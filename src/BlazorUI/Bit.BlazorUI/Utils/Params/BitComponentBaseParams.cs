@@ -93,26 +93,30 @@ public abstract class BitComponentBaseParams
     {
         if (bitComponentBase is null) return;
 
+        // This runs on every render of every component under the BitParams, so a value that drives the class or
+        // the style of the root only resets the builder when it differs from the one the component already holds:
+        // an unchanged one would rebuild both strings on every render for nothing.
+
         if (AriaLabel.HasValue() && bitComponentBase.HasNotBeenSet(nameof(AriaLabel)))
         {
             bitComponentBase.AriaLabel = AriaLabel;
         }
 
-        if (Class.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Class)))
+        if (Class.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Class)) && bitComponentBase.Class != Class)
         {
             bitComponentBase.Class = Class;
 
             bitComponentBase.ClassBuilder.Reset();
         }
 
-        if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)))
+        if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)) && bitComponentBase.Dir != Dir)
         {
             bitComponentBase.Dir = Dir.Value;
 
             bitComponentBase.ClassBuilder.Reset();
         }
 
-        if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)))
+        if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)) && bitComponentBase.ForceAnimation != ForceAnimation)
         {
             bitComponentBase.ForceAnimation = ForceAnimation.Value;
 
@@ -134,14 +138,14 @@ public abstract class BitComponentBaseParams
             bitComponentBase.Id = Id;
         }
 
-        if (IsEnabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(IsEnabled)))
+        if (IsEnabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(IsEnabled)) && bitComponentBase.IsEnabled != IsEnabled)
         {
             bitComponentBase.IsEnabled = IsEnabled.Value;
 
             bitComponentBase.ClassBuilder.Reset();
         }
 
-        if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)))
+        if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)) && bitComponentBase.Style != Style)
         {
             bitComponentBase.Style = Style;
 
@@ -153,7 +157,7 @@ public abstract class BitComponentBaseParams
             bitComponentBase.TabIndex = TabIndex;
         }
 
-        if (Visibility.HasValue && bitComponentBase.HasNotBeenSet(nameof(Visibility)))
+        if (Visibility.HasValue && bitComponentBase.HasNotBeenSet(nameof(Visibility)) && bitComponentBase.Visibility != Visibility)
         {
             bitComponentBase.Visibility = Visibility.Value;
 
