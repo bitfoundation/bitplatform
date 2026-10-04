@@ -236,7 +236,8 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
 
         // The cascaded attributes are merged into a copy rather than into the flag's own dictionary: that one may well
         // be an instance the page shares between several flags, or keeps for itself, and writing into it would hand
-        // the cascaded attributes to every one of them - or to the page - for good.
+        // the cascaded attributes to every one of them - or to the page - for good. The flag hands its own dictionary
+        // back before every call, never the last merge, so a cascaded attribute taken away or changed since follows.
         if (ImageAttributes is not null && ImageAttributes.Count > 0)
         {
             Dictionary<string, object>? merged = null;

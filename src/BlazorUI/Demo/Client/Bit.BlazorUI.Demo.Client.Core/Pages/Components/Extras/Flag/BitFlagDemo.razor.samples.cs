@@ -203,10 +203,28 @@ private static readonly BitCountry[] clickableCountries =
 private BitCountry? selectedCountry;";
 
     private readonly string example11RazorCode = @"
+<style>
+    .flag-grid {
+        gap: 0.5rem 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    }
+
+    .flag-grid > div {
+        gap: 0.5rem;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+</style>
+
 <div class=""flag-grid"">
     @foreach (var country in BitCountries.All)
     {
-        <BitFlag Bordered Country=""country"" Title=""@($""{country.Name} - {country.Iso2}"")"" />
+        <div>
+            <BitFlag Bordered Country=""country"" />
+            <span>@country.Name (@country.Iso2)</span>
+        </div>
     }
 </div>";
 

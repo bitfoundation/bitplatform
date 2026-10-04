@@ -116,6 +116,19 @@ public partial class BitFlag : BitComponentBase
     private bool _drawsOwnSrc;
 
     /// <summary>
+    /// The <see cref="ImageAttributes"/> the page itself handed the flag, kept apart from the dictionary the cascade
+    /// merges them into, so every render merges the cascade of that render into these rather than into the last
+    /// merge - which would keep a cascaded attribute since taken away, and its first value once changed.
+    /// </summary>
+    private Dictionary<string, object> _ownImageAttributes = [];
+
+    /// <summary>
+    /// The dictionary the last cascade merged into <see cref="ImageAttributes"/>, or null where it merged nothing.
+    /// The parameter still holding this very instance is how the flag tells the page has not handed it a new one.
+    /// </summary>
+    private Dictionary<string, object>? _mergedImageAttributes;
+
+    /// <summary>
     /// Whether the image currently pointed at has already failed to load. An image that failed is not
     /// drawn again - the browser would ask for it once per render - and the packaged flag, or the
     /// fallback, stands in its place instead.
@@ -800,8 +813,18 @@ public partial class BitFlag : BitComponentBase
     protected override void OnParametersSet()
     {
         // The cascade is applied before anything reads the parameters it may fill in: the image, the shape and the
-        // size are all worked out right below.
+        // size are all worked out right below. The image attributes go back to the page's own first: a parameter the
+        // page does not pass is not supplied again, so it would otherwise still hold the previous render's merge.
+        if (ReferenceEquals(ImageAttributes, _mergedImageAttributes) is false)
+        {
+            _ownImageAttributes = ImageAttributes;
+        }
+
+        ImageAttributes = _ownImageAttributes;
+
         CascadingParameters?.UpdateParameters(this);
+
+        _mergedImageAttributes = ReferenceEquals(ImageAttributes, _ownImageAttributes) ? null : ImageAttributes;
 
         (_cutsToFlag, _cutRatio) = GetCut();
 

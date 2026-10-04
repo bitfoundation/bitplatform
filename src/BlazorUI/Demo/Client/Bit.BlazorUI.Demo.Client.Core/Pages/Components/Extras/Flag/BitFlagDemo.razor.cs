@@ -113,7 +113,7 @@ public partial class BitFlagDemo
             Name = "ImageAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Additional HTML attributes for the img element rather than the frame, e.g. a crossorigin or referrerpolicy for a CDN. The flag's own src, alt and loading win, and a srcset only goes with a Src or SrcPattern.",
+            Description = "Additional HTML attributes for the img element rather than the frame, e.g. a crossorigin or referrerpolicy for a CDN. The flag's own src, alt and loading win. A srcset given here only goes with a Src or SrcPattern; it is dropped for the packaged flag and for an ImageSet, which picks its own srcset.",
         },
         new()
         {

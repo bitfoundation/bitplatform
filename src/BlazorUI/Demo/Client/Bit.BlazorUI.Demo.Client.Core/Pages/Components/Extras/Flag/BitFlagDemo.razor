@@ -280,14 +280,17 @@
 
             <DemoExample Title="All countries" RazorCode="@example11RazorCode" Id="example11">
                 <div class="example-desc">
-                    Every country of <b>BitCountries.All</b>, loaded lazily as it scrolls into view. Hover one for its
-                    name and code.
+                    Every country of <b>BitCountries.All</b>, loaded lazily as it scrolls into view, with its name and
+                    code beside it.
                 </div>
                 <br />
                 <div class="flag-grid">
                     @foreach (var country in BitCountries.All)
                     {
-                        <BitFlag Bordered Country="country" Title="@($"{country.Name} - {country.Iso2}")" />
+                        <div>
+                            <BitFlag Bordered Country="country" />
+                            <span>@country.Name (@country.Iso2)</span>
+                        </div>
                     }
                 </div>
             </DemoExample>

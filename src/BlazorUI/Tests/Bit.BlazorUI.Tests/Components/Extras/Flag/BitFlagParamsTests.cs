@@ -228,6 +228,45 @@ public class BitFlagParamsTests : BunitTestContext
         StringAssert.Contains(root.GetAttribute("style"), "height:3rem");
     }
 
+    /// <summary>
+    /// A flag the page hands no ImageAttributes of its own is not handed them again on the next render, so the
+    /// cascade of every render is merged into the flag's own and never into the last merge: a cascaded attribute
+    /// taken away since goes, and one changed since takes its new value.
+    /// </summary>
+    [TestMethod]
+    public void BitFlagShouldFollowAChangedCascadeOfImageAttributes()
+    {
+        var flagParams = new BitFlagParams { ImageAttributes = new() { ["data-changed"] = "first", ["data-removed"] = "first" } };
+
+        var renders = 0;
+
+        RenderFragment Flag() => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "NL");
+            builder.AddAttribute(2, nameof(BitFlag.Title), $"render {++renders}");
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { flagParams });
+            parameters.Add(p => p.ChildContent, Flag());
+        });
+
+        Assert.AreEqual("first", component.Find("img").GetAttribute("data-changed"));
+        Assert.AreEqual("first", component.Find("img").GetAttribute("data-removed"));
+
+        flagParams.ImageAttributes = new() { ["data-changed"] = "second" };
+
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Flag()));
+
+        var img = component.Find("img");
+
+        Assert.AreEqual("second", img.GetAttribute("data-changed"));
+        Assert.IsFalse(img.HasAttribute("data-removed"));
+    }
+
     [TestMethod]
     public void BitFlagShouldTakeTheSrcPatternFromTheCascade()
     {
