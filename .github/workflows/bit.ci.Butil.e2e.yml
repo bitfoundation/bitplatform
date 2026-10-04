@@ -1,7 +1,7 @@
 name: bit platform CI - Butil E2E
 
 # The cross-host suites: the standalone WebAssembly sample and every Blazor Web App render mode in Chromium (on
-# net10.0/net9.0/net8.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.
+# net11.0/net10.0/net9.0/net8.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.
 # They take far longer than the build, MCP and hosting pipeline (bit.ci.Butil.yml), so they run only when started
 # by hand. Every job runs the same suite against a different host (BUTIL_E2E_HOST); see
 # src/Butil/Tests/Bit.Butil.Tests.E2E/README.md for what each host proves and how to run the same thing locally.
@@ -27,13 +27,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - { host: standalone, framework: net10.0 }
+        - { host: standalone, framework: net11.0 }
+        - { host: server, framework: net11.0 }
+        - { host: server-noprerender, framework: net11.0 }
+        - { host: wasm, framework: net11.0 }
+        - { host: wasm-noprerender, framework: net11.0 }
+        - { host: auto, framework: net11.0 }
+        - { host: auto-noprerender, framework: net11.0 }
         - { host: server, framework: net10.0 }
-        - { host: server-noprerender, framework: net10.0 }
         - { host: wasm, framework: net10.0 }
-        - { host: wasm-noprerender, framework: net10.0 }
-        - { host: auto, framework: net10.0 }
-        - { host: auto-noprerender, framework: net10.0 }
         - { host: server, framework: net9.0 }
         - { host: wasm, framework: net9.0 }
         - { host: server, framework: net8.0 }
@@ -45,10 +47,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -73,7 +80,7 @@ jobs:
       run: dotnet build src/Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Butil/Tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Butil/Tests/Bit.Butil.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -106,7 +113,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -178,7 +185,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -198,7 +205,7 @@ jobs:
       run: dotnet build src/Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Butil/Tests/Bit.Butil.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Butil/Tests/Bit.Butil.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:

@@ -43,7 +43,10 @@ public partial class Program
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
-        Services.GetService<IStartupValidator>()?.Validate();
+        foreach (var startupValidator in Services.GetServices<IAsyncStartupValidator>())
+        {
+            startupValidator.ValidateAsync().GetAwaiter().GetResult();
+        }
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {
@@ -73,7 +76,20 @@ public partial class Program
             WindowState = FormWindowState.Maximized,
             BackColor = backgroundColor,
             FormCaptionBackColor = backgroundColor,
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
+            FormRevealMode = FormRevealMode.Deferred
+        };
+
+        var kioskOptions = Services.GetRequiredService<ClientWindowsSettings>().Kiosk;
+        var isKiosk = kioskOptions?.Enabled is true;
+        kioskModeManagerReferenceToKeepAlive = new KioskModeManager
+        {
+            ContainerControl = form,
+            TopMostInFullScreen = true,
+            AlwaysOn = kioskOptions?.PreventSleep is true,
+            ToggleFullScreenKeys = isKiosk ? Keys.None : Keys.F11,
+            EscapeExitsFullScreen = isKiosk is false,
+            FullScreen = isKiosk
         };
         var pubSubService = Services.GetRequiredService<PubSubService>();
         pubSubHandlerReferenceToKeepAlive = pubSubService.Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async args =>
@@ -123,10 +139,30 @@ public partial class Program
                 args.Handled = true;
                 args.State = CoreWebView2PermissionState.Allow;
             };
+
+            if (isKiosk)
+            {
+                var webViewSettings = blazorWebView.WebView.CoreWebView2.Settings;
+                webViewSettings.AreDevToolsEnabled = false;
+                webViewSettings.AreDefaultContextMenusEnabled = false;
+                webViewSettings.AreBrowserAcceleratorKeysEnabled = false;
+                webViewSettings.IsZoomControlEnabled = false;
+                webViewSettings.IsSwipeNavigationEnabled = false;
+                webViewSettings.IsStatusBarEnabled = false;
+                blazorWebView.WebView.AllowExternalDrop = false;
+                // A second window would be one the lockdown does not own, and its chrome is the way back to the desktop.
+                blazorWebView.WebView.CoreWebView2.NewWindowRequested += (_, args) => args.Handled = true;
+            }
+
             _ = StartBlazor(blazorWebView);
         };
 
         form.Controls.Add(blazorWebView);
+
+        if (isKiosk)
+        {
+            WindowsKioskGuard.Apply(form);
+        }
 
         Application.Run(form);
     }
@@ -182,4 +218,9 @@ public partial class Program
     /// Strong root for the PAGE_DATA_CHANGED subscription, which PubSubService itself only holds weakly.
     /// </summary>
     private static Action? pubSubHandlerReferenceToKeepAlive;
+
+    /// <summary>
+    /// Strong root for the kiosk manager, which only the form it hooks would otherwise keep alive.
+    /// </summary>
+    private static KioskModeManager? kioskModeManagerReferenceToKeepAlive;
 }

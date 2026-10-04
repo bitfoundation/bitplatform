@@ -182,6 +182,11 @@ public partial class AppHubConnection : IAsyncDisposable
                     }
                 })
                 .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
+                .WithAuthenticationRefresh(options =>
+                {
+                    options.EnableAutoRefresh = true;
+                    options.RefreshBeforeExpiration = TimeSpan.FromMinutes(1);
+                })
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
                 {
                     //#if (redis == true)

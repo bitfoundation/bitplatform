@@ -47,7 +47,7 @@ Comprehensive **Data and Response caching**:
 - Powerful vectorized database search using embeddings
 
 ### Modern Stack
-- **ASP.NET Core 10**, **C# 14**, **.NET Aspire**
+- **ASP.NET Core 11**, **C# 14**, **.NET Aspire**
 - **Entity Framework Core** with multiple database support (SQL Server, PostgreSQL, MySQL, SQLite)
 - Flexible file storage (Local, S3, Azure Blob Storage)
 - CI/CD pipelines for GitHub Actions and Azure DevOps

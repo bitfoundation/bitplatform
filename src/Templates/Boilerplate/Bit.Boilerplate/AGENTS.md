@@ -5,7 +5,7 @@
 You will be working with the following key technologies:
 
 *   **C# 14.0**
-*   **ASP.NET Core 10.0**
+*   **ASP.NET Core 11.0**
 *   **Blazor**: Component-based web UI framework
 *   **.NET MAUI Blazor Hybrid**: Cross-platform app development
 *   **ASP.NET Core Identity**: Authentication and authorization
@@ -111,7 +111,7 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
--   **Add new migrations**: Run `dnx dotnet-ef@10.0.14 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
+-   **Add new migrations**: Run `dnx dotnet-ef@11.0.0-rc.1.26425.128 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 
 ## 5. Coding Conventions & Best Practices
