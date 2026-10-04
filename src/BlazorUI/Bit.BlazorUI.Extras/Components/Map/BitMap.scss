@@ -40,6 +40,10 @@ $map-popup-background: var(--bit-Map-popup-background, #{$clr-bg-pri});
 $map-popup-color: var(--bit-Map-popup-color, #{$clr-fg-pri});
 $map-popup-radius: var(--bit-Map-popup-radius, #{$shp-radius-popup});
 $map-popup-shadow: var(--bit-Map-popup-shadow, #{$box-shadow-popup});
+// A close glyph in the page's secondary text color would vanish on a popup recolored through the two
+// variables above, so the glyph and its hover wash are both derived from the popup's own text color.
+$map-popup-close-color: color-mix(in srgb, #{$map-popup-color} 72%, transparent);
+$map-popup-close-hover-background: color-mix(in srgb, #{$map-popup-color} 10%, transparent);
 $map-tooltip-background: var(--bit-Map-tooltip-background, #{$clr-tooltip-bg});
 $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 
@@ -169,10 +173,10 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     .leaflet-popup-close-button,
     .maplibregl-popup-close-button,
     .mapboxgl-popup-close-button {
-        color: $clr-fg-sec;
+        color: $map-popup-close-color;
 
         &:hover {
-            color: $clr-fg-pri;
+            color: $map-popup-color;
         }
 
         &:focus-visible {
@@ -497,14 +501,14 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     border: none;
     border-radius: $shp-radius-sm;
     background: transparent;
-    color: $clr-fg-sec;
+    color: $map-popup-close-color;
     font-size: $tg-fs-md;
     line-height: 1;
     cursor: pointer;
 
     &:hover {
-        color: $clr-fg-pri;
-        background: $clr-bg-pri-hover;
+        color: $map-popup-color;
+        background: $map-popup-close-hover-background;
     }
 
     &:focus-visible {
@@ -669,13 +673,13 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     border: none;
     border-radius: $shp-radius-sm;
     background: transparent;
-    color: $clr-fg-sec;
+    color: $map-popup-close-color;
     font-size: $tg-fs-md;
     line-height: 1;
     cursor: pointer;
 
     &:hover {
-        color: $clr-fg-pri;
+        color: $map-popup-color;
     }
 
     &:focus-visible {

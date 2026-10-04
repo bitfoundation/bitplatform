@@ -1906,7 +1906,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         _openPopupMarker = current;
         await InvokeAsync(StateHasChanged);
         await SafeInvokeAsync(
-            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, current.Position.Latitude, current.Position.Longitude),
+            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, current.Position.Latitude, current.Position.Longitude,
+                                        PopupAutoPan, ShouldAnimate(true, false)),
             nameof(OpenPopup));
     }
 

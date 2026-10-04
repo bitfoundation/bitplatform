@@ -35,7 +35,12 @@
         hintTimer: any;
         listeners: { target: EventTarget, type: string, handler: any, capture: boolean }[];
         /** Element pinned to a geographic coordinate, and the frame loop keeping it there. */
-        anchor: { elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number, autoPan: boolean, animate: boolean } | null;
+        anchor: {
+            elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number,
+            autoPan: boolean, animate: boolean,
+            /** The auto-pan's settling window: when it ends, the popup size last seen, and for how many frames in a row. */
+            panDeadline: number | null, panWidth: number, panHeight: number, panStableFrames: number,
+        } | null;
     };
 
     /**
@@ -243,10 +248,15 @@
                 lat, lng,
                 frame: null as number | null,
                 deadline: Date.now() + 5_000,
-                // Spent on the first frame the popup is on screen: a popup only has to be brought into
-                // view as it opens, and panning on every frame would fight a user dragging it away.
+                // Spent once, as the popup opens: panning on every frame would fight a user dragging it
+                // away. Not on its first frame on screen, though - its content may not have laid out yet
+                // (or grow once an image loads), so the size is watched until it settles, within a bound.
                 autoPan: autoPan === true,
                 animate: animate === true,
+                panDeadline: null as number | null,
+                panWidth: -1,
+                panHeight: -1,
+                panStableFrames: 0,
             };
             s.anchor = anchor;
 
@@ -270,7 +280,7 @@
                 if (point) {
                     anchor.element.style.transform = `translate(${Math.round(point.x)}px, ${Math.round(point.y)}px)`;
                     anchor.element.style.visibility = '';
-                    if (anchor.autoPan) {
+                    if (anchor.autoPan && BitMapChrome._popupSettled(anchor, anchor.element)) {
                         anchor.autoPan = false;
                         BitMapChrome._panIntoView(s, id, anchor.element, anchor.animate);
                     }
@@ -306,6 +316,28 @@
         }
 
         // ---- helpers ----
+
+        /**
+         * Whether the anchored popup has stopped changing size: the same nonzero size for a few frames
+         * in a row, or the settling window has run out - in which case the pan goes ahead with the size
+         * last seen rather than waiting on content that keeps changing.
+         */
+        private static _popupSettled(anchor: NonNullable<ChromeState['anchor']>, anchorElement: HTMLElement) {
+            const popup = (anchorElement.firstElementChild as HTMLElement | null) ?? anchorElement;
+            const box = popup.getBoundingClientRect();
+            const now = Date.now();
+            anchor.panDeadline ??= now + 500;
+
+            if (box.width === anchor.panWidth && box.height === anchor.panHeight && (box.width > 0 || box.height > 0)) {
+                anchor.panStableFrames++;
+            } else {
+                anchor.panWidth = box.width;
+                anchor.panHeight = box.height;
+                anchor.panStableFrames = 0;
+            }
+
+            return anchor.panStableFrames >= 3 || now >= anchor.panDeadline;
+        }
 
         /**
          * Pans the map just enough to bring a popup inside the container, with a small margin - what
