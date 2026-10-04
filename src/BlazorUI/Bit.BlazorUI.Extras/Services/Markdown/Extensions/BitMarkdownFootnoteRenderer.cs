@@ -41,8 +41,8 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 // each reference has a short label to be described by.
                 b.OpenElement(23, "h" + Math.Clamp(footnotes.HeadingLevel, 1, 6));
                 b.AddAttribute(24, "id", $"{Scope(footnotes.IdScope)}footnotes-label");
-                b.AddAttribute(25, "class", "bit-mdv-sr-only");
-                b.AddContent(26, r.Texts.Footnotes);
+                r.AddScreenReaderOnly(b, 25, "bit-mdv-sr-only");
+                b.AddContent(27, r.Texts.Footnotes);
                 b.CloseElement();
                 b.OpenElement(11, "hr");
                 b.CloseElement();
@@ -68,6 +68,8 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                         r.WriteNode(b, definition.Children[c]);
                     }
                     b.OpenElement(22, "p");
+                    if (r.AutoDirection)
+                        b.AddAttribute(28, "dir", "auto");
                     r.WriteNodes(b, paragraph.Inlines);
                     WriteBackReferences(r, b, definition);
                     b.CloseElement();

@@ -55,6 +55,9 @@ public class BitMarkdownTexts
     /// </summary>
     public string NewTab { get; set; } = "(opens in a new tab)";
 
+    /// <summary>The accessible name of a code block, which scrolls and so is a tab stop.</summary>
+    public string CodeBlock { get; set; } = "Code block";
+
     /// <summary>The accessible name of the scrollable region a table sits in.</summary>
     public string Table { get; set; } = "Table";
 

@@ -44,12 +44,23 @@ public sealed class BitMarkdownRenderer
     public string? DocumentUrl { get; init; }
 
     /// <summary>
-    /// When <c>true</c>, every paragraph, heading and list is written with <c>dir="auto"</c>, so each
-    /// takes the direction of its own text - what a document mixing right-to-left and left-to-right
-    /// languages needs, since one direction for the whole document lays out every block written in
-    /// the other backwards. Defaults to <c>false</c>.
+    /// When <c>true</c>, every block of text - paragraph, heading, list and list item, table cell,
+    /// definition term and description, alert and container title, caption - is written with
+    /// <c>dir="auto"</c>, so each takes the direction of its own text - what a document mixing
+    /// right-to-left and left-to-right languages needs, since one direction for the whole document
+    /// lays out every block written in the other backwards. Defaults to <c>false</c>.
     /// </summary>
     public bool AutoDirection { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, the text the renderers write for assistive technology alone (the
+    /// <see cref="BitMarkdownTexts.NewTab"/> notice, the footnotes heading) carries the declarations
+    /// that hide it in a <c>style</c> attribute of its own, so output read without the viewer's
+    /// stylesheet - an email, a static file, markup placed outside a <c>bit-mdv</c> root - does not
+    /// show it. Leave it <c>false</c> where the stylesheet is in play: a strict
+    /// Content-Security-Policy refuses inline styles. Defaults to <c>false</c>.
+    /// </summary>
+    public bool Standalone { get; init; }
 
     /// <summary>
     /// Returns the destination to write for <paramref name="url"/>: an in-page one (<c>#id</c>)
@@ -69,18 +80,40 @@ public sealed class BitMarkdownRenderer
     /// </summary>
     /// <param name="builder">The builder the link is being written to.</param>
     /// <param name="sequence">
-    /// The first of the three sequence numbers the notice takes, a literal fixed to the call site.
+    /// The first of the four sequence numbers the notice takes, a literal fixed to the call site.
     /// </param>
     public void WriteNewTabNotice(RenderTreeBuilder builder, int sequence)
     {
         if (string.IsNullOrEmpty(Texts.NewTab)) return;
 
         builder.OpenElement(sequence, "span");
-        builder.AddAttribute(sequence + 1, "class", "bit-mdv-new-tab");
+        AddScreenReaderOnly(builder, sequence + 1, "bit-mdv-new-tab");
         // The space keeps the notice a word apart in the accessible name, which runs inline text together.
-        builder.AddContent(sequence + 2, " " + Texts.NewTab);
+        builder.AddContent(sequence + 3, " " + Texts.NewTab);
         builder.CloseElement();
     }
+
+    /// <summary>
+    /// Marks the element just opened as text for assistive technology alone: gives it
+    /// <paramref name="className"/>, which the viewer's stylesheet hides it by, and - when
+    /// <see cref="Standalone"/> - the same declarations inline.
+    /// </summary>
+    /// <param name="builder">The builder the element is being written to.</param>
+    /// <param name="sequence">
+    /// The first of the two sequence numbers the attributes take, a literal fixed to the call site.
+    /// </param>
+    /// <param name="className">The class the stylesheet hides the element by.</param>
+    public void AddScreenReaderOnly(RenderTreeBuilder builder, int sequence, string className)
+    {
+        builder.AddAttribute(sequence, "class", className);
+        if (Standalone)
+        {
+            builder.AddAttribute(sequence + 1, "style", ScreenReaderOnlyStyle);
+        }
+    }
+
+    // Kept in step with the .bit-mdv-sr-only rule in BitMarkdownViewer.scss.
+    private const string ScreenReaderOnlyStyle = "border:0;padding:0;width:1px;height:1px;margin:-1px;overflow:hidden;position:absolute;white-space:nowrap;clip-path:inset(50%);user-select:none;-webkit-user-select:none";
 
     /// <summary>Renders a sequence of nodes.</summary>
     public void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownNode> nodes)

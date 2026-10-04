@@ -22,6 +22,8 @@ public sealed class BitMarkdownAlertRenderer : BitMarkdownNodeRenderer
         // and a monochrome print both miss.
         b.OpenElement(2, "p");
         b.AddAttribute(3, "class", "markdown-alert-title");
+        if (r.AutoDirection)
+            b.AddAttribute(6, "dir", "auto");
         b.AddMarkupContent(4, GetIcon(alert.Kind));
         b.AddContent(5, r.Texts.GetAlertTitle(alert.Kind));
         b.CloseElement();

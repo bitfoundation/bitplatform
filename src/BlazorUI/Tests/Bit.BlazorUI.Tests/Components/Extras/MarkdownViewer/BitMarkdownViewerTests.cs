@@ -638,7 +638,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         // Four spaces make it an indented code block, not a definition.
-        Assert.Contains("<pre tabindex=\"0\">", component.Markup);
+        Assert.Contains("<pre tabindex=\"0\" role=\"region\" aria-label=\"Code block\">", component.Markup);
         Assert.Contains("[a]: /a", component.Markup);
     }
 

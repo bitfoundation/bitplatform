@@ -54,10 +54,23 @@ internal sealed class BitMarkdownViewerTemplateRenderer : BitMarkdownNodeRendere
             case BitMarkdownLinkNode link:
                 builder.OpenElement(6, "span");
                 builder.AddAttribute(7, "class", TemplateClass);
-                builder.AddContent(8, _viewer.LinkTemplate, link);
+                builder.AddContent(8, _viewer.LinkTemplate, ResolveInPageLink(renderer, link));
                 builder.CloseElement();
                 break;
         }
+    }
+
+    // The template is handed an in-page destination already written against the page, as every link the
+    // renderers draw is, so an anchor of its own does not lead to the base address instead. The destination
+    // is init-only, so a link that needs it gets a copy; any other reaches the template as it is.
+    private static BitMarkdownLinkNode ResolveInPageLink(BitMarkdownRenderer renderer, BitMarkdownLinkNode link)
+    {
+        var url = renderer.ResolveInPageUrl(link.Url);
+        if (ReferenceEquals(url, link.Url)) return link;
+
+        var resolved = new BitMarkdownLinkNode { Url = url, Title = link.Title, IsAutoLink = link.IsAutoLink };
+        resolved.Children.AddRange(link.Children);
+        return resolved;
     }
 
     internal const string TemplateClass = "bit-mdv-tpl";

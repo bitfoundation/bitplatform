@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
@@ -181,6 +182,30 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldNotParseAgainWhenOnlyTheEnabledStateChanges()
+    {
+        int parsed = 0;
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- [ ] one");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+            parameters.Add(p => p.OnTaskChanged, _ => { });
+            parameters.Add(p => p.OnParsed, _ => parsed++);
+        });
+
+        var document = component.Instance.Document;
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        Assert.IsTrue(component.Find(".bit-mdv input[type=checkbox]").HasAttribute("disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        Assert.IsFalse(component.Find(".bit-mdv input[type=checkbox]").HasAttribute("disabled"));
+
+        Assert.AreEqual(1, parsed);
+        Assert.AreSame(document, component.Instance.Document);
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldMakeANamedDocumentARegion()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
@@ -218,6 +243,25 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-mdv").HasAttribute("role"));
     }
 
+    [DataTestMethod]
+    [DataRow("aria-labelledby", "post-title")]
+    [DataRow("aria-label", "Comment")]
+    public void BitMarkdownViewerShouldMakeADocumentNamedBySplattedAttributesARegion(string attribute, string value)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMarkdownViewer>(0);
+            builder.AddAttribute(1, nameof(BitMarkdownViewer.Markdown), "text");
+            builder.AddAttribute(2, attribute, value);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-mdv");
+
+        Assert.AreEqual("region", root.GetAttribute("role"));
+        Assert.AreEqual(value, root.GetAttribute(attribute));
+    }
+
     [TestMethod]
     public void BitMarkdownViewerShouldGiveEachBlockItsOwnDirectionUnderAuto()
     {
@@ -231,6 +275,38 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.AreEqual("auto", component.Find(".bit-mdv h1").GetAttribute("dir"));
         Assert.AreEqual("auto", component.Find(".bit-mdv ul").GetAttribute("dir"));
         Assert.IsTrue(component.FindAll(".bit-mdv p").All(p => p.GetAttribute("dir") == "auto"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldGiveEachListItemAndCellItsOwnDirectionUnderAuto()
+    {
+        // A tight item's text sits straight in the <li>, so the <li> has to take its own direction, or every item
+        // follows the first one.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- این مورد فارسی است\n- English item\n\n| ستون | Column |\n|---|---|\n| یک | one |\n\n> [!NOTE]\n> x");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+            parameters.Add(p => p.Dir, BitDir.Auto);
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-mdv li").All(li => li.GetAttribute("dir") == "auto"));
+        Assert.IsTrue(component.FindAll(".bit-mdv th, .bit-mdv td").All(cell => cell.GetAttribute("dir") == "auto"));
+        Assert.AreEqual(4, component.FindAll(".bit-mdv th, .bit-mdv td").Count);
+        Assert.AreEqual("auto", component.Find(".bit-mdv .markdown-alert-title").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldGiveDefinitionsTheirOwnDirectionUnderAuto()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "واژه\n: تعریف");
+            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseDefinitionLists().Build());
+            parameters.Add(p => p.Dir, BitDir.Auto);
+        });
+
+        Assert.AreEqual("auto", component.Find(".bit-mdv dt").GetAttribute("dir"));
+        Assert.AreEqual("auto", component.Find(".bit-mdv dd").GetAttribute("dir"));
     }
 
     [DataTestMethod]
@@ -252,7 +328,12 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters => parameters.Add(p => p.Markdown, "```\nx\n```"));
 
-        Assert.AreEqual("0", component.Find(".bit-mdv pre").GetAttribute("tabindex"));
+        var pre = component.Find(".bit-mdv pre");
+
+        Assert.AreEqual("0", pre.GetAttribute("tabindex"));
+        // A tab stop needs a name, and a name needs a role.
+        Assert.AreEqual("region", pre.GetAttribute("role"));
+        Assert.AreEqual("Code block", pre.GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -324,6 +405,73 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-mdv-new-tab").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldHideItsScreenReaderTextInlineWhereThereIsNoPage()
+    {
+        // Rendered by an HtmlRenderer into an email or a static file, the output is read without the stylesheet.
+        Services.AddSingleton<NavigationManager>(new UninitializedNavigationManager());
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[docs](https://example.com) and a note[^1].\n\n[^1]: Note.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        StringAssert.Contains(component.Find(".bit-mdv-new-tab").GetAttribute("style"), "clip-path:inset(50%)");
+        StringAssert.Contains(component.Find(".bit-mdv .footnotes .bit-mdv-sr-only").GetAttribute("style"), "clip-path:inset(50%)");
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldLeaveHidingItsScreenReaderTextToTheStylesheetOnAPage()
+    {
+        // A strict Content-Security-Policy refuses inline styles, so none is written where the stylesheet is.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[docs](https://example.com) and a note[^1].\n\n[^1]: Note.");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        Assert.IsFalse(component.Find(".bit-mdv-new-tab").HasAttribute("style"));
+        Assert.IsFalse(component.Find(".bit-mdv .footnotes .bit-mdv-sr-only").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldHandALinkTemplateTheInPageDestinationWrittenAgainstThePage()
+    {
+        NavigateTo("/docs/page");
+
+        var urls = new List<string>();
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[see](#install) and [other](/other)");
+            parameters.Add(p => p.LinkTemplate, link => builder =>
+            {
+                urls.Add(link.Url);
+                builder.AddContent(0, link.Url);
+            });
+        });
+
+        CollectionAssert.AreEqual(new[] { "/docs/page#install", "/other" }, urls);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNotRenderAgainWhenTheAddressChangesUnderADocumentWithNoInPageLink()
+    {
+        NavigateTo("/a");
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[elsewhere](/other) and text");
+        });
+
+        var renders = component.RenderCount;
+
+        NavigateTo("/a?sort=new");
+
+        Assert.AreEqual(renders, component.RenderCount);
+        Assert.AreEqual("/other", component.Find(".bit-mdv a").GetAttribute("href"));
     }
 
     [TestMethod]

@@ -5,7 +5,7 @@
 //
 // --bit-MarkdownViewer-color                    text color of the document
 // --bit-MarkdownViewer-font-family              font of the document
-// --bit-MarkdownViewer-font-size                font size of the document; every block scales with it
+// --bit-MarkdownViewer-font-size                font size of the document; its headings and code spans scale with it
 // --bit-MarkdownViewer-line-height              line height of the document
 // --bit-MarkdownViewer-block-spacing            room under each block (paragraph, list, table, code block, ...)
 // --bit-MarkdownViewer-scroll-margin            room kept above a heading or footnote an in-page link scrolls to
@@ -181,6 +181,8 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
         -webkit-user-select: none;
     }
 
+    // A code span is a run inside a line of any size - a heading's as much as a paragraph's - so it is sized
+    // against that line rather than taken from the ramp, which would shrink it to body size inside a heading.
     @include own('code') {
         margin: 0;
         padding: 0.2em 0.4em;
@@ -197,7 +199,7 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
         margin-bottom: $_block-spacing;
         padding: var(--bit-MarkdownViewer-code-block-padding, #{spacing(2)});
         overflow: auto;
-        font-size: 85%;
+        font-size: $tg-fs-sm;
         line-height: 1.45;
         border-radius: var(--bit-MarkdownViewer-code-block-radius, #{$shp-radius-surface});
         color: var(--bit-MarkdownViewer-code-block-color, inherit);
@@ -298,11 +300,9 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
     }
 
     // Emphasis extras. <sub> and <sup> keep the line height they sit on, and the two "changed
-    // text" marks read as such without borrowing the link or the error colour. Every size in the
-    // document is relative, so it scales with --bit-MarkdownViewer-font-size and with the heading
-    // it sits in.
+    // text" marks read as such without borrowing the link or the error colour.
     @include own('sub, sup') {
-        font-size: 0.75em;
+        font-size: $tg-fs-xs;
         line-height: 0;
     }
 
@@ -487,7 +487,7 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
 
     @include own('figcaption') {
         margin-top: 0.5em;
-        font-size: 0.875em;
+        font-size: $tg-fs-sm;
         color: $clr-fg-sec;
     }
 
@@ -529,12 +529,12 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
     // Footnotes: the section is set apart and typographically quieter than the body it
     // annotates, and each marker stays small enough not to disturb the line it sits on.
     .footnote-ref {
-        font-size: 0.75em;
+        font-size: $tg-fs-xs;
         line-height: 0;
     }
 
     .footnotes {
-        font-size: 0.875em;
+        font-size: $tg-fs-sm;
         color: $clr-fg-sec;
 
         > hr {

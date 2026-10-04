@@ -49,8 +49,11 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 if (language is not null)
                     b.AddAttribute(35, "class", language);
                 // A block scrolls rather than wraps, so it is a tab stop: a line wider than the
-                // document can then be scrolled to with the keyboard alone (WCAG 2.1.1).
+                // document can then be scrolled to with the keyboard alone (WCAG 2.1.1). A focusable
+                // element needs a name, and a name needs a role - the one a table's scroll area has.
                 b.AddAttribute(36, "tabindex", "0");
+                b.AddAttribute(41, "role", "region");
+                b.AddAttribute(42, "aria-label", r.Texts.CodeBlock);
                 b.OpenElement(4, "code");
                 if (language is not null)
                     b.AddAttribute(5, "class", language);
@@ -113,7 +116,7 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                     b.AddAttribute(18, "title", link.Title);
                 r.WriteNodes(b, link.Children);
                 if (newTab)
-                    r.WriteNewTabNotice(b, 40);
+                    r.WriteNewTabNotice(b, 43);
                 b.CloseElement();
                 break;
 
@@ -180,6 +183,10 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
             b.OpenElement(27, "li");
             if (item.IsTask)
                 b.AddAttribute(34, "class", "task-list-item");
+            // Each item takes its own direction too: a tight item's text sits straight in the <li>, which
+            // would otherwise take the direction the list guessed from its first item.
+            if (r.AutoDirection)
+                b.AddAttribute(40, "dir", "auto");
             // Tight lists render a lone paragraph's inlines directly inside <li>.
             if (list.Tight)
             {

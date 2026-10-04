@@ -556,6 +556,7 @@ public partial class BitMarkdownViewerDemo
                 new() { Name = "FootnoteBackReference", Type = "string", DefaultValue = "Back to reference {0}", Description = "The accessible name of a footnote's back-link, given the footnote's number." },
                 new() { Name = "FootnoteBackReferenceOccurrence", Type = "string", DefaultValue = "Back to reference {0}-{1}", Description = "The accessible name of one of several back-links on the same footnote, given the footnote's number and the citation's." },
                 new() { Name = "NewTab", Type = "string", DefaultValue = "(opens in a new tab)", Description = "Read out after the text of a link that opens in a new tab; not shown. An empty string leaves it out." },
+                new() { Name = "CodeBlock", Type = "string", DefaultValue = "Code block", Description = "The accessible name of a code block, which scrolls and so is a tab stop." },
                 new() { Name = "Table", Type = "string", DefaultValue = "Table", Description = "The accessible name of the scrollable region a table sits in." },
                 new() { Name = "PermalinkTo", Type = "string", DefaultValue = "Permalink to {0}", Description = "The accessible name of a heading's permalink, given the heading's text." },
                 new() { Name = "PermalinkToSection", Type = "string", DefaultValue = "Permalink to this section", Description = "The accessible name of a permalink whose heading has no text of its own." },
@@ -702,7 +703,7 @@ public partial class BitMarkdownViewerDemo
     [
         new() { Name = "--bit-MarkdownViewer-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Text color of the document." },
         new() { Name = "--bit-MarkdownViewer-font-family", DefaultValue = "inherit", Description = "Font of the document." },
-        new() { Name = "--bit-MarkdownViewer-font-size", DefaultValue = "inherit", Description = "Font size of the document; every block scales with it." },
+        new() { Name = "--bit-MarkdownViewer-font-size", DefaultValue = "inherit", Description = "Font size of the document; its headings and code spans scale with it." },
         new() { Name = "--bit-MarkdownViewer-line-height", DefaultValue = "1.6", Description = "Line height of the document." },
         new() { Name = "--bit-MarkdownViewer-block-spacing", DefaultValue = "1em", Description = "Room under each block (paragraph, list, table, code block, ...)." },
         new() { Name = "--bit-MarkdownViewer-scroll-margin", DefaultValue = "0", Description = "Room kept above a heading or a footnote an in-page link scrolls to - the height of a sticky app bar." },
