@@ -72,7 +72,7 @@ self.assetsExclude = [
     /_headers$/,
 
     // The standalone app's css bundle; Server.Web serves that css inside its own bundle below instead.
-    ...(isServerHosted ? [/Boilerplate\.Client\.Web\.styles\.css$/] : [])
+    ...(isServerHosted ? [/Boilerplate\.Client\.Web\.styles\.css$/, /^_framework\/blazor\.webassembly\.js$/] : [])
 ];
 self.externalAssets = [
     {
