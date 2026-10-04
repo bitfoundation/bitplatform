@@ -735,9 +735,16 @@ namespace BitBlazorUI {
                 this._trailingTimer = null;
                 if (this._disposed) return;
                 const m = this.metrics();
-                if (m.scrollOffset !== this._lastNotifiedOffset) {
-                    this._notify(m.scrollOffset, m.viewportSize);
+                if (m.scrollOffset === this._lastNotifiedOffset && !this._viewportChanged) return;
+
+                // Like the coalescing above, a list an ancestor scrolls that is still out of view on the same side has
+                // nothing new to render.
+                if (this._external && !this._viewportChanged) {
+                    const side = this._sideOf(m.scrollOffset);
+                    if (side !== 0 && side === this._sideOf(this._lastNotifiedOffset)) return;
                 }
+
+                this._notify(m.scrollOffset, m.viewportSize);
             }, 150);
         }
 

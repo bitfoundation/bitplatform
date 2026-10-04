@@ -55,6 +55,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private int _visibleEnd;   // exclusive
     private int _renderStart;
     private int _renderEnd;    // exclusive
+    private int _paramsPrevRenderStart; // the rendered window before the last OnParametersSet, to load what it moved onto
+    private int _paramsPrevRenderEnd;
 
     private CancellationTokenSource? _loadCts;
 
@@ -418,6 +420,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         if (IsDisposed) return;
 
         var viewportChanged = Math.Abs(viewportSize - _viewportSize) > 0.5;
+        int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
 
         if (crossSize >= 0 && Math.Abs(crossSize - _crossSize) > 0.5)
         {
@@ -438,7 +441,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             // Sent before the browser performed a scroll decided since (e.g. keeping the items in view in place after
             // a prepend), so its offset no longer holds: acting on it would render the wrong window and could fire an
             // edge callback for an edge the viewport has already left. Its viewport size still holds.
-            if (viewportChanged is false) return;
+            if (viewportChanged is false)
+            {
+                // A responsive grid laid out again above may still have moved the window onto items not loaded yet.
+                await LoadProviderWindowIfMovedAsync(prevRenderStart, prevRenderEnd);
+                return;
+            }
 
             _viewportSize = viewportSize;
             UpdateScale();
@@ -459,7 +467,6 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             }
         }
 
-        int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
         RecomputeRange();
 
         if (_renderStart != prevRenderStart || _renderEnd != prevRenderEnd)
@@ -532,8 +539,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 _renderedScroll = $"d:{FormatCssValue(realDiff)}:{NextScrollSeq()}";
             }
 
+            int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
             RecomputeRange();
             StateHasChanged();
+            await LoadProviderWindowIfMovedAsync(prevRenderStart, prevRenderEnd);
         }
 
         // Re-align a pending ScrollToIndex once its target is rendered and measured, since its offset
@@ -641,6 +650,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             throw new InvalidOperationException($"BitVirtualize requires either {nameof(Items)} or {nameof(ItemsProvider)}, but not both.");
         }
 
+        _paramsPrevRenderStart = _renderStart;
+        _paramsPrevRenderEnd = _renderEnd;
+
         UpdateLayout();
 
         // Switching Dynamic on/off creates or drops the size tree.
@@ -714,6 +726,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 RecomputeRange();
             }
         }
+        else
+        {
+            // Sizing parameters (ItemSize, Lanes, OverscanCount, ...) may have moved the window.
+            await LoadProviderWindowIfMovedAsync(_paramsPrevRenderStart, _paramsPrevRenderEnd);
+        }
 
         await base.OnParametersSetAsync();
     }
@@ -763,9 +780,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                     var metrics = await _js.BitVirtualizeSetup(UniqueId, RootElement, Horizontal, Dynamic, _sentThreshold, ScrollerSelector, _dotnetObj!);
                     if (metrics is not null)
                     {
+                        int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
                         ApplyMetrics(metrics);
                         RecomputeRange();
                         StateHasChanged();
+                        await LoadProviderWindowIfMovedAsync(prevRenderStart, prevRenderEnd);
                     }
                 }
 
@@ -1226,6 +1245,16 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
 
         StateHasChanged();
+    }
+
+    // A window moved by a change of layout (lanes, measured sizes, sizing parameters, another scroller) may reach items
+    // the provider has not been asked for; the availability check skips the request when they are cached already.
+    private async Task LoadProviderWindowIfMovedAsync(int prevRenderStart, int prevRenderEnd)
+    {
+        if (ItemsProvider is null || _initialized is false) return;
+        if (_renderStart == prevRenderStart && _renderEnd == prevRenderEnd) return;
+
+        await LoadProviderWindowAsync(forceCount: false);
     }
 
     private async Task LoadProviderWindowAsync(bool forceCount)
