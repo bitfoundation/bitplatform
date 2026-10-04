@@ -44,8 +44,8 @@ public partial class BitToggle : BitInputBase<bool>
     /// </summary>
     /// <remarks>
     /// The disabled state is then conveyed by <c>aria-disabled</c> rather than by the native <c>disabled</c>
-    /// attribute, so the switch stays in the tab order, keeps answering the pointer - which is what lets its
-    /// <see cref="Title"/> explain why it cannot be used - and still refuses every change.
+    /// attribute, so the switch stays in the tab order and reachable by assistive technologies, while still
+    /// refusing every change.
     /// </remarks>
     [Parameter] public bool AllowDisabledFocus { get; set; }
 
@@ -373,7 +373,6 @@ public partial class BitToggle : BitInputBase<bool>
     /// <remarks>
     /// It sits on the root rather than on the track, so the label answers a hover as well - which is what
     /// keeps it reachable on a disabled toggle, whose track itself stops answering the pointer.
-    /// <see cref="AllowDisabledFocus"/> gives the track back too, along with the tab stop.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 

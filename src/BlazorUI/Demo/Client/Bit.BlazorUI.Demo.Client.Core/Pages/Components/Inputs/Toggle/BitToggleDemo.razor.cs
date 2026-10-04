@@ -9,7 +9,7 @@ public partial class BitToggleDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps a disabled toggle focusable and hoverable, conveying the disabled state through aria-disabled rather than the native disabled attribute. The toggle still refuses every change.",
+            Description = "Keeps a disabled toggle focusable and discoverable by assistive technologies, conveying the disabled state through aria-disabled rather than the native disabled attribute. The toggle still refuses every change.",
         },
         new()
         {

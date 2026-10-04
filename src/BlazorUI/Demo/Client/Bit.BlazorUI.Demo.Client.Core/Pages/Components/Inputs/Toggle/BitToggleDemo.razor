@@ -496,9 +496,9 @@
         </div>
         <br /><br /><br />
         <div>
-            A disabled BitToggle leaves the tab order, which also takes its <b>Title</b> with it - and "why can I
-            not turn this on?" is usually exactly what that tooltip is there to answer.
-            <b>AllowDisabledFocus</b> keeps it reachable and hoverable instead, reporting the state through
+            A disabled BitToggle leaves the tab order, so keyboard and assistive-technology users can no longer
+            reach it, while its <b>Title</b> still shows on hover, since the tooltip sits on the root.
+            <b>AllowDisabledFocus</b> keeps it focusable instead, reporting the state through
             <b>aria-disabled</b> rather than the native attribute, while still refusing every change. Tab through
             the two below:
         </div><br />

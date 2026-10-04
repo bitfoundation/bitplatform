@@ -109,8 +109,8 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
     public BitLabelPosition? LabelPosition { get; set; }
 
     /// <summary>
-    /// Renders a spinner in place of the knob's icon and suspends the toggle until the pending
-    /// work behind the change is done.
+    /// Renders a spinner in place of everything the knob carries - its icon or <c>ThumbTemplate</c> - and
+    /// suspends the toggle until the pending work behind the change is done.
     /// </summary>
     public bool? Loading { get; set; }
 
