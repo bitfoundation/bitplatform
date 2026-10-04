@@ -37,7 +37,7 @@ public partial class BitTextShimmerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the band that sweeps across the text, read from the theme. An explicit GradientColor wins over it.",
+            Description = "The general color of the band that sweeps across the text, read from the theme. An explicit GradientColor wins over it, unless only a BitParams supplies it.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -114,9 +114,9 @@ public partial class BitTextShimmerDemo
         new()
         {
             Name = "Spread",
-            Type = "double",
-            DefaultValue = "2",
-            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count, so longer text gets a proportionally wider shine. SpreadLength wins over it; left unset, --bit-TextShimmer-spread does too.",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "The shimmer band width multiplier. The effective spread of the band (px) - from its brightest point to each of its edges - is Spread times the character count (a multiplier of 2 when null), so longer text gets a proportionally wider shine. SpreadLength wins over it, unless only a BitParams supplies it; left null, --bit-TextShimmer-spread does too.",
         },
         new()
         {
@@ -145,11 +145,11 @@ public partial class BitTextShimmerDemo
     [
         new() { Name = "--bit-TextShimmer-base-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Resting color of the text. BaseColor wins over it." },
         new() { Name = "--bit-TextShimmer-gradient-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Color of the band. GradientColor and Color win over it." },
-        new() { Name = "--bit-TextShimmer-spread", DefaultValue = "2px per character", Description = "Distance from the brightest point of the band to each edge; prefer a font-relative length (em, ch). SpreadLength and a non-default Spread win over it." },
+        new() { Name = "--bit-TextShimmer-spread", DefaultValue = "2px per character", Description = "Distance from the brightest point of the band to each edge; prefer a font-relative length (em, ch). SpreadLength and any Spread that is set win over it." },
         new() { Name = "--bit-TextShimmer-angle", DefaultValue = "0deg", Description = "Tilt of the band from upright, mirrored in RTL. Angle wins over it." },
         new() { Name = "--bit-TextShimmer-duration", DefaultValue = "calc(2000ms * var(--bit-mot-loop-factor))", Description = "Length of one sweep. Duration wins over it." },
         new() { Name = "--bit-TextShimmer-delay", DefaultValue = "0ms", Description = "Pause before the first sweep. Delay wins over it." },
-        new() { Name = "--bit-TextShimmer-repeat-delay", DefaultValue = "0ms", Description = "Extra rest between two sweeps. RepeatDelay wins over it." },
+        new() { Name = "--bit-TextShimmer-repeat-delay", DefaultValue = "0ms", Description = "Extra rest between two sweeps, stretched by the loop factor along with the default sweep unless a duration is set. RepeatDelay wins over it." },
         new() { Name = "--bit-TextShimmer-iterations", DefaultValue = "infinite", Description = "Number of sweeps before the text comes to rest. Iterations wins over it." },
         new() { Name = "--bit-TextShimmer-disabled-opacity", DefaultValue = "var(--bit-opa-dis)", Description = "Opacity of a shimmer whose IsEnabled is false." },
     ];
