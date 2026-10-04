@@ -567,8 +567,10 @@
                 The public <b>--bit-PhoneInput-*</b> custom properties (see the
                 <BitLink Href="#css-variables-section">CSS variables</BitLink> table) re-skin the field without a selector:
                 on <code>:root</code> for the whole app, on an ancestor for the fields inside it, or in one field's
-                <b>Style</b> - which also carries them to its country list, rendered outside the field. <b>Style</b> and
-                <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name.
+                <b>Style</b>. The country list is rendered in the body, outside the field, so a variable set on an
+                ancestor styles the field but never reaches its list: set the list's variables on <code>:root</code>,
+                or in the field's <b>Style</b>, whose <b>--bit-PhoneInput-*</b> entries are copied onto the list.
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name.
             </div>
             <br />
             <div class="example-box">
