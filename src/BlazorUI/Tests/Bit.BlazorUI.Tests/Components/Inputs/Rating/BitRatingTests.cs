@@ -251,6 +251,27 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRatingFloorShouldBeRoundedLikeTheStepsAre()
+    {
+        // A third of an item has no exact decimal form, so the floor is rounded the way every committed step
+        // is - the first step is the same 0.33333 whether it is clamped to or clicked.
+        double value = 0;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.33);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        Assert.AreEqual(0.33333d, value);
+        Assert.AreEqual("0.33333", component.Find("input").GetAttribute("min"));
+
+        component.FindAll(".bit-rtg-btn")[1].Click();
+        component.FindAll(".bit-rtg-seg")[0].Click();
+
+        Assert.AreEqual(0.33333d, value);
+    }
+
+    [TestMethod]
     public void BitRatingShouldCommitTheFirstFractionOfAFractionalScale()
     {
         double value = 3;
@@ -532,7 +553,7 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(1d, value);
         StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:100%");
 
-        component.Find(".bit-rtg").MouseLeave();
+        component.Find(".bit-rtg-cnt").MouseLeave();
 
         Assert.IsNull(hovered);
         StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
@@ -559,7 +580,7 @@ public class BitRatingTests : BunitTestContext
         // The class turns off the CSS half of the preview, which shades the filled part on hover.
         Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("bit-rtg-nhp"));
 
-        component.Find(".bit-rtg").MouseLeave();
+        component.Find(".bit-rtg-cnt").MouseLeave();
 
         Assert.IsNull(hovered);
     }
@@ -719,6 +740,26 @@ public class BitRatingTests : BunitTestContext
         var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Precision, 0.5);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expected, value);
+    }
+
+    [TestMethod,
+     DataRow("ArrowUp", 0.16418d),
+     DataRow("ArrowDown", 0.13433d)]
+    public void BitRatingKeyboardShouldLeaveAValueRoundedOffAStepWithNoExactDecimalForm(string key, double expected)
+    {
+        // A precision of 0.015 splits an item into 67 steps, none of which has an exact decimal form, and every
+        // committed step is rounded to five decimals: the tenth step lands at 0.14925, a hair below the grid.
+        // The next step either way has to be one step further, never the one the value is already sitting on.
+        double value = 0.14925;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.015);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -1489,11 +1530,13 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.OnFocusOut, () => focusedOut++);
         });
 
-        component.Find(".bit-rtg").FocusIn();
+        // The focus crossing the edge of the rating is reported from JavaScript, which alone can tell it
+        // apart from the focus moving between two items of the same rating.
+        component.InvokeAsync(component.Instance._HandleFocusIn);
         Assert.AreEqual(1, focusedIn);
         Assert.AreEqual(0, focusedOut);
 
-        component.Find(".bit-rtg").FocusOut();
+        component.InvokeAsync(component.Instance._HandleFocusOut);
         Assert.AreEqual(1, focusedIn);
         Assert.AreEqual(1, focusedOut);
     }
@@ -1510,8 +1553,8 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.OnFocusOut, () => focusedOut++);
         });
 
-        component.Find(".bit-rtg").FocusIn();
-        component.Find(".bit-rtg").FocusOut();
+        component.InvokeAsync(component.Instance._HandleFocusIn);
+        component.InvokeAsync(component.Instance._HandleFocusOut);
 
         Assert.AreEqual(0, focusedIn);
         Assert.AreEqual(0, focusedOut);
@@ -1546,6 +1589,59 @@ public class BitRatingTests : BunitTestContext
 
         Assert.AreEqual("external-label", root.GetAttribute("aria-labelledby"));
         Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldKeepASplattedAriaDescribedByWrittenInAnyCase()
+    {
+        // The renderer drops a splatted attribute the component writes itself whatever its case, so the
+        // splatted value has to be found whatever its case too, or it is erased instead of carried over.
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.Description), "hint");
+            builder.AddMultipleAttributes(2, new Dictionary<string, object> { ["Aria-Describedby"] = "err" });
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual($"err {component.Find(".bit-rtg-dsc").Id}", component.Find(".bit-rtg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitRatingReadOnlyWithASplattedAriaLabelledByShouldKeepTheValueInItsName()
+    {
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.ReadOnly), true);
+            builder.AddAttribute(2, nameof(BitRating.DefaultValue), 4.2);
+            builder.AddMultipleAttributes(3, new Dictionary<string, object> { ["aria-labelledby"] = "title" });
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-rtg");
+        var valueText = component.Find(".bit-rtg-alb[id]");
+
+        // A name read by reference alone would lose the value a read-only rating exists to show.
+        Assert.AreEqual($"title {valueText.Id}", root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", 4.2, 5), valueText.TextContent);
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingReadOnlyShouldKeepASplattedAriaLabel()
+    {
+        // A splatted aria-label is a name the page wrote, which outranks the "4.2 of 5" the component falls back to.
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.ReadOnly), true);
+            builder.AddAttribute(2, nameof(BitRating.DefaultValue), 4.2);
+            builder.AddMultipleAttributes(3, new Dictionary<string, object> { ["aria-label"] = "Rated 4.2 by 1,034 people" });
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Rated 4.2 by 1,034 people", component.Find(".bit-rtg").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -1998,6 +2094,38 @@ public class BitRatingTests : BunitTestContext
         });
 
         Assert.AreEqual(expected, component.Find(".bit-rtg").ClassList.Contains("bit-rtg-req"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldMarkTheContainerOfALabelTemplate()
+    {
+        // A template has no .bit-rtg-lbl for the asterisk of a required rating to follow, so the container
+        // holding it is marked for the asterisk to follow instead.
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(b => b.AddContent(0, "Your rating")));
+        });
+
+        Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("bit-rtg-req"));
+        Assert.IsTrue(component.Find(".bit-rtg-lbc").ClassList.Contains("bit-rtg-ltp"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldNotClaimToBeRequiredWhenDisabled()
+    {
+        // Like the asterisk, aria-required follows an answer that is still being asked for.
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.IsFalse(root.HasAttribute("aria-required"));
+        Assert.IsFalse(root.ClassList.Contains("bit-rtg-req"));
     }
 
     [TestMethod]

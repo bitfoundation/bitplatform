@@ -16,6 +16,7 @@ public partial class BitRating : BitInputBase<double>
     private string _descriptionId = default!;
     private double? _hoverValue;
     private ElementReference[] _itemRefs = [];
+    private DotNetObjectReference<BitRating>? _dotnetObj;
 
 
 
@@ -224,12 +225,13 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public EventCallback<BitRatingChangeArgs> OnChanging { get; set; }
 
     /// <summary>
-    /// Callback for when the rating receives the focus.
+    /// Callback for when the rating receives the focus. It reports the focus arriving at the rating as a whole,
+    /// not at each item, so moving along the scale does not raise it again.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
     /// <summary>
-    /// Callback for when the focus leaves the rating.
+    /// Callback for when the focus leaves the rating as a whole, which moving from one item to another does not.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
@@ -355,11 +357,15 @@ public partial class BitRating : BitInputBase<double>
 
         if (firstRender)
         {
+            _dotnetObj = DotNetObjectReference.Create(this);
+
             try
             {
                 // Prevents the default behavior (scrolling) of the navigation keys handled by the items'
-                // keydown handler, since Blazor cannot conditionally preventDefault per key.
-                await _js.BitRatingsSetup(_Id);
+                // keydown handler, since Blazor cannot conditionally preventDefault per key, and reports the
+                // focus entering and leaving the rating as a whole - which takes the relatedTarget of the focus
+                // event that Blazor's FocusEventArgs does not carry.
+                await _js.BitRatingsSetup(_Id, _dotnetObj, nameof(_HandleFocusIn), nameof(_HandleFocusOut));
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
@@ -379,9 +385,7 @@ public partial class BitRating : BitInputBase<double>
 
         ClassBuilder.Register(() => Vertical ? "bit-rtg-vrt" : string.Empty);
 
-        // The asterisk is a property of an answer that is still expected, so a read-only or disabled
-        // rating - which is no longer asking anything - does not draw one.
-        ClassBuilder.Register(() => IsEnabled && ReadOnly is false && Required ? "bit-rtg-req" : string.Empty);
+        ClassBuilder.Register(() => _IsRequired ? "bit-rtg-req" : string.Empty);
 
         ClassBuilder.Register(() => LabelPosition switch
         {
@@ -506,7 +510,11 @@ public partial class BitRating : BitInputBase<double>
     /// without them the floor is the smallest rating that can still be given, which is a single step -
     /// a whole item at the default Precision, and the first half of the first one at a Precision of 0.5.
     /// </summary>
-    private double _MinValue => (AllowZeroStars || AllowClear) ? 0 : _Step;
+    /// <remarks>
+    /// Rounded like every value a step commits, so the first step - a third of an item, say - is the same
+    /// 0.33333 whether it is reached by clamping or by clicking.
+    /// </remarks>
+    private double _MinValue => (AllowZeroStars || AllowClear) ? 0 : Math.Round(_Step, 5);
 
     /// <summary>
     /// How many selectable steps each item is divided into, derived from the Precision.
@@ -554,9 +562,22 @@ public partial class BitRating : BitInputBase<double>
     }
 
     /// <summary>
-    /// The accessible name of the whole rating: the explicit AriaLabel, then the GetAriaLabel callback, and
-    /// finally - in read-only mode, where there is nothing left to describe the value - a "3.5 of 5" fallback.
+    /// Whether the rating still asks for an answer it requires. The asterisk and aria-required both follow it:
+    /// a read-only or disabled rating is no longer asking anything, so it marks nothing as required.
     /// </summary>
+    private bool _IsRequired => IsEnabled && ReadOnly is false && Required;
+
+    /// <summary>
+    /// The accessible name of the whole rating as an inline string: the explicit AriaLabel, then the
+    /// GetAriaLabel callback, then an aria-label the page splatted onto the component, and finally - in
+    /// read-only mode, where there is nothing left to describe the value - a "3.5 of 5" fallback.
+    /// </summary>
+    /// <remarks>
+    /// The splatted aria-label is resolved here because the component owns the attribute: it is rendered after
+    /// the HtmlAttributes splat, so writing it as anything else - a null included - would erase what the page
+    /// wrote. It is only rendered when <see cref="_NameReference"/> is null, since a name given by reference
+    /// wins over one given inline.
+    /// </remarks>
     private string? _AriaLabel
     {
         get
@@ -565,9 +586,38 @@ public partial class BitRating : BitInputBase<double>
 
             if (GetAriaLabel is not null) return GetAriaLabel(CurrentValue, _Max);
 
+            var splattedAriaLabel = GetSplattedAttribute("aria-label");
+
+            if (splattedAriaLabel.HasValue()) return splattedAriaLabel;
+
             if (ReadOnly is false) return null;
 
             return _ValueText;
+        }
+    }
+
+    /// <summary>
+    /// The element the name of the rating is read from, when it is read from the page rather than given as a
+    /// string: the explicit AriaLabelledBy, then the visible label, then an aria-labelledby the page splatted.
+    /// The two string forms - AriaLabel and the GetAriaLabel callback - are deliberately allowed to win over
+    /// the visible label, since aria-labelledby would otherwise silently discard them.
+    /// </summary>
+    /// <remarks>
+    /// A read-only rating is a picture of a value whose items are hidden behind a single name, so a name read
+    /// by reference would leave the value it exists to show unannounced: wherever this is not null, a read-only
+    /// rating renders its value in a hidden element of its own and adds that to the reference.
+    /// </remarks>
+    private string? _NameReference
+    {
+        get
+        {
+            if (AriaLabelledBy.HasValue()) return AriaLabelledBy;
+
+            if (AriaLabel.HasValue() || GetAriaLabel is not null) return null;
+
+            if (HasLabel) return _labelId;
+
+            return GetSplattedAttribute("aria-labelledby");
         }
     }
 
@@ -587,19 +637,6 @@ public partial class BitRating : BitInputBase<double>
     internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
     /// <summary>
-    /// The value of an aria attribute the consumer splatted onto the component. Every aria attribute the
-    /// rating computes sits after the HtmlAttributes splat in the markup, so it is what ends up rendered no
-    /// matter what - and a null would even remove a splatted value. This is what the computed attributes
-    /// hand back rather than erasing what the page wrote.
-    /// </summary>
-    private string? _GetSplattedAttribute(string name)
-    {
-        HtmlAttributes.TryGetValue(name, out var value);
-
-        return value?.ToString();
-    }
-
-    /// <summary>
     /// The elements that describe the rating, which is a splatted aria-describedby carried over rather than
     /// replaced: both are kept, since aria-describedby is a space separated list of IDREFs.
     /// </summary>
@@ -607,53 +644,13 @@ public partial class BitRating : BitInputBase<double>
     {
         get
         {
-            var splattedDescribedBy = _GetSplattedAttribute("aria-describedby");
+            var splattedDescribedBy = GetSplattedAttribute("aria-describedby");
 
             if (HasDescription is false) return splattedDescribedBy;
 
             return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
         }
     }
-
-    /// <summary>
-    /// The name of the rating as an inline string, which is only rendered when nothing names it by
-    /// reference. A name the page splatted is the last resort, so that writing aria-label on the component
-    /// works as it reads even though the component owns the attribute.
-    /// </summary>
-    private string? _AriaLabelAttribute => _AriaLabelledBy is null
-        ? (_AriaLabel ?? _GetSplattedAttribute("aria-label"))
-        : null;
-
-    /// <summary>
-    /// The element the name of the rating is read from, when it is read from the page rather than given as a
-    /// string: the explicit AriaLabelledBy, then the visible label. The two string forms - AriaLabel and the
-    /// GetAriaLabel callback - are deliberately allowed to win over the visible label, since aria-labelledby
-    /// would otherwise silently discard them.
-    /// </summary>
-    private string? _AriaLabelledBy
-    {
-        get
-        {
-            if (AriaLabelledBy.HasValue()) return AriaLabelledBy;
-
-            if (AriaLabel.HasValue() || GetAriaLabel is not null) return null;
-
-            if (HasLabel is false) return _GetSplattedAttribute("aria-labelledby");
-
-            return _RendersHiddenValueText ? $"{_labelId} {_valueTextId}" : _labelId;
-        }
-    }
-
-    /// <summary>
-    /// Whether the value joins the name of the rating from a hidden element of its own. A read-only rating is
-    /// a picture of a value whose items are hidden behind a single name, so naming it by its visible label
-    /// alone would leave the value it exists to show unannounced.
-    /// </summary>
-    private bool _RendersHiddenValueText => ReadOnly
-                                         && HasLabel
-                                         && AriaLabelledBy.HasNoValue()
-                                         && AriaLabel.HasNoValue()
-                                         && GetAriaLabel is null;
 
     /// <summary>
     /// The default format both the value text and the per-item labels fall back to.
@@ -720,7 +717,7 @@ public partial class BitRating : BitInputBase<double>
         // still filled by however much of it the value covers, so a fractional value stays readable.
         if (HighlightSelectedOnly)
         {
-            return Math.Ceiling(value) == index ? fill : 0;
+            return BitRatingItemContext.IsCurrentItem(index, value) ? fill : 0;
         }
 
         return fill;
@@ -826,18 +823,26 @@ public partial class BitRating : BitInputBase<double>
         await OnHoverChange.InvokeAsync(value);
     }
 
-    private async Task HandleOnFocusIn(FocusEventArgs e)
+    /// <summary>
+    /// Called from JavaScript when the focus arrives at the rating from outside of it.
+    /// </summary>
+    [JSInvokable(nameof(_HandleFocusIn))]
+    public async Task _HandleFocusIn()
     {
         if (IsEnabled is false) return;
 
-        await OnFocusIn.InvokeAsync(e);
+        await OnFocusIn.InvokeAsync(new FocusEventArgs { Type = "focusin" });
     }
 
-    private async Task HandleOnFocusOut(FocusEventArgs e)
+    /// <summary>
+    /// Called from JavaScript when the focus leaves the rating for something outside of it.
+    /// </summary>
+    [JSInvokable(nameof(_HandleFocusOut))]
+    public async Task _HandleFocusOut()
     {
         if (IsEnabled is false) return;
 
-        await OnFocusOut.InvokeAsync(e);
+        await OnFocusOut.InvokeAsync(new FocusEventArgs { Type = "focusout" });
     }
 
     private Task HandleOnMouseLeave() => EndPreview();
@@ -916,10 +921,14 @@ public partial class BitRating : BitInputBase<double>
     {
         var steps = value / step;
 
-        // A value that is exactly on the grid divides into a whole number of steps only to within the
-        // rounding of binary floating point, so the index is taken with a tolerance: without it the floor
-        // of a 2.9999999999 would move up to the step the value is already sitting on.
-        const double tolerance = 1e-4;
+        // A value that is on the grid divides into a whole number of steps only to within the rounding it
+        // went through, so the index is taken with a tolerance: without it the floor of a 2.9999999999 would
+        // move up to the step the value is already sitting on. Every committed step is rounded to five
+        // decimals, which on a step with no exact decimal form - a 67th of an item, say - leaves it up to
+        // 0.000005 off the grid, so the tolerance is set above that in value units and only then measured
+        // in steps. Even at the finest step of a hundredth it stays a thousandth of a step, far from the
+        // half-step that would let it mistake one step for another.
+        var tolerance = 1e-5 / step;
 
         var index = up ? Math.Floor(steps + tolerance) + 1
                        : Math.Ceiling(steps - tolerance) - 1;
@@ -1000,6 +1009,8 @@ public partial class BitRating : BitInputBase<double>
             await _js.BitRatingsDispose(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }

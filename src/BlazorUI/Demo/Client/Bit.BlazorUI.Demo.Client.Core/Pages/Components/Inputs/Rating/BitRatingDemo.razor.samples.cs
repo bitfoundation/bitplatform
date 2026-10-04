@@ -422,7 +422,7 @@ private readonly BitRatingParams[] ratingParams =
 
 <div>
     Rated
-    <BitRating Size=""BitSize.Small"" ReadOnly DefaultValue=""4"" Style=""--bit-Rating-target-size: 0; --bit-Rating-padding: 0;"" />
+    <BitRating Size=""BitSize.Small"" ReadOnly DefaultValue=""4"" Style=""display: inline-flex; vertical-align: middle; --bit-Rating-target-size: 0; --bit-Rating-padding: 0;"" />
     by 1,034 people.
 </div>
 
@@ -431,6 +431,8 @@ private readonly BitRatingParams[] ratingParams =
     <BitRating Label=""Story"" LabelPosition=""BitLabelPosition.Start"" ReadOnly DefaultValue=""4.5"" />
     <BitRating Label=""Music"" LabelPosition=""BitLabelPosition.Start"" ReadOnly DefaultValue=""3"" />
 </div>";
+    private readonly string example21CsharpCode = @"
+private double currentItemValue = 3.5;";
     private const string example21ScssCode = @"
 .custom-class {
     margin-inline: 1rem;

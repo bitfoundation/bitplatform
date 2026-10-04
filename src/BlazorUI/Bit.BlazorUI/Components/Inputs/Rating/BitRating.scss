@@ -31,7 +31,9 @@
 //                                                                                  $tg-fs-2xs/xs/sm)
 
 .bit-rtg {
-    display: inline-flex;
+    // Block-level like the plain div the rating has always been, so two ratings written one after the other
+    // still stack; a rating that belongs inside a line of text is made inline-flex through its Style.
+    display: flex;
     width: fit-content;
     // A column of label, items and description, which is the Top position; the label position classes
     // below turn it into the other three. The items themselves are laid out by their own container,
@@ -106,9 +108,11 @@
     }
 
     // The asterisk of a required rating, drawn on the label the way every other required input in the
-    // library draws it. It is decorative: the group already carries aria-required.
+    // library draws it - or after the LabelTemplate, which has no .bit-rtg-lbl of its own. It is
+    // decorative: the group already carries aria-required.
     &.bit-rtg-req {
-        .bit-rtg-lbl::after {
+        .bit-rtg-lbl::after,
+        .bit-rtg-ltp::after {
             content: " *";
             color: $clr-req;
             padding-inline-end: spacing(1.5);
@@ -289,6 +293,10 @@
 // A vertical rating stacks its items bottom-up, so that "more" is up the same way the ArrowUp key means
 // more, and the fill of a partly covered item grows from its bottom edge instead of its leading one.
 .bit-rtg-vrt {
+    // Inline, as a vertical rating has always been, so a column of items can stand beside the content
+    // around it instead of taking a line of its own.
+    display: inline-flex;
+
     .bit-rtg-cnt {
         flex-direction: column-reverse;
     }

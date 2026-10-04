@@ -601,7 +601,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CodeFiles="@example21CodeFiles" Id="example21">
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" CodeFiles="@example21CodeFiles" Id="example21">
         <div>
             <b>Style</b> and <b>Class</b> land on the root. <b>Styles</b> and <b>Classes</b> reach the parts by
             name - <b>Root</b>, <b>LabelContainer</b>, <b>Label</b>, <b>Description</b>, <b>Container</b>,
@@ -641,10 +641,10 @@
             <div>Bigger glyphs, room between them, and a livelier press (hold an item down):</div>
             <BitRating DefaultValue="3" Style="--bit-Rating-size: 2rem; --bit-Rating-gap: 0.5rem; --bit-Rating-hover-scale: 1.25; --bit-Rating-active-scale: 0.8; --bit-Rating-active-color: crimson;" />
             <br />
-            <div>Shrunk to the glyph, for a rating that sits inside a line of text:</div>
+            <div>Shrunk to the glyph and made inline, for a rating that sits inside a line of text:</div>
             <div>
                 Rated
-                <BitRating Size="BitSize.Small" ReadOnly DefaultValue="4" Style="--bit-Rating-target-size: 0; --bit-Rating-padding: 0;" />
+                <BitRating Size="BitSize.Small" ReadOnly DefaultValue="4" Style="display: inline-flex; vertical-align: middle; --bit-Rating-target-size: 0; --bit-Rating-padding: 0;" />
                 by 1,034 people.
             </div>
         </div>

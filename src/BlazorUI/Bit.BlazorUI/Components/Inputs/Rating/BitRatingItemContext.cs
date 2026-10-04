@@ -77,5 +77,11 @@ public class BitRatingItemContext
     /// from the run of filled ones behind it. It is the same thing the <c>data-is-current</c> attribute of
     /// the item marks for CSS that styles the built-in glyphs.
     /// </remarks>
-    public bool IsCurrent => Index == Math.Ceiling(DisplayValue);
+    public bool IsCurrent => IsCurrentItem(Index, DisplayValue);
+
+    /// <summary>
+    /// Whether the item at the given position is the one the given value lands in, which is the one rule
+    /// behind <see cref="IsCurrent"/>, the <c>data-is-current</c> attribute and HighlightSelectedOnly.
+    /// </summary>
+    internal static bool IsCurrentItem(int index, double value) => index == Math.Ceiling(value);
 }
