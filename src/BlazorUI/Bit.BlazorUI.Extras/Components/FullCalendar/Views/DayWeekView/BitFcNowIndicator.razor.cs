@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarTimeline
+public partial class BitFcNowIndicator
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
 
@@ -14,7 +14,7 @@ public partial class BitFcCalendarTimeline
 
         // Align the first tick to the next clock-minute boundary so the "now" marker doesn't lag
         // by up to ~60s; subsequent ticks fire every minute.
-        var now = DateTime.Now;
+        var now = State.Now;
         var msUntilNextMinute = 60_000 - ((now.Second * 1000) + now.Millisecond);
         var dueTime = TimeSpan.FromMilliseconds(msUntilNextMinute);
 
@@ -42,7 +42,7 @@ public partial class BitFcCalendarTimeline
     {
         // Measured from the grid's first rendered hour, so a grid that starts at 08:00 puts the
         // marker where the clock time actually falls instead of an hour-height per skipped hour off.
-        _offsetHours = BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(State.VisibleStartHour);
+        _offsetHours = BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(State.VisibleStartHour, State.Now);
     }
 
     public void Dispose()

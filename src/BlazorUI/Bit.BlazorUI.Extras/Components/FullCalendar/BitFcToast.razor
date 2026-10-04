@@ -1,0 +1,19 @@
+@namespace Bit.BlazorUI
+
+@* Both live regions are always in the DOM and the notices are added INTO them - a region inserted together with its
+   content is often not announced at all. A refusal interrupts (alert), anything else waits its turn (status); the
+   role sits on the region only, never on the notice as well, or the same message would be read twice. *@
+<div class="bit-bfc-toast-container">
+    <div class="bit-bfc-toast-region" role="alert">
+        @foreach (var toast in _toasts.Where(t => t.IsError))
+        {
+            <div @key="toast.Id" class="bit-bfc-toast error">@toast.Message</div>
+        }
+    </div>
+    <div class="bit-bfc-toast-region" role="status">
+        @foreach (var toast in _toasts.Where(t => t.IsError is false))
+        {
+            <div @key="toast.Id" class="bit-bfc-toast success">@toast.Message</div>
+        }
+    </div>
+</div>

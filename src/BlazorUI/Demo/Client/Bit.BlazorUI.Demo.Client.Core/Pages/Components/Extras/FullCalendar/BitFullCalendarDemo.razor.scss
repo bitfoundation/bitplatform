@@ -1,0 +1,73 @@
+﻿// The controls above a calendar sit on one wrapping row.
+.example-row {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.example-buttons {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+// Two calendars side by side when there is room, stacked when there is not; the shorter height keeps the pair
+// on one screen.
+.cascade-pair {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    --bit-FullCalendar-height: 420px;
+}
+
+.resource-header {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+
+    strong,
+    small {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    small {
+        opacity: 0.8;
+    }
+}
+
+.resource-avatar {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    flex-shrink: 0;
+    font-weight: 600;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--bit-clr-pri-text);
+    background: var(--bit-clr-pri);
+}
+
+.event-card {
+    gap: 2px;
+    display: flex;
+    flex-direction: column;
+
+    span {
+        opacity: 0.8;
+        font-size: 0.75rem;
+    }
+}
+
+.agenda-row {
+    gap: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}

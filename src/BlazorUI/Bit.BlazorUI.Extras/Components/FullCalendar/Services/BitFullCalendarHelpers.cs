@@ -63,6 +63,36 @@ public static class BitFullCalendarHelpers
     public static bool EventsOverlap(BitFullCalendarEvent a, BitFullCalendarEvent b)
         => a.StartDate < b.EndDate && b.StartDate < a.EndDate;
 
+    /// <summary>
+    /// The half-open stretch of time an event takes up: an all-day event its whole days, whatever clock times it
+    /// carries, and a zero-length one the instant it sits on (one tick), so neither can slip past a range test.
+    /// </summary>
+    public static (DateTime Start, DateTime End) GetOccupiedRange(BitFullCalendarEvent ev)
+    {
+        if (ev.IsAllDay)
+            return (ev.StartDate.Date, GetInclusiveEndDate(ev).AddDays(1));
+
+        return (ev.StartDate, ev.EndDate > ev.StartDate ? ev.EndDate : ev.StartDate.AddTicks(1));
+    }
+
+    /// <summary>
+    /// The events of <paramref name="events"/> whose time overlaps <c>[start, end)</c> on <paramref name="resourceId"/>:
+    /// one with no resource lies on every row. <paramref name="anyResource"/> skips the resource test altogether, for
+    /// the grids that have no resource rows.
+    /// </summary>
+    public static IEnumerable<BitFullCalendarEvent> GetBackgroundEventsAt(IEnumerable<BitFullCalendarEvent> events, DateTime start, DateTime end, string? resourceId = null, bool anyResource = true)
+    {
+        foreach (var ev in events)
+        {
+            if (anyResource is false && ev.Resource is not null && string.Equals(ev.Resource, resourceId, StringComparison.Ordinal) is false)
+                continue;
+
+            var (bgStart, bgEnd) = GetOccupiedRange(ev);
+            if (start < bgEnd && bgStart < end)
+                yield return ev;
+        }
+    }
+
     // -- Recurrence ------------------------------
 
     /// <summary>
@@ -169,8 +199,10 @@ public static class BitFullCalendarHelpers
                 Attendees = [.. master.Attendees],
                 IsAllDay = master.IsAllDay,
                 CssClass = master.CssClass,
-                // The series master is the editable thing; an occurrence is a projection of it.
-                IsReadOnly = true
+                IsBackground = master.IsBackground,
+                IsBlocking = master.IsBlocking,
+                // An occurrence is as locked as its series: a locked master freezes every one of them.
+                IsReadOnly = master.IsReadOnly
             };
 
             if (++emitted >= MaxOccurrencesPerSeries)
@@ -584,7 +616,8 @@ public static class BitFullCalendarHelpers
 
     // -- Culture-aware: Range text ------------------------------
 
-    public static string RangeText(BitFullCalendarView view, DateTime date, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null)
+    public static string RangeText(BitFullCalendarView view, DateTime date, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null,
+                                   int? weekDayCount = null, IReadOnlyList<DayOfWeek>? hiddenDays = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
         var cal = culture.Calendar;
@@ -600,9 +633,10 @@ public static class BitFullCalendarHelpers
             }
             case BitFullCalendarView.Week:
             {
-                var start = StartOfWeek(date, culture, firstDayOfWeek);
-                var end = start.AddDays(6);
-                return $"{FormatCultureDate(start, culture)} - {FormatCultureDate(end, culture)}";
+                var (start, end) = GetWeekSpan(date, culture, firstDayOfWeek, weekDayCount, hiddenDays);
+                return start == end
+                    ? FormatCultureDate(start, culture)
+                    : $"{FormatCultureDate(start, culture)} - {FormatCultureDate(end, culture)}";
             }
             case BitFullCalendarView.Day:
                 return FormatCultureDate(date, culture);
@@ -613,6 +647,29 @@ public static class BitFullCalendarHelpers
             }
             default:
                 return "Error";
+        }
+    }
+
+    /// <summary>
+    /// Formats the month and day of a date numerically in the culture's own order and calendar - its short date pattern
+    /// without the year ("10/4" in en-US, "04/10" in en-GB, "07/12" in fa-IR).
+    /// </summary>
+    public static string FormatShortMonthDay(DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+
+        // The year is dropped together with the separator that joins it to the rest, at whichever end it sits.
+        var pattern = System.Text.RegularExpressions.Regex.Replace(culture.DateTimeFormat.ShortDatePattern, @"^y+[^dM]*|[^dM]*y+[^dM]*$", "");
+        if (pattern.Contains('d') is false || pattern.Contains('M') is false)
+            pattern = "M/d";
+
+        try
+        {
+            return date.ToString(pattern, culture);
+        }
+        catch (FormatException)
+        {
+            return date.ToString("M/d", culture);
         }
     }
 
@@ -671,11 +728,15 @@ public static class BitFullCalendarHelpers
         BitFullCalendarView view,
         bool forward,
         CultureInfo? culture = null,
-        IReadOnlyList<DayOfWeek>? hiddenDays = null)
+        IReadOnlyList<DayOfWeek>? hiddenDays = null,
+        int? weekDayCount = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
         var cal = culture.Calendar;
         int delta = forward ? 1 : -1;
+        // A shorter week steps by its own length in shown days, from the first day it shows.
+        if (view == BitFullCalendarView.Week && NormalizeWeekDayCount(weekDayCount) is { } count)
+            return StepVisibleDays(NextVisibleDay(date.Date, 1, hiddenDays), forward ? count : -count, hiddenDays);
         return view switch
         {
             BitFullCalendarView.Month  => cal.AddMonths(date, delta),
@@ -688,6 +749,25 @@ public static class BitFullCalendarHelpers
             _                   => date
         };
     }
+
+    /// <summary>
+    /// The day <paramref name="count"/> shown days away from <paramref name="date"/> (back when negative), walking over
+    /// the hidden weekdays.
+    /// </summary>
+    private static DateTime StepVisibleDays(DateTime date, int count, IReadOnlyList<DayOfWeek>? hiddenDays)
+    {
+        var step = Math.Sign(count);
+        for (var i = 0; i < Math.Abs(count); i++)
+            date = NextVisibleDay(date.AddDays(step), step, hiddenDays);
+        return date;
+    }
+
+    /// <summary>
+    /// A week of fewer than seven days, or <c>null</c> for the whole week: anything below 1 or from 7 up is the whole
+    /// week (see <see cref="BitFullCalendarSettings.WeekDayCount"/>).
+    /// </summary>
+    public static int? NormalizeWeekDayCount(int? weekDayCount)
+        => weekDayCount is >= 1 and < 7 ? weekDayCount : null;
 
     private static DateTime NextVisibleDay(DateTime date, int step, IReadOnlyList<DayOfWeek>? hiddenDays)
     {
@@ -757,14 +837,46 @@ public static class BitFullCalendarHelpers
         DateTime date,
         CultureInfo? culture = null,
         DayOfWeek? firstDayOfWeek = null,
-        IReadOnlyList<DayOfWeek>? hiddenDays = null)
+        IReadOnlyList<DayOfWeek>? hiddenDays = null,
+        int? weekDayCount = null)
     {
+        // A shorter week is a run of shown days starting at the date itself rather than at the week's first day.
+        if (NormalizeWeekDayCount(weekDayCount) is { } count)
+        {
+            var dates = new DateTime[count];
+            dates[0] = NextVisibleDay(date.Date, 1, hiddenDays);
+            for (var i = 1; i < count; i++)
+                dates[i] = StepVisibleDays(dates[i - 1], 1, hiddenDays);
+            return dates;
+        }
+
         var start = StartOfWeek(date, culture, firstDayOfWeek);
         var hidden = NormalizeHiddenDays(hiddenDays);
         return Enumerable.Range(0, 7)
             .Select(i => start.AddDays(i))
             .Where(d => !hidden.Contains(d.DayOfWeek))
             .ToArray();
+    }
+
+    /// <summary>
+    /// The first and last date the week view covers: the culture's week around <paramref name="date"/>, or - for a
+    /// shorter week - the run of <paramref name="weekDayCount"/> shown days starting at it.
+    /// </summary>
+    public static (DateTime Start, DateTime End) GetWeekSpan(
+        DateTime date,
+        CultureInfo? culture = null,
+        DayOfWeek? firstDayOfWeek = null,
+        int? weekDayCount = null,
+        IReadOnlyList<DayOfWeek>? hiddenDays = null)
+    {
+        if (NormalizeWeekDayCount(weekDayCount) is null)
+        {
+            var start = StartOfWeek(date, culture, firstDayOfWeek);
+            return (start, start.AddDays(6));
+        }
+
+        var dates = GetWeekDates(date, culture, firstDayOfWeek, hiddenDays, weekDayCount);
+        return (dates[0], dates[^1]);
     }
 
     // -- Culture-aware: Weekday header names ------------------------------
@@ -946,6 +1058,21 @@ public static class BitFullCalendarHelpers
         }
 
         return string.Join('\n', lines);
+    }
+
+    /// <summary>
+    /// The accessible name of an event surface: its title and the span it covers, on one line. A block's
+    /// visible content may be a template, or a title cut short by a narrow column, so the name is written out
+    /// rather than left to whatever text the block happens to render.
+    /// </summary>
+    public static string BuildEventAriaLabel(
+        BitFullCalendarEvent ev, bool use24Hour, CultureInfo? culture = null, string? allDayLabel = null)
+    {
+        if (ev is null)
+            return string.Empty;
+
+        var time = BuildEventRangeText(ev, use24Hour, culture, allDayLabel);
+        return string.IsNullOrWhiteSpace(ev.Title) ? time : $"{ev.Title.Trim()}, {time}";
     }
 
     /// <summary>
@@ -1397,10 +1524,10 @@ public static class BitFullCalendarHelpers
         }).ToList();
     }
 
-    public static List<BitFullCalendarEvent> GetEventsForWeek(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null)
+    public static List<BitFullCalendarEvent> GetEventsForWeek(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null,
+                                                              int? weekDayCount = null, IReadOnlyList<DayOfWeek>? hiddenDays = null)
     {
-        var weekStart = StartOfWeek(date, culture, firstDayOfWeek);
-        var weekEnd = weekStart.AddDays(6);
+        var (weekStart, weekEnd) = GetWeekSpan(date, culture, firstDayOfWeek, weekDayCount, hiddenDays);
         return events.Where(ev => OverlapsPeriod(ev, weekStart, weekEnd)).ToList();
     }
 
@@ -1422,13 +1549,15 @@ public static class BitFullCalendarHelpers
         BitFullCalendarView view,
         DateTime selectedDate,
         CultureInfo? culture = null,
-        DayOfWeek? firstDayOfWeek = null)
+        DayOfWeek? firstDayOfWeek = null,
+        int? weekDayCount = null,
+        IReadOnlyList<DayOfWeek>? hiddenDays = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
         return view switch
         {
             BitFullCalendarView.Day => GetEventsForDay(events, selectedDate),
-            BitFullCalendarView.Week => GetEventsForWeek(events, selectedDate, culture, firstDayOfWeek),
+            BitFullCalendarView.Week => GetEventsForWeek(events, selectedDate, culture, firstDayOfWeek, weekDayCount, hiddenDays),
             BitFullCalendarView.Month => GetEventsForMonth(events, selectedDate, culture),
             BitFullCalendarView.Year => GetEventsForYear(events, selectedDate, culture),
             BitFullCalendarView.Agenda => GetEventsForMonth(events, selectedDate, culture),
@@ -1482,17 +1611,17 @@ public static class BitFullCalendarHelpers
     /// Offset of the "current time" indicator from the top of the time grid, measured from the
     /// grid's first rendered hour rather than from midnight.
     /// </summary>
-    public static double GetCurrentTimeLineTopPx(int visibleStartHour = 0)
-        => GetCurrentTimeLineOffsetHours(visibleStartHour) * HourHeightPx;
+    public static double GetCurrentTimeLineTopPx(int visibleStartHour = 0, DateTime? now = null)
+        => GetCurrentTimeLineOffsetHours(visibleStartHour, now) * HourHeightPx;
 
     /// <summary>
     /// Offset of the "current time" indicator from the top of the time grid, counted in hour rows
     /// from the grid's first rendered hour, so it can be rendered against
     /// <see cref="HourHeightVariableName"/> like the event blocks are.
     /// </summary>
-    public static double GetCurrentTimeLineOffsetHours(int visibleStartHour = 0)
+    public static double GetCurrentTimeLineOffsetHours(int visibleStartHour = 0, DateTime? now = null)
     {
-        double minutes = DateTime.Now.TimeOfDay.TotalMinutes - (Math.Clamp(visibleStartHour, 0, 23) * 60);
+        double minutes = (now ?? DateTime.Now).TimeOfDay.TotalMinutes - (Math.Clamp(visibleStartHour, 0, 23) * 60);
         return minutes / 60.0;
     }
 
@@ -1500,16 +1629,16 @@ public static class BitFullCalendarHelpers
     /// True when the current clock time falls inside the grid's visible hour window, so the
     /// indicator has a row to sit on.
     /// </summary>
-    public static bool IsNowInVisibleHours(int visibleStartHour, int visibleEndHour)
+    public static bool IsNowInVisibleHours(int visibleStartHour, int visibleEndHour, DateTime? now = null)
     {
         var (start, end) = NormalizeVisibleHours(visibleStartHour, visibleEndHour);
-        var hours = DateTime.Now.TimeOfDay.TotalHours;
+        var hours = (now ?? DateTime.Now).TimeOfDay.TotalHours;
         return hours >= start && hours < end;
     }
 
     /// <summary>
     /// New event with only <see cref="BitFullCalendarEvent.StartDate"/> and <see cref="BitFullCalendarEvent.EndDate"/>
-    /// set (same default duration as the built-in add dialog: 30 minutes from the slot start).
+    /// set (<paramref name="durationMinutes"/> from the slot start; the calendar passes its slot duration).
     /// </summary>
     public static BitFullCalendarEvent CreateDraftEventForTimeSlot(
         DateTime day,
@@ -1536,7 +1665,8 @@ public static class BitFullCalendarHelpers
     /// Computes the inclusive start/end dates for the visible range of the given view.
     /// </summary>
     public static (DateTime Start, DateTime End) GetDateRange(
-        BitFullCalendarView view, DateTime selectedDate, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null)
+        BitFullCalendarView view, DateTime selectedDate, CultureInfo? culture = null, DayOfWeek? firstDayOfWeek = null,
+        int? weekDayCount = null, IReadOnlyList<DayOfWeek>? hiddenDays = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
 
@@ -1545,11 +1675,7 @@ public static class BitFullCalendarHelpers
         return view switch
         {
             BitFullCalendarView.Day => (selectedDate.Date, selectedDate.Date),
-            BitFullCalendarView.Week =>
-            (
-                StartOfWeek(selectedDate, culture, firstDayOfWeek),
-                StartOfWeek(selectedDate, culture, firstDayOfWeek).AddDays(6)
-            ),
+            BitFullCalendarView.Week => GetWeekSpan(selectedDate, culture, firstDayOfWeek, weekDayCount, hiddenDays),
             BitFullCalendarView.Month or BitFullCalendarView.Agenda =>
             (
                 StartOfCulturalMonth(selectedDate, culture),

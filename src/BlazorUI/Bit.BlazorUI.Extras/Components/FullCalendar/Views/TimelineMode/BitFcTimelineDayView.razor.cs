@@ -32,7 +32,7 @@ public partial class BitFcTimelineDayView
 
     // The slots exist only as add/drop targets, so a read-only timeline must not expose a focusable
     // no-op button per slot and resource. A null attribute value is omitted from the markup.
-    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotRole => State.CanAdd is false ? null : "button";
 
     // Roving tabindex: the whole grid is a single tab stop and the arrow keys move both the tabbable
     // slot and the focus - a resource row per rendered slot would otherwise put hundreds of stops in
@@ -63,7 +63,7 @@ public partial class BitFcTimelineDayView
 
     private string? SlotTabIndex(string rowKey, int hour, int minute)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         return RovingSlot == (rowKey, hour, minute) ? "0" : "-1";
@@ -162,7 +162,7 @@ public partial class BitFcTimelineDayView
 
     private async Task OnSlotClickAsync(string resourceId, int hour, int minute)
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         if (OnAddClick.HasDelegate)
@@ -224,14 +224,15 @@ public partial class BitFcTimelineDayView
         }
     }
 
-    private string? SlotAriaLabel(string rowLabel, int hour, int minute)
+    private string? SlotAriaLabel(string rowKey, string rowLabel, int hour, int minute)
     {
         // The slot is inert in read-only mode, so it carries no label to announce.
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return null;
 
         var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {rowLabel}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
+        return $"{Texts.AddEventHoverHint}, {rowLabel}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
+               + State.DescribeBackground(start, start.AddMinutes(State.SlotDurationMinutes), rowKey == _unassignedKey ? null : rowKey, anyResource: false);
     }
 
     private void OnDragEnter(string resourceId, int hour, int minute)
