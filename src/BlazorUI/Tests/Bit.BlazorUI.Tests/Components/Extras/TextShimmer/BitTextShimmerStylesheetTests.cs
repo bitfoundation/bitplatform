@@ -43,7 +43,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
 
         var declared = GetRootDeclarations();
 
-        Assert.AreEqual(8, written.Length, string.Join(", ", written));
+        Assert.AreEqual(9, written.Length, string.Join(", ", written));
         foreach (var variable in written)
         {
             CollectionAssert.Contains(declared, variable, $"{variable} is written by the component but has no default on .bit-tsh.");
@@ -93,14 +93,22 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         StringAssert.Contains(keyframes, "calc(-50% + var(--bit-tsh-spread) * var(--bit-tsh-cycle))");
     }
 
-    // The component writes the pause as a time and the cycle is derived here, from the duration the element ends up
-    // with - so a duration a class sets gets the rest that was asked for, not one taken of a duration it replaced.
+    // The component writes the pause as a time and the cycle is derived here, from the sweep the element ends up with
+    // before the loop factor - so a duration a class sets gets the rest that was asked for, and the loop factor
+    // stretches the default sweep and its rest alike, whether the rest came from RepeatDelay or from the variable.
     [TestMethod]
-    public void TheCycleIsTakenOfTheDurationTheElementEndsUpWith()
+    public void TheCycleIsTakenOfTheSweepTheElementEndsUpWithBeforeTheLoopFactor()
     {
-        var block = GetBlock(ReadStylesheet(), "@supports (animation-duration: calc(1s * tan(atan2(1s, 2s))))");
+        var stylesheet = ReadStylesheet();
+        var block = GetBlock(stylesheet, "@supports (animation-duration: calc(1s * tan(atan2(1s, 2s))))");
 
-        StringAssert.Contains(block, "--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-duration)), 89.9deg)));");
+        StringAssert.Contains(block, "--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-sweep)), 89.9deg)));");
+
+        var root = GetBlock(stylesheet, "\n.bit-tsh {");
+
+        StringAssert.Contains(root, "--bit-tsh-sweep: var(--bit-TextShimmer-duration, 2000ms);");
+        StringAssert.Contains(root, "--bit-tsh-duration: var(--bit-TextShimmer-duration, calc(2000ms * #{$mot-loop-factor}));");
+        StringAssert.Contains(root, "--bit-tsh-repeat-delay: var(--bit-TextShimmer-repeat-delay, 0ms);");
     }
 
 
@@ -160,6 +168,16 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         StringAssert.Contains(GetBlock(stylesheet, "\n.bit-tsh.bit-dis {"), "opacity: var(--bit-TextShimmer-disabled-opacity, #{$opa-dis});");
         StringAssert.Contains(stylesheet, "//   --bit-TextShimmer-disabled-opacity ");
         StringAssert.Contains(GetBlock(GetBlock(stylesheet, "@media (forced-colors: active)"), ".bit-tsh.bit-dis {"), "color: GrayText;");
+    }
+
+    // Reduced motion is often on together with forced colors, so its rule must weigh no more than .bit-tsh: the
+    // forced-colors and print rules - and the GrayText of a disabled shimmer - would otherwise lose to it.
+    [TestMethod]
+    public void TheReducedMotionRuleDoesNotOutweighTheForcedColorsOnes()
+    {
+        var reducedMotion = GetBlock(ReadStylesheet(), "@media (prefers-reduced-motion: reduce)");
+
+        StringAssert.Contains(reducedMotion, ".bit-tsh:where(:not(.bit-fam):not(.bit-fam *)) {");
     }
 
     // A shimmer a page made focusable is drawn with the focus ring of the library rather than the browser's own.
