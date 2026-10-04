@@ -22,7 +22,7 @@ public partial class BitMarkdownViewerStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.HasCount(36, documented, "The stylesheet does not document the thirty-six public variables.");
+        Assert.HasCount(37, documented, "The stylesheet does not document the thirty-seven public variables.");
 
         foreach (var name in documented)
         {

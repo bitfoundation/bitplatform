@@ -279,4 +279,94 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             Assert.IsTrue(wrapper.ClassList.Contains("bit-mdv-tpl"));
         }
     }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldTellAScreenReaderALinkOpensInANewTab()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[docs](https://example.com) and [home](/home)");
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+
+        Assert.AreEqual("docs (opens in a new tab)", links[0].TextContent);
+        Assert.AreEqual("bit-mdv-new-tab", links[0].LastElementChild!.ClassName);
+        Assert.AreEqual("home", links[1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldNoticeANewTabTheLinkOptionsChose()
+    {
+        var texts = new BitMarkdownTexts { NewTab = "(neuer Tab)" };
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[docs](https://example.com) and [home](/home)");
+            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder()
+                                                .UseTexts(texts)
+                                                .UseLinkOptions(externalTarget: BitMarkdownLinkTarget.Self, internalTarget: BitMarkdownLinkTarget.Blank)
+                                                .Build());
+        });
+
+        var links = component.FindAll(".bit-mdv a");
+
+        Assert.AreEqual("docs", links[0].TextContent);
+        Assert.AreEqual("home (neuer Tab)", links[1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldLeaveTheNewTabNoticeOutWhenItHasNoText()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[docs](https://example.com)");
+            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseTexts(new BitMarkdownTexts { NewTab = "" }).Build());
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mdv-new-tab").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldPrefixHeadingIdsAndTheLinksToThem()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "## Install\n\n## Café {#café}\n\nSee [install](#install), [café](#caf%C3%A9) and [the form](#signup).");
+            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseAutoIdentifiers(anchorLinks: true).Build());
+            parameters.Add(p => p.HeadingIdPrefix, "msg-1-");
+        });
+
+        var headings = component.FindAll(".bit-mdv h2");
+        var links = component.FindAll(".bit-mdv p a");
+
+        Assert.AreEqual("msg-1-install", headings[0].Id);
+        Assert.AreEqual("msg-1-café", headings[1].Id);
+        Assert.AreEqual("#msg-1-install", headings[0].QuerySelector(".bit-mdv-anchor")!.GetAttribute("href"));
+        Assert.AreEqual("#msg-1-install", links[0].GetAttribute("href"));
+        Assert.AreEqual("#msg-1-caf%C3%A9", links[1].GetAttribute("href"));
+        // Nothing in the document has that id, so it points at the page and keeps the id it has there.
+        Assert.AreEqual("#signup", links[2].GetAttribute("href"));
+        Assert.AreEqual("msg-1-install", component.Instance.Document.Children.OfType<BitMarkdownHeadingNode>().First().Id);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldReapplyTheHeadingIdPrefixWhenItChanges()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "# Title");
+            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseAutoIdentifiers().Build());
+            parameters.Add(p => p.HeadingIdPrefix, "a-");
+        });
+
+        Assert.AreEqual("a-title", component.Find(".bit-mdv h1").Id);
+
+        component.Render(parameters => parameters.Add(p => p.HeadingIdPrefix, "b-"));
+
+        Assert.AreEqual("b-title", component.Find(".bit-mdv h1").Id);
+
+        component.Render(parameters => parameters.Add(p => p.HeadingIdPrefix, (string?)null));
+
+        Assert.AreEqual("title", component.Find(".bit-mdv h1").Id);
+    }
 }

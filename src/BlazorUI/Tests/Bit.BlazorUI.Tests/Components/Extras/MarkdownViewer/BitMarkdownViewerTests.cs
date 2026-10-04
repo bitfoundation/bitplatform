@@ -512,7 +512,8 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         Assert.AreEqual("https://bitplatform.dev", link.GetAttribute("href"));
         Assert.AreEqual("bit", link.GetAttribute("title"));
-        Assert.AreEqual("the docs", link.TextContent);
+        // The link opens in a new tab, which it says after its text.
+        Assert.AreEqual("the docs (opens in a new tab)", link.TextContent);
         // The definition itself is not part of the rendered document.
         Assert.DoesNotContain("[docs]:", component.Markup);
     }

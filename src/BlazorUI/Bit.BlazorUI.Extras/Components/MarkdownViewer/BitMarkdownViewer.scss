@@ -8,6 +8,7 @@
 // --bit-MarkdownViewer-font-size                font size of the document; every block scales with it
 // --bit-MarkdownViewer-line-height              line height of the document
 // --bit-MarkdownViewer-block-spacing            room under each block (paragraph, list, table, code block, ...)
+// --bit-MarkdownViewer-scroll-margin            room kept above a heading or footnote an in-page link scrolls to
 // --bit-MarkdownViewer-heading-color            text color of the headings
 // --bit-MarkdownViewer-heading-font-family      font of the headings
 // --bit-MarkdownViewer-heading-font-weight      weight of the headings
@@ -83,6 +84,12 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
         margin-bottom: 0;
     }
 
+    // What an in-page link (a permalink, a footnote, a table of contents) scrolls to stops this far below the top
+    // of the viewport, so it is not left under a sticky app bar.
+    @include own('[id]') {
+        scroll-margin-block-start: var(--bit-MarkdownViewer-scroll-margin, 0);
+    }
+
     // The wrapper a template is drawn into takes no box of its own.
     .bit-mdv-tpl {
         display: contents;
@@ -153,6 +160,22 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
         &:focus-visible {
             @include focus-ring;
         }
+    }
+
+    // What a link opening in a new tab adds to its name for a screen reader: out of the flow rather than hidden,
+    // since display:none would hide it from the reader it is written for, and out of a copied selection.
+    .bit-mdv-new-tab {
+        border: 0;
+        padding: 0;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        clip-path: inset(50%);
+        user-select: none;
+        -webkit-user-select: none;
     }
 
     @include own('code') {

@@ -20,6 +20,13 @@ public partial class BitMarkdownViewerDemo
         },
         new()
         {
+           Name = "HeadingIdPrefix",
+           Type = "string?",
+           DefaultValue = "null",
+           Description = "Prepended to every heading id and to the in-page links that point at one, so documents sharing a page (chat messages, comments) never repeat an id, and untrusted {#id} headings cannot take one the page uses.",
+        },
+        new()
+        {
            Name = "ImageRendering",
            Type = "BitMarkdownViewerImageRendering",
            DefaultValue = "BitMarkdownViewerImageRendering.SameOrigin",
@@ -548,6 +555,7 @@ public partial class BitMarkdownViewerDemo
                 new() { Name = "Footnotes", Type = "string", DefaultValue = "Footnotes", Description = "The accessible name of the footnotes section." },
                 new() { Name = "FootnoteBackReference", Type = "string", DefaultValue = "Back to reference {0}", Description = "The accessible name of a footnote's back-link, given the footnote's number." },
                 new() { Name = "FootnoteBackReferenceOccurrence", Type = "string", DefaultValue = "Back to reference {0}-{1}", Description = "The accessible name of one of several back-links on the same footnote, given the footnote's number and the citation's." },
+                new() { Name = "NewTab", Type = "string", DefaultValue = "(opens in a new tab)", Description = "Read out after the text of a link that opens in a new tab; not shown. An empty string leaves it out." },
                 new() { Name = "Table", Type = "string", DefaultValue = "Table", Description = "The accessible name of the scrollable region a table sits in." },
                 new() { Name = "PermalinkTo", Type = "string", DefaultValue = "Permalink to {0}", Description = "The accessible name of a heading's permalink, given the heading's text." },
                 new() { Name = "PermalinkToSection", Type = "string", DefaultValue = "Permalink to this section", Description = "The accessible name of a permalink whose heading has no text of its own." },
@@ -697,6 +705,7 @@ public partial class BitMarkdownViewerDemo
         new() { Name = "--bit-MarkdownViewer-font-size", DefaultValue = "inherit", Description = "Font size of the document; every block scales with it." },
         new() { Name = "--bit-MarkdownViewer-line-height", DefaultValue = "1.6", Description = "Line height of the document." },
         new() { Name = "--bit-MarkdownViewer-block-spacing", DefaultValue = "1em", Description = "Room under each block (paragraph, list, table, code block, ...)." },
+        new() { Name = "--bit-MarkdownViewer-scroll-margin", DefaultValue = "0", Description = "Room kept above a heading or a footnote an in-page link scrolls to - the height of a sticky app bar." },
         new() { Name = "--bit-MarkdownViewer-heading-color", DefaultValue = "inherit", Description = "Text color of the headings (h6 falls back to var(--bit-clr-fg-sec))." },
         new() { Name = "--bit-MarkdownViewer-heading-font-family", DefaultValue = "inherit", Description = "Font of the headings." },
         new() { Name = "--bit-MarkdownViewer-heading-font-weight", DefaultValue = "var(--bit-tpg-fw-semibold)", Description = "Weight of the headings." },
@@ -1049,6 +1058,7 @@ And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
             Footnotes = "Fußnoten",
             FootnoteBackReference = "Zurück zur Referenz {0}",
             FootnoteBackReferenceOccurrence = "Zurück zur Referenz {0}-{1}",
+            NewTab = "(öffnet in neuem Tab)",
             Table = "Tabelle",
             Task = "Aufgabe {0}",
         })
@@ -1057,7 +1067,7 @@ And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
     private readonly string localizedMarkdown = @"> [!WARNING]
 > Der Titel dieses Kastens kommt aus den Texten der Pipeline, nicht aus dem Dokument.
 
-Auch die Tabelle und die Fußnote[^1] tragen deutsche Namen.
+Auch die Tabelle, die Fußnote[^1] und der [externe Link](https://bitplatform.dev) tragen deutsche Namen.
 
 | Spalte | Wert |
 |:-------|-----:|
@@ -1070,11 +1080,11 @@ Auch die Tabelle und die Fußnote[^1] tragen deutsche Namen.
 
     private readonly string commentMarkdown = @"# Looks good to me
 
-Tested on **Firefox** and **Safari**. One nit:
+Tested on **Firefox** and **Safari**. One nit, under [Naming](#naming):
 
 ## Naming
 
-`MaxLength` reads well, but the docs should say it counts characters.
+`MaxLength` reads well, but the [docs](https://bitplatform.dev) should say it counts characters.
 
 ```csharp
 var viewer = new BitMarkdownViewer { MaxLength = 100_000 };

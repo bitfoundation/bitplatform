@@ -1,5 +1,10 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+// The site's sticky header would otherwise cover whatever the in-page links of the samples scroll to.
+.markdownviewer-demo {
+    --bit-MarkdownViewer-scroll-margin: var(--demo-section-scroll-margin);
+}
+
 ::deep {
     .mdv-playground {
         width: 100%;

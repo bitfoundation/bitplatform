@@ -62,6 +62,26 @@ public sealed class BitMarkdownRenderer
         return DocumentUrl + url;
     }
 
+    /// <summary>
+    /// Writes the <see cref="BitMarkdownTexts.NewTab"/> notice a link opening in a new tab ends with:
+    /// text a screen reader reads as part of the link's name, which takes no room on the page and is
+    /// left out of what a reader copies. Call it as the last thing inside the <c>&lt;a&gt;</c>.
+    /// </summary>
+    /// <param name="builder">The builder the link is being written to.</param>
+    /// <param name="sequence">
+    /// The first of the three sequence numbers the notice takes, a literal fixed to the call site.
+    /// </param>
+    public void WriteNewTabNotice(RenderTreeBuilder builder, int sequence)
+    {
+        if (string.IsNullOrEmpty(Texts.NewTab)) return;
+
+        builder.OpenElement(sequence, "span");
+        builder.AddAttribute(sequence + 1, "class", "bit-mdv-new-tab");
+        // The space keeps the notice a word apart in the accessible name, which runs inline text together.
+        builder.AddContent(sequence + 2, " " + Texts.NewTab);
+        builder.CloseElement();
+    }
+
     /// <summary>Renders a sequence of nodes.</summary>
     public void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownNode> nodes)
     {

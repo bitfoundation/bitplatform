@@ -98,6 +98,7 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
 
             case BitMarkdownLinkNode link:
                 b.OpenElement(14, "a");
+                bool newTab = false;
                 if (!string.IsNullOrEmpty(link.Url))
                 {
                     b.AddAttribute(15, "href", r.ResolveInPageUrl(link.Url));
@@ -105,11 +106,14 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                     {
                         b.AddAttribute(16, "target", "_blank");
                         b.AddAttribute(17, "rel", "noopener noreferrer");
+                        newTab = true;
                     }
                 }
                 if (!string.IsNullOrEmpty(link.Title))
                     b.AddAttribute(18, "title", link.Title);
                 r.WriteNodes(b, link.Children);
+                if (newTab)
+                    r.WriteNewTabNotice(b, 40);
                 b.CloseElement();
                 break;
 

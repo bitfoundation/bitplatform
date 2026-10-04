@@ -426,7 +426,7 @@ The image is written with a relative path, the way a README writes one.
     <LinkTemplate>
         <BitLink Href=""@context.Url"" Target=""_blank"">
             @BitMarkdownInlineHelpers.PlainText(context.Children)
-            <BitIcon IconName=""@BitIconName.NavigateExternalInline"" />
+            <BitIcon IconName=""@BitIconName.NavigateExternalInline"" AriaLabel=""opens in a new tab"" />
         </BitLink>
     </LinkTemplate>
 </BitMarkdownViewer>";
@@ -522,6 +522,7 @@ private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipeline
         Footnotes = ""Fußnoten"",
         FootnoteBackReference = ""Zurück zur Referenz {0}"",
         FootnoteBackReferenceOccurrence = ""Zurück zur Referenz {0}-{1}"",
+        NewTab = ""(öffnet in neuem Tab)"",
         Table = ""Tabelle"",
         Task = ""Aufgabe {0}"",
     })
@@ -530,7 +531,7 @@ private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipeline
 private readonly string localizedMarkdown = @""> [!WARNING]
 > Der Titel dieses Kastens kommt aus den Texten der Pipeline, nicht aus dem Dokument.
 
-Auch die Tabelle und die Fußnote[^1] tragen deutsche Namen.
+Auch die Tabelle, die Fußnote[^1] und der [externe Link](https://bitplatform.dev) tragen deutsche Namen.
 
 | Spalte | Wert |
 |:-------|-----:|
@@ -543,19 +544,20 @@ Auch die Tabelle und die Fußnote[^1] tragen deutsche Namen.
 <div class=""comment"">
     <h3>Comment by Sam</h3>
     <BitMarkdownViewer Markdown=""@commentMarkdown""
-                       Pipeline=""BitMarkdownPipelines.GitHub""
+                       Pipeline=""BitMarkdownPipelines.Advanced""
                        HeadingLevelOffset=""3""
+                       HeadingIdPrefix=""comment-42-""
                        AriaLabel=""Comment by Sam"" />
 </div>";
 
     private readonly string example17CsharpCode = @"
 private readonly string commentMarkdown = @""# Looks good to me
 
-Tested on **Firefox** and **Safari**. One nit:
+Tested on **Firefox** and **Safari**. One nit, under [Naming](#naming):
 
 ## Naming
 
-`MaxLength` reads well, but the docs should say it counts characters.
+`MaxLength` reads well, but the [docs](https://bitplatform.dev) should say it counts characters.
 
 ```csharp
 var viewer = new BitMarkdownViewer { MaxLength = 100_000 };

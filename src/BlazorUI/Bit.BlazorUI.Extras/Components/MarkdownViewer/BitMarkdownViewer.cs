@@ -40,6 +40,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     private int _parsedMaxDepth;
     private int _parsedMaxLength;
     private int _parsedHeadingLevelOffset;
+    private string? _parsedHeadingIdPrefix;
     private bool _parsedStripBidi;
     private bool _parsedInteractiveTasks;
     private bool _notifyParsed;
@@ -85,6 +86,16 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// outline assistive technology navigates by. Defaults to 0.
     /// </summary>
     [Parameter] public int HeadingLevelOffset { get; set; }
+
+    /// <summary>
+    /// Prepended to the id of every heading, and to every in-page link in the document that points at one, so the
+    /// document's ids cannot collide with the page's or with another viewer's - the way GitHub writes
+    /// <c>user-content-</c> before the ids a README declares. Set it wherever several documents share a page (the
+    /// messages of a chat, the comments of a thread), which would otherwise give two headings one id and send every
+    /// link to it to the first, and wherever the source is untrusted, since a <c>{#id}</c> heading can otherwise
+    /// take an id the page's own script looks elements up by. Heading ids come from the auto-identifier flavor.
+    /// </summary>
+    [Parameter] public string? HeadingIdPrefix { get; set; }
 
     /// <summary>
     /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipelines.Basic"/>,
@@ -239,12 +250,14 @@ public partial class BitMarkdownViewer : BitComponentBase
             _parsedMaxDepth != maxDepth ||
             _parsedMaxLength != MaxLength ||
             _parsedHeadingLevelOffset != HeadingLevelOffset ||
+            string.Equals(_parsedHeadingIdPrefix, HeadingIdPrefix, StringComparison.Ordinal) is false ||
             _parsedStripBidi != StripBidiControlCharacters ||
             _parsedInteractiveTasks != interactiveTasks)
         {
             _document = ParseSafely(pipeline, maxDepth);
             ApplyImageRendering(_document.Children);
             ApplyHeadingLevelOffset(_document.Children);
+            ApplyHeadingIdPrefix();
             WireTaskCheckboxes(interactiveTasks);
             ScopeFootnoteIds();
             _parsedSource = Markdown;
@@ -253,6 +266,7 @@ public partial class BitMarkdownViewer : BitComponentBase
             _parsedMaxDepth = maxDepth;
             _parsedMaxLength = MaxLength;
             _parsedHeadingLevelOffset = HeadingLevelOffset;
+            _parsedHeadingIdPrefix = HeadingIdPrefix;
             _parsedStripBidi = StripBidiControlCharacters;
             _parsedInteractiveTasks = interactiveTasks;
             _notifyParsed = true;
@@ -551,6 +565,56 @@ public partial class BitMarkdownViewer : BitComponentBase
             foreach (var childList in nodes[i].ChildLists)
             {
                 ApplyHeadingLevelOffset(childList);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Prepends <see cref="HeadingIdPrefix"/> to every heading id, then to every permalink and in-page link that
+    /// pointed at one of them. A link to any other fragment is left alone: it points at something outside the
+    /// document, which keeps the id it has.
+    /// </summary>
+    private void ApplyHeadingIdPrefix()
+    {
+        if (string.IsNullOrEmpty(HeadingIdPrefix)) return;
+
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var heading in BitMarkdownAstHelper.Descendants(_document).OfType<BitMarkdownHeadingNode>())
+        {
+            if (string.IsNullOrEmpty(heading.Id)) continue;
+
+            ids.Add(heading.Id);
+            heading.Id = HeadingIdPrefix + heading.Id;
+        }
+
+        if (ids.Count > 0)
+        {
+            PrefixInPageLinks(_document.Children, HeadingIdPrefix, ids);
+        }
+    }
+
+    // The permalink's id and the link's destination are init-only, so the nodes are replaced rather than changed.
+    private static void PrefixInPageLinks(IList<BitMarkdownNode> nodes, string prefix, HashSet<string> ids)
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            switch (nodes[i])
+            {
+                case BitMarkdownHeadingAnchorNode anchor when ids.Contains(anchor.Id):
+                    nodes[i] = new BitMarkdownHeadingAnchorNode { Id = prefix + anchor.Id, HeadingText = anchor.HeadingText };
+                    continue;
+
+                case BitMarkdownLinkNode { Url: ['#', .. var fragment] } link
+                    when ids.Contains(fragment) || ids.Contains(Uri.UnescapeDataString(fragment)):
+                    var prefixed = new BitMarkdownLinkNode { Url = "#" + prefix + fragment, Title = link.Title, IsAutoLink = link.IsAutoLink };
+                    prefixed.Children.AddRange(link.Children);
+                    nodes[i] = prefixed;
+                    break;
+            }
+
+            foreach (var childList in nodes[i].ChildLists)
+            {
+                PrefixInPageLinks(childList, prefix, ids);
             }
         }
     }

@@ -16,10 +16,12 @@ namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 [TestClass]
 public class BitMarkdownViewerParamsTests : BunitTestContext
 {
-    // What belongs to a single document rather than to a group of them: its source, its layout and its events.
+    // What belongs to a single document rather than to a group of them: its source, its layout, its events and the
+    // prefix that keeps its ids apart from the other documents'.
     private static readonly string[] _notCascaded =
     [
         nameof(BitMarkdownViewer.CascadingParameters),
+        nameof(BitMarkdownViewer.HeadingIdPrefix),
         nameof(BitMarkdownViewer.Inline),
         nameof(BitMarkdownViewer.Markdown),
         nameof(BitMarkdownViewer.OnParsed),

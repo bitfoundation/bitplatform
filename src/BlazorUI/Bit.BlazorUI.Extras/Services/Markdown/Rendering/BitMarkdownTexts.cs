@@ -49,6 +49,12 @@ public class BitMarkdownTexts
     /// </summary>
     public string FootnoteBackReferenceOccurrence { get; set; } = "Back to reference {0}-{1}";
 
+    /// <summary>
+    /// Read out after the text of a link that opens in a new tab, which a screen reader does not
+    /// otherwise announce. It is not shown, and an empty string leaves it out.
+    /// </summary>
+    public string NewTab { get; set; } = "(opens in a new tab)";
+
     /// <summary>The accessible name of the scrollable region a table sits in.</summary>
     public string Table { get; set; } = "Table";
 

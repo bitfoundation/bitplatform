@@ -173,7 +173,8 @@
                     <b>UseAutoIdentifiers(anchorLinks: true)</b> gives every heading a slug id and a permalink shown on hover
                     or focus; ending a heading with <code>{#id}</code> pins an id that survives rewording. The parsed tree
                     (<b>OnParsed</b>, or <b>Document</b> afterwards) is walked with <b>BitMarkdownAstHelper.Descendants</b>
-                    for a table of contents, and <b>ToPlainText</b> gives the text for an excerpt or a search index.
+                    for a table of contents, and <b>ToPlainText</b> gives the text for an excerpt or a search index. Under
+                    a sticky app bar, <b>--bit-MarkdownViewer-scroll-margin</b> keeps the heading a link lands on in view.
                 </div>
                 <br />
                 <div class="mdv-toc-layout">
@@ -191,7 +192,8 @@
 
             <DemoExample Title="Links & URLs" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>
-                    By default an external link opens in a new tab with <code>rel="noopener noreferrer"</code>.
+                    By default an external link opens in a new tab with <code>rel="noopener noreferrer"</code>, and its
+                    accessible name says so.
                     <b>UseLinkOptions()</b> changes that - here external links stay in the tab and are marked
                     <code>nofollow ugc</code>, as user-written links should be. <b>UseBaseUrl()</b> resolves relative
                     destinations (a README's images) against an address; <b>UseUrlRewriter()</b> is the general form, and
@@ -244,7 +246,7 @@
                     <LinkTemplate>
                         <BitLink Href="@context.Url" Target="_blank">
                             @BitMarkdownInlineHelpers.PlainText(context.Children)
-                            <BitIcon IconName="@BitIconName.NavigateExternalInline" />
+                            <BitIcon IconName="@BitIconName.NavigateExternalInline" AriaLabel="opens in a new tab" />
                         </BitLink>
                     </LinkTemplate>
                 </BitMarkdownViewer>
@@ -269,7 +271,7 @@
             <DemoExample Title="Localization" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
                 <div>
                     The few words the renderers write themselves - alert titles, footnote back-links, the names of a table's
-                    scroll region, a permalink or a task box - default to English. <b>UseTexts()</b> replaces them per
+                    scroll region, a permalink or a task box, the new-tab notice of a link - default to English. <b>UseTexts()</b> replaces them per
                     pipeline; the numbered ones take their number through <code>{0}</code>.
                 </div>
                 <br />
@@ -280,15 +282,17 @@
                 <div>
                     <b>HeadingLevelOffset</b> nests the document's outline under the page's own: here <code>#</code> renders
                     as an <code>h4</code> under the card's <code>h3</code>. <b>AriaLabel</b> names the document and makes it
-                    a region. Links are underlined (not told apart by color alone), code blocks and wide tables are
-                    keyboard-scrollable, and in-page links keep working under <code>&lt;base href&gt;</code>.
+                    a region. <b>HeadingIdPrefix</b> keeps its heading ids, and the links to them, apart from every other
+                    comment's. Links are underlined and tell a screen reader when they open a new tab; code blocks and wide
+                    tables are keyboard-scrollable; in-page links keep working under <code>&lt;base href&gt;</code>.
                 </div>
                 <br />
                 <div class="mdv-comment">
                     <h3 class="mdv-comment-title">Comment by Sam</h3>
                     <BitMarkdownViewer Markdown="@commentMarkdown"
-                                       Pipeline="BitMarkdownPipelines.GitHub"
+                                       Pipeline="BitMarkdownPipelines.Advanced"
                                        HeadingLevelOffset="3"
+                                       HeadingIdPrefix="comment-42-"
                                        AriaLabel="Comment by Sam" />
                 </div>
             </DemoExample>
