@@ -263,8 +263,10 @@ public partial class BitTextShimmer : BitComponentBase
     /// The spread is the distance from the brightest point of the band to each of its edges. A font-relative length
     /// ("3em", "4ch") follows the size of the text without counting its characters, which is what content supplied
     /// through <see cref="ChildContent"/> needs, and what keeps a heading and a caption with the same text looking
-    /// alike. Prefer an absolute or a font-relative length: a percentage is taken of the background the band is
-    /// painted in, which is wider than the text.
+    /// alike. It is also what a text that wraps over several lines needs: its character count grows with every line
+    /// while its width does not, so the computed band soon covers the whole text. Prefer an absolute or a
+    /// font-relative length: a percentage is taken of the background the band is painted in, which is wider than the
+    /// text.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? SpreadLength { get; set; }
