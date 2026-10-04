@@ -90,6 +90,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     // half an answer (WCAG 2.2, SC 3.3.1).
     private string? _invalidMessage;
 
+    // The tags as the field itself last left them, which is what tells a list the parent replaced from
+    // code apart from the one the field just handed it back through the binding. A copy rather than the
+    // reference, since a parent may change the very collection it bound in place.
+    private string[]? _knownTags;
+
     private string? _inputMode;
     private string? _enterKeyHint;
 
@@ -328,6 +333,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter]
     [CallOnSet(nameof(OnSetEnterKeyHint))]
     public BitEnterKeyHint? EnterKeyHint { get; set; }
+
+    /// <summary>
+    /// The sentence announced after each tag <see cref="CanRemoveTag"/> holds in place, which answers to
+    /// one gesture fewer than the others and so is described by a sentence of its own. It defaults to the
+    /// built-in one - unless <see cref="TagAriaDescription"/> is set, in which case it defaults to none at
+    /// all: a sentence of yours is written for the tags that can be removed, and reading it after one that
+    /// cannot would promise a removal that does nothing. An empty string keeps it from being rendered.
+    /// </summary>
+    [Parameter] public string? FixedTagAriaDescription { get; set; }
 
     /// <summary>
     /// The sentence that says why a tag was refused, for wording of your own and for localization. It
@@ -804,7 +818,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// like nothing but a word. It defaults to a sentence built from what the component was actually
     /// given (the inline edit, the reordering), and is left out entirely when neither is on, so that a
     /// plain list of chips is not read out with instructions it has no use for. An empty string keeps
-    /// it from being rendered at all.
+    /// it from being rendered at all. The tags <see cref="CanRemoveTag"/> holds in place are described by
+    /// <see cref="FixedTagAriaDescription"/> instead.
     /// </summary>
     [Parameter] public string? TagAriaDescription { get; set; }
 
@@ -1046,11 +1061,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // mark the form dirty and raise a change for a list that did not change.
         if (removed.Count > 0)
         {
-            await SetCurrentValueAsync(kept.Count > 0 ? kept : null);
+            await SetTagsAsync(kept.Count > 0 ? kept : null);
         }
         else if (CurrentValue is not null && kept.Count == 0)
         {
-            await SetCurrentValueAsync(null);
+            await SetTagsAsync(null);
         }
 
         StateHasChanged();
@@ -1165,6 +1180,19 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
+
+        // A list the parent replaced from code has moved the tags out from under every index the field
+        // was keeping: the tag that was picked up, and the one a refused duplicate collided with, would
+        // otherwise stay marked on whatever chip now stands where they were.
+        if (IsKnownValue() is false)
+        {
+            _knownTags = CurrentValue is null ? null : [.. CurrentValue];
+
+            SetPickedUpTag(-1);
+            ClearInvalid();
+        }
+
+        PutDownStalePickUp();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1377,6 +1405,52 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private List<string> GetTags() => CurrentValue is null ? [] : [.. CurrentValue];
 
     /// <summary>
+    /// Hands a new list to the binding, remembering it first: the parent can render the field again from
+    /// inside the ValueChanged it is told through, and that render must recognize the list as the field's
+    /// own rather than as one the parent replaced. A binding that cannot take the value keeps the old one,
+    /// which is the one that stays known.
+    /// </summary>
+    private async Task SetTagsAsync(ICollection<string>? tags)
+    {
+        if (InvalidValueBinding() is false)
+        {
+            _knownTags = tags is null ? null : [.. tags];
+        }
+
+        await SetCurrentValueAsync(tags);
+    }
+
+    /// <summary>
+    /// Whether the value holds the very tags the field last knew of - an empty list and none at all being
+    /// the same thing, since the field itself hands back null for a list it emptied.
+    /// </summary>
+    private bool IsKnownValue()
+    {
+        var count = CurrentValue?.Count ?? 0;
+
+        if (count != (_knownTags?.Length ?? 0)) return false;
+
+        return count == 0 || CurrentValue!.SequenceEqual(_knownTags!, StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Puts down a tag that was picked up with its handle and has nowhere left to land - because the fold
+    /// has closed over it, because only one chip is left and so no handle is drawn, or because the field
+    /// no longer offers the reordering at all: a chip that is lifted with nowhere to land is only a chip
+    /// drawn askew, and a field wearing the carrying state with no handle left to end it is stuck in it.
+    /// </summary>
+    private void PutDownStalePickUp()
+    {
+        if (_pickedUpTagIndex < 0) return;
+
+        var displayed = GetDisplayedTagCount();
+
+        if (_pickedUpTagIndex < displayed && displayed > 1 && IsEnabled && ReadOnly is false && AllowReorder) return;
+
+        SetPickedUpTag(-1);
+    }
+
+    /// <summary>
     /// The values the datalist offers: the <see cref="Suggestions"/> minus the ones that are already in
     /// the list, since offering a value that would only be refused as a duplicate is a dead end - and
     /// none at all once the ceiling is reached, where every one of them would be refused.
@@ -1440,7 +1514,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     private string? GetTagAriaDescription(bool removable)
     {
-        if (TagAriaDescription is not null) return TagAriaDescription.HasValue() ? TagAriaDescription : null;
+        if (removable is false && FixedTagAriaDescription is not null) return FixedTagAriaDescription.HasValue() ? FixedTagAriaDescription : null;
+
+        // A sentence of the consumer is written for the tags that can be removed: read after a tag that
+        // cannot, it would promise a removal that does nothing, so such a tag is told nothing instead.
+        if (TagAriaDescription is not null) return TagAriaDescription.HasValue() && removable ? TagAriaDescription : null;
 
         if (IsEnabled is false) return null;
 
@@ -1546,12 +1624,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     }
 
     /// <summary>
-    /// The aria-describedby of the input: the id of the <see cref="Description"/> added to whatever the
-    /// consumer wrote on the component through <see cref="BitInputBase{T}.InputHtmlAttributes"/>, rather than
-    /// written over it. The attribute is a list of ids, so a field that points at a validation message of its
-    /// own keeps pointing at it while the helper text is read out as well.
-    /// </summary>
-    /// <summary>
     /// The aria-labelledby of the input: the label of the component where it has one, and otherwise
     /// whatever the consumer wrote through <see cref="BitInputBase{TValue}.InputHtmlAttributes"/> - a field named by
     /// a heading of its own, most of the time. Merged rather than written over, since an attribute
@@ -1582,6 +1654,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             : null;
     }
 
+    /// <summary>
+    /// The aria-describedby of the input: the id of the <see cref="Description"/> added to whatever the
+    /// consumer wrote on the component through <see cref="BitInputBase{T}.InputHtmlAttributes"/>, rather than
+    /// written over it. The attribute is a list of ids, so a field that points at a validation message of its
+    /// own keeps pointing at it while the helper text is read out as well.
+    /// </summary>
     private string? GetDescribedBy(bool hasDescription, bool hasCount)
     {
         var custom = InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue("aria-describedby", out var value)
@@ -2270,11 +2348,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
             await RaiseOnInput(immediate: true);
         }
-        else if (e.Key == "Escape" && NoClearOnEscape is false && ShowClearButton && CurrentValue?.Count > 0)
+        else if (e.Key == "Escape" && NoClearOnEscape is false && ShowClearButton && HasRemovableTag())
         {
             // The clear button is deliberately kept out of the tab order, so Escape is its keyboard
             // equivalent, exactly as it is in BitSearchBox and BitNumberField - once there is nothing
-            // left in the input for it to take back.
+            // left in the input for it to take back, and only where the button itself would be drawn:
+            // a field holding nothing but the tags CanRemoveTag pins in place has nothing to clear.
             await Clear();
         }
         else if ((e.Key == (IsRtl ? "ArrowRight" : "ArrowLeft")) && _inputText.Length == 0 && CurrentValue?.Count > 0)
@@ -2305,6 +2384,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         {
             _focusedTagIndex = -1;
         }
+
+        PutDownStalePickUp();
     }
 
     private void HandleOnTagFocusIn(int index)
@@ -2319,7 +2400,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// pointed at. Not every engine focuses an element that is only focusable through its tabindex on
     /// its own, so it is asked for explicitly rather than being left to the browser.
     /// </summary>
-    private async Task HandleOnTagClick(int index)
+    private async Task HandleOnTagClick(MouseEventArgs e, int index)
     {
         if (IsEnabled is false) return;
 
@@ -2346,6 +2427,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         FocusTag(index);
 
         if (OnTagClick.HasDelegate is false) return;
+
+        // The second click of a double click is the start of the inline edit the dblclick that follows it
+        // opens, not a click on the tag of its own: the chip was already opened by the first one.
+        if (e.Detail > 1 && EditableTags && ReadOnly is false) return;
 
         var tags = GetTags();
         if (index < 0 || index >= tags.Count) return;
@@ -2543,7 +2628,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         Announce(MovedAnnouncementFormat ?? "{0} moved to position {1} of {2}.", TagName(tag), to + 1, list.Count);
 
-        await SetCurrentValueAsync(list);
+        await SetTagsAsync(list);
         await OnReorder.InvokeAsync(new() { Tag = tag, OldIndex = from, NewIndex = to });
     }
 
@@ -2761,7 +2846,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         if (index >= list.Count) return;
 
         var original = list[index];
-        var text = NormalizeTag(_editText);
+        var typed = _editText;
+        var text = NormalizeTag(typed);
 
         _editText = string.Empty;
 
@@ -2802,24 +2888,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (IsValidTag(text, list, out var reason, editingIndex: index) is false)
         {
+            // Handed back before the refusal is reported rather than after it: a handler of OnInvalid
+            // that awaits anything lets the field render in the meantime, and a render with the edit
+            // closed tears the little input down and drops the focus on the document body.
+            HandBackEdit(index, typed, restoreFocus);
+
             await ReportInvalid(text, reason);
 
-            if (restoreFocus)
-            {
-                // The correction is handed back rather than thrown away: a chip that snaps back to what it
-                // said before takes the typing with it, and an error is the one moment a field must not
-                // lose what the user has just entered. The little input is reopened holding the refused
-                // text, with the caret at the end of it. A commit that only happened because the focus
-                // went somewhere else is left alone - leaving the field is abandoning the correction, and
-                // pulling the focus back would undo the very move that caused the commit.
-                _editingTagIndex = index;
-                _editText = text;
-                _pendingFocusEdit = true;
-                _pendingSelectEdit = false;
-                _focusedTagIndex = index;
-                _pendingFocusTagIndex = -1;
-                _pendingFocusInput = false;
-            }
             return;
         }
 
@@ -2837,8 +2912,23 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             }
 
             // The handler is allowed to correct the text on its way in, so what is stored is what it
-            // left in NewTag rather than what was handed to it.
-            text = args.NewTag;
+            // left in NewTag rather than what was handed to it - once it has passed the very rules the
+            // typed text had to, a rewrite being no way around them.
+            var rewritten = NormalizeTag(args.NewTag);
+
+            if (rewritten.Length > 0 && string.Equals(rewritten, text, StringComparison.Ordinal) is false)
+            {
+                if (IsValidTag(rewritten, list, out var rewriteReason, editingIndex: index) is false)
+                {
+                    HandBackEdit(index, typed, restoreFocus);
+
+                    await ReportInvalid(rewritten, rewriteReason);
+
+                    return;
+                }
+
+                text = rewritten;
+            }
         }
 
         list[index] = text;
@@ -2856,7 +2946,48 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         Announce(EditedAnnouncementFormat ?? "{0} updated.", TagName(text));
 
-        await SetCurrentValueAsync(list);
+        await SetTagsAsync(list);
+    }
+
+    /// <summary>
+    /// Reopens a refused correction holding the text exactly as it was typed - not as it was normalized,
+    /// a trimmed or transformed spelling being one the user never wrote - with the caret at the end of it.
+    /// The correction is handed back rather than thrown away: a chip that snaps back to what it said
+    /// before takes the typing with it, and an error is the one moment a field must not lose what the
+    /// user has just entered. A commit that only happened because the focus went somewhere else is left
+    /// alone - leaving the field is abandoning the correction, and pulling the focus back would undo the
+    /// very move that caused the commit.
+    /// </summary>
+    private void HandBackEdit(int index, string typed, bool restoreFocus)
+    {
+        if (restoreFocus is false) return;
+
+        _editingTagIndex = index;
+        _editText = typed;
+        _pendingFocusEdit = true;
+        _pendingSelectEdit = false;
+        _focusedTagIndex = index;
+        _pendingFocusTagIndex = -1;
+        _pendingFocusInput = false;
+    }
+
+    /// <summary>
+    /// What an OnBeforeAdd handler left in place of the tag it was handed, normalized and run through the
+    /// very rules the typed text had to pass - a rewrite being a correction, not a way around them. An
+    /// empty one is a handler that wrote nothing, which leaves the tag as it stood. A rewrite that is
+    /// refused is reported and comes back as null.
+    /// </summary>
+    private async Task<string?> AcceptRewrittenTag(string text, string? rewritten, List<string> list)
+    {
+        var normalized = NormalizeTag(rewritten);
+
+        if (normalized.Length == 0 || string.Equals(normalized, text, StringComparison.Ordinal)) return text;
+
+        if (IsValidTag(normalized, list, out var reason)) return normalized;
+
+        await ReportInvalid(normalized, reason);
+
+        return null;
     }
 
     private async Task TryAddTag()
@@ -2889,18 +3020,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
             // The handler is allowed to correct the text on its way in, the way an OnEdit handler is; an
             // empty one is a handler that wrote nothing rather than one calling the add off, Cancel being
-            // what does that.
-            if (args.Tag.HasValue())
-            {
-                text = args.Tag;
-            }
+            // what does that. A rewrite that is refused leaves the typed text in the input to be corrected.
+            var accepted = await AcceptRewrittenTag(text, args.Tag, list);
+            if (accepted is null) return;
+
+            text = accepted;
         }
 
         list.Add(text);
 
         Announce(AddedAnnouncementFormat ?? "{0} added.", TagName(text));
 
-        await SetCurrentValueAsync(list);
+        await SetTagsAsync(list);
         await OnAdd.InvokeAsync([text]);
 
         // Last, so that the list a consumer reads out of OnInput is the one the tag is already in - the
@@ -2937,11 +3068,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                 await OnBeforeAdd.InvokeAsync(args);
                 if (args.Cancel) continue;
 
-                // As above: what the handler leaves in the args is what the list is given.
-                if (args.Tag.HasValue())
-                {
-                    text = args.Tag;
-                }
+                // As above: what the handler leaves in the args is what the list is given, once it has
+                // passed the rules - against the list as the batch has grown it so far.
+                var accepted = await AcceptRewrittenTag(text, args.Tag, list);
+                if (accepted is null) continue;
+
+                text = accepted;
             }
 
             list.Add(text);
@@ -2961,7 +3093,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             Announce(AddedManyAnnouncementFormat ?? "{0} tags added.", addedTags.Count);
         }
 
-        await SetCurrentValueAsync(list);
+        await SetTagsAsync(list);
         await OnAdd.InvokeAsync(addedTags);
 
         return addedTags.Count;
@@ -3031,7 +3163,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         Announce(RemovedAnnouncementFormat ?? "{0} removed.", TagName(tag));
 
-        await SetCurrentValueAsync(list.Count > 0 ? list : null);
+        await SetTagsAsync(list.Count > 0 ? list : null);
         await OnRemove.InvokeAsync(tag);
 
         return true;

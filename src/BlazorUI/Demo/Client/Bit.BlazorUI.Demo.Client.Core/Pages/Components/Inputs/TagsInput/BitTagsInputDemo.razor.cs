@@ -221,6 +221,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "FixedTagAriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The sentence announced after each tag CanRemoveTag holds in place, which answers to one gesture fewer than the others. It defaults to the built-in one - unless TagAriaDescription is set, in which case it defaults to none, since a sentence of yours written for the removable tags would promise a removal that does nothing. An empty string keeps it from being rendered.",
+        },
+        new()
+        {
             Name = "GetInvalidMessage",
             Type = "Func<BitTagsInputInvalidArgs, string?>?",
             DefaultValue = "null",
@@ -755,7 +762,7 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-font-size",
             DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the field. The helper text and the counter are derived from it, so one value resizes the whole component.",
+            Description = "Text size of the field. The helper text and the counter take theirs from --bit-TagsInput-description-font-size, and the chips from --bit-TagsInput-tag-font-size.",
         },
         new()
         {
@@ -786,6 +793,12 @@ public partial class BitTagsInputDemo
             Name = "--bit-TagsInput-description-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the helper text under the field. The error state overrides it with the invalid color.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-description-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the helper text and of the counter under the field, a step under the field's own.",
         },
         new()
         {
@@ -934,7 +947,7 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-tag-min-height",
-            DefaultValue = "Per Size",
+            DefaultValue = "Per Size, --bit-siz-chip-*",
             Description = "Smallest height of a chip, of the input and of the affixes, so a chip holding an icon or a template is exactly as tall as the one beside it.",
         },
         new()

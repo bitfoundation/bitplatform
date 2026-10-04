@@ -60,14 +60,6 @@
     var invalidMessage = ShowInvalidMessage ? _invalidMessage : null;
     var countDescription = GetTagCountDescription(tagCount);
 
-    // A tag picked up with its handle and never put anywhere - because the parent has since taken it
-    // away, because the fold has closed over it, or because the field no longer offers the reordering at
-    // all - is put back down: a chip that is lifted with nowhere to land is only a chip drawn askew.
-    if (_pickedUpTagIndex >= displayedTagCount || (_pickedUpTagIndex >= 0 && (isInteractive is false || AllowReorder is false)))
-    {
-        SetPickedUpTag(-1);
-    }
-
     // The tag that is currently being carried, read once rather than once per chip: while it is in the
     // air, every other handle is labelled by it rather than by the tag it belongs to.
     var carriedTag = _pickedUpTagIndex >= 0 && tags is not null && _pickedUpTagIndex < tags.Count
@@ -145,7 +137,7 @@
                        MaxDisplayedTags folds the rest away, the tags that are drawn are no longer the
                        tags there are, and "2 of 2" said over a list of six is worse than nothing. *@
                     <div @ref="_tagRefs[index]"
-                         @onclick="() => HandleOnTagClick(index)"
+                         @onclick="e => HandleOnTagClick(e, index)"
                          @onclick:stopPropagation="true"
                          @ondblclick="() => HandleOnTagDoubleClick(index)"
                          @ondblclick:stopPropagation="true"

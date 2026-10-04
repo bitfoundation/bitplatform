@@ -172,6 +172,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     public string? EditedAnnouncementFormat { get; set; }
 
     /// <summary>
+    /// The sentence announced after each tag CanRemoveTag holds in place.
+    /// </summary>
+    public string? FixedTagAriaDescription { get; set; }
+
+    /// <summary>
     /// Sets the enterkeyhint html attribute of the input element.
     /// </summary>
     public BitEnterKeyHint? EnterKeyHint { get; set; }
@@ -616,6 +621,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
         if (EditedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(EditedAnnouncementFormat)))
         {
             bitTagsInput.EditedAnnouncementFormat = EditedAnnouncementFormat;
+        }
+
+        if (FixedTagAriaDescription is not null && bitTagsInput.HasNotBeenSet(nameof(FixedTagAriaDescription)))
+        {
+            bitTagsInput.FixedTagAriaDescription = FixedTagAriaDescription;
         }
 
         if (EnterKeyHint.HasValue && bitTagsInput.HasNotBeenSet(nameof(EnterKeyHint)))

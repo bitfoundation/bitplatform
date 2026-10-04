@@ -8,6 +8,7 @@
 //   --bit-TagsInput-label-color             color of the label above the field                (default: $clr-fg-pri)
 //   --bit-TagsInput-required-color          color of the asterisk a Required label carries    (default: $clr-req)
 //   --bit-TagsInput-description-color       color of the helper text under the field          (default: $clr-fg-sec)
+//   --bit-TagsInput-description-font-size   text size of the helper text and of the counter   (default: per size, a step under the field's)
 //   --bit-TagsInput-counter-color           color of the tag counter                          (default: $clr-fg-sec)
 //   --bit-TagsInput-affix-color             color of the prefix and of the suffix             (default: $clr-fg-sec)
 //   --bit-TagsInput-background              fill of the field                                 (default: per variant)
@@ -34,7 +35,7 @@
 //   --bit-TagsInput-tag-padding             inset of a chip                                   (default: per size)
 //   --bit-TagsInput-tag-gap                 room between a chip's text and its dismiss button (default: spacing(0.375))
 //   --bit-TagsInput-tag-font-size           text size of a chip                               (default: per size, from the type ramp)
-//   --bit-TagsInput-tag-min-height          smallest height of a chip                         (default: per size)
+//   --bit-TagsInput-tag-min-height          smallest height of a chip                         (default: per size, $siz-chip-*)
 //   --bit-TagsInput-tag-max-width           widest a chip grows before its text is ellipsized (default: 100%)
 //   --bit-TagsInput-tag-hover-color         text of a chip an OnTagClick opens, under the
 //                                           pointer                                           (default: per tag variant)
@@ -96,7 +97,7 @@
     overflow-wrap: break-word;
     padding: spacing(0.625) 0 0;
     color: var(--bit-TagsInput-description-color, #{$clr-fg-sec});
-    font-size: calc(var(--bit-TagsInput-font-size, var(--bit-tgi-fontsize)) - #{spacing(0.25)});
+    font-size: var(--bit-TagsInput-description-font-size, var(--bit-tgi-helperfontsize));
 }
 
 //the count of the tags: the same size as the helper text, never wrapping, and pushed to the end of the
@@ -110,7 +111,7 @@
     padding: spacing(0.625) 0 0;
     font-variant-numeric: tabular-nums;
     color: var(--bit-TagsInput-counter-color, #{$clr-fg-sec});
-    font-size: calc(var(--bit-TagsInput-font-size, var(--bit-tgi-fontsize)) - #{spacing(0.25)});
+    font-size: var(--bit-TagsInput-description-font-size, var(--bit-tgi-helperfontsize));
 }
 
 //the sentence a refusal is reported with, standing where the helper text otherwise would: it carries the
@@ -836,10 +837,11 @@
     --bit-tgi-gap: #{spacing(0.25)};
     --bit-tgi-fontsize: #{$tg-fs-xs};
     --bit-tgi-iconsize: #{$siz-icon-sm};
+    --bit-tgi-helperfontsize: #{$tg-fs-2xs};
     --bit-tgi-tagfontsize: #{$tg-fs-xs};
     --bit-tgi-minheight: #{$siz-ctrl-sm};
     --bit-tgi-padding: #{spacing(0.25)} #{spacing(0.375)};
-    --bit-tgi-tagminheight: #{spacing(2.25)};
+    --bit-tgi-tagminheight: #{$siz-chip-sm};
     --bit-tgi-tagpadding: 0 calc(#{$siz-ctrl-pad-x-sm} / 2);
 }
 
@@ -847,10 +849,11 @@
     --bit-tgi-gap: #{spacing(0.375)};
     --bit-tgi-fontsize: #{$tg-fs-sm};
     --bit-tgi-iconsize: #{$siz-icon-md};
+    --bit-tgi-helperfontsize: #{$tg-fs-xs};
     --bit-tgi-tagfontsize: #{$tg-fs-xs};
     --bit-tgi-minheight: #{$siz-ctrl-md};
     --bit-tgi-padding: #{spacing(0.375)} #{spacing(0.5)};
-    --bit-tgi-tagminheight: #{spacing(2.5)};
+    --bit-tgi-tagminheight: #{$siz-chip-sm};
     --bit-tgi-tagpadding: 0 calc(#{$siz-ctrl-pad-x-md} / 2);
 }
 
@@ -858,9 +861,10 @@
     --bit-tgi-gap: #{spacing(0.5)};
     --bit-tgi-fontsize: #{$tg-fs-md};
     --bit-tgi-iconsize: #{$siz-icon-lg};
+    --bit-tgi-helperfontsize: #{$tg-fs-sm};
     --bit-tgi-tagfontsize: #{$tg-fs-sm};
     --bit-tgi-minheight: #{$siz-ctrl-lg};
     --bit-tgi-padding: #{spacing(0.5)} #{spacing(0.625)};
-    --bit-tgi-tagminheight: #{spacing(3)};
+    --bit-tgi-tagminheight: #{$siz-chip-md};
     --bit-tgi-tagpadding: 0 calc(#{$siz-ctrl-pad-x-lg} / 2);
 }
