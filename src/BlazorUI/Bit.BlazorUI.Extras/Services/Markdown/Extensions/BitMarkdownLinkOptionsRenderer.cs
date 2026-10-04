@@ -42,13 +42,15 @@ public sealed class BitMarkdownLinkOptionsRenderer : BitMarkdownNodeRenderer
         bool external = BitMarkdownLinkHelpers.IsExternalUrl(link.Url);
 
         b.OpenElement(0, "a");
+        bool newTab = false;
         if (string.IsNullOrEmpty(link.Url) is false)
         {
-            b.AddAttribute(1, "href", link.Url);
+            b.AddAttribute(1, "href", r.ResolveInPageUrl(link.Url));
 
             var target = external ? ExternalTarget : InternalTarget;
             if (target != BitMarkdownLinkTarget.Self)
                 b.AddAttribute(2, "target", "_" + target.ToString().ToLowerInvariant());
+            newTab = target == BitMarkdownLinkTarget.Blank;
 
             var rel = external ? ExternalRel : InternalRel;
             if (string.IsNullOrWhiteSpace(rel) is false)
@@ -58,6 +60,8 @@ public sealed class BitMarkdownLinkOptionsRenderer : BitMarkdownNodeRenderer
             b.AddAttribute(4, "title", link.Title);
 
         r.WriteNodes(b, link.Children);
+        if (newTab)
+            r.WriteNewTabNotice(b, 5);
         b.CloseElement();
     }
 }

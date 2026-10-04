@@ -22,9 +22,11 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(0, "sup");
                 b.AddAttribute(1, "class", "footnote-ref");
                 b.OpenElement(2, "a");
-                b.AddAttribute(3, "href", $"#{referenceScope}fn-{reference.Number}");
+                b.AddAttribute(3, "href", r.ResolveInPageUrl($"#{referenceScope}fn-{reference.Number}"));
                 b.AddAttribute(4, "id", FootnoteRefId(reference));
-                b.AddAttribute(5, "aria-describedby", $"{referenceScope}footnotes");
+                // Described by the section's label rather than by the section: a description is read out in full,
+                // and the section's is every note in the document.
+                b.AddAttribute(5, "aria-describedby", $"{referenceScope}footnotes-label");
                 b.AddContent(6, reference.Number.ToString());
                 b.CloseElement();
                 b.CloseElement();
@@ -34,7 +36,14 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(7, "section");
                 b.AddAttribute(8, "class", "footnotes");
                 b.AddAttribute(9, "id", $"{Scope(footnotes.IdScope)}footnotes");
-                b.AddAttribute(10, "aria-label", r.Texts.Footnotes);
+                b.AddAttribute(10, "aria-labelledby", $"{Scope(footnotes.IdScope)}footnotes-label");
+                // A heading only a screen reader meets, so the notes can be reached from its list of headings and
+                // each reference has a short label to be described by.
+                b.OpenElement(23, "h" + Math.Clamp(footnotes.HeadingLevel, 1, 6));
+                b.AddAttribute(24, "id", $"{Scope(footnotes.IdScope)}footnotes-label");
+                r.AddScreenReaderOnly(b, 25, "bit-mdv-sr-only");
+                b.AddContent(27, r.Texts.Footnotes);
+                b.CloseElement();
                 b.OpenElement(11, "hr");
                 b.CloseElement();
                 b.OpenElement(12, "ol");
@@ -59,6 +68,8 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                         r.WriteNode(b, definition.Children[c]);
                     }
                     b.OpenElement(22, "p");
+                    if (r.AutoDirection)
+                        b.AddAttribute(28, "dir", "auto");
                     r.WriteNodes(b, paragraph.Inlines);
                     WriteBackReferences(r, b, definition);
                     b.CloseElement();
@@ -81,7 +92,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
         {
             b.AddContent(16, " ");
             b.OpenElement(17, "a");
-            b.AddAttribute(18, "href", $"#{Scope(definition.IdScope)}fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}");
+            b.AddAttribute(18, "href", r.ResolveInPageUrl($"#{Scope(definition.IdScope)}fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}"));
             b.AddAttribute(19, "class", "footnote-backref");
             b.AddAttribute(20, "aria-label", definition.ReferenceCount > 1
                 ? string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReferenceOccurrence, definition.Number, i)
