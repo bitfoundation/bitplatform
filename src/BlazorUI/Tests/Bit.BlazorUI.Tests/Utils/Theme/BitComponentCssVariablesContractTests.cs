@@ -27,10 +27,17 @@ public sealed class BitComponentCssVariablesContractTests
         RegexOptions.Compiled);
 
     // One row of the demo page's componentCssVariables table, which is the whole source of what the site
-    // and the MCP server say about this tier - there is no type behind it to read the names off.
+    // and the MCP server say about this tier - there is no type behind it to read the names off. Only a name
+    // of the public shape counts: a page may also tabulate the global tokens it reads (--bit-bp-*), which
+    // belong to the theme tier this contract is not about.
     private static readonly Regex DocumentedVar = new(
-        @"Name\s*=\s*""(--bit-[A-Za-z0-9-]+)""",
+        @"Name\s*=\s*""(--bit-[A-Z][A-Za-z0-9]*-[a-z0-9-]+)",
         RegexOptions.Compiled);
+
+    // A numbered series - BitChart's --bit-Chart-series-color-1..10 - is read with its number interpolated
+    // (so the read ends in the dash) and documented as a span ("-1 ... -10"), so both sides are compared as
+    // the one family they name.
+    private static readonly Regex SeriesNumber = new(@"-\d*$", RegexOptions.Compiled);
 
     [TestMethod]
     public void ComponentVariablesNeverShadowGlobalTokens()
@@ -58,14 +65,14 @@ public sealed class BitComponentCssVariablesContractTests
     [TestMethod]
     public void EveryPublicVariableIsBothReadAndDocumented()
     {
-        var read = CollectPublicReads(GetComponentStylesDirectory());
+        var read = CollectPublicReads(GetPublicComponentDirectories());
         var documented = CollectDocumented(GetDemoPagesDirectory());
 
         var undocumented = read.Keys.Except(documented.Keys)
             .Select(v => $"{v} (read by {read[v]}, named in no componentCssVariables table)");
 
         var unread = documented.Keys.Except(read.Keys)
-            .Select(v => $"{v} (documented by {documented[v]}, read by no stylesheet)");
+            .Select(v => $"{v} (documented by {documented[v]}, read by no component)");
 
         var offenders = undocumented.Concat(unread).OrderBy(o => o, StringComparer.Ordinal).ToArray();
 
@@ -113,6 +120,25 @@ public sealed class BitComponentCssVariablesContractTests
         return dir;
     }
 
+    /// <summary>
+    /// Every package's components: Extras and Legacy ship public variables of their own, and the demo pages
+    /// documenting them sit in the same tree as the core ones.
+    /// </summary>
+    private static string[] GetPublicComponentDirectories()
+    {
+        var root = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", ".."));
+        var dirs = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
+            .Select(project => Path.Combine(root, project, "Components"))
+            .ToArray();
+
+        foreach (var dir in dirs)
+        {
+            Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}.");
+        }
+
+        return dirs;
+    }
+
     private static string GetDemoPagesDirectory()
     {
         var dir = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", "..",
@@ -124,18 +150,30 @@ public sealed class BitComponentCssVariablesContractTests
     private static IEnumerable<string> EnumerateStyles(string stylesDir)
         => Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories);
 
-    /// <summary>Every public variable a component stylesheet reads, against the file that reads it.</summary>
-    private static SortedDictionary<string, string> CollectPublicReads(string stylesDir)
+    /// <summary>
+    /// The stylesheets and the C# of the components. A variable is not always read by a stylesheet: one that
+    /// feeds a value the component computes (BitDialog's --bit-Dialog-max-width) is written into an inline
+    /// style by the C# side, and is just as public for it.
+    /// </summary>
+    private static IEnumerable<string> EnumerateSources(string componentsDir)
+        => Directory.EnumerateFiles(componentsDir, "*.scss", SearchOption.AllDirectories)
+                    .Concat(Directory.EnumerateFiles(componentsDir, "*.cs", SearchOption.AllDirectories));
+
+    /// <summary>The component a file belongs to: BitDialog for BitDialog.scss and BitDialog.razor.cs alike.</summary>
+    private static string GetComponentName(string file) => Path.GetFileName(file).Split('.')[0];
+
+    /// <summary>Every public variable a component reads, against the component that reads it.</summary>
+    private static SortedDictionary<string, string> CollectPublicReads(string[] componentDirs)
     {
         var byVariable = new SortedDictionary<string, string>(StringComparer.Ordinal);
 
-        foreach (var file in EnumerateStyles(stylesDir))
+        foreach (var file in componentDirs.SelectMany(EnumerateSources))
         {
-            var component = Path.GetFileNameWithoutExtension(file);
+            var component = GetComponentName(file);
 
             foreach (Match match in PublicVarRead.Matches(File.ReadAllText(file)))
             {
-                byVariable[match.Groups[1].Value] = component;
+                byVariable[NormalizeSeries(match.Groups[1].Value)] = component;
             }
         }
 
@@ -158,12 +196,14 @@ public sealed class BitComponentCssVariablesContractTests
 
             foreach (Match match in DocumentedVar.Matches(text, start))
             {
-                byVariable[match.Groups[1].Value] = Path.GetFileName(file);
+                byVariable[NormalizeSeries(match.Groups[1].Value)] = Path.GetFileName(file);
             }
         }
 
         return byVariable;
     }
+
+    private static string NormalizeSeries(string name) => SeriesNumber.Replace(name, "-N");
 
     private static SortedDictionary<string, SortedSet<string>> CollectDeclarations(string stylesDir)
     {

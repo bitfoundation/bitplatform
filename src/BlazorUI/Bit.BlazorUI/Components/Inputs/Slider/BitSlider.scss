@@ -12,13 +12,14 @@
 // slider, one set on an ancestor re-skins the sliders inside it, and one set on the Style of an instance
 // re-skins that one alone:
 //   --bit-Slider-color                   the accent: the fill and the ring around a thumb    (default: the Color role's main color)
-//   --bit-Slider-hover-color             the accent while the slider is hovered              (default: the role's hover color)
-//   --bit-Slider-active-color            the accent while a thumb or the band is held down   (default: the role's active color)
-//   --bit-Slider-focus-color             the ring around the thumb that holds the focus      (default: the role's focus color, the error focus color while the value is invalid)
+//   --bit-Slider-hover-color             the accent while the slider is hovered              (default: --bit-Slider-color when set, else the role's hover color)
+//   --bit-Slider-active-color            the accent while a thumb or the band is held down   (default: --bit-Slider-color when set, else the role's active color)
+//   --bit-Slider-focus-color             the ring around the thumb that holds the focus      (default: --bit-Slider-color when set, else the role's focus color;
+//                                                                                              never used while the value is invalid - see below)
 //   --bit-Slider-disabled-color          the fill, the thumb ring, the marks and the origin
 //                                        tick while IsEnabled is false                       (default: $clr-bg-dis)
-//   --bit-Slider-invalid-color           the fill and the thumb ring while the value is
-//                                        invalid                                             (default: $clr-err)
+//   --bit-Slider-invalid-color           the fill, the thumb ring and the focus ring while
+//                                        the value is invalid                                (default: $clr-err, and $clr-err-focus for the focus ring)
 //   --bit-Slider-rail-color              the part of the track the fill has not reached      (default: $clr-bg-sec)
 //   --bit-Slider-rail-size               thickness of the rail and of the fill               (default: per size, $siz-track-*)
 //   --bit-Slider-rail-radius             corner radius of the rail and of the fill           (default: the rail thickness, which draws a pill)
@@ -77,8 +78,10 @@
 
     // The focus ring is drawn by a single rule further down, so which color it takes is carried here rather
     // than by a second, more specific copy of that rule - one that would have outweighed the rule that takes
-    // the ring back off the thumb the focus is not on, and left an invalid range ringed at both ends.
-    --bit-sld-clr-ring: var(--bit-Slider-focus-color, var(--bit-sld-clr-focus));
+    // the ring back off the thumb the focus is not on, and left an invalid range ringed at both ends. An
+    // accent set on its own carries into the ring, as it does into the hover and press colors, so a slider
+    // re-skinned with --bit-Slider-color alone never flashes the theme's color in any state.
+    --bit-sld-clr-ring: var(--bit-Slider-focus-color, var(--bit-Slider-color, var(--bit-sld-clr-focus)));
 
     width: 100%;
     font-family: $tg-font-family;
@@ -130,7 +133,9 @@
     // An invalid value repaints the parts that carry it, so the error is visible on the slider itself and
     // not only in the message under it.
     &.bit-inv:not(.bit-dis) {
-        --bit-sld-clr-ring: var(--bit-Slider-focus-color, #{$clr-err-focus});
+        // The error outranks an accent of the caller's own, the ring included: a focus color set to re-skin
+        // the slider would otherwise be the one part of an invalid slider not saying so.
+        --bit-sld-clr-ring: var(--bit-Slider-invalid-color, #{$clr-err-focus});
 
         .bit-sld-fil {
             background-color: var(--bit-Slider-invalid-color, #{$clr-err});
@@ -793,8 +798,8 @@
     .bit-sld-#{$role} {
         --bit-sld-clr: var(--bit-Slider-color, #{role($tokens, main)});
         --bit-sld-clr-on: #{role($tokens, on)};
-        --bit-sld-clr-hover: var(--bit-Slider-hover-color, #{role($tokens, hover)});
-        --bit-sld-clr-active: var(--bit-Slider-active-color, #{role($tokens, active)});
+        --bit-sld-clr-hover: var(--bit-Slider-hover-color, var(--bit-Slider-color, #{role($tokens, hover)}));
+        --bit-sld-clr-active: var(--bit-Slider-active-color, var(--bit-Slider-color, #{role($tokens, active)}));
         --bit-sld-clr-focus: #{role($tokens, focus)};
     }
 }
@@ -805,57 +810,70 @@
  * ---------------------------------------------------------------------------------------------------
  * The filled and unfilled parts of the track are told apart by color alone, which forced-colors modes
  * discard, so the distinction is re-established with the system colors.
+ *
+ * Every part redrawn here takes forced-color-adjust: none, which is what lets the system colors through -
+ * and with them any author color a more specific rule sets. The hover, press, invalid and disabled states
+ * all repaint these same parts through selectors this block cannot outweigh by specificity alone, so the
+ * system colors are made important: a high-contrast theme is the user's choice, and no state of the
+ * slider is meant to paint over it.
  */
 @media (forced-colors: active) {
     .bit-sld-fil {
         forced-color-adjust: none;
-        background-color: Highlight;
+        background-color: Highlight !important;
     }
 
     // The thumb keeps a page-colored face so that it stays a distinguishable shape where it overlaps the
     // fill, which a solid Highlight lozenge on a Highlight bar would not be.
     .bit-sld-thb {
         forced-color-adjust: none;
-        background-color: Canvas;
-        border-color: Highlight;
+        background-color: Canvas !important;
+        border-color: Highlight !important;
     }
 
     .bit-sld-trk::before {
         forced-color-adjust: none;
-        background-color: ButtonText;
+        background-color: ButtonText !important;
     }
 
     .bit-sld-mrk {
         forced-color-adjust: none;
-        background-color: ButtonText;
+        background-color: ButtonText !important;
     }
 
     .bit-sld-mrk-act {
-        background-color: Canvas;
+        background-color: Canvas !important;
     }
 
     // The origin tick is told apart from the rail it crosses by its color alone, so it needs one of its own
     // here as much as the marks do.
     .bit-sld-ztk {
         forced-color-adjust: none;
-        background-color: ButtonText;
+        background-color: ButtonText !important;
     }
 
     // The floating label is text in the on-color over a chip of the accent, and both are dropped here, so it
     // is redrawn as a bordered canvas panel rather than left as text standing on nothing.
     .bit-sld-tlb {
         forced-color-adjust: none;
-        color: CanvasText;
-        background-color: Canvas;
+        color: CanvasText !important;
+        background-color: Canvas !important;
         border: $shp-border-width $shp-border-style CanvasText;
     }
 
+    // More specific than the rules above, so a disabled slider still reads as one among the important
+    // declarations too.
     .bit-sld.bit-dis {
         .bit-sld-fil {
-            background-color: GrayText;
+            background-color: GrayText !important;
         }
 
         .bit-sld-thb {
+            border-color: GrayText !important;
+        }
+
+        .bit-sld-tlb {
+            color: GrayText !important;
             border-color: GrayText;
         }
     }

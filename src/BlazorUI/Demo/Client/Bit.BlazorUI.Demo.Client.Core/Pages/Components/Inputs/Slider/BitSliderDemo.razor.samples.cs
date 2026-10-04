@@ -42,12 +42,10 @@ private BitSliderRangeValue ageBand = new(25, 45);";
 
 <BitSlider Label=""Load"" ShowMarkLabels Marks=""loadMarks""
            Max=""100"" Step=""5""
-           ValueFormat=""0'%'""
            DefaultValue=""45"" />
 
 <BitSlider Label=""How was it?"" ShowValue=""false""
            Max=""4""
-           AriaValueText=""GetMoodText""
            DefaultValue=""3"">
     <MarkLabelTemplate Context=""mark"">
         <BitIcon IconName=""@GetMoodIcon(mark.Value)"" Size=""BitSize.Small"" />
@@ -89,10 +87,6 @@ private readonly List<BitSliderMark> loadMarks =
     new(90, ""limit"") { Style = ""background-color: tomato; color: tomato;"" },
     new(100)
 ];
-
-private static readonly string[] moodWords = [""Awful"", ""Poor"", ""Fine"", ""Good"", ""Great""];
-
-private static string GetMoodText(double value) => moodWords[(int)Math.Clamp(value, 0, 4)];
 
 private static string GetMoodIcon(double value) => value switch
 {
@@ -549,7 +543,7 @@ private readonly BitSliderParams[] sliderParams =
            Style=""--bit-Slider-thumb-size: 1.5rem; --bit-Slider-thumb-border-width: 0.25rem; --bit-Slider-thumb-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 30%);"" />
 
 
-<div style=""--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;"">
+<div style=""--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-active-color: darkgreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;"">
     <BitSlider Label=""Bass"" DefaultValue=""4"" />
     <BitSlider Label=""Middle"" DefaultValue=""6"" />
     <BitSlider Label=""Treble"" DefaultValue=""8"" />

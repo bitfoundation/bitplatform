@@ -13,8 +13,8 @@
     var fillEnd = _FillEnd;
     var marks = _Marks;
     @* A template labels every mark; without one only the marks that carry a label of their own are labelled,
-       and a slider with none of either draws no row at all. *@
-    var hasMarkLabels = MarkLabelTemplate is not null || marks.Exists(m => m.Label.HasValue());
+       and a slider with none of either - or with no marks for a template to label - draws no row at all. *@
+    var hasMarkLabels = marks.Count > 0 && (MarkLabelTemplate is not null || marks.Exists(m => m.Label.HasValue()));
     var labelId = $"{_Id}-label";
     var inputId = $"{_Id}-input";
     var hasLabel = Label.HasValue() || LabelTemplate is not null;
@@ -304,12 +304,14 @@
                            not already carry, and a third slider in the tab order announcing the same lower
                            value again would be noise rather than a way through. Pressing it does focus it,
                            as pressing any input does, so the focus is handed back to the lower thumb as soon
-                           as the gesture ends - left on an element outside the accessibility tree it would
-                           go on moving the whole range on every arrow key with nothing to announce it. *@
+                           as the gesture ends, however it ends - left on an element outside the accessibility
+                           tree it would go on moving the whole range on every arrow key with nothing to
+                           announce it. *@
                         <input @oninput="HandleOnTrackInput"
                                @onchange="HandleOnTrackChange"
                                @onpointerdown="_onTrackPointerDown"
-                               @onpointerup="_onTrackPointerUp"
+                               @onpointerup="_onTrackPointerEnd"
+                               @onpointercancel="_onTrackPointerEnd"
                                type="range"
                                tabindex="-1"
                                aria-hidden="true"

@@ -604,10 +604,27 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldMeasureTheLastValueAStepReaches()
+    {
+        // A range that is not a whole number of steps stops short of Max on its last step - here 9, on a scale
+        // to 10 stepping by 3 - and that value is as pickable as any other, so it is measured too.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Step, 3D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.GetValueText, (double v) => v == 9 ? "Very high" : $"{v:0}");
+        });
+
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:9ch");
+    }
+
+    [TestMethod]
     public void BitSliderShouldNotWalkAScaleTooFineToMeasure()
     {
-        // A scale with more values than anyone would label one by one is a numeric one in all but name, so
-        // it is measured at its ends rather than walked from one to the other.
+        // A scale with more values than anyone would label one by one is measured at its ends and one step in
+        // from each, rather than walked from one end to the other.
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.Min, 0D);
@@ -619,20 +636,25 @@ public class BitSliderTests : BunitTestContext
         StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:4ch");
     }
 
-    [TestMethod]
-    public void BitSliderShouldLeaveANumericScaleUnwalked()
+    [TestMethod,
+        DataRow(0D, 1D, 0.25D, 4),   // "0" and "1" at the ends, "0.25" between them
+        DataRow(-1D, 1D, 0.5D, 4),   // "-1" and "1" at the ends, "-0.5" between them
+        DataRow(0D, 100D, 0.25D, 5), // too fine to walk, and "99.75" one step in from the far end
+        DataRow(0D, 4D, 1D, 1)       // a whole-numbered scale reads no wider than its ends
+    ]
+    public void BitSliderShouldMeasureTheFractionalValuesOfANumericScale(double min, double max, double step, int chars)
     {
-        // Without a GetValueText there is nothing to walk for: the format is monotonic in the number, so the
-        // ends of the scale are its longest labels.
+        // A numeric label is not longest at the ends of the scale when the step is fractional: the decimals
+        // only appear between them, and reserving the ends alone would leave the track resizing mid-drag.
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Min, 0D);
-            parameters.Add(p => p.Max, 4D);
-            parameters.Add(p => p.Value, 0D);
-            parameters.Add(p => p.ValueFormat, "0");
+            parameters.Add(p => p.Min, min);
+            parameters.Add(p => p.Max, max);
+            parameters.Add(p => p.Step, step);
+            parameters.Add(p => p.Value, min);
         });
 
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:1ch");
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), $"--bit-sld-vlb-min:{chars}ch");
     }
 
     [TestMethod]
@@ -1909,17 +1931,24 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSliderShouldGenerateMarksForAMarkStepAlone()
+    public void BitSliderShouldNotGenerateMarksForAMarkStepAlone()
     {
-        // An interval to draw the marks at has no other purpose, so setting it is asking for them.
+        // An interval only spaces the marks something else asks for. Marks are also what RestrictToMarks
+        // snaps to, so a MarkStep set on its own must not turn a freely stepping slider into a snapping one.
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.Min, 0D);
             parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Step, 1D);
             parameters.Add(p => p.MarkStep, 25D);
+            parameters.Add(p => p.RestrictToMarks, true);
         });
 
-        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+
+        com.Find(".bit-sld-inp").Input("37");
+
+        Assert.AreEqual(37, com.Instance.Value);
     }
 
     [TestMethod]
@@ -1983,6 +2012,22 @@ public class BitSliderTests : BunitTestContext
 
         Assert.AreEqual(4, com.FindAll(".bit-sld-mrk").Count);
         Assert.AreEqual(4, com.FindAll(".bit-sld-mlb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotReserveAMarkLabelRowForATemplateWithNoMarks()
+    {
+        // A template with nothing to label - no marks given, or none inside Min..Max - leaves no empty row
+        // holding open the room under the track.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Marks, new List<BitSliderMark> { new(10), new(-3) });
+            parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mks").Count);
     }
 
     [TestMethod]
@@ -3321,6 +3366,32 @@ public class BitSliderTests : BunitTestContext
         var bar = com.Find(".bit-sld-inp-bar");
 
         bar.PointerDown();
+        bar.PointerUp();
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackFromACancelledBandPress()
+    {
+        // A touch on the band that turns into a scroll is taken over by the browser: a pointercancel, with
+        // neither a pointerup nor a change behind it. The focus must not be left on the hidden band.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.TriggerEvent("onpointercancel", new PointerEventArgs());
+
+        Assert.AreEqual(1, CountFocusCalls());
+
+        // The press is over, so a later pointerup has nothing left to hand back.
         bar.PointerUp();
 
         Assert.AreEqual(1, CountFocusCalls());

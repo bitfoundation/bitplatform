@@ -64,7 +64,7 @@ public partial class BitSlider : BitInputBase<double>
     // and the focus handed back to a thumb as soon as it ends.
     private bool _bandPressed;
     private EventCallback<PointerEventArgs> _onTrackPointerDown;
-    private EventCallback<PointerEventArgs> _onTrackPointerUp;
+    private EventCallback<PointerEventArgs> _onTrackPointerEnd;
 
     // The marks themselves, and the values they sit at - sorted and deduplicated. Both are looked up several
     // times a render and again on every step of a drag, and building a series of up to two hundred of them
@@ -269,10 +269,16 @@ public partial class BitSlider : BitInputBase<double>
     [Parameter] public RenderFragment<BitSliderMark>? MarkLabelTemplate { get; set; }
 
     /// <summary>
-    /// The interval between the generated marks, which setting is enough to ask for them. It defaults to the
-    /// <see cref="Step"/>, which is the right choice for a coarse slider but far too dense for a fine one:
-    /// a 0..1000 slider stepping by 1 wants its marks every 100, not every 1.
+    /// The interval between the generated marks. It defaults to the <see cref="Step"/>, which is the right
+    /// choice for a coarse slider but far too dense for a fine one: a 0..1000 slider stepping by 1 wants its
+    /// marks every 100, not every 1.
     /// </summary>
+    /// <remarks>
+    /// It only spaces the marks something else asks for - <see cref="ShowMarks"/>, <see cref="ShowMarkLabels"/>
+    /// or <see cref="MarkLabelTemplate"/> - rather than asking for them itself. Marks are also what
+    /// <see cref="RestrictToMarks"/> snaps to, so an interval set ahead of time would otherwise quietly turn a
+    /// slider stepping freely into one that only stops at the marks.
+    /// </remarks>
     [Parameter] public double? MarkStep { get; set; }
 
     /// <summary>
@@ -365,9 +371,8 @@ public partial class BitSlider : BitInputBase<double>
 
     /// <summary>
     /// Draws a mark at every <see cref="MarkStep"/> (or every <see cref="Step"/> when that is not set) along
-    /// the track. Setting <see cref="Marks"/> explicitly takes precedence over this, and any of
-    /// <see cref="MarkStep"/>, <see cref="ShowMarkLabels"/> and <see cref="MarkLabelTemplate"/> asks for the
-    /// same series without it.
+    /// the track. Setting <see cref="Marks"/> explicitly takes precedence over this, and either of
+    /// <see cref="ShowMarkLabels"/> and <see cref="MarkLabelTemplate"/> asks for the same series without it.
     /// </summary>
     [Parameter] public bool ShowMarks { get; set; }
 
@@ -573,7 +578,7 @@ public partial class BitSlider : BitInputBase<double>
         _onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(new object(), HandleOnKeyDown);
         _onPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnPointerDown);
         _onTrackPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerDown);
-        _onTrackPointerUp = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerUpAsync);
+        _onTrackPointerEnd = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerEndAsync);
 
         // The default of an unbound ranged slider is applied here rather than in OnParametersSet, so that a
         // later re-render with the same parameters cannot undo what the user has done since.
@@ -936,10 +941,11 @@ public partial class BitSlider : BitInputBase<double>
                         .ToList();
         }
 
-        // Asking for the marks is not the only way of asking for them: an interval to draw them at, a request
-        // to label them and a template to label them with each have no other purpose, and a parameter whose
-        // only effect is nothing at all is a parameter that reads as broken.
-        if (ShowMarks is false && ShowMarkLabels is false && MarkStep is null && MarkLabelTemplate is null) return [];
+        // Asking for the marks is not the only way of asking for them: a request to label them and a template to
+        // label them with have no other purpose, and a parameter whose only effect is nothing at all is a
+        // parameter that reads as broken. An interval is not one of them - it only spaces the marks, and a
+        // MarkStep set beside RestrictToMarks before it drew anything has to keep the slider stepping freely.
+        if (ShowMarks is false && ShowMarkLabels is false && MarkLabelTemplate is null) return [];
 
         return GenerateMarks();
     }
@@ -1073,8 +1079,7 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
-    /// The number of values a label is measured over before the scale is taken to be too fine to walk. A
-    /// slider with more steps than this is a numeric one in all but name, and its ends are its longest labels.
+    /// The number of values a label is measured over before the scale is taken to be too fine to walk.
     /// </summary>
     private const int MaxMeasuredValues = 100;
 
@@ -1085,18 +1090,18 @@ public partial class BitSlider : BitInputBase<double>
     /// out longer still grows past it.
     /// </summary>
     /// <remarks>
-    /// A numeric label is longest at one end of the scale or the other, so the two ends measure the whole of
-    /// it. <see cref="GetValueText"/> promises nothing of the kind - a scale reading Low, Medium, High is
-    /// widest in the middle - so a slider that builds its own text is measured over every value it can read,
-    /// as long as there are few enough of them to be worth walking.
+    /// The ends alone do not measure it: a fractional step reads 0.25 between the 0 and the 1 at its ends, and
+    /// <see cref="GetValueText"/> promises nothing about where its longest text is - a scale reading Low,
+    /// Medium, High is widest in the middle. So every value the slider can read is measured, as long as there
+    /// are few enough of them to be worth walking. A scale finer than that is measured at its ends and at the
+    /// values one step in from each, which is where a numeric label carries both its most digits and the
+    /// decimals of the step; text of the caller's own on such a scale may still outgrow it.
     /// </remarks>
     private int _ValueChars => _valueChars ??= MeasureValueChars();
 
     private int MeasureValueChars()
     {
         var chars = Math.Max(GetDisplayValue(_Min).Length, GetDisplayValue(_Max).Length);
-
-        if (GetValueText is null) return chars;
 
         var range = _Range;
 
@@ -1105,9 +1110,20 @@ public partial class BitSlider : BitInputBase<double>
         var step = _Step;
         var count = Math.Floor(range / step);
 
-        if (count is > MaxMeasuredValues or <= 1) return chars;
+        if (double.IsFinite(count) is false || count < 1) return chars;
 
-        for (var i = 1; i < (int)count; i++)
+        // The last value a step reaches, which falls short of Max whenever the range is not a whole number of
+        // steps - and which a user can still pick, so it is measured like any other.
+        var last = Denoise(_Min + count * step);
+
+        if (count > MaxMeasuredValues)
+        {
+            chars = Math.Max(chars, GetDisplayValue(Denoise(_Min + step)).Length);
+            chars = Math.Max(chars, GetDisplayValue(last).Length);
+            return Math.Max(chars, GetDisplayValue(Denoise(last - step)).Length);
+        }
+
+        for (var i = 1; i <= (int)count; i++)
         {
             chars = Math.Max(chars, GetDisplayValue(Denoise(_Min + i * step)).Length);
         }
@@ -1590,7 +1606,12 @@ public partial class BitSlider : BitInputBase<double>
     /// arrives first hands the focus back and the other finds nothing left to do; a press that moved the band
     /// nowhere fires no change at all, which is why the pointer is listened to as well.
     /// </summary>
-    private Task HandleOnTrackPointerUpAsync(PointerEventArgs e) => ReleaseBandFocusAsync();
+    /// <remarks>
+    /// A pointercancel ends the gesture too, and with neither a pointerup nor a change behind it: a touch on the
+    /// band that turns into a scroll of the page is taken over by the browser part way through. Without it the
+    /// focus would be left resting on the hidden band, and the press flag set for a press long since over.
+    /// </remarks>
+    private Task HandleOnTrackPointerEndAsync(PointerEventArgs e) => ReleaseBandFocusAsync();
 
     /// <summary>
     /// Hands the focus a band press took back to the lower thumb.

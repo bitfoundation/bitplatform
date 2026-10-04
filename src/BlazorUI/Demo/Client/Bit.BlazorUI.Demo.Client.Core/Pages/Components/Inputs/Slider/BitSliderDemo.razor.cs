@@ -409,20 +409,20 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-hover-color",
-            DefaultValue = "The Color role's hover color",
+            DefaultValue = "--bit-Slider-color when set, otherwise the Color role's hover color",
             Description = "The accent while the slider is hovered (pointer devices only).",
         },
         new()
         {
             Name = "--bit-Slider-active-color",
-            DefaultValue = "The Color role's active color",
+            DefaultValue = "--bit-Slider-color when set, otherwise the Color role's active color",
             Description = "The accent while a thumb - or the draggable band - is held down, which is the feedback a pointer drag gets in place of the focus ring a keyboard gets.",
         },
         new()
         {
             Name = "--bit-Slider-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "The ring around the thumb that holds the keyboard focus. A slider whose value is invalid uses the error focus color instead.",
+            DefaultValue = "--bit-Slider-color when set, otherwise the Color role's focus color",
+            Description = "The ring around the thumb that holds the keyboard focus. A slider whose value is invalid ignores it and takes --bit-Slider-invalid-color (the error focus color by default) instead.",
         },
         new()
         {
@@ -434,7 +434,7 @@ public partial class BitSliderDemo
         {
             Name = "--bit-Slider-invalid-color",
             DefaultValue = "--bit-clr-err",
-            Description = "The fill and the thumb ring while the value is invalid.",
+            Description = "The fill, the thumb ring and the focus ring while the value is invalid. The focus ring falls back to the error focus color rather than to --bit-clr-err.",
         },
         new()
         {
@@ -987,10 +987,6 @@ public partial class BitSliderDemo
         < 67 => BitIconName.Volume2,
         _ => BitIconName.Volume3
     };
-
-    private static readonly string[] moodWords = ["Awful", "Poor", "Fine", "Good", "Great"];
-
-    private static string GetMoodText(double value) => moodWords[(int)Math.Clamp(value, 0, 4)];
 
     private static string GetMoodIcon(double value) => value switch
     {

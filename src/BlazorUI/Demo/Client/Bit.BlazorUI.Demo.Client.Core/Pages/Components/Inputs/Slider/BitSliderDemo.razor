@@ -83,8 +83,9 @@
         <div>
             <b>ShowMarks</b> draws a tick at every <b>Step</b>. <b>MarkStep</b> widens that interval for a scale
             too fine to mark at each one - a 0 to 1000 slider wants its marks every 100 - and <b>ShowMarkLabels</b>
-            writes each tick's value underneath, formatted the way the value labels are. Each of those asks for
-            the marks on its own, so <b>ShowMarks</b> is only needed when nothing else has.
+            writes each tick's value underneath, formatted the way the value labels are. <b>ShowMarkLabels</b>
+            asks for the marks on its own, so <b>ShowMarks</b> is only needed when nothing else has - while
+            <b>MarkStep</b> only spaces the marks something else has asked for.
         </div>
         <div>
             For anything beyond a regular series, hand <b>Marks</b> a list of <b>BitSliderMark</b> - a value, an
@@ -128,13 +129,11 @@
             <div>Marks of your own: the unlabelled ones take their value, and one carries a style of its own:</div>
             <BitSlider Label="Load" ShowMarkLabels Marks="loadMarks"
                        Max="100" Step="5"
-                       ValueFormat="0'%'"
                        DefaultValue="45" />
             <br />
             <div>MarkLabelTemplate, a scale whose stops are faces:</div>
             <BitSlider Label="How was it?" ShowValue="false"
                        Max="4"
-                       AriaValueText="GetMoodText"
                        DefaultValue="3">
                 <MarkLabelTemplate Context="mark">
                     <BitIcon IconName="@GetMoodIcon(mark.Value)" Size="BitSize.Small" />
@@ -805,7 +804,7 @@
         <br />
         <div>Set once on an ancestor, inherited by every slider inside it:</div>
         <br />
-        <div class="example-box" style="--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;">
+        <div class="example-box" style="--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-active-color: darkgreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;">
             <BitSlider Label="Bass" DefaultValue="4" />
             <BitSlider Label="Middle" DefaultValue="6" />
             <BitSlider Label="Treble" DefaultValue="8" />
