@@ -21,14 +21,14 @@
             <BitText Typography="BitTypography.H5" Gutter>1. Install the .NET SDK</BitText>
             <BitPivot>
                 <BitPivotItem HeaderText="Windows">
-                    <CodeBox>winget install Microsoft.DotNet.SDK.10 --accept-package-agreements --accept-source-agreements</CodeBox>
+                    <CodeBox>winget install Microsoft.DotNet.SDK.Preview --accept-package-agreements --accept-source-agreements</CodeBox>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="macOS">
                     <br />
-                    Download and run the macOS installer of the latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0" target="_blank" rel="noopener">.NET 10 SDK</a>.
+                    Download and run the macOS installer of the latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/11.0" target="_blank" rel="noopener">.NET 11 SDK</a>.
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Linux">
-                    <CodeBox>curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0
+                    <CodeBox>curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 11.0 --quality preview
 echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.bashrc
 echo 'export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 source ~/.bashrc</CodeBox>

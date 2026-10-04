@@ -2,7 +2,7 @@
     "servers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp?v=10.6.2"
+            "url": "https://bitplatform.dev/mcp?v=11.0.0"
         },
         "github": {
             "type": "http",

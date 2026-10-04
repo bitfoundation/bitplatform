@@ -43,7 +43,10 @@ public static partial class Program
 
         var host = builder.Build();
 
-        host.Services.GetService<IStartupValidator>()?.Validate();
+        foreach (var startupValidator in host.Services.GetServices<IAsyncStartupValidator>())
+        {
+            await startupValidator.ValidateAsync();
+        }
 
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException), host);
         TaskScheduler.UnobservedTaskException += (_, e) =>
