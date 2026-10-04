@@ -8,11 +8,13 @@ namespace BitBlazorUI {
             horizontal: boolean,
             dynamic: boolean,
             scrollThreshold: number,
+            scrollerSelector: string | null,
             dotnetObj: DotNetObject) {
 
             Virtualize._instances.get(id)?.dispose();
 
-            const instance = new VirtualizeInstance(rootElement, horizontal, dynamic, scrollThreshold, dotnetObj);
+            const scroller = VirtualizeInstance.resolveScroller(scrollerSelector, rootElement);
+            const instance = new VirtualizeInstance(rootElement, scroller, horizontal, dynamic, scrollThreshold, dotnetObj);
             Virtualize._instances.set(id, instance);
 
             return instance.metrics();
@@ -57,15 +59,21 @@ namespace BitBlazorUI {
     //     measurements never make the content visibly jump.
     //   * Drive keyboard navigation (roving focus) via .NET.
     // Every offset exchanged with .NET is relative to the start of the items spacer: the content before it
-    // (a header, or the space AlignToEnd adds) is the "lead", subtracted here so .NET never sees it.
+    // (a header, or the space AlignToEnd adds, and the page above a list scrolled by an ancestor) is the "lead",
+    // subtracted here so .NET never sees it.
     class VirtualizeInstance {
         private static readonly NAV_KEYS = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'PageDown', 'PageUp', 'Home', 'End'];
         private static readonly ITEM_SELECTOR = ':scope > .bit-vir-spc > .bit-vir-blk > [data-bit-vir-index]';
         // A smooth scroll is taken to be over once no scroll event arrived for SMOOTH_IDLE_MS, or SMOOTH_MAX_MS after it started.
         private static readonly SMOOTH_IDLE_MS = 150;
         private static readonly SMOOTH_MAX_MS = 1000;
+        // Selectors that all mean "the page itself scrolls".
+        private static readonly VIEWPORT_SELECTORS = ['window', 'document', 'body', 'html', ':root'];
 
         private _element: HTMLElement;
+        // What scrolls the list: the list itself, an ancestor (ScrollerSelector), or null for the page viewport.
+        private _scroller: HTMLElement | null;
+        private _external: boolean;
         private _horizontal: boolean;
         private _dynamic: boolean;
         private _threshold: number;
@@ -103,16 +111,20 @@ namespace BitBlazorUI {
         private _header: HTMLElement | null = null;
         private _lead = 0;
         private _lastViewportSize = 0;
+        private _lastCrossSize = 0;
         private _viewportObserver: ResizeObserver;
         private _leadObserver: ResizeObserver;
         private _itemObserver: ResizeObserver;
         // Performs the scroll a render carries (data-bit-vir-scroll on the spacer) as soon as the render lands:
         // mutation callbacks run before the browser paints, so the moved items and the scroll show up together.
         private _renderObserver: MutationObserver;
-        // In RTL horizontal mode, browsers report scrollLeft as <= 0 (0 at the start, negative toward
-        // the end). Cached (rather than read via getComputedStyle on every scroll event) and refreshed
+        // Whether the list lays out right to left. In horizontal mode browsers then report scrollLeft as <= 0 (0 at
+        // the start, negative toward the end), and in either mode the next lane (and the next item of a horizontal
+        // list) is on the left. Cached (rather than read via getComputedStyle on every scroll event) and refreshed
         // on render/resize, since the direction rarely changes.
         private _rtl = false;
+        // Whether the scroller lays out right to left, which is what decides the sign of its scrollLeft.
+        private _scrollRtl = false;
         // The number of the latest scroll .NET requested that got performed here, sent back with every report so
         // .NET can tell the reports sent before it (describing a position that no longer holds) from the rest.
         private _seq = 0;
@@ -121,33 +133,36 @@ namespace BitBlazorUI {
         // may not have moved the focus yet; a key pressed on any other item (e.g. a clicked one) continues from it.
         private _navIndex = -1;
 
-        constructor(element: HTMLElement, horizontal: boolean, dynamic: boolean, threshold: number, dotnetObj: DotNetObject) {
+        constructor(element: HTMLElement, scroller: HTMLElement | null, horizontal: boolean, dynamic: boolean, threshold: number, dotnetObj: DotNetObject) {
             this._element = element;
+            this._scroller = scroller;
+            this._external = scroller !== element;
             this._horizontal = horizontal;
             this._dynamic = dynamic;
             this._threshold = threshold > 0 ? threshold : 0;
             this._dotnetObj = dotnetObj;
             this._refreshRtl();
 
-            this._element.addEventListener('scroll', this._onScroll, { passive: true });
+            const target = this._scrollTarget();
+            target.addEventListener('scroll', this._onScroll, { passive: true });
+            target.addEventListener('wheel', this._onGesture, { passive: true });
+            target.addEventListener('touchstart', this._onGesture, { passive: true });
             this._element.addEventListener('keydown', this._onKeyDown);
-            this._element.addEventListener('wheel', this._onGesture, { passive: true });
-            this._element.addEventListener('touchstart', this._onGesture, { passive: true });
 
             // Track viewport resizes. The observer's initial callback reports the size setup already returned;
             // notifying it would only send a stale offset that could race a scroll .NET is about to request.
             this._lastViewportSize = this._viewportSize();
-            this._viewportObserver = new ResizeObserver(() => {
-                if (this._disposed) return;
-                this._refreshRtl();
-                const leadChanged = this._refreshLead();
-                const size = this._viewportSize();
-                if (size === this._lastViewportSize && !leadChanged) return;
-                this._lastViewportSize = size;
-                this._viewportChanged = true;
-                this._onScroll();
-            });
-            this._viewportObserver.observe(this._element);
+            this._lastCrossSize = this._crossSize();
+            this._viewportObserver = new ResizeObserver(this._onViewportResize);
+            if (this._scroller) {
+                this._viewportObserver.observe(this._scroller);
+            } else {
+                window.addEventListener('resize', this._onViewportResize);
+            }
+            // The size of the list across the scroll axis is what a responsive grid divides into lanes.
+            if (this._external) {
+                this._viewportObserver.observe(this._element);
+            }
 
             // Track the size of what comes before the items (a header, or the AlignToEnd space that shrinks as the spacer grows).
             this._leadObserver = new ResizeObserver(() => {
@@ -168,7 +183,7 @@ namespace BitBlazorUI {
         }
 
         public metrics() {
-            return { scrollOffset: this._readOffset(), viewportSize: this._viewportSize() };
+            return { scrollOffset: this._readOffset(), viewportSize: this._viewportSize(), crossSize: this._crossSize() };
         }
 
         public update(horizontal: boolean, dynamic: boolean, threshold: number) {
@@ -220,7 +235,15 @@ namespace BitBlazorUI {
             if (this._disposed) return;
 
             this._adoptSeq(seq);
-            this._scrollTo(end ? this._maxRawOffset() : 0, smooth);
+            if (!this._external) {
+                this._scrollTo(end ? this._maxRawOffset() : 0, smooth);
+                return;
+            }
+
+            // An ancestor scrolls more than the list: its edges are the edges of the list (header and footer included).
+            const start = this._startOf(this._element);
+            const target = end ? start + this._sizeOf(this._element) - this._viewportSize() : start;
+            this._scrollTo(Math.min(this._maxRawOffset(), Math.max(0, target)), smooth);
         }
 
         // Adjusts the scroll position by delta without emitting a user-scroll event.
@@ -239,10 +262,11 @@ namespace BitBlazorUI {
             }
 
             this._suppressScroll = true;
+            const scrolling = this._scrollingElement();
             if (this._horizontal) {
-                this._element.scrollLeft += this._rtl ? -delta : delta;
+                scrolling.scrollLeft += this._scrollRtl ? -delta : delta;
             } else {
-                this._element.scrollTop += delta;
+                scrolling.scrollTop += delta;
             }
             // Release the suppression after the scroll event has been dispatched.
             requestAnimationFrame(() => { this._suppressScroll = false; });
@@ -256,12 +280,29 @@ namespace BitBlazorUI {
             el.focus({ preventScroll: true });
         }
 
+        // Resolves the element ScrollerSelector names: the list itself when there is none, null for the page.
+        public static resolveScroller(selector: string | null | undefined, element: HTMLElement): HTMLElement | null {
+            if (!selector || !selector.trim()) return element;
+
+            if (VirtualizeInstance.VIEWPORT_SELECTORS.indexOf(selector.trim().toLowerCase()) >= 0) return null;
+
+            try {
+                // The nearest matching ancestor, falling back to the first match in the document.
+                return (element.parentElement?.closest(selector) as HTMLElement | null) ?? (document.querySelector(selector) as HTMLElement | null);
+            } catch {
+                // An invalid selector is not worth breaking the component over: the page scrolls it, as with no ancestor.
+                return null;
+            }
+        }
+
         public dispose() {
             this._disposed = true;
-            this._element.removeEventListener('scroll', this._onScroll);
+            const target = this._scrollTarget();
+            target.removeEventListener('scroll', this._onScroll);
+            target.removeEventListener('wheel', this._onGesture);
+            target.removeEventListener('touchstart', this._onGesture);
             this._element.removeEventListener('keydown', this._onKeyDown);
-            this._element.removeEventListener('wheel', this._onGesture);
-            this._element.removeEventListener('touchstart', this._onGesture);
+            window.removeEventListener('resize', this._onViewportResize);
             this._viewportObserver.disconnect();
             this._leadObserver.disconnect();
             this._itemObserver.disconnect();
@@ -305,24 +346,70 @@ namespace BitBlazorUI {
         }
 
         private _refreshRtl() {
-            this._rtl = this._horizontal && getComputedStyle(this._element).direction === 'rtl';
+            this._rtl = getComputedStyle(this._element).direction === 'rtl';
+            this._scrollRtl = this._external ? getComputedStyle(this._scrollingElement()).direction === 'rtl' : this._rtl;
+        }
+
+        // The element whose scroll position is read and written; the page's own for the page viewport.
+        private _scrollingElement(): HTMLElement {
+            return this._scroller ?? (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+        }
+
+        // What dispatches the scroll events: the scroller, or the window for the page.
+        private _scrollTarget(): EventTarget {
+            return this._scroller ?? window;
         }
 
         private _rawOffset() {
-            if (!this._horizontal) return this._element.scrollTop;
-            return this._rtl ? -this._element.scrollLeft : this._element.scrollLeft;
+            const scrolling = this._scrollingElement();
+            if (!this._horizontal) return scrolling.scrollTop;
+            return this._scrollRtl ? -scrolling.scrollLeft : scrolling.scrollLeft;
         }
 
         private _readOffset() {
+            // Whatever is above a list an ancestor scrolls may change at any time, so its lead is read afresh.
+            if (this._external && this._spacer && this._spacer.isConnected) {
+                this._lead = this._startOf(this._spacer);
+            }
             return this._rawOffset() - this._lead;
         }
 
         private _viewportSize() {
-            return this._horizontal ? this._element.clientWidth : this._element.clientHeight;
+            if (!this._scroller) {
+                const root = document.documentElement;
+                return this._horizontal ? root.clientWidth : root.clientHeight;
+            }
+            return this._horizontal ? this._scroller.clientWidth : this._scroller.clientHeight;
+        }
+
+        private _crossSize() {
+            return this._horizontal ? this._element.clientHeight : this._element.clientWidth;
         }
 
         private _scrollExtent() {
-            return this._horizontal ? this._element.scrollWidth : this._element.scrollHeight;
+            const scrolling = this._scrollingElement();
+            return this._horizontal ? scrolling.scrollWidth : scrolling.scrollHeight;
+        }
+
+        private _sizeOf(el: HTMLElement) {
+            return this._horizontal ? el.offsetWidth : el.offsetHeight;
+        }
+
+        // Where the leading edge of an element is within the scroll content of an ancestor scroller (or the page),
+        // in the same coordinates as _rawOffset.
+        private _startOf(el: HTMLElement) {
+            const rect = el.getBoundingClientRect();
+            let top = 0, left = 0, right = document.documentElement.clientWidth;
+            if (this._scroller) {
+                const box = this._scroller.getBoundingClientRect();
+                top = box.top + this._scroller.clientTop;
+                left = box.left + this._scroller.clientLeft;
+                right = left + this._scroller.clientWidth;
+            }
+
+            const raw = this._rawOffset();
+            if (!this._horizontal) return rect.top - top + raw;
+            return this._scrollRtl ? right - rect.right + raw : rect.left - left + raw;
         }
 
         private _maxRawOffset() {
@@ -341,10 +428,11 @@ namespace BitBlazorUI {
                 // An instant scroll cancels any animation in flight.
                 this._endSmooth();
             }
+            const scrolling = this._scrollingElement();
             if (this._horizontal) {
-                this._element.scrollTo({ left: this._rtl ? -raw : raw, behavior });
+                scrolling.scrollTo({ left: this._scrollRtl ? -raw : raw, behavior });
             } else {
-                this._element.scrollTo({ top: raw, behavior });
+                scrolling.scrollTo({ top: raw, behavior });
             }
         }
 
@@ -369,6 +457,19 @@ namespace BitBlazorUI {
             const pending = this._pendingAnchor;
             this._pendingAnchor = 0;
             this.adjustScroll(pending);
+        }
+
+        private _onViewportResize = () => {
+            if (this._disposed) return;
+            this._refreshRtl();
+            const leadChanged = this._refreshLead();
+            const size = this._viewportSize();
+            const cross = this._crossSize();
+            if (size === this._lastViewportSize && cross === this._lastCrossSize && !leadChanged) return;
+            this._lastViewportSize = size;
+            this._lastCrossSize = cross;
+            this._viewportChanged = true;
+            this._onScroll();
         }
 
         // A wheel or touch gesture interrupts the browser's smooth scroll, so the anchoring need not wait for it any longer.
@@ -405,6 +506,14 @@ namespace BitBlazorUI {
         // the items in view stay put.
         private _refreshLead() {
             const spacer = this._spacer;
+            if (this._external) {
+                // The page around a list an ancestor scrolls is anchored by the browser itself, so nothing is adjusted here.
+                const lead = spacer && spacer.isConnected ? this._startOf(spacer) : 0;
+                const changed = Math.abs(lead - this._lead) > 0.5;
+                this._lead = lead;
+                return changed;
+            }
+
             let lead = 0;
             if (spacer && spacer.isConnected) {
                 // offsetTop/offsetLeft are layout positions: unaffected by the scroll position and by transforms.
@@ -496,9 +605,9 @@ namespace BitBlazorUI {
                 this._navIndex = focused;
             }
 
-            // In a right-to-left horizontal list the next item is on the left.
+            // In a right-to-left list the next item (or lane) is on the left.
             let key = e.key;
-            if (this._horizontal && this._rtl) {
+            if (this._rtl) {
                 key = key === 'ArrowLeft' ? 'ArrowRight' : key === 'ArrowRight' ? 'ArrowLeft' : key;
             }
 
@@ -548,11 +657,27 @@ namespace BitBlazorUI {
         // Coalesce interop: skip notifications smaller than the movement threshold unless the viewport
         // changed or the scroll is near either edge (so edge-reached callbacks stay responsive).
         private _shouldNotify(offset: number) {
-            if (this._viewportChanged || this._threshold <= 0 || !this._notified) return true;
+            if (this._viewportChanged || !this._notified) return true;
+
+            // A list an ancestor scrolls is out of view for most of the page's scrolling: while it stays out of view on the
+            // same side there is nothing new to render.
+            if (this._external) {
+                const side = this._sideOf(offset);
+                if (side !== 0 && side === this._sideOf(this._lastNotifiedOffset)) return false;
+            }
+
+            if (this._threshold <= 0) return true;
 
             const raw = this._rawOffset();
             const nearEdge = offset <= this._threshold || raw >= this._maxRawOffset() - this._threshold;
             return nearEdge || Math.abs(offset - this._lastNotifiedOffset) >= this._threshold;
+        }
+
+        // -1 while the viewport is entirely before the list, 1 while it is entirely past it, 0 while the two overlap.
+        private _sideOf(offset: number) {
+            if (offset + this._viewportSize() < 0) return -1;
+            if (offset > (this._spacer ? this._sizeOf(this._spacer) : 0)) return 1;
+            return 0;
         }
 
         private _notify(offset: number, viewportSize: number) {
@@ -560,7 +685,7 @@ namespace BitBlazorUI {
             this._lastNotifiedOffset = offset;
             this._viewportChanged = false;
             if (this._trailingTimer) { clearTimeout(this._trailingTimer); this._trailingTimer = null; }
-            this._dotnetObj.invokeMethodAsync('Scroll', offset, viewportSize, this._seq);
+            this._dotnetObj.invokeMethodAsync('Scroll', offset, viewportSize, this._seq, this._crossSize());
         }
 
         // Ensure the final resting position is always reported after the user stops scrolling.

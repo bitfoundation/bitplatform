@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -5,9 +6,10 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitVirtualize is a high-performance virtualization (windowing) component that renders only the items
 /// currently visible in its scroll viewport (plus a configurable overscan buffer). It supports fixed and
-/// dynamically measured item sizes, vertical and horizontal orientation, in-memory or lazy-loaded data,
-/// placeholders, header and footer content, sticky group headers, keyboard navigation, and a bottom-anchored
-/// (chat) mode with scroll anchoring that prevents content from jumping as dynamic items get measured.
+/// dynamically measured item sizes, vertical and horizontal orientation, grids of lanes (fixed or responsive),
+/// in-memory or lazy-loaded data, scrolling by itself or by an ancestor (or the page), placeholders, header and
+/// footer content, sticky group headers, keyboard navigation, and a bottom-anchored (chat) mode with scroll
+/// anchoring that prevents content from jumping as dynamic items get measured.
 /// </summary>
 public partial class BitVirtualize<TItem> : BitComponentBase
 {
@@ -22,6 +24,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private int _loadedStart;
     private int _itemCount;
+    private int _lanes = 1;                     // the lanes the size tree and the measurements were built for
     private bool _initialized;
     private bool _loading;
     private bool _fetching;
@@ -36,13 +39,15 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private IReadOnlyList<TItem>? _loadedItems; // current provider window
     private Dictionary<int, TItem>? _providerCache; // previously loaded provider items, keyed by absolute index
 
-    private BitVirtualizePrefixSumTree? _tree;  // dynamic mode only
-    private Dictionary<object, double>? _sizeByKey; // dynamic + ItemKey: measured sizes keyed by item identity
+    private BitVirtualizePrefixSumTree? _tree;  // dynamic mode only: one entry per track (a row, or a column when horizontal)
+    private Dictionary<object, double>? _sizeByKey; // dynamic + ItemKey (single lane): measured sizes keyed by item identity
+    private Dictionary<int, double>? _laneSizes; // dynamic + Lanes: the measured size of each item, of which its track takes the largest
     private double _realTotal;                  // the rendered (capped) size of the spacer (px)
     private double _ratio = 1d;                 // virtual px per real px of scrolling (1 unless the extent exceeds MaxCssSize)
     private double _scrollOffset;               // virtual scroll offset (item-coordinate space)
     private double _realScrollOffset;           // real scroll offset of the viewport, relative to the start of the spacer (px)
     private double _viewportSize;               // viewport size (px)
+    private double _crossSize;                  // size of the list across the scroll axis (px), which MinLaneSize divides into lanes
     private double _renderStartOffset;          // virtual offset of the first rendered item
     private double _blockOffset;                // real offset of the rendered block within the spacer (px)
     private int _visibleStart;
@@ -94,6 +99,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private bool _sentDynamic;
     private BitDir? _sentDir;
     private double _sentThreshold;
+    private string? _sentScroller;
     private bool _syncedSpacer;
 
     private DotNetObjectReference<BitVirtualize<TItem>>? _dotnetObj;
@@ -101,6 +107,19 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the virtualize component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple virtualize components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitVirtualizeParams.ParamName)]
+    public BitVirtualizeParams? CascadingParameters { get; set; }
 
 
 
@@ -156,6 +175,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     public bool Horizontal { get; set; }
 
     /// <summary>
+    /// The custom template to render each item, which also receives the index of the item in the whole list
+    /// (for example, for numbering or striping the rows). Takes precedence over ItemTemplate and ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment<BitVirtualizeItemContext<TItem>>? IndexedItemTemplate { get; set; }
+
+    /// <summary>
     /// The index of the item to scroll to on the first render. Ignored when Reversed is set.
     /// </summary>
     [Parameter] public int? InitialIndex { get; set; }
@@ -187,7 +212,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public string? ItemRole { get; set; } = "listitem";
 
     /// <summary>
-    /// The size in pixels of each item along the scroll axis when the Dynamic mode is off.
+    /// The size in pixels of each item (each row of items with Lanes) along the scroll axis when the Dynamic mode is off.
     /// </summary>
     [Parameter] public float ItemSize { get; set; } = 50f;
 
@@ -200,6 +225,21 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// Alias for ChildContent.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// The number of items laid side by side across the scroll axis, which turns the list into a virtualized grid:
+    /// the items fill each row (each column in horizontal mode) from the start, every one as wide as an equal share
+    /// of the row, and the arrow keys move across the lanes as well as along them. In dynamic mode a row is as tall
+    /// as its tallest item.
+    /// </summary>
+    [Parameter] public int Lanes { get; set; } = 1;
+
+    /// <summary>
+    /// The smallest size in pixels of a lane across the scroll axis, which makes the grid responsive: the list has as many
+    /// lanes as fit in its width (its height in horizontal mode), at least one. Takes precedence over Lanes once the list
+    /// has been measured.
+    /// </summary>
+    [Parameter] public float? MinLaneSize { get; set; }
 
     /// <summary>
     /// The custom template to render until the component has performed its first load.
@@ -249,6 +289,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// The ARIA role of the root element.
     /// </summary>
     [Parameter] public string? Role { get; set; } = "list";
+
+    /// <summary>
+    /// The CSS selector of an ancestor that scrolls the list instead of the list itself, which then grows to the full size
+    /// of its items and only virtualizes them; the "window", "document", "body" and "html" values select the page itself.
+    /// The list then has no height of its own to give.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// The custom template to render the pinned sticky item. Falls back to the item template when not provided.
@@ -348,11 +396,25 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// <param name="seq">The number of the latest scroll requested from here that the browser had performed when it
     /// sent this report; -1 when unknown.</param>
     [JSInvokable("Scroll")]
-    public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1)
+    /// <param name="crossSize">The size of the list across the scroll axis; -1 when unknown.</param>
+    public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1, double crossSize = -1)
     {
         if (IsDisposed) return;
 
         var viewportChanged = Math.Abs(viewportSize - _viewportSize) > 0.5;
+
+        if (crossSize >= 0 && Math.Abs(crossSize - _crossSize) > 0.5)
+        {
+            _crossSize = crossSize;
+            if (ComputeLanes() != _lanes)
+            {
+                // A resized responsive grid lays its items out again, keeping the item in view where it was; the scroll
+                // that takes there makes the rest of this report stale.
+                UpdateLayout();
+                RecomputeRange();
+                StateHasChanged();
+            }
+        }
 
         var restick = false;
         if (seq >= 0 && seq < _scrollSeq)
@@ -406,28 +468,35 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         if (IsDisposed || Dynamic is false || _tree is null || indices.Length == 0 || indices.Length != sizes.Length) return;
 
-        // The first item that starts in view: the resize of an item cut by the leading edge then moves only its hidden
+        // The first track that starts in view: the resize of an item cut by the leading edge then moves only its hidden
         // part, rather than everything in view below it.
-        var anchor = _visibleStart;
-        if (anchor + 1 < _itemCount && _tree.PrefixSum(anchor) < _scrollOffset - 0.01)
+        var anchor = TrackOf(_visibleStart);
+        if (anchor + 1 < _tree.Count && _tree.PrefixSum(anchor) < _scrollOffset - 0.01)
         {
             anchor++;
         }
         var oldAnchorOffset = _tree.PrefixSum(anchor);
 
         var changed = false;
-        for (var i = 0; i < indices.Length; i++)
+        if (_lanes == 1)
         {
-            var idx = indices[i];
-            var size = sizes[i];
-            if (idx < 0 || idx >= _itemCount || size < 0 || double.IsFinite(size) is false) continue;
-
-            if (_tree.SetSize(idx, size) != 0d)
+            for (var i = 0; i < indices.Length; i++)
             {
-                changed = true;
-            }
+                var idx = indices[i];
+                var size = sizes[i];
+                if (idx < 0 || idx >= _itemCount || size < 0 || double.IsFinite(size) is false) continue;
 
-            CacheMeasuredSize(idx, size);
+                if (_tree.SetSize(idx, size) != 0d)
+                {
+                    changed = true;
+                }
+
+                CacheMeasuredSize(idx, size);
+            }
+        }
+        else
+        {
+            changed = ApplyLaneMeasurements(indices, sizes);
         }
 
         var realign = _pendingScrollIndex >= 0 && _initialized;
@@ -490,18 +559,30 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         var hasActive = _activeIndex >= 0 && _activeIndex < _itemCount;
         var current = hasActive ? _activeIndex : _visibleStart;
-        var page = Math.Max(1, _visibleEnd - _visibleStart - 1);
+        // A page is the tracks in view less one, so the item that was last in view is still there to keep the reader's place.
+        var page = Math.Max(1, TrackOf(Math.Max(_visibleStart, _visibleEnd - 1)) - TrackOf(_visibleStart)) * _lanes;
+        // With lanes, the arrows along the scroll axis move to the next track and the arrows across it to the next lane;
+        // a single lane takes either pair to its next item. A right-to-left list has its arrows swapped by the browser side.
+        var (forward, back) = Horizontal ? ("ArrowRight", "ArrowLeft") : ("ArrowDown", "ArrowUp");
+        var step = key == forward || key == back ? _lanes : 1;
         var target = key switch
         {
             // With nothing active yet, the first arrow press activates the first visible item.
-            "ArrowDown" or "ArrowRight" => hasActive ? current + 1 : current,
-            "ArrowUp" or "ArrowLeft" => hasActive ? current - 1 : current,
+            "ArrowDown" or "ArrowRight" => hasActive ? current + step : current,
+            "ArrowUp" or "ArrowLeft" => hasActive ? current - step : current,
             "PageDown" => current + page,
             "PageUp" => current - page,
             "Home" => 0,
             "End" => _itemCount - 1,
             _ => current
         };
+
+        // A step along the scroll axis that would leave the grid stays on the item it was on, rather than jumping to
+        // the end of a lane the user did not ask for; the last, partly filled track is still reached by it.
+        if (step > 1 && hasActive && (target < 0 || TrackOf(target) >= TrackCount(_itemCount)))
+        {
+            target = current;
+        }
 
         target = Math.Clamp(target, 0, _itemCount - 1);
         if (target == _activeIndex && _renderStart <= target && target < _renderEnd && focusedIndex == target) return;
@@ -515,9 +596,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         _pendingScrollBatches = 0;
 
         // Bring the target into view (and into the rendered window) before focusing it.
-        var offset = GetItemOffset(target);
-        var size = GetItemSize(target);
-        var virtualTarget = Math.Clamp(ResolveAutoAlignment(offset, size), 0, MaxScrollOffset);
+        var virtualTarget = Math.Clamp(ResolveAutoAlignment(target), 0, MaxScrollOffset);
         var realTarget = Math.Clamp(RealFromVirtual(virtualTarget), 0, Math.Max(0, _realTotal - _viewportSize));
         var rangeChanged = MoveTo(virtualTarget, realTarget);
 
@@ -533,8 +612,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
 
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitVirtualizeParams))]
     protected override void OnParametersSet()
     {
+        // The cascade is applied before anything reads the parameters it may fill in.
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         if (Items is not null && ItemsProvider is not null)
@@ -542,17 +625,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             throw new InvalidOperationException($"BitVirtualize requires either {nameof(Items)} or {nameof(ItemsProvider)}, but not both.");
         }
 
-        // A change of the orientation invalidates the sizes measured along the old axis.
-        if (Horizontal != _lastHorizontal)
-        {
-            _lastHorizontal = Horizontal;
-            if (_tree is not null)
-            {
-                _tree = null;
-                _sizeByKey = null;
-                SetItemCount(_itemCount);
-            }
-        }
+        UpdateLayout();
 
         // Switching Dynamic on/off creates or drops the size tree.
         if (Dynamic != (_tree is not null))
@@ -640,16 +713,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 _sentDynamic = Dynamic;
                 _sentDir = Dir;
                 _sentThreshold = ScrollThreshold;
-                var metrics = await _js.BitVirtualizeSetup(UniqueId, RootElement, Horizontal, Dynamic, _sentThreshold, _dotnetObj);
+                _sentScroller = ScrollerSelector;
+                var metrics = await _js.BitVirtualizeSetup(UniqueId, RootElement, Horizontal, Dynamic, _sentThreshold, ScrollerSelector, _dotnetObj);
 
                 // metrics is null when the js runtime is not available (e.g. prerendering).
                 if (metrics is not null)
                 {
                     _syncedSpacer = ShowsSpacer();
-                    _viewportSize = metrics.ViewportSize;
-                    _realScrollOffset = metrics.ScrollOffset;
-                    UpdateScale();
-                    _scrollOffset = VirtualFromReal(metrics.ScrollOffset);
+                    ApplyMetrics(metrics);
                     _initialized = true;
                 }
 
@@ -665,6 +736,23 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             }
             else if (_initialized)
             {
+                // Another scroller is another viewport, so the browser side starts over with it.
+                if (ScrollerSelector != _sentScroller)
+                {
+                    _sentHorizontal = Horizontal;
+                    _sentDynamic = Dynamic;
+                    _sentDir = Dir;
+                    _sentThreshold = ScrollThreshold;
+                    _sentScroller = ScrollerSelector;
+                    var metrics = await _js.BitVirtualizeSetup(UniqueId, RootElement, Horizontal, Dynamic, _sentThreshold, ScrollerSelector, _dotnetObj!);
+                    if (metrics is not null)
+                    {
+                        ApplyMetrics(metrics);
+                        RecomputeRange();
+                        StateHasChanged();
+                    }
+                }
+
                 var threshold = ScrollThreshold;
                 // A changed direction is picked up by the update too: it re-reads the computed direction.
                 if (Horizontal != _sentHorizontal || Dynamic != _sentDynamic || Dir != _sentDir || Math.Abs(threshold - _sentThreshold) > 0.01)
@@ -706,6 +794,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         ClassBuilder.Register(() => Horizontal ? "bit-vir-hor" : string.Empty);
         ClassBuilder.Register(() => AlignToEnd ? "bit-vir-ate" : string.Empty);
+        // A list that an ancestor scrolls must not clip (and scroll) its own content on top of it.
+        ClassBuilder.Register(() => ScrollerSelector.HasValue() ? "bit-vir-ext" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -743,6 +833,56 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     // Every call is followed by a scroll that takes the returned number to the browser (sent to it, or carried by the
     // next render in _renderedScroll), or the browser's reports would stay stale for good.
     private int NextScrollSeq() => ++_scrollSeq;
+
+    private void ApplyMetrics(BitVirtualizeMetrics metrics)
+    {
+        _crossSize = metrics.CrossSize;
+        UpdateLayout();
+        _viewportSize = metrics.ViewportSize;
+        _realScrollOffset = metrics.ScrollOffset;
+        UpdateScale();
+        _scrollOffset = VirtualFromReal(metrics.ScrollOffset);
+    }
+
+    private int ComputeLanes() =>
+        MinLaneSize is > 0f && _crossSize > 0 ? Math.Max(1, (int)Math.Floor(_crossSize / MinLaneSize.Value)) : Math.Max(1, Lanes);
+
+    // A change of the orientation invalidates the sizes measured along the old axis, and one of the lanes the sizes of
+    // the tracks, which then hold other items. Another number of lanes moves every item to another track, so the item
+    // that was first in view is kept there rather than leaving the reader somewhere else in the list.
+    private void UpdateLayout()
+    {
+        var lanes = ComputeLanes();
+        if (Horizontal == _lastHorizontal && lanes == _lanes) return;
+
+        var anchor = _initialized && _initialScrollDone && _scrollOffset > 0 && lanes != _lanes && _visibleStart < _itemCount ? _visibleStart : -1;
+
+        _lastHorizontal = Horizontal;
+        _lanes = lanes;
+        _laneSizes = null;
+        if (_tree is not null)
+        {
+            _tree = null;
+            _sizeByKey = null;
+            SetItemCount(_itemCount);
+        }
+
+        if (anchor >= 0)
+        {
+            _scrollOffset = Math.Clamp(GetItemOffset(anchor), 0, MaxScrollOffset);
+            ScrollInRender();
+        }
+    }
+
+    // Has the next render carry the browser to the current (virtual) scroll offset, which it performs before painting
+    // the window rendered for it.
+    private void ScrollInRender()
+    {
+        UpdateScale();
+        _realScrollOffset = Math.Clamp(RealFromVirtual(_scrollOffset), 0, Math.Max(0, _realTotal - _viewportSize));
+        _pendingScrollOffset = _scrollOffset;
+        _renderedScroll = $"o:{FormatCssValue(_realScrollOffset)}:{NextScrollSeq()}";
+    }
 
     private void UpdateScale()
     {
@@ -786,10 +926,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var size = GetItemSize(index);
         var target = alignment switch
         {
-            BitVirtualizeScrollAlignment.Start => offset,
+            BitVirtualizeScrollAlignment.Start => offset - GetStickyInset(index),
             BitVirtualizeScrollAlignment.Center => offset - (_viewportSize - size) / 2d,
             BitVirtualizeScrollAlignment.End => offset - (_viewportSize - size),
-            _ => ResolveAutoAlignment(offset, size)
+            _ => ResolveAutoAlignment(index)
         };
 
         // In dynamic mode the offset is derived from estimates for unmeasured items, so remember the
@@ -948,10 +1088,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         if (anchored)
         {
             // The window gets rendered at the new offset, and the render carries the scroll that takes the browser there.
-            UpdateScale();
-            _realScrollOffset = Math.Clamp(RealFromVirtual(_scrollOffset), 0, Math.Max(0, _realTotal - _viewportSize));
-            _pendingScrollOffset = _scrollOffset;
-            _renderedScroll = $"o:{FormatCssValue(_realScrollOffset)}:{NextScrollSeq()}";
+            ScrollInRender();
         }
 
         RecomputeRange();
@@ -1029,15 +1166,16 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (Dynamic)
         {
+            var tracks = TrackCount(count);
             if (_tree is null)
             {
-                _tree = new BitVirtualizePrefixSumTree(count, EstimatedSize);
+                _tree = new BitVirtualizePrefixSumTree(tracks, EstimatedSize);
             }
             else
             {
                 // Keep the already measured sizes of the surviving indices so a count change
                 // (e.g. infinite-scroll append) does not throw away the measurements.
-                _tree.Resize(count, EstimatedSize);
+                _tree.Resize(tracks, EstimatedSize);
             }
 
             // Re-apply identity-keyed measurements so sizes follow their items across
@@ -1167,7 +1305,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         double size = Dynamic ? EstimatedSize : FixedSize;
         var viewport = _viewportSize > 0 ? _viewportSize : 600;
-        return (int)Math.Ceiling(viewport / size) + (Overscan * 2) + 1;
+        return ((int)Math.Ceiling(viewport / size) + (Overscan * 2) + 1) * _lanes;
     }
 
     private bool TryGetItem(int index, out TItem item)
@@ -1215,7 +1353,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private void CacheMeasuredSize(int index, double size)
     {
-        if (ItemKey is null) return;
+        if (ItemKey is null || _lanes > 1) return;
         if (TryGetItem(index, out var item) is false) return;
 
         var key = ItemKey(item);
@@ -1226,9 +1364,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         _sizeByKey[key] = size;
     }
 
+    // With lanes a size belongs to a track rather than to an item, so there is no identity for it to follow.
     private void ReseedTreeFromKeys()
     {
-        if (Dynamic is false || _tree is null || ItemKey is null || _sizeByKey is null || _sizeByKey.Count == 0) return;
+        if (Dynamic is false || _tree is null || ItemKey is null || _lanes > 1 || _sizeByKey is null || _sizeByKey.Count == 0) return;
 
         if (_itemList is not null)
         {
@@ -1270,20 +1409,77 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
     }
 
-    private double GetItemOffset(int index) => _tree is not null ? _tree.PrefixSum(index) : index * (double)FixedSize;
+    // The items are laid out in tracks (rows, or columns when horizontal) of Lanes items each: the scroll axis is
+    // made of tracks, so every offset and size along it is that of the track an item is in.
+    private int TrackOf(int index) => index / _lanes;
 
-    private double GetItemSize(int index) => _tree is not null ? _tree.GetSize(index) : FixedSize;
+    private int TrackCount(int count) => (count + _lanes - 1) / _lanes;
 
-    private double GetTotalSize() => _tree is not null ? _tree.Total : _itemCount * (double)FixedSize;
+    private double GetTrackOffset(int track) => _tree is not null ? _tree.PrefixSum(track) : track * (double)FixedSize;
 
-    private int FindIndexAtOffset(double offset)
+    private double GetItemOffset(int index) => GetTrackOffset(TrackOf(index));
+
+    private double GetItemSize(int index) => _tree is not null ? _tree.GetSize(TrackOf(index)) : FixedSize;
+
+    private double GetTotalSize() => _tree is not null ? _tree.Total : TrackCount(_itemCount) * (double)FixedSize;
+
+    private int FindTrackAtOffset(double offset)
     {
-        if (_itemCount == 0) return 0;
+        var tracks = TrackCount(_itemCount);
+        if (tracks == 0) return 0;
 
         if (_tree is not null) return _tree.FindIndex(offset);
 
-        var index = (int)Math.Floor(offset / FixedSize);
-        return Math.Clamp(index, 0, _itemCount - 1);
+        var track = (int)Math.Floor(offset / FixedSize);
+        return Math.Clamp(track, 0, tracks - 1);
+    }
+
+    // Takes the size of every track measured items are in from the largest of its items. The sizes of the items are
+    // kept as long as they are rendered, so the track of an item that shrinks is not held at the size it had before.
+    private bool ApplyLaneMeasurements(int[] indices, double[] sizes)
+    {
+        _laneSizes ??= [];
+
+        var tracks = new HashSet<int>();
+        for (var i = 0; i < indices.Length; i++)
+        {
+            var idx = indices[i];
+            var size = sizes[i];
+            if (idx < 0 || idx >= _itemCount || size < 0 || double.IsFinite(size) is false) continue;
+
+            _laneSizes[idx] = size;
+            tracks.Add(TrackOf(idx));
+        }
+
+        var changed = false;
+        foreach (var track in tracks)
+        {
+            var largest = 0d;
+            var end = Math.Min(_itemCount, (track + 1) * _lanes);
+            for (var idx = track * _lanes; idx < end; idx++)
+            {
+                if (_laneSizes.TryGetValue(idx, out var size) && size > largest)
+                {
+                    largest = size;
+                }
+            }
+
+            if (_tree!.SetSize(track, largest) != 0d)
+            {
+                changed = true;
+            }
+        }
+
+        // The sizes of the items far from the rendered window are dropped; their tracks keep the size they got.
+        if (_laneSizes.Count > SizeCacheCap)
+        {
+            foreach (var idx in _laneSizes.Keys.Where(k => k < _renderStart || k >= _renderEnd).ToArray())
+            {
+                _laneSizes.Remove(idx);
+            }
+        }
+
+        return changed;
     }
 
     private void RecomputeRange()
@@ -1310,15 +1506,18 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var viewport = _viewportSize;
         var offset = Math.Clamp(_scrollOffset, 0, MaxScrollOffset);
 
-        var start = FindIndexAtOffset(offset);
-        // An item starting exactly at the far edge of the viewport is not in view.
-        var end = FindIndexAtOffset(Math.Max(offset, offset + viewport - 0.01)) + 1;
-        end = Math.Min(end, _itemCount);
+        // The part of the viewport the items can take: less what comes before them (a header, or the page above a list
+        // that scrolls with the page) while that is in view, so a list mostly out of view renders only what shows.
+        var end = Math.Max(offset, Math.Min(offset + viewport, _scrollOffset + viewport));
 
-        var newVisibleStart = start;
-        var newVisibleEnd = end;
-        var newRenderStart = Math.Max(0, start - Overscan);
-        var newRenderEnd = Math.Min(_itemCount, end + Overscan);
+        var startTrack = FindTrackAtOffset(offset);
+        // A track starting exactly at the far edge of the viewport is not in view.
+        var endTrack = FindTrackAtOffset(Math.Max(offset, end - 0.01)) + 1;
+
+        var newVisibleStart = Math.Min(startTrack * _lanes, _itemCount);
+        var newVisibleEnd = Math.Min(endTrack * _lanes, _itemCount);
+        var newRenderStart = Math.Max(0, startTrack - Overscan) * _lanes;
+        var newRenderEnd = (int)Math.Min(_itemCount, ((long)endTrack + Overscan) * _lanes);
 
         var rangeChanged = newVisibleStart != _visibleStart || newVisibleEnd != _visibleEnd;
 
@@ -1465,11 +1664,15 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
     }
 
-    private double ResolveAutoAlignment(double offset, double size)
+    private double ResolveAutoAlignment(int index)
     {
-        if (offset < _scrollOffset)
+        var offset = GetItemOffset(index);
+        var size = GetItemSize(index);
+        var inset = GetStickyInset(index);
+
+        if (offset - inset < _scrollOffset)
         {
-            return offset; // above the viewport -> align to start
+            return offset - inset; // above the viewport (or under the pinned sticky item) -> align to start
         }
 
         if (offset + size > _scrollOffset + _viewportSize)
@@ -1478,6 +1681,20 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
 
         return _scrollOffset; // already visible -> no change
+    }
+
+    // The room the pinned sticky item takes at the leading edge while the item at the index is the first in view: the
+    // size of the sticky item of its group, unless it is a sticky item itself (which is then the one pinned, in its place).
+    // An item scrolled to the start is placed below it, rather than under it where it (and its focus) would be hidden.
+    private double GetStickyInset(int index)
+    {
+        if (_stickyIndices is null || _stickyIndices.Count == 0) return 0;
+
+        var position = _stickyIndices.BinarySearch(index);
+        if (position >= 0) return 0;
+
+        var group = ~position - 1;
+        return group >= 0 ? GetItemSize(_stickyIndices[group]) : 0;
     }
 
     private string GetSpacerStyle()
@@ -1497,14 +1714,53 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private string GetItemStyle(int index)
     {
-        var offset = FormatCssValue(GetItemOffset(index) - _renderStartOffset);
-        // In fixed mode pin the size so each item exactly fills its slot.
-        if (Horizontal)
+        var relative = GetItemOffset(index) - _renderStartOffset;
+        if (_ratio > 1d && (index < _renderStart || index >= _renderEnd))
         {
-            return Dynamic ? $"inset-inline-start:{offset}px" : $"inset-inline-start:{offset}px;width:{FormatCssValue(FixedSize)}px";
+            // A scaled spacer is shorter than the items it stands for, so the kept focused item (see GetRenderedIndices)
+            // is held inside it, where it cannot stretch the scroll range.
+            relative = Math.Clamp(relative, -_blockOffset, Math.Max(-_blockOffset, _realTotal - _blockOffset - GetItemSize(index)));
         }
 
-        return Dynamic ? $"transform:translateY({offset}px)" : $"transform:translateY({offset}px);height:{FormatCssValue(FixedSize)}px";
+        var offset = FormatCssValue(relative);
+        // In fixed mode pin the size so each item exactly fills its slot.
+        var style = Horizontal
+            ? (Dynamic ? $"inset-inline-start:{offset}px" : $"inset-inline-start:{offset}px;width:{FormatCssValue(FixedSize)}px")
+            : (Dynamic ? $"transform:translateY({offset}px)" : $"transform:translateY({offset}px);height:{FormatCssValue(FixedSize)}px");
+
+        if (_lanes == 1) return style;
+
+        // Each lane is an equal share of the cross axis, taken by calc so the shares add up to the whole exactly.
+        var lane = index % _lanes;
+        return Horizontal
+            ? $"{style};inset-block-start:calc(100% / {_lanes} * {lane});height:calc(100% / {_lanes})"
+            : $"{style};inset-inline-start:calc(100% / {_lanes} * {lane});width:calc(100% / {_lanes})";
+    }
+
+    // The rendered window, plus the active (roving tabindex) item when it has scrolled out of it: removing the item
+    // that has the focus would drop the focus to the page, and a list whose tab stop is gone would be entered at its
+    // start rather than at the item the user left. Kept in index order, so the keyed diff never has to move it.
+    private IEnumerable<int> GetRenderedIndices()
+    {
+        var kept = _activeIndex >= 0 && _activeIndex < _itemCount && (_activeIndex < _renderStart || _activeIndex >= _renderEnd) && TryGetItem(_activeIndex, out _)
+            ? _activeIndex
+            : -1;
+
+        if (kept >= 0 && kept < _renderStart) yield return kept;
+
+        for (var i = _renderStart; i < _renderEnd; i++)
+        {
+            yield return i;
+        }
+
+        if (kept >= _renderEnd) yield return kept;
+    }
+
+    private RenderFragment? RenderItem(TItem item, int index)
+    {
+        if (IndexedItemTemplate is not null) return IndexedItemTemplate(new BitVirtualizeItemContext<TItem>(item, index));
+
+        return (ItemTemplate ?? ChildContent)?.Invoke(item);
     }
 
     // The pinned header is positioned by CSS position:sticky (so it never lags behind the scroll);
@@ -1512,10 +1768,19 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private string GetStickyStyle() =>
         Dynamic ? string.Empty : Horizontal ? $"width:{FormatCssValue(FixedSize)}px" : $"height:{FormatCssValue(FixedSize)}px";
 
-    // The root leaves the tab order only while the roving (tabindex=0) item is actually rendered,
-    // so the list always stays reachable with the Tab key.
-    private string GetRootTabIndex() =>
-        _activeIndex >= _renderStart && _activeIndex < _renderEnd && _activeIndex < _itemCount ? "-1" : (TabIndex ?? "0");
+    // The root leaves the tab order only while the roving (tabindex=0) item is actually rendered (in the window, or
+    // kept outside it while it is loaded), so the list always stays reachable with the Tab key.
+    private string GetRootTabIndex() => IsActiveRendered() ? "-1" : (TabIndex ?? "0");
+
+    private bool IsActiveRendered()
+    {
+        if (_activeIndex < 0 || _activeIndex >= _itemCount || ShowsSpacer() is false) return false;
+
+        if (TryGetItem(_activeIndex, out _)) return true;
+
+        // An item still loading is rendered only in the window, and there only as a placeholder.
+        return PlaceholderTemplate is not null && _activeIndex >= _renderStart && _activeIndex < _renderEnd;
+    }
 
     private static string FormatCssValue(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 

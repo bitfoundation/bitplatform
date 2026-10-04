@@ -14,4 +14,9 @@ public sealed class BitVirtualizeMetrics
     /// The size (px) of the viewport along the scroll axis.
     /// </summary>
     public double ViewportSize { get; set; }
+
+    /// <summary>
+    /// The size (px) of the list across the scroll axis.
+    /// </summary>
+    public double CrossSize { get; set; }
 }

@@ -486,7 +486,7 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitVirtualizeRootShouldReturnToTheTabOrderWhenTheActiveItemScrollsAway()
+    public async Task BitVirtualizeShouldKeepTheActiveItemRenderedWhenItScrollsAway()
     {
         SetupViewport(300);
 
@@ -495,8 +495,57 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
         Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
 
-        // Scroll far away with the mouse: the active item is no longer rendered, so the root must be tabbable again.
+        // Scroll far away with the mouse: the focused item stays in the DOM (the focus is not dropped to the page), at
+        // its own offset and before the window in the DOM order, and it stays the list's only tab stop.
         await component.InvokeAsync(() => component.Instance._Scroll(3000, 300));
+
+        var kept = component.Find("[data-bit-vir-index='0']");
+        Assert.AreEqual("0", kept.GetAttribute("tabindex"));
+        Assert.AreEqual("1", kept.GetAttribute("aria-posinset"));
+        Assert.AreEqual(-3000 + 150, TranslateOf(kept.GetAttribute("style")));
+        Assert.AreEqual(0, RenderedIndices(component)[0]);
+        CollectionAssert.AreEqual(RenderedIndices(component).OrderBy(i => i).ToArray(), RenderedIndices(component));
+        Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldKeepAnActiveItemAfterTheWindowInIndexOrder()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50);
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("End"));
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300));
+
+        var rendered = RenderedIndices(component);
+        Assert.AreEqual(99, rendered[^1]);
+        Assert.AreEqual(1, rendered.Count(i => i == 99));
+        Assert.AreEqual("0", component.Find("[data-bit-vir-index='99']").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeRootShouldReturnToTheTabOrderWhenTheActiveItemIsNoLongerLoaded()
+    {
+        SetupViewport(300);
+
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, request => ValueTask.FromResult(new BitVirtualizeItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1_000 - request.StartIndex)).ToList(), 1_000)));
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
+        await component.InvokeAsync(() => component.Instance._Scroll(30_000, 300));
+
+        // Still cached, so still kept.
+        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='0']").Count);
+        Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
+
+        // A refresh drops the cache: the item is gone, so the root must be tabbable again.
+        await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
         Assert.AreEqual(0, component.FindAll("[data-bit-vir-index='0']").Count);
         Assert.AreEqual("0", component.Find(".bit-vir").GetAttribute("tabindex"));
@@ -1706,6 +1755,53 @@ public class BitVirtualizeTests : BunitTestContext
         var sticky = component.Find(".bit-vir-stk");
         Assert.AreEqual("Group 2", sticky.TextContent);
         Assert.AreEqual("1500", sticky.GetAttribute("data-bit-vir-sticky-next"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldScrollAnItemToBelowThePinnedStickyItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
+
+        // Item 25 is in the group of item 20, which is pinned at the top while 25 is the first in view: the item is
+        // placed below it, where it is not hidden.
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(25));
+        Assert.AreEqual(1200d, LastScrollToOffset());
+
+        // A sticky item is the one pinned, in its own place.
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(30));
+        Assert.AreEqual(1500d, LastScrollToOffset());
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeKeyboardShouldNotLeaveTheFocusedItemUnderThePinnedStickyItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1300, 300)); // items 26-31 in view, 20 pinned
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowUp", 27));
+
+        // Item 26 starts at 1300, right under the pinned item 20 (50px): the list scrolls it out from under it.
+        Assert.AreEqual(1250d, LastScrollToOffset());
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizePinnedCopyShouldBeMarkedWhileItMirrorsTheActiveItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
+
+        Assert.IsFalse(component.Find(".bit-vir-stk").ClassList.Contains("bit-vir-sac"));
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
+        Assert.IsTrue(component.Find(".bit-vir-stk").ClassList.Contains("bit-vir-sac"));
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
+        Assert.IsFalse(component.Find(".bit-vir-stk").ClassList.Contains("bit-vir-sac"));
     }
 
     [TestMethod]

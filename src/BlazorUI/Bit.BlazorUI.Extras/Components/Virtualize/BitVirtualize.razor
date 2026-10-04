@@ -2,10 +2,6 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@{
-    var template = ItemTemplate ?? ChildContent;
-}
-
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="@Role"
@@ -35,9 +31,8 @@
     {
         <div class="bit-vir-spc" role="presentation" style="@GetSpacerStyle()" data-bit-vir-scroll="@_renderedScroll">
             <div class="bit-vir-blk" role="presentation" style="@GetBlockStyle()">
-                @for (int i = _renderStart; i < _renderEnd; i++)
+                @foreach (var index in GetRenderedIndices())
                 {
-                    var index = i;
                     var hasItem = TryGetItem(index, out var item);
 
                     // Skip unloaded indices with no placeholder so assistive tech never lands on an empty listitem.
@@ -48,13 +43,13 @@
                          class="bit-vir-itm@(Dynamic ? null : " bit-vir-fix") @Classes?.Item"
                          style="@JoinStyles(GetItemStyle(index), Styles?.Item)"
                          tabindex="@(index == _activeIndex ? "0" : "-1")"
-                         aria-setsize="@_itemCount"
-                         aria-posinset="@(index + 1)"
+                         aria-setsize="@(ItemRole.HasValue() ? _itemCount : null)"
+                         aria-posinset="@(ItemRole.HasValue() ? index + 1 : null)"
                          aria-busy="@(hasItem ? null : "true")"
                          data-bit-vir-index="@index">
                         @if (hasItem)
                         {
-                            @(template?.Invoke(item))
+                            @RenderItem(item, index)
                         }
                         else if (PlaceholderTemplate is not null)
                         {
@@ -68,10 +63,10 @@
             {
                 <div role="presentation"
                      aria-hidden="true"
-                     class="bit-vir-stk @Classes?.Sticky"
+                     class="bit-vir-stk@(_stickyActiveIndex == _activeIndex ? " bit-vir-sac" : null) @Classes?.Sticky"
                      style="@JoinStyles(GetStickyStyle(), Styles?.Sticky)"
                      data-bit-vir-sticky-next="@FormatCssValue(_stickyNextOffset)">
-                    @((StickyTemplate ?? template)?.Invoke(stickyItem))
+                    @(StickyTemplate is not null ? StickyTemplate(stickyItem) : RenderItem(stickyItem, _stickyActiveIndex))
                 </div>
             }
         </div>
