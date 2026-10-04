@@ -1321,7 +1321,7 @@ public partial class BitNavPanelDemo
         new()
         {
             Name = "--bit-NavPanel-radius",
-            DefaultValue = "0",
+            DefaultValue = "var(--bit-shp-radius-sheet)",
             Description = "Corner radius of the panel, for a floating sidebar.",
         },
         new()
@@ -1772,11 +1772,14 @@ public partial class BitNavPanelDemo
     private readonly List<BitNavItem> noToggleNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> iconUrlNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> headerTextNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> searchNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> drawerNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> behaviorNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> alwaysDrawerNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> templateNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> cascadeNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> colorNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> sizeSmallNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> sizeMediumNavItems = CreateBasicNavItems();
     private readonly List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
