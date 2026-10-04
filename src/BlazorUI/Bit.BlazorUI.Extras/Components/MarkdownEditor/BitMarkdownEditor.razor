@@ -10,7 +10,7 @@
 
     @if (Label is not null || LabelTemplate is not null)
     {
-        <label style="@Styles?.Label" class="bit-mde-lbl @Classes?.Label" for="@TextAreaId">
+        <label style="@Styles?.Label" class="bit-mde-lbl @(Required ? "bit-mde-req" : null) @Classes?.Label" for="@TextAreaId">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -28,6 +28,8 @@
              style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
             @foreach (var item in ActiveToolbar)
             {
+                if (IsToolbarItemVisible(item) is false) continue;
+
                 if (item.Type is BitMarkdownEditorToolbarItemType.Separator)
                 {
                     <span class="bit-mde-sep" aria-hidden="true"></span>
@@ -45,14 +47,17 @@
                                 aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                                 aria-haspopup="menu"
                                 aria-expanded="false"
+                                aria-controls="@GetMenuId(item)"
                                 data-cmd="@item.Name"
                                 tabindex="-1"
                                 disabled="@IsToolbarItemDisabled(item)">
                             @((MarkupString)item.Icon)
                         </button>
-                        <div class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
+                        <div id="@GetMenuId(item)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
                             @foreach (var child in item.Children ?? [])
                             {
+                                if (IsToolbarItemVisible(child) is false) continue;
+
                                 if (child.Type is BitMarkdownEditorToolbarItemType.Separator)
                                 {
                                     <div class="bit-mde-msep" role="separator"></div>
@@ -71,6 +76,7 @@
                                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(child)"
                                             aria-checked="@(IsToolbarItemToggle(child) ? (IsToolbarItemActive(child) ? "true" : "false") : null)"
                                             data-cmd="@child.Name"
+                                            data-bit-mde-upload="@(child.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                                             disabled="@IsToolbarItemDisabled(child)"
                                             @onclick="() => OnToolbarItemClick(child)">
                                         @((MarkupString)child.Icon)
@@ -94,6 +100,7 @@
                             aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                             aria-pressed="@(IsToolbarItemToggle(item) ? (IsToolbarItemActive(item) ? "true" : "false") : null)"
                             data-cmd="@item.Name"
+                            data-bit-mde-upload="@(item.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                             tabindex="-1"
                             disabled="@IsToolbarItemDisabled(item)"
                             @onclick="() => OnToolbarItemClick(item)">
@@ -108,6 +115,9 @@
     {
         <div class="bit-mde-fnd" role="region" aria-label="@ActiveTexts.FindReplaceTitle">
             <input @ref="_findRef"
+                   type="search"
+                   autocomplete="off"
+                   spellcheck="false"
                    class="bit-mde-fni"
                    placeholder="@ActiveTexts.FindPlaceholder"
                    aria-label="@ActiveTexts.FindPlaceholder"
@@ -115,6 +125,9 @@
                    @oninput="e => OnFindTextChanged(e.Value?.ToString() ?? string.Empty)"
                    @onkeydown="OnFindKeyDown" />
             <input class="bit-mde-fni"
+                   type="text"
+                   autocomplete="off"
+                   spellcheck="false"
                    placeholder="@ActiveTexts.ReplacePlaceholder"
                    aria-label="@ActiveTexts.ReplacePlaceholder"
                    value="@_replaceText"
@@ -144,6 +157,7 @@
         <div class="bit-mde-pne bit-mde-epn">
             <textarea @ref="_textAreaRef"
                       id="@TextAreaId"
+                      name="@Name"
                       style="@Styles?.TextArea"
                       class="bit-mde-txa @Classes?.TextArea"
                       placeholder="@Placeholder"
@@ -152,6 +166,9 @@
                       maxlength="@(MaxLength is > 0 ? MaxLength : null)"
                       spellcheck="@(SpellCheck ? "true" : "false")"
                       readonly="@(ReadOnly || IsEnabled is false)"
+                      disabled="@(IsEnabled is false)"
+                      required="@Required"
+                      aria-invalid="@(_invalid ? "true" : null)"
                       autocomplete="off"
                       autocapitalize="off"
                       autocorrect="off"
@@ -186,6 +203,9 @@
         </div>
     </div>
 
+    @* Kept on the page while empty: a live region only announces a change made after it is already there. *@
+    <span class="bit-mde-ann" aria-live="polite" aria-atomic="true">@_announcement</span>
+
     @if (ShowStatusBar)
     {
         <div style="@Styles?.StatusBar" class="bit-mde-sbr @Classes?.StatusBar">
@@ -214,14 +234,14 @@
             <div @ref="_helpRef"
                  role="dialog"
                  aria-modal="true"
-                 aria-label="@ActiveTexts.KeyboardShortcutsTitle"
+                 aria-labelledby="@HelpTitleId"
                  tabindex="-1"
                  class="bit-mde-hcr"
                  @onkeydown="OnHelpKeyDown"
                  @onclick:stopPropagation="true">
                 <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
                 <header>
-                    <strong>@ActiveTexts.KeyboardShortcutsTitle</strong>
+                    <h2 id="@HelpTitleId">@ActiveTexts.KeyboardShortcutsTitle</h2>
                     <button type="button" @ref="_helpCloseRef" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
                 </header>
                 <dl>

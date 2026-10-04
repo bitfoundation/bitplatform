@@ -170,7 +170,7 @@ public partial class MainLayout
                 new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler" },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling", Description = "InfiniteScroll, LoadMore", Data = "Endless scroll, Infinite list, Lazy loading, Feed, Chat, Paging" },
                 new() { Text = "Map", Url = "/components/map" },
-                new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
+                new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor", Data = "Markdown, Text editor, Rich text, Comment box, Notes, Preview, Toolbar" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },

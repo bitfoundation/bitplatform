@@ -53,5 +53,11 @@ public enum BitMarkdownEditorToolbarItemType
     /// <summary>
     /// A button that reveals a menu of child items (e.g. a heading picker).
     /// </summary>
-    Dropdown
+    Dropdown,
+
+    /// <summary>
+    /// Opens the file picker and uploads the chosen images through the editor's OnImageUpload handler, the way a
+    /// pasted or dropped image is uploaded. Only rendered while OnImageUpload is set.
+    /// </summary>
+    ImageUpload
 }

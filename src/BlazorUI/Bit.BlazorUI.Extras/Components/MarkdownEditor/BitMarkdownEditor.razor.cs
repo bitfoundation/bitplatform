@@ -1,4 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitMarkdownEditor is a native Blazor markdown editor with a customizable toolbar, keyboard
@@ -34,10 +38,43 @@ public partial class BitMarkdownEditor : BitComponentBase
     private ElementReference _textAreaRef = default!;
     private CancellationTokenSource? _debounceCts;
     private DotNetObjectReference<BitMarkdownEditor>? _dotnetObj;
+    private BitMarkdownEditorMode? _renderedMode;
+    private string? _announcement;
+    private bool _invalid;
+    private EditContext? _editContext;
+    private FieldIdentifier? _fieldIdentifier;
+    private Expression<Func<string?>>? _fieldExpression;
+    private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+
+
+
+    public BitMarkdownEditor()
+    {
+        _validationStateChangedHandler = (_, _) =>
+        {
+            if (UpdateInvalid()) _ = InvokeAsync(StateHasChanged);
+        };
+    }
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the markdown editor component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the texts of a localized app, its toolbar and
+    /// its image upload handler, above all) to be applied to multiple editors through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitMarkdownEditorParams.ParamName)]
+    public BitMarkdownEditorParams? CascadingParameters { get; set; }
 
 
 
@@ -45,6 +82,14 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// Moves the keyboard focus into the editor as soon as it is initialized.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// Grows the editor with its content instead of scrolling it, from <see cref="MinHeight"/> up to
+    /// <see cref="MaxHeight"/> (past which it scrolls again), the way a comment box does. <see cref="Height"/>
+    /// and <see cref="Resizable"/> have no effect while it is on, and full-screen mode still fills the viewport.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool AutoHeight { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the editor.
@@ -160,18 +205,24 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public int? MaxLength { get; set; }
 
     /// <summary>
-    /// The largest pasted or dropped image (in bytes) the editor uploads. A bigger file is
+    /// The largest pasted, dropped or picked image (in bytes) the editor uploads. A bigger file is
     /// refused before its bytes are read, and reported through <see cref="OnImageRejected"/>.
     /// Null (the default) leaves the size unlimited.
     /// </summary>
     [Parameter] public long? MaxImageSize { get; set; }
 
     /// <summary>
-    /// The image types the paste/drop upload accepts, as a comma separated list of MIME types
+    /// The image types the paste/drop/picker upload accepts, as a comma separated list of MIME types
     /// or extensions (the shape of an input's accept attribute, e.g. <c>image/png,image/jpeg</c>
     /// or <c>.png,.jpg</c>). Null (the default) accepts every image type.
     /// </summary>
     [Parameter] public string? AcceptedImageTypes { get; set; }
+
+    /// <summary>
+    /// The name of the textarea, under which its text is posted with a plain HTML form (a statically rendered
+    /// page, for one), where no binding carries the value.
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
 
     /// <summary>
     /// Determines which panes of the editor are visible (edit / split / preview).
@@ -185,11 +236,12 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
-    /// A handler that uploads a pasted or dropped image and returns the URL to reference
-    /// it by. When set, the editor enables clipboard-paste and drag-and-drop image upload:
-    /// a placeholder is inserted immediately and replaced with the returned URL once the
-    /// handler completes (returning null cancels the insertion). When null, image upload
-    /// is disabled and only the manual image command is available.
+    /// A handler that uploads a pasted, dropped or picked image and returns the URL to reference
+    /// it by. When set, the editor enables clipboard-paste and drag-and-drop image upload and shows
+    /// the toolbar's upload button, the keyboard's way to pick a file from the disk: a placeholder
+    /// is inserted immediately and replaced with the returned URL once the handler completes
+    /// (returning null cancels the insertion). When null, image upload is disabled and only the
+    /// manual image command is available.
     /// </summary>
     [Parameter] public Func<BitMarkdownEditorImageUploadInfo, Task<string?>>? OnImageUpload { get; set; }
 
@@ -255,6 +307,12 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// Makes the editor read-only.
     /// </summary>
     [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Marks the editor as a field that has to be filled in: the textarea carries the native required state
+    /// (which assistive tech announces) and the label an asterisk.
+    /// </summary>
+    [Parameter] public bool Required { get; set; }
 
     /// <summary>
     /// Lets the user drag the bottom edge of the editor to change its height.
@@ -330,6 +388,13 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// </summary>
     [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnValueSet))]
     public string? Value { get; set; }
+
+    /// <summary>
+    /// The expression identifying the bound value, which ties the editor to the field of an
+    /// <see cref="EditForm"/>: an edit notifies the form's <see cref="EditContext"/>, and the field's
+    /// validation messages mark the editor invalid. Set automatically by <c>@bind-Value</c>.
+    /// </summary>
+    [Parameter] public Expression<Func<string?>>? ValueExpression { get; set; }
 
 
 
@@ -509,6 +574,12 @@ public partial class BitMarkdownEditor : BitComponentBase
             _internalValueChange = false;
         }
 
+        // A form validates the field as it is edited, the way it does every other input of it.
+        if (_editContext is not null && _fieldIdentifier is { } field)
+        {
+            _editContext.NotifyFieldChanged(field);
+        }
+
         await OnChange.InvokeAsync(value);
 
         await UpdatePreviewAsync();
@@ -683,6 +754,11 @@ public partial class BitMarkdownEditor : BitComponentBase
                 await AssignFullScreen(FullScreen is false);
                 await InvokeAsync(StateHasChanged);
                 break;
+            case "help":
+                _showHelp = _showHelp is false;
+                _focusHelp = _showHelp;
+                await InvokeAsync(StateHasChanged);
+                break;
         }
     }
 
@@ -697,30 +773,61 @@ public partial class BitMarkdownEditor : BitComponentBase
         ClassBuilder.Register(() => FullScreen ? "bit-mde-fsc" : string.Empty);
 
         ClassBuilder.Register(() => Resizable ? "bit-mde-rsz" : string.Empty);
+
+        ClassBuilder.Register(() => AutoHeight ? "bit-mde-ahg" : string.Empty);
+
+        ClassBuilder.Register(() => _invalid ? "bit-inv" : string.Empty);
     }
 
+    // The three sizes are the public variables themselves, written on the instance: what an app sets on :root
+    // is the default, and the parameter is the instance's own value of it.
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Height is null ? string.Empty : $"--bit-mde-height:{Height}");
+        StyleBuilder.Register(() => Height is null ? string.Empty : $"--bit-MarkdownEditor-height:{Height}");
 
-        StyleBuilder.Register(() => MinHeight is null ? string.Empty : $"--bit-mde-min-height:{MinHeight}");
+        StyleBuilder.Register(() => MinHeight is null ? string.Empty : $"--bit-MarkdownEditor-min-height:{MinHeight}");
 
-        StyleBuilder.Register(() => MaxHeight is null ? string.Empty : $"--bit-mde-max-height:{MaxHeight}");
+        StyleBuilder.Register(() => MaxHeight is null ? string.Empty : $"--bit-MarkdownEditor-max-height:{MaxHeight}");
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownEditorParams))]
     protected override void OnInitialized()
     {
+        // The initial value is seeded below, and the parameters a BitParams fills in are already in place for it.
+        CascadingParameters?.UpdateParameters(this);
+
         _value = Value ?? DefaultValue ?? string.Empty;
         _previewValue = _value;
 
         base.OnInitialized();
     }
 
+    protected override void OnParametersSet()
+    {
+        // Before anything below reads the parameters it may fill in. A BitParams that has gone away takes what it
+        // had cascaded with it, which the base class has already put back by now.
+        CascadingParameters?.UpdateParameters(this);
+
+        AttachEditContext();
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // A pane that held the focus and was just hidden by a mode switch hands it to the pane now on screen, so
+        // the keyboard is not dropped on the body of the page (where F9 could not bring the pane back either).
+        var modeChanged = _renderedMode is { } rendered && rendered != Mode;
+        _renderedMode = Mode;
+
+        if (modeChanged && firstRender is false)
+        {
+            try { await _js.BitMarkdownEditorSyncFocus(_Id); } catch (JSDisconnectedException) { }
+        }
 
         if (_focusHelp)
         {
@@ -790,6 +897,7 @@ public partial class BitMarkdownEditor : BitComponentBase
         TabIndents = TabIndents,
         AutoClose = AutoClosePairs,
         Submit = OnSubmit.HasDelegate,
+        AutoHeight = AutoHeight,
         MaxImageSize = MaxImageSize is > 0 ? MaxImageSize.Value : 0,
         ImageAccept = string.IsNullOrWhiteSpace(AcceptedImageTypes) ? null : AcceptedImageTypes,
         UploadingText = ActiveTexts.UploadingText,
@@ -879,6 +987,10 @@ public partial class BitMarkdownEditor : BitComponentBase
 
     private string CounterId => $"{_Id}-cnt";
 
+    private string HelpTitleId => $"{_Id}-hlt";
+
+    private string GetMenuId(BitMarkdownEditorToolbarItem item) => $"{_Id}-mnu-{item.Name}";
+
     // A limit nobody can see is a limit that surprises: while MaxLength is set, the counter
     // describes the textarea so assistive tech reads out how much room is left.
     private string? TextAreaDescribedBy => ShowStatusBar && MaxLength is > 0 ? CounterId : null;
@@ -931,10 +1043,15 @@ public partial class BitMarkdownEditor : BitComponentBase
             BitMarkdownEditorToolbarItemType.Dropdown => item.Children?.Any(c => IsToolbarItemDisabled(c) is false) is not true,
             BitMarkdownEditorToolbarItemType.Command or
             BitMarkdownEditorToolbarItemType.Undo or
-            BitMarkdownEditorToolbarItemType.Redo => true,
+            BitMarkdownEditorToolbarItemType.Redo or
+            BitMarkdownEditorToolbarItemType.ImageUpload => true,
             _ => false
         };
     }
+
+    // The upload button picks a file for the upload handler, so without one it has nothing to hand the file to.
+    private bool IsToolbarItemVisible(BitMarkdownEditorToolbarItem item) =>
+        item.Type is not BitMarkdownEditorToolbarItemType.ImageUpload || OnImageUpload is not null;
 
     private bool IsToolbarItemActive(BitMarkdownEditorToolbarItem item) =>
         (item.Type is BitMarkdownEditorToolbarItemType.ToggleFullScreen && FullScreen) ||
@@ -1025,6 +1142,7 @@ public partial class BitMarkdownEditor : BitComponentBase
         (ActiveTexts.ShortcutFind, "Ctrl/Cmd + F"),
         (ActiveTexts.ShortcutTogglePreview, "F9"),
         (ActiveTexts.ShortcutFullScreen, "F11"),
+        (ActiveTexts.ShortcutHelp, "Ctrl/Cmd + /"),
         (ActiveTexts.ShortcutEscapeTab, "Esc, then Tab")
     ];
 
@@ -1213,7 +1331,58 @@ public partial class BitMarkdownEditor : BitComponentBase
             _ => BitMarkdownEditorMode.Edit
         };
 
-        await AssignMode(next);
+        if (await AssignMode(next) is false) return;
+
+        // Which panes are on screen is only ever shown, so a screen reader is told what the cycle landed on.
+        _announcement = string.Format(ActiveTexts.ModeAnnouncementFormat, ActiveTexts.GetModeLabel(Mode));
+    }
+
+    // Ties the editor to the field of a cascaded EditForm: the field is the bound expression when there is one,
+    // or the Value itself while it is bound without one.
+    private void AttachEditContext()
+    {
+        if (ReferenceEquals(CascadedEditContext, _editContext) is false)
+        {
+            if (_editContext is not null) _editContext.OnValidationStateChanged -= _validationStateChangedHandler;
+
+            _editContext = CascadedEditContext;
+
+            if (_editContext is not null) _editContext.OnValidationStateChanged += _validationStateChangedHandler;
+
+            _fieldExpression = null;
+        }
+
+        if (_editContext is null)
+        {
+            _fieldIdentifier = null;
+        }
+        else if (_fieldIdentifier is null || ReferenceEquals(ValueExpression, _fieldExpression) is false)
+        {
+            // A lambda written in the markup is a new instance on every render of the parent, so the field is only
+            // rebuilt when it actually points somewhere else; comparing the instances alone would rebuild it each time.
+            var field = ValueExpression is not null
+                ? FieldIdentifier.Create(ValueExpression)
+                : ValueChanged.HasDelegate ? FieldIdentifier.Create(() => Value) : (FieldIdentifier?)null;
+
+            _fieldExpression = ValueExpression;
+            _fieldIdentifier = field;
+        }
+
+        UpdateInvalid();
+    }
+
+    // Returns true when the invalid state changed.
+    private bool UpdateInvalid()
+    {
+        var invalid = _editContext is not null && _fieldIdentifier is { } field && _editContext.GetValidationMessages(field).Any();
+
+        if (invalid == _invalid) return false;
+
+        _invalid = invalid;
+
+        ClassBuilder.Reset();
+
+        return true;
     }
 
     // A full-screen editor covers the viewport, so a page that goes on scrolling behind it
@@ -1302,6 +1471,12 @@ public partial class BitMarkdownEditor : BitComponentBase
         _debounceCts = null;
 
         _dotnetObj?.Dispose();
+
+        if (_editContext is not null)
+        {
+            _editContext.OnValidationStateChanged -= _validationStateChangedHandler;
+            _editContext = null;
+        }
 
         try
         {

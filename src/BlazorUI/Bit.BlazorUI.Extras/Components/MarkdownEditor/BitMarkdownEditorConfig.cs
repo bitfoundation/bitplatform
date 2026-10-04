@@ -60,10 +60,15 @@ internal sealed class BitMarkdownEditorConfig
     public bool Submit { get; set; }
 
     /// <summary>
+    /// Whether the panes grow with their content instead of scrolling it.
+    /// </summary>
+    public bool AutoHeight { get; set; }
+
+    /// <summary>
     /// A signature of every value above, used to detect a config change across renders
     /// without comparing the properties one by one.
     /// </summary>
     public override string ToString() =>
         $"{ImageUpload}|{SyncScroll}|{AutoPair}|{AutoSaveKey}|{ChangeDebounceMs}|{MaxLength}|{AutoFocus}|" +
-        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}";
+        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}|{AutoHeight}";
 }

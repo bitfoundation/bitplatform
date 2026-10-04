@@ -1,16 +1,84 @@
-﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
+// ancestor) re-tunes every editor under it and one set on the Style of an instance that one alone:
+//   --bit-MarkdownEditor-color                     text of the editor                          (default: $clr-fg-pri)
+//   --bit-MarkdownEditor-background                background of the editor                    (default: $clr-bg-pri)
+//   --bit-MarkdownEditor-border-color              outer border                                (default: $clr-brd-pri)
+//   --bit-MarkdownEditor-border-width              outer border width                          (default: $shp-border-width)
+//   --bit-MarkdownEditor-border-radius             outer corner radius                         (default: $shp-radius-surface)
+//   --bit-MarkdownEditor-divider-color             lines between the parts and the panes       (default: $clr-brd-sec)
+//   --bit-MarkdownEditor-focus-color               every focus indicator of the editor         (default: $clr-pri-focus)
+//   --bit-MarkdownEditor-error-color               invalid border and the counter at its limit (default: $clr-err)
+//   --bit-MarkdownEditor-height                    height of the panes                         (default: spacing(40))
+//   --bit-MarkdownEditor-min-height                smallest height of the panes                (default: spacing(15))
+//   --bit-MarkdownEditor-max-height                largest height of the panes                 (default: none)
+//   --bit-MarkdownEditor-pane-min-width            split panes stack below twice this width    (default: 18rem)
+//   --bit-MarkdownEditor-font-family               font of the textarea                        (default: $tg-font-family-mono)
+//   --bit-MarkdownEditor-font-size                 font size of the textarea                   (default: $tg-fs-sm)
+//   --bit-MarkdownEditor-line-height               line height of the textarea                 (default: 1.6)
+//   --bit-MarkdownEditor-padding                   padding of the textarea                     (default: spacing(1.5) spacing(1.75))
+//   --bit-MarkdownEditor-placeholder-color         placeholder of the textarea                 (default: $clr-fg-sec)
+//   --bit-MarkdownEditor-preview-padding           padding of the preview pane                 (default: spacing(1.5) spacing(2))
+//   --bit-MarkdownEditor-toolbar-background        background of the toolbar and find panel    (default: $clr-bg-sec)
+//   --bit-MarkdownEditor-button-size               square of a toolbar button                  (default: $siz-ctrl-md)
+//   --bit-MarkdownEditor-button-color              glyph of a toolbar button                   (default: $clr-fg-sec)
+//   --bit-MarkdownEditor-button-radius             corner radius of a toolbar button           (default: $shp-radius-button)
+//   --bit-MarkdownEditor-button-hover-color        ... under the pointer                       (default: $clr-fg-pri)
+//   --bit-MarkdownEditor-button-hover-background   ... under the pointer                       (default: $clr-bg-sec-hover)
+//   --bit-MarkdownEditor-button-active-color       glyph of a pressed (active) button          (default: $clr-pri-text)
+//   --bit-MarkdownEditor-button-active-background  background of a pressed (active) button     (default: $clr-pri)
+//   --bit-MarkdownEditor-statusbar-color           text of the status bar                      (default: $clr-fg-sec)
+//   --bit-MarkdownEditor-statusbar-background      background of the status bar                (default: $clr-bg-sec)
+
+$mde-color: var(--bit-MarkdownEditor-color, #{$clr-fg-pri});
+$mde-background: var(--bit-MarkdownEditor-background, #{$clr-bg-pri});
+$mde-border-color: var(--bit-MarkdownEditor-border-color, #{$clr-brd-pri});
+$mde-border-width: var(--bit-MarkdownEditor-border-width, #{$shp-border-width});
+$mde-radius: var(--bit-MarkdownEditor-border-radius, #{$shp-radius-surface});
+$mde-divider: var(--bit-MarkdownEditor-divider-color, #{$clr-brd-sec});
+$mde-focus: var(--bit-MarkdownEditor-focus-color, #{$clr-pri-focus});
+$mde-error: var(--bit-MarkdownEditor-error-color, #{$clr-err});
+$mde-bar-background: var(--bit-MarkdownEditor-toolbar-background, #{$clr-bg-sec});
+$mde-button-color: var(--bit-MarkdownEditor-button-color, #{$clr-fg-sec});
+$mde-button-radius: var(--bit-MarkdownEditor-button-radius, #{$shp-radius-button});
+$mde-button-active-color: var(--bit-MarkdownEditor-button-active-color, #{$clr-pri-text});
+$mde-button-active-background: var(--bit-MarkdownEditor-button-active-background, #{$clr-pri});
+
+// A ring drawn inside the element, for the parts that fill a pane whose overflow would clip one drawn outside.
+@mixin mde-inset-ring($color: $mde-focus) {
+    outline: none;
+    box-shadow: inset 0 0 0 $shp-focus-ring-width #{$color};
+
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
 
 .bit-mde {
     width: 100%;
     display: flex;
-    overflow: hidden;
     position: relative;
     box-sizing: border-box;
     flex-direction: column;
-    color: $clr-fg-pri;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-surface;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    color: $mde-color;
+    background: $mde-background;
+    border-radius: $mde-radius;
+    border: $mde-border-width $shp-border-style $mde-border-color;
+}
+
+// The root does not clip its children (a menu of the toolbar has to be able to hang out of a short editor),
+// so the parts that paint a background round the corners they share with the root themselves.
+.bit-mde > .bit-mde-tlb:first-child,
+.bit-mde > .bit-mde-fnd:first-child {
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+}
+
+.bit-mde > .bit-mde-sbr {
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
 }
 
 .bit-mde-fsc {
@@ -25,8 +93,28 @@
 // The marker is an attribute rather than a class: the script sets it, and Blazor rewrites
 // the root's class attribute whenever FullScreen or Resizable flips, which would drop it.
 .bit-mde[data-bit-mde-drag] {
-    border-color: $clr-pri;
-    box-shadow: inset 0 0 0 $shp-border-width $clr-pri;
+    border-color: $mde-focus;
+    box-shadow: inset 0 0 0 $shp-border-width $mde-focus;
+}
+
+.bit-mde.bit-inv {
+    border-color: $mde-error;
+}
+
+.bit-mde.bit-dis {
+    color: $clr-fg-dis;
+    background: $clr-bg-dis;
+    border-color: $clr-brd-dis;
+
+    .bit-mde-txa,
+    .bit-mde-lbl,
+    .bit-mde-sbr {
+        color: $clr-fg-dis;
+    }
+
+    .bit-mde-lbl {
+        cursor: default;
+    }
 }
 
 .bit-mde-tlb {
@@ -34,22 +122,22 @@
     flex-wrap: wrap;
     align-items: center;
     gap: spacing(0.25);
-    background: $clr-bg-sec;
+    background: $mde-bar-background;
     padding: spacing(0.75) spacing(1);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-bottom: $shp-border-width $shp-border-style $mde-divider;
 }
 
 .bit-mde-btn {
     padding: 0;
     cursor: pointer;
-    width: $siz-ctrl-md;
-    height: $siz-ctrl-md;
     align-items: center;
-    color: $clr-fg-sec;
     display: inline-flex;
     background: transparent;
     justify-content: center;
-    border-radius: $shp-radius-button;
+    color: $mde-button-color;
+    border-radius: $mde-button-radius;
+    width: var(--bit-MarkdownEditor-button-size, #{$siz-ctrl-md});
+    height: var(--bit-MarkdownEditor-button-size, #{$siz-ctrl-md});
     border: $shp-border-width $shp-border-style transparent;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
@@ -59,9 +147,9 @@
     }
 
     &:hover:not(:disabled) {
-        color: $clr-fg-pri;
-        background: $clr-bg-sec-hover;
-        border-color: $clr-brd-sec;
+        border-color: $mde-divider;
+        color: var(--bit-MarkdownEditor-button-hover-color, #{$clr-fg-pri});
+        background: var(--bit-MarkdownEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &:active:not(:disabled) {
@@ -69,14 +157,13 @@
     }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri;
-        outline-offset: $shp-focus-ring-offset;
+        @include focus-ring($mde-focus);
     }
 
     &.bit-mde-act {
-        color: $clr-pri-text;
-        background: $clr-pri;
-        border-color: $clr-pri;
+        color: $mde-button-active-color;
+        background: $mde-button-active-background;
+        border-color: $mde-button-active-background;
     }
 
     &:disabled {
@@ -89,7 +176,7 @@
     width: $shp-border-width;
     align-self: stretch;
     margin: spacing(0.5);
-    background: $clr-brd-sec;
+    background: $mde-divider;
 }
 
 .bit-mde-dd {
@@ -156,14 +243,27 @@
     outline: none;
 }
 
+// Read by assistive tech only: what changed that nothing on screen announces (the display mode).
+.bit-mde-ann {
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-mde-fnd {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: spacing(0.5);
-    background: $clr-bg-sec;
+    background: $mde-bar-background;
     padding: spacing(0.5) spacing(1);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-bottom: $shp-border-width $shp-border-style $mde-divider;
 }
 
 .bit-mde-fni {
@@ -172,13 +272,14 @@
     color: $clr-fg-pri;
     font-size: $tg-fs-sm;
     background: $clr-bg-pri;
+    min-height: $siz-ctrl-sm;
+    box-sizing: border-box;
     padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
     border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include mde-inset-ring;
     }
 }
 
@@ -187,6 +288,10 @@
     color: $clr-fg-pri;
     background: $clr-bg-pri;
     font-size: $tg-fs-xs;
+    box-sizing: border-box;
+    // WCAG 2.5.8: a pointer target is at least 24px square, which the padding alone does not reach.
+    min-width: spacing(3);
+    min-height: spacing(3);
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
     border-radius: $shp-radius-button;
@@ -198,14 +303,13 @@
     }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri;
-        outline-offset: $shp-focus-ring-offset;
+        @include focus-ring($mde-focus);
     }
 
     &.bit-mde-act {
-        color: $clr-pri-text;
-        background: $clr-pri;
-        border-color: $clr-pri;
+        color: $mde-button-active-color;
+        background: $mde-button-active-background;
+        border-color: $mde-button-active-background;
     }
 
     &:disabled {
@@ -224,18 +328,28 @@
     white-space: nowrap;
 }
 
+// The two panes wrap onto a line each once the body is narrower than two of their minimum widths, so a
+// split editor on a phone stacks the preview under the text instead of squeezing both into half a screen.
 .bit-mde-bdy {
     display: flex;
+    flex-wrap: wrap;
     overflow: hidden;
-    min-height: var(--bit-mde-min-height, #{spacing(15)});
-    max-height: var(--bit-mde-max-height, none);
-    height: var(--bit-mde-height, #{spacing(40)});
+    min-height: var(--bit-MarkdownEditor-min-height, #{spacing(15)});
+    max-height: var(--bit-MarkdownEditor-max-height, none);
+    height: var(--bit-MarkdownEditor-height, #{spacing(40)});
 }
 
 // `resize` needs a non-visible overflow, which the body already has; the height it
-// writes inline wins over the --bit-mde-height default.
+// writes inline wins over the --bit-MarkdownEditor-height default.
 .bit-mde-rsz .bit-mde-bdy {
     resize: vertical;
+}
+
+// The script sizes the body to its content (capped by the max-height), so nothing else may: the drag handle
+// would fight it, and the default height would show for a frame before the first fit.
+.bit-mde-ahg .bit-mde-bdy {
+    resize: none;
+    height: auto;
 }
 
 .bit-mde-fsc .bit-mde-bdy {
@@ -248,8 +362,17 @@
 
 .bit-mde-pne {
     min-width: 0;
-    flex: 1 1 50%;
+    min-height: 0;
     overflow: auto;
+    box-sizing: border-box;
+    flex: 1 1 var(--bit-MarkdownEditor-pane-min-width, 18rem);
+}
+
+// A column, so the textarea fills its pane by flex rather than by a percentage height, which a wrapped
+// (multi-line) body would leave unresolved.
+.bit-mde-epn {
+    display: flex;
+    flex-direction: column;
 }
 
 // Hide the inactive pane per mode but keep it in the DOM so the textarea
@@ -262,47 +385,57 @@
     display: none;
 }
 
+// The divider is drawn on both leading edges of the preview pane and pulled 1px outside it, so the body's
+// overflow clips whichever one lies on its own edge: the inline one while the panes sit side by side, the
+// block one once they have stacked.
 .bit-mde-split .bit-mde-ppn {
-    border-inline-start: $shp-border-width $shp-border-style $clr-brd-sec;
+    margin-block-start: calc(-1 * #{$shp-border-width});
+    margin-inline-start: calc(-1 * #{$shp-border-width});
+    border-block-start: $shp-border-width $shp-border-style $mde-divider;
+    border-inline-start: $shp-border-width $shp-border-style $mde-divider;
 }
 
 .bit-mde-txa {
     margin: 0;
     width: 100%;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     border: none;
     resize: none;
     outline: none;
     tab-size: 4;
     display: block;
-    line-height: 1.6;
-    color: $clr-fg-pri;
+    color: inherit;
     box-sizing: border-box;
     background: transparent;
-    font-size: $tg-fs-sm;
-    padding: spacing(1.5) spacing(1.75);
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: var(--bit-MarkdownEditor-font-size, #{$tg-fs-sm});
+    line-height: var(--bit-MarkdownEditor-line-height, 1.6);
+    padding: var(--bit-MarkdownEditor-padding, #{spacing(1.5) spacing(1.75)});
+    font-family: var(--bit-MarkdownEditor-font-family, #{$tg-font-family-mono});
 
     &::placeholder {
-        color: $clr-fg-sec;
+        opacity: 1;
+        color: var(--bit-MarkdownEditor-placeholder-color, #{$clr-fg-sec});
     }
 
-    // The textarea fills its pane, so an inset outline keeps the keyboard
+    // The textarea fills its pane, so an inset ring keeps the keyboard
     // focus indicator visible instead of being clipped by the container.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include mde-inset-ring;
     }
 }
 
-.bit-mde-ppn {
-    padding: spacing(1.5) spacing(2);
+.bit-mde.bit-inv .bit-mde-txa:focus-visible {
+    @include mde-inset-ring($mde-error);
+}
 
-    // The pane is a tab stop so the arrow keys can scroll it; the same inset outline
+.bit-mde-ppn {
+    padding: var(--bit-MarkdownEditor-preview-padding, #{spacing(1.5) spacing(2)});
+
+    // The pane is a tab stop so the arrow keys can scroll it; the same inset ring
     // keeps that focus visible against the pane's own edge.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include mde-inset-ring;
     }
 }
 
@@ -314,27 +447,33 @@
 .bit-mde-lbl {
     display: block;
     cursor: pointer;
-    color: $clr-fg-pri;
+    color: inherit;
     font-size: $tg-fs-sm;
     font-weight: $tg-fw-semibold;
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(0.75) spacing(1) 0;
 }
 
+.bit-mde-req::after {
+    content: " *";
+    color: $mde-error;
+}
+
 .bit-mde-sbr {
     display: flex;
-    gap: spacing(1.75);
+    flex-wrap: wrap;
+    gap: spacing(0.5) spacing(1.75);
     align-items: center;
-    color: $clr-fg-sec;
-    background: $clr-bg-sec;
     font-size: $tg-fs-xs;
     padding: spacing(0.5) spacing(1.5);
-    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-top: $shp-border-width $shp-border-style $mde-divider;
+    color: var(--bit-MarkdownEditor-statusbar-color, #{$clr-fg-sec});
+    background: var(--bit-MarkdownEditor-statusbar-background, #{$clr-bg-sec});
 }
 
 // The character counter once the MaxLength is reached.
 .bit-mde-lim {
-    color: $clr-err;
+    color: $mde-error;
     font-weight: $tg-fw-semibold;
 }
 
@@ -358,6 +497,7 @@
     display: flex;
     position: absolute;
     align-items: center;
+    border-radius: inherit;
     justify-content: center;
     z-index: $zindex-overlay;
     background: $clr-bg-overlay;
@@ -378,11 +518,21 @@
     border-radius: $shp-radius-dialog;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
+    &:focus-visible {
+        @include focus-anchor;
+    }
+
     header {
         display: flex;
         align-items: center;
         margin-bottom: spacing(1.25);
         justify-content: space-between;
+    }
+
+    h2 {
+        margin: 0;
+        font-size: $tg-fs-md;
+        font-weight: $tg-fw-semibold;
     }
 
     dl {
@@ -409,21 +559,58 @@
             text-align: end;
             white-space: nowrap;
             color: $clr-fg-sec;
-            font-family: ui-monospace, monospace;
+            font-family: $tg-font-family-mono;
         }
     }
 }
 
 .bit-mde-hcl {
+    padding: 0;
     border: none;
     line-height: 1;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: spacing(3);
+    min-height: spacing(3);
     color: $clr-fg-sec;
     background: transparent;
     font-size: $tg-fs-xl;
+    border-radius: $mde-button-radius;
+
+    &:hover {
+        color: $clr-fg-pri;
+    }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid $clr-pri;
-        outline-offset: $shp-focus-ring-offset;
+        @include focus-ring($mde-focus);
+    }
+}
+
+@media (forced-colors: active) {
+    // A forced palette drops every background, which is all that told the pressed buttons and the
+    // dividers apart; borders survive it.
+    .bit-mde-btn.bit-mde-act,
+    .bit-mde-fnb.bit-mde-act {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background: Highlight;
+        border-color: Highlight;
+    }
+
+    .bit-mde-btn:disabled,
+    .bit-mde-fnb:disabled {
+        color: GrayText;
+    }
+
+    .bit-mde-sep,
+    .bit-mde-msep {
+        forced-color-adjust: none;
+        background: CanvasText;
+    }
+
+    .bit-mde[data-bit-mde-drag] {
+        border-color: Highlight;
     }
 }
