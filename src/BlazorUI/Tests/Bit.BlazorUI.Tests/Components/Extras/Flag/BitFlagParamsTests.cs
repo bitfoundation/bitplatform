@@ -267,6 +267,155 @@ public class BitFlagParamsTests : BunitTestContext
         Assert.IsFalse(img.HasAttribute("data-removed"));
     }
 
+    /// <summary>
+    /// The cascaded attributes the page leaves to the flag are read the same way its own are: a draggable or a
+    /// decoding among them is kept rather than overwritten by the flag's default.
+    /// </summary>
+    [TestMethod]
+    public void BitFlagShouldKeepTheDefaultsTheCascadedImageAttributesGive()
+    {
+        var component = RenderWithParams(new BitFlagParams { ImageAttributes = new() { ["draggable"] = "true", ["decoding"] = "sync" } },
+                                         flag => flag.Add(p => p.ImageAttributes, new Dictionary<string, object> { ["decoding"] = "auto" }));
+
+        var img = component.Find("img");
+
+        Assert.AreEqual("true", img.GetAttribute("draggable"));
+        Assert.AreEqual("auto", img.GetAttribute("decoding"));
+    }
+
+    /// <summary>
+    /// A value the cascade stops setting goes back to what the flag held before it, the way a cascaded Rounded
+    /// does - including one that changes where the image comes from.
+    /// </summary>
+    [TestMethod]
+    public void BitFlagShouldDropACascadedValueThatIsCleared()
+    {
+        var flagParams = new BitFlagParams { SrcPattern = "/flags/{iso2}.svg", Height = "2rem", Circular = true };
+
+        var renders = 0;
+
+        RenderFragment Flag() => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "NL");
+            builder.AddAttribute(2, nameof(BitFlag.Title), $"render {++renders}");
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { flagParams });
+            parameters.Add(p => p.ChildContent, Flag());
+        });
+
+        Assert.AreEqual("/flags/nl.svg", component.Find("img").GetAttribute("src"));
+
+        flagParams.SrcPattern = null;
+        flagParams.Height = null;
+        flagParams.Circular = null;
+
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Flag()));
+
+        var root = component.Find(".bit-flg");
+
+        Assert.AreEqual(PackagedNetherlands, component.Find("img").GetAttribute("src"));
+        Assert.IsFalse(root.ClassList.Contains("bit-flg-cir"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("height:2rem"));
+    }
+
+    /// <summary>
+    /// A value the flag set for itself wins over one the cascade sets for a parameter that would outrank it.
+    /// </summary>
+    [TestMethod]
+    public void BitFlagOwnImageSetShouldWinOverACascadedSrcPattern()
+    {
+        var component = RenderWithParams(new BitFlagParams { SrcPattern = "https://flagcdn.com/{iso2}.svg" },
+                                         flag => flag.Add(p => p.ImageSet, BitFlagImageSet.Shiny));
+
+        StringAssert.StartsWith(component.Find("img").GetAttribute("src"), "_content/Bit.BlazorUI.Assets/flags/NL-shiny-");
+    }
+
+    [TestMethod]
+    public void BitFlagOwnSrcShouldWinOverACascadedEmoji()
+    {
+        var component = RenderWithParams(new BitFlagParams { Emoji = true }, flag => flag.Add(p => p.Src, "own.svg"));
+
+        Assert.AreEqual("own.svg", component.Find("img").GetAttribute("src"));
+        Assert.AreEqual(0, component.FindAll(".bit-flg-emj").Count);
+    }
+
+    [TestMethod]
+    public void BitFlagOwnRoundedShouldWinOverACascadedCircular()
+    {
+        var component = RenderWithParams(new BitFlagParams { Circular = true }, flag => flag.Add(p => p.Rounded, true));
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-rnd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-flg-cir"));
+    }
+
+    [TestMethod]
+    public void BitFlagOwnSizeShouldWinOverACascadedLength()
+    {
+        var component = RenderWithParams(new BitFlagParams { Height = "2rem", Width = "3rem" }, flag => flag.Add(p => p.Size, BitSize.Large));
+
+        var root = component.Find(".bit-flg");
+        var style = root.GetAttribute("style") ?? string.Empty;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-lg"));
+        Assert.IsFalse(style.Contains("height:2rem"));
+        Assert.IsFalse(style.Contains("width:3rem"));
+    }
+
+    [TestMethod]
+    public void BitFlagOwnLengthShouldNotTakeASecondOneFromTheCascade()
+    {
+        // A height alone is a square; a cascaded width would give it proportions the flag never asked for.
+        var component = RenderWithParams(new BitFlagParams { Width = "3rem" }, flag => flag.Add(p => p.Height, "2rem"));
+
+        var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "height:2rem");
+        Assert.IsFalse(style.Contains("width:3rem"));
+    }
+
+    [TestMethod]
+    public void BitFlagOwnAspectRatioShouldTakeOneCascadedLengthOnly()
+    {
+        // Two lengths leave the browser nothing to work a ratio out for, so the flag's own ratio keeps the height.
+        var component = RenderWithParams(new BitFlagParams { Width = "2rem", Height = "2rem" }, flag => flag.Add(p => p.AspectRatio, "3/2"));
+
+        var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "aspect-ratio:3/2");
+        StringAssert.Contains(style, "height:2rem");
+        Assert.IsFalse(style.Contains("width:2rem"));
+    }
+
+    /// <summary>
+    /// A cascaded value applied before the flag set one of its own that outranks it is taken back off, rather than
+    /// left behind from the earlier render.
+    /// </summary>
+    [TestMethod]
+    public void BitFlagShouldTakeBackACascadedValueOnceItsOwnOutranksIt()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitFlagParams { Circular = true } });
+            parameters.AddChildContent<BitFlag>(flag => flag.Add(p => p.Iso2, "NL"));
+        });
+
+        Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-cir"));
+
+        component.FindComponent<BitFlag>().Render(parameters => parameters.Add(p => p.Rounded, true));
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-rnd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-flg-cir"));
+    }
+
     [TestMethod]
     public void BitFlagShouldTakeTheSrcPatternFromTheCascade()
     {
@@ -284,6 +433,10 @@ public class BitFlagParamsTests : BunitTestContext
         DataRow("/flags/{ISO2}.png", "/flags/NL.png"),
         DataRow("/flags/{iso3}.svg", "/flags/nld.svg"),
         DataRow("/flags/{ISO3}-{iso2}.svg", "/flags/NLD-nl.svg"),
+        DataRow("/flags/{Iso2}.svg", "/flags/nl.svg"),
+        DataRow("/flags/{iSO3}/{IsO2}.svg", "/flags/nld/nl.svg"),
+        DataRow("/{flags}/{iso}/{iso4}{ISO2", "/{flags}/{iso}/{iso4}{ISO2"),
+        DataRow("/flags/{iso2}{ISO2}.svg", "/flags/nlNL.svg"),
         DataRow("/flags/netherlands.svg", "/flags/netherlands.svg")]
     public void BitFlagShouldWriteTheCodesIntoTheSrcPattern(string pattern, string expected)
     {

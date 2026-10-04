@@ -27,9 +27,12 @@
 // size a flag has always been.
 .bit-flg {
     --bit-flg-siz: var(--bit-Flag-size, #{$siz-icon-md});
-    // The corner and the border of the frame, which a picture cut to the flag clips itself to.
+    // The corner of the frame, which a picture cut to the flag clips itself to.
     --bit-flg-rad: 0px;
-    --bit-flg-bdw: 0px;
+    // The elevation of the frame, which the focus ring is drawn on top of rather than in place of. A
+    // transparent shadow of no size is what a flag without a Shadow has, so the ring always has a layer to
+    // keep beside it.
+    --bit-flg-elv: 0 0 #0000;
 
     padding: 0;
     flex-shrink: 0;
@@ -55,18 +58,11 @@
     // The ring is drawn on the frame, which is also the element that takes the focus: only a flag with
     // a click handler or a tab index of its own is focusable at all, so nothing else ever draws it.
     //
-    // It is an outline rather than the shared box-shadow ring because the box-shadow of the frame is
-    // already its Shadow, and one property cannot carry both: a focused raised flag would lose its
-    // elevation while it is focused. The outline follows the rounded and circular corners, and sits off
-    // the frame by the theme's ring offset.
+    // It is the shared ring of the library, but the box-shadow it is drawn with is also the frame's
+    // Shadow, and one declaration replaces the other: a focused raised flag would lose its elevation for
+    // as long as it is focused. So the elevation is handed to the mixin as a layer to keep under the ring.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-Flag-focus-color, #{$clr-pri-focus});
-        outline-offset: $shp-focus-ring-offset;
-
-        // Forced colors keep the outline but not an author color, so the ring takes the system's own.
-        @media (forced-colors: active) {
-            outline-color: Highlight;
-        }
+        @include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));
     }
 }
 
@@ -157,10 +153,14 @@
 // of the packaged image unless the image of a set says otherwise), the frame takes its proportions from
 // the height, and the picture is blown up and moved so that box lands exactly on the frame.
 //
-// The picture overhangs the frame and is clipped back to it, corner included, with a clip-path rather
-// than an overflow of the frame's own: that would also clip the hit box that grows a clickable flag to
-// a real target. A flag that is not a button has no such box, so it clips the overhang as well, which
-// keeps it out of the scrollable overflow of whatever the flag sits in.
+// The picture overhangs the frame and is clipped back to it, corner included. A flag that is not a button
+// clips it with an overflow of the frame's own, which follows the inside of the border at whatever corners
+// the frame has and keeps the overhang out of the scrollable overflow of whatever the flag sits in. A
+// clickable one cannot: the overflow would also clip the hit box that grows it to a real target. So its
+// picture clips itself, with a clip-path rounded by the corner of the frame. That corner is taken whole,
+// as any border-radius - "0.75rem 0" included - since the inner corner of a border cannot be worked out
+// of it in CSS; the curve inside a border is then rounded a little more than the border is, which leaves
+// a sliver of at most four tenths of the border's width between the two.
 .bit-flg-crp {
     --bit-flg-crp-s: 16;
 
@@ -184,7 +184,11 @@
                          calc(100% * (var(--bit-flg-crp-s) - var(--bit-flg-crp-x) - var(--bit-flg-crp-w)) / var(--bit-flg-crp-s))
                          calc(100% * (var(--bit-flg-crp-s) - var(--bit-flg-crp-y) - var(--bit-flg-crp-h)) / var(--bit-flg-crp-s))
                          calc(100% * var(--bit-flg-crp-x) / var(--bit-flg-crp-s))
-                         round max(0px, calc(var(--bit-flg-rad) - var(--bit-flg-bdw))));
+                         round var(--bit-flg-rad));
+    }
+
+    &:not(.bit-flg-clk) > .bit-flg-img {
+        clip-path: none;
     }
 }
 
@@ -249,14 +253,14 @@
 // flag takes exactly as much room as one without. This is what keeps a mostly white flag off a white
 // surface.
 .bit-flg-brd {
-    --bit-flg-bdw: var(--bit-Flag-border-width, #{$shp-border-width});
-    border-width: var(--bit-flg-bdw);
+    border-width: var(--bit-Flag-border-width, #{$shp-border-width});
     border-style: $shp-border-style;
     border-color: var(--bit-Flag-border-color, #{$clr-brd-sec});
 }
 
 .bit-flg-shd {
-    box-shadow: var(--bit-Flag-shadow, #{$box-shadow-card});
+    --bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});
+    box-shadow: var(--bit-flg-elv);
 }
 
 .bit-flg-gry {

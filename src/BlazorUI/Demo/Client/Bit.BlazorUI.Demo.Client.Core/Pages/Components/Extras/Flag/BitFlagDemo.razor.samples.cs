@@ -144,6 +144,7 @@ private const string netherlandsSvg = ""data:image/svg+xml,%3Csvg xmlns='http://
                  Loading=""BitImageLoading.Eager""
                  Country=""BitCountries.Portugal""
                  ImageAttributes=""@(new() { { ""referrerpolicy"", ""no-referrer"" } })"" />
+        <span>Eager, with a referrerpolicy on the img</span>
 
         <BitFlag Bordered Height=""2rem""
                  Country=""BitCountries.Portugal""

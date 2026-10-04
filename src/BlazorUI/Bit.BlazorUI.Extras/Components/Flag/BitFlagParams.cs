@@ -153,15 +153,43 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFlag);
 
+        // A value set on the flag itself wins over the cascade, and that has to hold between parameters as well as
+        // within one: Circular wins over Rounded, Emoji over every image source, SrcPattern over ImageSet, a Width or
+        // a Height over Size, and two lengths over AspectRatio. So a cascaded value that would outrank, or reshape,
+        // what the flag set for itself stands down - and one applied on an earlier render, before the flag set its
+        // own, is taken back off, which is why each of these is worked out as the value the flag should hold rather
+        // than only as whether to assign it.
+        var ownRounded = IsOwn(bitFlag, nameof(Rounded)) && bitFlag.Rounded;
+        var ownImageSet = IsOwn(bitFlag, nameof(ImageSet)) && bitFlag.ImageSet.HasValue;
+        var ownImage = ownImageSet
+                    || (IsOwn(bitFlag, nameof(BitFlag.Src)) && bitFlag.Src.HasValue())
+                    || (IsOwn(bitFlag, nameof(SrcPattern)) && bitFlag.SrcPattern.HasValue());
+        var ownWidth = IsOwn(bitFlag, nameof(Width)) && bitFlag.Width.HasValue();
+        var ownHeight = IsOwn(bitFlag, nameof(Height)) && bitFlag.Height.HasValue();
+        var ownSize = ownWidth || ownHeight || (IsOwn(bitFlag, nameof(Size)) && bitFlag.Size.HasValue);
+        var ownAspectRatio = IsOwn(bitFlag, nameof(AspectRatio)) && bitFlag.AspectRatio.HasValue();
+
+        // A flag that sized itself keeps that size: a cascaded length would win over its Size, and a second length
+        // would give its square proportions it never asked for. A flag that gave itself a ratio takes one cascaded
+        // length at most, since two of them leave the browser nothing to work the ratio out for.
+        var height = ownSize ? null : Height;
+        var width = ownSize || (ownAspectRatio && height.HasValue()) ? null : Width;
+
         // This runs on every render of every flag under the BitParams - a country picker renders two hundred of them -
         // so a value that drives the class or the style of the root only resets the builders when it differs from the
         // one the flag already holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (AspectRatio.HasValue() && bitFlag.HasNotBeenSet(nameof(AspectRatio)) && bitFlag.AspectRatio != AspectRatio)
+        if (AspectRatio.HasValue() && bitFlag.HasNotBeenSet(nameof(AspectRatio)))
         {
-            bitFlag.AspectRatio = AspectRatio;
+            // Two lengths of the flag's own are its proportions already.
+            var aspectRatio = ownWidth && ownHeight ? null : AspectRatio;
 
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            if (bitFlag.AspectRatio != aspectRatio)
+            {
+                bitFlag.AspectRatio = aspectRatio;
+
+                bitFlag.ClassBuilder.Reset();
+                bitFlag.StyleBuilder.Reset();
+            }
         }
 
         if (AutoAlt.HasValue && bitFlag.HasNotBeenSet(nameof(AutoAlt)))
@@ -182,12 +210,17 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
             bitFlag.StyleBuilder.Reset();
         }
 
-        if (Circular.HasValue && bitFlag.HasNotBeenSet(nameof(Circular)) && bitFlag.Circular != Circular.Value)
+        if (Circular.HasValue && bitFlag.HasNotBeenSet(nameof(Circular)))
         {
-            bitFlag.Circular = Circular.Value;
+            var circular = Circular.Value && ownRounded is false;
 
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            if (bitFlag.Circular != circular)
+            {
+                bitFlag.Circular = circular;
+
+                bitFlag.ClassBuilder.Reset();
+                bitFlag.StyleBuilder.Reset();
+            }
         }
 
         if (Classes is not null && bitFlag.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFlag.Classes, Classes) is false)
@@ -197,12 +230,17 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
             bitFlag.ClassBuilder.Reset();
         }
 
-        if (Emoji.HasValue && bitFlag.HasNotBeenSet(nameof(Emoji)) && bitFlag.Emoji != Emoji.Value)
+        if (Emoji.HasValue && bitFlag.HasNotBeenSet(nameof(Emoji)))
         {
-            bitFlag.Emoji = Emoji.Value;
+            var emoji = Emoji.Value && ownImage is false;
 
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            if (bitFlag.Emoji != emoji)
+            {
+                bitFlag.Emoji = emoji;
+
+                bitFlag.ClassBuilder.Reset();
+                bitFlag.StyleBuilder.Reset();
+            }
         }
 
         if (FallbackTemplate is not null && bitFlag.HasNotBeenSet(nameof(FallbackTemplate)))
@@ -226,35 +264,17 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
             bitFlag.ClassBuilder.Reset();
         }
 
-        if (Height.HasValue() && bitFlag.HasNotBeenSet(nameof(Height)) && bitFlag.Height != Height)
+        if (Height.HasValue() && bitFlag.HasNotBeenSet(nameof(Height)) && bitFlag.Height != height)
         {
-            bitFlag.Height = Height;
+            bitFlag.Height = height;
 
             bitFlag.ClassBuilder.Reset();
             bitFlag.StyleBuilder.Reset();
         }
 
-        // The cascaded attributes are merged into a copy rather than into the flag's own dictionary: that one may well
-        // be an instance the page shares between several flags, or keeps for itself, and writing into it would hand
-        // the cascaded attributes to every one of them - or to the page - for good. The flag hands its own dictionary
-        // back before every call, never the last merge, so a cascaded attribute taken away or changed since follows.
-        if (ImageAttributes is not null && ImageAttributes.Count > 0)
-        {
-            Dictionary<string, object>? merged = null;
-
-            foreach (var attribute in ImageAttributes)
-            {
-                if (bitFlag.ImageAttributes.ContainsKey(attribute.Key)) continue;
-
-                merged ??= new(bitFlag.ImageAttributes, bitFlag.ImageAttributes.Comparer);
-                merged[attribute.Key] = attribute.Value;
-            }
-
-            if (merged is not null)
-            {
-                bitFlag.ImageAttributes = merged;
-            }
-        }
+        // The ImageAttributes are not written onto the flag: it renders the cascaded ones under its own, which is
+        // what keeps both dictionaries uncopied and untouched, and a cascaded attribute taken away or changed since
+        // gone or changed on the very next render.
 
         if (ImageSet.HasValue && bitFlag.HasNotBeenSet(nameof(ImageSet)))
         {
@@ -296,7 +316,7 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
 
         if (SrcPattern.HasValue() && bitFlag.HasNotBeenSet(nameof(SrcPattern)))
         {
-            bitFlag.SrcPattern = SrcPattern;
+            bitFlag.SrcPattern = ownImageSet ? null : SrcPattern;
         }
 
         if (Styles is not null && bitFlag.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFlag.Styles, Styles) is false)
@@ -306,12 +326,14 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
             bitFlag.StyleBuilder.Reset();
         }
 
-        if (Width.HasValue() && bitFlag.HasNotBeenSet(nameof(Width)) && bitFlag.Width != Width)
+        if (Width.HasValue() && bitFlag.HasNotBeenSet(nameof(Width)) && bitFlag.Width != width)
         {
-            bitFlag.Width = Width;
+            bitFlag.Width = width;
 
             bitFlag.ClassBuilder.Reset();
             bitFlag.StyleBuilder.Reset();
         }
+
+        static bool IsOwn(BitFlag flag, string name) => flag.HasNotBeenSet(name) is false;
     }
 }

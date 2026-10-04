@@ -98,18 +98,37 @@ public partial class BitFlagStylesheetTests
     }
 
     [TestMethod]
-    public void BitFlagShouldKeepTheFocusRingOffTheShadow()
+    public void BitFlagShouldDrawTheSharedFocusRingOverItsShadow()
     {
-        // The box-shadow of the frame is its Shadow; a ring drawn with it would take the elevation away from a
-        // focused flag. So the ring is an outline, which the forced-colors palette keeps in the system color.
-        var focus = ReadStylesheet();
-        focus = focus[focus.IndexOf("&:focus-visible {", System.StringComparison.Ordinal)..];
+        // The ring is the library's own, drawn with the same box-shadow the Shadow uses, so the elevation is handed
+        // to the mixin as a layer to keep: a focused raised flag keeps its shadow under the ring.
+        var stylesheet = ReadStylesheet();
+
+        var focus = stylesheet[stylesheet.IndexOf("&:focus-visible {", System.StringComparison.Ordinal)..];
         focus = focus[..focus.IndexOf("\n    }", System.StringComparison.Ordinal)];
 
-        StringAssert.Contains(focus, "outline: $shp-focus-ring-width solid var(--bit-Flag-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(focus, "@media (forced-colors: active) {\n            outline-color: Highlight;");
-        Assert.IsFalse(focus.Contains("box-shadow"), "The focus ring is drawn with the box-shadow the Shadow uses.");
-        Assert.IsFalse(focus.Contains("focus-ring;"), "The focus ring is drawn with the box-shadow the Shadow uses.");
+        StringAssert.Contains(focus, "@include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));");
+        Assert.IsFalse(focus.Contains("outline:"), "The focus ring is drawn by hand rather than with the shared mixin.");
+
+        StringAssert.Contains(RuleOf(stylesheet, ".bit-flg"), "--bit-flg-elv: 0 0 #0000;");
+        StringAssert.Contains(RuleOf(stylesheet, ".bit-flg-shd"), "--bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});\n    box-shadow: var(--bit-flg-elv);");
+
+        StringAssert.Contains(ReadFile("theme-styles", "functions.scss"),
+"@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset, $also: null) {");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldClipACroppedPictureWithAnyCornerTheFrameIsGiven()
+    {
+        // A --bit-Flag-radius of more than one value ("0.75rem 0") cannot be calculated with, and a calc() of it would
+        // make the whole clip-path invalid - so the corner is taken whole, and a flag that is not a button leaves
+        // the clipping to the overflow of its frame, which follows the inside of the border exactly.
+        var crop = RuleOf(ReadStylesheet(), ".bit-flg-crp");
+
+        StringAssert.Contains(crop, "round var(--bit-flg-rad));");
+        Assert.IsFalse(crop.Contains("calc(var(--bit-flg-rad)"), "The corner of the frame is calculated with.");
+        StringAssert.Contains(crop, "&:not(.bit-flg-clk) {\n        overflow: clip;");
+        StringAssert.Contains(crop, "&:not(.bit-flg-clk) > .bit-flg-img {\n        clip-path: none;");
     }
 
     [TestMethod]

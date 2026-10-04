@@ -85,14 +85,14 @@
         not dragged out of the page it is read in, and it is decoded off the main thread because a list
         of two hundred of them is what this renders. Both are read back out of the image attributes so
         that a page saying otherwise is not overwritten by the value written after the splat. *@
-    var splattedDraggable = ImageAttributes.TryGetValue("draggable", out var sdg) ? sdg?.ToString() : null;
-    var splattedDecoding = ImageAttributes.TryGetValue("decoding", out var sdc) ? sdc?.ToString() : null;
+    var splattedDraggable = GetImageAttribute("draggable");
+    var splattedDecoding = GetImageAttribute("decoding");
 
     @*  The srcset of the picture. An image of a set carries its own; a srcset of the page's own goes with
         an image of the page's own only - a Src, or one written out of a SrcPattern - since the packaged
         flag standing in for a failed one - or asked for in the first place - would otherwise never be
         drawn over it. *@
-    var splattedSrcSet = ImageAttributes.TryGetValue("srcset", out var sss) ? sss?.ToString() : null;
+    var splattedSrcSet = GetImageAttribute("srcset");
     var srcSet = _srcSet ?? (_drawsOwnSrc && _hasError is false ? splattedSrcSet : null);
 
     @*  The error is the flag's own business - it is what moves the picture on to the packaged flag and
@@ -133,7 +133,7 @@
         @*  The attributes of the page's own are splatted in first, so everything written after them
             wins: the flag would otherwise stop being able to say what it draws or how it is named.
             The two it only defaults are read back out of them above. *@
-        <img @attributes="ImageAttributes"
+        <img @attributes="_imageAttributes"
              src="@_src"
              srcset="@srcSet"
              alt="@alt"

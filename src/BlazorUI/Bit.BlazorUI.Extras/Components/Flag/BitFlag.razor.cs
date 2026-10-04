@@ -116,17 +116,13 @@ public partial class BitFlag : BitComponentBase
     private bool _drawsOwnSrc;
 
     /// <summary>
-    /// The <see cref="ImageAttributes"/> the page itself handed the flag, kept apart from the dictionary the cascade
-    /// merges them into, so every render merges the cascade of that render into these rather than into the last
-    /// merge - which would keep a cascaded attribute since taken away, and its first value once changed.
+    /// The <see cref="SrcPattern"/> and the country the last url written out of a pattern was written for, and that
+    /// url: a picker re-renders every one of its flags on every keystroke of its search box, and the url only
+    /// changes when one of the two does.
     /// </summary>
-    private Dictionary<string, object> _ownImageAttributes = [];
-
-    /// <summary>
-    /// The dictionary the last cascade merged into <see cref="ImageAttributes"/>, or null where it merged nothing.
-    /// The parameter still holding this very instance is how the flag tells the page has not handed it a new one.
-    /// </summary>
-    private Dictionary<string, object>? _mergedImageAttributes;
+    private string? _patternSrcPattern;
+    private BitCountry? _patternSrcCountry;
+    private string? _patternSrc;
 
     /// <summary>
     /// Whether the image currently pointed at has already failed to load. An image that failed is not
@@ -220,6 +216,15 @@ public partial class BitFlag : BitComponentBase
                              && _src is not null
                              && (_drawsSetImage || string.Equals(_src, _packagedSrc, StringComparison.Ordinal))
                              && _cutsToFlag;
+
+    /// <summary>
+    /// The attributes the picture is rendered with: the <see cref="BitFlagParams.ImageAttributes"/> a
+    /// <see cref="BitParams"/> cascades first and the flag's own <see cref="ImageAttributes"/> after them, which win
+    /// since the later of two attributes of the same name is the one an element keeps. Neither dictionary is
+    /// copied, nor written into.
+    /// </summary>
+    private IEnumerable<KeyValuePair<string, object>> _imageAttributes =>
+        CascadingParameters?.ImageAttributes is { Count: > 0 } cascaded ? cascaded.Concat(ImageAttributes) : ImageAttributes;
 
     private string _loading => Loading switch
     {
@@ -644,7 +649,8 @@ public partial class BitFlag : BitComponentBase
     /// <summary>
     /// The url of the flag image of every country, as a pattern the codes of the country are written into:
     /// <c>{iso2}</c> and <c>{iso3}</c> for the lower-cased codes, <c>{ISO2}</c> and <c>{ISO3}</c> for the
-    /// upper-cased ones (e.g. "https://flagcdn.com/{iso2}.svg" or "/flags/4x3/{iso2}.svg").
+    /// upper-cased ones (e.g. "https://flagcdn.com/{iso2}.svg" or "/flags/4x3/{iso2}.svg"). A placeholder is found
+    /// whatever its case, and only one written all in capitals writes the code in capitals.
     /// </summary>
     /// <remarks>
     /// <see cref="Src"/> points one flag at an image; this points every flag at a set - a CDN, or the vector
@@ -813,18 +819,8 @@ public partial class BitFlag : BitComponentBase
     protected override void OnParametersSet()
     {
         // The cascade is applied before anything reads the parameters it may fill in: the image, the shape and the
-        // size are all worked out right below. The image attributes go back to the page's own first: a parameter the
-        // page does not pass is not supplied again, so it would otherwise still hold the previous render's merge.
-        if (ReferenceEquals(ImageAttributes, _mergedImageAttributes) is false)
-        {
-            _ownImageAttributes = ImageAttributes;
-        }
-
-        ImageAttributes = _ownImageAttributes;
-
+        // size are all worked out right below.
         CascadingParameters?.UpdateParameters(this);
-
-        _mergedImageAttributes = ReferenceEquals(ImageAttributes, _ownImageAttributes) ? null : ImageAttributes;
 
         (_cutsToFlag, _cutRatio) = GetCut();
 
@@ -853,7 +849,7 @@ public partial class BitFlag : BitComponentBase
             src = Src;
             _drawsOwnSrc = true;
         }
-        else if (SrcPattern.HasValue() && _country is not null && FormatSrcPattern(SrcPattern!, _country) is { } patternSrc)
+        else if (SrcPattern.HasValue() && _country is not null && GetPatternSrc(SrcPattern!, _country) is { } patternSrc)
         {
             src = patternSrc;
             _drawsOwnSrc = true;
@@ -967,30 +963,84 @@ public partial class BitFlag : BitComponentBase
         $"{AssetsFlagsPath}{iso2.ToUpperInvariant()}-{(set is BitFlagImageSet.Shiny ? "shiny" : "flat")}-{size}.webp";
 
     /// <summary>
+    /// The url a <see cref="SrcPattern"/> comes to for a country, written out again only once the pattern or the
+    /// country has changed.
+    /// </summary>
+    private string? GetPatternSrc(string pattern, BitCountry country)
+    {
+        if (ReferenceEquals(country, _patternSrcCountry) is false ||
+            string.Equals(pattern, _patternSrcPattern, StringComparison.Ordinal) is false)
+        {
+            _patternSrcPattern = pattern;
+            _patternSrcCountry = country;
+            _patternSrc = FormatSrcPattern(pattern, country);
+        }
+
+        return _patternSrc;
+    }
+
+    /// <summary>
     /// The url a <see cref="SrcPattern"/> comes to for a country: its codes written in where the pattern names
-    /// them, lower-cased or upper-cased the way the placeholder itself is written.
+    /// them, upper-cased where the placeholder is written in capitals and lower-cased otherwise.
     /// </summary>
     /// <remarks>
+    /// The placeholders are found whatever their case, so a <c>{Iso2}</c> is a placeholder too rather than text
+    /// left in the url, where it would only ever end in a failed request.
+    /// <br />
     /// A code the country does not carry - the alpha-3 code of a country of the page's own that has none, as the
     /// European Union does not - would write a url that names no image at all, so there is no url to draw then,
     /// and the flag is drawn as though there were no pattern.
     /// </remarks>
     private static string? FormatSrcPattern(string pattern, BitCountry country)
     {
+        const int placeholderLength = 6; // {iso2} and {iso3}
+
         var iso2 = country.Iso2;
-        var iso3 = country.Iso3;
 
         if (iso2.HasValue() is false) return null;
 
-        if (iso3.HasValue() is false &&
-            (pattern.Contains("{iso3}", StringComparison.Ordinal) || pattern.Contains("{ISO3}", StringComparison.Ordinal))) return null;
+        System.Text.StringBuilder? url = null;
+        var copied = 0;
+        var index = pattern.IndexOf('{');
 
-        iso3 ??= string.Empty;
+        while (index >= 0 && index + placeholderLength <= pattern.Length)
+        {
+            var name = pattern.AsSpan(index + 1, 3);
 
-        return pattern.Replace("{iso2}", iso2.ToLowerInvariant(), StringComparison.Ordinal)
-                      .Replace("{ISO2}", iso2.ToUpperInvariant(), StringComparison.Ordinal)
-                      .Replace("{iso3}", iso3.ToLowerInvariant(), StringComparison.Ordinal)
-                      .Replace("{ISO3}", iso3.ToUpperInvariant(), StringComparison.Ordinal);
+            if (pattern[index + 5] != '}' ||
+                pattern[index + 4] is not ('2' or '3') ||
+                name.Equals("iso", StringComparison.OrdinalIgnoreCase) is false)
+            {
+                index = pattern.IndexOf('{', index + 1);
+
+                continue;
+            }
+
+            var code = pattern[index + 4] == '2' ? iso2 : country.Iso3;
+
+            if (code.HasValue() is false) return null;
+
+            var upper = char.IsUpper(name[0]) && char.IsUpper(name[1]) && char.IsUpper(name[2]);
+
+            url ??= new(pattern.Length);
+            url.Append(pattern, copied, index - copied)
+               .Append(upper ? code!.ToUpperInvariant() : code!.ToLowerInvariant());
+
+            copied = index + placeholderLength;
+            index = pattern.IndexOf('{', copied);
+        }
+
+        return url is null ? pattern : url.Append(pattern, copied, pattern.Length - copied).ToString();
+    }
+
+    /// <summary>
+    /// The value of one of the attributes the picture is rendered with: the flag's own, else the cascaded one.
+    /// </summary>
+    private string? GetImageAttribute(string name)
+    {
+        if (ImageAttributes.TryGetValue(name, out var value)) return value?.ToString();
+
+        return CascadingParameters?.ImageAttributes?.TryGetValue(name, out value) is true ? value?.ToString() : null;
     }
 
     /// <summary>
@@ -1170,32 +1220,19 @@ public partial class BitFlag : BitComponentBase
     /// The CSS pixels a length written in px, or in rem at the 16 pixels a root font size comes to
     /// unless the page changed it, stands for. Any other length is null.
     /// </summary>
-    private static double? ParseCssPixels(string? length)
+    private static double? ParseCssPixels(string? length) => ToCssPixels(SplitCssLength(length));
+
+    /// <summary>
+    /// The CSS pixels a length split into its number and its unit stands for, under the same rule as
+    /// <see cref="ParseCssPixels"/>.
+    /// </summary>
+    private static double? ToCssPixels((double? Value, string Unit) length)
     {
-        var value = length?.Trim();
+        if (length.Value is not { } value) return null;
 
-        if (value.HasValue() is false) return null;
+        if (length.Unit.Equals("px", StringComparison.OrdinalIgnoreCase)) return value;
 
-        double pixels;
-
-        if (value!.EndsWith("rem", StringComparison.OrdinalIgnoreCase))
-        {
-            pixels = 16;
-            value = value[..^3];
-        }
-        else if (value.EndsWith("px", StringComparison.OrdinalIgnoreCase))
-        {
-            pixels = 1;
-            value = value[..^2];
-        }
-        else
-        {
-            return null;
-        }
-
-        return double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && number > 0
-            ? number * pixels
-            : null;
+        return length.Unit.Equals("rem", StringComparison.OrdinalIgnoreCase) ? value * 16 : null;
     }
 
     /// <summary>
@@ -1205,17 +1242,21 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     private static double? ParseLengthRatio(string? width, string? height)
     {
-        if (ParseCssPixels(width) is { } widthPixels && ParseCssPixels(height) is { } heightPixels)
+        var widthLength = SplitCssLength(width);
+        var heightLength = SplitCssLength(height);
+
+        if (widthLength.Value is null || heightLength.Value is null) return null;
+
+        if (ToCssPixels(widthLength) is { } widthPixels && ToCssPixels(heightLength) is { } heightPixels)
         {
             return widthPixels / heightPixels;
         }
 
-        var (widthValue, widthUnit) = SplitCssLength(width);
-        var (heightValue, heightUnit) = SplitCssLength(height);
+        if (widthLength.Unit == "%") return null;
 
-        if (widthValue is null || heightValue is null || widthUnit == "%") return null;
-
-        return string.Equals(widthUnit, heightUnit, StringComparison.OrdinalIgnoreCase) ? widthValue / heightValue : null;
+        return string.Equals(widthLength.Unit, heightLength.Unit, StringComparison.OrdinalIgnoreCase)
+            ? widthLength.Value / heightLength.Value
+            : null;
     }
 
     /// <summary>
