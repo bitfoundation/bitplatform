@@ -135,6 +135,13 @@
         <None Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\AccordionList\BitAccordionListDemo.razor.cs" Link="Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\AccordionList\BitAccordionListDemo.razor.cs">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- BitFlagStylesheetTests does the same for the public bit-Flag CSS variables. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\Flag\BitFlag.scss" Link="Bit.BlazorUI.Extras\Components\Flag\BitFlag.scss">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\Flag\BitFlagDemo.razor.cs" Link="Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\Flag\BitFlagDemo.razor.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <!-- The flag images a BitFlag with an ImageSet points at ship in Bit.BlazorUI.Assets, tied to the
