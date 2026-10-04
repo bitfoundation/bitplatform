@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace Bit.BlazorUI;
 
@@ -112,12 +113,34 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the map component.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple maps - whatever their
+    /// provider is - through the <see cref="BitParams"/> component. A parameter the map's own markup sets always wins.
+    /// </remarks>
+    [CascadingParameter(Name = BitMapParams.ParamName)]
+    public BitMapParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Optional content rendered above the map canvas (overlays, custom controls, etc.).
     /// Each direct child is sized to its content from the top-start corner, unless positioned
     /// absolutely, and only the children take the pointer, so the map stays draggable around them.
     /// Keep them clear of the corners the provider's controls and attribution occupy.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the map.
+    /// </summary>
+    [Parameter] public BitMapClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the map.
+    /// </summary>
+    [Parameter] public BitMapClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The provider configuration (basemap, tokens, options). When null on first render, a
@@ -273,7 +296,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// animated <see cref="SetView"/> jump straight to the destination instead of animating.
     /// <para>
     /// Both methods take an <c>essential</c> argument to opt a specific move back into animating
-    /// (a "locate me" recentre, say, where the motion carries the meaning).
+    /// (a "locate me" recentre, say, where the motion carries the meaning), and
+    /// <see cref="BitComponentBase.ForceAnimation"/> opts every move of the map back in.
     /// </para>
     /// </summary>
     [Parameter] public bool RespectReducedMotion { get; set; } = true;
@@ -295,6 +319,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </para>
     /// </summary>
     [Parameter] public RenderFragment<BitMapMarker>? MarkerPopupTemplate { get; set; }
+
+    /// <summary>
+    /// Pans the map as a <see cref="MarkerPopupTemplate"/> popup opens, just enough to bring the whole popup inside the
+    /// map - a marker near an edge would otherwise open a popup the map's own bounds cut off.
+    /// </summary>
+    [Parameter] public bool PopupAutoPan { get; set; } = true;
 
     /// <summary>Accessible name of the popup when its marker has neither an <c>Alt</c> nor a <c>Title</c>.</summary>
     [Parameter] public string PopupLabel { get; set; } = "Marker details";
@@ -873,9 +903,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         _openPopupMarker = marker;
         await InvokeAsync(StateHasChanged);
 
-        // The element only exists after the render above, so the anchor is attached afterwards.
+        // The element only exists after the render above, so the anchor is attached afterwards. The pan
+        // that brings the popup into view is not essential motion, so reduced motion makes it a jump.
         await SafeInvokeAsync(
-            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude),
+            _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude,
+                                        PopupAutoPan, ShouldAnimate(true, false)),
             nameof(OpenPopup));
 
         // A dialog nobody is standing in is a dialog whose Escape handler never fires and whose
@@ -1496,6 +1528,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     protected override string RootElementClass => "bit-map";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override void OnInitialized()
     {
         _canvasId = $"{_Id}-canvas";
@@ -1629,8 +1671,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMapParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         if (_cameraParametersDirty)
@@ -2179,19 +2224,21 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     private async ValueTask<bool> ReadReducedMotionPreference()
     {
-        if (RespectReducedMotion is false) return false;
+        // Read whatever RespectReducedMotion is now: it is consulted on every camera move, so a map
+        // that turns it on after the first render has to know the answer already.
         try { return await _js.BitMapChromePrefersReducedMotion(); }
         catch { return false; }
     }
 
     /// <summary>
     /// Decides whether a camera move animates. Reduced motion wins over the caller's
-    /// <paramref name="animate"/>, except for a move the caller marked essential.
+    /// <paramref name="animate"/>, except for a move the caller marked essential or a map whose
+    /// <see cref="BitComponentBase.ForceAnimation"/> opts it out of the reduction altogether.
     /// </summary>
     private bool ShouldAnimate(bool animate, bool essential)
     {
         if (animate is false) return false;
-        if (essential) return true;
+        if (essential || ForceAnimation) return true;
         return (RespectReducedMotion && _prefersReducedMotion) is false;
     }
 
@@ -2350,7 +2397,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task ShowMarker(string markerId)
     {
-        if (_initialized is false) return;
+        if (_initialized is false || IsEnabled is false) return;
         if (_markerState.TryGetValue(markerId, out var marker) is false) return;
 
         // Essential motion: the movement is what tells the user where they were taken.

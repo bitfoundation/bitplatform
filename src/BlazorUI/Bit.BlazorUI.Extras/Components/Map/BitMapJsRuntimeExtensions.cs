@@ -209,9 +209,9 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.cancelWaitForVisible", canvasId);
     }
 
-    public static ValueTask BitMapChromeTrackAnchor(this IJSRuntime jsRuntime, string id, string elementId, double lat, double lng)
+    public static ValueTask BitMapChromeTrackAnchor(this IJSRuntime jsRuntime, string id, string elementId, double lat, double lng, bool autoPan = false, bool animate = false)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.trackAnchor", id, elementId, lat, lng);
+        return jsRuntime.InvokeVoid("BitBlazorUI.BitMapChrome.trackAnchor", id, elementId, lat, lng, autoPan, animate);
     }
 
     public static ValueTask BitMapChromeUntrackAnchor(this IJSRuntime jsRuntime, string id)

@@ -1,5 +1,31 @@
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
+// Public CSS variables, read off the map and never declared here, so a value set on :root re-skins every map of the
+// app and one set on the Style of a map - or of any element around a group of them - re-skins those alone. Styles and
+// Classes still reach each part by name and win over these.
+//   --bit-Map-background             what shows where no tile is drawn: before the tiles load, behind the
+//                                    loading / error cover, and around a fullscreen map                (default: $clr-bg-sec)
+//   --bit-Map-border                 border of the map                                                 (default: none)
+//   --bit-Map-radius                 corner radius of the map, which clips the tiles too               (default: $shp-radius-none)
+//   --bit-Map-focus-color            focus outline of the map canvas                                   (default: $clr-pri-focus)
+//   --bit-Map-disabled-opacity       opacity of the canvas of a disabled map                           (default: $opa-dis)
+//   --bit-Map-popup-background       background of the popups and the keyboard instructions            (default: $clr-bg-pri)
+//   --bit-Map-popup-color            text color of the popups and the keyboard instructions            (default: $clr-fg-pri)
+//   --bit-Map-popup-radius           corner radius of the popups and the keyboard instructions         (default: $shp-radius-popup)
+//   --bit-Map-popup-shadow           elevation of the popups and the keyboard instructions             (default: $box-shadow-popup)
+//   --bit-Map-popup-padding          padding of the MarkerPopupTemplate popup                          (default: spacing(1) spacing(1.25))
+//   --bit-Map-popup-max-width        widest the MarkerPopupTemplate popup gets before wrapping         (default: 18rem)
+//   --bit-Map-tooltip-background     background of the marker tooltips                                 (default: $clr-tooltip-bg)
+//   --bit-Map-tooltip-color          text color of the marker tooltips                                 (default: $clr-tooltip-fg)
+//   --bit-Map-hint-background        backdrop of the cooperative-gestures hint                         (default: $clr-bg-overlay)
+//   --bit-Map-hint-color             text color of the cooperative-gestures hint                       (default: $clr-ntr-white)
+//   --bit-Map-cluster-background     fill of the cluster bubbles                                       (default: $clr-pri)
+//   --bit-Map-cluster-color          count drawn inside the cluster bubbles                            (default: $clr-pri-text)
+//   --bit-Map-cluster-border-color   ring around the cluster bubbles                                   (default: $clr-ntr-white)
+//
+// The popup and tooltip variables reach the providers' own popups and tooltips too (Leaflet, MapLibre, Mapbox and
+// OpenLayers), so a marker's PopupText looks like the MarkerPopupTemplate popup next to it, in both schemes.
+
 // The map's layer stack, bottom to top. The root is a stacking context of its own, so these
 // numbers order the layers against each other and never against the page around the map.
 $map-z-content: 0; // what the provider draws on the map itself: tiles, vectors, markers
@@ -10,6 +36,23 @@ $map-z-popup: 4; // the MarkerPopupTemplate anchor and the provider's own popups
 $map-z-control: 5; // the provider's controls and attribution (a licence requirement)
 $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
 
+$map-popup-background: var(--bit-Map-popup-background, #{$clr-bg-pri});
+$map-popup-color: var(--bit-Map-popup-color, #{$clr-fg-pri});
+$map-popup-radius: var(--bit-Map-popup-radius, #{$shp-radius-popup});
+$map-popup-shadow: var(--bit-Map-popup-shadow, #{$box-shadow-popup});
+$map-tooltip-background: var(--bit-Map-tooltip-background, #{$clr-tooltip-bg});
+$map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
+
+// The tail of a GL popup is a triangle drawn with one colored border, which side depending on where the popup sits
+// against its anchor - so painting it the popup's color means naming each anchor.
+@mixin gl-popup-tip($lib, $color) {
+    @each $anchor, $side in (top: bottom, top-left: bottom, top-right: bottom, bottom: top, bottom-left: top, bottom-right: top, left: right, right: left) {
+        &.#{$lib}-popup-anchor-#{$anchor} .#{$lib}-popup-tip {
+            border-#{$side}-color: $color;
+        }
+    }
+}
+
 .bit-map {
     width: 100%;
     height: 100%;
@@ -17,14 +60,19 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     position: relative;
     overflow: hidden;
     isolation: isolate;
+    border: var(--bit-Map-border, none);
+    border-radius: var(--bit-Map-radius, #{$shp-radius-none});
+    background: var(--bit-Map-background, #{$clr-bg-sec});
 }
 
 // A fullscreen element has no ancestor to inherit a size or a background from, so both are
-// stated here - otherwise the map is letterboxed against the browser's default black.
+// stated here - otherwise the map is letterboxed against the browser's default black. Nor does
+// it keep the corners and the frame it had inside the page.
 .bit-map:fullscreen {
     width: 100%;
     height: 100%;
-    background: $clr-bg-pri;
+    border: none;
+    border-radius: 0;
 }
 
 // A provider gives its panes and controls z-indexes of its own (Leaflet's run from 400 to 1000),
@@ -44,6 +92,14 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     // that draws above the overlay on every provider.
     &:is(.leaflet-container, .maplibregl-map, .mapboxgl-map, :has(> .ol-viewport)) {
         isolation: auto;
+    }
+
+    // Leaflet paints its container a fixed light gray and sets its own font, both of which would
+    // ignore the theme: the gray flashes before the tiles in a dark scheme, and the font reaches
+    // every popup and tooltip it draws.
+    &.leaflet-container {
+        background: var(--bit-Map-background, #{$clr-bg-sec});
+        font-family: $tg-font-family;
     }
 
     .leaflet-map-pane {
@@ -81,11 +137,145 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     .ol-overlaycontainer-stopevent {
         z-index: $map-z-control !important;
     }
+
+    // The providers' own popups wear the same surface as the MarkerPopupTemplate one. Their stylesheets
+    // load after this one, which is why every rule here is scoped under the canvas: the extra class is
+    // what outranks theirs.
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip,
+    .maplibregl-popup-content,
+    .mapboxgl-popup-content {
+        color: $map-popup-color;
+        background: $map-popup-background;
+        box-shadow: $map-popup-shadow;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .maplibregl-popup-content,
+    .mapboxgl-popup-content {
+        border-radius: $map-popup-radius;
+    }
+
+    .leaflet-popup-close-button,
+    .maplibregl-popup-close-button,
+    .mapboxgl-popup-close-button {
+        color: $clr-fg-sec;
+
+        &:hover {
+            color: $clr-fg-pri;
+        }
+
+        &:focus-visible {
+            @include focus-ring;
+        }
+    }
+
+    .maplibregl-popup {
+        @include gl-popup-tip(maplibregl, $map-popup-background);
+    }
+
+    .mapboxgl-popup {
+        @include gl-popup-tip(mapboxgl, $map-popup-background);
+    }
+
+    .leaflet-tooltip {
+        color: $map-tooltip-color;
+        background: $map-tooltip-background;
+        border-color: $map-tooltip-background;
+        border-radius: $map-popup-radius;
+        box-shadow: $box-shadow-tooltip;
+    }
+
+    .leaflet-tooltip-top::before {
+        border-top-color: $map-tooltip-background;
+    }
+
+    .leaflet-tooltip-bottom::before {
+        border-bottom-color: $map-tooltip-background;
+    }
+
+    .leaflet-tooltip-left::before {
+        border-left-color: $map-tooltip-background;
+    }
+
+    .leaflet-tooltip-right::before {
+        border-right-color: $map-tooltip-background;
+    }
+
+    // Leaflet's zoom buttons, and every other bar control, in the theme's colors rather than a fixed
+    // white - which in a dark scheme is the brightest thing on the page.
+    .leaflet-bar a {
+        color: $clr-fg-pri;
+        background-color: $clr-bg-pri;
+        border-bottom-color: $clr-brd-sec;
+
+        &:hover,
+        &:focus-visible {
+            background-color: $clr-bg-pri-hover;
+        }
+
+        &:focus-visible {
+            @include focus-ring;
+        }
+
+        &.leaflet-disabled {
+            color: $clr-fg-dis;
+            background-color: $clr-bg-pri;
+        }
+    }
+
+    .leaflet-control-attribution {
+        color: $clr-fg-sec;
+        background-color: translucent($clr-bg-pri, 80%);
+
+        a {
+            color: $clr-pri;
+        }
+    }
+
+    .leaflet-control-scale-line {
+        color: $clr-fg-pri;
+        border-color: $clr-fg-sec;
+        background-color: translucent($clr-bg-pri, 80%);
+    }
+
+    // OpenLayers' zoom and attribution buttons are text glyphs on a fixed translucent blue; the theme's surface
+    // keeps them legible on both schemes and in step with Leaflet's.
+    .ol-control {
+        background-color: transparent;
+
+        button {
+            color: $clr-fg-pri;
+            background-color: $clr-bg-pri;
+
+            &:hover,
+            &:focus-visible {
+                color: $clr-fg-pri;
+                background-color: $clr-bg-pri-hover;
+                outline: none;
+            }
+
+            &:focus-visible {
+                @include focus-ring;
+            }
+        }
+    }
+
+    .ol-attribution:not(.ol-collapsed) {
+        color: $clr-fg-sec;
+        background-color: translucent($clr-bg-pri, 80%);
+    }
 }
 
 .bit-map-canvas:focus-visible {
-    outline: $shp-border-width-thick solid $clr-brd-pri-focus;
+    outline: $shp-border-width-thick solid var(--bit-Map-focus-color, #{$clr-pri-focus});
     outline-offset: -#{$shp-border-width-thick};
+}
+
+// A disabled map is inert - out of the tab order and away from the pointer - and dimmed like every other disabled
+// element that keeps its own colors, so it does not look like a map that merely failed to respond.
+.bit-map.bit-dis .bit-map-canvas {
+    opacity: var(--bit-Map-disabled-opacity, #{$opa-dis});
 }
 
 // Only the overlay's children take the pointer, and a flex column sizes each one to its content
@@ -135,15 +325,16 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     white-space: normal;
     clip-path: none;
     z-index: $map-z-help;
-    color: $clr-fg-pri;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-popup;
+    color: $map-popup-color;
+    background: $map-popup-background;
+    border-radius: $map-popup-radius;
+    box-shadow: $map-popup-shadow;
     font-size: $tg-fs-xs;
 }
 
 // Cooperative-gestures hint. Covers the canvas while a blocked gesture is attempted, then
-// fades out; aria-hidden because the same information is in .bit-map-help for AT users.
+// fades out; aria-hidden because the same information is in .bit-map-help for AT users. The fade
+// reads the motion tokens, which collapse under a reduced-motion preference on their own.
 .bit-map-gesture-hint {
     position: absolute;
     inset: 0;
@@ -155,8 +346,9 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    background: rgba(0, 0, 0, 0.5);
-    transition: opacity 0.2s $mot-easing, visibility 0.2s $mot-easing;
+    color: var(--bit-Map-hint-color, #{$clr-ntr-white});
+    background: var(--bit-Map-hint-background, #{$clr-bg-overlay});
+    transition: opacity $mot-duration $mot-easing, visibility $mot-duration $mot-easing;
 }
 
 .bit-map-gesture-hint-vis {
@@ -165,10 +357,23 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
 }
 
 .bit-map-gesture-hint-text {
-    color: #fff;
     font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
     text-align: center;
+}
+
+// The colors of the cluster bubbles, which are images a stylesheet cannot reach: the clustering layer reads them off
+// this probe and paints them in. Never seen - the computed colors are all it is there for.
+.bit-map-cluster-probe {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    color: var(--bit-Map-cluster-color, #{$clr-pri-text});
+    background-color: var(--bit-Map-cluster-background, #{$clr-pri});
+    border: 0 solid var(--bit-Map-cluster-border-color, #{$clr-ntr-white});
 }
 
 // Loading / error / unsupported states. They sit above the canvas but below the consumer's
@@ -181,7 +386,7 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     align-items: center;
     justify-content: center;
     padding: spacing(2);
-    background: $clr-bg-pri;
+    background: var(--bit-Map-background, #{$clr-bg-sec});
 }
 
 .bit-map-status-box {
@@ -200,6 +405,8 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     color: $clr-fg-pri;
 }
 
+// A loader slows down under reduced motion rather than stopping - it is the only thing telling the
+// user the work is still running - which the spinner tokens do on their own.
 .bit-map-status-spinner {
     flex: none;
     display: inline-block;
@@ -208,23 +415,12 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     border: $siz-spinner-stroke solid $clr-brd-sec;
     border-block-start-color: $clr-pri;
     border-radius: $shp-radius-full;
-    animation: bit-map-spin 0.9s linear infinite;
+    animation: bit-map-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-map-spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-// The spinner is decorative motion, so it stops entirely rather than merely slowing down.
-@media (prefers-reduced-motion: reduce) {
-    .bit-map-status-spinner {
-        animation: none;
-    }
-
-    .bit-map-gesture-hint {
-        transition: none;
     }
 }
 
@@ -246,15 +442,21 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
     position: relative;
     transform: translate(-50%, calc(-100% - #{spacing(1.5)}));
     min-width: 8rem;
-    max-width: 18rem;
-    padding: spacing(1) spacing(1.25);
-    color: $clr-fg-pri;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-popup;
+    max-width: var(--bit-Map-popup-max-width, 18rem);
+    padding: var(--bit-Map-popup-padding, #{spacing(1) spacing(1.25)});
+    color: $map-popup-color;
+    background: $map-popup-background;
+    border-radius: $map-popup-radius;
+    box-shadow: $map-popup-shadow;
     font-size: $tg-fs-sm;
     pointer-events: auto;
     overflow-wrap: break-word;
+
+    // The popup takes the focus as it opens so that Escape reaches it and its content is read out,
+    // not so that anything is operated on the popup itself - a ring around it would be noise.
+    &:focus-visible {
+        @include focus-anchor;
+    }
 
     // The tail, drawn as a rotated square so it inherits the same background and shadow colour
     // as the bubble no matter which theme is active.
@@ -265,17 +467,25 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
         inset-inline-start: calc(50% - 4px);
         width: 8px;
         height: 8px;
-        background: $clr-bg-pri;
+        background: $map-popup-background;
         transform: rotate(45deg);
     }
 }
 
+// 24px square at the least, the smallest target WCAG 2.5.8 accepts for something this close to the
+// popup's own content.
 .bit-map-popup-close {
     position: absolute;
-    inset-block-start: 2px;
-    inset-inline-end: 4px;
-    padding: 2px 6px;
+    inset-block-start: spacing(0.25);
+    inset-inline-end: spacing(0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: rem2(24px);
+    min-height: rem2(24px);
+    padding: 0;
     border: none;
+    border-radius: $shp-radius-sm;
     background: transparent;
     color: $clr-fg-sec;
     font-size: $tg-fs-md;
@@ -284,12 +494,17 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
 
     &:hover {
         color: $clr-fg-pri;
+        background: $clr-bg-pri-hover;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
     }
 }
 
 .bit-map-popup-body {
     // Room for the close button, so the first line of content does not run under it.
-    padding-inline-end: spacing(1.5);
+    padding-inline-end: spacing(2.5);
 }
 
 // Text alternative to the markers. Sits outside .bit-map so the map's overflow does not clip
@@ -329,16 +544,147 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
 }
 
 .bit-map-marker-table-action {
+    min-height: rem2(24px);
     padding: spacing(0.25) spacing(0.75);
     border: $siz-divider solid $clr-brd-sec;
     border-radius: $shp-radius-button;
     background: transparent;
     color: $clr-pri;
     font: inherit;
+    letter-spacing: $tg-ctrl-letter-spacing;
     cursor: pointer;
 
     &:hover {
         background: $clr-bg-pri-hover;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+        background: transparent;
+    }
+}
+
+// Marker icon shell used by the Azure Maps provider's HtmlMarker. Everything static lives
+// here rather than in an inline style attribute, which a strict CSP would strip.
+.bit-map-marker-icon {
+    position: relative;
+    transform: translate(-50%, -100%);
+}
+
+// Popup body shared by the providers that build their popup content as DOM.
+.bit-map-popup-content {
+    padding: spacing(0.75) spacing(1);
+    overflow-wrap: break-word;
+}
+
+// OpenLayers hover tooltip. Pointer-transparent so it cannot interrupt the hover that produced it.
+.bit-map-ol-tooltip {
+    padding: spacing(0.5) spacing(0.75);
+    color: $map-tooltip-color;
+    background: $map-tooltip-background;
+    border-radius: $map-popup-radius;
+    box-shadow: $box-shadow-tooltip;
+    font-size: $tg-fs-xs;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.bit-map-ol-tooltip--hidden {
+    display: none;
+}
+
+// Tooltip variant of the shared popup body: tighter, and never wide enough to cover the marker.
+.bit-map-popup-content-tooltip {
+    padding: spacing(0.25) spacing(0.5);
+    font-size: $tg-fs-xs;
+    white-space: nowrap;
+}
+
+// The GL providers render a tooltip as a second popup; this trims the padding their stylesheet
+// gives a full popup, paints it as a tooltip, and keeps it out of the pointer's way. Scoped under
+// the canvas so it outranks the popup surface above.
+.bit-map-canvas .bit-map-gl-tooltip {
+    pointer-events: none;
+
+    .maplibregl-popup-content,
+    .mapboxgl-popup-content {
+        padding: spacing(0.25) spacing(0.75);
+        color: $map-tooltip-color;
+        background: $map-tooltip-background;
+        box-shadow: $box-shadow-tooltip;
+        font-size: $tg-fs-xs;
+        white-space: nowrap;
+    }
+
+    &.maplibregl-popup {
+        @include gl-popup-tip(maplibregl, $map-tooltip-background);
+    }
+
+    &.mapboxgl-popup {
+        @include gl-popup-tip(mapboxgl, $map-tooltip-background);
+    }
+}
+
+// OpenLayers popup. Styles live here (instead of inline cssText in the TS provider)
+// so they aren't blocked under strict CSP configurations that disallow inline styles
+// and so consumers can theme them from their own stylesheets.
+.bit-map-ol-popup {
+    position: relative;
+    max-width: 280px;
+    padding: spacing(1.25) spacing(1.5);
+    color: $map-popup-color;
+    background: $map-popup-background;
+    border-radius: $map-popup-radius;
+    box-shadow: $map-popup-shadow;
+    font-size: $tg-fs-sm;
+    overflow-wrap: break-word;
+}
+
+.bit-map-ol-popup--hidden {
+    display: none;
+}
+
+.bit-map-ol-popup__close {
+    position: absolute;
+    inset-block-start: spacing(0.25);
+    inset-inline-end: spacing(0.25);
+    min-width: rem2(24px);
+    min-height: rem2(24px);
+    padding: 0;
+    border: none;
+    border-radius: $shp-radius-sm;
+    background: transparent;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-md;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        color: $clr-fg-pri;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+.bit-map-ol-popup__content {
+    margin-block-start: spacing(0.5);
+}
+
+// Forced colors drop every box-shadow, which is all that separates a popup or a tooltip from the
+// map under it - so they are outlined in the system's text color instead.
+@media (forced-colors: active) {
+    .bit-map-popup,
+    .bit-map-ol-popup,
+    .bit-map-ol-tooltip,
+    .bit-map-canvas:focus-visible ~ .bit-map-help {
+        outline: 1px solid CanvasText;
     }
 }
 
@@ -365,90 +711,4 @@ $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
         white-space: normal;
         clip-path: none;
     }
-}
-
-// Marker icon shell used by the Azure Maps provider's HtmlMarker. Everything static lives
-// here rather than in an inline style attribute, which a strict CSP would strip.
-.bit-map-marker-icon {
-    position: relative;
-    transform: translate(-50%, -100%);
-}
-
-// Popup body shared by the providers that build their popup content as DOM.
-.bit-map-popup-content {
-    padding: spacing(0.75) spacing(1);
-    overflow-wrap: break-word;
-}
-
-// OpenLayers hover tooltip. A lighter surface than the click popup, and pointer-transparent so
-// it cannot interrupt the hover that produced it.
-.bit-map-ol-tooltip {
-    padding: spacing(0.5) spacing(0.75);
-    color: $clr-fg-pri;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-popup;
-    font-size: $tg-fs-xs;
-    white-space: nowrap;
-    pointer-events: none;
-}
-
-.bit-map-ol-tooltip--hidden {
-    display: none;
-}
-
-// Tooltip variant of the shared popup body: tighter, and never wide enough to cover the marker.
-.bit-map-popup-content-tooltip {
-    padding: spacing(0.25) spacing(0.5);
-    font-size: $tg-fs-xs;
-    white-space: nowrap;
-}
-
-// The GL providers render a tooltip as a second popup; this trims the padding their stylesheet
-// gives a full popup and keeps it out of the pointer's way.
-.bit-map-gl-tooltip {
-    pointer-events: none;
-
-    .maplibregl-popup-content,
-    .mapboxgl-popup-content {
-        padding: spacing(0.25) spacing(0.75);
-        font-size: $tg-fs-xs;
-        white-space: nowrap;
-    }
-}
-
-// OpenLayers popup. Styles live here (instead of inline cssText in the TS provider)
-// so they aren't blocked under strict CSP configurations that disallow inline styles
-// and so consumers can theme them from their own stylesheets.
-.bit-map-ol-popup {
-    position: relative;
-    max-width: 280px;
-    padding: spacing(1.25) spacing(1.5);
-    color: $clr-fg-pri;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-popup;
-    box-shadow: $box-shadow-popup;
-    font-size: $tg-fs-sm;
-    overflow-wrap: break-word;
-}
-
-.bit-map-ol-popup--hidden {
-    display: none;
-}
-
-.bit-map-ol-popup__close {
-    position: absolute;
-    inset-block-start: 2px;
-    inset-inline-end: 6px;
-    padding: 2px 4px;
-    border: none;
-    background: transparent;
-    color: $clr-fg-sec;
-    font-size: $tg-fs-md;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.bit-map-ol-popup__content {
-    margin-block-start: spacing(0.5);
 }

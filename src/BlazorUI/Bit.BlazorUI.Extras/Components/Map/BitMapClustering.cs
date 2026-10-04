@@ -34,11 +34,24 @@ public sealed class BitMapClustering
     /// </summary>
     public int MinPoints { get; set; } = 2;
 
-    /// <summary>Fill colour of the cluster bubble. Any CSS colour.</summary>
-    public string Color { get; set; } = "#3388ff";
+    /// <summary>
+    /// Fill colour of the cluster bubble. Any CSS colour.
+    /// <para>
+    /// Null, the default, takes the theme's: the <c>--bit-Map-cluster-background</c> CSS variable,
+    /// which falls back to the primary colour - so the bubbles follow the theme and the colour scheme
+    /// like every other part of the map, and one variable on <c>:root</c> restyles them app-wide.
+    /// </para>
+    /// </summary>
+    public string? Color { get; set; }
 
-    /// <summary>Colour of the count drawn inside the bubble. Pick one that meets 4.5:1 against <see cref="Color"/>.</summary>
-    public string TextColor { get; set; } = "#ffffff";
+    /// <summary>
+    /// Colour of the count drawn inside the bubble. Pick one that meets 4.5:1 against <see cref="Color"/>.
+    /// <para>
+    /// Null, the default, takes the theme's: the <c>--bit-Map-cluster-color</c> CSS variable, which
+    /// falls back to the text colour made for the primary colour.
+    /// </para>
+    /// </summary>
+    public string? TextColor { get; set; }
 
     /// <summary>
     /// Skip markers outside the current viewport entirely rather than handing them to the provider.

@@ -3147,6 +3147,176 @@ public class BitMapTests : BunitTestContext
             }
             """));
 
+    [TestMethod]
+    public async Task BitMapShouldAskTheChromeToPanAnOpeningPopupIntoView()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(1, 2) });
+        await component.Instance.OpenPopup("a");
+
+        var anchor = Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR);
+        Assert.AreEqual(true, anchor.Arguments[4], "PopupAutoPan is on by default");
+        Assert.AreEqual(true, anchor.Arguments[5], "the pan animates without a reduced-motion preference");
+
+        await component.Instance.ClosePopup();
+        component.Render(parameters => parameters.Add(p => p.PopupAutoPan, false));
+        await component.Instance.OpenPopup("a");
+
+        Assert.AreEqual(false, Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR).Arguments[4]);
+    }
+
+    [TestMethod]
+    public void BitMapShouldPutItsTabIndexOnTheCanvas()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+        Assert.AreEqual("0", component.Find(".bit-map-canvas").GetAttribute("tabindex"));
+
+        // -1 takes a decorative map out of the tab order while leaving it focusable from code.
+        component.Render(parameters => parameters.Add(p => p.TabIndex, "-1"));
+        Assert.AreEqual("-1", component.Find(".bit-map-canvas").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldApplyClassesAndStylesToEachPart()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.CooperativeGestures, true);
+            parameters.Add(p => p.MarkerListMode, BitMapMarkerListMode.Visible);
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+            parameters.Add(p => p.ChildContent, (Microsoft.AspNetCore.Components.RenderFragment)(b => b.AddContent(0, "overlay")));
+            parameters.Add(p => p.Classes, new BitMapClassStyles
+            {
+                Root = "c-root", Canvas = "c-canvas", Overlay = "c-overlay", Instructions = "c-help", GestureHint = "c-hint",
+                Popup = "c-popup", PopupCloseButton = "c-close", PopupBody = "c-body", MarkerList = "c-list", MarkerListButton = "c-btn",
+            });
+            parameters.Add(p => p.Styles, new BitMapClassStyles
+            {
+                Root = "--s-root: 1", Canvas = "--s-canvas: 1", Popup = "--s-popup: 1", MarkerListButton = "--s-btn: 1",
+            });
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        var root = component.Find(".bit-map");
+        Assert.IsTrue(root.ClassList.Contains("c-root"));
+        StringAssert.Contains(root.GetAttribute("style"), "--s-root: 1");
+
+        Assert.IsTrue(component.Find(".bit-map-canvas").ClassList.Contains("c-canvas"));
+        StringAssert.Contains(component.Find(".bit-map-canvas").GetAttribute("style"), "--s-canvas: 1");
+        Assert.IsTrue(component.Find(".bit-map-overlay").ClassList.Contains("c-overlay"));
+        Assert.IsTrue(component.Find(".bit-map > .bit-map-help").ClassList.Contains("c-help"));
+        Assert.IsTrue(component.Find(".bit-map-gesture-hint").ClassList.Contains("c-hint"));
+        Assert.IsTrue(component.Find(".bit-map-popup").ClassList.Contains("c-popup"));
+        StringAssert.Contains(component.Find(".bit-map-popup").GetAttribute("style"), "--s-popup: 1");
+        Assert.IsTrue(component.Find(".bit-map-popup-close").ClassList.Contains("c-close"));
+        Assert.IsTrue(component.Find(".bit-map-popup-body").ClassList.Contains("c-body"));
+        Assert.IsTrue(component.Find(".bit-map-marker-list").ClassList.Contains("c-list"));
+        Assert.IsTrue(component.Find(".bit-map-marker-table-action").ClassList.Contains("c-btn"));
+        StringAssert.Contains(component.Find(".bit-map-marker-table-action").GetAttribute("style"), "--s-btn: 1");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldMakeADisabledMapInert()
+    {
+        // A disabled map takes neither the focus nor the pointer: inert on the canvas reaches the provider's markers
+        // and controls inside it too, which a tabindex on the canvas alone would not.
+        SetupSuccessfulMount();
+        Context.JSInterop.SetupVoid(SET_VIEW);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.MarkerListMode, BitMapMarkerListMode.Visible);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0), Alt = "A" });
+
+        var root = component.Find(".bit-map");
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+        Assert.IsTrue(component.Find(".bit-map-canvas").HasAttribute("inert"));
+
+        var button = component.Find(".bit-map-marker-table-action");
+        Assert.IsTrue(button.HasAttribute("disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+
+        Assert.IsNull(component.Find(".bit-map").GetAttribute("aria-disabled"));
+        Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("inert"));
+        Assert.IsFalse(component.Find(".bit-map-marker-table-action").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldStillFlyUnderReducedMotionWhenForceAnimationIsSet()
+    {
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(true);
+        Context.JSInterop.SetupVoid(FLY_TO);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.ForceAnimation, true);
+        });
+
+        await component.Instance.FlyTo(new(10, 20), 8);
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldHonourReducedMotionTurnedOnAfterTheFirstRender()
+    {
+        // The preference is read once whatever RespectReducedMotion is at mount, so turning it on later still works.
+        SetupSuccessfulMount();
+        Context.JSInterop.Setup<bool>(CHROME_REDUCED_MOTION).SetResult(true);
+        Context.JSInterop.SetupVoid(SET_VIEW);
+        Context.JSInterop.SetupVoid(FLY_TO);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.RespectReducedMotion, false);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.RespectReducedMotion, true));
+
+        await component.Instance.FlyTo(new(10, 20), 8);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+    }
+
+    [TestMethod]
+    public void BitMapShouldLeaveTheClusterColorsToTheThemeByDefault()
+    {
+        // Null colors make the clustering layer read the --bit-Map-cluster-* variables off the probe, so the bubbles
+        // follow the theme and the scheme.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+        });
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_CONFIGURE).Arguments[2]!;
+        Assert.IsNull(options["color"]);
+        Assert.IsNull(options["textColor"]);
+
+        var probe = component.Find(".bit-map > .bit-map-cluster-probe");
+        Assert.AreEqual("true", probe.GetAttribute("aria-hidden"));
+    }
+
+
     private sealed class WebGlTestProvider : BitMapProviderBase
     {
         public override string Key => "webgl-test";

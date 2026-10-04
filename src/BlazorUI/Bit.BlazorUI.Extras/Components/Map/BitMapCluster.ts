@@ -7,10 +7,10 @@
         maxZoom: number;
         /** A cell holding fewer than this many markers is drawn as individual markers. */
         minPoints: number;
-        /** Fill of the cluster bubble. */
-        color: string;
-        /** Colour of the count drawn inside the bubble. */
-        textColor: string;
+        /** Fill of the cluster bubble. Null takes the theme's, off the map's cluster probe. */
+        color: string | null;
+        /** Colour of the count drawn inside the bubble. Null takes the theme's, off the map's cluster probe. */
+        textColor: string | null;
         /** Skip markers outside the viewport (padded by `radius`) entirely. */
         cullOffscreen: boolean;
         /** Upper bound on how many individual markers may be handed to the provider at once. */
@@ -20,6 +20,9 @@
     };
 
     type SourceMarker = { id: string, payload: any };
+
+    /** The colours a bubble is drawn in, resolved to plain CSS colours an image can be painted with. */
+    type BubbleColors = { fill: string, text: string, ring: string };
 
     type ClusterState = {
         jsObjectName: string;
@@ -115,9 +118,11 @@
                 ? s.markers.filter(m => BitMapCluster._isWithin(m, bounds, zoom, s.options.radius))
                 : s.markers;
 
+            const colors = BitMapCluster._colors(id, s.options);
+
             const rendered = zoom >= s.options.maxZoom
                 ? BitMapCluster._capped(visible, s.options.maxRenderedMarkers)
-                : BitMapCluster._cluster(visible, zoom, s.options);
+                : BitMapCluster._cluster(visible, zoom, s.options, colors);
 
             // Re-syncing identical markers would tear down and rebuild every DOM marker, losing
             // any open popup and the keyboard focus along with it.
@@ -127,7 +132,10 @@
             // pan - so an id-only signature would leave a bubble labelled with a count it no longer
             // stands for, and a count-only one would leave it at the centroid of a membership it has
             // since swapped (one marker out, another in, the count unchanged).
-            const signature = rendered
+            //
+            // The colours lead it too, so a theme or scheme switched since the last render repaints
+            // the bubbles on the next settled view rather than leaving them in the old palette.
+            const signature = `${colors.fill};${colors.text};${colors.ring}|` + rendered
                 .map(m => `${m.id}:${m.members?.length ?? 0}:${m.payload?.lat ?? ''},${m.payload?.lng ?? ''}`)
                 .join('|');
             if (signature === s.lastSignature) return;
@@ -238,7 +246,27 @@
             return markers.length <= max ? markers : markers.slice(0, max);
         }
 
-        private static _cluster(markers: SourceMarker[], zoom: number, options: ClusterOptions): any[] {
+        /**
+         * The bubble's colours: the ones .NET was given, or else the theme's, read off the probe the
+         * component renders inside the map. A stylesheet cannot reach into an image, so this is how the
+         * --bit-Map-cluster-* variables - and the tokens they fall back to - get into the bubble.
+         * Computed colours come back as rgb(), which an SVG image paints as reliably as any literal.
+         */
+        private static _colors(id: string, options: ClusterOptions): BubbleColors {
+            let fill = '#3388ff', text = '#ffffff', ring = '#ffffff';
+            try {
+                const probe = document.getElementById(id)?.querySelector(':scope > .bit-map-cluster-probe');
+                if (probe) {
+                    const style = getComputedStyle(probe);
+                    fill = style.backgroundColor || fill;
+                    text = style.color || text;
+                    ring = style.borderTopColor || ring;
+                }
+            } catch { /* no DOM to read - keep the defaults */ }
+            return { fill: options.color || fill, text: options.textColor || text, ring };
+        }
+
+        private static _cluster(markers: SourceMarker[], zoom: number, options: ClusterOptions, colors: BubbleColors): any[] {
             const cells: { [key: string]: SourceMarker[] } = {};
             const radius = Math.max(1, options.radius);
 
@@ -281,7 +309,7 @@
                         alt: BitMapCluster._bubbleLabel(count, options),
                         focusable: true,
                         draggable: false,
-                        iconUrl: BitMapCluster._bubbleIcon(count, size, options),
+                        iconUrl: BitMapCluster._bubbleIcon(count, size, colors),
                         iconWidth: size,
                         iconHeight: size,
                         // A bubble is a disc, not a pin: the coordinate it stands for is at its
@@ -314,14 +342,14 @@
          * Draws the bubble as an inline SVG data URI rather than a DOM element, because that is
          * the one icon mechanism all seven providers already accept (`iconUrl`).
          */
-        private static _bubbleIcon(count: number, size: number, options: ClusterOptions): string {
+        private static _bubbleIcon(count: number, size: number, colors: BubbleColors): string {
             const label = count < 1000 ? `${count}` : `${Math.floor(count / 1000)}k+`;
             const half = size / 2;
             const fontSize = Math.max(10, Math.round(size / 2.8));
             const svg =
                 `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
-                `<circle cx="${half}" cy="${half}" r="${half - 2}" fill="${options.color}" fill-opacity="0.85" stroke="#ffffff" stroke-width="2"/>` +
-                `<text x="${half}" y="${half}" fill="${options.textColor}" font-family="sans-serif" font-size="${fontSize}" ` +
+                `<circle cx="${half}" cy="${half}" r="${half - 2}" fill="${colors.fill}" fill-opacity="0.85" stroke="${colors.ring}" stroke-width="2"/>` +
+                `<text x="${half}" y="${half}" fill="${colors.text}" font-family="sans-serif" font-size="${fontSize}" ` +
                 `font-weight="600" text-anchor="middle" dominant-baseline="central">${label}</text>` +
                 `</svg>`;
             // encodeURIComponent rather than btoa: the colours come from .NET and may be any CSS

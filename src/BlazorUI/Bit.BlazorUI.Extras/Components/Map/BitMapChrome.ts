@@ -31,7 +31,7 @@
         hintTimer: any;
         listeners: { target: EventTarget, type: string, handler: any, capture: boolean }[];
         /** Element pinned to a geographic coordinate, and the frame loop keeping it there. */
-        anchor: { elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number } | null;
+        anchor: { elementId: string, element: HTMLElement | null, lat: number, lng: number, frame: number | null, deadline: number, autoPan: boolean, animate: boolean } | null;
     };
 
     /**
@@ -222,7 +222,7 @@
          * The position is recomputed per animation frame rather than per map event: a drag moves
          * the map continuously, and anything slower visibly lags behind the marker.
          */
-        public static trackAnchor(id: string, elementId: string, lat: number, lng: number) {
+        public static trackAnchor(id: string, elementId: string, lat: number, lng: number, autoPan: boolean = false, animate: boolean = false) {
             const s = BitMapChrome._instances[id];
             if (!s) return;
 
@@ -237,6 +237,10 @@
                 lat, lng,
                 frame: null as number | null,
                 deadline: Date.now() + 5_000,
+                // Spent on the first frame the popup is on screen: a popup only has to be brought into
+                // view as it opens, and panning on every frame would fight a user dragging it away.
+                autoPan: autoPan === true,
+                animate: animate === true,
             };
             s.anchor = anchor;
 
@@ -260,6 +264,10 @@
                 if (point) {
                     anchor.element.style.transform = `translate(${Math.round(point.x)}px, ${Math.round(point.y)}px)`;
                     anchor.element.style.visibility = '';
+                    if (anchor.autoPan) {
+                        anchor.autoPan = false;
+                        BitMapChrome._panIntoView(s, id, anchor.element, anchor.animate);
+                    }
                 } else {
                     // Off-screen, or behind the globe on a 3D provider. Hide rather than park it
                     // at a stale position, which would read as a popup for the wrong place.
@@ -292,6 +300,35 @@
         }
 
         // ---- helpers ----
+
+        /**
+         * Pans the map just enough to bring a popup inside the container, with a small margin - what
+         * Leaflet's autoPan does for its own popups, done here so the Blazor-rendered popup gets it on
+         * every provider. When the popup is larger than the map its top-start corner wins, which is
+         * where its title and close button are.
+         */
+        private static _panIntoView(s: ChromeState, id: string, anchorElement: HTMLElement, animate: boolean) {
+            const popup = (anchorElement.firstElementChild as HTMLElement | null) ?? anchorElement;
+            const box = popup.getBoundingClientRect();
+            const frame = s.root.getBoundingClientRect();
+            if (box.width === 0 && box.height === 0) return;
+
+            const margin = 8;
+            const rtl = getComputedStyle(s.root).direction === 'rtl';
+            const overLeft = frame.left + margin - box.left;
+            const overRight = box.right - (frame.right - margin);
+            const overTop = frame.top + margin - box.top;
+            const overBottom = box.bottom - (frame.bottom - margin);
+
+            // A positive offset moves the content left / up, so the view travels toward the overflow.
+            let dx = 0;
+            if (rtl) dx = overRight > 0 ? overRight : (overLeft > 0 ? -overLeft : 0);
+            else dx = overLeft > 0 ? -overLeft : (overRight > 0 ? overRight : 0);
+            const dy = overTop > 0 ? -overTop : (overBottom > 0 ? overBottom : 0);
+            if (dx === 0 && dy === 0) return;
+
+            try { (globalThis as any).BitBlazorUI?.[s.options.jsObjectName]?.panBy?.(id, Math.round(dx), Math.round(dy), animate); } catch { /* ignore */ }
+        }
 
         private static _listen(s: ChromeState, target: EventTarget, type: string, handler: any, options?: AddEventListenerOptions) {
             target.addEventListener(type, handler, options);
