@@ -25,7 +25,7 @@ public partial class BitNavPanelDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Moves the focus into the drawer of a small screen as it opens - onto the search box, or onto the first item of a panel without one. The column of a wide screen was on screen all along and takes nothing.",
+            Description = "Moves the focus onto the search box of the drawer as it opens (or onto the first item of a panel without one) instead of onto the drawer itself, where a modal drawer puts it otherwise. Off by default because focusing an input opens the on-screen keyboard of a touch device.",
         },
         new()
         {
@@ -98,6 +98,15 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "DrawerBreakpoint",
+            Type = "BitNavPanelBreakpoint?",
+            DefaultValue = "null",
+            Description = "The screen width below which the panel turns into an off-canvas drawer opened by IsOpen. Never keeps it a column on every screen and Always makes it a drawer on every screen. The default (null) is Md.",
+            LinkType = LinkType.Link,
+            Href = "#nav-panel-breakpoint-enum",
+        },
+        new()
+        {
             Name = "EmptyListTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -150,7 +159,14 @@ public partial class BitNavPanelDemo
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render as the header of the nav panel.",
+            Description = "The custom template to render as the header of the nav panel. It replaces the built-in buttons of the header too, so call Toggle / Close from a control of its own.",
+        },
+        new()
+        {
+            Name = "HeaderText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title shown beside the logo in the header - typically the name of the app. It is part of the IconNavUrl link and names it, is hidden in the rail, and keeps the built-in buttons of the header.",
         },
         new()
         {
@@ -180,14 +196,14 @@ public partial class BitNavPanelDemo
             Name = "IconAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the logo in the header of the nav panel: the name of the link an IconNavUrl wraps it in, and the alternative text of the image otherwise. Falls back to AriaLabel and then to a built-in name.",
+            Description = "The accessible name of the logo in the header of the nav panel: the name of the link an IconNavUrl wraps it in, and the alternative text of the image otherwise. Falls back to AriaLabel and then to a built-in name; beside a HeaderText the title names the link instead.",
         },
         new()
         {
             Name = "IconNavUrl",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Renders an anchor wrapping the icon to navigate to the specified url.",
+            Description = "Renders an anchor wrapping the icon (and the HeaderText) to navigate to the specified url.",
         },
         new()
         {
@@ -222,7 +238,7 @@ public partial class BitNavPanelDemo
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines if the nav panel is open in small screens.",
+            Description = "Determines if the nav panel is open while it is an off-canvas drawer (see DrawerBreakpoint).",
         },
         new()
         {
@@ -320,7 +336,7 @@ public partial class BitNavPanelDemo
             Name = "NoFocusTrap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stops the open drawer of a small screen from holding the focus inside itself. The focus is only ever held while the panel covers the page, which is the state its overlay is rendered in.",
+            Description = "Stops the open drawer of a small screen from taking the focus as it opens and holding it inside itself. The focus is only ever held while the panel covers the page, which is the state its overlay is rendered in.",
         },
         new()
         {
@@ -341,7 +357,7 @@ public partial class BitNavPanelDemo
             Name = "NoRestoreFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stops the closing drawer of a small screen from handing the focus back to the element that had it when the drawer opened. Only ever read by a panel that took the focus in the first place (see AutoFocus).",
+            Description = "Stops the closing drawer of a small screen from handing the focus back to the element that had it when the drawer opened. Only ever read by a panel that took the focus in the first place: a modal drawer, or one with AutoFocus.",
         },
         new()
         {
@@ -632,6 +648,13 @@ public partial class BitNavPanelDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the header icon of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "HeaderText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header text (title) of the BitNavPanel.",
                 },
                 new()
                 {
@@ -1321,9 +1344,15 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "--bit-NavPanel-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of the column of a wide screen, for a floating panel (with the radius and the border).",
+        },
+        new()
+        {
             Name = "--bit-NavPanel-drawer-shadow",
             DefaultValue = "--bit-shd-sheet",
-            Description = "Elevation of the drawer of a small screen.",
+            Description = "Elevation of the drawer.",
         },
         new()
         {
@@ -1545,6 +1574,51 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Id = "nav-panel-breakpoint-enum",
+            Name = "BitNavPanelBreakpoint",
+            Description = "The screen width below which a BitNavPanel stops being a column of the page and turns into an off-canvas drawer.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Never",
+                    Description = "The panel is never a drawer: it stays a column of the page on every screen.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Sm",
+                    Description = "The panel is a drawer below the sm breakpoint (600px).",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Md",
+                    Description = "The panel is a drawer below the md breakpoint (960px). This is the default.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Lg",
+                    Description = "The panel is a drawer below the lg breakpoint (1280px).",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Xl",
+                    Description = "The panel is a drawer below the xl breakpoint (1920px).",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "Always",
+                    Description = "The panel is a drawer on every screen, opened and closed through IsOpen.",
+                    Value = "5",
+                }
+            ]
+        },
+        new()
+        {
             Id = "nav-panel-position-enum",
             Name = "BitNavPanelPosition",
             Description = "The edge of the viewport the off-canvas drawer of a BitNavPanel comes from.",
@@ -1643,6 +1717,7 @@ public partial class BitNavPanelDemo
     private bool expandOnHoverIsOpen;
     private bool noToggleIsOpen;
     private bool iconUrlIsOpen;
+    private bool headerTextIsOpen;
     private bool searchIsOpen;
     private bool selectionIsOpen;
     private bool singleExpandIsOpen;
@@ -1658,6 +1733,7 @@ public partial class BitNavPanelDemo
     private bool rtlIsOpen;
     private bool groupedIsOpen;
     private bool drawerIsOpen;
+    private bool alwaysDrawerIsOpen;
     private bool stickyIsOpen;
     private bool cascadeIsOpen;
     private bool cascadeOwnIsOpen;

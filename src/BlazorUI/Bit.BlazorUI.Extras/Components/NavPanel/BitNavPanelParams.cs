@@ -41,7 +41,8 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public bool? AllExpanded { get; set; }
 
     /// <summary>
-    /// Moves the focus into the drawer of a small screen as it opens.
+    /// Moves the focus onto the search box (or the first item) of the drawer as it opens, instead of onto the
+    /// drawer itself.
     /// </summary>
     public bool? AutoFocus { get; set; }
 
@@ -90,6 +91,11 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The screen width below which the nav panel turns into an off-canvas drawer.
+    /// </summary>
+    public BitNavPanelBreakpoint? DrawerBreakpoint { get; set; }
+
+    /// <summary>
     /// The custom message for when the search result is empty.
     /// </summary>
     public string? EmptyListMessage { get; set; }
@@ -128,6 +134,11 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     /// The custom template to render as the header of the nav panel, in place of the logo and the buttons.
     /// </summary>
     public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// The title shown beside the logo in the header of the nav panel - typically the name of the app.
+    /// </summary>
+    public string? HeaderText { get; set; }
 
     /// <summary>
     /// The render mode of the custom HeaderTemplate of the nav.
@@ -446,6 +457,13 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.Color = Color.Value;
         }
 
+        if (DrawerBreakpoint.HasValue && bitNavPanel.HasNotBeenSet(nameof(DrawerBreakpoint)) && bitNavPanel.DrawerBreakpoint != DrawerBreakpoint)
+        {
+            bitNavPanel.DrawerBreakpoint = DrawerBreakpoint.Value;
+
+            bitNavPanel.ClassBuilder.Reset();
+        }
+
         if (EmptyListMessage.HasValue() && bitNavPanel.HasNotBeenSet(nameof(EmptyListMessage)))
         {
             bitNavPanel.EmptyListMessage = EmptyListMessage;
@@ -490,6 +508,11 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
         if (Header is not null && bitNavPanel.HasNotBeenSet(nameof(Header)))
         {
             bitNavPanel.Header = Header;
+        }
+
+        if (HeaderText.HasValue() && bitNavPanel.HasNotBeenSet(nameof(HeaderText)))
+        {
+            bitNavPanel.HeaderText = HeaderText;
         }
 
         if (HeaderTemplateRenderMode.HasValue && bitNavPanel.HasNotBeenSet(nameof(HeaderTemplateRenderMode)))

@@ -152,17 +152,28 @@ private bool noToggleIsOpen;
 " + basicNavItemsCsharpCode;
 
     private readonly string example4RazorCode = @"
-<BitToggleButton @bind-IsChecked=""iconUrlIsOpen"" OnText=""Close"" OffText=""Open"" />
-
 <div style=""width:222px"">
+    <div>Logo</div>
+    <BitToggleButton @bind-IsChecked=""iconUrlIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""iconUrlIsOpen""
                  Items=""basicNavItems""
                  IconUrl=""/images/icon.png""
                  IconNavUrl=""https://bitplatform.dev""
                  IconAriaLabel=""bit platform home"" />
+</div>
+
+<div style=""width:222px"">
+    <div>Logo and title</div>
+    <BitToggleButton @bind-IsChecked=""headerTextIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitNavPanel @bind-IsOpen=""headerTextIsOpen""
+                 Items=""basicNavItems""
+                 IconUrl=""/images/icon.png""
+                 IconNavUrl=""https://bitplatform.dev""
+                 HeaderText=""BlazorUI"" />
 </div>";
     private readonly string example4CsharpCode = @"
 private bool iconUrlIsOpen;
+private bool headerTextIsOpen;
 " + basicNavItemsCsharpCode;
 
     private readonly string example5RazorCode = @"
@@ -318,10 +329,20 @@ private readonly List<CustomNavItem> customNavItems =
     <div>Non-modal</div>
     <BitToggleButton @bind-IsChecked=""behaviorIsOpen"" OnText=""Close"" OffText=""Open"" />
     <BitNavPanel @bind-IsOpen=""behaviorIsOpen"" Items=""basicNavItems"" NoOverlay NoAutoClose NoSwipe />
+</div>
+
+<div style=""width:222px"">
+    <div>A drawer on every screen</div>
+    <BitToggleButton @bind-IsChecked=""alwaysDrawerIsOpen"" OnText=""Close"" OffText=""Open"" />
+    <BitNavPanel @bind-IsOpen=""alwaysDrawerIsOpen""
+                 Items=""basicNavItems""
+                 ShowCloseButton
+                 DrawerBreakpoint=""BitNavPanelBreakpoint.Always"" />
 </div>";
     private readonly string example9CsharpCode = @"
 private bool drawerIsOpen;
 private bool behaviorIsOpen;
+private bool alwaysDrawerIsOpen;
 " + basicNavItemsCsharpCode;
 
     private readonly string example10RazorCode = @"
@@ -633,6 +654,7 @@ private bool sizeIsOpen;
                  Style=""--bit-NavPanel-background: var(--bit-clr-bg-sec);
                         --bit-NavPanel-border-width: 1px;
                         --bit-NavPanel-radius: 1rem;
+                        --bit-NavPanel-shadow: var(--bit-shd-card);
                         --bit-NavPanel-gap: 0.25rem;
                         --bit-NavPanel-toggled-width: 3.5rem;
                         --bit-Nav-item-radius: 999px;"" />

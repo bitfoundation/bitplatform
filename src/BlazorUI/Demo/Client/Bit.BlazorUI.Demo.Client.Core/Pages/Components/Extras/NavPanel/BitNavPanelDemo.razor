@@ -5,7 +5,7 @@
             Description="BitNavPanel is a navigation component specialized to be rendered in a vertical panel: a searchable nav with a header, a footer, a rail mode, and a modal off-canvas drawer on small screens." />
 
 <DemoPage Name="NavPanel"
-          Description="BitNavPanel is the side navigation of an app: a BitNav wrapped in a header with a logo and a rail toggle, a search box that filters the items, and a footer. Below the md breakpoint it becomes a modal off-canvas drawer."
+          Description="BitNavPanel is the side navigation of an app: a BitNav wrapped in a header with a logo and a rail toggle, a search box that filters the items, and a footer. Below a breakpoint (md by default) it becomes a modal off-canvas drawer."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
@@ -31,8 +31,9 @@
         whole nav API - the item tree, the URL matching, the templates and the keyboard navigation - is available
         through it.
         <br /><br />
-        The panel is a permanent column on a wide screen and an off-canvas drawer below the <b>md</b> breakpoint,
-        opened by <b>IsOpen</b>. The <b>Open</b> button above each example only shows on a small screen.
+        The panel is a permanent column on a wide screen and an off-canvas drawer below the <b>md</b> breakpoint
+        (see <b>DrawerBreakpoint</b>), opened by <b>IsOpen</b>. The <b>Open</b> button above each example only
+        shows on a small screen.
     </DescriptionTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -107,22 +108,37 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Icon" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Logo" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                <b>IconUrl</b> puts a logo in the header (hidden in the rail), <b>IconNavUrl</b> links it, and
-                <b>IconAriaLabel</b> is its accessible name - separate from <b>AriaLabel</b>, which names the
-                navigation landmark.
+                <b>IconUrl</b> puts a logo in the header and <b>HeaderText</b> a title beside it (both hidden in the
+                rail, the toggle button kept); <b>IconNavUrl</b> links them. A logo-only link is named by
+                <b>IconAriaLabel</b> - separate from <b>AriaLabel</b>, which names the navigation landmark - and a
+                titled one by its title.
             </div>
             <br />
-            <div class="open-btn">
-                <BitToggleButton @bind-IsChecked="iconUrlIsOpen" OnText="Close" OffText="Open" />
-            </div>
-            <div style="width:222px">
-                <BitNavPanel @bind-IsOpen="iconUrlIsOpen"
-                             Items="basicNavItems"
-                             IconUrl="/images/icon.png"
-                             IconNavUrl="https://bitplatform.dev"
-                             IconAriaLabel="bit platform home" />
+            <div class="example-content">
+                <div style="width:222px">
+                    <div>Logo</div>
+                    <div class="open-btn">
+                        <BitToggleButton @bind-IsChecked="iconUrlIsOpen" OnText="Close" OffText="Open" />
+                    </div>
+                    <BitNavPanel @bind-IsOpen="iconUrlIsOpen"
+                                 Items="basicNavItems"
+                                 IconUrl="/images/icon.png"
+                                 IconNavUrl="https://bitplatform.dev"
+                                 IconAriaLabel="bit platform home" />
+                </div>
+                <div style="width:222px">
+                    <div>Logo and title</div>
+                    <div class="open-btn">
+                        <BitToggleButton @bind-IsChecked="headerTextIsOpen" OnText="Close" OffText="Open" />
+                    </div>
+                    <BitNavPanel @bind-IsOpen="headerTextIsOpen"
+                                 Items="basicNavItems"
+                                 IconUrl="/images/icon.png"
+                                 IconNavUrl="https://bitplatform.dev"
+                                 HeaderText="BlazorUI" />
+                </div>
             </div>
         </DemoExample>
 
@@ -214,13 +230,13 @@
 
         <DemoExample Title="Drawer" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
-                Below the <b>md</b> breakpoint the open panel is a modal drawer: a dialog that locks the page
-                scroll, traps the focus, restores it on close, and closes on the overlay, Escape, a swipe toward
-                its edge, or a navigation. <b>AutoFocus</b> moves the focus in as it opens, <b>Position</b> picks
-                its edge, and <b>ShowCloseButton</b> adds a close button (<b>CloseIcon</b>,
-                <b>CloseIconName</b>, <b>CloseAriaLabel</b>). <b>NoScrollLock</b>, <b>NoFocusTrap</b> and
-                <b>NoRestoreFocus</b> opt out one by one; <b>NoOverlay</b> makes it non-modal, <b>NoAutoClose</b>
-                keeps it open on navigation, and <b>NoSwipe</b> turns the gesture off. Narrow the window to try it.
+                Below <b>DrawerBreakpoint</b> (<b>Md</b> by default, or <b>Sm</b> / <b>Lg</b> / <b>Xl</b>;
+                <b>Never</b> and <b>Always</b> fix the shape) the panel is a modal drawer opened by <b>IsOpen</b>:
+                it locks the page scroll, takes, traps and restores the focus, and closes on the overlay, Escape, a
+                swipe toward its edge, or a navigation. <b>AutoFocus</b> moves the focus on to the search box,
+                <b>Position</b> picks the edge, and <b>ShowCloseButton</b> adds a close button (<b>CloseIcon</b>, <b>CloseIconName</b>,
+                <b>CloseAriaLabel</b>). <b>NoScrollLock</b>, <b>NoFocusTrap</b>, <b>NoRestoreFocus</b>,
+                <b>NoAutoClose</b> and <b>NoSwipe</b> opt out one by one; <b>NoOverlay</b> makes it non-modal.
             </div>
             <br />
             <div class="example-content">
@@ -241,6 +257,14 @@
                         <BitToggleButton @bind-IsChecked="behaviorIsOpen" OnText="Close" OffText="Open" />
                     </div>
                     <BitNavPanel @bind-IsOpen="behaviorIsOpen" Items="basicNavItems" NoOverlay NoAutoClose NoSwipe />
+                </div>
+                <div style="width:222px">
+                    <div>A drawer on every screen</div>
+                    <BitToggleButton @bind-IsChecked="alwaysDrawerIsOpen" OnText="Close" OffText="Open" />
+                    <BitNavPanel @bind-IsOpen="alwaysDrawerIsOpen"
+                                 Items="basicNavItems"
+                                 ShowCloseButton
+                                 DrawerBreakpoint="BitNavPanelBreakpoint.Always" />
                 </div>
             </div>
         </DemoExample>
@@ -484,6 +508,7 @@
                                  Style="--bit-NavPanel-background: var(--bit-clr-bg-sec);
                                         --bit-NavPanel-border-width: 1px;
                                         --bit-NavPanel-radius: 1rem;
+                                        --bit-NavPanel-shadow: var(--bit-shd-card);
                                         --bit-NavPanel-gap: 0.25rem;
                                         --bit-NavPanel-toggled-width: 3.5rem;
                                         --bit-Nav-item-radius: 999px;" />

@@ -8,13 +8,13 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// The panel wraps a <see cref="BitNav{TItem}"/> in the chrome a side navigation needs: a header with a logo
 /// and the button that collapses the panel down to a rail of icons, a search box that filters the items as
-/// they are typed, and a footer. On small screens it turns into an off-canvas drawer that opens over the page
-/// with an overlay behind it, and closes on a click on that overlay, on the Escape key, on a swipe towards the
-/// side it came from, and on the navigation of an item.
+/// they are typed, and a footer. Below <see cref="DrawerBreakpoint"/> it turns into an off-canvas drawer that
+/// opens over the page with an overlay behind it, and closes on a click on that overlay, on the Escape key, on
+/// a swipe towards the side it came from, and on the navigation of an item.
 /// <br />
 /// The drawer is a modal surface for as long as it covers the page: it reports itself as a dialog, holds the
-/// page it covers from scrolling and the focus from leaving it, and hands the focus back to whatever had it
-/// once it closes - each of which <see cref="NoScrollLock"/>, <see cref="NoFocusTrap"/> and
+/// page it covers from scrolling, takes the focus as it opens and keeps it from leaving, and hands it back to
+/// whatever had it once it closes - each of which <see cref="NoScrollLock"/>, <see cref="NoFocusTrap"/> and
 /// <see cref="NoRestoreFocus"/> give back, and none of which a panel with <see cref="NoOverlay"/> takes in
 /// the first place.
 /// </remarks>
@@ -89,12 +89,15 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool AllExpanded { get; set; }
 
     /// <summary>
-    /// Moves the focus into the drawer of a small screen as it opens - onto the search box, or onto the first
-    /// item of a panel without one - which is what a surface covering the page is expected to do.
+    /// Moves the focus onto the search box of the drawer as it opens - or onto the first item of a panel
+    /// without one - instead of onto the drawer itself, where a modal drawer puts it otherwise.
+    /// It also moves the focus into a drawer that does not trap it (<see cref="NoFocusTrap"/>,
+    /// <see cref="NoOverlay"/>), which takes none of its own.
     /// </summary>
     /// <remarks>
     /// Only the drawer takes the focus: on a wide screen the panel is a column that was on screen all along,
-    /// and nothing opened for the keyboard to be moved into.
+    /// and nothing opened for the keyboard to be moved into. The search box is left alone by default because
+    /// focusing a text input opens the on-screen keyboard of a touch device over the drawer that just opened.
     /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
@@ -149,6 +152,15 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
+    /// The screen width below which the panel turns into an off-canvas drawer opened by <see cref="IsOpen"/>.
+    /// <see cref="BitNavPanelBreakpoint.Never"/> keeps it a column on every screen and
+    /// <see cref="BitNavPanelBreakpoint.Always"/> makes it a drawer on every screen. The default is
+    /// <see cref="BitNavPanelBreakpoint.Md"/>.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitNavPanelBreakpoint? DrawerBreakpoint { get; set; }
+
+    /// <summary>
     /// The custom template for when the search result is empty.
     /// </summary>
     [Parameter] public RenderFragment? EmptyListTemplate { get; set; }
@@ -201,6 +213,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
+    /// The title shown beside the logo in the header of the nav panel - typically the name of the app. It is
+    /// part of the link of <see cref="IconNavUrl"/> and names it, and it is hidden in the rail together with the
+    /// logo. Unlike <see cref="Header"/>, it keeps the built-in buttons of the header.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
+
+    /// <summary>
     /// Used to customize how nav content inside the group header is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
@@ -219,12 +238,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// The accessible name of the logo in the header of the nav panel: the name of the link an
     /// <see cref="IconNavUrl"/> wraps it in, and the alternative text of the image otherwise.
     /// The panel falls back to <see cref="BitComponentBase.AriaLabel"/> and then to a built-in name, so set
-    /// this whenever the name of the navigation landmark is not what the logo itself should be called.
+    /// this whenever the name of the navigation landmark is not what the logo itself should be called. Beside a
+    /// <see cref="HeaderText"/> the title is the name instead, and the logo is left unnamed.
     /// </summary>
     [Parameter] public string? IconAriaLabel { get; set; }
 
     /// <summary>
-    /// Renders an anchor wrapping the icon to navigate to the specified url.
+    /// Renders an anchor wrapping the icon (and the <see cref="HeaderText"/>) to navigate to the specified url.
     /// </summary>
     [Parameter] public string? IconNavUrl { get; set; }
 
@@ -249,7 +269,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public int IndentValue { get; set; } = 16;
 
     /// <summary>
-    /// Determines if the nav panel is open in small screens.
+    /// Determines if the nav panel is open while it is an off-canvas drawer (see <see cref="DrawerBreakpoint"/>).
     /// </summary>
     [Parameter, TwoWayBound, ResetClassBuilder, CallOnSet(nameof(OnIsOpenSet))]
     public bool IsOpen { get; set; }
@@ -312,7 +332,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool NoCollapse { get; set; }
 
     /// <summary>
-    /// Stops the open drawer of a small screen from holding the focus inside itself.
+    /// Stops the open drawer of a small screen from taking the focus as it opens and holding it inside itself.
     /// The focus is only ever held while the panel actually covers the page, which is the state its overlay
     /// is rendered in, so a panel with <see cref="NoOverlay"/> never holds it in the first place.
     /// </summary>
@@ -333,8 +353,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// Stops the closing drawer of a small screen from handing the focus back to the element that had it
-    /// when the drawer opened. Only ever read by a panel that took the focus in the first place
-    /// (see <see cref="AutoFocus"/>).
+    /// when the drawer opened. Only ever read by a panel that took the focus in the first place: a modal drawer,
+    /// or one with <see cref="AutoFocus"/>.
     /// </summary>
     [Parameter] public bool NoRestoreFocus { get; set; }
 
@@ -647,6 +667,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => ExpandOnHover ? "bit-npn-eoh" : string.Empty);
         ClassBuilder.Register(() => Position is BitNavPanelPosition.End ? "bit-npn-end" : string.Empty);
         ClassBuilder.Register(() => StickyEnds ? "bit-npn-ste" : string.Empty);
+        ClassBuilder.Register(() => _BreakpointClass);
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -711,6 +732,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         // The cascade is applied before anything reads the parameters it may fill in.
         CascadingParameters?.UpdateParameters(this);
 
+        // The two breakpoints that decide the shape on every screen need no media query to find it out, so the
+        // shape is known right away and nothing waiting for it has to wait for the browser.
+        if (_ScreenQuery is null)
+        {
+            _isDrawer = DrawerBreakpoint is BitNavPanelBreakpoint.Always;
+            _screenChecked = true;
+        }
+
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) reaches
         // the filtered list a search is showing as well.
@@ -763,7 +792,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
             if (_isDrawer && IsOpen)
             {
-                await FocusFirstElement();
+                // A modal drawer that kept the focus where it was would claim the page behind it is inert while
+                // the keyboard is still on that page: the focus trap only wraps a Tab pressed inside it, and the
+                // Escape that closes it is only heard there too. So the drawer takes the focus onto itself - its
+                // dialog role and name are announced - unless AutoFocus moves it further in.
+                var focused = AutoFocus && await FocusFirstElement();
+
+                if (focused is false && _IsTrappingDrawer && RootElement.Context is not null)
+                {
+                    await RootElement.FocusAsync(preventScroll: true);
+                }
             }
         }
 
@@ -791,25 +829,25 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private void OnIsOpenSet()
     {
-        if (AutoFocus is false) return;
         if (IsOpen is false) return;
 
         _focusOnOpenPending = true;
     }
 
-    // Where the focus goes when the panel opens: the search box is the first thing in it, and a panel without
-    // one hands the focus to its first item instead. A panel with neither keeps the focus where it was.
-    private async Task FocusFirstElement()
+    // Where AutoFocus puts the focus when the panel opens: the search box is the first thing in it, and a panel
+    // without one hands the focus to its first item instead. A panel with neither reports that it moved nothing.
+    private async Task<bool> FocusFirstElement()
     {
         if (NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
         {
             await _searchBoxRef.FocusAsync();
-            return;
+            return true;
         }
 
-        if (_bitNavRef is null || _filteredNavItems.Count == 0) return;
+        if (_bitNavRef is null || _filteredNavItems.Count == 0) return false;
 
         await _bitNavRef.FocusItem(_filteredNavItems[0]);
+        return true;
     }
 
     private async Task ClosePanel()
@@ -1089,9 +1127,36 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // expressed in the text direction, so the End of a right-to-left layout is the left of the screen.
     private bool _IsDockedAtEnd => (Position is BitNavPanelPosition.End) != (Dir is BitDir.Rtl);
 
+    // The class that tells the stylesheet below which screen width the panel is a drawer. The overlay carries
+    // it too, since it is rendered beside the panel and is only ever shown on the screens the drawer is.
+    private string _BreakpointClass => DrawerBreakpoint switch
+    {
+        BitNavPanelBreakpoint.Never => "bit-npn-bnv",
+        BitNavPanelBreakpoint.Sm => "bit-npn-bsm",
+        BitNavPanelBreakpoint.Lg => "bit-npn-blg",
+        BitNavPanelBreakpoint.Xl => "bit-npn-bxl",
+        BitNavPanelBreakpoint.Always => "bit-npn-bal",
+        _ => "bit-npn-bmd",
+    };
+
+    // The query that reports the screens the panel is a drawer on, or none for the two breakpoints whose
+    // answer is the same on every screen.
+    private BitScreenQuery? _ScreenQuery => DrawerBreakpoint switch
+    {
+        BitNavPanelBreakpoint.Never or BitNavPanelBreakpoint.Always => null,
+        BitNavPanelBreakpoint.Sm => BitScreenQuery.LtSm,
+        BitNavPanelBreakpoint.Lg => BitScreenQuery.LtLg,
+        BitNavPanelBreakpoint.Xl => BitScreenQuery.LtXl,
+        _ => BitScreenQuery.LtMd,
+    };
+
     // The panel is a modal drawer while it covers the page: only on a small screen, only while it is open,
     // and only with the overlay that is what makes it cover anything at all.
     private bool _IsModalDrawer => _isDrawer && IsOpen && NoOverlay is false && IsEnabled;
+
+    // The modal drawer that also holds the focus inside itself: the one that reports itself as aria-modal, takes
+    // the focus as it opens, and is made programmatically focusable to take it.
+    private bool _IsTrappingDrawer => _IsModalDrawer && NoFocusTrap is false;
 
     // Reports the screen the panel renders on: below the breakpoint it is an off-canvas drawer, above it a
     // column of the page. A render is only asked for when the answer actually changes.
@@ -1158,9 +1223,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private async Task CaptureFocusOrigin()
     {
-        // Nothing is handed back by a panel that never takes the focus, or by one that was told not to hand
-        // anything back, so nothing is recorded for either of them.
-        if (AutoFocus is false || NoRestoreFocus || _focusOriginCaptured || IsDisposed || IsRendered is false) return;
+        // Nothing is handed back by a panel that never takes the focus (neither trapping it nor told to take
+        // it), or by one that was told not to hand anything back, so nothing is recorded for either of them.
+        if ((AutoFocus is false && _IsTrappingDrawer is false) || NoRestoreFocus || _focusOriginCaptured || IsDisposed || IsRendered is false) return;
 
         _focusOriginCaptured = true;
 

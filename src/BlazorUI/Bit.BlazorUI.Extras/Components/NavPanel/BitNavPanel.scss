@@ -15,9 +15,119 @@
 //   --bit-NavPanel-border-width             rule along the edge the panel turns to the page     (default: 0)
 //   --bit-NavPanel-border-color             color of that rule                                  (default: $clr-brd-sec)
 //   --bit-NavPanel-header-icon-size         largest width and height of the logo                (default: spacing(4.75))
-//   --bit-NavPanel-drawer-shadow            elevation of the drawer of a small screen           (default: $box-shadow-sheet)
+//   --bit-NavPanel-shadow                   elevation of the column, for a floating panel       (default: none)
+//   --bit-NavPanel-drawer-shadow            elevation of the drawer                             (default: $box-shadow-sheet)
 //   --bit-NavPanel-overlay-background       fill of the overlay behind the drawer               (default: $clr-bg-overlay)
 //   --bit-NavPanel-overlay-backdrop-filter  filter over the page behind the overlay, e.g. blur(4px) (default: none)
+
+// The panel has one of two shapes, and DrawerBreakpoint decides where the one gives way to the other: a column
+// of the page at and above the breakpoint, an off-canvas drawer below it. Each shape is a mixin, so every
+// breakpoint applies the very same rules under its own media query (see the bit-npn-b* classes below).
+
+// The rail and the open panel are the two ends of a transition rather than a jump, whichever of them
+// asked for it - the toggle button, the Toggle method, or the pointer over an ExpandOnHover rail. Only
+// on the screens the panel is a column of the page on: below the breakpoint it is an off-canvas drawer,
+// and sliding in from the edge it came from is the movement that belongs there.
+// A FitWidth panel is the exception: its width is its content's, far short of the container its open
+// bound is, so the travel would spend most of its time where nothing visibly moves - it jumps instead.
+@mixin npn-column {
+    box-shadow: var(--bit-NavPanel-shadow, none);
+
+    &:not(.bit-npn-fiw) {
+        transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;
+    }
+
+    // The open end of that transition needs a bound of the same kind as the rail's: a panel widening
+    // into an unbounded max-width has nothing to travel to and snaps open instead. A panel given no
+    // Width travels to the width of its container, which is the width it takes anyway - so the cap
+    // never changes what the panel is, only how it gets there.
+    &:not(.bit-npn-tgl) {
+        max-width: var(--bit-npn-w, var(--bit-NavPanel-width, 100%));
+    }
+
+    // The two modes that size the panel themselves travel to the width of their container like a panel
+    // that was given none: the Width they are documented to ignore is not let back in as a bound.
+    &.bit-npn-fiw:not(.bit-npn-tgl),
+    &.bit-npn-fuw:not(.bit-npn-tgl) {
+        max-width: 100%;
+    }
+}
+
+@mixin npn-drawer {
+    left: 0;
+    right: unset;
+    padding: var(--bit-NavPanel-padding, 0);
+    opacity: 1;
+    position: fixed;
+    visibility: visible;
+    height: unset !important;
+    z-index: $zindex-callout;
+    bottom: $bit-env-inset-bottom;
+    top: $bit-env-inset-top !important;
+    // A drawer given a Width wider than the screen it opens on would run off its far edge.
+    max-width: 100%;
+    // The drawer is a surface lifted over the page, so it casts the shadow of one.
+    box-shadow: var(--bit-NavPanel-drawer-shadow, #{$box-shadow-sheet});
+    // The drawer enters decelerating and leaves accelerating (see the closed state below): the transition
+    // that runs is the one of the state being entered.
+    transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-decelerate;
+
+    // The drawer is docked to the edge it comes from, which the Position expresses in the text direction:
+    // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
+    // screen, and a panel that is both is back where it started.
+    &.bit-rtl,
+    &.bit-npn-end {
+        right: 0;
+        left: unset;
+    }
+
+    &.bit-rtl.bit-npn-end {
+        left: 0;
+        right: unset;
+    }
+
+    &.bit-npn-cls {
+        opacity: 0;
+        transform: translateX(-100%);
+        // A panel that is only moved off screen keeps its links in the tab order and in the accessibility
+        // tree, so the closed one is hidden outright once it has finished sliding away.
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform $mot-duration $mot-easing-accelerate, opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration;
+
+        &.bit-rtl,
+        &.bit-npn-end {
+            transform: translateX(100%);
+        }
+
+        &.bit-rtl.bit-npn-end {
+            transform: translateX(-100%);
+        }
+    }
+
+    &.bit-npn-tgl {
+        min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));
+        max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));
+    }
+
+    &.bit-npn-npd.bit-npn-tgl {
+        min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
+        max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
+    }
+
+    .bit-npn-tbn {
+        display: none;
+    }
+
+    .bit-npn-cbw {
+        display: contents;
+    }
+
+    // The drawer reads its own padding, so NoPad takes it away here too.
+    &.bit-npn-npd {
+        padding: 0;
+    }
+}
 
 .bit-npn {
     top: 0;
@@ -49,33 +159,6 @@
 
         .bit-npn-cnt {
             align-items: center;
-        }
-    }
-
-    // The rail and the open panel are the two ends of a transition rather than a jump, whichever of them
-    // asked for it - the toggle button, the Toggle method, or the pointer over an ExpandOnHover rail. Only
-    // on the screens the panel is a column of the page on: below the breakpoint it is an off-canvas drawer,
-    // and sliding in from the edge it came from is the movement that belongs there.
-    // A FitWidth panel is the exception: its width is its content's, far short of the container its open
-    // bound is, so the travel would spend most of its time where nothing visibly moves - it jumps instead.
-    @include gt-sm {
-        &:not(.bit-npn-fiw) {
-            transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;
-        }
-
-        // The open end of that transition needs a bound of the same kind as the rail's: a panel widening
-        // into an unbounded max-width has nothing to travel to and snaps open instead. A panel given no
-        // Width travels to the width of its container, which is the width it takes anyway - so the cap
-        // never changes what the panel is, only how it gets there.
-        &:not(.bit-npn-tgl) {
-            max-width: var(--bit-npn-w, var(--bit-NavPanel-width, 100%));
-        }
-
-        // The two modes that size the panel themselves travel to the width of their container like a panel
-        // that was given none: the Width they are documented to ignore is not let back in as a bound.
-        &.bit-npn-fiw:not(.bit-npn-tgl),
-        &.bit-npn-fuw:not(.bit-npn-tgl) {
-            max-width: 100%;
         }
     }
 
@@ -122,78 +205,65 @@
         width: 0;
     }
 
+    // The modal drawer takes the focus onto itself as it opens (it is only focusable then, with a tabindex of
+    // -1): the container is not a control, and a ring drawn around the whole drawer would point at nothing.
+    &:focus {
+        outline: none;
+    }
+
     .bit-srb,
     .bit-srb-cnt {
         width: 100%;
     }
 
-    @include lt-md {
-        left: 0;
-        right: unset;
-        padding: var(--bit-NavPanel-padding, 0);
-        opacity: 1;
-        position: fixed;
-        visibility: visible;
-        height: unset !important;
-        z-index: $zindex-callout;
-        bottom: $bit-env-inset-bottom;
-        top: $bit-env-inset-top !important;
-        // The drawer is a surface lifted over the page, so it casts the shadow of one.
-        box-shadow: var(--bit-NavPanel-drawer-shadow, #{$box-shadow-sheet});
-        // The drawer enters decelerating and leaves accelerating (see the closed state below): the transition
-        // that runs is the one of the state being entered.
-        transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-decelerate;
+    // The shape of each DrawerBreakpoint: Never is always a column, Always always a drawer, and the others split
+    // the screens at their breakpoint (Md is the default).
+    &.bit-npn-bnv {
+        @include npn-column;
+    }
 
-        // The drawer is docked to the edge it comes from, which the Position expresses in the text direction:
-        // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
-        // screen, and a panel that is both is back where it started.
-        &.bit-rtl,
-        &.bit-npn-end {
-            right: 0;
-            left: unset;
+    &.bit-npn-bsm {
+        @include gt-xs {
+            @include npn-column;
         }
 
-        &.bit-rtl.bit-npn-end {
-            left: 0;
-            right: unset;
+        @include lt-sm {
+            @include npn-drawer;
+        }
+    }
+
+    &.bit-npn-bmd {
+        @include gt-sm {
+            @include npn-column;
         }
 
-        &.bit-npn-cls {
-            opacity: 0;
-            transform: translateX(-100%);
-            // A panel that is only moved off screen keeps its links in the tab order and in the accessibility
-            // tree, so the closed one is hidden outright once it has finished sliding away.
-            visibility: hidden;
-            pointer-events: none;
-            transition: transform $mot-duration $mot-easing-accelerate, opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration;
+        @include lt-md {
+            @include npn-drawer;
+        }
+    }
 
-            &.bit-rtl,
-            &.bit-npn-end {
-                transform: translateX(100%);
-            }
-
-            &.bit-rtl.bit-npn-end {
-                transform: translateX(-100%);
-            }
+    &.bit-npn-blg {
+        @include gt-md {
+            @include npn-column;
         }
 
-        &.bit-npn-tgl {
-            min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));
-            max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));
+        @include lt-lg {
+            @include npn-drawer;
+        }
+    }
+
+    &.bit-npn-bxl {
+        @include gt-lg {
+            @include npn-column;
         }
 
-        &.bit-npn-npd.bit-npn-tgl {
-            min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
-            max-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));
+        @include lt-xl {
+            @include npn-drawer;
         }
+    }
 
-        .bit-npn-tbn {
-            display: none;
-        }
-
-        .bit-npn-cbw {
-            display: contents;
-        }
+    &.bit-npn-bal {
+        @include npn-drawer;
     }
 }
 
@@ -230,8 +300,33 @@
     background-color: var(--bit-NavPanel-overlay-background, #{$clr-bg-overlay});
     backdrop-filter: var(--bit-NavPanel-overlay-backdrop-filter, none);
 
-    @include gt-sm {
+    // The overlay only belongs to the drawer, so it is taken away on the screens the panel is a column on.
+    &.bit-npn-bnv {
         display: none;
+    }
+
+    &.bit-npn-bsm {
+        @include gt-xs {
+            display: none;
+        }
+    }
+
+    &.bit-npn-bmd {
+        @include gt-sm {
+            display: none;
+        }
+    }
+
+    &.bit-npn-blg {
+        @include gt-md {
+            display: none;
+        }
+    }
+
+    &.bit-npn-bxl {
+        @include gt-lg {
+            display: none;
+        }
     }
 }
 
@@ -257,6 +352,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.bit-npn-hln {
+    display: flex;
+    min-width: 0;
+    color: inherit;
+    align-items: center;
+    text-decoration: none;
+    border-radius: $shp-radius-sm;
+}
+
+// The title of the app beside the logo: one line, cut short rather than wrapped in a narrow panel.
+.bit-npn-htx {
+    min-width: 0;
+    overflow: hidden;
+    color: $clr-fg-pri;
+    white-space: nowrap;
+    font-size: $tg-fs-md;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-semibold;
+
+    .bit-npn-img + & {
+        margin-inline-start: spacing(1);
+    }
 }
 
 .bit-npn-img {
