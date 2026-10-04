@@ -914,15 +914,62 @@
             }
         }
 
-        // Whether focus is inside the open side panel - which is about to leave the DOM,
-        // taking the focus with it unless it is moved first.
-        public static sidebarHasFocus(root: HTMLElement) {
-            const active = document.activeElement;
-            if (!root || !active) {
-                return false;
+        private static readonly panelSelector = ".bit-pdv-thumbs,.bit-pdv-outline,.bit-pdv-attachments,.bit-pdv-layers";
+
+        // Remembers whether focus last landed inside a side panel, so a panel that closes
+        // can hand its focus to the surface without .NET asking first. Only a move to
+        // somewhere else clears it: a focused element taken out of the DOM blurs with no
+        // relatedTarget, and that is exactly the case worth remembering.
+        public static registerFocusTracker(root: HTMLElement) {
+            if (!root) {
+                return;
             }
-            const panel = root.querySelector(".bit-pdv-thumbs,.bit-pdv-outline,.bit-pdv-attachments,.bit-pdv-layers");
-            return !!panel && panel.contains(active);
+            PdfViewer.disposeFocusTracker(root);
+            const r = root as any;
+            const onFocusIn = (e: FocusEvent) => {
+                r.__bitPdvPanelFocus = !!(e.target as Element)?.closest?.(PdfViewer.panelSelector);
+            };
+            const onFocusOut = (e: FocusEvent) => {
+                const next = e.relatedTarget as Node | null;
+                if (next && !root.contains(next)) {
+                    r.__bitPdvPanelFocus = false;
+                }
+            };
+            root.addEventListener("focusin", onFocusIn);
+            root.addEventListener("focusout", onFocusOut);
+            r.__bitPdvFocusIn = onFocusIn;
+            r.__bitPdvFocusOut = onFocusOut;
+        }
+
+        public static disposeFocusTracker(root: HTMLElement) {
+            if (!root) {
+                return;
+            }
+            const r = root as any;
+            if (r.__bitPdvFocusIn) {
+                root.removeEventListener("focusin", r.__bitPdvFocusIn);
+                root.removeEventListener("focusout", r.__bitPdvFocusOut);
+                r.__bitPdvFocusIn = null;
+                r.__bitPdvFocusOut = null;
+            }
+            r.__bitPdvPanelFocus = false;
+        }
+
+        // Called after a side panel has left the DOM. A reader who was inside it (F4 from a
+        // thumbnail, say) has been dropped onto the body - outside the viewer and its
+        // shortcuts - so focus moves to the surface. One whose focus was anywhere else
+        // keeps it.
+        public static restorePanelFocus(root: HTMLElement, container: HTMLElement) {
+            const r = root as any;
+            if (!root || !r.__bitPdvPanelFocus) {
+                return;
+            }
+            r.__bitPdvPanelFocus = false;
+            const active = document.activeElement;
+            if (active && active !== document.body && active.isConnected) {
+                return;
+            }
+            container?.focus?.({ preventScroll: true });
         }
 
         // The text the reader has selected inside the document surface, or "" when the
