@@ -577,6 +577,13 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Includes advanced automated tests (e.g. the Blazor WebAssembly offline sync test) that add extra infrastructure not needed by a typical project."
+        },
+        "realProject": {
+            "displayName": "Real project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "A real project rather than a quick test. Aspire keeps its containers between runs, so starting and debugging the project are fast."
         }
     },
     "postActions": [
