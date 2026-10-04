@@ -77,19 +77,22 @@ namespace BitBlazorUI {
                 // A single line input drops the line breaks out of whatever is pasted into it, so a
                 // column copied out of a spreadsheet would otherwise arrive as one run-on tag. The
                 // breaks are turned into the first separator before the text lands, which is what the
-                // splitting on the .NET side then reads as a list. Without a separator there is nothing
-                // to express a list with, so the paste is left to the browser.
+                // splitting on the .NET side then reads as a list.
                 if (input.readOnly || input.disabled) return;
-
-                const separators = TagsInput.getSeparators(input);
-                if (separators.length === 0) return;
 
                 const text = e.clipboardData?.getData('text');
                 if (!text || !/[\r\n]/.test(text)) return;
 
                 e.preventDefault();
 
-                const value = text.replace(/(\r\n|[\r\n])+/g, separators[0]);
+                // Without a separator there is nothing to express a list with, so the lines cannot become
+                // tags of their own - but they must not be run together into one word either, which is
+                // what a single line input does with the breaks it drops. They are joined by a space, so
+                // what lands is the text that was copied rather than "firstsecond".
+                const separators = TagsInput.getSeparators(input);
+                const joiner = separators.length > 0 ? separators[0] : ' ';
+
+                const value = text.replace(/(\r\n|[\r\n])+/g, joiner);
 
                 // insertText keeps the caret, the selection it replaces and the undo stack of the field
                 // intact, and raises the input event that the component listens to. It is a deprecated
