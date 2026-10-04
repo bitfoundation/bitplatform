@@ -8,7 +8,7 @@
          is: the suites can run the harness on every runtime Bit.Butil ships for. -->
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <!-- ButilHarnessFramework narrows the harness hosts to one framework for a publish (see publish-gate.sh).
              A property of their own rather than -p:TargetFrameworks, which as a global property also reaches
              Bit.Butil.Build - a netstandard2.0 task project whose restore it breaks. -->
@@ -25,6 +25,7 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.31" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.20" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.1.26425.128" />
     </ItemGroup>
 
     <ItemGroup>

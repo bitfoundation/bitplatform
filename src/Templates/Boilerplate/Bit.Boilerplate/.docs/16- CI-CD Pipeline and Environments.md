@@ -430,7 +430,7 @@ dotnet publish -c Release \
   -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" \
   -p:Version="1.0.0" \
   -p:Environment=Production \
-  -f net10.0-android
+  -f net11.0-android
 ```
 
 3. **Upload Artifact**
@@ -488,7 +488,7 @@ dotnet publish -c Release \
      -p:CodesignProvision="MyApp Provisioning" \  # Profile name
      -p:Version="1.0.0" \
      -p:Environment=Production \
-     -f net10.0-ios
+     -f net11.0-ios
    ```
 
 4. **Upload Artifact**

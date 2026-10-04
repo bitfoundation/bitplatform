@@ -19,10 +19,10 @@ here="$(cd "$(dirname "$0")" && pwd)"
 project="$here/../Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj"
 log="$(mktemp)"
 
-# ButilHarnessFramework=net10.0 on top of -f: -f alone does not reach project references, so the WebAssembly
+# ButilHarnessFramework=net11.0 on top of -f: -f alone does not reach project references, so the WebAssembly
 # client would still evaluate every framework it targets - and with RunAOTCompilation each of those demands its
 # own wasm-tools workload. Not -p:TargetFrameworks, which would also reach the netstandard2.0 Bit.Butil.Build.
-dotnet publish "$project" -c Release -f net10.0 -p:ButilHarnessFramework=net10.0 -o "$output" \
+dotnet publish "$project" -c Release -f net11.0 -p:ButilHarnessFramework=net11.0 -o "$output" \
     -p:SuppressTrimAnalysisWarnings=false -p:TrimmerSingleWarn=false "$@" 2>&1 | tee "$log"
 
 # The origin member follows the warning code, so "IL2026: Bit.Butil.Clipboard.X" is raised inside the library

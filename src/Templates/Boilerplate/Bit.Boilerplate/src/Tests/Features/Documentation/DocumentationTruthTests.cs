@@ -267,7 +267,7 @@ public class DocumentationTruthTests
         if (repositoryRoots.Any(root => candidate.StartsWith(root, StringComparison.Ordinal)) is false)
             return false;
 
-        // Build output. `.docs/17` legitimately tells the reader to run `src/Tests/bin/Debug/net10.0/playwright.ps1`,
+        // Build output. `.docs/17` legitimately tells the reader to run `src/Tests/bin/Debug/net11.0/playwright.ps1`,
         // which only exists after a build.
         if (candidate.Contains("/bin/", StringComparison.Ordinal) || candidate.Contains("/obj/", StringComparison.Ordinal))
             return false;

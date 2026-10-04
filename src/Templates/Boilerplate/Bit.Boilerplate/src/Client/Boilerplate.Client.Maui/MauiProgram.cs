@@ -107,7 +107,10 @@ public static partial class MauiProgram
 
         var mauiApp = builder.Build();
 
-        mauiApp.Services.GetService<IStartupValidator>()?.Validate();
+        foreach (var startupValidator in mauiApp.Services.GetServices<IAsyncStartupValidator>())
+        {
+            startupValidator.ValidateAsync().GetAwaiter().GetResult();
+        }
 
         mauiApp.Services.GetRequiredService<PubSubService>()
             .Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async (args) =>

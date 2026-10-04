@@ -144,7 +144,7 @@ public partial class SignInPanel
             {
                 CleanModel();
 
-                if (validatorRef?.EditContext.Validate() is false) return;
+                if (validatorRef is not null && await validatorRef.EditContext.ValidateAsync(CurrentCancellationToken) is false) return;
 
                 if (isNewUser is false)
                 {
