@@ -92,7 +92,7 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// A unique value to use as a key or id of the navbar option.
+    /// A unique value to use as a key or id of the navbar option, and what the DefaultSelectedKey of the navbar matches.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 

@@ -17,13 +17,13 @@ public partial class MagicLinkReplayTests
     public async Task ReplayingAConsumedMagicLinkCode_Should_BeRejectedAsExpired()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         // A confirmed, per-run account. Confirming already signs it in once, which leaves no outstanding code behind.
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         // The magic link e-mail of a repeat sign-in: the account is confirmed, so the code arrives as a plain OTP.
         await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
@@ -64,12 +64,12 @@ public partial class MagicLinkReplayTests
     public async Task RequestingANewCode_Should_BeAllowedRightAfterAConsumedOne()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 
@@ -96,7 +96,7 @@ public partial class MagicLinkReplayTests
 
     private static async Task<int> ReadAccessFailedCount(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
@@ -108,7 +108,7 @@ public partial class MagicLinkReplayTests
 
     private static async Task<int> ReadUserSessionCount(AppTestServer server, string email)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 

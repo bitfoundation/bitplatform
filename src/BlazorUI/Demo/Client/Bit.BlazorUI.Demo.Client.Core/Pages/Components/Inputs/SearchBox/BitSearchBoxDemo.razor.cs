@@ -730,7 +730,7 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-label-font-weight",
-            DefaultValue = "$tg-fw-semibold",
+            DefaultValue = "$tg-field-label-font-weight",
             Description = "Weight of the label.",
         },
         new()

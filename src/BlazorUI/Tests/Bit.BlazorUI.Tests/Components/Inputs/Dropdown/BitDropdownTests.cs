@@ -1416,6 +1416,76 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownCalloutShouldInheritThePublicCssVariablesOfTheStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Style, "margin:1rem;--bit-Dropdown-accent-color:red; --bit-Dropdown-item-height:3rem");
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Root = "--bit-Dropdown-callout-radius:1rem", Callout = "z-index:9" });
+        });
+
+        // The callout is a sibling of the root (and is moved to the body while it is open), so it inherits
+        // nothing the author sets on the dropdown. The public variables are carried across by hand, from the
+        // Style of the instance and from Styles.Root; Styles.Callout is appended last so it still wins.
+        var callout = component.Find(".bit-drp-cal").GetAttribute("style");
+
+        Assert.IsNotNull(callout);
+        StringAssert.Contains(callout, "--bit-Dropdown-accent-color:red;");
+        StringAssert.Contains(callout, "--bit-Dropdown-item-height:3rem;");
+        StringAssert.Contains(callout, "--bit-Dropdown-callout-radius:1rem;");
+        StringAssert.Contains(callout, "z-index:9");
+        Assert.IsTrue(callout.IndexOf("--bit-Dropdown-callout-radius", StringComparison.Ordinal) < callout.IndexOf("z-index:9", StringComparison.Ordinal));
+
+        // Only the public variables travel: a layout declaration written for the field would move the callout
+        // away from the trigger it is positioned against.
+        Assert.IsFalse(callout.Contains("margin:1rem", StringComparison.Ordinal));
+
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-drp").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin:1rem");
+    }
+
+    [TestMethod]
+    public void BitDropdownCalloutShouldCarryOnlyItsOwnStyleWithoutPublicCssVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Style, "margin:1rem");
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Callout = "z-index:9" });
+        });
+
+        Assert.AreEqual("z-index:9", component.Find(".bit-drp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchBoxShouldNameTheListItFilters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // The search box sits outside the listbox, so without aria-controls it is a field that narrows
+        // nothing a screen reader can tie it to.
+        var listId = component.Find(".bit-drp-scn").GetAttribute("id");
+
+        Assert.IsFalse(string.IsNullOrEmpty(listId));
+        Assert.AreEqual(listId, component.Find(".bit-drp-sin").GetAttribute("aria-controls"));
+    }
+
+    [TestMethod]
     public void BitDropdownComboTypingWhileClosedShouldOpenAndKeepFilter()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -1808,11 +1878,21 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.DefaultValues, items.Select(i => i.Value).ToArray());
         });
 
-        // The count alone says nothing about what got collapsed, so the hidden items are named.
+        // The count alone says nothing about what got collapsed, so the hidden items are named. The names are
+        // RENDERED rather than asserted through aria-label, which is not exposed on an element with no role of
+        // its own: the counter is hidden from a screen reader and the visually hidden list takes its place,
+        // both in the accessible name of the combobox (computed from this subtree) and in what a reader walks.
         var overflow = component.Find(".bit-drp-ovf");
-        Assert.AreEqual("+3", overflow.TextContent.Trim());
         Assert.AreEqual("Orange, Banana, Broccoli", overflow.GetAttribute("title"));
-        Assert.AreEqual("Orange, Banana, Broccoli", overflow.GetAttribute("aria-label"));
+        Assert.IsFalse(overflow.HasAttribute("aria-label"));
+
+        var counter = overflow.QuerySelector("[aria-hidden='true']");
+        Assert.IsNotNull(counter);
+        Assert.AreEqual("+3", counter.TextContent.Trim());
+
+        var names = overflow.QuerySelector(".bit-drp-vhd");
+        Assert.IsNotNull(names);
+        Assert.AreEqual("Orange, Banana, Broccoli", names.TextContent.Trim());
     }
 
     [TestMethod]
@@ -2155,8 +2235,11 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
     }
 
+    // The combobox role belongs on the element the keyboard lands on, which is the field itself only
+    // while it has nothing focusable inside it. The ComboBox mode has an input, so the role - and the
+    // state that goes with it - moves onto that, leaving the dropdown one tab stop rather than two.
     [TestMethod]
-    public void BitDropdownComboAriaAutocompleteShouldBeOnTheComboboxElement()
+    public void BitDropdownComboboxRoleShouldFollowTheFocusedElement()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -2165,7 +2248,11 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
-        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-autocomplete"));
+        var field = component.Find(".bit-drp-wrp");
+        Assert.AreEqual("combobox", field.GetAttribute("role"));
+        Assert.AreEqual("false", field.GetAttribute("aria-expanded"));
+        Assert.AreEqual("0", field.GetAttribute("tabindex"));
+        Assert.IsFalse(field.HasAttribute("aria-autocomplete"));
 
         component.Render(parameters =>
         {
@@ -2173,7 +2260,21 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Combo, true);
         });
 
-        Assert.AreEqual("list", component.Find(".bit-drp-wrp").GetAttribute("aria-autocomplete"));
+        field = component.Find(".bit-drp-wrp");
+        Assert.IsFalse(field.HasAttribute("role"));
+        Assert.IsFalse(field.HasAttribute("aria-expanded"));
+        Assert.IsFalse(field.HasAttribute("aria-haspopup"));
+        Assert.AreEqual("-1", field.GetAttribute("tabindex"));
+
+        var comboInput = component.Find(".bit-drp-inp");
+        Assert.AreEqual("combobox", comboInput.GetAttribute("role"));
+        Assert.AreEqual("listbox", comboInput.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("list", comboInput.GetAttribute("aria-autocomplete"));
+        Assert.AreEqual("false", comboInput.GetAttribute("aria-expanded"));
+
+        component.Find(".bit-drp-wrp").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-drp-inp").GetAttribute("aria-expanded"));
     }
 
     [TestMethod]
@@ -3411,8 +3512,10 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
     }
 
-    // The trigger is named after the element that shows the selection. An input inside that element
-    // would contribute its value to the name, making the trigger report back whatever is being typed.
+    // A dropdown that is not typed into is named after the element that shows the selection, and an
+    // input inside that element would contribute its value to the name, making the field report back
+    // whatever is being typed. In the ComboBox mode the input is the combobox and names itself after
+    // the label, so its value never reaches the name in the first place.
     [TestMethod]
     public void BitDropdownComboInputShouldStayOutOfTheTriggerAccessibleName()
     {
@@ -3420,17 +3523,30 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Label, "Fruit");
             parameters.Add(p => p.Items, GetShortDropdownItems());
             parameters.Add(p => p.Value, "f-app");
         });
 
         var labelledBy = component.Find(".bit-drp-wrp").GetAttribute("aria-labelledby");
-        var namedBy = component.Find($"#{labelledBy}");
+        var namedBy = component.Find($"#{labelledBy!.Split(' ')[^1]}");
 
         Assert.AreEqual("Apple", namedBy.TextContent.Trim());
         Assert.AreEqual(0, namedBy.QuerySelectorAll("input").Length);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Label, "Fruit");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.Value, "f-app");
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+
         Assert.AreEqual(1, component.FindAll(".bit-drp-inp").Count);
+        Assert.AreEqual(component.Find(".bit-drp-lbl").GetAttribute("id"), comboInput.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-labelledby"));
     }
 
     // A live region only announces while it is in the accessibility tree, and the callout is hidden
@@ -3739,6 +3855,100 @@ public class BitDropdownTests : BunitTestContext
 
         invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
         Assert.AreEqual(true, invocations[^1].Arguments[6]);
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchBoxShouldReplaceTheTypeAhead()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        var callout = component.Find(".bit-drp-cal");
+        callout.KeyDown(new KeyboardEventArgs { Key = "b" });
+
+        // Without a search box a printable key is a type-ahead, which is a move of the focus.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
+        Assert.AreEqual("char", invocations[^1].Arguments[1]);
+        Assert.AreEqual("b", invocations[^1].Arguments[2]);
+
+        var countBefore = invocations.Count;
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        callout.KeyDown(new KeyboardEventArgs { Key = "b" });
+
+        // With one, the key belongs to the search box - the keydown listener of Dropdowns.ts hands it
+        // back to it - so the component must not move the focus away from the field being typed into.
+        Assert.AreEqual(countBefore, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownTypingOnTheClosedTriggerShouldGoIntoTheSearchBox()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+        });
+
+        var trigger = component.Find(".bit-drp-wrp");
+        trigger.KeyDown(new KeyboardEventArgs { Key = "b" });
+
+        // The key opens the list, and it is the search box that it lands in: the callout leaves every
+        // printable key to that box, so a type-ahead here would spend the character on a focus move and
+        // drop it from the term the next characters go on building.
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual("b", component.Find(".bit-drp-sin").GetAttribute("value"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+
+        // The box takes the focus with the caret behind that character, so the browser types the rest of
+        // the term into it natively rather than in front of what is already there.
+        var focus = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusSearchBox"];
+        Assert.AreEqual(1, focus[^1].Arguments[1]);
+
+        trigger.KeyDown(new KeyboardEventArgs { Key = "a" });
+
+        Assert.AreEqual("ba", component.Find(".bit-drp-sin").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDropdownOverlayShouldInheritThePublicCssVariablesOfTheStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Style, "margin:1rem;--bit-Dropdown-overlay-background:rgba(0,0,0,.4)");
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Root = "--bit-Dropdown-accent-color:red", Overlay = "z-index:9" });
+        });
+
+        // The overlay is a sibling of the root and is moved to the body along with the callout, so the
+        // public variables reach it the same way they reach the callout - by hand. Styles.Overlay is
+        // appended last, so a value written for the layer itself still wins.
+        var overlay = component.Find(".bit-drp-ovl").GetAttribute("style");
+
+        Assert.IsNotNull(overlay);
+        StringAssert.Contains(overlay, "--bit-Dropdown-overlay-background:rgba(0,0,0,.4);");
+        StringAssert.Contains(overlay, "--bit-Dropdown-accent-color:red;");
+        StringAssert.Contains(overlay, "z-index:9");
+        Assert.IsTrue(overlay.IndexOf("--bit-Dropdown-accent-color", StringComparison.Ordinal) < overlay.IndexOf("z-index:9", StringComparison.Ordinal));
+
+        // Only the public variables travel, and the layer keeps the display the component toggles it with.
+        Assert.IsFalse(overlay.Contains("margin:1rem", StringComparison.Ordinal));
+        StringAssert.Contains(overlay, "display:none");
     }
 
     [TestMethod]
@@ -4251,6 +4461,484 @@ public class BitDropdownTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.RefreshItemsAsync());
 
         Assert.AreEqual(0, component.FindAll("[role=option]").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldRenderErrorMessageAndMarkItselfInvalid()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "Pick a fruit.");
+        });
+
+        var error = component.Find(".bit-drp-erm");
+        Assert.AreEqual("Pick a fruit.", error.TextContent.Trim());
+
+        // A message is a rejection, so it gives the dropdown the same look and the same attribute the
+        // EditContext would.
+        Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains("bit-inv"));
+
+        var trigger = component.Find(".bit-drp-wrp");
+        Assert.AreEqual("true", trigger.GetAttribute("aria-invalid"));
+        Assert.AreEqual(error.GetAttribute("id"), trigger.GetAttribute("aria-describedby"));
+
+        // Announced the moment it shows up rather than only on the next focus.
+        Assert.AreEqual("Pick a fruit.", component.Find(".bit-drp-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownInvalidShouldMarkItselfInvalidWithoutAMessage()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-drp-wrp").GetAttribute("aria-invalid"));
+        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldDescribeItselfByEveryDescriptionItCarries()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "Pick a fruit.");
+            parameters.Add(p => p.Description, "Only what is in season.");
+            parameters.Add(p => p.AriaDescription, "The list is refreshed every morning.");
+        });
+
+        // In reading order: what is wrong with the value, the visible helper text, then the text
+        // written for a screen reader alone.
+        var expected = string.Join(' ',
+            component.Find(".bit-drp-erm").GetAttribute("id"),
+            component.Find(".bit-drp-des").GetAttribute("id"),
+            component.Find(".bit-drp-vhd").GetAttribute("id"));
+
+        Assert.AreEqual(expected, component.Find(".bit-drp-wrp").GetAttribute("aria-describedby"));
+        Assert.AreEqual("The list is refreshed every morning.", component.Find(".bit-drp-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownComboInputShouldCarryTheDescriptionsAndTheInvalidState()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "Pick a fruit.");
+            parameters.Add(p => p.AriaDescription, "The list is refreshed every morning.");
+        });
+
+        // The combobox role sits on the input in this mode, so it is the element that has to report
+        // both of them - the field around it is out of the tab order and out of the accessibility tree.
+        var input = component.Find(".bit-drp-inp");
+        var expected = string.Join(' ',
+            component.Find(".bit-drp-erm").GetAttribute("id"),
+            component.Find(".bit-drp-vhd").GetAttribute("id"));
+
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.AreEqual(expected, input.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownCollapsedTextDisplayShouldStillNameEverySelectedItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.MaxDisplayedItems, 1);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Values, new[] { "f-app", "f-ora" });
+        });
+
+        // What is on the screen is a count of the selection, which is all a screen reader would be told
+        // the field holds; the names are rendered in its place instead.
+        var summary = component.Find(".bit-drp-tdp > [aria-hidden=true]");
+        Assert.AreEqual("2 items selected", summary.TextContent.Trim());
+        Assert.AreEqual("Apple, Orange", summary.GetAttribute("title"));
+        Assert.AreEqual("Apple, Orange", component.Find(".bit-drp-tdp .bit-drp-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitDropdownClearAsyncShouldClearTheWholeSelection()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var cleared = 0;
+        var values = new List<string?> { "f-app", "f-ora" };
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Values, values);
+            parameters.Add(p => p.ValuesChanged, v => values = v?.ToList() ?? []);
+            parameters.Add(p => p.OnClear, () => cleared++);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ClearAsync());
+
+        Assert.AreEqual(0, values.Count);
+        Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public async Task BitDropdownClearAsyncShouldBeRefusedByAReadOnlyDropdown()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var values = new List<string?> { "f-app" };
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Values, values);
+            parameters.Add(p => p.ValuesChanged, v => values = v?.ToList() ?? []);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ClearAsync());
+
+        Assert.AreEqual(1, values.Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitDropdownParams<BitDropdownItem<string>, string>.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitDropdown<BitDropdownItem<string>, string>)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitDropdownParams<BitDropdownItem<string>, string>();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitDropdownParams<BitDropdownItem<string>, string>.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldApplyCascadingParametersFromBitParams()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<string>, string>
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                NoBorder = true,
+                Underlined = true,
+                Placeholder = "Cascaded placeholder",
+                Title = "Cascaded title"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-suc"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-lg"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-nbd"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-und"));
+        Assert.AreEqual("Cascaded placeholder", instance.Placeholder);
+        Assert.AreEqual("Cascaded title", instance.Title);
+    }
+
+    [TestMethod]
+    public void BitDropdownDirectParametersShouldOverrideCascadingParameters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<string>, string>
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Placeholder = "Cascaded placeholder",
+                Underlined = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.AddAttribute(2, nameof(BitDropdown<BitDropdownItem<string>, string>.Color), BitColor.Error);
+                builder.AddAttribute(3, nameof(BitDropdown<BitDropdownItem<string>, string>.Size), BitSize.Small);
+                builder.AddAttribute(4, nameof(BitDropdown<BitDropdownItem<string>, string>.Placeholder), "Direct placeholder");
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        // Direct parameters should override cascading ones
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-err"));
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-sm"));
+        Assert.AreEqual("Direct placeholder", instance.Placeholder);
+
+        // Underlined from cascading params should still apply (not overridden)
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-und"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldIgnoreCascadingParametersOfOtherTypeArguments()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<int>, int>
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        Assert.IsNull(instance.CascadingParameters);
+        Assert.IsFalse(dropdown.ClassList.Contains("bit-drp-suc"));
+        Assert.IsFalse(dropdown.ClassList.Contains("bit-drp-lg"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldMatchTheCascadingParametersOfItsOwnTypeArguments()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<int>, int> { Color = BitColor.Error },
+            new BitDropdownParams<BitDropdownItem<string>, string> { Color = BitColor.Success }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+
+        Assert.IsTrue(dropdown.ClassList.Contains("bit-drp-suc"));
+        Assert.IsFalse(dropdown.ClassList.Contains("bit-drp-err"));
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsUpdateParametersShouldSetAllProperties()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var @params = new BitDropdownParams<BitDropdownItem<string>, string>
+        {
+            AriaDescription = "Test description",
+            AutoFocus = true,
+            CaretDownIconName = "ChevronDown",
+            Chips = true,
+            CloseOnSelect = false,
+            Color = BitColor.Warning,
+            Combo = true,
+            DebounceTime = 300,
+            Description = "Test description text",
+            DropDirection = BitDropDirection.All,
+            FitWidth = true,
+            IsLoading = true,
+            Items = items,
+            ItemSize = 40,
+            Label = "Test label",
+            MaxHeight = 200,
+            MultiSelect = true,
+            MultiSelectDelimiter = " | ",
+            NoBorder = true,
+            Placeholder = "Test placeholder",
+            Prefix = "Pre",
+            SearchBoxPlaceholder = "Test search",
+            SearchMode = BitDropdownSearchMode.StartsWith,
+            ShowClearButton = true,
+            ShowSearchBox = true,
+            Size = BitSize.Small,
+            Suffix = "Suf",
+            Title = "Test title",
+            Transparent = true,
+            Underlined = true,
+            Virtualize = true,
+            AriaLabel = "Test aria label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+
+        Assert.AreEqual("Test description", instance.AriaDescription);
+        Assert.IsTrue(instance.AutoFocus);
+        Assert.AreEqual("ChevronDown", instance.CaretDownIconName);
+        Assert.IsTrue(instance.Chips);
+        Assert.IsFalse(instance.CloseOnSelect);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.IsTrue(instance.Combo);
+        Assert.AreEqual(300, instance.DebounceTime);
+        Assert.AreEqual("Test description text", instance.Description);
+        Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.IsTrue(instance.FitWidth);
+        Assert.IsTrue(instance.IsLoading);
+        Assert.AreSame(items, instance.Items);
+        Assert.AreEqual(40, instance.ItemSize);
+        Assert.AreEqual("Test label", instance.Label);
+        Assert.AreEqual(200, instance.MaxHeight);
+        Assert.IsTrue(instance.MultiSelect);
+        Assert.AreEqual(" | ", instance.MultiSelectDelimiter);
+        Assert.IsTrue(instance.NoBorder);
+        Assert.AreEqual("Test placeholder", instance.Placeholder);
+        Assert.AreEqual("Pre", instance.Prefix);
+        Assert.AreEqual("Test search", instance.SearchBoxPlaceholder);
+        Assert.AreEqual(BitDropdownSearchMode.StartsWith, instance.SearchMode);
+        Assert.IsTrue(instance.ShowClearButton);
+        Assert.IsTrue(instance.ShowSearchBox);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Suf", instance.Suffix);
+        Assert.AreEqual("Test title", instance.Title);
+        Assert.IsTrue(instance.Transparent);
+        Assert.IsTrue(instance.Underlined);
+        Assert.IsTrue(instance.Virtualize);
+        Assert.AreEqual("Test aria label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var @params = new BitDropdownParams<BitDropdownItem<string>, string>
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Placeholder = "Params placeholder"
+        };
+
+        // First render with direct parameters
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.Placeholder, "Existing placeholder");
+        });
+
+        var instance = component.Instance;
+
+        // Verify initial values
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing placeholder", instance.Placeholder);
+
+        // Now try to update with param, should not overwrite since properties were already set
+        @params.UpdateParameters(instance);
+
+        // Values should remain unchanged because HasNotBeenSet returns false
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing placeholder", instance.Placeholder);
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldApplyClassesAndStyles()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var classes = new BitDropdownClassStyles { Root = "custom-root" };
+        var styles = new BitDropdownClassStyles { Root = "color: red;" };
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitDropdownParams<BitDropdownItem<string>, string>
+            {
+                Classes = classes,
+                Styles = styles
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+                builder.AddAttribute(1, nameof(BitDropdown<BitDropdownItem<string>, string>.Items), BitDropdownTests.GetShortDropdownItems());
+                builder.CloseComponent();
+            });
+        });
+
+        var dropdown = component.Find(".bit-drp");
+
+        Assert.IsTrue(dropdown.ClassList.Contains("custom-root"));
+        Assert.IsTrue(dropdown.GetAttribute("style")?.Contains("color: red;"));
     }
 
     private static List<BitDropdownItem<string>> GetDropdownItemsWithDisabled() => new()

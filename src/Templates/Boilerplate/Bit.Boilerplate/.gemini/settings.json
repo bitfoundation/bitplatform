@@ -1,7 +1,7 @@
 {
     "mcpServers": {
         "bitplatform": {
-            "httpUrl": "https://bitplatform.dev/mcp?v=10.6.1"
+            "httpUrl": "https://bitplatform.dev/mcp?v=10.6.2"
         },
         "aspire": {
             "command": "aspire",

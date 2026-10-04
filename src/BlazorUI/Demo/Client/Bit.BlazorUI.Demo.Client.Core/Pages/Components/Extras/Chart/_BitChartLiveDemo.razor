@@ -3,11 +3,9 @@
 
 <DemoExample Title="Streaming updates" RazorCode="@streamRazorCode" CsharpCode="@streamCsharpCode" Id="live-streaming">
     <div class="example-desc">
-        Blazor only re-renders when a parameter it can compare changes, so appending a reading to the same
-        <code>BitChartData</code> object leaves the chart showing the old scene. <code>Refresh()</code> is what tells
-        it to rebuild from the data as it now stands - the counterpart of Chart.js's <code>chart.update()</code>
-        - which is all a live feed needs. An open tooltip keeps pointing at the reading it was on rather than
-        blinking out on every tick.
+        Mutating the same <code>BitChartData</code> instance does not re-render the chart; call
+        <code>Refresh()</code> to rebuild it from the current data. An open tooltip stays on its reading across
+        updates.
     </div>
     <div class="buttons-container" style="gap:.5rem">
         <BitButton Variant="BitVariant.Outline" OnClick="Toggle">@(_timer is null ? "Start" : "Stop")</BitButton>
@@ -18,10 +16,9 @@
 
 <DemoExample Title="Showing and hiding series from code" RazorCode="@visibilityRazorCode" CsharpCode="@visibilityCsharpCode" Id="live-visibility">
     <div class="example-desc">
-        The legend's toggle is also an API: <code>ToggleDataset</code>, <code>SetDatasetVisible</code> and
-        <code>IsDatasetVisible</code> drive the same state from your own controls, <code>ToggleDataIndex</code> does it
-        per slice for pie, doughnut and polar-area charts, and <code>ResetVisibility</code> brings everything back.
-        Hiding a series re-scales the axes around what is left, exactly as clicking its legend entry would.
+        <code>ToggleDataset</code>, <code>SetDatasetVisible</code> and <code>IsDatasetVisible</code> drive dataset
+        visibility from code, <code>ToggleDataIndex</code> does it per slice for pie, doughnut and polar area, and
+        <code>ResetVisibility</code> shows everything again. Axes re-scale as on a legend click.
     </div>
     <div class="controls">
         @for (int i = 0; i < _revenue.Datasets.Count; i++)

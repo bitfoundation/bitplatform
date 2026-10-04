@@ -241,11 +241,13 @@ public partial class BitGridItem : BitComponentBase
     public int? ColumnSpan { get; set; }
 
     /// <summary>
-    /// The custom html element used for the root node. The default is "div".
+    /// The custom html element used for the root node. The default is "div", or "li" in a grid rendered as a
+    /// <c>ul</c>, an <c>ol</c> or a <c>menu</c>.
     /// </summary>
     /// <remarks>
-    /// This is the counterpart of <see cref="BitGrid.Element"/>: the items of a grid rendered as a <c>ul</c>
-    /// are rendered as <c>li</c>, and the items of a grid rendered as a <c>dl</c> as <c>dt</c> and <c>dd</c>.
+    /// This is the counterpart of <see cref="BitGrid.Element"/>: the items of a grid rendered as a list element
+    /// are list items without being told, and the items of a grid rendered as a <c>dl</c> name <c>dt</c> and
+    /// <c>dd</c> here.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
 
@@ -612,15 +614,29 @@ public partial class BitGridItem : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Element ?? "div");
+        // The only child a list element may have is a list item, so an item of a grid rendered as one is an li
+        // unless it names an element of its own.
+        builder.OpenElement(0, Element ?? (Parent?.IsListElement is true ? "li" : "div"));
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
-        builder.AddAttribute(3, "aria-label", AriaLabel);
-        builder.AddAttribute(4, "style", StyleBuilder.Value);
-        builder.AddAttribute(5, "class", ClassBuilder.Value);
-        builder.AddAttribute(6, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(7, v => RootElement = v);
-        builder.AddContent(8, ChildContent);
+        // A null value still drops the attribute of the same name that came out of HtmlAttributes, so an unset
+        // parameter is only written when it carries a value and a splatted one is left alone otherwise.
+        if (AriaLabel is not null)
+        {
+            builder.AddAttribute(3, "aria-label", AriaLabel);
+        }
+        if (TabIndex is not null)
+        {
+            builder.AddAttribute(4, "tabindex", TabIndex);
+        }
+        builder.AddAttribute(5, "style", StyleBuilder.Value);
+        builder.AddAttribute(6, "class", ClassBuilder.Value);
+        if (Dir is not null)
+        {
+            builder.AddAttribute(7, "dir", Dir.Value.ToString().ToLowerInvariant());
+        }
+        builder.AddElementReferenceCapture(8, v => RootElement = v);
+        builder.AddContent(9, ChildContent);
         builder.CloseElement();
 
         base.BuildRenderTree(builder);

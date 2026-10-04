@@ -71,7 +71,7 @@ public class UnconfirmedUsersRetentionTests
 
         var userId = await CreateUnconfirmedUser(server, createdOn: DateTimeOffset.UtcNow - Retention(server) - TimeSpan.FromMinutes(1));
 
-        await using (var scope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scope = server.ApiApp.Services.CreateAsyncScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -96,12 +96,12 @@ public class UnconfirmedUsersRetentionTests
     private async Task<AppTestServer> StartServer()
     {
         var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
         return server;
     }
 
     private static TimeSpan Retention(AppTestServer server)
-        => server.WebApp.Services.GetRequiredService<ServerApiSettings>().Identity.UnconfirmedUsersRetention;
+        => server.ApiApp.Services.GetRequiredService<ServerApiSettings>().Identity.UnconfirmedUsersRetention;
 
     /// <summary>
     /// Written straight to the database, because the age is the whole point and nothing auto-provisioned through the
@@ -109,7 +109,7 @@ public class UnconfirmedUsersRetentionTests
     /// </summary>
     private async Task<Guid> CreateUnconfirmedUser(AppTestServer server, DateTimeOffset createdOn, bool emailConfirmed = false)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var userName = $"retention-{Guid.CreateVersion7():N}";
@@ -135,7 +135,7 @@ public class UnconfirmedUsersRetentionTests
 
     private async Task EnforceRetention(AppTestServer server)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
         await scope.ServiceProvider.GetRequiredService<UnconfirmedUsersRetentionJobRunner>()
             .EnforceRetention(TestContext.CancellationToken);
@@ -143,7 +143,7 @@ public class UnconfirmedUsersRetentionTests
 
     private async Task<bool> UserExists(AppTestServer server, Guid userId)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Set<User>().AnyAsync(user => user.Id == userId, TestContext.CancellationToken);
@@ -154,7 +154,7 @@ public class UnconfirmedUsersRetentionTests
     {
         try
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
 
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Set<User>()
                 .Where(user => user.Id == userId)

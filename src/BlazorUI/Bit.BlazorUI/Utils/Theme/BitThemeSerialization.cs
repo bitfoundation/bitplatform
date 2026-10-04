@@ -110,6 +110,7 @@ public static class BitThemeSerialization
         theme.Color ??= new BitThemeColors();
         theme.BoxShadow ??= new BitThemeBoxShadows();
         theme.Spacing ??= new BitThemeSpacings();
+        theme.Spacing.Card ??= new BitThemeSizeScale();
         theme.ZIndex ??= new BitThemeZIndices();
         theme.Shape ??= new BitThemeShapes();
         theme.Typography ??= new BitThemeTypography();
@@ -154,6 +155,8 @@ public static class BitThemeSerialization
         typography.FontSize ??= new BitThemeTypographyFontSizes();
         typography.FontWeights ??= new BitThemeTypographyFontWeights();
         typography.Control ??= new BitThemeControlTypography();
+        typography.Dialog ??= new BitThemeDialogTypography();
+        typography.FieldLabel ??= new BitThemeFieldLabelTypography();
 
         // Layout branch.
         theme.Layout.Breakpoints ??= new BitThemeBreakpoints();
@@ -170,6 +173,9 @@ public static class BitThemeSerialization
         theme.Size.Item ??= new BitThemeSizeScale();
         theme.Size.Track ??= new BitThemeSizeScale();
         theme.Size.SliderThumb ??= new BitThemeSizeScale();
+        theme.Size.Badge ??= new BitThemeSizeScale();
+        theme.Size.BadgeDot ??= new BitThemeSizeScale();
+        theme.Size.Chip ??= new BitThemeSizeScale();
         theme.Size.Switch ??= new BitThemeSwitchSizes();
         theme.Size.Switch.Width ??= new BitThemeSizeScale();
         theme.Size.Switch.Height ??= new BitThemeSizeScale();

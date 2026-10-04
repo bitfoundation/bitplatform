@@ -2,6 +2,7 @@ name: bit platform CI - Minifier
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
     - 'src/Minifier/**'
@@ -34,4 +35,4 @@ jobs:
       run: dotnet build src/Minifier/Bit.Minifier.slnx
 
     - name: dotnet test
-      run: cd src/Minifier && dotnet test --project Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj --no-build
+      run: cd src/Minifier/Tests/Bit.Minifier.Tests && dotnet test --no-build

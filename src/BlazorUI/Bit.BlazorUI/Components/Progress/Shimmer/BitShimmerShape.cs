@@ -6,7 +6,7 @@
 public enum BitShimmerShape
 {
     /// <summary>
-    /// A rectangle with the small corner radius of the theme, which is what a line of text or a block of content reads as.
+    /// A rectangle with the surface corner radius of the theme, which is what a line of text or a block of content reads as.
     /// </summary>
     Rounded,
 

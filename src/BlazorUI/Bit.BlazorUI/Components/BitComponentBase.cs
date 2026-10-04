@@ -262,7 +262,16 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         ParametersCache = null;
 
-        return base.SetParametersAsync(ParameterView.Empty);
+        var restore = RestoreDroppedCascadeParameters();
+
+        return restore.IsCompletedSuccessfully ? base.SetParametersAsync(ParameterView.Empty) : SetParametersAfterAsync(restore);
+    }
+
+    private async Task SetParametersAfterAsync(Task restore)
+    {
+        await restore;
+
+        await base.SetParametersAsync(ParameterView.Empty);
     }
 
 
@@ -475,6 +484,20 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     private protected static bool IsVoidElement(string element)
     {
         return _VoidElements.Contains(element);
+    }
+
+    /// <summary>
+    /// Resolves the tag a page names for the root of a component that writes content into it.
+    /// </summary>
+    /// <remarks>
+    /// The name is used as written, less its surrounding whitespace, while it is a name a tag can have and one that can
+    /// hold content; anything else - a void element included - falls back to the given default.
+    /// </remarks>
+    private protected static string ResolveContentElement(string? element, string fallback)
+    {
+        element = element?.Trim();
+
+        return element.HasValue() && IsValidElement(element!) && IsVoidElement(element!) is false ? element! : fallback;
     }
 
     // The obsolete four (basefont, bgsound, frame and keygen) are in the list the HTML parser itself treats as void,

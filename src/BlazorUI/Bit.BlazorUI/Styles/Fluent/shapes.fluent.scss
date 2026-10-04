@@ -15,11 +15,24 @@
     //the base inset of a dialog surface - the one padding a design system decides for dialog
     //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
     --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    //the inset of a card and of each of its parts, per size class. The steps of the spacing unit are
+    //their own unitless tokens so a theme applied lower in the tree that only re-values the density
+    //or the spacing unit can re-declare the inset there (BitThemeMapper.AugmentWithSpacingReSubstitution)
+    //and still land on this preset's steps rather than on the document's already-computed length.
+    --bit-spa-card-sm-steps: 1.5;
+    --bit-spa-card-md-steps: 2;
+    --bit-spa-card-lg-steps: 3;
+    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //12px
+    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //16px
+    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //24px
     //layout - how a dialog/message-box footer lays out its action buttons. Fluent and Material run
     //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
+    //how a dialog's title and message are aligned - to the start under Fluent and Material,
+    //centred over Cupertino's alerts.
+    --bit-layout-dialog-text-align: start;
     //zindex - the layering contract, top to bottom:
     //  snackbar (1400) - notifications, above everything.
     //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).
@@ -55,6 +68,10 @@
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px;
 
+    //shape - the corners of the selection indicator of a tab strip, which Fluent draws square. The corners on
+    //the edge it stands on (--bit-shp-radius-tab-indicator-base) follow these unless a preset sets them.
+    --bit-shp-radius-tab-indicator: 0;
+
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
@@ -62,7 +79,9 @@
 
 //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
 //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
-//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
+//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element, which is what forced-colors
+//mode reads the offset back off; the ring itself cannot be recolored through them, since the var()s below are substituted
+//here rather than where the token is used, so a focus-ring() call carrying its own color writes the shadow out inline instead.
 //In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
 //
 //It is a composite of four other tokens, so - exactly as in semantic-tokens.scss and

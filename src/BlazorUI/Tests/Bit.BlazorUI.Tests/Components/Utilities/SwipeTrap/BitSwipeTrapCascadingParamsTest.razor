@@ -1,0 +1,27 @@
+﻿@using Bit.BlazorUI
+
+@* Covers BitSwipeTrapParams: the cascaded values fill in the parameters a SwipeTrap did not set itself and never
+   overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitSwipeTrapParams[]
+                         {
+                             new()
+                             {
+                                 KeyboardTrigger = true,
+                                 OrientationLock = BitSwipeOrientation.Horizontal,
+                                 SkipSelector = ".no-swipe",
+                                 Threshold = 10,
+                                 Throttle = 20,
+                                 TouchOnly = true,
+                                 Trigger = 60,
+                                 TriggerVelocity = 0.5m,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitSwipeTrap>first</BitSwipeTrap>
+    <BitSwipeTrap OrientationLock="BitSwipeOrientation.Vertical"
+                  Trigger="0.5m"
+                  TouchOnly="false"
+                  KeyboardTrigger="false"
+                  Class="second">second</BitSwipeTrap>
+</BitParams>

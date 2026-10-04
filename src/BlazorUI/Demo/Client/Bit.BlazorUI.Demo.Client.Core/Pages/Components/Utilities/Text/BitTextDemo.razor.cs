@@ -63,7 +63,7 @@ public partial class BitTextDemo
             Name = "ForceBreak",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Forces the text to always break at the end.",
+            Description = "Breaks the text wherever the line runs out, even in the middle of a word.",
         },
         new()
         {
@@ -86,7 +86,7 @@ public partial class BitTextDemo
             Name = "Gutter",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the text will have a bottom margin, sized in em so that it follows the size of the variant.",
+            Description = "Adds a bottom margin in em, so it follows the size of the variant. An inline variant needs Block for it to show.",
         },
         new()
         {
@@ -135,7 +135,7 @@ public partial class BitTextDemo
             Name = "NoWrap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the text will not wrap, but instead will truncate with a text overflow ellipsis.",
+            Description = "Keeps the text on a single line and ends it with an ellipsis. Needs a box with a width, which Block gives an inline variant.",
         },
         new()
         {
@@ -181,7 +181,7 @@ public partial class BitTextDemo
             Name = "Typography",
             Type = "BitTypography?",
             DefaultValue = "null",
-            Description = "The typography of the text.",
+            Description = "The typography variant: the size, weight, line height and tracking, and the tag rendered unless Element is set. Only the six heading variants render a heading tag. Defaults to Subtitle1.",
             LinkType = LinkType.Link,
             Href = "#typography-enum"
         },
@@ -197,7 +197,7 @@ public partial class BitTextDemo
             Name = "VisuallyHidden",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the text from the page while keeping it available to assistive technologies.",
+            Description = "Removes the text from the page while keeping it available to assistive technologies. It is drawn again while it holds the focus, so a skip link stays visible when tabbed to.",
         },
         new()
         {
@@ -231,7 +231,7 @@ public partial class BitTextDemo
                 new()
                 {
                     Name= "Primary",
-                    Description="Info Primary general color.",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()
@@ -454,8 +454,8 @@ public partial class BitTextDemo
                 new() { Name = "H4", Description = "Renders an h4.", Value = "3" },
                 new() { Name = "H5", Description = "Renders an h5.", Value = "4" },
                 new() { Name = "H6", Description = "Renders an h6.", Value = "5" },
-                new() { Name = "Subtitle1", Description = "Renders an h6. The default variant.", Value = "6" },
-                new() { Name = "Subtitle2", Description = "Renders an h6.", Value = "7" },
+                new() { Name = "Subtitle1", Description = "Renders a div - not a heading. The default variant.", Value = "6" },
+                new() { Name = "Subtitle2", Description = "Renders a div - not a heading.", Value = "7" },
                 new() { Name = "Body1", Description = "Renders a p.", Value = "8" },
                 new() { Name = "Body2", Description = "Renders a p.", Value = "9" },
                 new() { Name = "Button", Description = "Renders a span.", Value = "10" },
@@ -469,223 +469,73 @@ public partial class BitTextDemo
 
 
 
-    private string example1RazorCode = @"
-<BitText>This is default (Subtitle1)</BitText>
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Text-color",
+            DefaultValue = "currentcolor (the color around the text)",
+            Description = "Text color when neither Color nor Foreground is set.",
+        },
+        new()
+        {
+            Name = "--bit-Text-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Font family of every variant but Inherit, which keeps the family around it.",
+        },
+        new()
+        {
+            Name = "--bit-Text-heading-font-family",
+            DefaultValue = "--bit-Text-font-family",
+            Description = "Font family of the H1 to H6 variants, for a display face beside the text face.",
+        },
+        new()
+        {
+            Name = "--bit-Text-monospace-font-family",
+            DefaultValue = "--bit-tpg-font-family-mono",
+            Description = "Font family of a Monospace text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-gutter",
+            DefaultValue = "--bit-tpg-gutter-size",
+            Description = "Bottom margin of a Gutter text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-decoration-color",
+            DefaultValue = "currentcolor",
+            Description = "Color of the Underline and Strikethrough lines.",
+        },
+        new()
+        {
+            Name = "--bit-Text-decoration-thickness",
+            DefaultValue = "auto",
+            Description = "Thickness of the Underline and Strikethrough lines.",
+        },
+        new()
+        {
+            Name = "--bit-Text-underline-offset",
+            DefaultValue = "auto",
+            Description = "Distance between the baseline and the Underline line.",
+        },
+        new()
+        {
+            Name = "--bit-Text-disabled-opacity",
+            DefaultValue = "--bit-opa-dis",
+            Description = "Opacity of a text whose IsEnabled is false.",
+        },
+    ];
 
-<BitText Typography=""BitTypography.H1"">H1. Heading</BitText>
-<BitText Typography=""BitTypography.H2"">H2. Heading</BitText>
-<BitText Typography=""BitTypography.H3"">H3. Heading</BitText>
-<BitText Typography=""BitTypography.H4"">H4. Heading</BitText>
-<BitText Typography=""BitTypography.H5"">H5. Heading</BitText>
-<BitText Typography=""BitTypography.H6"">H6. Heading</BitText>
 
-<BitText Typography=""BitTypography.Subtitle1"">Subtitle1. Once upon a time</BitText>
-<BitText Typography=""BitTypography.Subtitle2"">Subtitle2. Once upon a time</BitText>
-
-<BitText Typography=""BitTypography.Body1"">Body1. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-<BitText Typography=""BitTypography.Body2"">Body2. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-
-<BitText Typography=""BitTypography.Button"">Button. Click Me</BitText>
-<BitText Typography=""BitTypography.Caption1"">Caption1. Hello World!</BitText>
-<BitText Typography=""BitTypography.Caption2"">Caption2. Hello World!</BitText>
-<BitText Typography=""BitTypography.Overline"">Overline. this is overline text.</BitText>
-
-<div style=""font-style:italic;font-size:1.25rem;color:tomato"">
-    <BitText Typography=""BitTypography.Inherit"">Inherit. Takes the size, the weight and the family of the element around it.</BitText>
-</div>";
-
-    private string example2RazorCode = @"
-<BitText Element=""h2"" Typography=""BitTypography.H4"">An h2 drawn at the size of an h4</BitText>
-<BitText Element=""span"" Typography=""BitTypography.H4"">An h4 look with no heading semantics at all (span)</BitText>
-<BitText Element=""strong"" Typography=""BitTypography.Body1"">Strongly emphasized body text</BitText>
-<BitText Element=""blockquote"" Typography=""BitTypography.Body1"">A quotation, in a blockquote</BitText>
-<BitText Element=""code"" Typography=""BitTypography.Body2"">var text = new BitText();</BitText>
-<BitText Element=""not a tag name"" Typography=""BitTypography.Body2"">A tag name carrying whitespace falls back to the tag of the variant (p).</BitText>
-<BitText Element=""hr"">A void element holds no content, so this text is not rendered.</BitText>";
-
-    private string example3RazorCode = @"
-<BitText Weight=""BitFontWeight.Light"">Light weight</BitText>
-<BitText Weight=""BitFontWeight.Regular"">Regular weight</BitText>
-<BitText Weight=""BitFontWeight.Medium"">Medium weight</BitText>
-<BitText Weight=""BitFontWeight.Semibold"">Semibold weight</BitText>
-<BitText Weight=""BitFontWeight.Bold"">Bold weight</BitText>
-
-<BitText Italic>Italic text</BitText>
-<BitText Underline>Underlined text</BitText>
-<BitText Strikethrough>Struck through text</BitText>
-<BitText Underline Strikethrough>Both underlined and struck through</BitText>
-
-<BitText Transform=""BitTextTransform.Uppercase"">Uppercase transform</BitText>
-<BitText Transform=""BitTextTransform.Lowercase"">Lowercase Transform</BitText>
-<BitText Transform=""BitTextTransform.Capitalize"">capitalize transform</BitText>
-<BitText Typography=""BitTypography.Overline"" Transform=""BitTextTransform.None"">None, undoing the uppercase of the overline variant</BitText>";
-
-    private string example4RazorCode = @"
-<BitText Typography=""BitTypography.Body1"">1,111.11</BitText>
-<BitText Typography=""BitTypography.Body1"">8,888.88</BitText>
-<BitText Typography=""BitTypography.Body1"">1,234.56</BitText>
-
-<BitText Typography=""BitTypography.Body1"" Numeric>1,111.11</BitText>
-<BitText Typography=""BitTypography.Body1"" Numeric>8,888.88</BitText>
-<BitText Typography=""BitTypography.Body1"" Numeric>1,234.56</BitText>
-
-<BitText Typography=""BitTypography.Body1"" Monospace>1,111.11</BitText>
-<BitText Typography=""BitTypography.Body1"" Monospace>8,888.88</BitText>
-<BitText Typography=""BitTypography.Body1"" Monospace>1,234.56</BitText>
-
-<BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>
-<BitText Element=""samp"" Typography=""BitTypography.Body2"" Monospace>sha256:3f7a91c0b2ed48d5</BitText>";
-
-    private string example5RazorCode = @"
-<BitText Style=""width:250px"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-
-<BitText Style=""width:250px"" NoWrap>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-
-<BitText Style=""width:250px"" Typography=""BitTypography.Caption2"" NoWrap Block>Once upon a time, stories wove connections between people, a symphony of voices.</BitText>
-
-<BitText Style=""width:250px"" BreakWord>A path: /a/very/long/path/segment/that/never/breaks/on/its/own/anywhere.txt</BitText>
-
-<BitText Style=""width:250px"" ForceBreak>1234567890123456789012345678901234567890123456789012345678901234567890</BitText>
-
-<BitText Style=""width:250px"" Typography=""BitTypography.H5"" Wrap=""BitTextWrap.Balance"">A heading whose lines are balanced against each other</BitText>
-
-<BitText Style=""width:250px"" Wrap=""BitTextWrap.Pretty"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>
-
-<BitText Style=""width:250px"" Lang=""en"" Hyphenate>An incomprehensibly complicated internationalization responsibility.</BitText>
-
-<BitText Style=""width:250px"" PreserveWhitespace>@(@""Dear reader,
-
-    Two blank lines and an indent survive,
-    and a line this long is still wrapped."")</BitText>";
-
-    private string example6RazorCode = @"
-<BitText Style=""width:250px"" LineClamp=""1"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>
-
-<BitText Style=""width:250px"" LineClamp=""2"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>
-
-<BitText Style=""width:250px"" LineClamp=""3"">Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams that outlasted every one of the nights they were told in.</BitText>";
-
-    private string example7RazorCode = @"
-<BitText Style=""width:250px"" Align=""BitTextAlign.Start"">Start</BitText>
-<BitText Style=""width:250px"" Align=""BitTextAlign.Center"">Center</BitText>
-<BitText Style=""width:250px"" Align=""BitTextAlign.End"">End</BitText>
-<BitText Style=""width:250px"" Align=""BitTextAlign.Justify"">Justify. Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</BitText>";
-
-    private string example8RazorCode = @"
-<BitText Typography=""BitTypography.H5"" Gutter>A heading with a gutter</BitText>
-<BitText Typography=""BitTypography.Body1"" Gutter>A paragraph with a gutter, whose margin is smaller because the variant is.</BitText>
-<BitText Typography=""BitTypography.Body1"">A paragraph with none.</BitText>";
-
-    private string example9RazorCode = @"
-<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"">Handgloves</BitText></div>
-
-<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"" Trim=""BitTextTrim.Start"">Handgloves</BitText></div>
-
-<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"" Trim=""BitTextTrim.End"">Handgloves</BitText></div>
-
-<div class=""demo-boxed""><BitText Typography=""BitTypography.H4"" Trim=""BitTextTrim.Both"">Handgloves</BitText></div>";
-
-    private string example10RazorCode = @"
-<BitText Element=""div"" Typography=""BitTypography.H5"" AriaLevel=""3"">A div announced as a level 3 heading</BitText>
-<BitText Element=""h2"" Typography=""BitTypography.H5"" AriaLevel=""4"">An h2 announced as a level 4 heading</BitText>
-
-<BitText VisuallyHidden>Read out by a screen reader, and drawn nowhere.</BitText>
-
-<BitText NoSelect>Try to select this text - it will not be selected.</BitText>";
-
-    private string example11RazorCode = @"
-<BitText Visibility=""BitVisibility.Visible"">Visible text</BitText>
-<BitText Visibility=""BitVisibility.Hidden"">Hidden text</BitText>
-<BitText Visibility=""BitVisibility.Collapsed"">Collapsed text</BitText>
-
-<BitText IsEnabled=""false"">A disabled run of text</BitText>
-<BitText IsEnabled=""false"" Color=""BitColor.Error"">A disabled run of text, keeping its error color</BitText>";
-
-    private string example12RazorCode = @"
-<BitText Foreground=""BitColorKind.Primary"">Primary foreground</BitText>
-<BitText Foreground=""BitColorKind.Secondary"">Secondary foreground</BitText>
-<BitText Foreground=""BitColorKind.Tertiary"">Tertiary foreground</BitText>
-
-<div style=""background:linear-gradient(blue, pink);background-clip:text;"">
-    <BitText Foreground=""BitColorKind.Transparent"">Transparent foreground</BitText>
-</div>";
-
-    private string example13RazorCode = @"
-<BitText Typography=""BitTypography.H3"" Gradient=""linear-gradient(90deg, #7c3aed, #06b6d4)"">A gradient headline</BitText>
-
-<BitText Typography=""BitTypography.H4"" Gradient=""linear-gradient(45deg, #f43f5e, #f59e0b 50%, #22c55e)"">Three stops, on a diagonal</BitText>
-
-<BitText Typography=""BitTypography.H4"" Weight=""BitFontWeight.Bold"" Gradient=""radial-gradient(circle at 30% 50%, #06b6d4, #7c3aed)"">A radial gradient, and a weight of its own</BitText>
-
-<BitText Gradient=""linear-gradient(90deg, var(--bit-clr-fg-pri), transparent)"">A run of body text fading out into nothing</BitText>";
 
     private readonly BitTextParams[] textParams =
     [
         new()
         {
             Typography = BitTypography.Body1,
-            Color = BitColor.Info,
+            Weight = BitFontWeight.Semibold,
             Transform = BitTextTransform.Uppercase,
         }
     ];
-
-    private string example14RazorCode = @"
-@* The params object carries a default down to every text under it, and never overwrites what one set itself. *@
-<BitParams Parameters=""@textParams"">
-    <BitText>Takes the variant, the color and the transform from the cascade</BitText>
-    <BitText>So does this one, without repeating any of it</BitText>
-    <BitText Color=""BitColor.Error"" Weight=""BitFontWeight.Bold"">Its own color and weight, the cascaded variant</BitText>
-</BitParams>
-
-<BitText>Outside the cascade, and back to the defaults</BitText>
-
-@code {
-    private readonly BitTextParams[] textParams =
-    [
-        new()
-        {
-            Typography = BitTypography.Body1,
-            Color = BitColor.Info,
-            Transform = BitTextTransform.Uppercase,
-        }
-    ];
-}";
-
-    private string example15RazorCode = @"
-<BitText Color=""BitColor.Primary"">Primary color</BitText>
-<BitText Color=""BitColor.Secondary"">Secondary color</BitText>
-<BitText Color=""BitColor.Tertiary"">Tertiary color</BitText>
-
-<BitText Color=""BitColor.Info"">Info color</BitText>
-<BitText Color=""BitColor.Success"">Success color</BitText>
-<BitText Color=""BitColor.Warning"">Warning color</BitText>
-<BitText Color=""BitColor.SevereWarning"">SevereWarning color</BitText>
-<BitText Color=""BitColor.Error"">Error color</BitText>
-
-<BitText Color=""BitColor.PrimaryBackground"">PrimaryBackground color</BitText>
-<BitText Color=""BitColor.SecondaryBackground"">SecondaryBackground color</BitText>
-<BitText Color=""BitColor.TertiaryBackground"">TertiaryBackground color</BitText>
-
-<BitText Color=""BitColor.PrimaryForeground"">PrimaryForeground color</BitText>
-<BitText Color=""BitColor.SecondaryForeground"">SecondaryForeground color</BitText>
-<BitText Color=""BitColor.TertiaryForeground"">TertiaryForeground color</BitText>
-
-<BitText Color=""BitColor.PrimaryBorder"">PrimaryBorder color</BitText>
-<BitText Color=""BitColor.SecondaryBorder"">SecondaryBorder color</BitText>
-<BitText Color=""BitColor.TertiaryBorder"">TertiaryBorder color</BitText>";
-
-    private string example16RazorCode = @"
-<BitText Style=""color: tomato; font-weight: bold;"">Styled through the Style parameter</BitText>
-<BitText Class=""demo-boxed"">Classed through the Class parameter</BitText>
-
-<BitText Align=""BitTextAlign.Center""
-         Style=""width:250px""
-         @attributes=""@(new Dictionary<string, object> { [""class""] = ""demo-boxed"" })"">
-    A splatted class, kept beside the class and the alignment the component builds
-</BitText>";
-
-    private string example17RazorCode = @"
-<BitText Dir=""BitDir.Rtl"" Typography=""BitTypography.H5"">این یک عنوان راست‌چین است</BitText>
-<BitText Dir=""BitDir.Rtl"" Align=""BitTextAlign.Start"">این متن از لبه‌ی آغازین چیده شده است.</BitText>
-<BitText Dir=""BitDir.Rtl"" Align=""BitTextAlign.End"">این متن از لبه‌ی پایانی چیده شده است.</BitText>";
 }

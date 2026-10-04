@@ -1596,7 +1596,7 @@ public class BitFileUploadTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFileUploadShouldNotRenderThePreviewOfANonImageFile()
+    public void BitFileUploadShouldNotRenderAThumbnailForANonImageFile()
     {
         SetupFiles([new() { Name = "notes.txt", Size = 100, FileId = "1", Index = 0 }]);
 
@@ -1607,7 +1607,10 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        Assert.IsEmpty(com.FindAll(".bit-upl-prv"));
+        // only an image has a thumbnail of its own; the box is still there, carrying a type glyph,
+        // so the names of a mixed list stay lined up along one edge.
+        Assert.IsEmpty(com.FindAll("img.bit-upl-prv"));
+        Assert.HasCount(1, com.FindAll(".bit-upl-prv.bit-upl-pvi"));
     }
 
     [TestMethod]
@@ -2663,6 +2666,1146 @@ public class BitFileUploadTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.Upload());
 
         Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNameTheFileList()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.AreEqual("Selected files", com.Find(".bit-upl-fl").GetAttribute("aria-label"));
+
+        com.Render(parameters => parameters.Add(p => p.FileListAriaLabel, "Attachments"));
+
+        Assert.AreEqual("Attachments", com.Find(".bit-upl-fl").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldLeaveTheFileListUnnamedWithAnEmptyLabel()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.FileListAriaLabel, string.Empty);
+        });
+
+        SelectFiles(com);
+
+        Assert.IsNull(com.Find(".bit-upl-fl").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitFileUploadParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitFileUpload)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitFileUploadParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitFileUploadParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileUploadParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Outline,
+                Label = "Cascaded label",
+                UploadUrl = "/cascaded-upload",
+                Description = "Cascaded description"
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-otl"));
+        Assert.AreEqual("Cascaded label", com.Find(".bit-upl-lbl").TextContent.Trim());
+        Assert.AreEqual("Cascaded description", com.Find(".bit-upl-dsc").TextContent.Trim());
+        Assert.AreEqual("/cascaded-upload", com.FindComponent<BitFileUpload>().Instance.UploadUrl);
+    }
+
+    [TestMethod]
+    public void BitFileUploadDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileUploadParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Label = "Cascaded label",
+                UploadUrl = "/cascaded-upload"
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.AddAttribute(1, nameof(BitFileUpload.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitFileUpload.Label), "Own label");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-err"));
+        Assert.AreEqual("Own label", com.Find(".bit-upl-lbl").TextContent.Trim());
+
+        // what the component left unset still comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-lg"));
+        Assert.AreEqual("/cascaded-upload", com.FindComponent<BitFileUpload>().Instance.UploadUrl);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsUpdateParametersShouldSetAllProperties()
+    {
+        var @params = new BitFileUploadParams
+        {
+            Accept = ".pdf",
+            AllowDrop = false,
+            AllowPaste = false,
+            AllowDuplicates = false,
+            AllowedExtensions = [".pdf", ".docx"],
+            Append = true,
+            AutoChunkSize = true,
+            AutoReset = true,
+            AutoRetries = 3,
+            AutoRetryDelay = TimeSpan.FromSeconds(2),
+            AutoUpload = true,
+            Capture = "environment",
+            ChunkedUpload = true,
+            Color = BitColor.Warning,
+            ConcurrentUploads = 2,
+            Description = "Test description",
+            Directory = true,
+            FileListAriaLabel = "Test list",
+            HideFileView = true,
+            HideLabel = true,
+            Label = "Test label",
+            MaxCount = 5,
+            MaxSize = 1024,
+            MaxTotalSize = 4096,
+            MinSize = 16,
+            Multiple = true,
+            ReadImageDimensions = true,
+            RemoveUrl = "/remove",
+            ShowPreview = true,
+            ShowRemoveButton = true,
+            Size = BitSize.Small,
+            UploadUrl = "/upload",
+            UploadTimeout = TimeSpan.FromMinutes(1),
+            Variant = BitVariant.Text,
+            WithCredentials = true,
+            AriaLabel = "Test aria label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = com.FindComponent<BitFileUpload>().Instance;
+
+        Assert.AreEqual(".pdf", instance.Accept);
+        Assert.IsFalse(instance.AllowDrop);
+        Assert.IsFalse(instance.AllowPaste);
+        Assert.IsFalse(instance.AllowDuplicates);
+        Assert.AreEqual(2, instance.AllowedExtensions.Count);
+        Assert.IsTrue(instance.Append);
+        Assert.IsTrue(instance.AutoChunkSize);
+        Assert.IsTrue(instance.AutoReset);
+        Assert.AreEqual(3, instance.AutoRetries);
+        Assert.AreEqual(TimeSpan.FromSeconds(2), instance.AutoRetryDelay);
+        Assert.IsTrue(instance.AutoUpload);
+        Assert.AreEqual("environment", instance.Capture);
+        Assert.IsTrue(instance.ChunkedUpload);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(2, instance.ConcurrentUploads);
+        Assert.AreEqual("Test description", instance.Description);
+        Assert.IsTrue(instance.Directory);
+        Assert.AreEqual("Test list", instance.FileListAriaLabel);
+        Assert.IsTrue(instance.HideFileView);
+        Assert.IsTrue(instance.HideLabel);
+        Assert.AreEqual("Test label", instance.Label);
+        Assert.AreEqual(5, instance.MaxCount);
+        Assert.AreEqual(1024, instance.MaxSize);
+        Assert.AreEqual(4096, instance.MaxTotalSize);
+        Assert.AreEqual(16, instance.MinSize);
+        Assert.IsTrue(instance.Multiple);
+        Assert.IsTrue(instance.ReadImageDimensions);
+        Assert.AreEqual("/remove", instance.RemoveUrl);
+        Assert.IsTrue(instance.ShowPreview);
+        Assert.IsTrue(instance.ShowRemoveButton);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("/upload", instance.UploadUrl);
+        Assert.AreEqual(TimeSpan.FromMinutes(1), instance.UploadTimeout);
+        Assert.AreEqual(BitVariant.Text, instance.Variant);
+        Assert.IsTrue(instance.WithCredentials);
+        Assert.AreEqual("Test aria label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitFileUploadParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Label = "Params label"
+        };
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.Label, "Existing label");
+        });
+
+        var instance = com.Instance;
+
+        @params.UpdateParameters(instance);
+
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing label", instance.Label);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldApplyClassesAndStyles()
+    {
+        var @params = new BitFileUploadParams
+        {
+            Classes = new BitFileUploadClassStyles { Root = "custom-root", Label = "custom-label" },
+            Styles = new BitFileUploadClassStyles { Root = "color: red;", Label = "color: blue;" }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+        var label = com.Find(".bit-upl-lbl");
+
+        Assert.IsTrue(root.ClassList.Contains("custom-root"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red"));
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.IsTrue(label.GetAttribute("style")!.Contains("color: blue"));
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadParamsShouldDeriveTheWorkingChunkSize()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 4 * 1024 * 1024, FileId = "1", Index = 0 }]);
+
+        var @params = new BitFileUploadParams
+        {
+            ChunkedUpload = true,
+            ChunkSize = 2L * 1024 * 1024
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var upload = com.FindComponent<BitFileUpload>();
+
+        upload.Find(".bit-upl-fi").Change(string.Empty);
+
+        await upload.InvokeAsync(() => upload.Instance.Upload());
+        await upload.InvokeAsync(() => upload.Instance.__HandleChunkUpload(0, 200, string.Empty));
+
+        // a ChunkSize that arrives through the cascade still drives the size of the chunks, which
+        // the setter of the parameter - bypassed by the cascade - is what normally derives.
+        Assert.AreEqual(2 * 1024 * 1024, upload.Instance.Files[0].TotalUploadedSize);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldMoveTheFocusOnWhenAnItemButtonRemovesItsFile()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 },
+                    new() { Name = "b.txt", Size = 100, FileId = "2", Index = 1 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.ShowRemoveButton, true);
+        });
+
+        SelectFiles(com);
+
+        var removeButtons = com.FindAll(".bit-upl-usi[aria-label^='Remove']");
+
+        Assert.HasCount(2, removeButtons);
+
+        var focusCountBeforeRemove = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        // the item of b.txt is keyed, so its button survives the removal as the same element - and the
+        // reference id of an element is written into the markup by the render that captured it, never
+        // again by the renders it lives through. so the button is picked up before the click.
+        var remainingRemoveButton = com.FindAll(".bit-upl-itm .bit-upl-usi[aria-label='Remove b.txt']")[0];
+
+        await com.Find(".bit-upl-itm .bit-upl-usi[aria-label='Remove a.txt']").ClickAsync(new());
+
+        // the removed file leaves the list, and the focus is handed to the item that takes its place
+        // rather than being dropped on the document body with the button that was pressed.
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
+        Assert.HasCount(1, com.FindAll(".bit-upl-itm"));
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(focusCountBeforeRemove + 1, focused.Count);
+        focused[^1].Arguments[0].ShouldBeElementReferenceTo(remainingRemoveButton);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheHttpStatusOfTheUploadResponse()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        BitFileInfo? failed = null;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.OnUploadFailed, file => failed = file);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 413, "too large"));
+
+        // the status is what tells an expired token from a payload the server refused from a network
+        // that dropped, none of which the response body is obliged to say anything about.
+        Assert.IsNotNull(failed);
+        Assert.AreEqual(413, failed.ResponseStatus);
+        Assert.AreEqual("too large", failed.Message);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheHttpStatusOfASuccessfulUploadResponse()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.IsNull(com.Instance.Files[0].ResponseStatus);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 201, "done"));
+
+        Assert.AreEqual(201, com.Instance.Files[0].ResponseStatus);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheHttpStatusOfTheRemovalResponse()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "file-1", Index = 0 }]);
+
+        SetupHttpClient(HttpStatusCode.Forbidden);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 200, "done"));
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        Assert.AreEqual(BitFileUploadStatus.RemoveFailed, com.Instance.Files[0].Status);
+        Assert.AreEqual(403, com.Instance.Files[0].ResponseStatus);
+    }
+
+    [TestMethod,
+       DataRow("photo.png", "image/png", "Photo2"),
+       DataRow("clip.mp4", "video/mp4", "Video"),
+       DataRow("report.pdf", "", "PDF"),
+       DataRow("sheet.xlsx", "", "ExcelDocument"),
+       DataRow("bundle.zip", "", "ZipFolder"),
+       DataRow("data.bin", "", "Page")
+    ]
+    public void BitFileUploadShouldShowATypeGlyphForAFileWithoutAThumbnail(string name, string contentType, string glyph)
+    {
+        SetupFiles([new() { Name = name, ContentType = contentType, Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowPreview, true);
+        });
+
+        SelectFiles(com);
+
+        // the preview box is there whatever the file is, so the names of a mixed list line up; only an
+        // image ever carries a thumbnail of its own, and the browser is what produces that.
+        var preview = com.Find(".bit-upl-prv");
+
+        Assert.AreEqual("DIV", preview.TagName);
+        Assert.Contains("bit-upl-pvi", preview.ClassName);
+        Assert.Contains($"bit-icon--{glyph}", preview.InnerHtml);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldShowTheThumbnailOfAnImageThatHasOne()
+    {
+        SetupFiles([new() { Name = "photo.png", ContentType = "image/png", Size = 100, FileId = "1", Index = 0,
+                            PreviewUrl = "blob:preview" }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowPreview, true);
+        });
+
+        SelectFiles(com);
+
+        var preview = com.Find(".bit-upl-prv");
+
+        Assert.AreEqual("IMG", preview.TagName);
+        Assert.AreEqual("blob:preview", preview.GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotShowAPreviewBoxWithoutShowPreview()
+    {
+        SetupFiles([new() { Name = "report.pdf", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.IsEmpty(com.FindAll(".bit-upl-prv"));
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldAskTheAutoRetryDelayProviderForEachAttempt()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        List<int> attempts = [];
+        List<int?> statuses = [];
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AutoRetries, 2);
+            parameters.Add(p => p.AutoRetryDelayProvider, (file, attempt) =>
+            {
+                attempts.Add(attempt);
+                statuses.Add(file.ResponseStatus);
+
+                return TimeSpan.Zero;
+            });
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 503, "busy"));
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 503, "busy"));
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 503, "busy"));
+
+        // the attempts count from 1, and the file carries the status of the response that failed, which
+        // is what a backoff answering a 503 differently from a 429 reads.
+        Assert.AreEqual("1,2", string.Join(",", attempts));
+        Assert.AreEqual("503,503", string.Join(",", statuses));
+        Assert.AreEqual(BitFileUploadStatus.Failed, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldStillRetryWhenTheAutoRetryDelayProviderThrows()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AutoRetries, 1);
+            parameters.Add(p => p.AutoRetryDelayProvider, (_, _) => throw new InvalidOperationException("boom"));
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 500, "boom"));
+
+        // a provider that throws decides nothing, and the retry it was asked about still happens.
+        Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPassTheDropZoneSelectorToTheDragDropSetup()
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.DropZoneSelector, "#zone");
+        });
+
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop");
+
+        // the selector is what makes an element the app owns a drop zone of this component.
+        Assert.AreEqual("#zone", invocation.Arguments[7]);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPassTheRejectStateToTheDragDropSetup()
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AllowedExtensions, ["image/*", "application/pdf"]);
+            parameters.Add(p => p.MaxCount, 3);
+            parameters.Add(p => p.Classes, new() { DraggingRejected = "nope" });
+            parameters.Add(p => p.Styles, new() { DraggingRejected = "color:red" });
+        });
+
+        var args = Context.JSInterop.Invocations
+                                    .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop").Arguments;
+
+        Assert.AreEqual("bit-upl-drj nope", args[8]);
+        Assert.AreEqual("color:red", args[9]);
+        CollectionAssert.AreEqual(new[] { "image/*", "application/pdf" }, (string[])args[10]!);
+        Assert.AreEqual(3, args[11]);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotJudgeADragAgainstARuleWithExtensions()
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            // a dragged file shows its MIME type but not its name, so an extension cannot be checked mid-drag.
+            parameters.Add(p => p.AllowedExtensions, ["image/*", ".pdf"]);
+        });
+
+        var args = Context.JSInterop.Invocations
+                                    .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop").Arguments;
+
+        Assert.IsNull(args[10]);
+        Assert.AreEqual(-1, args[11]);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderThePreloadedFilesAsAlreadyUploaded()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        var file = com.Instance.Files.Single();
+
+        Assert.IsTrue(file.IsPreloaded);
+        Assert.AreEqual(BitFileUploadStatus.Completed, file.Status);
+        // the whole file is on the server already.
+        Assert.AreEqual(100, file.TotalUploadedSize);
+        // it takes no part in the transfer, though, so it neither inflates the batch nor reports one
+        // nobody has started as finished.
+        Assert.AreEqual(0, com.Instance.TotalSize);
+        Assert.AreEqual(0, com.Instance.OverallUploadProgress);
+        Assert.AreEqual("Already uploaded", com.Find(".bit-upl-us").TextContent.Trim());
+        // a file that never travelled from here shows its size alone rather than a count running up to it.
+        Assert.AreEqual(0, com.FindAll(".bit-upl-pct").Count);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldGiveThePreloadedFilesAnIdWhenTheyArriveWithoutOne()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 1 }
+            ]);
+        });
+
+        // the id names the file in the BIT_FILE_ID header of its remove request, so it cannot stay empty.
+        Assert.IsTrue(com.Instance.Files.Single().FileId.HasValue());
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNeverUploadAPreloadedFile()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+
+        // there is no content on this side to send, so no request is even attempted for it.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
+        Assert.AreEqual(BitFileUploadStatus.Completed, com.Instance.Files.Single().Status);
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.UploadStatus);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldCountThePreloadedFilesTowardsTheListLimits()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.MaxCount, 1);
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        // the file that is already on the server holds the only slot the list has.
+        Assert.AreEqual(BitFileUploadStatus.NotAllowed, com.Instance.Files[1].Status);
+        Assert.AreEqual("The maximum number of files is exceeded", com.Instance.Files[1].Message);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldKeepThePreloadedFilesThroughASelectionThatReplacesTheList()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        // a selection replaces the selection, not the record: the attachments are still on the server.
+        Assert.HasCount(2, com.Instance.Files);
+        Assert.IsTrue(com.Instance.Files[0].IsPreloaded);
+        Assert.AreEqual("b.txt", com.Instance.Files[1].Name);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldAddressThePickedFilesByTheirOwnIndexBesideThePreloadedOnes()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 40));
+
+        // the index names the uploader of the picked file, which the preloaded one ahead of it in the
+        // list has none of - so the progress belongs to the second item rather than to the first.
+        Assert.AreEqual(40, com.Instance.Files[1].LastChunkUploadedSize);
+        Assert.AreEqual(0, com.Instance.Files[0].LastChunkUploadedSize);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldRemoveAPreloadedFileFromTheServer()
+    {
+        var handler = SetupHttpClient(HttpStatusCode.OK);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
+        Assert.AreEqual("server-1", handler.LastRequest!.Headers.GetValues("BIT_FILE_ID").Single());
+        // there is no uploader holding anything for it, so nothing is asked to hand anything back.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.release"]);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNotBringARemovedPreloadedFileBackWhileTheCollectionStaysTheSame()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+
+        IReadOnlyCollection<BitFileInfo> files = [new() { Name = "a.txt", Size = 100, FileId = "server-1" }];
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, files);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        com.Render(parameters => parameters.Add(p => p.PreloadedFiles, files));
+
+        // the same collection is the same record, and the render it arrives on is not a reason to undo
+        // what the user has done to the list since.
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
+        Assert.AreEqual(0, com.FindAll(".bit-upl-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRebuildThePreloadedFilesWhenTheCollectionIsReplaced()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "b.txt", Size = 200, FileId = "server-2" }
+            ]);
+        });
+
+        // a new collection is a new record, so the preloaded part of the list is built from it again.
+        Assert.AreEqual("b.txt", com.Instance.Files.Single().Name);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderACustomMessageForThePreloadedFiles()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFileMessage, "Saved with this record");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        Assert.AreEqual("Saved with this record", com.Find(".bit-upl-us").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldKeepThePreloadedFilesThroughAReset()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Reset());
+
+        // a reset undoes the selection, and what is on the server was never part of it - which is also
+        // what keeps AutoReset from hiding the attachments of the record on every browse.
+        Assert.AreEqual("a.txt", com.Instance.Files.Single().Name);
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.UploadStatus);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNotBringAPreloadedFileDeletedFromTheServerBackOnAReset()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+        await com.InvokeAsync(() => com.Instance.Reset());
+
+        // the file is gone from the server, and nothing on this side gets to claim otherwise.
+        Assert.IsEmpty(com.Instance.Files);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRejectASelectedFileThatTheRecordAlreadyHas()
+    {
+        // a file picked here carries the modification time of the file system, which the server never
+        // reports, so the two are compared on the name and the size they do have in common.
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0, LastModified = 1700000000000 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AllowDuplicates, false);
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        Assert.AreEqual(BitFileUploadStatus.NotAllowed, com.Instance.Files[1].Status);
+        Assert.AreEqual("The file is already selected", com.Instance.Files[1].Message);
+        // the attachment the record has is never the one turned away.
+        Assert.AreEqual(BitFileUploadStatus.Completed, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldTakeASelectedFileBackOnceTheRecordsCopyOfItIsRemoved()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0, LastModified = 1700000000000 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AllowDuplicates, false);
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        // the rule is re-read over the whole list on every change, so deleting the copy on the server
+        // is what makes the file picked here uploadable after all.
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.Files[1].Status);
+        Assert.IsNull(com.Instance.Files[1].Message);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNotRebuildThePreloadedFilesForACollectionWrittenInline()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        // another array holding the same file is what every render of a collection written inline in the
+        // markup hands over, and it says nothing about the record having changed.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files.Single().Status);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderAPreloadedFileAsNeitherSucceededNorFailed()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        var item = com.Find(".bit-upl-itm");
+
+        // an upload that just landed is the green one; a file that was already there is a state, not an
+        // outcome, and takes a class of its own so it can be colored - and restyled - as one.
+        Assert.IsTrue(item.ClassList.Contains("bit-upl-pre"));
+        Assert.IsFalse(item.ClassList.Contains("bit-upl-uld"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldAnnounceThePreloadedFilesApartFromTheSelectedOnes()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        // nothing has been selected or uploaded in this visit yet, whatever the record already holds.
+        StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "No file selected. 1 already attached.");
+
+        SelectFiles(com);
+
+        StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "1 file selected. 1 already attached.");
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderNoLabelIconByDefault()
+    {
+        var com = RenderComponent<BitFileUpload>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-upl-lic").Count);
+    }
+
+    [TestMethod]
+    [DataRow(null, false)]
+    [DataRow(BitIconPosition.Start, false)]
+    [DataRow(BitIconPosition.End, true)]
+    public void BitFileUploadShouldRenderTheLabelIcon(BitIconPosition? position, bool isEnd)
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.LabelIconName, "Upload");
+            parameters.Add(p => p.LabelIconPosition, position);
+            parameters.Add(p => p.Classes, new() { LabelIcon = "my-icon" });
+        });
+
+        var icon = com.Find(".bit-upl-lbl .bit-upl-lic");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Upload"));
+        Assert.IsTrue(icon.ClassList.Contains("my-icon"));
+        // the text beside it already names the button.
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+        Assert.AreEqual(isEnd, com.Find(".bit-upl").ClassList.Contains("bit-upl-eni"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPreferTheExternalLabelIcon()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.LabelIcon, BitIconInfo.Fa("solid upload"));
+            parameters.Add(p => p.LabelIconName, "Upload");
+        });
+
+        var icon = com.Find(".bit-upl-lic");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-upload"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Upload"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderTheDropArea()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowDropArea, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-upl").ClassList.Contains("bit-upl-dra"));
+        // the drop area brings a glyph of its own when none is configured, and it is still the one button.
+        Assert.IsTrue(com.Find("button.bit-upl-lbl .bit-upl-lic").ClassList.Contains("bit-icon--CloudUpload"));
+
+        com.Render(parameters => parameters.Add(p => p.LabelIconName, "Add"));
+
+        Assert.IsTrue(com.Find(".bit-upl-lic").ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotRenderTheBatchActionsByDefault()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderTheBatchActionsOnlyWhenThereIsSomethingToActOn()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 },
+                    new() { Name = "b.txt", Size = 100, FileId = "2", Index = 1 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+            parameters.Add(p => p.UploadAllText, "Send all");
+        });
+
+        // an empty list has nothing to act on.
+        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+
+        SelectFiles(com);
+
+        // the buttons keep their places, and the ones with nothing to do are only marked unavailable.
+        CollectionAssert.AreEqual(new[] { "Send all", "Cancel all", "Clear" },
+                                  com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray());
+        CollectionAssert.AreEqual(new[] { false, true, false }, AriaDisabledStates(com));
+
+        com.FindAll(".bit-upl-bab")[0].Click();
+
+        // once everything is on its way only calling it off is left.
+        Assert.IsTrue(com.Instance.Files.All(f => f.Status == BitFileUploadStatus.InProgress));
+        CollectionAssert.AreEqual(new[] { true, false, true }, AriaDisabledStates(com));
+
+        // an unavailable button still takes the click, and does nothing with it.
+        com.FindAll(".bit-upl-bab")[2].Click();
+        Assert.AreEqual(2, com.Instance.Files.Count);
+
+        com.FindAll(".bit-upl-bab")[1].Click();
+
+        Assert.IsTrue(com.Instance.Files.All(f => f.Status == BitFileUploadStatus.Canceled));
+        // a canceled file can be retried, and a settled list cleared.
+        CollectionAssert.AreEqual(new[] { false, true, false }, AriaDisabledStates(com));
+
+        com.FindAll(".bit-upl-bab")[2].Click();
+
+        Assert.AreEqual(0, com.Instance.Files.Count);
+        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+
+        static bool[] AriaDisabledStates(IRenderedComponent<BitFileUpload> com)
+            => com.FindAll(".bit-upl-bab").Select(b => b.GetAttribute("aria-disabled") == "true").ToArray();
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotOfferUploadAllWhenAutoUploading()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+            parameters.Add(p => p.AutoUpload, true);
+        });
+
+        SelectFiles(com);
+
+        // the selection already means upload, so there is no button to ask for it.
+        var buttons = com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray();
+        CollectionAssert.AreEqual(new[] { "Cancel all", "Clear" }, buttons);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldDisableTheBatchActionsWhenDisabled()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+        });
+
+        SelectFiles(com);
+
+        com.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        Assert.IsTrue(com.FindAll(".bit-upl-bab").All(b => b.HasAttribute("disabled")));
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldCascadeTheNewParameters()
+    {
+        var bitParams = new BitFileUploadParams
+        {
+            ShowDropArea = true,
+            ShowBatchActions = true,
+            LabelIconName = "Add",
+            LabelIconPosition = BitIconPosition.End,
+            UploadAllText = "U",
+            CancelAllText = "C",
+            ClearText = "X",
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { bitParams });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.AddAttribute(1, nameof(BitFileUpload.ClearText), "Own");
+                builder.CloseComponent();
+            });
+        });
+
+        var upload = com.FindComponent<BitFileUpload>().Instance;
+
+        Assert.IsTrue(upload.ShowDropArea);
+        Assert.IsTrue(upload.ShowBatchActions);
+        Assert.AreEqual("Add", upload.LabelIconName);
+        Assert.AreEqual(BitIconPosition.End, upload.LabelIconPosition);
+        Assert.AreEqual("U", upload.UploadAllText);
+        Assert.AreEqual("C", upload.CancelAllText);
+        // what the component sets for itself wins over the cascade.
+        Assert.AreEqual("Own", upload.ClearText);
+
+        var root = com.Find(".bit-upl");
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-dra"));
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-eni"));
     }
 
     private void SetupFiles(BitFileInfo[] files)

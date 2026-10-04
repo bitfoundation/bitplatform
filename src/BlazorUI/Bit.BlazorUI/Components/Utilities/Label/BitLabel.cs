@@ -61,7 +61,8 @@ public partial class BitLabel : BitComponentBase
     /// The label inherits the color of its container while this is not set, which is what keeps it in step with the
     /// text around it. Setting it is how a caption is given a meaning of its own - an <see cref="BitColor.Error"/> one
     /// beside a field that failed its validation, a <see cref="BitColor.SecondaryForeground"/> one for a caption that
-    /// should sit back from the content it names.
+    /// should sit back from the content it names. An accent color is painted in the foreground shade of its role, the
+    /// one picked to be read as text on the page rather than to fill a surface.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -117,6 +118,9 @@ public partial class BitLabel : BitComponentBase
     /// a width to overflow: the label is a block element whichever tag <see cref="Element"/> renders, so it takes the
     /// width of its container, and one given a display of its own through the style needs a width of its own for the
     /// ellipsis to appear.
+    /// <br />
+    /// Only the content is truncated: it is rendered into an element of its own, so the required or optional
+    /// indicator stays whole after the ellipsis rather than being the first thing the overflow cuts off.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool NoWrap { get; set; }
@@ -213,6 +217,9 @@ public partial class BitLabel : BitComponentBase
     /// <see cref="BitVisibility.Collapsed"/> label is. A visible caption is what most users need, so this belongs to
     /// the places where the surrounding design already says what the control is - a search box with a magnifier in it,
     /// a cell of a table whose column header names the field.
+    /// <br />
+    /// A hidden label that wraps its own control comes back on the page while the focus is inside it, since a control
+    /// taking the focus out of sight leaves a keyboard user with no idea where the focus went.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool VisuallyHidden { get; set; }
@@ -301,46 +308,69 @@ public partial class BitLabel : BitComponentBase
         // and a group caption rendered through Element is pointed at by its group rather than pointing at a control.
         builder.AddAttribute(8, "for", isLabelElement ? For : null);
         builder.AddElementReferenceCapture(9, v => RootElement = v);
-        builder.AddContent(10, ChildContent);
+
+        // A truncated label cuts its content alone: the content gets an element of its own to put the ellipsis on, so
+        // the indicator after it - the one thing saying the field is required - is never what the overflow hides. The
+        // two sit in an inline row of their own rather than turning the label itself into one, so the label stays a
+        // block whose text-align positions the row, and one given a display of its own through the style still has a
+        // row inside it that truncates.
+        if (NoWrap)
+        {
+            builder.OpenElement(10, "span");
+            builder.AddAttribute(11, "class", "bit-lbl-row");
+            builder.OpenElement(12, "span");
+            builder.AddAttribute(13, "class", "bit-lbl-txt");
+            builder.AddContent(14, ChildContent);
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.AddContent(15, ChildContent);
+        }
 
         // A field is either required or optional, so the two indicators are the branches of one decision rather than
         // two independent ones: a label asked for both renders the required one, which is the stronger statement.
         if (Required)
         {
-            builder.OpenElement(11, "span");
-            builder.AddAttribute(12, "style", Styles?.RequiredIndicator);
-            builder.AddAttribute(13, "class", Classes?.RequiredIndicator.HasValue() is true
+            builder.OpenElement(16, "span");
+            builder.AddAttribute(17, "style", Styles?.RequiredIndicator);
+            builder.AddAttribute(18, "class", Classes?.RequiredIndicator.HasValue() is true
                                               ? $"bit-lbl-rqi {Classes!.RequiredIndicator}"
                                               : "bit-lbl-rqi");
             // The default asterisk is a decoration - a screen reader that announces it at all announces a "star" in the
             // middle of the caption, which says nothing about the field, while the "required" attribute of the control
             // is what does. An indicator written by the page is a word put there to be read, so it is left announced.
-            builder.AddAttribute(14, "aria-hidden", RequiredTemplate is null && RequiredText.HasNoValue() ? "true" : null);
+            builder.AddAttribute(19, "aria-hidden", RequiredTemplate is null && RequiredText.HasNoValue() ? "true" : null);
             if (RequiredTemplate is not null)
             {
-                builder.AddContent(15, RequiredTemplate);
+                builder.AddContent(20, RequiredTemplate);
             }
             else
             {
-                builder.AddContent(16, RequiredText ?? "*");
+                builder.AddContent(21, RequiredText ?? "*");
             }
             builder.CloseElement();
         }
         else if (Optional)
         {
-            builder.OpenElement(17, "span");
-            builder.AddAttribute(18, "style", Styles?.OptionalIndicator);
-            builder.AddAttribute(19, "class", Classes?.OptionalIndicator.HasValue() is true
+            builder.OpenElement(22, "span");
+            builder.AddAttribute(23, "style", Styles?.OptionalIndicator);
+            builder.AddAttribute(24, "class", Classes?.OptionalIndicator.HasValue() is true
                                               ? $"bit-lbl-opi {Classes!.OptionalIndicator}"
                                               : "bit-lbl-opi");
             if (OptionalTemplate is not null)
             {
-                builder.AddContent(20, OptionalTemplate);
+                builder.AddContent(25, OptionalTemplate);
             }
             else
             {
-                builder.AddContent(21, OptionalText ?? "(optional)");
+                builder.AddContent(26, OptionalText ?? "(optional)");
             }
+            builder.CloseElement();
+        }
+
+        if (NoWrap)
+        {
             builder.CloseElement();
         }
 

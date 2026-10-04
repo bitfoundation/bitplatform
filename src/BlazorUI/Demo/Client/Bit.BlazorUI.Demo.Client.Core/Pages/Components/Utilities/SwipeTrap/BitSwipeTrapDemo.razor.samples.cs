@@ -2,23 +2,18 @@
 
 public partial class BitSwipeTrapDemo
 {
-
     private readonly string example1RazorCode = @"
 <style>
-    .basic-container {
+    .box {
         width: 100%;
-        cursor: grab;
         height: 500px;
         display: flex;
         user-select: none;
+        border-radius: 0.5rem;
         align-items: center;
         flex-direction: column;
         justify-content: center;
-        border: 1px solid lightgray;
-    }
-
-    .bit-stp-swp .basic-container {
-        cursor: grabbing;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
@@ -27,7 +22,7 @@ public partial class BitSwipeTrapDemo
               OnMove=""HandleOnMoveBasic""
               OnEnd=""HandleOnEndBasic""
               OnTrigger=""HandleOnTriggerBasic"">
-    <div class=""basic-container"">
+    <div class=""box"">
         <div>StartX: @swipeTrapEventArgsBasic?.StartX</div>
         <div>StartY: @swipeTrapEventArgsBasic?.StartY</div>
         <div>DiffX: @swipeTrapEventArgsBasic?.DiffX</div>
@@ -46,8 +41,8 @@ public partial class BitSwipeTrapDemo
 </BitSwipeTrap>";
     private readonly string example1CsharpCode = @"
 private bool isTriggeredBasic;
-BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
-BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
+private BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
+private BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
 private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
 {
     swipeTrapEventArgsBasic = args;
@@ -75,37 +70,37 @@ private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
 
     private readonly string example2RazorCode = @"
 <style>
-    .lock-boxes {
+    .boxes {
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
     }
 
-    .lock-container {
+    .box {
         width: 250px;
-        cursor: grab;
         height: 250px;
         display: flex;
         user-select: none;
+        border-radius: 0.5rem;
         align-items: center;
         flex-direction: column;
         justify-content: center;
-        border: 1px solid lightgray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
-<div class=""lock-boxes"">
+<div class=""boxes"">
     <BitSwipeTrap Trigger=""0.5m"" OnTrigger=""HandleOnTriggerFractional"">
-        <div class=""lock-container"">
+        <div class=""box"">
             <div><b>Trigger=""0.5m""</b></div>
-            <div>(half of the container)</div>
+            <div>(half of the box)</div>
             <div>Direction: <b>@triggerArgsFractional?.Direction</b></div>
             <div>DiffX: @triggerArgsFractional?.DiffX</div>
             <div>DiffY: @triggerArgsFractional?.DiffY</div>
         </div>
     </BitSwipeTrap>
     <BitSwipeTrap Trigger=""80m"" OnTrigger=""HandleOnTriggerAbsolute"">
-        <div class=""lock-container"">
+        <div class=""box"">
             <div><b>Trigger=""80m""</b></div>
             <div>(80 pixels)</div>
             <div>Direction: <b>@triggerArgsAbsolute?.Direction</b></div>
@@ -113,10 +108,20 @@ private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
             <div>DiffY: @triggerArgsAbsolute?.DiffY</div>
         </div>
     </BitSwipeTrap>
+    <BitSwipeTrap Trigger=""0.9m"" TriggerVelocity=""0.5m"" OnTrigger=""HandleOnTriggerFlick"">
+        <div class=""box"">
+            <div><b>TriggerVelocity=""0.5m""</b></div>
+            <div>(a flick)</div>
+            <div>Direction: <b>@triggerArgsFlick?.Direction</b></div>
+            <div>VelocityX: @triggerArgsFlick?.VelocityX.ToString(""0.00"")</div>
+            <div>VelocityY: @triggerArgsFlick?.VelocityY.ToString(""0.00"")</div>
+        </div>
+    </BitSwipeTrap>
 </div>";
     private readonly string example2CsharpCode = @"
 private BitSwipeTrapTriggerArgs? triggerArgsFractional;
 private BitSwipeTrapTriggerArgs? triggerArgsAbsolute;
+private BitSwipeTrapTriggerArgs? triggerArgsFlick;
 private void HandleOnTriggerFractional(BitSwipeTrapTriggerArgs args)
 {
     triggerArgsFractional = args;
@@ -124,81 +129,39 @@ private void HandleOnTriggerFractional(BitSwipeTrapTriggerArgs args)
 private void HandleOnTriggerAbsolute(BitSwipeTrapTriggerArgs args)
 {
     triggerArgsAbsolute = args;
+}
+private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
+{
+    triggerArgsFlick = args;
 }";
 
     private readonly string example3RazorCode = @"
 <style>
-    .basic-container {
-        width: 100%;
-        cursor: grab;
-        height: 500px;
-        display: flex;
-        user-select: none;
-        align-items: center;
-        flex-direction: column;
-        justify-content: center;
-        border: 1px solid lightgray;
-    }
-
-    .bit-stp-swp .basic-container {
-        cursor: grabbing;
-    }
-</style>
-
-<BitSwipeTrap Style=""width:100%""
-              Trigger=""0.9m""
-              TriggerVelocity=""0.5m""
-              OnTrigger=""HandleOnTriggerFlick"">
-    <div class=""basic-container"">
-        <div>Flicked? @isFlicked</div>
-        <div>Flick direction: <b>@swipeTrapTriggerArgsFlick?.Direction</b></div>
-        <div>Flick velocityX: @swipeTrapTriggerArgsFlick?.VelocityX.ToString(""0.00"")</div>
-        <div>Flick velocityY: @swipeTrapTriggerArgsFlick?.VelocityY.ToString(""0.00"")</div>
-        <div>Flick duration: @swipeTrapTriggerArgsFlick?.Duration.ToString(""0"") ms</div>
-    </div>
-</BitSwipeTrap>";
-    private readonly string example3CsharpCode = @"
-private bool isFlicked;
-private BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsFlick;
-private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
-{
-    isFlicked = true;
-    swipeTrapTriggerArgsFlick = args;
-    _ = Task.Delay(3000).ContinueWith(async _ =>
-    {
-        isFlicked = false;
-        swipeTrapTriggerArgsFlick = null;
-        await InvokeAsync(StateHasChanged);
-    });
-}";
-
-    private readonly string example4RazorCode = @"
-<style>
-    .lock-boxes {
+    .boxes {
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
     }
 
-    .lock-container {
+    .box {
         width: 250px;
-        cursor: grab;
         height: 250px;
         display: flex;
         user-select: none;
+        border-radius: 0.5rem;
         align-items: center;
         flex-direction: column;
         justify-content: center;
-        border: 1px solid lightgray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
-<div class=""lock-boxes"">
+<div class=""boxes"">
     <BitSwipeTrap OrientationLock=""BitSwipeOrientation.Horizontal""
                   OnMove=""HandleOnMoveHorizontalLock""
                   OnEnd=""HandleOnEndHorizontalLock"">
-        <div class=""lock-container"">
-            <div><b>Horizontal lock</b></div>
+        <div class=""box"">
+            <div><b>Horizontal</b></div>
             <div>DiffX: @diffXHorizontalLock</div>
             <div>DiffY: @diffYHorizontalLock</div>
         </div>
@@ -206,8 +169,8 @@ private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
     <BitSwipeTrap OrientationLock=""BitSwipeOrientation.Vertical""
                   OnMove=""HandleOnMoveVerticalLock""
                   OnEnd=""HandleOnEndVerticalLock"">
-        <div class=""lock-container"">
-            <div><b>Vertical lock</b></div>
+        <div class=""box"">
+            <div><b>Vertical</b></div>
             <div>DiffX: @diffXVerticalLock</div>
             <div>DiffY: @diffYVerticalLock</div>
         </div>
@@ -215,14 +178,14 @@ private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
     <BitSwipeTrap OrientationLock=""BitSwipeOrientation.Auto""
                   OnMove=""HandleOnMoveAutoLock""
                   OnEnd=""HandleOnEndAutoLock"">
-        <div class=""lock-container"">
-            <div><b>Auto lock</b></div>
+        <div class=""box"">
+            <div><b>Auto</b></div>
             <div>DiffX: @diffXAutoLock</div>
             <div>DiffY: @diffYAutoLock</div>
         </div>
     </BitSwipeTrap>
 </div>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private decimal diffXHorizontalLock;
 private decimal diffYHorizontalLock;
 private decimal diffXVerticalLock;
@@ -260,32 +223,32 @@ private void HandleOnEndAutoLock(BitSwipeTrapEventArgs args)
     diffYAutoLock = 0;
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <style>
-    .lock-boxes {
+    .boxes {
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
     }
 
-    .lock-container {
+    .box {
         width: 250px;
-        cursor: grab;
         height: 250px;
         display: flex;
         user-select: none;
+        border-radius: 0.5rem;
         align-items: center;
         flex-direction: column;
         justify-content: center;
-        border: 1px solid lightgray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
-<div class=""lock-boxes"">
+<div class=""boxes"">
     <BitSwipeTrap Threshold=""30""
                   OnMove=""HandleOnMoveThreshold""
                   OnEnd=""HandleOnEndThreshold"">
-        <div class=""lock-container"">
+        <div class=""box"">
             <div><b>Threshold=""30""</b></div>
             <div>(the first 30px are free)</div>
             <div>DiffX: @diffXThreshold</div>
@@ -295,16 +258,16 @@ private void HandleOnEndAutoLock(BitSwipeTrapEventArgs args)
     <BitSwipeTrap Throttle=""200""
                   OnMove=""HandleOnMoveThrottle""
                   OnEnd=""HandleOnEndThrottle"">
-        <div class=""lock-container"">
+        <div class=""box"">
             <div><b>Throttle=""200""</b></div>
-            <div>(at most one move per 200ms)</div>
+            <div>(one move per 200ms at most)</div>
             <div>Moves: @moveCountThrottle</div>
             <div>DiffX: @diffXThrottle</div>
             <div>DiffY: @diffYThrottle</div>
         </div>
     </BitSwipeTrap>
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private decimal diffXThreshold;
 private decimal diffYThreshold;
 private int moveCountThrottle;
@@ -333,32 +296,32 @@ private void HandleOnEndThrottle(BitSwipeTrapEventArgs args)
     diffYThrottle = 0;
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
-    .lock-boxes {
+    .boxes {
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
     }
 
-    .lock-container {
+    .box {
         width: 250px;
-        cursor: grab;
         height: 250px;
         display: flex;
         user-select: none;
+        border-radius: 0.5rem;
         align-items: center;
         flex-direction: column;
         justify-content: center;
-        border: 1px solid lightgray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 </style>
 
-<div class=""lock-boxes"">
+<div class=""boxes"">
     <BitSwipeTrap TouchOnly
                   OnMove=""HandleOnMoveTouchOnly""
                   OnEnd=""HandleOnEndTouchOnly"">
-        <div class=""lock-container"">
+        <div class=""box"">
             <div><b>TouchOnly</b></div>
             <div>(mouse drags are ignored)</div>
             <div>DiffX: @diffXTouchOnly</div>
@@ -368,19 +331,27 @@ private void HandleOnEndThrottle(BitSwipeTrapEventArgs args)
     <BitSwipeTrap SkipSelector="".no-swipe""
                   OnMove=""HandleOnMoveSkip""
                   OnEnd=""HandleOnEndSkip"">
-        <div class=""lock-container"">
+        <div class=""box"">
             <div><b>SkipSelector</b></div>
             <div>DiffX: @diffXSkip</div>
             <div>DiffY: @diffYSkip</div>
-            <input class=""no-swipe"" placeholder=""No swipe starts here"" />
+            <input class=""no-swipe"" placeholder=""Swipes skip this field"" aria-label=""Note"" />
+        </div>
+    </BitSwipeTrap>
+    <BitSwipeTrap IsEnabled=""false"" OnMove=""HandleOnMoveDisabled"">
+        <div class=""box"">
+            <div><b>IsEnabled=""false""</b></div>
+            <div>(nothing is trapped)</div>
+            <div>Moves: @moveCountDisabled</div>
         </div>
     </BitSwipeTrap>
 </div>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private decimal diffXTouchOnly;
 private decimal diffYTouchOnly;
 private decimal diffXSkip;
 private decimal diffYSkip;
+private int moveCountDisabled;
 private void HandleOnMoveTouchOnly(BitSwipeTrapEventArgs args)
 {
     diffXTouchOnly = args.DiffX;
@@ -400,106 +371,58 @@ private void HandleOnEndSkip(BitSwipeTrapEventArgs args)
 {
     diffXSkip = 0;
     diffYSkip = 0;
+}
+private void HandleOnMoveDisabled(BitSwipeTrapEventArgs args)
+{
+    moveCountDisabled++;
+}";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .box {
+        width: 100%;
+        height: 160px;
+        display: flex;
+        user-select: none;
+        border-radius: 0.5rem;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<BitSwipeTrap KeyboardTrigger
+              AriaLabel=""Message card. Swipe or press the right arrow key to archive, the left one to snooze.""
+              OrientationLock=""BitSwipeOrientation.Horizontal""
+              OnEnd=""HandleOnEndKeyboard""
+              OnTrigger=""HandleOnTriggerKeyboard"">
+    <div class=""box"">
+        <div><b>Left: snooze - Right: archive</b></div>
+        <div aria-live=""polite"">Last action: @cardAction</div>
+        <div>PointerType: @cardPointerType</div>
+        <div>Last swipe: @cardLastEnd</div>
+    </div>
+</BitSwipeTrap>";
+    private readonly string example6CsharpCode = @"
+private string? cardAction;
+private string? cardPointerType;
+private string? cardLastEnd;
+private void HandleOnTriggerKeyboard(BitSwipeTrapTriggerArgs args)
+{
+    cardAction = args.Direction == BitSwipeDirection.Right ? ""Archived"" : ""Snoozed"";
+    cardPointerType = args.PointerType;
+}
+private void HandleOnEndKeyboard(BitSwipeTrapEventArgs args)
+{
+    cardLastEnd = args.IsCanceled ? ""canceled"" : ""released"";
 }";
 
     private readonly string example7RazorCode = @"
 <style>
-    .panel-container {
-        width: 100%;
-        height: 300px;
-        overflow: hidden;
-        user-select: none;
-        position: relative;
-        border: 1px solid lightgray;
-    }
-
-    .panel-container button {
-        padding: 0.5rem;
-    }
-
-    .panel-container .panel {
-        left: 0;
-        color: black;
-        width: 200px;
-        cursor: grab;
-        inset-block: 0;
-        position: absolute;
-        background-color: lightgray;
-        transform: translateX(-100%);
-    }
-
-    .panel-container .panel.open {
-        transform: translateX(0);
-    }
-
-    .panel-container .panel-trap {
-        gap: 1rem;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background-color: gray;
-    }
-</style>
-
-<div class=""panel-container"">
-    <button @onclick=""OpenPanel"">
-        Open
-    </button>
-    <div class=""panel@(isPanelOpen ? "" open"": """")"" style=""@GetPanelStyle()"">
-        <button @onclick=""ClosePanel"" style=""position:absolute;top:0;right:0"">
-            Close
-        </button>
-        <BitSwipeTrap Style=""width:100%;height:100%""
-                      OnMove=""HandleOnMovePanel""
-                      OnEnd=""HandleOnEndPanel""
-                      OnTrigger=""HandleOnTriggerPanel"">
-            <div class=""panel-trap"">
-                <h3>Title</h3>
-                <div>Item1</div>
-                <div>Item2</div>
-                <div>Item3</div>
-            </div>
-        </BitSwipeTrap>
-    </div>
-</div>";
-    private readonly string example7CsharpCode = @"
-private decimal diffXPanel;
-private bool isPanelOpen;
-private void OpenPanel()
-{
-    isPanelOpen = true;
-}
-private void ClosePanel()
-{
-    isPanelOpen = false;
-}
-private void HandleOnMovePanel(BitSwipeTrapEventArgs args)
-{
-    diffXPanel = args.DiffX;
-}
-private void HandleOnEndPanel(BitSwipeTrapEventArgs args)
-{
-    diffXPanel = 0;
-}
-private void HandleOnTriggerPanel(BitSwipeTrapTriggerArgs args)
-{
-    if (args.Direction == BitSwipeDirection.Left)
-    {
-        diffXPanel = 0;
-        ClosePanel();
-    }
-}
-private string GetPanelStyle()
-{
-    return diffXPanel < 0 ? $""transform: translateX({diffXPanel}px)"" : """";
-}";
-
-    private readonly string example8RazorCode = @"
-<style>
     .list-container {
         gap: 4px;
         width: 100%;
-        color: black;
         height: 300px;
         display: flex;
         overflow-y: auto;
@@ -507,7 +430,7 @@ private string GetPanelStyle()
         overflow-x: hidden;
         position: relative;
         flex-direction: column;
-        border: 1px solid lightgray;
+        border: 1px solid var(--bit-clr-brd-sec);
     }
 
     .list-container .row {
@@ -517,20 +440,24 @@ private string GetPanelStyle()
 
     .list-container .delete {
         width: 60px;
-        color: white;
         height: 100%;
         padding: 4px;
         position: absolute;
-        background-color: red;
+        box-sizing: border-box;
+        color: var(--bit-clr-err-fg);
+        background-color: var(--bit-clr-err);
     }
 
     .list-container .row-trap {
         width: 100%;
         height: 100%;
-        cursor: grab;
-        padding: 4px;
+        display: flex;
         position: absolute;
-        background-color: gray;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 0 0.25rem 0 0.5rem;
+        justify-content: space-between;
+        background-color: var(--bit-clr-bg-ter);
     }
 </style>
 
@@ -549,6 +476,13 @@ private string GetPanelStyle()
                           OnTrigger=""args => HandleOnTriggerList(args, i)"">
                 <div class=""row-trap"" style=""@GetRowStyle(i)"">
                     <div>Item@(i + 1)</div>
+                    <BitButton IconOnly
+                               Size=""BitSize.Small""
+                               Variant=""BitVariant.Text""
+                               IconName=""@BitIconName.Delete""
+                               Title=""Delete""
+                               AriaLabel=""@($""Delete Item{i + 1}"")""
+                               OnClick=""() => ConfirmDeleteList(i)"" />
                 </div>
             </BitSwipeTrap>
         </div>
@@ -560,7 +494,7 @@ private string GetPanelStyle()
            Message=""Are you sure you want to delete this item?""
            OnOk=""HandleOnOkList""
            OnCancel=""HandleOnCancelList"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private int deletingIndex = -1;
 private bool isListDialogOpen;
 private TaskCompletionSource? listTcs;
@@ -581,14 +515,18 @@ private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
 {
     if (args.Direction == BitSwipeDirection.Right)
     {
-        deletingIndex = index;
-        listTcs = new();
-        isListDialogOpen = true;
-        await listTcs.Task;
-        isListDialogOpen = false;
-        diffXList[index] = 0;
-        deletingIndex = -1;
+        await ConfirmDeleteList(index);
     }
+}
+private async Task ConfirmDeleteList(int index)
+{
+    deletingIndex = index;
+    listTcs = new();
+    isListDialogOpen = true;
+    await listTcs.Task;
+    isListDialogOpen = false;
+    diffXList[index] = 0;
+    deletingIndex = -1;
 }
 private string GetRowStyle(int index)
 {
@@ -612,7 +550,7 @@ private void ResetList()
     itemsList = Enumerable.Range(0, 10).ToList();
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .mobile-frame {
         height: 666px;
@@ -622,7 +560,7 @@ private void ResetList()
         border-radius: 36px;
         border: 16px solid #333;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        background-color: var(--bit-clr-fg-sec);
+        background-color: var(--bit-clr-bg-pri);
     }
 
     .mobile-frame .screen {
@@ -637,13 +575,20 @@ private void ResetList()
     }
 
     .mobile-frame .header {
-        gap: 1rem;
         width: 100%;
         height: 66px;
         display: flex;
+        padding: 0 0.5rem;
         align-items: center;
-        justify-content: center;
+        box-sizing: border-box;
+        justify-content: space-between;
         background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mobile-frame .brand {
+        gap: 1rem;
+        display: flex;
+        align-items: center;
     }
 
     .mobile-frame .main {
@@ -659,23 +604,20 @@ private void ResetList()
     }
 
     .mobile-frame .panel {
-        color: black;
-        cursor: grab;
+        width: 200px;
         inset-block: 0;
         user-select: none;
         position: absolute;
-        background-color: lightgray;
+        background-color: var(--bit-clr-bg-ter);
     }
 
     .mobile-frame .panel.left {
         left: 0;
-        width: 200px;
         transform: translateX(-100%);
     }
 
     .mobile-frame .panel.right {
         right: 0;
-        width: 200px;
         transform: translateX(100%);
     }
 
@@ -686,7 +628,6 @@ private void ResetList()
         padding-top: 0.2rem;
         padding-left: 0.8rem;
         flex-direction: column;
-        background-color: gray;
     }
 </style>
 
@@ -694,25 +635,40 @@ private void ResetList()
     <div class=""screen"">
         <div class=""layout"">
             <div class=""header"">
-                <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
-                <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
-                    bit BlazorUI
-                </BitText>
+                <BitButton IconOnly
+                           Variant=""BitVariant.Text""
+                           IconName=""@BitIconName.GlobalNavButton""
+                           AriaLabel=""Left menu""
+                           aria-expanded=""@IsPanelOpenAdvanced(BitSwipeDirection.Left)""
+                           OnClick=""() => TogglePanelAdvanced(BitSwipeDirection.Left)"" />
+                <div class=""brand"">
+                    <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
+                    <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
+                        bit BlazorUI
+                    </BitText>
+                </div>
+                <BitButton IconOnly
+                           Variant=""BitVariant.Text""
+                           IconName=""@BitIconName.More""
+                           AriaLabel=""Right menu""
+                           aria-expanded=""@IsPanelOpenAdvanced(BitSwipeDirection.Right)""
+                           OnClick=""() => TogglePanelAdvanced(BitSwipeDirection.Right)"" />
             </div>
             <div class=""main"">
                 <BitSwipeTrap Style=""width:100%;height:100%""
+                              KeyboardTrigger
+                              AriaLabel=""Screen. Swipe, or press the arrow keys, to open and close the side menus.""
+                              OrientationLock=""BitSwipeOrientation.Horizontal""
                               OnMove=""HandleOnMovePanelAdvanced""
                               OnEnd=""HandleOnEndPanelAdvanced""
                               OnTrigger=""HandleOnTriggerPanelAdvanced"">
                     <div class=""main-text"">
-                        <BitText Style=""user-select:none""
-                                 Typography=""BitTypography.H4""
-                                 Color=""BitColor.SecondaryBackground"">
+                        <BitText Style=""user-select:none"" Typography=""BitTypography.H4"">
                             Swipe left or right
                         </BitText>
                     </div>
 
-                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"">
+                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"" inert=""@(panelOpen != BitSwipeDirection.Left)"">
                         <div class=""panel-trap"">
                             <h3>Left Menu</h3>
                             <div>Item1</div>
@@ -720,7 +676,7 @@ private void ResetList()
                             <div>Item3</div>
                         </div>
                     </div>
-                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"">
+                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"" inert=""@(panelOpen != BitSwipeDirection.Right)"">
                         <div class=""panel-trap"">
                             <h3>Right Menu</h3>
                             <div>Item1</div>
@@ -733,7 +689,7 @@ private void ResetList()
         </div>
     </div>
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private decimal? diffXPanelAdvanced;
 private BitSwipeDirection? direction;
 private BitSwipeDirection? panelOpen;
@@ -750,6 +706,18 @@ private void ClosePanelAdvanced()
     panelOpen = null;
     diffXPanelAdvanced = null;
 }
+private void TogglePanelAdvanced(BitSwipeDirection side)
+{
+    if (panelOpen == side)
+    {
+        ClosePanelAdvanced();
+    }
+    else
+    {
+        OpenPanelAdvanced(side);
+    }
+}
+private string IsPanelOpenAdvanced(BitSwipeDirection side) => panelOpen == side ? ""true"" : ""false"";
 private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
 {
     diffXPanelAdvanced = args.DiffX;
@@ -807,7 +775,7 @@ private string GetLeftPanelAdvancedStyle()
     {
         return ""transform: translateX(0px)"";
     }
-    else if((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || (panelOpen == BitSwipeDirection.Left && direction == BitSwipeDirection.Left))
+    else if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || (panelOpen == BitSwipeDirection.Left && direction == BitSwipeDirection.Left))
     {
         return diffXPanelAdvanced switch
         {
@@ -838,5 +806,150 @@ private string GetRightPanelAdvancedStyle()
     }
 
     return string.Empty;
+}";
+
+    private readonly string example9RazorCode = @"
+<style>
+    .boxes {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .box {
+        width: 250px;
+        height: 250px;
+        display: flex;
+        user-select: none;
+        border-radius: 0.5rem;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<BitParams Parameters=""swipeTrapParams"">
+    <div class=""boxes"">
+        <BitSwipeTrap AriaLabel=""Cascaded trap"" OnTrigger=""HandleOnTriggerCascaded"">
+            <div class=""box"">
+                <div><b>From BitParams</b></div>
+                <div>(horizontal, 60px, arrow keys)</div>
+                <div>Direction: <b>@triggerArgsCascaded?.Direction</b></div>
+            </div>
+        </BitSwipeTrap>
+        <BitSwipeTrap AriaLabel=""Trap with its own lock""
+                      OrientationLock=""BitSwipeOrientation.Vertical""
+                      OnTrigger=""HandleOnTriggerCascadedOwn"">
+            <div class=""box"">
+                <div><b>Its own vertical lock</b></div>
+                <div>(the rest from BitParams)</div>
+                <div>Direction: <b>@triggerArgsCascadedOwn?.Direction</b></div>
+            </div>
+        </BitSwipeTrap>
+    </div>
+</BitParams>";
+    private readonly string example9CsharpCode = @"
+private BitSwipeTrapTriggerArgs? triggerArgsCascaded;
+private BitSwipeTrapTriggerArgs? triggerArgsCascadedOwn;
+private readonly BitSwipeTrapParams[] swipeTrapParams =
+[
+    new() { OrientationLock = BitSwipeOrientation.Horizontal, Trigger = 60m, KeyboardTrigger = true }
+];
+private void HandleOnTriggerCascaded(BitSwipeTrapTriggerArgs args)
+{
+    triggerArgsCascaded = args;
+}
+private void HandleOnTriggerCascadedOwn(BitSwipeTrapTriggerArgs args)
+{
+    triggerArgsCascadedOwn = args;
+}";
+
+    private readonly string example10RazorCode = @"
+<style>
+    .boxes {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .box {
+        display: flex;
+        user-select: none;
+        border-radius: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--bit-clr-brd-sec);
+        background-color: var(--bit-clr-bg-pri);
+    }
+
+    .box.small {
+        width: 200px;
+        height: 120px;
+    }
+
+    .custom-trap {
+        border-radius: 0.5rem;
+        outline: 2px dashed var(--bit-clr-pri);
+    }
+
+    .custom-trap.bit-stp-swp {
+        outline-style: solid;
+    }
+
+    .custom-trap.bit-stp-swp .box {
+        background-color: var(--bit-clr-pri-tint);
+    }
+</style>
+
+<div class=""boxes"">
+    <BitSwipeTrap Style=""padding: 0.5rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-sec);"">
+        <div class=""box small"">Style</div>
+    </BitSwipeTrap>
+
+    <BitSwipeTrap Class=""custom-trap"">
+        <div class=""box small"">Class (swipe me)</div>
+    </BitSwipeTrap>
+
+    <BitSwipeTrap KeyboardTrigger
+                  AriaLabel=""Styled by CSS variables""
+                  Style=""--bit-SwipeTrap-cursor: grab; --bit-SwipeTrap-swiping-cursor: move; --bit-SwipeTrap-focus-color: var(--bit-clr-ter);"">
+        <div class=""box small"">CSS variables (hover, swipe, Tab)</div>
+    </BitSwipeTrap>
+</div>";
+
+    private readonly string example11RazorCode = @"
+<style>
+    .box {
+        width: 100%;
+        height: 160px;
+        display: flex;
+        user-select: none;
+        border-radius: 0.5rem;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<div dir=""rtl"">
+    <BitSwipeTrap Dir=""BitDir.Rtl""
+                  KeyboardTrigger
+                  AriaLabel=""کارت پیام. برای بایگانی به چپ بکشید یا کلید جهت چپ را بزنید، برای تعویق به راست.""
+                  OrientationLock=""BitSwipeOrientation.Horizontal""
+                  OnTrigger=""HandleOnTriggerRtl"">
+        <div class=""box"">
+            <div><b>راست: تعویق - چپ: بایگانی</b></div>
+            <div aria-live=""polite"">آخرین اقدام: @rtlCardAction</div>
+        </div>
+    </BitSwipeTrap>
+</div>";
+    private readonly string example11CsharpCode = @"
+private string? rtlCardAction;
+private void HandleOnTriggerRtl(BitSwipeTrapTriggerArgs args)
+{
+    // The directions are physical, so in a right-to-left layout the end of the line is on the left.
+    rtlCardAction = args.Direction == BitSwipeDirection.Left ? ""بایگانی شد"" : ""به تعویق افتاد"";
 }";
 }

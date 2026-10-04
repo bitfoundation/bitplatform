@@ -1,0 +1,9 @@
+@using Bit.BlazorUI
+
+@* A list named after a heading elsewhere on the page through a splatted aria-labelledby. *@
+<h2 id="settings-heading">Settings</h2>
+<BitAccordionList TItem="BitAccordionListItem" Items="Items" aria-labelledby="settings-heading" />
+
+@code {
+    [Parameter] public List<BitAccordionListItem> Items { get; set; } = [];
+}

@@ -1,6 +1,7 @@
 @import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+// The box the examples put on the layer: a surface of their own, since the Overlay paints none.
 .content {
     width: 87%;
     display: flex;
@@ -9,56 +10,63 @@
     padding: rem2(15px);
     max-width: rem2(960px);
     max-height: rem2(288px);
-    border-radius: rem2(3px);
+    border-radius: rem2(4px);
     flex-flow: column nowrap;
-    border: dodgerblue solid rem2(1.6px);
+    border: $bit-color-primary solid rem2(1.6px);
     background-color: $bit-color-background-primary;
+}
+
+// A box that hugs its own text, for the examples that place it rather than stretch it.
+.small {
+    width: auto;
+    margin: rem2(16px);
+    max-width: rem2(360px);
 }
 
 .scroller {
     overflow: auto;
-    height: rem2(360px);
+    height: rem2(240px);
     padding: rem2(15px);
     position: relative;
-    align-items: center;
     margin-top: rem2(15px);
-    border-radius: rem2(3px);
+    border-radius: rem2(4px);
     border: rem2(2px) solid green;
 }
 
 .container {
     display: flex;
-    height: rem2(480px);
+    height: rem2(240px);
     position: relative;
     align-items: center;
+    border-radius: rem2(16px);
     justify-content: center;
-    border: rem2(2px) solid blue;
+    border: rem2(2px) solid $bit-color-primary;
+}
+
+.report {
+    gap: 1rem;
+    display: flex;
+    min-width: rem2(240px);
+    flex-flow: column nowrap;
 }
 
 .btn-container {
     gap: 1rem;
     display: flex;
     flex-flow: row wrap;
+    align-items: center;
+}
+
+.position-grid {
+    gap: 0.5rem;
+    display: grid;
+    max-width: rem2(480px);
+    grid-template-columns: repeat(3, 1fr);
 }
 
 ::deep {
-    // The Overlay covers what it covers and lays its content out no further than that, so the samples that
-    // want theirs in the middle of the layer center it themselves: the layer is a flex container, and this
-    // is the whole of what it takes.
-    .centered-overlay {
-        align-items: center;
-        justify-content: center;
-    }
-
     .custom-overlay {
-        align-items: center;
-        justify-content: center;
         backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .close-button {
-        right: rem2(10px);
-        position: absolute;
     }
 }

@@ -75,7 +75,7 @@ public class BitNavBarItem
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// A unique value to use as a key or id of the navbar item.
+    /// A unique value to use as a key or id of the navbar item, and what the DefaultSelectedKey of the navbar matches.
     /// </summary>
     public string? Key { get; set; }
 

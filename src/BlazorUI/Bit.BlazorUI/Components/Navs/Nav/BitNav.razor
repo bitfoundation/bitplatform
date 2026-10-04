@@ -4,13 +4,18 @@
 
 <nav @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="navigation"
      aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    <ul role="list">
+    @{
+        // The tree may have changed shape since the last render, so the ancestors of the selected item are
+        // looked up again by the first collapsed branch that asks for them.
+        InvalidateSelectedAncestors();
+    }
+
+    <ul role="list" class="bit-nav-lst">
         <CascadingValue Value="this" IsFixed="true">
             @if (Options is not null || ChildContent is not null)
             {

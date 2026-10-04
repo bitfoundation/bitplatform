@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -159,6 +159,25 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitChoiceGroupShouldOnlyMarkTheRootAsStretchItemLabelWhenAsked()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-chg-sil"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.StretchItemLabel, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-chg-sil"));
+    }
+
+    [TestMethod]
     [DataRow(null, "bit-chg-led")]
     [DataRow(BitLabelPosition.End, "bit-chg-led")]
     [DataRow(BitLabelPosition.Start, "bit-chg-lst")]
@@ -217,5 +236,133 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
 
         Assert.IsTrue(description.ClassList.Contains("description-class"));
         Assert.AreEqual("color: red", description.GetAttribute("style"));
+    }
+
+    [TestMethod,
+      DataRow(null, "bit-chg-txt"),
+      DataRow(BitVariant.Text, "bit-chg-txt"),
+      DataRow(BitVariant.Outline, "bit-chg-otl"),
+      DataRow(BitVariant.Fill, "bit-chg-fil")
+    ]
+    public void BitChoiceGroupShouldApplyTheVariantClass(BitVariant? variant, string expectedClass)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+
+        // Exactly one variant class, so a re-render never leaves the previous one behind.
+        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-chg-txt" or "bit-chg-otl" or "bit-chg-fil"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldSwapTheVariantClassOnARerender()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-chg-otl"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Variant, BitVariant.Fill);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-fil"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-otl"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldApplyTheDisabledClassAndStyleToADisabledItemAlone()
+    {
+        var items = GetItems();
+        items[1].IsEnabled = false;
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Classes, new BitChoiceGroupClassStyles { ItemDisabled = "custom-disabled" });
+            parameters.Add(p => p.Styles, new BitChoiceGroupClassStyles { ItemDisabled = "opacity:0.4" });
+        });
+
+        var containers = component.FindAll(".bit-chg-icn");
+
+        Assert.IsFalse(containers[0].ClassList.Contains("custom-disabled"));
+        Assert.AreEqual(string.Empty, containers[0].GetAttribute("style"));
+
+        Assert.IsTrue(containers[1].ClassList.Contains("custom-disabled"));
+        Assert.IsTrue(containers[1].ClassList.Contains("bit-chg-ids"));
+        Assert.AreEqual("opacity:0.4", containers[1].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldApplyTheDisabledClassAndStyleToEveryItemOfADisabledGroup()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Classes, new BitChoiceGroupClassStyles { ItemDisabled = "custom-disabled" });
+            parameters.Add(p => p.Styles, new BitChoiceGroupClassStyles { ItemDisabled = "opacity:0.4" });
+        });
+
+        var containers = component.FindAll(".bit-chg-icn");
+
+        Assert.IsTrue(containers.All(c => c.ClassList.Contains("custom-disabled")));
+        Assert.IsTrue(containers.All(c => c.GetAttribute("style") == "opacity:0.4"));
+    }
+
+    // The disabled style is written last so it is the state that wins the inline declaration list: an item
+    // that is both checked and disabled has to look disabled, not selected.
+    [TestMethod]
+    public void BitChoiceGroupShouldWriteTheDisabledStyleAfterTheCheckedStyle()
+    {
+        var items = GetItems();
+        items[0].IsEnabled = false;
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Value, "A");
+            parameters.Add(p => p.Styles, new BitChoiceGroupClassStyles
+            {
+                ItemChecked = "border-color:red",
+                ItemDisabled = "border-color:gray"
+            });
+        });
+
+        Assert.AreEqual("border-color:red;border-color:gray", component.FindAll(".bit-chg-icn")[0].GetAttribute("style"));
+    }
+
+    // The wrapper that stacks the text over its description is the same part whether the item draws an
+    // icon or not, so the hook has to reach both of them.
+    [TestMethod]
+    public void BitChoiceGroupShouldApplyTheTextWrapperHookToAnItemWithADescriptionAndNoIcon()
+    {
+        var items = GetItems();
+        items[0].Description = "The first one";
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Classes, new BitChoiceGroupClassStyles { ItemTextWrapper = "custom-text-wrapper" });
+            parameters.Add(p => p.Styles, new BitChoiceGroupClassStyles { ItemTextWrapper = "gap:2px" });
+        });
+
+        var wrapper = component.Find(".bit-chg-txd");
+
+        Assert.IsTrue(wrapper.ClassList.Contains("custom-text-wrapper"));
+        Assert.AreEqual("gap:2px", wrapper.GetAttribute("style"));
     }
 }

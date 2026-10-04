@@ -1,0 +1,53 @@
+﻿@using Bit.BlazorUI
+
+@* Covers BitTooltipParams: the cascaded values fill in the parameters a tooltip did not set itself and never
+   overwrite the ones it did. A BitTooltipGroup nested inside the cascade still hands its delays to the tooltips
+   that left them alone, since the group is the nearer of the two. *@
+
+<BitParams Parameters="@(new BitTooltipParams[]
+                         {
+                             new()
+                             {
+                                 ArrowSize = 20,
+                                 Color = BitColor.Primary,
+                                 FullWidth = true,
+                                 HideArrow = true,
+                                 HideDelay = 400,
+                                 Interactive = false,
+                                 LazyRender = true,
+                                 MaxWidth = "12rem",
+                                 NoAnimation = true,
+                                 NoDismissOnEscape = true,
+                                 Offset = 16,
+                                 Position = BitTooltipPosition.Bottom,
+                                 Relationship = BitTooltipRelationship.Label,
+                                 ShowDelay = 5000,
+                                 Size = BitSize.Large,
+                                 ZIndex = 50,
+                                 Classes = new() { Root = "cascaded-root", Tooltip = "cascaded-tooltip" },
+                                 Styles = new() { Root = "margin: 1px;" },
+                             }
+                         })">
+    <BitTooltip Id="cascaded" Text="Cascaded">
+        <button>First</button>
+    </BitTooltip>
+
+    <BitTooltip Id="own"
+                Text="Own"
+                Color="BitColor.Error"
+                HideArrow="false"
+                Interactive="true"
+                LazyRender="false"
+                Offset="4"
+                Position="BitTooltipPosition.Left"
+                Relationship="BitTooltipRelationship.Description"
+                Size="BitSize.Small">
+        <button>Second</button>
+    </BitTooltip>
+
+    <BitTooltipGroup ShowDelay="100">
+        <BitTooltip Id="grouped" Text="Grouped">
+            <button>Third</button>
+        </BitTooltip>
+    </BitTooltipGroup>
+</BitParams>

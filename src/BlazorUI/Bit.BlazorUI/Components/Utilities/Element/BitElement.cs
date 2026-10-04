@@ -17,9 +17,17 @@ namespace Bit.BlazorUI;
 /// or a "style" written as a plain HTML attribute is kept alongside <see cref="BitComponentBase.Class"/> and <see cref="BitComponentBase.Style"/>.
 /// <br />
 /// The tag decides the rest of the behavior: a void element such as "input" or "img" holds no content, so <see cref="ChildContent"/>
-/// is not rendered into it, and a disabled element gets the "disabled" attribute only where HTML defines one, plus "aria-disabled"
-/// and a tabindex of -1 everywhere else, so that a tag HTML cannot disable is at least taken out of the tab order. A disabled
-/// hyperlink ("a" or "area") also loses its "href", which is what keeps the link itself from being focused and followed.
+/// is not rendered into it, and a disabled element gets "aria-disabled" whatever its tag, plus the "disabled" attribute where HTML
+/// defines one and a tabindex of -1 everywhere else, so that a tag HTML cannot disable is at least taken out of the tab order.
+/// A disabled "a" that has an "href" loses it, which is what keeps the link itself from being focused and followed, and is given
+/// the "link" role back, so it is still announced as a link - a disabled one - rather than as plain text; an "a" written without
+/// an "href" is a placeholder rather than a link, and gets no role. A disabled "area" keeps its "href" instead, since an area
+/// without one may carry no role and would vanish from assistive technologies, and has the default action of its click and of
+/// its auxiliary click prevented, which is what keeps it from being followed once the page is interactive.
+/// Whatever the tag, a disabled element also drops the handlers written on it for the events that activate an element - the
+/// clicks, the mouse and pointer presses, the touches and the keys - as a form element the browser disables is out of reach of
+/// both the pointer and the keyboard, so neither a click a screen reader dispatches nor an event bubbling up from its content runs
+/// them.
 /// <see cref="NoWrapper"/> removes the tag altogether and leaves only the content behind, which is what turns the component into a
 /// conditional wrapper. <see cref="StopPropagation"/> and <see cref="PreventDefault"/>, and <see cref="StopPropagationEvents"/> and
 /// <see cref="PreventDefaultEvents"/> for the events other than the click, reach the event modifiers that Razor only offers on plain
@@ -41,12 +49,17 @@ public partial class BitElement : BitComponentBase
         "button", "fieldset", "input", "optgroup", "option", "select", "textarea"
     };
 
-    // The elements that are hyperlinks of their own. They are reachable and activatable through their href whatever
-    // the tab order says, so taking that href away is what disables the link itself; every other tag has none to lose.
-    private static readonly HashSet<string> _linkElements = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "a", "area"
-    };
+    // The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
+    // assistive technology dispatches. A disabled element drops the handlers splatted for them, since a form element
+    // the browser disables is out of reach of all of them, while the ones that only follow the pointer or the focus
+    // around (a hover, a focus) are left alone.
+    private static readonly string[] _activationEvents =
+    [
+        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
+        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
+        "ontouchstart", "ontouchend",
+        "onkeydown", "onkeyup", "onkeypress"
+    ];
 
 
 
@@ -235,8 +248,9 @@ public partial class BitElement : BitComponentBase
         var nativelyDisabled = disabled && _disableableElements.Contains(element!);
         // A hyperlink is reachable and activatable through its own href whatever the tab order says: it stays focusable
         // programmatically, and the enter key on a focused link follows the href without a click the pointer-events of
-        // the disabled class could stop. Dropping the href is what disables the link itself.
-        var disabledLink = disabled && _linkElements.Contains(element!);
+        // the disabled class could stop. The two tags that are hyperlinks of their own are disabled in two ways, below.
+        var disabledAnchor = disabled && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase);
+        var disabledArea = disabled && string.Equals(element, "area", StringComparison.OrdinalIgnoreCase);
 
         builder.OpenElement(0, element!);
         // The splatted attributes come first so everything the component builds itself is written over them. The values
@@ -259,19 +273,49 @@ public partial class BitElement : BitComponentBase
         {
             builder.AddAttribute(8, "disabled", true);
         }
-        // What keeps a disabled element announced as disabled rather than as missing, whichever tag it renders.
+        // What keeps a disabled element announced as disabled rather than as missing, whichever tag it renders. It is
+        // written on a tag the disabled attribute applies to as well, where it repeats that attribute harmlessly and
+        // keeps the markup a selector or a test matches a disabled element by the same for every tag.
         builder.AddAttribute(9, "aria-disabled", disabled ? "true" : GetSplattedAttribute("aria-disabled"));
-        // Written over the splatted href of a disabled hyperlink, which is what takes the link out of the tab order the
-        // browser builds of itself and leaves nothing for the enter key to follow; every other tag has no href to lose.
-        builder.AddAttribute(10, "href", disabledLink ? null : GetSplattedAttribute("href"));
+        // Written over the splatted href of a disabled anchor, which is what takes the link out of the tab order the
+        // browser builds of itself and leaves nothing for the enter key to follow; every other tag keeps what it has.
+        var href = GetSplattedAttribute("href");
+        builder.AddAttribute(10, "href", disabledAnchor ? null : href);
+        // An anchor without an href is no longer a link to assistive technologies but a generic element, which the
+        // aria-disabled above means nothing on, so the role is given back to keep it announced as a disabled link.
+        // Only an anchor that was a link gets it: one written without an href is a placeholder, and stays generic.
+        // A role the page wrote is kept, unless it is one that names no role at all.
+        if (disabledAnchor && href is not null)
+        {
+            var role = GetSplattedAttribute("role");
+            builder.AddAttribute(11, "role", role.HasValue() ? role : "link");
+        }
+        // The pointer events the disabled class turns off are only one of the ways an event reaches an element: a
+        // screen reader activates what it announces by dispatching a click on it, and an event of an enabled control
+        // inside a disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables
+        // is out of reach of the pointer and the keyboard both, so a disabled element of any tag drops the splatted
+        // handlers of the events that activate an element rather than run them for a state it announces as unavailable.
+        // The block keeps its length whichever way the element stands, so the frames after it keep their numbers.
+        var seq = 12;
+        foreach (var @event in _activationEvents)
+        {
+            if (disabled)
+            {
+                builder.AddAttribute(seq, @event, (object?)null);
+            }
+            seq++;
+        }
         // The event modifiers of a plain element, which the razor compiler refuses on a component. A modifier that is
         // off writes no attribute at all, and the renderer takes the one a previous render wrote away again by not
         // finding it here, so the two of the click are asked for on every render whichever way they stand and the ones
         // of the other events only while they are named. A name in either list has the last word over the parameter of
         // the click beside it, since it is written after it and the later of two attributes of a name is the one kept.
-        builder.AddEventStopPropagationAttribute(11, "onclick", StopPropagation);
-        builder.AddEventPreventDefaultAttribute(12, "onclick", PreventDefault);
-        var seq = 13;
+        builder.AddEventStopPropagationAttribute(seq++, "onclick", StopPropagation);
+        // A disabled area keeps its href, since an area without one may carry no role and would no longer be announced
+        // at all, so what keeps it from being followed is the default action of the clicks that follow a hyperlink:
+        // the click of the pointer, of the enter key and of a screen reader, and the auxiliary click of a middle button.
+        builder.AddEventPreventDefaultAttribute(seq++, "onclick", PreventDefault || disabledArea);
+        builder.AddEventPreventDefaultAttribute(seq++, "onauxclick", disabledArea);
         foreach (var name in StopPropagationEvents ?? [])
         {
             var @event = NormalizeEventName(name);

@@ -13,9 +13,21 @@ public class BitFileUploadClassStyles
     public string? Dragging { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles added on top of <see cref="Dragging"/> while the files dragged over the
+    /// BitFileUpload are known to be turned away - a MIME type the AllowedExtensions rule does not accept,
+    /// or more files than the MaxCount leaves room for.
+    /// </summary>
+    public string? DraggingRejected { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the browse button (label) of the BitFileUpload.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon of the browse button of the BitFileUpload.
+    /// </summary>
+    public string? LabelIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the description (hint) of the BitFileUpload.
@@ -33,9 +45,16 @@ public class BitFileUploadClassStyles
     public string? FileItem { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the image preview thumbnail of each file item of the BitFileUpload.
+    /// Custom CSS classes/styles for the image preview thumbnail of each file item of the BitFileUpload,
+    /// and for the box that takes its place with a type glyph for a file that is not an image.
     /// </summary>
     public string? Preview { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the type glyph shown in place of the preview thumbnail
+    /// of a file item that is not an image.
+    /// </summary>
+    public string? PreviewIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the file name of each file item of the BitFileUpload.
@@ -106,4 +125,26 @@ public class BitFileUploadClassStyles
     /// Custom CSS classes/styles for the remove button icon of each file item of the BitFileUpload.
     /// </summary>
     public string? RemoveIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the spinner that takes the place of the remove button
+    /// of a file item while that file is being removed from the server.
+    /// </summary>
+    public string? RemoveSpinnerContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner that takes the place of the remove button of a file item
+    /// while that file is being removed from the server.
+    /// </summary>
+    public string? RemoveSpinner { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the batch action buttons of the BitFileUpload.
+    /// </summary>
+    public string? BatchActions { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each batch action button ("Upload all", "Cancel all", "Clear") of the BitFileUpload.
+    /// </summary>
+    public string? BatchActionButton { get; set; }
 }

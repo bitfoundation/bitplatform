@@ -316,6 +316,49 @@ public partial class _BitNavItemDemo
         new() { Text = "Inputs", IconName = BitIconName.TextField, Url = "/components/textfield" },
     ];
 
+    private static readonly List<BitNavItem> a11yNavItems =
+    [
+        new()
+        {
+            Text = "Navs",
+            IconName = BitIconName.GlobalNavButton,
+            Url = "/components",
+            Description = "Links to the areas of an app",
+            ExpandAriaLabel = "Show the navs",
+            CollapseAriaLabel = "Hide the navs",
+            ChildItems =
+            [
+                new() { Text = "Nav", Url = "/components/nav" },
+                new() { Text = "NavBar", Url = "/components/navbar" },
+                new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
+            ]
+        },
+        new()
+        {
+            Text = "Inputs",
+            IconName = BitIconName.TextField,
+            Description = "Fields that take a value",
+            ChildItems =
+            [
+                new() { Text = "TextField", Url = "/components/textfield" },
+                new() { Text = "Dropdown", Url = "/components/dropdown" },
+            ]
+        },
+    ];
+
+    private readonly BitNavParams[] navParams =
+    [
+        new() { Mode = BitNavMode.Manual, FitWidth = true, IconOnly = true }
+    ];
+
+    private static readonly List<BitNavItem> mailNavItems =
+    [
+        new() { Text = "Inbox", IconName = BitIconName.Inbox, Data = 12 },
+        new() { Text = "Drafts", IconName = BitIconName.EditMail, Data = 2 },
+        new() { Text = "Sent", IconName = BitIconName.Send },
+        new() { Text = "Archive", IconName = BitIconName.Archive },
+    ];
+
     private static readonly List<BitNavItem> colorNavItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home },

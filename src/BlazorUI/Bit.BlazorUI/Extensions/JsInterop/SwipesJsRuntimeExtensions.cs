@@ -8,7 +8,7 @@ internal static class SwipesJsRuntimeExtensions
              string id,
              decimal trigger,
              BitPanelPosition position,
-             bool isRtl,
+             bool? isRtl,
              BitSwipeOrientation orientationLock,
              DotNetObjectReference<T>? dotnetObj,
              bool isResponsive = true,

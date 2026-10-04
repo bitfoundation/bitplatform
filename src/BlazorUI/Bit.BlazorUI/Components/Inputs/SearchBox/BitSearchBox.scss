@@ -24,7 +24,7 @@
 //   --bit-SearchBox-invalid-color               border and icon color of a rejected field, and the
 //                                               color of its error message                        (default: $clr-err)
 //   --bit-SearchBox-label-color                 color of the label                                 (default: $clr-fg-pri)
-//   --bit-SearchBox-label-font-weight           weight of the label                                (default: $tg-fw-semibold)
+//   --bit-SearchBox-label-font-weight           weight of the label                                (default: $tg-field-label-font-weight)
 //   --bit-SearchBox-required-color              color of the asterisk of a required field          (default: $clr-req)
 //   --bit-SearchBox-description-color           color of the description under the field           (default: $clr-fg-sec)
 //   --bit-SearchBox-affix-color                 text color of the prefix and of the suffix         (default: $clr-fg-pri)
@@ -244,7 +244,7 @@
     padding: spacing(0.625) 0;
     font-size: var(--bit-srb-fontsize);
     color: var(--bit-SearchBox-label-color, #{$clr-fg-pri});
-    font-weight: var(--bit-SearchBox-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-SearchBox-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 .bit-srb-wrp {

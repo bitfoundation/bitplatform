@@ -6,76 +6,53 @@ public partial class BitScrollablePaneDemo
 <style>
     .pane {
         padding: 0 0.25rem;
-        border: 1px solid #999;
+        border: 1px solid var(--bit-clr-brd-pri);
     }
 </style>
 
-<BitScrollablePane Height=""12rem"" Class=""pane"">
+<BitScrollablePane Height=""10rem"" Class=""pane"">
     <p>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
+        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
     </p>
     <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
+        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. Think of this text as a bridge, connecting the empty spaces of now with the narratives of tomorrow.
     </p>
     <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary.
     </p>
     <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
+        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
+        the foundation upon which your creativity will build.
     </p>
 </BitScrollablePane>";
 
     private readonly string example2RazorCode = @"
-<BitScrollablePane Height=""10rem"" Class=""pane"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
 
-<BitScrollablePane Width=""300px"" Horizontal Class=""pane"">
-    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
+<BitScrollablePane Width=""18rem"" Height=""6rem"" Class=""pane"" ExpandOnPrint>
+    <p>
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        Each word carried meaning, each pause brought understanding, and every story found its listener.
+    </p>
 </BitScrollablePane>
 
 <BitButton OnClick=""() => maxHeightLines++"">Add a line</BitButton>
+
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => maxHeightLines = 2"">Reset</BitButton>
 
 <BitScrollablePane MaxHeight=""10rem"" Class=""pane"">
@@ -88,6 +65,34 @@ public partial class BitScrollablePaneDemo
 private int maxHeightLines = 2;";
 
     private readonly string example3RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .chip-row {
+        gap: 0.5rem;
+        display: flex;
+    }
+
+    .chip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        border-radius: 1rem;
+        padding: 0.25rem 0.75rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
 <BitChoiceGroup @bind-Value=""overflow""
                 Horizontal
                 Label=""Overflow""
@@ -100,30 +105,12 @@ private int maxHeightLines = 2;";
 
 <BitToggle @bind-Value=""noScroll"" Label=""NoScroll"" />
 
-<BitNumberField Label=""Items count"" Min=""4"" @bind-Value=""@overflowItemsCount"" />
-
-<BitScrollablePane Overflow=""@overflow"" NoScroll=""noScroll"" Height=""16rem"" Class=""pane"">
-    @for (int i = 0; i < overflowItemsCount; i++)
+<BitScrollablePane Overflow=""overflow"" NoScroll=""noScroll"" Height=""12rem"" Width=""20rem"" Class=""pane"">
+    @for (var i = 1; i <= 10; i++)
     {
-        var index = i;
-        <div class=""item"">@index</div>
+        <div class=""item"">Item @i</div>
     }
-</BitScrollablePane>";
-    private readonly string example3CsharpCode = @"
-private bool noScroll;
-private BitOverflow overflow;
-private double overflowItemsCount = 6;";
-
-    private readonly string example4RazorCode = @"
-<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"">
-    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-    Each word carried meaning, each pause brought understanding.
 </BitScrollablePane>
-
-<style>
-    .chip-row { display: flex; gap: 0.5rem; }
-    .chip { flex: 0 0 auto; padding: 0.25rem 0.75rem; border-radius: 1rem; background-color: #777; color: #fff; }
-</style>
 
 <BitScrollablePane Horizontal Width=""20rem"" Class=""pane"">
     <div class=""chip-row"">
@@ -133,8 +120,25 @@ private double overflowItemsCount = 6;";
         }
     </div>
 </BitScrollablePane>";
+    private readonly string example3CsharpCode = @"
+private bool noScroll;
+private BitOverflow overflow;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
 <BitChoiceGroup @bind-Value=""overscroll""
                 Horizontal
                 Label=""Overscroll""
@@ -144,7 +148,7 @@ private double overflowItemsCount = 6;";
     <BitChoiceGroupOption Text=""None"" Value=""BitOverscroll.None"" />
 </BitChoiceGroup>
 
-<BitScrollablePane Height=""12rem"" Width=""22rem"" Class=""pane"">
+<BitScrollablePane Height=""12rem"" Width=""20rem"" Class=""pane"">
     <div class=""item"">The outer pane</div>
     <BitScrollablePane Height=""8rem"" Overscroll=""overscroll"" Class=""pane"">
         @for (var i = 1; i <= 12; i++)
@@ -157,211 +161,177 @@ private double overflowItemsCount = 6;";
         <div class=""item"">Outer @i</div>
     }
 </BitScrollablePane>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private BitOverscroll overscroll = BitOverscroll.Contain;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
+<BitChoiceGroup @bind-Value=""scrollbarWidth""
+                Horizontal
+                Label=""ScrollbarWidth""
+                TItem=""BitChoiceGroupOption<BitScrollbarWidth>"" TValue=""BitScrollbarWidth"">
+    <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarWidth.Auto"" />
+    <BitChoiceGroupOption Text=""Thin"" Value=""BitScrollbarWidth.Thin"" />
+    <BitChoiceGroupOption Text=""None"" Value=""BitScrollbarWidth.None"" />
+</BitChoiceGroup>
+
 <BitChoiceGroup @bind-Value=""gutter""
                 Horizontal
-                Label=""Scrollbar gutter""
+                Label=""Gutter""
                 TItem=""BitChoiceGroupOption<BitScrollbarGutter>"" TValue=""BitScrollbarGutter"">
     <BitChoiceGroupOption Text=""Auto"" Value=""BitScrollbarGutter.Auto"" />
     <BitChoiceGroupOption Text=""Stable"" Value=""BitScrollbarGutter.Stable"" />
     <BitChoiceGroupOption Text=""BothEdges"" Value=""BitScrollbarGutter.BothEdges"" />
 </BitChoiceGroup>
 
-<BitNumberField Label=""Items count"" Min=""4"" @bind-Value=""@gutterItemsCount"" />
+<BitStack Horizontal Wrap Gap=""1rem"">
+    <BitToggle @bind-Value=""scrollbarColored"" Label=""ScrollbarColor"" />
+    <BitToggle @bind-Value=""scrollbarOverflowing"" Label=""Overflowing"" />
+</BitStack>
 
-<BitScrollablePane Gutter=""@gutter"" Height=""16rem"" Class=""pane"">
-    @for (int i = 0; i < gutterItemsCount; i++)
+<BitScrollablePane Height=""12rem"" Width=""20rem"" Class=""pane""
+                   ScrollbarWidth=""scrollbarWidth""
+                   Gutter=""gutter""
+                   ScrollbarColor=""@(scrollbarColored ? ""var(--bit-clr-pri) var(--bit-clr-bg-ter)"" : null)"">
+    @for (var i = 1; i <= (scrollbarOverflowing ? 10 : 3); i++)
     {
-        var index = i;
-        <div class=""item"">@index</div>
+        <div class=""item"">Item @i</div>
     }
 </BitScrollablePane>";
-    private readonly string example6CsharpCode = @"
-private BitScrollbarGutter gutter;
-private double gutterItemsCount = 6;";
+    private readonly string example5CsharpCode = @"
+private BitScrollbarWidth scrollbarWidth;
+private BitScrollbarGutter gutter = BitScrollbarGutter.Stable;
+private bool scrollbarColored;
+private bool scrollbarOverflowing;";
 
-    private readonly string example7RazorCode = @"
-<BitScrollablePane Height=""10rem"" Class=""pane"" ScrollbarWidth=""BitScrollbarWidth.Thin"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>
-
-<BitScrollablePane Height=""10rem"" Class=""pane"" ScrollbarWidth=""BitScrollbarWidth.None"" Fade>
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>
-
-<BitScrollablePane Height=""10rem"" Class=""pane"" ScrollbarColor=""#0078D4 #DEECF9"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>";
-
-    private readonly string example8RazorCode = @"
-<BitToggle @bind-Value=""autoHideScrollbar"" Label=""AutoHideScrollbar"" />
-
-<BitScrollablePane Height=""10rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>
-
-<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"" Modern
-                   AutoHideScrollbar=""autoHideScrollbar"" Style=""--bit-scp-sbs:0.75rem"">
-    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-    Each word carried meaning, each pause brought understanding.
-</BitScrollablePane>";
-    private readonly string example8CsharpCode = @"
-private bool autoHideScrollbar = true;";
-
-    private readonly string example9RazorCode = @"
-<BitToggle @bind-Value=""fade"" Label=""Fade"" />
-<BitSlider Label=""FadeSize (rem)"" Min=""0.5"" Max=""5"" Step=""0.5"" @bind-Value=""fadeSize"" />
-
-<BitScrollablePane Height=""12rem"" Class=""pane"" Fade=""fade"" FadeSize=""@($""{fadeSize}rem"")"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>
-
+    private readonly string example6RazorCode = @"
 <style>
-    /* width: max-content is what makes the grid wider than the pane, which is what gives the second
-       axis something to fade over. */
-    .wide-grid { display: flex; flex-direction: column; gap: 0.5rem; width: max-content; }
-    .wide-row { display: flex; gap: 0.5rem; }
-    .chip { flex: 0 0 auto; padding: 0.25rem 0.75rem; border-radius: 1rem; background-color: #777; color: #fff; white-space: nowrap; }
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .chip-row {
+        gap: 0.5rem;
+        display: flex;
+    }
+
+    .chip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        border-radius: 1rem;
+        padding: 0.25rem 0.75rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
 </style>
 
-<BitScrollablePane Height=""10rem"" Width=""22rem"" Class=""pane"" Fade>
+<BitToggle @bind-Value=""autoHideScrollbar"" Label=""AutoHideScrollbar"" />
+<BitNumberField Label=""AutoHideDelay (ms)"" Min=""0"" Step=""200"" @bind-Value=""autoHideDelay"" Style=""max-width: 20rem"" />
+
+<BitScrollablePane Height=""10rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"" AutoHideDelay=""(int)autoHideDelay"">
+    <p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
+    </p>
+    <p>
+        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. Think of this text as a bridge, connecting the empty spaces of now with the narratives of tomorrow.
+    </p>
+    <p>
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary.
+    </p>
+    <p>
+        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
+        the foundation upon which your creativity will build.
+    </p>
+</BitScrollablePane>
+
+<BitScrollablePane Horizontal Width=""20rem"" Class=""pane"" Modern AutoHideScrollbar=""autoHideScrollbar"" AutoHideDelay=""(int)autoHideDelay"">
+    <div class=""chip-row"">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class=""chip"">Item @i</div>
+        }
+    </div>
+</BitScrollablePane>";
+    private readonly string example6CsharpCode = @"
+private bool autoHideScrollbar = true;
+private double autoHideDelay = 800;";
+
+    private readonly string example7RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .chip-row {
+        gap: 0.5rem;
+        display: flex;
+    }
+
+    .chip {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        border-radius: 1rem;
+        padding: 0.25rem 0.75rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .wide-grid {
+        gap: 0.5rem;
+        display: flex;
+        width: max-content;
+        padding: 0.25rem 0;
+        flex-direction: column;
+    }
+</style>
+
+<BitToggle @bind-Value=""fade"" Label=""Fade"" />
+
+<BitSlider Label=""FadeSize (rem)"" Min=""0.5"" Max=""5"" Step=""0.5"" @bind-Value=""fadeSize"" Style=""max-width: 20rem"" />
+
+<BitScrollablePane Height=""10rem"" Class=""pane"" Modern AutoHideScrollbar
+                   Fade=""fade"" FadeSize=""@($""{fadeSize}rem"")"">
+    <p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
+    </p>
+    <p>
+        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. Think of this text as a bridge, connecting the empty spaces of now with the narratives of tomorrow.
+    </p>
+    <p>
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary.
+    </p>
+    <p>
+        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
+        the foundation upon which your creativity will build.
+    </p>
+</BitScrollablePane>
+
+<BitScrollablePane Height=""10rem"" Width=""20rem"" Class=""pane"" ScrollbarWidth=""BitScrollbarWidth.None"" Fade=""fade"">
     <div class=""wide-grid"">
         @for (var row = 1; row <= 8; row++)
         {
-            <div class=""wide-row"">
+            <div class=""chip-row"">
                 @for (var col = 1; col <= 8; col++)
                 {
                     <div class=""chip"">R@(row)C@(col)</div>
@@ -370,14 +340,66 @@ private bool autoHideScrollbar = true;";
         }
     </div>
 </BitScrollablePane>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool fade = true;
 private double fadeSize = 2;";
 
-    private readonly string example10RazorCode = @"
-<BitNumberField Label=""ScrollThrottle (ms)"" Min=""0"" Step=""50"" @bind-Value=""scrollThrottle"" />
+    private readonly string example8RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+</style>
 
-<BitProgress Value=""@((scrollOffset?.PercentY ?? 0) * 100)"" />
+<BitToggle @bind-Value=""focusable"" Label=""Focusable"" />
+
+<BitScrollablePane Height=""10rem"" Class=""pane"" Fade
+                   Focusable=""focusable""
+                   AriaLabel=""Release notes"">
+    <p>
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
+    </p>
+    <p>
+        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. Think of this text as a bridge, connecting the empty spaces of now with the narratives of tomorrow.
+    </p>
+    <p>
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary.
+    </p>
+    <p>
+        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
+        the foundation upon which your creativity will build.
+    </p>
+</BitScrollablePane>";
+    private readonly string example8CsharpCode = @"
+private bool focusable = true;";
+
+    private readonly string example9RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .readout {
+        font-family: monospace;
+        color: var(--bit-clr-fg-sec);
+    }
+</style>
+
+<BitNumberField Label=""ScrollThrottle (ms)"" Min=""0"" Step=""50"" @bind-Value=""scrollThrottle"" Style=""max-width: 20rem"" />
+
+<BitProgress Value=""@((scrollOffset?.PercentY ?? 0) * 100)"" AriaLabel=""Scroll progress"" />
 
 <BitScrollablePane Height=""12rem"" Class=""pane""
                    ScrollThrottle=""(int)scrollThrottle""
@@ -390,19 +412,19 @@ private double fadeSize = 2;";
     }
 </BitScrollablePane>
 
-<div>
+<div class=""readout"">
     Top: @((scrollOffset?.Top ?? 0).ToString(""0"")) of @((scrollOffset?.MaxTop ?? 0).ToString(""0""))
-    | PercentY: @(((scrollOffset?.PercentY ?? 0) * 100).ToString(""0""))%
-    | AtTop: @(scrollOffset?.AtTop.ToString() ?? ""-"")
-    | AtBottom: @(scrollOffset?.AtBottom.ToString() ?? ""-"")
+    &nbsp;|&nbsp; PercentY: @(((scrollOffset?.PercentY ?? 0) * 100).ToString(""0""))%
+    &nbsp;|&nbsp; AtTop: @(scrollOffset?.AtTop.ToString() ?? ""-"")
+    &nbsp;|&nbsp; AtBottom: @(scrollOffset?.AtBottom.ToString() ?? ""-"")
 </div>
-<div>State: @scrollState | Going: @scrollDirection</div>";
-    private readonly string example10CsharpCode = @"
+
+<div class=""readout"">State: @scrollState &nbsp;|&nbsp; Going: @scrollDirection</div>";
+    private readonly string example9CsharpCode = @"
 private double scrollThrottle;
 private string scrollState = ""-"";
 private string scrollDirection = ""-"";
 private BitScrollOffset? scrollOffset;
-
 private void HandleScroll(BitScrollOffset offset)
 {
     scrollOffset = offset;
@@ -414,13 +436,30 @@ private void HandleScroll(BitScrollOffset offset)
 
     StateHasChanged();
 }
-
 private void HandleScrollStart() => scrollState = ""scrolling..."";
-
 private void HandleScrollEnd(BitScrollOffset offset) => scrollState = $""stopped at {offset.Top:0} ({offset.PercentY * 100:0}%)"";";
 
-    private readonly string example11RazorCode = @"
-<BitNumberField Label=""ReachOffset (px)"" Min=""0"" Step=""20"" @bind-Value=""reachOffset"" />
+    private readonly string example10RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .readout {
+        font-family: monospace;
+        color: var(--bit-clr-fg-sec);
+    }
+</style>
+
+<BitNumberField Label=""ReachOffset (px)"" Min=""0"" Step=""20"" @bind-Value=""reachOffset"" Style=""max-width: 20rem"" />
 
 <BitScrollablePane Height=""14rem"" Class=""pane""
                    ReachOffset=""(int)reachOffset""
@@ -436,15 +475,13 @@ private void HandleScrollEnd(BitScrollOffset offset) => scrollState = $""stopped
     }
 </BitScrollablePane>
 
-<div>Last edge reached: <b>@reachedEdge</b> | rows: <b>@endlessRows.Count</b></div>";
-    private readonly string example11CsharpCode = @"
+<div class=""readout"">Last edge reached: <b>@reachedEdge</b> &nbsp;|&nbsp; rows: <b>@endlessRows.Count</b></div>";
+    private readonly string example10CsharpCode = @"
 private bool loadingMore;
 private double reachOffset = 40;
 private string reachedEdge = ""-"";
 private readonly List<string> endlessRows = [.. Enumerable.Range(1, 12).Select(i => $""Row {i}"")];
-
 private void HandleReachedTop() => reachedEdge = ""top"";
-
 private async Task LoadMoreRows()
 {
     reachedEdge = ""bottom"";
@@ -463,34 +500,59 @@ private async Task LoadMoreRows()
     StateHasChanged();
 }";
 
-    private readonly string example12RazorCode = @"
-<BitToggle @bind-Value=""smooth"" Label=""Smooth"" />
-
-<BitButton OnClick=""() => scrollablePane?.ScrollToStart()"">To start</BitButton>
-<BitButton OnClick=""() => scrollablePane?.ScrollToEnd()"">To end</BitButton>
-<BitButton OnClick=""() => scrollablePane?.ScrollTo(null, 200)"">To 200px</BitButton>
-<BitButton OnClick=""() => scrollablePane?.ScrollBy(0, 100)"">Down 100px</BitButton>
-<BitButton OnClick='() => scrollablePane?.ScrollToElement(""scp-row-15"")'>To row 15</BitButton>
-<BitButton OnClick='() => scrollablePane?.ScrollToElement(""scp-row-15"", alignment: BitScrollAlignment.Center)'>To row 15, centered</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""ReadScrollOffset"">Read position</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollablePane?.FocusAsync()"">Focus the pane</BitButton>
-
+    private readonly string example11RazorCode = @"
 <style>
-    .sticky-head { position: sticky; top: 0; z-index: 1; padding: 0.25rem 0.5rem; background-color: #4A4A4A; color: #fff; }
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .sticky-head {
+        top: 0;
+        z-index: 1;
+        position: sticky;
+        padding: 0.25rem 0.5rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-pri);
+        border-bottom: 1px solid var(--bit-clr-brd-sec);
+    }
+
+    .readout {
+        font-family: monospace;
+        color: var(--bit-clr-fg-sec);
+    }
 </style>
 
+<BitToggle @bind-Value=""smooth"" Label=""Smooth"" />
+
+<BitStack Horizontal Wrap Gap=""0.5rem"">
+    <BitButton OnClick=""() => scrollablePane?.ScrollToStart()"">To start</BitButton>
+    <BitButton OnClick=""() => scrollablePane?.ScrollToEnd()"">To end</BitButton>
+    <BitButton OnClick=""() => scrollablePane?.ScrollTo(null, 200)"">To 200px</BitButton>
+    <BitButton OnClick=""() => scrollablePane?.ScrollBy(0, 100)"">Down 100px</BitButton>
+    <BitButton OnClick='() => scrollablePane?.ScrollToElement(""scp-row-15"")'>To row 15</BitButton>
+    <BitButton OnClick='() => scrollablePane?.ScrollToElement(""scp-row-15"", alignment: BitScrollAlignment.Center)'>To row 15, centered</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""ReadScrollOffset"">Read position</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollablePane?.FocusAsync()"">Focus the pane</BitButton>
+</BitStack>
+
 <BitScrollablePane @ref=""scrollablePane"" Height=""12rem"" Class=""pane"" Smooth=""smooth""
-                   ScrollPadding=""2.5rem"" Focusable Role=""region"" AriaLabel=""Rows"">
-    <div class=""sticky-head"">A header of the pane's own, and 2.5rem of ScrollPadding under it</div>
+                   ScrollPadding=""2.5rem"" Focusable AriaLabel=""Rows"">
+    <div class=""sticky-head"">A sticky header, with 2.5rem of ScrollPadding under it</div>
     @for (var i = 1; i <= 25; i++)
     {
         <div class=""item"" id=""@($""scp-row-{i}"")"">Row @i</div>
     }
 </BitScrollablePane>
 
-<div>@readPosition</div>
-
-<div>A pane that opened 250px down, without ever having been at the top:</div>
+<div class=""readout"">@readPosition</div>
 
 <BitScrollablePane Height=""8rem"" Class=""pane"" InitialScrollTop=""250"">
     @for (var i = 1; i <= 25; i++)
@@ -498,11 +560,10 @@ private async Task LoadMoreRows()
         <div class=""item"">Row @i</div>
     }
 </BitScrollablePane>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool smooth = true;
 private string readPosition = ""-"";
 private BitScrollablePane? scrollablePane;
-
 private async Task ReadScrollOffset()
 {
     if (scrollablePane is null) return;
@@ -514,8 +575,22 @@ private async Task ReadScrollOffset()
         : $""Top {offset.Top:0} of {offset.MaxTop:0}, at the bottom: {offset.AtBottom}"";
 }";
 
-    private readonly string example13RazorCode = @"
-<BitNumberField Label=""AutoScrollThreshold (px)"" Min=""0"" Step=""10"" @bind-Value=""autoScrollThreshold"" />
+    private readonly string example12RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
+<BitNumberField Label=""AutoScrollThreshold (px)"" Min=""0"" Step=""10"" @bind-Value=""autoScrollThreshold"" Style=""max-width: 20rem"" />
 
 <BitButton OnClick=""AddAutoScrollContent"" IsEnabled=""@(autoScrollRunning is false)"">Add lines periodically</BitButton>
 
@@ -526,11 +601,10 @@ private async Task ReadScrollOffset()
         <div class=""item"">@line</div>
     }
 </BitScrollablePane>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool autoScrollRunning;
 private double autoScrollThreshold;
 private readonly List<string> autoScrollLines = [];
-
 private async Task AddAutoScrollContent()
 {
     autoScrollRunning = true;
@@ -552,12 +626,28 @@ private async Task AddAutoScrollContent()
     }
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
-    /* Turning the browser's own scroll anchoring off is what puts the pane on the side of the line
-       PreserveScroll is there for: with it on, every engine but WebKit already keeps the reader's
-       place and the toggle below would have nothing to show. */
-    .no-anchor { overflow-anchor: none; }
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .no-anchor {
+        overflow-anchor: none;
+    }
+
+    .readout {
+        font-family: monospace;
+        color: var(--bit-clr-fg-sec);
+    }
 </style>
 
 <BitToggle @bind-Value=""preserveScroll"" Label=""PreserveScroll"" />
@@ -570,21 +660,18 @@ private async Task AddAutoScrollContent()
     {
         <div class=""item"">Loading older messages...</div>
     }
-    @* Keyed, so the older messages are new elements at the TOP rather than new text in the elements
-       that were already there - which is what there is a place to keep for. *@
     @foreach (var message in conversation)
     {
         <div @key=""message"" class=""item"">@message</div>
     }
 </BitScrollablePane>
 
-<div>Oldest message loaded: <b>@oldestMessage</b> | messages: <b>@conversation.Count</b></div>";
-    private readonly string example14CsharpCode = @"
+<div class=""readout"">Oldest message loaded: <b>@oldestMessage</b> &nbsp;|&nbsp; messages: <b>@conversation.Count</b></div>";
+    private readonly string example13CsharpCode = @"
 private bool preserveScroll = true;
 private bool loadingOlder;
 private int oldestMessage = 1;
 private readonly List<string> conversation = [.. Enumerable.Range(1, 14).Select(i => $""Message {i}"")];
-
 private async Task LoadOlderMessages()
 {
     if (loadingOlder || oldestMessage <= -40) return;
@@ -603,45 +690,25 @@ private async Task LoadOlderMessages()
     StateHasChanged();
 }";
 
-    private readonly string example15RazorCode = @"
-<BitToggle @bind-Value=""focusable"" Label=""Focusable"" />
+    private readonly string example14RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
 
-<BitScrollablePane Height=""10rem"" Class=""pane""
-                   Focusable=""focusable""
-                   Role=""region""
-                   AriaLabel=""Release notes"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
-    <p>
-        Whether it is a tale of adventure, a reflection of truth, or an idea that sparks change, these lines are
-        yours to fill, to shape, and to make uniquely yours. The journey begins here, in this quiet moment where
-        everything is possible.
-    </p>
-    <p>
-        For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the
-        symphony, the foundation upon which your creativity will build. Soon, this space will hold your thoughts,
-        your visions, and your voice.
-    </p>
-</BitScrollablePane>";
-    private readonly string example15CsharpCode = @"
-private bool focusable = true;";
+    .card {
+        width: 8rem;
+        height: 4rem;
+        padding: 0.5rem;
+        display: inline-block;
+        margin: 0.5rem 0.5rem 0.5rem 0;
+        color: var(--bit-clr-fg-pri);
+        border-radius: var(--bit-shp-radius-sm);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
 
-    private readonly string example16RazorCode = @"
 <BitChoiceGroup @bind-Value=""snap""
                 Horizontal
                 Label=""Snap""
@@ -662,101 +729,192 @@ private bool focusable = true;";
 
 <BitToggle @bind-Value=""snapStop"" Label=""SnapStop"" />
 
-<style>
-    .snap-card { display: inline-block; width: 8rem; height: 4rem; margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem; color: #fff; background-color: #777; }
-</style>
-
-<BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern
-                   Snap=""snap"" SnapAlign=""snapAlign"" SnapStop=""snapStop"">
-    @for (var i = 1; i <= 10; i++)
-    {
-        <div class=""snap-card"">Card @i</div>
-    }
-</BitScrollablePane>";
-    private readonly string example16CsharpCode = @"
+<BitStack Horizontal Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
+    <BitButton IconName=""@BitIconName.ChevronLeft"" Variant=""BitVariant.Outline"" AriaLabel=""Previous card""
+               IsEnabled=""@(carouselOffset?.AtLeft is false)""
+               OnClick=""() => carouselPane!.ScrollBy(-136, 0)"" />
+    <BitScrollablePane @ref=""carouselPane"" Horizontal Width=""22rem"" Class=""pane"" Modern
+                       Snap=""snap"" SnapAlign=""snapAlign"" SnapStop=""snapStop""
+                       OnScroll=""o => carouselOffset = o"">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class=""card"">Card @i</div>
+        }
+    </BitScrollablePane>
+    <BitButton IconName=""@BitIconName.ChevronRight"" Variant=""BitVariant.Outline"" AriaLabel=""Next card""
+               IsEnabled=""@(carouselOffset?.AtRight is not true)""
+               OnClick=""() => carouselPane!.ScrollBy(136, 0)"" />
+</BitStack>";
+    private readonly string example14CsharpCode = @"
 private bool snapStop = true;
 private BitScrollSnap snap = BitScrollSnap.Mandatory;
-private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;";
+private BitScrollSnapAlign snapAlign = BitScrollSnapAlign.Start;
+private BitScrollablePane? carouselPane;
+private BitScrollOffset? carouselOffset;";
 
-    private readonly string example17RazorCode = @"
-<BitToggle @bind-Value=""dragScroll"" Label=""DragScroll"" />
-<BitToggle @bind-Value=""dragMomentum"" Label=""DragMomentum"" />
-<BitToggle @bind-Value=""horizontalWheel"" Label=""HorizontalWheel"" />
-
+    private readonly string example15RazorCode = @"
 <style>
-    .snap-card { display: inline-block; width: 8rem; height: 4rem; margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem; color: #fff; background-color: #777; }
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .card {
+        width: 8rem;
+        height: 4rem;
+        padding: 0.5rem;
+        display: inline-block;
+        margin: 0.5rem 0.5rem 0.5rem 0;
+        color: var(--bit-clr-fg-pri);
+        border-radius: var(--bit-shp-radius-sm);
+        background-color: var(--bit-clr-bg-ter);
+    }
 </style>
+
+<BitStack Horizontal Wrap Gap=""1rem"">
+    <BitToggle @bind-Value=""dragScroll"" Label=""DragScroll"" />
+    <BitToggle @bind-Value=""dragMomentum"" Label=""DragMomentum"" />
+    <BitToggle @bind-Value=""horizontalWheel"" Label=""HorizontalWheel"" />
+</BitStack>
 
 <BitScrollablePane Horizontal Width=""22rem"" Class=""pane"" Modern
                    DragScroll=""dragScroll"" DragMomentum=""dragMomentum""
                    HorizontalWheel=""horizontalWheel"">
     @for (var i = 1; i <= 10; i++)
     {
-        <div class=""snap-card"">Card @i</div>
+        <div class=""card"">Card @i</div>
     }
 </BitScrollablePane>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool dragScroll = true;
 private bool dragMomentum = true;
 private bool horizontalWheel = true;";
 
+    private readonly string example16RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
+    .themed-panes {
+        --bit-ScrollablePane-scrollbar-size: 0.75rem;
+        --bit-ScrollablePane-scrollbar-thumb-radius: 0.125rem;
+        --bit-ScrollablePane-scrollbar-thumb-color: var(--bit-clr-pri);
+        --bit-ScrollablePane-scrollbar-thumb-hover-color: var(--bit-clr-pri-hover);
+        --bit-ScrollablePane-scrollbar-thumb-active-color: var(--bit-clr-pri-active);
+        --bit-ScrollablePane-scrollbar-track-color: var(--bit-clr-bg-sec);
+        --bit-ScrollablePane-focus-color: var(--bit-clr-sec);
+    }
+</style>
+
+<div class=""themed-panes"">
+    <BitScrollablePane Height=""8rem"" Class=""pane"" Modern Focusable AriaLabel=""Themed pane"">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class=""item"">Styled by the container @i</div>
+        }
+    </BitScrollablePane>
+    <BitScrollablePane Height=""8rem"" Class=""pane"" Modern Fade
+                       Style=""--bit-ScrollablePane-scrollbar-thumb-color: var(--bit-clr-sec); --bit-ScrollablePane-fade-size: 3rem;"">
+        @for (var i = 1; i <= 10; i++)
+        {
+            <div class=""item"">Styled by its own Style @i</div>
+        }
+    </BitScrollablePane>
+</div>";
+
+    private readonly string example17RazorCode = @"
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+</style>
+
+<BitParams Parameters=""@scrollablePaneParams"">
+    <BitStack Horizontal Wrap Gap=""1rem"">
+        <BitScrollablePane Width=""14rem"" Class=""pane"">
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class=""item"">Cascaded @i</div>
+            }
+        </BitScrollablePane>
+        <BitScrollablePane Width=""14rem"" Class=""pane"" Fade=""false"" Height=""6rem"">
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class=""item"">Own Fade, Height @i</div>
+            }
+        </BitScrollablePane>
+    </BitStack>
+</BitParams>";
+    private readonly string example17CsharpCode = @"
+private readonly List<IBitComponentParams> scrollablePaneParams =
+[
+    new BitScrollablePaneParams
+    {
+        Height = ""10rem"",
+        Modern = true,
+        AutoHideScrollbar = true,
+        Fade = true,
+        Overscroll = BitOverscroll.Contain,
+    }
+];";
+
     private readonly string example18RazorCode = @"
 <style>
+    .item {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1.25rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-ter);
+    }
+
     .custom-pane {
-        color: #fff;
         padding: 0.5rem;
         border-radius: 0.5rem;
-        background-color: #4A4A4A;
-        --bit-scp-sbs: 0.5rem;
-        --bit-scp-sbc: #9FD5FF;
-        --bit-scp-sbch: #C6E6FF;
-        --bit-scp-sbca: #FFFFFF;
+        background-color: var(--bit-clr-bg-pri);
     }
 </style>
 
 <BitScrollablePane Height=""8rem""
-                   Style=""border:2px solid #0078D4; border-radius:0.5rem; padding:0.5rem; background:#DEECF933"">
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
+                   Style=""border: 2px solid var(--bit-clr-pri); border-radius: 0.5rem; padding: 0.5rem;"">
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""item"">Item @i</div>
+    }
 </BitScrollablePane>
 
 <BitScrollablePane Height=""8rem"" Class=""custom-pane"" Modern>
-    <p>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take
-        shape. Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built.
-    </p>
-    <p>
-        In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity
-        waits to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the
-        infinite possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now
-        with the vibrant narratives of tomorrow.
-    </p>
-    <p>
-        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely
-        and each word has the power to transform into something extraordinary. Here lies the start of something new,
-        an opportunity to craft, inspire, and create.
-    </p>
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""item"">Item @i</div>
+    }
 </BitScrollablePane>";
 
     private readonly string example19RazorCode = @"
-<BitScrollablePane Dir=""BitDir.Rtl"" lang=""fa"" Height=""10rem"" Class=""pane"" Modern>
+<style>
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid var(--bit-clr-brd-pri);
+    }
+</style>
+
+<BitScrollablePane Dir=""BitDir.Rtl"" lang=""fa"" Height=""8rem"" Class=""pane"" Modern>
     <p>
         داستان‌ها روزگاری پیوند میان مردم را می‌بافتند، سمفونی‌ای از صداها که رویاهای مشترک را می‌ساخت.
         هر واژه معنایی داشت و هر مکث فهمی به همراه می‌آورد.
@@ -768,14 +926,6 @@ private bool horizontalWheel = true;";
     <p>
         در این فضا، امکان حکمرانی می‌کند. لحظه‌ای معلق در زمان، جایی که تخیل آزادانه می‌رقصد و هر واژه
         توان آن را دارد که به چیزی خارق‌العاده بدل شود.
-    </p>
-    <p>
-        هر داستانی با بومی سفید آغاز می‌شود؛ فضایی آرام که منتظر پر شدن با ایده‌ها، احساس‌ها و رویاهاست.
-        این واژه‌های موقت نشانهٔ آغازند؛ لحظه‌ای از امکان که هنوز خلاقیت در آن شکل نگرفته است.
-    </p>
-    <p>
-        فعلاً این سطرها اینجا هستند تا زیبایی آغازها را به یاد بیاورند. آن‌ها سکوت پیش از سمفونی‌اند،
-        بنیادی که خلاقیت شما بر آن ساخته خواهد شد.
     </p>
 </BitScrollablePane>
 

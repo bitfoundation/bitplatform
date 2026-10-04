@@ -8,6 +8,10 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 {
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
+    // The parameters of this class are taken out of the ParameterView here, before it reaches the classes below,
+    // so their sets never see them: a cascade filling in what the markup left unset reads this one instead.
+    private readonly HashSet<string> _assignedTextInputParameters = [];
+
 
     /// <summary>
     /// Specifies the value of the autocomplete attribute of the input component.
@@ -90,6 +94,8 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
     }
 
+    private protected override bool IsSetByMarkup(string name) => _assignedTextInputParameters.Contains(name) || base.IsSetByMarkup(name);
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -128,6 +134,14 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
             await InvokeAsync(async () => await HandleOnStringValueChangeAsync(args)));
     }
+
+
+
+    /// <summary>
+    /// Drops any input event still waiting out its <see cref="DebounceTime"/> or <see cref="ThrottleTime"/>,
+    /// for a derived component that has just committed that text by other means.
+    /// </summary>
+    protected void ResetInputRateLimiter() => _rateLimiter.Reset();
 
 
 

@@ -25,7 +25,7 @@ public partial class CultureSelectionUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // Read the expected home messages straight from the resx for each culture instead of hard-coding them.
         var faCulture = CultureInfoManager.GetCultureInfo("fa-IR")!;

@@ -28,6 +28,11 @@ public class BitSnackBarClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the spinner of a loading item of the BitSnackBar.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the dismiss button of the BitSnackBar.
     /// </summary>
     public string? DismissButton { get; set; }

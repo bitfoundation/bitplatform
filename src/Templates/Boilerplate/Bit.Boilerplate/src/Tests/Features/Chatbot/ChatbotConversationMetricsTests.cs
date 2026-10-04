@@ -30,7 +30,7 @@ public partial class ChatbotConversationMetricsTests
     public async Task OngoingConversationsCount_Should_RiseForAnOpenChat_AndFallBackWhenItEnds()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         long ongoing = 0;
 
@@ -74,7 +74,7 @@ public partial class ChatbotConversationMetricsTests
     private async Task<HubConnection> Connect(AppTestServer server)
     {
         var connection = new HubConnectionBuilder()
-            .WithUrl(new Uri(server.WebAppServerAddress, "app-hub"), options => options.Transports = HttpTransportType.WebSockets)
+            .WithUrl(new Uri(server.ApiAppAddress, "app-hub"), options => options.Transports = HttpTransportType.WebSockets)
             .Build();
 
         await connection.StartAsync(TestContext.CancellationToken);

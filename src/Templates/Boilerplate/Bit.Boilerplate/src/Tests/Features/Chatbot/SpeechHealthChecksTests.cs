@@ -122,14 +122,13 @@ public class SpeechHealthChecksTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
+        await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.Replace(ServiceDescriptor.Singleton(providers.SpeechToTextClient));
             services.Replace(ServiceDescriptor.Singleton(providers.TextToSpeechClient));
             services.Replace(ServiceDescriptor.Singleton<OpenAIRealtimeCallClient>(providers.RealtimeCallClient));
         },
-        configuration =>
+        configureTestConfiguration: configuration =>
         {
             // The keys are never used: every client they would build is replaced above.
             configuration["AI:OpenAI:SpeechToTextApiKey"] = "fake-key";
@@ -140,7 +139,7 @@ public class SpeechHealthChecksTests
             configuration["AI:OpenAI:RealtimeVoice"] = "test-realtime-voice";
         }).Start(TestContext.CancellationToken);
 
-        return await server.WebApp.Services.GetRequiredService<HealthCheckService>()
+        return await server.ApiApp.Services.GetRequiredService<HealthCheckService>()
             .CheckHealthAsync(r => checkNames.Contains(r.Name), TestContext.CancellationToken);
     }
 

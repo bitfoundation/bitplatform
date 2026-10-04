@@ -53,7 +53,7 @@ public partial class BitLayoutDemo
             Name = "FooterHeight",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The height of the footer section in pixels, including its paddings and border. When not set, the footer is as tall as its own content.",
+            Description = "The height of the footer section in pixels, including its paddings and border. It is also the room a sticky nav panel or aside leaves at the bottom for a sticky footer. When not set, the footer is as tall as its own content.",
         },
         new()
         {
@@ -172,14 +172,14 @@ public partial class BitLayoutDemo
             Name = "ScrollableMain",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the header and the footer in place and gives the sections of the middle row a scrollport of their own, which is the shape of an application shell. It needs the BitLayout to have a height to fill: FullHeight, or a parent of a definite height.",
+            Description = "Keeps the header and the footer in place and gives the sections of the middle row a scrollport of their own, which is the shape of an application shell. It needs the BitLayout to have a height to fill: FullHeight (which then holds it at exactly the viewport height), or a parent of a definite height.",
         },
         new()
         {
             Name = "SkipLink",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a skip link as the first focusable element of the BitLayout, which jumps to the main section. The link stays out of sight until it is focused.",
+            Description = "Renders a skip link as the first focusable element of the BitLayout. It stays out of sight until focused, and activating it scrolls to the main section and moves the focus there.",
         },
         new()
         {
@@ -193,7 +193,7 @@ public partial class BitLayoutDemo
             Name = "StickyAside",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables sticky positioning of the aside, pinned HeaderHeight pixels from the top of the viewport and given the rest of it with its own scrollbar.",
+            Description = "Enables sticky positioning of the aside, pinned HeaderHeight pixels from the top of the viewport and given the rest of it (less FooterHeight under a sticky footer) with its own scrollbar.",
         },
         new()
         {
@@ -214,7 +214,7 @@ public partial class BitLayoutDemo
             Name = "StickyNavPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables sticky positioning of the nav panel, pinned HeaderHeight pixels from the top of the viewport and given the rest of it with its own scrollbar.",
+            Description = "Enables sticky positioning of the nav panel, pinned HeaderHeight pixels from the top of the viewport and given the rest of it (less FooterHeight under a sticky footer) with its own scrollbar.",
         },
         new()
         {
@@ -304,19 +304,146 @@ public partial class BitLayoutDemo
 
 
 
-    private bool hideNavPanel;
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Layout-background",
+            DefaultValue = "transparent",
+            Description = "Background of the whole layout.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-header-background",
+            DefaultValue = "transparent; --bit-clr-bg-pri while StickyHeader",
+            Description = "Background of the header. A pinned header is opaque by default, so the content scrolling under it does not show through.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-footer-background",
+            DefaultValue = "transparent; --bit-clr-bg-pri while StickyFooter",
+            Description = "Background of the footer, opaque by default while it is pinned.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-nav-panel-background",
+            DefaultValue = "transparent",
+            Description = "Background of the nav panel.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-aside-background",
+            DefaultValue = "transparent",
+            Description = "Background of the aside.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-main-background",
+            DefaultValue = "transparent",
+            Description = "Background of the main section.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the whole layout.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-header-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the header, the pair of --bit-Layout-header-background.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-footer-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the footer.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-nav-panel-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the nav panel.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-aside-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the aside.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-main-color",
+            DefaultValue = "inherit",
+            Description = "Text color of the main section.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-header-shadow",
+            DefaultValue = "none",
+            Description = "Box shadow of the header, for example --bit-shd-appbar-top for the elevation of an app bar over the content scrolling under a sticky header.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-footer-shadow",
+            DefaultValue = "none",
+            Description = "Box shadow of the footer.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the dividers drawn by Bordered.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of the dividers drawn by Bordered.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-header-height",
+            DefaultValue = "auto",
+            Description = "Height of the header, and the offset the pinned panels stick at (none while no header is rendered). The HeaderHeight parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-footer-height",
+            DefaultValue = "auto",
+            Description = "Height of the footer, and the room the pinned panels leave for a sticky footer (none while no footer is rendered). The FooterHeight parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-gap",
+            DefaultValue = "0",
+            Description = "Room between the sections of the middle row. The Gap parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-padding",
+            DefaultValue = "0",
+            Description = "Padding of the main section. The Padding parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Layout-z-index",
+            DefaultValue = "--bit-zin-base",
+            Description = "Stacking order of the pinned sections. The ZIndex parameter wins over it.",
+        },
+    ];
 
-    private bool hideAside;
+
 
     private bool reverseNavPanel;
 
-    private bool fullHeightPanels;
-    private bool reverseNavPanel2;
-
     private bool hideHeader;
-    private bool hideNavPanel2;
-    private bool hideAside2;
+    private bool hideNavPanel;
+    private bool hideAside;
     private bool hideFooter;
+
+    private bool fullHeightPanels;
 
     private bool stickyHeader;
     private bool stickyNavPanel;
@@ -326,4 +453,19 @@ public partial class BitLayoutDemo
     private bool fullHeight;
 
     private bool scrollableMain;
+
+    private bool isLtMd;
+    private bool isLtSm;
+
+    private readonly BitLayoutParams[] layoutParams =
+    [
+        new()
+        {
+            Bordered = true,
+            Gap = "1rem",
+            Padding = "0.5rem",
+            NavPanelWidth = 120,
+            NavPanelAriaLabel = "Section",
+        }
+    ];
 }

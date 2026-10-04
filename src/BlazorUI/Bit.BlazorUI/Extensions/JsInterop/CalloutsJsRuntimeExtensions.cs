@@ -54,7 +54,10 @@ internal static class CalloutsJsRuntimeExtensions
         int alignmentOffset = 0,
         // The distance in pixels the arrow is kept away from the corners of the callout, so that it never
         // lands on a rounded one; zero takes the default the placement keeps on its own.
-        int arrowPadding = 0) where T : class
+        int arrowPadding = 0,
+        // Keeps a scroll or a resize of the page from dismissing the callout, without what noDismiss also
+        // takes away: a click outside of it still closes it. It is re-anchored to its anchor instead.
+        bool noScrollDismiss = false) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -84,7 +87,8 @@ internal static class CalloutsJsRuntimeExtensions
             noFlip,
             collisionPadding,
             alignmentOffset,
-            arrowPadding);
+            arrowPadding,
+            noScrollDismiss);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above
@@ -106,5 +110,29 @@ internal static class CalloutsJsRuntimeExtensions
     internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.clear", calloutId);
+    }
+
+    // Hands the keyboard over to an opening BitCallout in one round trip: remembers the element the focus is on,
+    // listens for Escape on the page, traps the focus, or puts the callout in the tab order after its trigger -
+    // each only where asked for (a null trigger id asks for no tab-out). Returns whether a focus origin was
+    // remembered, which it is not for a focus that was on the body.
+    internal static ValueTask<bool> BitCalloutSetupKeyboard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime,
+        string calloutId,
+        DotNetObjectReference<T> dotnetObj,
+        bool captureFocusOrigin,
+        bool escape,
+        string? escapeTriggerId,
+        bool focusTrap,
+        string? tabOutTriggerId) where T : class
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.setupKeyboard",
+                                      calloutId, dotnetObj, captureFocusOrigin, escape, escapeTriggerId, focusTrap, tabOutTriggerId);
+    }
+
+    // Takes back everything BitCalloutSetupKeyboard may have set up, in one round trip.
+    internal static ValueTask BitCalloutDisposeKeyboard(this IJSRuntime jsRuntime, string calloutId, bool forgetFocusOrigin)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.disposeKeyboard", calloutId, forgetFocusOrigin);
     }
 }
