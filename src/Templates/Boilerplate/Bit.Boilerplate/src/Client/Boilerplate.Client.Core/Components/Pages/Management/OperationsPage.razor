@@ -214,7 +214,7 @@
                     {
                         var count = Count(filter);
                         <BitTag Variant="BitVariant.Outline"
-                                Shape="BitTagShape.Circular"
+                                Shape="BitShape.Pill"
                                 Color="@(tone is Tone.Neutral ? BitColor.Primary : ToneColor(tone))"
                                 Text="@($"{label} · {count}")"
                                 IsEnabled="@(filter is StatusFilter.All || count > 0)"

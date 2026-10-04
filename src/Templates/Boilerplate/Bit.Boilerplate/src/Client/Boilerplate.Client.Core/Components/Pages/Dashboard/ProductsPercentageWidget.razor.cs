@@ -17,7 +17,7 @@ public partial class ProductsPercentageWidget
             AspectRatio = 1.1,
             Plugins = new BitChartPluginOptions
             {
-                Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+                Legend = new BitChartLegendOptions { Placement = BitPlacement.Right }
             }
         }
     };

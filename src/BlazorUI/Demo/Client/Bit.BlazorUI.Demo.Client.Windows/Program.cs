@@ -74,7 +74,8 @@ public partial class Program
             Text = "bit BlazorUI",
             WindowState = FormWindowState.Maximized,
             BackColor = ColorTranslator.FromHtml("#0D2960"),
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
+            FormRevealMode = FormRevealMode.Deferred
         };
 
         var blazorWebView = new BlazorWebView

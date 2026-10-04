@@ -7,13 +7,7 @@
 #else
     var includeWasm = false;
 #endif
-#if DEBUG
-    // While debugging, boot from the framework-served blazor.web.js instead of the ES2019-transpiled
-    // bit.blazor.web.es2019.js variant, which is only needed to support legacy (non-ES2019+) browsers.
     var blazorWebScript = "_framework/blazor.web.js";
-#else
-    var blazorWebScript = "_framework/bit.blazor.web.es2019.js";
-#endif
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
     // Without the WASM client in the build, WebAssembly render modes can't boot, so fall back to Blazor Server
     // even where AppRenderMode.Current would pick WebAssembly (e.g. Release with IncludeWasm=false).
