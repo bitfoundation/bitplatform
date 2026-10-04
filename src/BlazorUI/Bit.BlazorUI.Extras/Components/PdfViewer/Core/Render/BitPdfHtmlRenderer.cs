@@ -100,6 +100,21 @@ public sealed class BitPdfHtmlRenderer
     /// </summary>
     public bool EmitCanvasOps { get; set; }
 
+    /// <summary>
+    /// Whether link annotations are emitted as hotspots. A thumbnail turns them off: it is
+    /// one option of a listbox, and a link inside it would be a tab stop nobody can see.
+    /// Default is <c>true</c>.
+    /// </summary>
+    public bool EmitLinks { get; set; } = true;
+
+    /// <summary>
+    /// The accessible name of an internal link, with <c>{0}</c> standing for the 1-based
+    /// page it goes to. The hotspot is transparent - the words it covers are painted
+    /// beneath it - so without a name a screen reader has nothing to call it.
+    /// Default is <c>"Go to page {0}"</c>.
+    /// </summary>
+    public string InternalLinkLabelFormat { get; set; } = "Go to page {0}";
+
     /// <summary>The display list JSON after a canvas-mode render, else null.</summary>
     public string? CanvasOpsJson { get; private set; }
 
@@ -160,6 +175,10 @@ public sealed class BitPdfHtmlRenderer
     private readonly bool _ownFontFaces;                // emit faces inline (no shared store)
     private readonly Dictionary<object, string?> _patternCache = new();
     private StringBuilder _html = new();
+    // The link hotspots, kept apart from the painted content: that content is hidden
+    // from assistive technology as a whole, and the links are the one part of it a
+    // reader has to be able to reach.
+    private readonly StringBuilder _links = new();
     private int _openGroups;
 
     // Marked-content / optional-content state. While OC content is hidden, output
@@ -272,7 +291,18 @@ public sealed class BitPdfHtmlRenderer
                 $"style=\"position:absolute;left:0;top:0;width:{viewW:0.##}px;height:{viewH:0.##}px\"></canvas>"));
             CanvasOpsJson = System.Text.Json.JsonSerializer.Serialize(_ops);
         }
-        sb.Append(_html);
+        // The painted layer is a picture of the text, not the text: its glyphs may be
+        // private-use codepoints, its images carry no description, and every word in it
+        // is also in the selection layer above - which is what assistive technology reads.
+        // The wrapper is positioned and sized like the page and starts no stacking
+        // context, so what is inside it paints and blends exactly as it did without it.
+        if (_html.Length > 0)
+        {
+            sb.Append("<div aria-hidden=\"true\" style=\"position:absolute;inset:0\">");
+            sb.Append(_html);
+            sb.Append("</div>");
+        }
+        sb.Append(_links);
         // The coalesced selection/text layer sits on top of the painted content so
         // it captures selection. The container itself is transparent to pointer
         // events (clicks pass through to link annotations); only its spans opt back
@@ -1280,33 +1310,42 @@ public sealed class BitPdfHtmlRenderer
         // (e.g. a link that wraps across several lines); emit one hotspot per quad,
         // falling back to the whole /Rect when they are absent (4.8).
         var regions = QuadPointRegions(annot) ?? new List<double[]> { ToRect(rectArr) };
-        foreach (double[] r in regions)
+        for (int i = 0; i < regions.Count; i++)
         {
-            EmitLinkHotspot(r, uri, destPage, destTop);
+            EmitLinkHotspot(regions[i], uri, destPage, destTop, i > 0);
         }
     }
 
-    private void EmitLinkHotspot(double[] r, string? uri, int? destPage, double? destTop = null)
+    private void EmitLinkHotspot(double[] r, string? uri, int? destPage, double? destTop = null, bool continuation = false)
     {
+        if (EmitLinks is false) return;
+
+        // A link wrapped across lines is one link with several hotspots: the first is the
+        // one a keyboard or a screen reader reaches, the rest only take the pointer.
+        string reach = continuation ? " tabindex=\"-1\" aria-hidden=\"true\"" : string.Empty;
+
         BitPdfMatrix transform = BitPdfMatrix.Concat(_baseMatrix, new BitPdfMatrix(1, 0, 0, 1, r[0], r[1]));
         string style = string.Create(CultureInfo.InvariantCulture,
             $"position:absolute;left:0;top:0;width:{r[2] - r[0]:0.##}px;height:{r[3] - r[1]:0.##}px;transform:{transform.ToSvg()};transform-origin:0 0");
 
         if (uri is not null && IsAllowedUri(uri))
         {
-            _html.Append($"<a href=\"{Escape(uri)}\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"{style}\"></a>");
+            // Named by its address, which is also what the pointer shows on hover.
+            _links.Append($"<a href=\"{Escape(uri)}\" title=\"{Escape(uri)}\" target=\"_blank\" rel=\"noopener noreferrer\"{reach} style=\"{style}\"></a>");
         }
         else if (destPage is int page)
         {
             // Internal link: the viewer delegates clicks on [data-bit-pdv-page] to
-            // page navigation. Emitted as a div (no href) so nothing navigates away.
-            // A destination that names a vertical position carries it along, so the
-            // click lands where the link means to rather than at the page's top edge.
+            // page navigation and cancels the default, so nothing navigates away. A real
+            // link rather than a clickable div, so the keyboard reaches it and Enter
+            // follows it. A destination that names a vertical position carries it along,
+            // so the click lands where the link means to rather than at the page's top.
             string top = destTop is double t
                 ? string.Create(CultureInfo.InvariantCulture, $" data-bit-pdv-top=\"{t:0.##}\"")
                 : string.Empty;
-            _html.Append(string.Create(CultureInfo.InvariantCulture,
-                $"<div data-bit-pdv-page=\"{page}\"{top} style=\"{style};cursor:pointer\"></div>"));
+            string label = Escape(string.Format(CultureInfo.CurrentCulture, InternalLinkLabelFormat, page));
+            _links.Append(string.Create(CultureInfo.InvariantCulture,
+                $"<a href=\"#page={page}\" data-bit-pdv-page=\"{page}\"{top} aria-label=\"{label}\"{reach} style=\"{style}\"></a>"));
         }
         // Otherwise (unknown/unsafe scheme, unresolved dest): drop the hotspot.
     }
