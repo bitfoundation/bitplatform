@@ -543,6 +543,30 @@ namespace BitBlazorUI {
 
     installReorderKeyGuard();
 
+    // A column's resize handle sits inside its header, which is draggable while the column can be reordered. Firefox
+    // starts the header's native drag from a press on the handle (the press is not cancelled - that would also keep
+    // the handle from taking the focus), so the drag that should move the column's edge moved the column instead.
+    // The handle pressed last is remembered, and a drag of the header holding it is cancelled before it starts;
+    // the resize overlay then receives the pointer moves as it does in other browsers.
+    let pressedResizer: Element | null = null;
+    let resizeDragGuardInstalled = false;
+    function installResizeDragGuard() {
+        if (resizeDragGuardInstalled || typeof document === 'undefined') return;
+        resizeDragGuardInstalled = true;
+        document.addEventListener('pointerdown', (e: PointerEvent) => {
+            pressedResizer = (e.target as Element | null)?.closest?.('.bit-dtg-resizer') ?? null;
+        }, { capture: true });
+        const release = () => pressedResizer = null;
+        document.addEventListener('pointerup', release, { capture: true });
+        document.addEventListener('dragend', release, { capture: true });
+        document.addEventListener('dragstart', (e: DragEvent) => {
+            const target = e.target as Node | null;
+            if (pressedResizer && target?.contains?.(pressedResizer)) e.preventDefault();
+        }, { capture: true });
+    }
+
+    installResizeDragGuard();
+
     // A focused, navigable data cell owns the arrow / page / home / end / enter / escape / F2 keys
     // (cell-to-cell movement and the edit lifecycle). Their browser defaults -- scrolling the
     // page/grid, submitting a surrounding form, resetting an input -- must be cancelled *before* the
