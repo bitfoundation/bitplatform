@@ -1488,14 +1488,16 @@ public class BitInfiniteScrollingTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.IsTrue(component.Instance.IsLoading);
-            Assert.IsTrue(component.Find(".bit-isc-btn").HasAttribute("disabled"));
+            var button = component.Find(".bit-isc-btn");
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+            Assert.IsFalse(button.HasAttribute("disabled"), "A disabled button drops the focus that pressed it.");
         });
 
         release.SetResult();
 
         await load;
 
-        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-isc-btn").HasAttribute("disabled")));
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-isc-btn").HasAttribute("aria-disabled")));
     }
 
     [TestMethod]
@@ -1532,7 +1534,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             Assert.IsTrue(component.Instance.IsLoading);
 
             var button = component.Find(".bit-isc-btn");
-            Assert.IsTrue(button.HasAttribute("disabled"));
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
             Assert.AreEqual("Retry", button.TextContent.Trim());
         });
 
@@ -1545,6 +1547,48 @@ public class BitInfiniteScrollingTests : BunitTestContext
             Assert.AreEqual(3, component.Instance.Items.Count);
             Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
         });
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingButtonClickedWhileItsRetryRunsShouldBeIgnored()
+    {
+        var calls = 0;
+        var release = new TaskCompletionSource();
+
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, async request =>
+            {
+                if (Interlocked.Increment(ref calls) == 1) throw new InvalidOperationException("boom");
+
+                await release.Task;
+
+                return (IEnumerable<int>)Enumerable.Range(request.Skip, request.Count).ToList();
+            });
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.RetryText, "Retry");
+            parameters.Add(p => p.PageSize, 3);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("Retry", component.Find(".bit-isc-btn").TextContent.Trim()));
+
+        var click = Task.Run(() => component.Find(".bit-isc-btn").Click());
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsLoading));
+
+        // The button is only marked disabled, so it still takes a click: one that lands mid-retry changes nothing.
+        await component.InvokeAsync(() => component.Find(".bit-isc-btn").Click());
+
+        var button = component.Find(".bit-isc-btn");
+        Assert.AreEqual("Retry", button.TextContent.Trim());
+        Assert.AreEqual(2, calls);
+
+        release.SetResult();
+
+        await click;
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Items.Count));
     }
 
     [TestMethod]

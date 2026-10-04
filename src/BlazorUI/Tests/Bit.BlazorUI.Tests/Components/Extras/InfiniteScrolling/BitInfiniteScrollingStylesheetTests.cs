@@ -74,6 +74,21 @@ public partial class BitInfiniteScrollingStylesheetTests
     }
 
     [TestMethod]
+    public void BitInfiniteScrollingButtonShouldStayFocusableAndUnclippedWhileItLoads()
+    {
+        var stylesheet = ReadStylesheet();
+        var button = Block(stylesheet, "\n.bit-isc-btn {");
+
+        // The busy button is marked aria-disabled, never disabled, so the focus that pressed it is kept.
+        StringAssert.Contains(button, "&[aria-disabled=\"true\"] {");
+        Assert.IsFalse(button.Contains(":disabled"), "The busy button is styled through :disabled, which it never is.");
+
+        // A box-shadow ring is not scrolled to, so the button keeps room for it at either end of the list.
+        StringAssert.Contains(button, "margin-block: $isc-ring-room;");
+        StringAssert.Contains(stylesheet, "$isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});");
+    }
+
+    [TestMethod]
     public void BitInfiniteScrollingShouldPrintAtTheLengthOfItsItems()
     {
         var print = Block(ReadStylesheet(), "\n@media print {");

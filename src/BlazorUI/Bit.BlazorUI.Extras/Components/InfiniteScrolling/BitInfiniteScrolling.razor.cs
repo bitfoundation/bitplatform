@@ -40,6 +40,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     private bool _pendingScrollToEnd;
     private bool _initialScrollDone;
     private int _lastLoadedCount;
+    private int _lastLoadedTotal;
     private int? _pendingFocusIndex;
     private string? _jsSetupKey;
     private CancellationTokenSource? _cts;
@@ -68,8 +69,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
                              && (EndTemplate is not null || EndMessage.HasValue());
 
     // The button loads the next page in manual mode and retries the page that failed in any mode. It stays in
-    // the DOM (disabled) while the load it started runs, rather than vanishing under the keyboard focus that
-    // pressed it and dropping that focus back to the top of the page.
+    // the DOM (marked aria-disabled) while the load it started runs, rather than vanishing under the keyboard
+    // focus that pressed it and dropping that focus back to the top of the page.
     private bool _showButton => IsEnabled && (_error is not null || _retrying || (Manual && _hasMore && _initialized));
 
     // The label of that button, which keeps saying "retry" for as long as the retry it started is running.
@@ -143,6 +144,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     /// <summary>
     /// The message to render when the items provider throws and no ErrorTemplate is provided.
+    /// With an ErrorTemplate it is what screen readers are told instead.
     /// </summary>
     [Parameter] public string ErrorMessage { get; set; } = "Failed to load the items.";
 
@@ -570,6 +572,10 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // what keeps the button (and the focus on it) in place, and its label from flipping mid-flight.
     private async Task HandleLoadMoreClick()
     {
+        // The button stays focusable (aria-disabled) while its page loads, so a click can still land on it then;
+        // it must not flip the label of the retry in flight back to the load-more one.
+        if (_isLoading) return;
+
         _retrying = _error is not null;
 
         var countBefore = _items.Count;
@@ -855,6 +861,10 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
                 _hasMore = false;
                 _endedByCap = true;
             }
+
+            // The announcement describes the page that just landed, so its total is taken now: an item that is
+            // appended or removed from code afterwards must not re-announce that page with a different count.
+            _lastLoadedTotal = _items.Count;
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {
@@ -1042,12 +1052,15 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     private string? GetKeyedItemClass() => JoinClasses("bit-isc-itm", Classes?.Item);
 
-    // What the live region announces. The error has its own alert element, which is announced by being
-    // inserted, so it is deliberately not repeated here. A page that just landed is announced along with the
-    // end it may have reached, so neither one hides the other.
+    // What the live region announces. The default error has its own alert element, which is announced by being
+    // inserted, so it is deliberately not repeated here; an ErrorTemplate replaces that element with markup of
+    // its own, so the failure is announced from here instead. A page that just landed is announced along with
+    // the end it may have reached, so neither one hides the other.
     private string? GetStatusMessage()
     {
         if (_isLoading) return LoadingMessage;
+
+        if (_error is not null) return ErrorTemplate is null ? null : ErrorMessage;
 
         if (_showEmpty) return EmptyMessage;
 
@@ -1070,7 +1083,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     {
         try
         {
-            return string.Format(CultureInfo.CurrentCulture, message, _lastLoadedCount, _items.Count);
+            return string.Format(CultureInfo.CurrentCulture, message, _lastLoadedCount, _lastLoadedTotal);
         }
         catch (FormatException)
         {

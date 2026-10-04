@@ -53,7 +53,7 @@ public partial class BitInfiniteScrollingDemo
             Name = "ErrorMessage",
             Type = "string",
             DefaultValue = "Failed to load the items.",
-            Description = "The message to render when the items provider throws and no ErrorTemplate is provided.",
+            Description = "The message to render when the items provider throws and no ErrorTemplate is provided. With an ErrorTemplate it is what screen readers are told instead.",
          },
          new()
          {
@@ -160,7 +160,7 @@ public partial class BitInfiniteScrollingDemo
             Name = "LoadMoreText",
             Type = "string",
             DefaultValue = "Load more",
-            Description = "The text of the button that loads the next page in the manual mode. The button keeps its place, disabled, while the page it asked for is loading.",
+            Description = "The text of the button that loads the next page in the manual mode. The button keeps its place and the focus (aria-disabled) while the page it asked for is loading.",
          },
          new()
          {

@@ -339,6 +339,73 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitInfiniteScrollingShouldNotReannounceALoadedPageAfterAnEdit()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Manual, true);
+            parameters.Add(p => p.LoadedMessage, "{0} more items, {1} in all");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("5 more items, 5 in all", component.Find(".bit-isc-sts").TextContent));
+
+        await component.InvokeAsync(() => component.Instance.AppendItemsAsync([100]));
+
+        Assert.AreEqual(6, component.Instance.Items.Count);
+        Assert.AreEqual("5 more items, 5 in all", component.Find(".bit-isc-sts").TextContent);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldAnnounceTheErrorMessageWhenAnErrorTemplateReplacesTheAlert()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, _ => throw new InvalidOperationException("boom"));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.ErrorMessage, "Could not load.");
+            parameters.Add(p => p.ErrorTemplate, error => builder => builder.AddMarkupContent(0, $"<p class=\"own-error\">{error.Message}</p>"));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".own-error").Count));
+
+        Assert.AreEqual(0, component.FindAll("[role=alert]").Count);
+        Assert.AreEqual("Could not load.", component.Find(".bit-isc-sts").TextContent);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldNotRepeatTheDefaultErrorAlertInTheLiveRegion()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, _ => throw new InvalidOperationException("boom"));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.Preload, true);
+            parameters.Add(p => p.ErrorMessage, "Could not load.");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("Could not load.", component.Find("[role=alert]").TextContent.Trim()));
+
+        Assert.AreEqual(string.Empty, component.Find(".bit-isc-sts").TextContent);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingLiveRegionShouldFollowTheDirectionOfTheList()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(5));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.AreEqual("rtl", component.Find(".bit-isc-sts").GetAttribute("dir"));
+    }
+
+    [TestMethod]
     public async Task BitInfiniteScrollingShouldRenderAHiddenSpinnerInTheDefaultLoadingBlock()
     {
         var source = new TaskCompletionSource<IEnumerable<int>>();

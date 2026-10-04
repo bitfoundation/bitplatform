@@ -32,6 +32,13 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
                       Context=""item""
                       EndMessage=""You have reached the end of the list."">
     <div>Item @item</div>
+</BitInfiniteScrolling>
+
+<BitInfiniteScrolling ItemsProvider=""LoadEmptyItems""
+                      Class=""basic""
+                      Context=""item""
+                      EmptyMessage=""Nothing to show here."">
+    <div>Item @item</div>
 </BitInfiniteScrolling>";
     private readonly string example2CsharpCode = @"
 private const int TotalItems = 40;
@@ -41,29 +48,15 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     await Task.Delay(1000);
     var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
     return Enumerable.Range(request.Skip, count);
-}";
+}
 
-    private readonly string example3RazorCode = @"
-<style>
-    .basic {
-        max-height: 300px;
-    }
-</style>
-
-<BitInfiniteScrolling ItemsProvider=""LoadEmptyItems""
-                      Class=""basic""
-                      Context=""item""
-                      EmptyMessage=""Nothing to show here."">
-    <div>Item @item</div>
-</BitInfiniteScrolling>";
-    private readonly string example3CsharpCode = @"
 private async ValueTask<IEnumerable<int>> LoadEmptyItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     await Task.Delay(2000);
     return [];
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -105,7 +98,7 @@ private async ValueTask<IEnumerable<int>> LoadEmptyItems(BitInfiniteScrollingIte
         <div class=""empty""><b>--- No item ---</b></div>
     </EmptyTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -121,7 +114,7 @@ private async ValueTask<IEnumerable<int>> LoadEmptyItems(BitInfiniteScrollingIte
     return [];
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -150,7 +143,7 @@ private async ValueTask<IEnumerable<int>> LoadEmptyItems(BitInfiniteScrollingIte
         <b>+ Show 10 more</b>
     </LoadMoreTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -160,7 +153,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -204,7 +197,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
         </div>
     </ErrorTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private const int TotalItems = 40;
 
 private string? lastError;
@@ -249,7 +242,7 @@ private async Task RetryErrorTemplate()
     await errorTemplateRef.LoadMoreAsync();
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .chat {
         gap: 0.5rem;
@@ -287,7 +280,7 @@ private async Task RetryErrorTemplate()
         <input class=""note"" placeholder=""note"" aria-label=""Note for @message.Text"" />
     </div>
 </BitInfiniteScrolling>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 public record ChatMessage(int Id, string Text);
 
 private const int TotalMessages = 40;
@@ -305,7 +298,7 @@ private async ValueTask<IEnumerable<ChatMessage>> LoadKeyedMessages(BitInfiniteS
     return Enumerable.Range(start, count).Select(i => new ChatMessage(i, $""Message {i + 1}""));
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .h-list {
         gap: 0.5rem;
@@ -328,7 +321,7 @@ private async ValueTask<IEnumerable<ChatMessage>> LoadKeyedMessages(BitInfiniteS
                       EndMessage=""The end."">
     <div class=""h-item"">Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -338,7 +331,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .grid {
         gap: 1rem;
@@ -363,7 +356,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
         <div class=""item"">Item @item</div>
     </ItemTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private async ValueTask<IEnumerable<int>> LoadScrollerItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     if (request.Skip >= 200) return [];
@@ -371,7 +364,7 @@ private async ValueTask<IEnumerable<int>> LoadScrollerItems(BitInfiniteScrolling
     return Enumerable.Range(request.Skip, 50);
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -394,7 +387,7 @@ private async ValueTask<IEnumerable<int>> LoadScrollerItems(BitInfiniteScrolling
     Loaded @(progressRef?.Items.Count ?? 0) of @(progressRef?.TotalCount?.ToString() ?? ""?"") items
     in @loadedPages pages @(reachedEnd ? ""(end reached)"" : """")
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private const int TotalCatalogItems = 35;
 
 private int loadedPages;
@@ -416,7 +409,7 @@ private void HandleOnItemsLoaded(IReadOnlyList<int> items) => loadedPages++;
 
 private void HandleOnEnd() => reachedEnd = true;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -450,7 +443,7 @@ private void HandleOnEnd() => reachedEnd = true;";
     Items: @(membersRef?.Items.Count ?? 0) &nbsp; HasMore: @(membersRef?.HasMore) &nbsp;
     IsLoading: @(membersRef?.IsLoading) &nbsp; Offset: @membersOffset
 </div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private const int TotalItems = 40;
 
 private int appendedItems;
@@ -516,7 +509,7 @@ private async Task ReadMembersOffset()
     membersOffset = await membersRef.GetScrollOffsetAsync();
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -537,7 +530,7 @@ private async Task ReadMembersOffset()
                       EndMessage=""No more items to load."">
     <div>Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private const int TotalItems = 40;
 
 private string filter = ""even"";
@@ -557,7 +550,7 @@ private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrolling
     return source.Skip(request.Skip).Take(request.Count);
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -586,7 +579,7 @@ private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrolling
         <span>A short description of product @item.</span>
     </div>
 </BitInfiniteScrolling>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private const int TotalCatalogItems = 35;
 
 private async ValueTask<IEnumerable<int>> LoadCatalogItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -600,7 +593,7 @@ private async ValueTask<IEnumerable<int>> LoadCatalogItems(BitInfiniteScrollingI
                                                            totalCount: TotalCatalogItems);
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -616,7 +609,7 @@ private async ValueTask<IEnumerable<int>> LoadCatalogItems(BitInfiniteScrollingI
         <div>Item @item</div>
     </BitInfiniteScrolling>
 </BitParams>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private const int TotalItems = 40;
 
 private readonly BitInfiniteScrollingParams[] infiniteScrollingParams =
@@ -637,7 +630,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -674,7 +667,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
                       EndMessage=""No more items to load."">
     <div>Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private const int TotalItems = 40;
 
 private const string cssVariablesStyle = ""--bit-InfiniteScrolling-status-color:var(--bit-clr-pri);"" +
@@ -692,7 +685,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -708,7 +701,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
                       EndMessage=""به انتهای لیست رسیدید."">
     <div>آیتم @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)

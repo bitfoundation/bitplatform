@@ -39,10 +39,11 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="PageSize" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <DemoExample Title="PageSize & states" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
                 <div>
                     <b>PageSize</b> is sent as the <b>Count</b> of each request, and a shorter page marks the end of the
-                    data without an extra empty round trip. <b>EndMessage</b> is rendered after the last item.
+                    data without an extra empty round trip. <b>EndMessage</b> follows the last item; <b>EmptyMessage</b>
+                    replaces the list when the first page has no item.
                 </div>
                 <br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
@@ -52,13 +53,8 @@
                                       EndMessage="You have reached the end of the list.">
                     <div>Item @item</div>
                 </BitInfiniteScrolling>
-            </DemoExample>
-
-            <DemoExample Title="Empty" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-                <div>
-                    <b>EmptyMessage</b> is rendered when the first page comes back with no item.
-                </div>
-                <br />
+                <br /><br />
+                <div><b>EmptyMessage:</b></div><br />
                 <BitInfiniteScrolling ItemsProvider="LoadEmptyItems"
                                       Class="basic"
                                       Context="item"
@@ -67,7 +63,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Templates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <DemoExample Title="Templates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
                 <div>
                     <b>ItemTemplate</b> (an alias of the child content) renders each item, and <b>LoadingTemplate</b>,
                     <b>EndTemplate</b> and <b>EmptyTemplate</b> replace the built-in state blocks.
@@ -98,12 +94,12 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Manual" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <DemoExample Title="Manual" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
                 <div>
                     <b>Manual</b> loads every page after the first one from a button, which keeps the page footer
                     reachable and gives keyboard users a real control. Its label is <b>LoadMoreText</b>, and
-                    <b>LoadMoreTemplate</b> replaces its content. The button stays in place (disabled) while its page loads,
-                    so the focus is not lost.
+                    <b>LoadMoreTemplate</b> replaces its content. While its page loads the button stays in place and keeps
+                    the focus, marked <b>aria-disabled</b> rather than disabled.
                 </div>
                 <br /><br />
                 <BitInfiniteScrolling ItemsProvider="LoadPagedItems"
@@ -131,12 +127,13 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Error handling" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <DemoExample Title="Error handling" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>
                     A provider that throws renders <b>ErrorMessage</b> with a <b>RetryText</b> button and stops loading
                     until the retry, so a failing server is not flooded with requests. <b>OnError</b> receives the exception.
                     <b>ErrorTemplate</b> replaces both the message and the button, so it offers its own way back
-                    (<b>LoadMoreAsync</b>). Both lists fail once, on their second page.
+                    (<b>LoadMoreAsync</b>); screen readers still hear <b>ErrorMessage</b>. Both lists fail once, on their
+                    second page.
                 </div>
                 <br /><br />
                 <BitInfiniteScrolling ItemsProvider="LoadFaultyItems"
@@ -171,7 +168,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Reversed" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <DemoExample Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
                 <div>
                     <b>Reversed</b> turns the list into a chat: it opens on the newest items, and scrolling up prepends
                     older pages without moving what the reader is looking at. <b>Preload</b> fetches the first page during
@@ -196,7 +193,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Horizontal" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <DemoExample Title="Horizontal" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
                 <div>
                     <b>Horizontal</b> lays the items out in a row and loads while scrolling sideways. Give the items
                     <code>flex: 0 0 auto</code> so the row overflows instead of squeezing them.
@@ -212,7 +209,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Scroller" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <DemoExample Title="Scroller" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>
                     <b>ScrollerSelector</b> points the list at another scroll container; <b>window</b> (or <b>document</b>,
                     <b>body</b>, <b>html</b>) is the page itself. <b>RootMargin</b> starts loading before the end is
@@ -233,7 +230,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Events & progress" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <DemoExample Title="Events & progress" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
                 <div>
                     <b>OnItemsLoaded</b> receives each loaded page and <b>OnEnd</b> fires once nothing is left. A provider
                     may return a <b>BitInfiniteScrollingItemsProviderResult</b>: still the page, plus <b>HasMore</b> (the
@@ -258,7 +255,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Public members" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <DemoExample Title="Public members" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
                 <div>
                     A reference exposes the state (<b>Items</b>, <b>HasMore</b>, <b>IsLoading</b>, <b>TotalCount</b>,
                     <b>Error</b>) and methods to reload (<b>RefreshDataAsync</b>, <b>LoadMoreAsync</b>), edit the items
@@ -296,7 +293,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="ResetKey" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <DemoExample Title="ResetKey" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
                 <div>
                     A provider lambda that captures a filter is the same method on every render, so a changed filter
                     cannot be detected from it. Pass the filter as <b>ResetKey</b>: each change reloads the list from its
@@ -319,12 +316,14 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>
                     <b>Feed</b> renders the WAI-ARIA feed pattern: each item is a focusable article with its position in
                     the set. Tab into the list, then <b>Page Down</b> / <b>Page Up</b> move between items and
                     <b>Ctrl+End</b> / <b>Ctrl+Home</b> leave it. A page loaded from the button receives the focus.
                     <b>LoadedMessage</b> announces each page to screen readers, and <b>AriaLabel</b> names the list.
+                    Outside a feed, a scrolling list with nothing focusable inside needs <b>TabIndex="0"</b> and a name
+                    to be scrollable from the keyboard.
                 </div>
                 <br />
                 <BitInfiniteScrolling ItemsProvider="LoadCatalogItems"
@@ -344,7 +343,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
                 <div>
                     <b>BitParams</b> with a <b>BitInfiniteScrollingParams</b> sets defaults (texts, templates, loading mode,
                     styles) for every list under it - one place to localize them. A list's own value wins (the second list
@@ -362,7 +361,7 @@
                 </BitParams>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
                 <div>
                     <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part:
                     <b>Root</b>, <b>Item</b>, <b>LastElement</b>, <b>Loading</b>, <b>Spinner</b>, <b>Empty</b>, <b>End</b>,
@@ -392,7 +391,7 @@
                 </BitInfiniteScrolling>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
                 <div>
                     With <b>Dir</b> set to <b>Rtl</b> the items, the state blocks and the button flip, and a horizontal list
                     scrolls from the right.

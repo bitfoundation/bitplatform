@@ -56,7 +56,7 @@ public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentP
     public RenderFragment? EndTemplate { get; set; }
 
     /// <summary>
-    /// The message to render when the items provider throws and no ErrorTemplate is provided.
+    /// The message to render when the items provider throws and no ErrorTemplate is provided. With an ErrorTemplate it is what screen readers are told instead.
     /// </summary>
     public string? ErrorMessage { get; set; }
 

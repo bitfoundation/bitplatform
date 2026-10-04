@@ -18,6 +18,9 @@
 //   --bit-InfiniteScrolling-button-padding        padding of the button                       (default: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm)
 //   --bit-InfiniteScrolling-item-focus-color      focus indicator of a feed's article         (default: $clr-pri-focus)
 
+// What the focus ring of the button takes up outside its border box.
+$isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
+
 .bit-isc {
     overflow: auto;
     box-sizing: border-box;
@@ -66,9 +69,10 @@
         align-self: center;
     }
 
-    // The auto margins that center the button under a column would push it away from the items of a row.
+    // The auto margins that center the button under a column would push it away from the items of a row; the
+    // room its focus ring needs at the end of the row is kept instead.
     > .bit-isc-btn {
-        margin-inline: 0;
+        margin-inline: $isc-ring-room;
     }
 
     // An article is as wide as its content, like any other item of a row.
@@ -195,11 +199,13 @@
 // its own, so a list of any look can host it (and LoadMoreTemplate restyle it) without fighting it. It sits
 // centered under the status blocks it follows.
 .bit-isc-btn {
-    margin: 0;
     border: none;
     display: block;
     cursor: pointer;
     margin-inline: auto;
+    // The ring is drawn outside the button, and a box-shadow is not part of what a scroller scrolls to: without
+    // this room the ring of a button at the very end (or, reversed, the very start) of the list is clipped.
+    margin-block: $isc-ring-room;
     box-sizing: border-box;
     min-height: $siz-ctrl-sm;
     font-family: $tg-font-family;
@@ -214,13 +220,13 @@
     transition: color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
-        &:hover {
+        &:hover:not([aria-disabled="true"]) {
             text-decoration: underline;
             color: var(--bit-InfiniteScrolling-button-hover-color, #{$clr-pri-hover});
         }
     }
 
-    &:active {
+    &:active:not([aria-disabled="true"]) {
         color: $clr-pri-active;
     }
 
@@ -228,8 +234,9 @@
         @include focus-ring($clr-pri-focus);
     }
 
-    // The button keeps its place while the load it started runs, so the focus that pressed it is not dropped.
-    &:disabled {
+    // The button keeps its place - and the focus that pressed it - while the load it started runs. It is marked
+    // aria-disabled rather than disabled for that: the browser drops the focus of an element that gets disabled.
+    &[aria-disabled="true"] {
         cursor: default;
         color: $clr-fg-dis;
         text-decoration: none;
@@ -244,7 +251,7 @@
         border-block-start-color: CanvasText;
     }
 
-    .bit-isc-btn:disabled {
+    .bit-isc-btn[aria-disabled="true"] {
         color: GrayText;
     }
 }
