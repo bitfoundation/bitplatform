@@ -1,33 +1,147 @@
-﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
+// ancestor) re-tunes every editor under it and one set on the Style of an instance that one alone. The
+// floating parts (the selection toolbar, the slash and mention menus) are rendered inside the root, so they
+// inherit them too:
+//   --bit-RichTextEditor-color                     text of the editor                              (default: $clr-fg-pri)
+//   --bit-RichTextEditor-background                background of the editor                        (default: $clr-bg-pri)
+//   --bit-RichTextEditor-border-color              outer border                                    (default: $clr-brd-pri)
+//   --bit-RichTextEditor-border-width              outer border width                              (default: $shp-border-width)
+//   --bit-RichTextEditor-border-radius             outer corner radius                             (default: $shp-radius-surface)
+//   --bit-RichTextEditor-divider-color             lines between the toolbar, panels and footer    (default: $clr-brd-sec)
+//   --bit-RichTextEditor-focus-color               every focus indicator of the editor             (default: $clr-pri-focus)
+//   --bit-RichTextEditor-error-color               invalid border, errors and the limit reached    (default: $clr-err)
+//   --bit-RichTextEditor-height                    height the editing surface starts at            (default: spacing(37.5))
+//   --bit-RichTextEditor-max-height                height past which the surface scrolls           (default: none)
+//   --bit-RichTextEditor-padding                   padding of the editing surface                  (default: spacing(1.75) spacing(2))
+//   --bit-RichTextEditor-font-family               font of the content                             (default: inherit)
+//   --bit-RichTextEditor-font-size                 font size of the content                        (default: inherit)
+//   --bit-RichTextEditor-line-height               line height of the content                      (default: 1.6)
+//   --bit-RichTextEditor-placeholder-color         placeholder of the editing surface              (default: $clr-fg-sec)
+//   --bit-RichTextEditor-link-color                links in the content                            (default: $clr-pri)
+//   --bit-RichTextEditor-code-background           code spans and code blocks                      (default: $clr-bg-sec)
+//   --bit-RichTextEditor-quote-border-color        leading rule of a block quote                   (default: $clr-brd-pri)
+//   --bit-RichTextEditor-table-border-color        cell borders and horizontal rules               (default: $clr-brd-pri)
+//   --bit-RichTextEditor-mention-color             text of a mention chip                          (default: $clr-pri-dark)
+//   --bit-RichTextEditor-mention-background        background of a mention chip                    (default: $clr-pri-light)
+//   --bit-RichTextEditor-find-background           every find match                                (default: $clr-wrn-light)
+//   --bit-RichTextEditor-toolbar-background        background of the toolbar and its panels        (default: $clr-bg-sec)
+//   --bit-RichTextEditor-toolbar-sticky-offset     gap above a StickyToolbar once it is pinned     (default: 0)
+//   --bit-RichTextEditor-button-size               square of a toolbar button                      (default: $siz-ctrl-md)
+//   --bit-RichTextEditor-button-color              glyph of a toolbar button                       (default: $clr-fg-pri)
+//   --bit-RichTextEditor-button-radius             corner radius of a toolbar button               (default: $shp-radius-button)
+//   --bit-RichTextEditor-button-hover-background   ... under the pointer                           (default: $clr-bg-sec-hover)
+//   --bit-RichTextEditor-button-active-color       glyph of a pressed button                       (default: $clr-pri)
+//   --bit-RichTextEditor-button-active-background  background of a pressed button                  (default: $clr-bg-pri-active)
+//   --bit-RichTextEditor-footer-color              text of the count footer                        (default: $clr-fg-sec)
+//   --bit-RichTextEditor-footer-background         background of the count footer                  (default: $clr-bg-sec)
+
+$rte-color: var(--bit-RichTextEditor-color, #{$clr-fg-pri});
+$rte-background: var(--bit-RichTextEditor-background, #{$clr-bg-pri});
+$rte-border-color: var(--bit-RichTextEditor-border-color, #{$clr-brd-pri});
+$rte-divider: var(--bit-RichTextEditor-divider-color, #{$clr-brd-sec});
+$rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});
+$rte-error: var(--bit-RichTextEditor-error-color, #{$clr-err});
+$rte-padding: var(--bit-RichTextEditor-padding, #{spacing(1.75) spacing(2)});
+$rte-bar-background: var(--bit-RichTextEditor-toolbar-background, #{$clr-bg-sec});
+$rte-button-size: var(--bit-RichTextEditor-button-size, #{$siz-ctrl-md});
+$rte-button-radius: var(--bit-RichTextEditor-button-radius, #{$shp-radius-button});
+$rte-button-active-color: var(--bit-RichTextEditor-button-active-color, #{$clr-pri});
+$rte-button-active-background: var(--bit-RichTextEditor-button-active-background, #{$clr-bg-pri-active});
+$rte-code-background: var(--bit-RichTextEditor-code-background, #{$clr-bg-sec});
+$rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
+
+// A ring drawn inside the element, for the parts that fill the frame, whose clipping would cut one drawn outside.
+@mixin rte-inset-ring($color: $rte-focus) {
+    outline: none;
+    box-shadow: inset 0 0 0 $shp-focus-ring-width #{$color};
+
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
+
+// The small fields of the tool panels and menus.
+@mixin rte-field {
+    color: $clr-fg-pri;
+    font-size: $tg-fs-sm;
+    box-sizing: border-box;
+    background: $clr-bg-pri;
+    height: $siz-ctrl-sm;
+    border-radius: $shp-radius-control;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:focus-visible {
+        @include focus-ring($rte-focus, 0);
+    }
+}
 
 .bit-rte {
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-radius-surface;
-    overflow: hidden;
+    display: flex;
+    box-sizing: border-box;
+    flex-direction: column;
+    color: $rte-color;
+    background: $rte-background;
+    border-radius: var(--bit-RichTextEditor-border-radius, #{$shp-radius-surface});
+    border: var(--bit-RichTextEditor-border-width, #{$shp-border-width}) $shp-border-style $rte-border-color;
     // The floating selection toolbar is positioned in this element's coordinate space, which is
     // also what the bridge measures the selection rectangle against.
     position: relative;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
-    display: flex;
-    flex-direction: column;
+    // Clip, not hide: the corners are cut the same way, but no scroll container is made, so a
+    // StickyToolbar sticks to whatever the page scrolls in rather than to this (unscrolled) frame.
+    overflow: hidden;
+    overflow: clip;
 }
 
+.bit-rte.bit-inv {
+    border-color: $rte-error;
+}
+
+// The edit surface keeps the frame's ring inside the frame; the error color wins on an invalid editor.
+.bit-rte.bit-inv .bit-rte-edt:focus-visible {
+    @include rte-inset-ring($rte-error);
+}
+
+// A text-bearing control: it greys out with the disabled colors rather than fading as a whole.
 .bit-rte.bit-dis {
-    opacity: $opa-dis;
+    color: $clr-fg-dis;
+    background: $clr-bg-dis;
+    border-color: $clr-brd-dis;
 
     .bit-rte-tlb,
     .bit-rte-edt,
     .bit-rte-src {
         pointer-events: none;
     }
+
+    .bit-rte-edt,
+    .bit-rte-cnt,
+    .bit-rte-lbl {
+        color: $clr-fg-dis;
+    }
 }
 
 .bit-rte-fsc {
-    position: fixed;
     inset: 0;
-    z-index: 9999;
+    position: fixed;
     border-radius: 0;
+    z-index: $zindex-modal;
+}
+
+.bit-rte-lbl {
+    display: block;
+    color: inherit;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-semibold;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(0.75) spacing(1) spacing(0.5);
+}
+
+.bit-rte-req::after {
+    content: " *";
+    color: $rte-error;
 }
 
 .bit-rte-tlb {
@@ -35,223 +149,271 @@
     flex-wrap: wrap;
     align-items: center;
     gap: spacing(0.5);
-    padding: spacing(0.7) spacing(1);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
-    background: $clr-bg-sec;
+    padding: spacing(0.75) spacing(1);
+    background: $rte-bar-background;
+    border-bottom: $shp-border-width $shp-border-style $rte-divider;
+}
+
+.bit-rte-stk > .bit-rte-tlb {
     position: sticky;
-    top: 0;
+    // Above the surface it slides over and the content's own stacking (a floated image).
     z-index: 2;
+    top: var(--bit-RichTextEditor-toolbar-sticky-offset, 0);
 }
 
 .bit-rte-grp {
     display: flex;
-    gap: spacing(0.3);
-    padding-right: spacing(0.7);
-    margin-right: spacing(0.3);
-    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
+    align-items: center;
+    gap: spacing(0.25);
+    padding-inline-end: spacing(0.75);
+    margin-inline-end: spacing(0.25);
+    border-inline-end: $shp-border-width $shp-border-style $rte-divider;
 
     &:last-child {
-        border-right: none;
+        border-inline-end: none;
     }
 }
 
 .bit-rte-btn {
-    min-width: spacing(3.75);
-    height: spacing(3.75);
-    padding: 0 spacing(0.9);
-    border: $shp-border-width $shp-border-style transparent;
-    border-radius: $shp-radius-control;
-    background: transparent;
-    color: $clr-fg-pri;
-    font-size: $tg-fs-sm;
-    line-height: 1;
+    font: inherit;
+    padding: 0 spacing(0.5);
     cursor: pointer;
-    display: inline-flex;
+    line-height: 1;
+    font-size: $tg-fs-sm;
     align-items: center;
+    display: inline-flex;
     justify-content: center;
+    box-sizing: border-box;
+    background: transparent;
+    height: $rte-button-size;
+    min-width: $rte-button-size;
+    border-radius: $rte-button-radius;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-RichTextEditor-button-color, #{$clr-fg-pri});
+    border: $shp-border-width $shp-border-style transparent;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+
+    svg {
+        flex-shrink: 0;
+        width: $siz-icon-md;
+        height: $siz-icon-md;
+    }
+
+    svg.bit-rte-flip:dir(rtl) {
+        transform: scaleX(-1);
+    }
 
     &:hover:not(:disabled) {
-        background: $clr-bg-sec-hover;
+        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &.bit-rte-act {
-        background: $clr-bg-pri-active;
-        border-color: $clr-pri;
-        color: $clr-pri;
+        color: $rte-button-active-color;
+        border-color: $rte-button-active-color;
+        background: $rte-button-active-background;
     }
 
     &:disabled {
         opacity: $opa-dis;
-        cursor: default;
+        cursor: not-allowed;
     }
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(0.125);
+        @include focus-ring($rte-focus);
     }
+}
+
+// The tool panels' text buttons (Apply, Cancel, ...): their label is their whole content. Open is a link styled the
+// same way, so it drops the underline a link would otherwise draw.
+.bit-rte-pbt {
+    text-decoration: none;
+    padding: 0 $siz-ctrl-pad-x-sm;
+    text-transform: $tg-ctrl-text-transform;
+    border-color: $clr-brd-pri;
+    background: $clr-bg-pri;
 }
 
 .bit-rte-sel {
-    height: spacing(3.75);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-radius-control;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
-    padding: 0 spacing(0.8);
-    font-size: $tg-fs-sm;
+    @include rte-field;
     cursor: pointer;
-
-    &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(0.125);
-    }
+    height: $rte-button-size;
+    padding: 0 spacing(0.75);
 }
 
 .bit-rte-color {
-    display: inline-flex;
-    align-items: center;
-    height: spacing(3.75);
-    padding: 0 spacing(0.5);
-    border-radius: $shp-radius-control;
-    cursor: pointer;
     gap: spacing(0.25);
+    cursor: pointer;
+    align-items: center;
+    display: inline-flex;
+    padding: 0 spacing(0.5);
+    height: $rte-button-size;
+    border-radius: $rte-button-radius;
 
     &:hover {
-        background: $clr-bg-sec-hover;
+        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
+    }
+
+    &:has(input:focus-visible) {
+        @include focus-ring($rte-focus);
+    }
+
+    svg {
+        width: $siz-icon-md;
+        height: $siz-icon-md;
     }
 
     input[type="color"] {
+        padding: 0;
+        border: none;
+        cursor: pointer;
+        background: none;
         width: spacing(2.5);
         height: spacing(2.5);
-        border: none;
-        background: none;
-        padding: 0;
-        cursor: pointer;
+
+        // The label carries the ring, so the swatch does not draw a second one.
+        &:focus-visible {
+            outline: none;
+        }
     }
 }
 
 .bit-rte-bar {
     display: flex;
     flex-wrap: wrap;
-    gap: spacing(0.7);
+    gap: spacing(0.75);
     align-items: center;
-    padding: spacing(0.8) spacing(1);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
-    background: $clr-bg-sec;
+    padding: spacing(0.75) spacing(1);
+    background: $rte-bar-background;
+    border-bottom: $shp-border-width $shp-border-style $rte-divider;
 }
 
 .bit-rte-inp {
+    @include rte-field;
     flex: 1;
     min-width: spacing(7.5);
-    height: spacing(3.75);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-radius-control;
-    padding: 0 spacing(1.1);
-    font-size: $tg-fs-sm;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
+    padding: 0 $siz-ctrl-pad-x-sm;
 }
 
 .bit-rte-num {
-    width: spacing(6);
-    height: spacing(3.75);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-radius-control;
-    padding: 0 spacing(0.6);
-    font-size: $tg-fs-sm;
-    background: $clr-bg-pri;
-    color: $clr-fg-pri;
+    @include rte-field;
+    width: spacing(8);
+    padding: 0 spacing(0.75);
 }
 
-.bit-rte-find-opt {
-    font-size: $tg-fs-xs;
+.bit-rte-opt {
     display: inline-flex;
+    gap: spacing(0.5);
     align-items: center;
-    gap: spacing(0.25);
+    font-size: $tg-fs-xs;
+    // WCAG 2.5.8: the label is the pointer target of its checkbox, so it reaches the 24px minimum.
+    min-height: spacing(3);
 }
 
 .bit-rte-find-count {
-    font-size: $tg-fs-xs;
     color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
     min-width: spacing(8);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .bit-rte-emoji-panel {
-    padding: spacing(0.8) spacing(1);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
-    background: $clr-bg-sec;
+    padding: spacing(0.75) spacing(1);
+    background: $rte-bar-background;
+    border-bottom: $shp-border-width $shp-border-style $rte-divider;
+
+    > .bit-rte-inp {
+        width: 100%;
+    }
 }
 
 .bit-rte-emoji-scroll {
-    margin-top: spacing(0.7);
-    max-height: spacing(17.5);
     overflow-y: auto;
+    margin-top: spacing(0.75);
+    max-height: spacing(17.5);
 }
 
 .bit-rte-emoji-head {
-    font-size: $tg-fs-2xs;
-    font-weight: $tg-fw-semibold;
-    text-transform: uppercase;
-    letter-spacing: $tg-ctrl-letter-spacing;
-    color: $clr-fg-sec;
-    padding: spacing(0.5) spacing(0.3) spacing(0.2);
-    position: sticky;
     top: 0;
-    background: $clr-bg-sec;
+    position: sticky;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-2xs;
+    text-transform: uppercase;
+    background: $rte-bar-background;
+    font-weight: $tg-fw-semibold;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(0.5) spacing(0.25) spacing(0.25);
 }
 
 .bit-rte-emoji-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: spacing(0.3);
+    gap: spacing(0.25);
 }
 
 .bit-rte-emoji {
-    width: spacing(3.75);
-    height: spacing(3.75);
-    border: $shp-border-width $shp-border-style transparent;
-    border-radius: $shp-radius-control;
-    background: transparent;
-    font-size: $tg-fs-lg;
+    padding: 0;
     cursor: pointer;
+    font-size: $tg-fs-lg;
+    background: transparent;
+    width: $rte-button-size;
+    height: $rte-button-size;
+    border-radius: $rte-button-radius;
+    border: $shp-border-width $shp-border-style transparent;
 
     &:hover {
-        background: $clr-bg-sec-hover;
+        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(0.125);
+        @include focus-ring($rte-focus);
     }
 }
 
 .bit-rte-emoji-empty {
-    font-size: $tg-fs-xs;
     color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
     padding: spacing(0.5);
 }
 
 .bit-rte-err {
-    padding: spacing(0.7) spacing(1.2);
-    background: $clr-bg-sec;
-    color: $clr-err;
-    border-bottom: $shp-border-width $shp-border-style $clr-err;
+    color: $rte-error;
     font-size: $tg-fs-xs;
+    background: $rte-bar-background;
+    padding: spacing(0.75) spacing(1.25);
+    border-bottom: $shp-border-width $shp-border-style $rte-error;
 }
 
 .bit-rte-cnt {
-    padding: spacing(0.5) spacing(1.2);
-    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
-    background: $clr-bg-sec;
-    color: $clr-fg-sec;
+    text-align: end;
     font-size: $tg-fs-xs;
-    text-align: right;
+    padding: spacing(0.5) spacing(1.25);
+    font-variant-numeric: tabular-nums;
+    border-top: $shp-border-width $shp-border-style $rte-divider;
+    color: var(--bit-RichTextEditor-footer-color, #{$clr-fg-sec});
+    background: var(--bit-RichTextEditor-footer-background, #{$clr-bg-sec});
 }
 
 .bit-rte-cnt-over {
-    color: $clr-err;
-    margin-left: spacing(0.8);
+    color: $rte-error;
     font-weight: $tg-fw-semibold;
+
+    &:not(:empty) {
+        margin-inline-start: spacing(1);
+    }
+}
+
+// Read by assistive technology only.
+.bit-rte-ann {
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-rte-src {
@@ -259,35 +421,34 @@
     border: none;
     outline: none;
     resize: vertical;
-    padding: spacing(1.7) spacing(2);
-    font-family: SFMono-Regular, Consolas, monospace;
-    font-size: $tg-fs-sm;
-    line-height: 1.5;
-    background: $clr-bg-sec;
-    color: $clr-fg-pri;
+    color: $rte-color;
     box-sizing: border-box;
+    padding: $rte-padding;
+    font-size: $tg-fs-sm;
+    line-height: var(--bit-RichTextEditor-line-height, 1.6);
+    background: $rte-code-background;
+    font-family: $tg-font-family-mono;
+    min-height: var(--bit-RichTextEditor-height, #{spacing(37.5)});
+    max-height: var(--bit-RichTextEditor-max-height, none);
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(-0.25);
+        @include rte-inset-ring;
     }
 }
 
 .bit-rte-edt {
-    padding: spacing(1.7) spacing(2);
-    outline: none;
-
-    // Scroll wide content (notably wide tables) on both axes instead of clipping it, while
-    // keeping the existing vertical scrolling behavior of the editing surface.
-    overflow: auto;
-    line-height: 1.6;
-    color: $clr-fg-pri;
     flex: 1;
-
-    // Allow this scroll pane to shrink below its content inside the .bit-rte flex column so its
-    // own scrollbar engages in fullscreen/constrained layouts instead of inheriting min-height:auto.
-    min-height: 0;
+    overflow: auto;
+    outline: none;
     position: relative;
+    box-sizing: border-box;
+    padding: $rte-padding;
+    color: inherit;
+    font-size: var(--bit-RichTextEditor-font-size, inherit);
+    font-family: var(--bit-RichTextEditor-font-family, inherit);
+    line-height: var(--bit-RichTextEditor-line-height, 1.6);
+    min-height: var(--bit-RichTextEditor-height, #{spacing(37.5)});
+    max-height: var(--bit-RichTextEditor-max-height, none);
 
     // Source view hides the surface with the hidden attribute, which any display rule aimed at
     // the surface (a host class, for one) would otherwise override.
@@ -303,8 +464,7 @@
     }
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(-0.25);
+        @include rte-inset-ring;
     }
 
     // Opt-in drag handle on the bottom edge (Resizable), mirroring what the source-view textarea
@@ -314,12 +474,13 @@
     }
 
     &.bit-rte-edt-empty::before {
-        content: attr(data-placeholder);
-        color: $clr-fg-ter;
-        pointer-events: none;
         position: absolute;
-        inset-block-start: spacing(1.7);
+        pointer-events: none;
+        content: attr(data-placeholder);
         inset-inline-start: spacing(2);
+        inset-block-start: spacing(1.75);
+        // The secondary foreground, not the tertiary one: a placeholder is text, held to the 4.5:1 contrast of text.
+        color: var(--bit-RichTextEditor-placeholder-color, #{$clr-fg-sec});
     }
 
     > :first-child {
@@ -342,60 +503,59 @@
 
     h3 {
         font-size: $tg-fs-lg;
-        margin: spacing(1.8) 0 spacing(0.9);
+        margin: spacing(1.75) 0 spacing(1);
     }
 
     p {
-        margin: 0 0 spacing(1.2);
+        margin: 0 0 spacing(1.25);
     }
 
     blockquote {
-        margin: 0 0 spacing(1.2);
-        padding: spacing(0.5) spacing(2);
-        border-left: spacing(0.5) $shp-border-style $clr-brd-pri;
         color: $clr-fg-sec;
+        margin: 0 0 spacing(1.25);
+        padding: spacing(0.5) spacing(2);
+        border-inline-start: spacing(0.5) $shp-border-style var(--bit-RichTextEditor-quote-border-color, #{$clr-brd-pri});
     }
 
     pre {
-        background: $clr-bg-sec;
-        border-radius: $shp-radius-surface;
-        padding: spacing(1.5) spacing(2);
         overflow-x: auto;
-        font-family: SFMono-Regular, Consolas, monospace;
         font-size: $tg-fs-sm;
+        padding: spacing(1.5) spacing(2);
+        background: $rte-code-background;
+        font-family: $tg-font-family-mono;
+        border-radius: $shp-radius-md;
     }
 
     ul,
     ol {
-        padding-left: spacing(3);
-        margin: 0 0 spacing(1.2);
+        margin: 0 0 spacing(1.25);
+        padding-inline-start: spacing(3);
     }
 
     a {
-        color: $clr-pri;
+        color: var(--bit-RichTextEditor-link-color, #{$clr-pri});
     }
 
     img {
         max-width: 100%;
     }
 
-    table.bit-rte-table,
     table {
         border-collapse: collapse;
-        margin: 0 0 spacing(1.2);
+        margin: 0 0 spacing(1.25);
     }
 
     td,
     th {
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
-        padding: spacing(0.6) spacing(1);
         min-width: spacing(4);
+        padding: spacing(0.75) spacing(1);
+        border: $shp-border-width $shp-border-style $rte-rule-color;
     }
 
     hr {
         border: none;
-        border-top: spacing(0.25) $shp-border-style $clr-brd-pri;
-        margin: spacing(1.6) 0;
+        margin: spacing(1.5) 0;
+        border-top: $shp-border-width-thick $shp-border-style $rte-rule-color;
     }
 
     iframe,
@@ -404,21 +564,21 @@
     }
 
     mark.bit-rte-find {
-        background: $clr-wrn-light;
         color: $clr-fg-pri;
-    }
-
-    span.bit-rte-mention {
-        background: $clr-pri-light;
-        color: $clr-pri-dark;
-        border-radius: $shp-radius-chip;
-        padding: 0 spacing(0.5);
-        white-space: nowrap;
+        background: var(--bit-RichTextEditor-find-background, #{$clr-wrn-light});
     }
 
     mark.bit-rte-find-cur {
-        background: $clr-pri;
         color: $clr-pri-text;
+        background: $clr-pri;
+    }
+
+    span.bit-rte-mention {
+        white-space: nowrap;
+        padding: 0 spacing(0.5);
+        border-radius: $shp-radius-chip;
+        color: var(--bit-RichTextEditor-mention-color, #{$clr-pri-dark});
+        background: var(--bit-RichTextEditor-mention-background, #{$clr-pri-light});
     }
 
     // Checklists are plain lists whose marker is drawn from the item's data-checked state, so the
@@ -433,14 +593,15 @@
 
             &::before {
                 content: "";
+                cursor: pointer;
                 position: absolute;
-                inset-inline-start: 0;
-                inset-block-start: spacing(0.4);
+                box-sizing: border-box;
                 width: spacing(1.75);
                 height: spacing(1.75);
-                border: $shp-border-width-thick $shp-border-style $clr-brd-pri;
+                inset-inline-start: 0;
+                inset-block-start: spacing(0.375);
                 border-radius: $shp-radius-selection;
-                cursor: pointer;
+                border: $shp-border-width-thick $shp-border-style $clr-brd-pri;
             }
 
             &[data-checked="true"] {
@@ -448,67 +609,86 @@
                 text-decoration: line-through;
 
                 &::before {
-                    content: "✔";
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: $tg-fs-2xs;
-                    text-decoration: none;
+                    color: $clr-pri-text;
                     background: $clr-pri;
                     border-color: $clr-pri;
-                    color: $clr-pri-text;
+                    font-size: $tg-fs-2xs;
+                    text-decoration: none;
+                    content: "✔";
                 }
             }
         }
     }
 
     code {
-        background: $clr-bg-sec;
-        border-radius: $shp-radius-xs;
-        padding: 0 spacing(0.4);
-        font-family: SFMono-Regular, Consolas, monospace;
         font-size: $tg-fs-xs;
+        padding: 0 spacing(0.5);
+        border-radius: $shp-radius-xs;
+        background: $rte-code-background;
+        font-family: $tg-font-family-mono;
     }
 
     pre > code {
-        background: none;
         padding: 0;
+        background: none;
         font-size: inherit;
     }
 }
 
+// The full-screen surface fills the viewport, which a MaxHeight written for the inline editor would cut short, and
+// shrinks below its content there so its own scrollbar engages.
+.bit-rte-fsc .bit-rte-edt,
+.bit-rte-fsc .bit-rte-src {
+    min-height: 0;
+    max-height: none;
+}
+
+.bit-rte-fsc .bit-rte-src {
+    flex: 1;
+    resize: none;
+}
+
 .bit-rte-quick {
-    position: absolute;
     z-index: 3;
     display: flex;
-    gap: spacing(0.3);
-    padding: spacing(0.3);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-radius-popup;
-    background: $clr-bg-pri;
+    flex-wrap: wrap;
+    gap: spacing(0.25);
+    position: absolute;
+    padding: spacing(0.25);
+    background: $rte-background;
     box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
     // Never let the bar itself swallow a click meant for the text it is floating over.
     max-width: calc(100% - #{spacing(1)});
-    flex-wrap: wrap;
 }
 
 .bit-rte-slash {
     display: flex;
-    flex-direction: column;
     gap: spacing(0.25);
-    padding: spacing(0.7);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    border-radius: $shp-radius-popup;
-    background: $clr-bg-pri;
-    margin: spacing(0.5) spacing(1);
-    box-shadow: $box-shadow-popup;
+    flex-direction: column;
+    padding: spacing(0.75);
     max-width: spacing(32.5);
+    margin: spacing(0.5) spacing(1);
+    background: $rte-background;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    > .bit-rte-inp {
+        flex: none;
+    }
 }
 
 .bit-rte-slash-list {
     display: flex;
-    flex-direction: column;
+    overflow-y: auto;
     gap: spacing(0.25);
+    flex-direction: column;
+    max-height: $siz-popup-max-height;
 }
 
 .bit-rte-mention-menu {
@@ -521,30 +701,76 @@
 
 .bit-rte-mention-desc {
     display: block;
-    font-size: $tg-fs-2xs;
     color: $clr-fg-sec;
+    font-size: $tg-fs-2xs;
 }
 
 .bit-rte-slash-item {
-    text-align: left;
+    font: inherit;
     border: none;
-    background: transparent;
-    color: $clr-fg-pri;
-    padding: spacing(0.6) spacing(1);
-    border-radius: $shp-radius-control;
     cursor: pointer;
+    text-align: start;
+    color: $clr-fg-pri;
     font-size: $tg-fs-sm;
+    background: transparent;
+    min-height: $siz-item-md;
+    padding: spacing(0.5) spacing(1);
+    border-radius: $shp-radius-control;
 
     &:hover {
         background: $clr-bg-sec-hover;
     }
 
     &.bit-rte-slash-item-sel {
-        background: $clr-bg-sec-hover;
+        color: $rte-button-active-color;
+        background: $rte-button-active-background;
     }
 
     &:focus-visible {
-        outline: spacing(0.25) solid $clr-pri;
-        outline-offset: spacing(0.125);
+        @include focus-ring($rte-focus);
+    }
+}
+
+// The image resize handle is appended to the body (it has to sit over the image wherever the surface scrolls it),
+// so it reads the global tokens only, and it rides above a full-screen editor.
+.bit-rte-resize-handle {
+    touch-action: none;
+    cursor: nwse-resize;
+    position: absolute;
+    box-sizing: border-box;
+    width: spacing(1.5);
+    height: spacing(1.5);
+    background: $clr-pri;
+    border-radius: $shp-radius-xs;
+    z-index: calc(#{$zindex-modal} + 1);
+    border: $shp-border-width-thick $shp-border-style $clr-bg-pri;
+}
+
+@media (forced-colors: active) {
+    // A forced palette drops every background, which is all that told the pressed buttons, the current menu
+    // item, the checked tasks and the current find match apart; system colors survive it.
+    .bit-rte-btn.bit-rte-act,
+    .bit-rte-slash-item.bit-rte-slash-item-sel,
+    .bit-rte-edt mark.bit-rte-find-cur,
+    .bit-rte-edt ul.bit-rte-tasks > li[data-checked="true"]::before,
+    .bit-rte-resize-handle {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background: Highlight;
+        border-color: Highlight;
+    }
+
+    .bit-rte-edt mark.bit-rte-find {
+        forced-color-adjust: none;
+        color: MarkText;
+        background: Mark;
+    }
+
+    .bit-rte-btn:disabled {
+        color: GrayText;
+    }
+
+    .bit-rte-edt span.bit-rte-mention {
+        border: $shp-border-width $shp-border-style CanvasText;
     }
 }

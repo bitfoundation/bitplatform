@@ -82,7 +82,7 @@ public partial class BitRichTextEditor
         if (IsKnownCommand(command) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("unknown-shortcut",
-                string.Format(Label("unknown-shortcut", "Shortcut command '{0}' is not recognized."), command)));
+                string.Format(Loc("unknown-shortcut", "Shortcut command '{0}' is not recognized."), command)));
             return false;
         }
 

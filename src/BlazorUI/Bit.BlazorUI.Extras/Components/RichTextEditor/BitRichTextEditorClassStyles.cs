@@ -11,6 +11,11 @@ public class BitRichTextEditorClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the label of the BitRichTextEditor.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the toolbar of the BitRichTextEditor.
     /// </summary>
     public string? Toolbar { get; set; }
@@ -24,6 +29,26 @@ public class BitRichTextEditorClassStyles
     /// Custom CSS classes/styles for the toolbar buttons of the BitRichTextEditor.
     /// </summary>
     public string? Button { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the tool panels (link, image, media, table, find and emoji) of the BitRichTextEditor.
+    /// </summary>
+    public string? Panel { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the floating selection toolbar of the BitRichTextEditor.
+    /// </summary>
+    public string? QuickToolbar { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the slash command and mention menus of the BitRichTextEditor.
+    /// </summary>
+    public string? Menu { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the inline error message of the BitRichTextEditor.
+    /// </summary>
+    public string? Error { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the editor (content) area of the BitRichTextEditor.

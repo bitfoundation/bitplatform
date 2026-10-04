@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -30,6 +30,50 @@ public partial class BitRichTextEditor
         // was swapped), so caching on the expression instance alone can notify a stale field.
         _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
         _hasField = true;
+    }
+
+    private EditContext? _trackedEditContext;
+
+    /// <summary>
+    /// Whether the bound field currently fails validation: the frame takes the error color and the editing surface
+    /// reports <c>aria-invalid</c>, the way every other input of an EditForm does.
+    /// </summary>
+    private bool IsInvalid
+    {
+        get
+        {
+            if (CascadedEditContext is null || ValueExpression is null) return false;
+            EnsureField();
+            return _hasField && CascadedEditContext.GetValidationMessages(_fieldIdentifier).Any();
+        }
+    }
+
+    // Follows the EditContext the editor sits in, so a submit that fails (or a later edit that passes) re-renders the
+    // invalid state without waiting for the editor's own next render.
+    private void TrackEditContext()
+    {
+        if (ReferenceEquals(_trackedEditContext, CascadedEditContext)) return;
+
+        UntrackEditContext();
+
+        _trackedEditContext = CascadedEditContext;
+        if (_trackedEditContext is not null)
+        {
+            _trackedEditContext.OnValidationStateChanged += HandleValidationStateChanged;
+        }
+    }
+
+    private void UntrackEditContext()
+    {
+        if (_trackedEditContext is null) return;
+        _trackedEditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+        _trackedEditContext = null;
+    }
+
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        ClassBuilder.Reset();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Notifies the cascaded EditContext that the bound field changed.</summary>

@@ -46,7 +46,7 @@ public partial class BitRichTextEditor
         if (await _js.BitRichTextEditorValidateHtml(_editorRef, _sourceText) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-html",
-                Label("invalid-html", "The HTML could not be parsed; fix it before leaving source view.")));
+                Loc("invalid-html", "The HTML could not be parsed; fix it before leaving source view.")));
             return;
         }
 

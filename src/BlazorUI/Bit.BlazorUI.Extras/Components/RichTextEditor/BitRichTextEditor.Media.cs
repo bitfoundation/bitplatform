@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Bit.BlazorUI;
 
@@ -29,10 +29,18 @@ public partial class BitRichTextEditor
     private IReadOnlyList<string> EffectiveFontSizes
         => FontSizes is { Count: > 0 } ? FontSizes : DefaultFontSizes;
 
+    // A select whose value matches none of its options draws blank, so a font the content inherits from the page
+    // (or a size outside the list) reads as the placeholder option rather than as nothing at all.
+    private static string SelectedOption(string? value, IReadOnlyList<string> options)
+        => value is not null && options.Any(o => string.Equals(o, value, StringComparison.OrdinalIgnoreCase))
+            ? options.First(o => string.Equals(o, value, StringComparison.OrdinalIgnoreCase))
+            : "";
+
     // ---- image insertion ----
     private bool _showImageInput;
     private string _imageUrl = "";
     private string _imageAlt = "";
+    private int? _imageWidth;
     private ElementReference _imageInputRef = default!;
 
     private async Task ToggleImageInput()
@@ -43,6 +51,8 @@ public partial class BitRichTextEditor
         // otherwise be written, which is how images end up published without any.
         _imageUrl = _showImageInput && _state.ImageSelected ? _state.ImageSrc ?? "" : "";
         _imageAlt = _showImageInput && _state.ImageSelected ? _state.ImageAlt ?? "" : "";
+        // The width is the keyboard's (and a single pointer's) alternative to dragging the resize handle.
+        _imageWidth = _showImageInput && _state.ImageSelected ? _state.ImageWidth : null;
         if (_showImageInput)
         {
             await CloseOtherPanels("image");
@@ -51,10 +61,15 @@ public partial class BitRichTextEditor
         ClearInlineError();
     }
 
+    private async Task CloseImageInput()
+    {
+        if (_showImageInput) await ToggleImageInput();
+        RequestEditorFocus();
+    }
+
     private async Task OnImageKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await ApplyImageAsync();
-        else if (e.Key == "Escape") await ToggleImageInput();
     }
 
     /// <summary>
@@ -68,23 +83,26 @@ public partial class BitRichTextEditor
         var url = _imageUrl.Trim();
         if (IsAcceptableImageUrl(url) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("image-url-invalid", "That image URL is not valid.")));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Loc("image-url-invalid", "That image URL is not valid.")));
             return;
         }
 
+        var width = _imageWidth is > 0 ? _imageWidth : null;
         if (_state.ImageSelected)
         {
-            await _js.BitRichTextEditorUpdateImage(_editorRef, url, _imageAlt.Trim());
+            await _js.BitRichTextEditorUpdateImage(_editorRef, url, _imageAlt.Trim(), width);
         }
         else
         {
-            await _js.BitRichTextEditorInsertImageUrl(_editorRef, url, _imageAlt.Trim());
+            await _js.BitRichTextEditorInsertImageUrl(_editorRef, url, _imageAlt.Trim(), width);
         }
 
         _showImageInput = false;
         _imageUrl = "";
         _imageAlt = "";
+        _imageWidth = null;
         ClearInlineError();
+        RequestEditorFocus();
     }
 
     // Known image MIME types accepted for data: URLs, mirroring the bridge's IMAGE_MIME set.
@@ -155,7 +173,7 @@ public partial class BitRichTextEditor
         if (estimatedBytes > MaxImageBytes)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
-                string.Format(Label("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
+                string.Format(Loc("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
             return null;
         }
 
@@ -167,7 +185,7 @@ public partial class BitRichTextEditor
         if (TryNormalizeImageMimeType(contentType, out var mimeType) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-image",
-                string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
+                string.Format(Loc("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
             return null;
         }
 
@@ -178,7 +196,7 @@ public partial class BitRichTextEditor
             if (DataImageUrisAllowed is false)
             {
                 await RaiseErrorAsync(new BitRichTextEditorError("invalid-image",
-                    string.Format(Label("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
+                    string.Format(Loc("image-unsupported-type", "\"{0}\" is not a supported image type."), fileName)));
                 return null;
             }
             // Clear any lingering upload error so a successful retry doesn't keep showing the
@@ -193,14 +211,14 @@ public partial class BitRichTextEditor
             if (bytes.Length > MaxImageBytes)
             {
                 await RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
-                    string.Format(Label("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
+                    string.Format(Loc("image-too-large", "\"{0}\" exceeds the 10 MB limit."), fileName)));
                 return null;
             }
             var url = await OnImageUpload(new BitRichTextEditorImageUpload(fileName, mimeType, bytes));
             if (string.IsNullOrWhiteSpace(url))
             {
                 await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
-                    string.Format(Label("image-upload-no-url", "Upload of \"{0}\" did not return a URL."), fileName)));
+                    string.Format(Loc("image-upload-no-url", "Upload of \"{0}\" did not return a URL."), fileName)));
                 return null;
             }
             // Clear any lingering upload error so a successful retry doesn't keep showing the
@@ -215,7 +233,7 @@ public partial class BitRichTextEditor
             // other always-on logging paths in this component (e.g. _OnCommandError).
             Trace.TraceError($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
             await RaiseErrorAsync(new BitRichTextEditorError("upload-failed",
-                string.Format(Label("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
+                string.Format(Loc("image-upload-failed", "Upload of \"{0}\" failed. Please try again."), fileName)));
             return null;
         }
     }

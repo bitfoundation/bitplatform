@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -21,10 +21,15 @@ public partial class BitRichTextEditor
         ClearInlineError();
     }
 
+    private async Task CloseMediaInput()
+    {
+        if (_showMediaInput) await ToggleMediaInput();
+        RequestEditorFocus();
+    }
+
     private async Task OnMediaKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await ApplyMediaAsync();
-        else if (e.Key == "Escape") await ToggleMediaInput();
     }
 
     private async Task ApplyMediaAsync()
@@ -36,14 +41,14 @@ public partial class BitRichTextEditor
             || Uri.TryCreate(url, UriKind.Absolute, out var uri) is false
             || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("media-url-invalid", "That media URL is not valid.")));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Loc("media-url-invalid", "That media URL is not valid.")));
             return;
         }
 
         var html = BuildMediaEmbed(uri);
         if (html is null)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("media-not-allowed", Label("media-not-allowed", "That media type or host is not supported.")));
+            await RaiseErrorAsync(new BitRichTextEditorError("media-not-allowed", Loc("media-not-allowed", "That media type or host is not supported.")));
             return;
         }
 
@@ -55,6 +60,7 @@ public partial class BitRichTextEditor
         ClearInlineError();
         _showMediaInput = false;
         _mediaUrl = "";
+        RequestEditorFocus();
     }
 
     private static string? BuildMediaEmbed(Uri uri)

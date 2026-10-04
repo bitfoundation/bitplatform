@@ -151,7 +151,7 @@ public partial class BitRichTextEditor
             // Use Trace (not Debug) so the failure is still recorded in Release builds.
             System.Diagnostics.Trace.TraceError($"BitRichTextEditor toolbar action '{item.Id}' failed: {ex}");
             await RaiseErrorAsync(new BitRichTextEditorError("custom-action-failed",
-                string.Format(Label("custom-action-failed", "Toolbar action '{0}' failed."), item.Id)));
+                string.Format(Loc("custom-action-failed", "Toolbar action '{0}' failed."), item.Id)));
         }
     }
 }

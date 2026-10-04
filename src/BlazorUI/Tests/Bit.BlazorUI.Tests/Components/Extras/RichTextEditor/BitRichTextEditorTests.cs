@@ -203,20 +203,24 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.MaxHeight, "20rem");
         });
 
-        var style = component.Find(".bit-rte-edt").GetAttribute("style");
-        StringAssert.Contains(style, "min-height:12rem");
-        StringAssert.Contains(style, "max-height:20rem");
+        // The sizes set the public variables on the instance, which both the surface and the source view read.
+        var style = component.Find(".bit-rte").GetAttribute("style");
+        StringAssert.Contains(style, "--bit-RichTextEditor-height:12rem");
+        StringAssert.Contains(style, "--bit-RichTextEditor-max-height:20rem");
+        Assert.IsNull(component.Find(".bit-rte-edt").GetAttribute("style"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldOmitMaxHeightWhenNotSet()
+    public void BitRichTextEditorShouldLeaveTheSizesToTheStylesheetWhenNotSet()
     {
         SetupJsInterop();
 
         var component = RenderComponent<BitRichTextEditor>();
 
-        // An unset MaxHeight must not leak an empty/invalid declaration into the style attribute.
-        Assert.IsFalse(component.Find(".bit-rte-edt").GetAttribute("style")!.Contains("max-height"));
+        // Unset sizes declare nothing, so a --bit-RichTextEditor-height set on :root or an ancestor applies.
+        var style = component.Find(".bit-rte").GetAttribute("style") ?? "";
+        Assert.IsFalse(style.Contains("--bit-RichTextEditor-height"));
+        Assert.IsFalse(style.Contains("--bit-RichTextEditor-max-height"));
     }
 
     [TestMethod]
@@ -679,6 +683,27 @@ public class BitRichTextEditorTests : BunitTestContext
         var selects = component.FindAll(".bit-rte-sel");
         Assert.AreEqual("Georgia", selects[0].GetAttribute("value"));
         Assert.AreEqual("16px", selects[1].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldFallBackToThePlaceholderOptionsForValuesItDoesNotOffer()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.BlockFormat | BitRichTextEditorToolbar.Font);
+            parameters.Add(p => p.FontFamilies, new[] { "Georgia" });
+        });
+
+        // A list item's block, and a font inherited from the page, are values none of the options carry.
+        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { Block = "li", FontName = "Segoe UI", FontSize = "13px" })).Wait();
+
+        var selects = component.FindAll(".bit-rte-sel");
+        Assert.AreEqual("p", selects[0].GetAttribute("value"));
+        Assert.AreEqual("", selects[1].GetAttribute("value"));
+        Assert.AreEqual("", selects[2].GetAttribute("value"));
     }
 
     [TestMethod]
