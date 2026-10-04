@@ -13,7 +13,7 @@ namespace Boilerplate.Tests.Features.Identity;
 /// <para>
 /// ⚠ <b>Only the test double is exercised here, and that is a real gap, not an oversight.</b>
 /// <c>MauiStorageService</c> and <c>WindowsStorageService</c> live in projects this one does not reference and cannot:
-/// Client.Maui needs the MAUI workloads and Client.Windows is <c>net10.0-windows</c>, so referencing either would
+/// Client.Maui needs the MAUI workloads and Client.Windows is <c>net11.0-windows</c>, so referencing either would
 /// retarget the test project and break the Linux CI job. <c>WebStorageService</c> is reachable as a type but its
 /// stores are <c>localStorage</c> and <c>sessionStorage</c> behind JS interop, so it needs a browser. What this class
 /// buys is a single, executable statement of the contract that a reader can diff the three by hand against; what it
