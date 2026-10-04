@@ -29,6 +29,7 @@ public class BitVirtualizeParamsTests : BunitTestContext
         nameof(BitVirtualize<int>.IndexedItemTemplate),
         nameof(BitVirtualize<int>.InitialIndex),
         nameof(BitVirtualize<int>.IsStickyItem),
+        nameof(BitVirtualize<int>.ItemAttributes),
         nameof(BitVirtualize<int>.ItemKey),
         nameof(BitVirtualize<int>.Items),
         nameof(BitVirtualize<int>.ItemsProvider),
@@ -104,6 +105,7 @@ public class BitVirtualizeParamsTests : BunitTestContext
             Classes = new() { Root = "cascaded-root", Item = "cascaded-item" },
             Styles = new() { Root = "margin:1px" },
             ItemSize = 100,
+            Gap = 10,
             OverscanCount = 0,
             Role = "feed",
             ItemRole = "article",
@@ -116,12 +118,12 @@ public class BitVirtualizeParamsTests : BunitTestContext
         StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
         Assert.AreEqual("feed", root.GetAttribute("role"));
 
-        // 300px of 100px items with no overscan.
+        // 300px of 100px items, 10px apart, with no overscan.
         var items = component.FindAll(".bit-vir-itm");
         Assert.AreEqual(3, items.Count);
         Assert.AreEqual("article", items[0].GetAttribute("role"));
         Assert.IsTrue(items[0].ClassList.Contains("cascaded-item"));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:10000px");
+        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:10990px");
     }
 
     [TestMethod]

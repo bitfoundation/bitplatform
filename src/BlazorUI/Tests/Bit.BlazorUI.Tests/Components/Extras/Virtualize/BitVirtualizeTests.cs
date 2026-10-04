@@ -175,6 +175,29 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitVirtualizeShouldBeAGroupWhileItsItemsAreReplacedByTheEmptyContent()
+    {
+        SetupViewport(300);
+
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<int>());
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.AriaLabel, "Results");
+            parameters.Add(p => p.EmptyTemplate, builder => builder.AddContent(0, "No results"));
+        });
+
+        // A list of no list items, but of a text, is not a list.
+        var root = component.Find(".bit-vir");
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("Results", root.GetAttribute("aria-label"));
+
+        component.Render(p => p.Add(x => x.Items, new List<int> { 1, 2, 3 }));
+
+        Assert.AreEqual("list", component.Find(".bit-vir").GetAttribute("role"));
+    }
+
+    [TestMethod]
     public void BitVirtualizeShouldRenderHeaderAndFooterAroundTheItems()
     {
         var component = RenderList(100, 50, p =>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -296,6 +297,127 @@ public class BitVirtualizeLayoutTests : BunitTestContext
     }
 
 
+
+    [TestMethod]
+    public void BitVirtualizeGapShouldSpaceTheItemsAlongTheScrollAxis()
+    {
+        SetupViewport(300);
+
+        var component = RenderGrid(10, 1, 50, p => p.Add(x => x.Gap, 10f));
+
+        // 10 items of 50px and the 9 gaps between them.
+        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:590px");
+        Assert.AreEqual(120, TranslateOf(component.Find("[data-bit-vir-index='2']").GetAttribute("style")));
+        StringAssert.Contains(component.Find("[data-bit-vir-index='2']").GetAttribute("style"), "height:50px");
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeGapShouldBeTakenIntoAccountWhenScrolling()
+    {
+        SetupViewport(300);
+
+        var component = RenderGrid(100, 1, 50, p => p.Add(x => x.Gap, 10f));
+
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20));
+        Assert.AreEqual(1200d, Convert.ToDouble(Context.JSInterop.Invocations[ScrollToOffsetFn][^1].Arguments[1], CultureInfo.InvariantCulture));
+
+        // 1200px is the start of item 20 (5 in view, 3 of overscan on each side).
+        await component.InvokeAsync(() => component.Instance._Scroll(1200, 300));
+        CollectionAssert.AreEqual(Enumerable.Range(17, 11).ToArray(), RenderedIndices(component));
+    }
+
+    [TestMethod]
+    public void BitVirtualizeGapShouldSpaceTheLanesOfAGrid()
+    {
+        SetupViewport(300);
+
+        var component = RenderGrid(100, 3, 100, p => p.Add(x => x.Gap, 8f));
+
+        var style = component.Find("[data-bit-vir-index='4']").GetAttribute("style");
+
+        // The second row, in the second lane: 2 gaps of 8px are shared out by the 3 lanes.
+        Assert.AreEqual(108, TranslateOf(style));
+        StringAssert.Contains(style, "inset-inline-start:calc((100% - 16px) / 3 * 1 + 8px)");
+        StringAssert.Contains(style, "width:calc((100% - 16px) / 3)");
+    }
+
+    [TestMethod]
+    public void BitVirtualizeGapShouldBeLeftOutOfTheLanesThatFit()
+    {
+        SetupViewport(300, 1000);
+
+        // 4 lanes of 220px and their 3 gaps of 40px take 1000px exactly.
+        var component = RenderGrid(100, 1, 100, p =>
+        {
+            p.Add(x => x.MinLaneSize, 220f);
+            p.Add(x => x.Gap, 40f);
+        });
+
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc((100% - 120px) / 4)");
+
+        component.Render(p => p.Add(x => x.Gap, 41f));
+
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc((100% - 82px) / 3)");
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeDynamicGapShouldBeAddedToTheMeasuredSizes()
+    {
+        SetupViewport(300);
+
+        var component = RenderGrid(10, 1, 100, p =>
+        {
+            p.Add(x => x.Dynamic, true);
+            p.Add(x => x.EstimatedItemSize, 50);
+            p.Add(x => x.Gap, 10f);
+        });
+
+        // 10 items estimated at 50px, 9 gaps.
+        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:590px");
+
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([0], [80d]));
+
+        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:620px");
+        Assert.AreEqual(90, TranslateOf(component.Find("[data-bit-vir-index='1']").GetAttribute("style")));
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldRenderTheItemAttributesOnTheElementOfEachItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderGrid(100, 1, 50, p =>
+        {
+            p.Add(x => x.Role, "listbox");
+            p.Add(x => x.ItemRole, "option");
+            p.Add(x => x.Classes, new() { Item = "own-class" });
+            p.Add(x => x.ItemAttributes, i => new Dictionary<string, object>
+            {
+                ["aria-selected"] = i == 1 ? "true" : "false",
+                ["class"] = i == 1 ? "selected" : "",
+                ["style"] = "color:red",
+                ["role"] = i == 2 ? "presentation" : "option",
+                ["tabindex"] = "5",
+                ["data-bit-vir-index"] = "99",
+            });
+        });
+
+        var item = component.Find(".bit-vir-itm.selected");
+
+        Assert.AreEqual("1", item.GetAttribute("data-bit-vir-index"));
+        Assert.AreEqual("true", item.GetAttribute("aria-selected"));
+        Assert.AreEqual("false", component.Find("[data-bit-vir-index='0']").GetAttribute("aria-selected"));
+
+        // The class and the style are appended to the component's own, ...
+        Assert.IsTrue(item.ClassList.Contains("bit-vir-itm"));
+        Assert.IsTrue(item.ClassList.Contains("own-class"));
+        StringAssert.Contains(item.GetAttribute("style"), "translateY(50px)");
+        StringAssert.Contains(item.GetAttribute("style"), "color:red");
+
+        // ... the role overrides the ItemRole, and what the component relies on is left to it.
+        Assert.AreEqual("presentation", component.Find("[data-bit-vir-index='2']").GetAttribute("role"));
+        Assert.AreEqual("-1", item.GetAttribute("tabindex"));
+    }
 
     [TestMethod]
     public void BitVirtualizeScrollerSelectorShouldHandTheScrollingToTheBrowserSide()
