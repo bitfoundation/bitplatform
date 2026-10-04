@@ -420,36 +420,38 @@
             camera.setView({ destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, carto.height) });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, _paddingPx: number, _maxZoom?: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, _paddingPx: number, _maxZoom?: number, animate: boolean = true) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             s.viewer.camera.flyTo({
                 destination: Cesium.Rectangle.fromDegrees(Math.min(swLng, neLng), Math.min(swLat, neLat), Math.max(swLng, neLng), Math.max(swLat, neLat)),
-                duration: 0,
+                duration: animate ? 1.0 : 0,
             });
         }
 
-        public static fitBoundsToMarkers(id: string, _paddingPx: number, _maxZoom?: number) {
+        public static fitBoundsToMarkers(id: string, _paddingPx: number, _maxZoom?: number, animate: boolean = true) {
             const s = BitMapCesium._require(id);
             const ents = Object.values(s.markers);
             if (ents.length === 0) return;
-            try { s.viewer.flyTo(ents, { duration: 1.0 }); } catch { /* ignore */ }
+            try { s.viewer.flyTo(ents, { duration: animate ? 1.0 : 0 }); } catch { /* ignore */ }
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
+            opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const existing = s.markers[markerId];
             if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
-            const billboard = opts.iconUrl ? {
+            // Drawn from its bottom centre, then shifted so the icon's anchor - a pin's tip by default - is
+            // what sits on the coordinate, as on every other provider.
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            const billboard = {
                 image: opts.iconUrl,
-                width: opts.iconWidth || 32,
-                height: opts.iconHeight || 32,
+                width: w,
+                height: h,
                 verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            } : {
-                image: BitMapCesium._defaultPin(),
-                width: 27, height: 41,
-                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                pixelOffset: new Cesium.Cartesian2(w / 2 - ax, h - ay),
             };
             // description is rendered as HTML in Cesium's InfoBox.
             // popupText is escaped to prevent XSS; popupHtml is passed raw (caller's responsibility).
@@ -508,7 +510,16 @@
             if (e) s.viewer.selectedEntity = e;
         }
 
+        /** Deselects the entity whose InfoBox is showing, which closes it. Returns whether one was. */
+        public static closeMarkerPopup(id: string): boolean {
+            const s = BitMapCesium._maps[id];
+            if (!s?.viewer?.selectedEntity) return false;
+            s.viewer.selectedEntity = undefined;
+            return true;
+        }
+
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
@@ -524,6 +535,7 @@
         }
 
         public static addPolygon(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
@@ -544,6 +556,7 @@
         }
 
         public static addCircle(id: string, layerId: string, lat: number, lng: number, radiusMeters: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
@@ -565,6 +578,7 @@
         }
 
         public static addRectangle(id: string, layerId: string, swLat: number, swLng: number, neLat: number, neLng: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
@@ -584,6 +598,7 @@
         }
 
         public static async addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
@@ -705,13 +720,6 @@
         private static _altitudeToZoom(alt: number): number {
             if (!alt || alt <= 0) return 1;
             return Math.max(0, Math.min(21, Math.log2(20_000_000 / alt)));
-        }
-
-        private static _defaultPin(): string {
-            return "data:image/svg+xml;charset=utf-8," +
-                "<svg xmlns='http://www.w3.org/2000/svg' width='27' height='41' viewBox='0 0 27 41'>" +
-                "<path fill='%23e53935' d='M13.5 0C6.04 0 0 6.04 0 13.5c0 10.125 13.5 27.5 13.5 27.5S27 23.625 27 13.5C27 6.04 20.96 0 13.5 0z'/>" +
-                "<circle cx='13.5' cy='13.5' r='5' fill='%23fff'/></svg>";
         }
 
         private static _readView(s: any) {

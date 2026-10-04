@@ -372,13 +372,16 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitSeparator", "BitSeparatorParams")]
     [DataRow("BitOverlay", "BitOverlayParams")]
     [DataRow("BitAppShell", "BitAppShellParams")]
+    [DataRow("BitFullCalendar", "BitFullCalendarParams")]
     [DataRow("BitInfiniteScrolling", "BitInfiniteScrollingParams")]
     [DataRow("BitMarkdownViewer", "BitMarkdownViewerParams")]
+    [DataRow("BitMarkdownEditor", "BitMarkdownEditorParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitFlag", "BitFlagParams")]
     [DataRow("BitErrorBoundary", "BitErrorBoundaryParams")]
     [DataRow("BitChart", "BitChartParams")]
+    [DataRow("BitMap", "BitMapParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });

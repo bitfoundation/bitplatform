@@ -30,11 +30,11 @@ namespace BitBlazorUI {
         public static panBy(id: string, dx: number, dy: number, animate: boolean) {
             return BitMapGlBase.panBy(BitMapMapLibre._key, id, dx, dy, animate);
         }
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
-            return BitMapGlBase.fitBounds(BitMapMapLibre._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom);
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
+            return BitMapGlBase.fitBounds(BitMapMapLibre._key, id, swLat, swLng, neLat, neLng, paddingPx, maxZoom, animate);
         }
-        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
-            return BitMapGlBase.fitBoundsToMarkers(BitMapMapLibre._key, id, paddingPx, maxZoom);
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
+            return BitMapGlBase.fitBoundsToMarkers(BitMapMapLibre._key, id, paddingPx, maxZoom, animate);
         }
         public static addMarker(id: string, markerId: string, opts: any) { return BitMapGlBase.addMarker(BitMapMapLibre._key, id, markerId, opts); }
         public static removeMarker(id: string, markerId: string) { return BitMapGlBase.removeMarker(BitMapMapLibre._key, id, markerId); }
@@ -46,6 +46,7 @@ namespace BitBlazorUI {
             return BitMapGlBase.setMarkerPosition(BitMapMapLibre._key, id, markerId, lat, lng);
         }
         public static openMarkerPopup(id: string, markerId: string) { return BitMapGlBase.openMarkerPopup(BitMapMapLibre._key, id, markerId); }
+        public static closeMarkerPopup(id: string) { return BitMapGlBase.closeMarkerPopup(BitMapMapLibre._key, id); }
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
             return BitMapGlBase.addPolyline(BitMapMapLibre._key, id, layerId, latlngs, style);
         }

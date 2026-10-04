@@ -1,10 +1,11 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarHeader
+public partial class BitFcHeader
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarSettings Settings { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter(Name = "HideFilters")] public bool HideFilters { get; set; }
     [CascadingParameter(Name = "HideSettings")] public bool HideSettings { get; set; }
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
@@ -13,14 +14,17 @@ public partial class BitFcCalendarHeader
 
     private async Task OnAddEventClick()
     {
-        if (State.ReadOnly)
+        if (State.CanAdd is false)
             return;
 
         if (OnAddClick.HasDelegate)
         {
+            // One slot long, like every other draft (the built-in dialog, a month day, a grid slot).
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
                 State.SelectedDate,
-                State.StartOfDayHour);
+                State.StartOfDayHour,
+                0,
+                State.SlotDurationMinutes);
             await OnAddClick.InvokeAsync(draft);
         }
         else

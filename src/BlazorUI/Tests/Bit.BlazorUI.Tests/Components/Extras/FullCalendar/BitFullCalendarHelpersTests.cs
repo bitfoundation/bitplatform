@@ -524,7 +524,7 @@ public class BitFullCalendarHelpersTests
 
         Assert.IsTrue(result.All(o => o.SeriesId == "series"));
         Assert.IsTrue(result.All(o => o.IsOccurrence));
-        Assert.IsTrue(result.All(o => o.IsReadOnly), "the master is what a consumer edits");
+        Assert.IsTrue(result.All(o => o.IsReadOnly is false), "an occurrence is as locked as its series, which is not");
         CollectionAssert.AreEqual(new[] { start.Date, start.Date.AddDays(1) }, result.Select(o => o.OccurrenceDate!.Value).ToArray());
         Assert.AreEqual(result.Select(o => o.Id).Distinct().Count(), result.Count, "occurrence ids stay unique");
     }

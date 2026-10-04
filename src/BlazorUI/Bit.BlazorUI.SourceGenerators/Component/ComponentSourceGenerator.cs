@@ -181,6 +181,12 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertyName}HasBeenSet = false;");
         }
+        // A params cascade that no longer reaches the component is absent from the ParameterView rather than
+        // passed as null, so it is cleared first; otherwise the last one it saw would keep being applied.
+        foreach (var par in parameters.Where(p => p.IsCascadedParams))
+        {
+            builder.AppendLine($"            {par.PropertyName} = default!;");
+        }
         if (doesSupportParametersViewCache)
         {
             builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");

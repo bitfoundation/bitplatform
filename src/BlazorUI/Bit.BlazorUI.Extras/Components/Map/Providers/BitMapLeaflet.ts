@@ -42,6 +42,13 @@ namespace BitBlazorUI {
     }
 
     export class BitMapLeaflet {
+        /**
+         * Leaflet pans and zooms from the keyboard while its container - the canvas - has the focus, so
+         * BitMapChrome leaves the keys to it. Its handler listens on the document and does not check
+         * whether a key was already handled, so the chrome's own would make every press count twice.
+         */
+        public static readonly handlesCanvasKeyboard = true;
+
         private static _maps: { [id: string]: LeafletState } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -56,7 +63,7 @@ namespace BitBlazorUI {
             const zoom: number = o.zoom ?? 13;
 
             const zoomControlEnabled = o.zoomControl !== false;
-            const map = L.map(element, {
+            const map = BitMapLeaflet._keepTabIndex(element, () => L.map(element, {
                 center, zoom,
                 minZoom: o.minZoom ?? undefined,
                 maxZoom: o.maxZoom ?? undefined,
@@ -69,7 +76,7 @@ namespace BitBlazorUI {
                 keyboard: o.keyboardNavigation !== false,
                 // Spread last so an escape-hatch entry wins over what the component models.
                 ...(o.additionalOptions || {}),
-            });
+            }));
 
             // The default tileUrl is OpenStreetMap, which contractually requires the
             // standard attribution. When the caller leaves tileUrl unset (so we serve
@@ -221,7 +228,9 @@ namespace BitBlazorUI {
             if (o.doubleClickZoom !== undefined) o.doubleClickZoom ? s.map.doubleClickZoom.enable() : s.map.doubleClickZoom.disable();
             if (o.boxZoom !== undefined) o.boxZoom ? s.map.boxZoom.enable() : s.map.boxZoom.disable();
             if (o.dragging !== undefined) o.dragging ? s.map.dragging.enable() : s.map.dragging.disable();
-            if (o.keyboardNavigation !== undefined) o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable();
+            if (o.keyboardNavigation !== undefined) {
+                BitMapLeaflet._keepTabIndex(s.map.getContainer(), () => o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable());
+            }
 
             // Zoom limits are constructor options in Leaflet, so a provider that changes
             // MinZoom/MaxZoom after init has to be pushed through the setters or the new
@@ -321,15 +330,15 @@ namespace BitBlazorUI {
             s.map.panBy([dx, dy], { animate: animate !== false });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const pad = paddingPx ?? 48;
             s.map.fitBounds(L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng)),
-                { padding: [pad, pad], maxZoom: maxZoom ?? 18 });
+                { padding: [pad, pad], maxZoom: maxZoom ?? 18, animate });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number, animate: boolean = true) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const layers = Object.values(s.markers);
@@ -337,10 +346,11 @@ namespace BitBlazorUI {
             const b = L.featureGroup(layers).getBounds();
             if (!b.isValid()) return;
             const pad = paddingPx ?? 48;
-            s.map.fitBounds(b, { padding: [pad, pad], maxZoom: maxZoom ?? 18 });
+            s.map.fitBounds(b, { padding: [pad, pad], maxZoom: maxZoom ?? 18, animate });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
+            opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             let icon: any | undefined;
@@ -350,11 +360,15 @@ namespace BitBlazorUI {
                 // The point of the image that sits on the coordinate. Bottom-centre by default,
                 // which is where a pin's tip is; a dot-shaped icon passes its own centre instead.
                 const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+                const offsets = BitMapHelpers.popupOffsets(opts, w, h);
                 icon = L.icon({
                     iconUrl: opts.iconUrl,
                     iconSize: [w, h],
                     iconAnchor: [ax, ay],
-                    popupAnchor: [Math.round(w / 2) - ax, -ay],
+                    popupAnchor: offsets['bottom'],
+                    // Beside the icon's head, as Leaflet's own pin has it - without one the tooltip
+                    // points at the coordinate, which is the tip of a pin, under the pin itself.
+                    tooltipAnchor: [offsets['left'][0] + 3, offsets['left'][1]],
                 });
             }
             const markerOpts: any = {
@@ -465,15 +479,31 @@ namespace BitBlazorUI {
             if (m && m.getPopup()) m.openPopup();
         }
 
+        /** Closes whichever marker popup is open. Returns whether there was one. */
+        public static closeMarkerPopup(id: string): boolean {
+            const s = BitMapLeaflet._maps[id];
+            if (!s) return false;
+            for (const key in s.markers) {
+                const m = s.markers[key];
+                if (m.isPopupOpen?.()) {
+                    m.closePopup();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
-            const pl = L.polyline(latlngs.map(p => [p.lat, p.lng]), BitMapLeaflet._pathStyle(style)).addTo(s.map);
+            const pl = L.polyline(latlngs.map(p => [p.lat, p.lng]), BitMapLeaflet._pathStyle(style, false)).addTo(s.map);
             BitMapLeaflet._wireVectorClick(s, pl, layerId, 'polyline');
             BitMapLeaflet._setLayer(s, layerId, pl);
         }
 
         public static addPolygon(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const poly = L.polygon(latlngs.map(p => [p.lat, p.lng]), BitMapLeaflet._pathStyle(style)).addTo(s.map);
@@ -482,6 +512,7 @@ namespace BitBlazorUI {
         }
 
         public static addCircle(id: string, layerId: string, lat: number, lng: number, radiusMeters: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const c = L.circle([lat, lng], { radius: radiusMeters, ...BitMapLeaflet._pathStyle(style) }).addTo(s.map);
@@ -490,6 +521,7 @@ namespace BitBlazorUI {
         }
 
         public static addRectangle(id: string, layerId: string, swLat: number, swLng: number, neLat: number, neLng: number, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const r = L.rectangle(L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng)),
@@ -499,13 +531,14 @@ namespace BitBlazorUI {
         }
 
         public static addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
+            style = BitMapHelpers.resolvePathStyle(id, style);
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             let gj: any;
             try { gj = JSON.parse(geoJsonString); }
             catch { throw new Error("BitMapLeaflet.addGeoJson: invalid GeoJSON string."); }
             const layer = L.geoJSON(gj, {
-                style: () => BitMapLeaflet._pathStyle(style),
+                style: (feature: any) => BitMapLeaflet._pathStyle(style, !/LineString$/.test(feature?.geometry?.type ?? '')),
                 // Default L.geoJSON renders Point/MultiPoint features as a vanilla
                 // L.marker which ignores the path style passed above. Provide a
                 // pointToLayer that wraps each point as a styled circleMarker so
@@ -591,7 +624,22 @@ namespace BitBlazorUI {
             });
         }
 
-        private static _pathStyle(style: any) {
+        /**
+         * Runs a Leaflet call that may enable its keyboard handler, which makes its container a tab stop by
+         * setting a non-positive tabIndex to 0 - undoing a TabIndex of the component's, such as -1 for a
+         * decorative map, that Blazor will not write again while its own value is unchanged.
+         */
+        private static _keepTabIndex<T>(element: HTMLElement, action: () => T): T {
+            const tabIndex = element.getAttribute('tabindex');
+            try {
+                return action();
+            } finally {
+                if (tabIndex !== null && element.getAttribute('tabindex') !== tabIndex) element.setAttribute('tabindex', tabIndex);
+            }
+        }
+
+        /** A shape's Leaflet options. An open line is never filled: Leaflet would fill the area its ends enclose. */
+        private static _pathStyle(style: any, closed: boolean = true) {
             if (!style) return {};
             return {
                 color: style.color ?? '#3388ff',
@@ -599,7 +647,7 @@ namespace BitBlazorUI {
                 opacity: style.opacity ?? 1,
                 // `fill: false` is not the same as a zero fill opacity: an invisible fill is
                 // still rendered and still hit-tested, so an outline-only shape needs the flag.
-                fill: style.fill !== false,
+                fill: closed && style.fill !== false,
                 fillColor: style.fillColor ?? style.color ?? '#3388ff',
                 fillOpacity: style.fillOpacity ?? 0.2,
                 dashArray: style.dashArray ?? undefined,

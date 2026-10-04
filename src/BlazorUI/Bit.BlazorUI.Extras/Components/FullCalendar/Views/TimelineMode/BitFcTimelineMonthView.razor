@@ -49,7 +49,7 @@
     _monthDays = monthDays;
 
     // If today falls inside the active month, scroll horizontally to today's day cell.
-    var todayIdx = Array.FindIndex(monthDays, d => d.Date == DateTime.Today);
+    var todayIdx = Array.FindIndex(monthDays, d => d.Date == State.Today);
 }
 
 <BitFcTimelineLayout ColumnCount="daysInMonth"
@@ -65,7 +65,7 @@
             {
                 var dayIndex = di;
                 var d = monthDays[dayIndex];
-                var isToday = d.Date == DateTime.Today;
+                var isToday = d.Date == State.Today;
                 var dayNum = BitFullCalendarHelpers.GetCulturalDayOfMonth(d, culture);
                 var dowInitial = culture.DateTimeFormat.GetShortestDayName(d.DayOfWeek);
                 var isScrollTarget = dayIndex == todayIdx;
@@ -84,18 +84,19 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day) @(State.IsDateInAllowedRange(day) ? null : "bit-bfc-out-of-range")"
                  id="@SlotElementId(rowKey, day)"
                  style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@SlotTabIndex(rowKey, day)"
-                 aria-label="@SlotAriaLabel(day, resource.Title)"
+                 data-bit-bfc-roving="nopage" tabindex="@SlotTabIndex(rowKey, day)"
+                 aria-disabled="@(State.IsDateInAllowedRange(day) ? null : "true")"
+                 aria-label="@SlotAriaLabel(rowKey, day, resource.Title)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"
                  @ondrop="() => OnDrop(rowKey, day)"
                  @onclick="() => OnSlotClickAsync(rowKey, day)"
                  @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day)">
-                @if (!State.ReadOnly)
+                @if (State.CanAdd)
                 {
                     <div class="bit-bfc-cell-add-hint" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -104,6 +105,14 @@
                 }
             </div>
         }
+
+        <BitFcBackgroundEvents Events="State.BackgroundEvents"
+                               AxisStart="monthStart.Date"
+                               AxisEnd="monthStart.Date.AddDays(daysInMonth)"
+                               Horizontal
+                               PixelsPerHour="dayWidth / 24.0"
+                               ResourceId="@resource.Id"
+                               AnyResource="false" />
 
         @if (perResource.TryGetValue(rowKey, out var lanes))
         {
@@ -120,18 +129,26 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day) @(State.IsDateInAllowedRange(day) ? null : "bit-bfc-out-of-range")"
                  id="@SlotElementId(rowKey, day)"
                  style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@SlotTabIndex(rowKey, day)"
-                 aria-label="@SlotAriaLabel(day, Texts.NoResourceLabel)"
+                 data-bit-bfc-roving="nopage" tabindex="@SlotTabIndex(rowKey, day)"
+                 aria-disabled="@(State.IsDateInAllowedRange(day) ? null : "true")"
+                 aria-label="@SlotAriaLabel(rowKey, day, Texts.NoResourceLabel)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"
                  @ondrop="() => OnDrop(rowKey, day)"
                  @onclick="() => OnSlotClickAsync(rowKey, day)"
                  @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day)"></div>
         }
+        <BitFcBackgroundEvents Events="State.BackgroundEvents"
+                               AxisStart="monthStart.Date"
+                               AxisEnd="monthStart.Date.AddDays(daysInMonth)"
+                               Horizontal
+                               PixelsPerHour="dayWidth / 24.0"
+                               AnyResource="false" />
+
         @if (hasUnassignedEvents)
         {
             @RenderLanes(perResource[_unassignedKey], monthStart, daysInMonth)
@@ -157,7 +174,7 @@
     private RenderFragment<int> NowIndicator => todayIndex => @<text>
         @if (State.ShowCurrentTimeIndicator && todayIndex >= 0)
         {
-            <BitFcTimelineNowIndicator Day="DateTime.Today"
+            <BitFcTimelineNowIndicator Day="State.Today"
                                        ColumnOffsetPx="@(todayIndex * BitFullCalendarHelpers.TimelineDayWidthPx)"
                                        PixelsPerMinute="@(BitFullCalendarHelpers.TimelineDayWidthPx / 1440.0)"
                                        VisibleStartHour="0"
