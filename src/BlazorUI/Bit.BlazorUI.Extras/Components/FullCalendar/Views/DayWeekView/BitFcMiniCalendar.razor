@@ -55,7 +55,7 @@
                                walk, rather than one stop per day. *@
                             <button type="button" class="bit-bfc-mini-calendar-day @cls"
                                     id="@DayButtonId(cell.Date)"
-                                    tabindex="@(RovingDate == cell.Date.Date ? "0" : "-1")"
+                                    data-bit-bfc-roving tabindex="@(RovingDate == cell.Date.Date ? "0" : "-1")"
                                     aria-label="@(isSelected ? $"{cell.Date.ToString("D", State.Culture)}, {Texts.PickerSelectedDayAriaLabel}" : cell.Date.ToString("D", State.Culture))"
                                     aria-current="@(isToday ? "date" : null)"
                                     disabled="@isOutOfRange"

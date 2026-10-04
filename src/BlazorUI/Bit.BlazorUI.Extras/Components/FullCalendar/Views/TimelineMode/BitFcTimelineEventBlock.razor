@@ -43,6 +43,8 @@
 
 <div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
+     data-bit-bfc-event="@Event.Id"
+     data-bit-bfc-move="@(CanEdit ? "x" : null)"
      role="button"
      tabindex="0"
      aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"

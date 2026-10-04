@@ -129,7 +129,7 @@
                              id="@SlotElementId(row.Key, hour, minute)"
                              style="position:absolute;top:0;bottom:0;inset-inline-start:@(startPercent)%;inset-inline-end:auto;width:@(widthPercent)%;"
                              role="@_slotRole"
-                             tabindex="@SlotTabIndex(row.Key, hour, minute)"
+                             data-bit-bfc-roving="nopage" tabindex="@SlotTabIndex(row.Key, hour, minute)"
                              aria-label="@SlotAriaLabel(row.Label, hour, minute)"
                              @ondragenter="() => OnDragEnter(row.Key, hour, minute)"
                              @ondragover:preventDefault="true"

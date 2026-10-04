@@ -6,6 +6,15 @@ public partial class BitFullCalendarDemo
     [
         new()
         {
+            Name = "AgendaEventTemplate",
+            Type = "RenderFragment<BitFullCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "Replaces the content of an event row in the agenda view and in the event lists (\"+N more\", a year-view day). The row stays the button that opens the event.",
+            LinkType = LinkType.Link,
+            Href = "#event-class",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitFullCalendarClassStyles?",
             DefaultValue = "null",
@@ -136,6 +145,15 @@ public partial class BitFullCalendarDemo
             Description = "The currently active layout mode of the calendar (Event or Timeline). Timeline requires Resources to be non-empty and only supports the Day, Week, and Month views (Year and Agenda fall back to the week layout). (two-way bound)",
             LinkType = LinkType.Link,
             Href = "#mode-enum",
+        },
+        new()
+        {
+            Name = "MonthCellTemplate",
+            Type = "RenderFragment<BitFullCalendarCell>?",
+            DefaultValue = "null",
+            Description = "Extra content for each day of the month grid, under the day number and above the events - a holiday, a price, an availability count.",
+            LinkType = LinkType.Link,
+            Href = "#cell-class",
         },
         new()
         {
@@ -465,12 +483,12 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Description", Type = "string", DefaultValue = "string.Empty", Description = "Event description shown in the details and add/edit dialogs." },
                 new() { Name = "StartDate", Type = "DateTime", DefaultValue = "", Description = "Start date and time of the event." },
                 new() { Name = "EndDate", Type = "DateTime", DefaultValue = "", Description = "End date and time of the event." },
-                new() { Name = "Color", Type = "string", DefaultValue = "BitFullCalendarColorScheme.FallbackColorId", Description = "Identifier of the color matching a BitFullCalendarColorOption.Id from the configured palette.", LinkType = LinkType.Link, Href = "#color-option-class" },
+                new() { Name = "Color", Type = "string", DefaultValue = "BitFullCalendarColorScheme.FallbackColorId", Description = "Id of a BitFullCalendarColorOption from the configured palette, or - when no option matches - a CSS color of its own (a hex or a color function such as rgb(), hsl(), oklch(), var()). Anything else is drawn in --bit-FullCalendar-event-color.", LinkType = LinkType.Link, Href = "#color-option-class" },
                 new() { Name = "Attendees", Type = "List<BitFullCalendarAttendee>", DefaultValue = "[]", Description = "People attending the event.", LinkType = LinkType.Link, Href = "#attendee-class" },
                 new() { Name = "Resource", Type = "string?", DefaultValue = "null", Description = "Optional resource identifier linking this event to a BitFullCalendarResource. Used by the timeline view to place the event on the matching resource row. null or empty means the event is unassigned.", LinkType = LinkType.Link, Href = "#resource-class" },
                 new() { Name = "IsAllDay", Type = "bool", DefaultValue = "false", Description = "Marks the event as lasting the whole day (or span of days) rather than a time range. It renders in the all-day row above the day and week time grids and its badge shows no clock time." },
                 new() { Name = "IsReadOnly", Type = "bool", DefaultValue = "false", Description = "Locks this single event: it cannot be dragged, resized, edited, or deleted even while the calendar itself is editable. Reading its details keeps working." },
-                new() { Name = "CssClass", Type = "string?", DefaultValue = "null", Description = "Extra CSS class(es) applied to every element that renders this event - the month badge, the day/week block, and the timeline block." },
+                new() { Name = "CssClass", Type = "string?", DefaultValue = "null", Description = "Extra CSS class(es) applied to every element that renders this event - the month badge, the day/week block, the timeline block, and the agenda row." },
                 new() { Name = "Recurrence", Type = "BitFullCalendarRecurrence?", DefaultValue = "null", Description = "Repeat rule that turns this event into a series master. The calendar expands it into occurrences across the visible range; the master itself is never rendered once it has one.", LinkType = LinkType.Link, Href = "#recurrence-class" },
                 new() { Name = "SeriesId", Type = "string?", DefaultValue = "null", Description = "Set on a generated occurrence to the Id of the series master it came from. Null on every event a consumer supplied." },
                 new() { Name = "OccurrenceDate", Type = "DateTime?", DefaultValue = "null", Description = "Set on a generated occurrence to the date it falls on, so a click handler can tell which one of a series the user picked." },
@@ -524,6 +542,18 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Title", Type = "string", DefaultValue = "string.Empty", Description = "Display label shown in pickers, filters, agenda headers, and event details. Used as-is with no localization." },
                 new() { Name = "Value", Type = "string", DefaultValue = "string.Empty", Description = "CSS color value used for swatches, bullets, badge accents, and chip surfaces. Any valid CSS color such as hex, rgb(), hsl(), or a named color. Badge background, border, and text contrast tints are derived from this value at runtime." },
                 new() { Name = "Defaults", Type = "static IReadOnlyList<BitFullCalendarColorOption>", DefaultValue = "", Description = "Built-in palette (blue, green, red, yellow, purple, orange) used when EventColorOptions is null or empty." },
+            ]
+        },
+        new()
+        {
+            Id = "cell-class",
+            Title = "BitFullCalendarCell",
+            Description = "One day of the month grid, as MonthCellTemplate receives it.",
+            Parameters =
+            [
+                new() { Name = "Day", Type = "int", DefaultValue = "0", Description = "The day number in the active calendar system (a Persian date shows its own day)." },
+                new() { Name = "CurrentMonth", Type = "bool", DefaultValue = "false", Description = "True for a day of the month being shown; false for one borrowed from a neighbouring month." },
+                new() { Name = "Date", Type = "DateTime", DefaultValue = "", Description = "The date of the day." },
             ]
         },
         new()
@@ -841,7 +871,7 @@ public partial class BitFullCalendarDemo
         new() { Name = "--bit-FullCalendar-accent-color", DefaultValue = "var(--bit-clr-pri)", Description = "Accent: today's marker, the primary button, the selected choices, the focus outline of a slot." },
         new() { Name = "--bit-FullCalendar-accent-hover-color", DefaultValue = "var(--bit-clr-pri-hover)", Description = "Accent of a hovered primary button." },
         new() { Name = "--bit-FullCalendar-accent-text-color", DefaultValue = "var(--bit-clr-pri-text)", Description = "Text drawn on the accent color." },
-        new() { Name = "--bit-FullCalendar-event-color", DefaultValue = "--bit-FullCalendar-accent-color", Description = "Color of an event whose Color matches no color option. Its chip, swatch and bullet are derived from it." },
+        new() { Name = "--bit-FullCalendar-event-color", DefaultValue = "--bit-FullCalendar-accent-color", Description = "Color of an event whose Color is neither a color option nor a CSS color. Its chip, swatch and bullet are derived from it." },
         new() { Name = "--bit-FullCalendar-event-border-radius", DefaultValue = "var(--bit-shp-radius-control)", Description = "Corner radius of the event badges and blocks." },
         new() { Name = "--bit-FullCalendar-today-background", DefaultValue = "6% accent", Description = "Tint of today's column in the week grid." },
         new() { Name = "--bit-FullCalendar-selection-background", DefaultValue = "22% accent", Description = "The slots a range selection covers." },
@@ -866,6 +896,7 @@ public partial class BitFullCalendarDemo
     private readonly List<BitFullCalendarEvent> monthGridEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> allDayEvents = CreateAllDayEvents();
     private readonly List<BitFullCalendarEvent> recurringEvents = CreateRecurringEvents();
+    private readonly List<BitFullCalendarEvent> colorEvents = CreateColorEvents();
     private readonly List<BitFullCalendarEvent> templateEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> resourceEvents = CreateResourceEvents();
     private readonly List<BitFullCalendarEvent> boundsEvents = CreateEvents();
@@ -1324,6 +1355,32 @@ public partial class BitFullCalendarDemo
             new() { Id = (++id).ToString(), Title = "Company Retreat", Description = "Strategy and team building.", StartDate = today.AddDays(5), EndDate = today.AddDays(7).AddHours(16), Color = "purple" },
             new() { Id = (++id).ToString(), Title = "Quarterly Review", Description = "Company-wide QBR.", StartDate = today.AddDays(-3).AddHours(10), EndDate = today.AddDays(-3).AddHours(12), Color = "red" },
             new() { Id = (++id).ToString(), Title = "Product Demo", Description = "Stakeholder walkthrough.", StartDate = today.AddDays(-2).AddHours(14), EndDate = today.AddDays(-2).AddHours(15), Color = "orange" },
+        ];
+    }
+
+    private readonly List<BitFullCalendarColorOption> colorOptions =
+    [
+        new() { Id = "work", Title = "Work", Value = "#2563eb" },
+        new() { Id = "personal", Title = "Personal", Value = "#16a34a" },
+        new() { Id = "urgent", Title = "Urgent", Value = "#dc2626" },
+    ];
+
+    private readonly Dictionary<DateTime, string> holidays = new()
+    {
+        [DateTime.Today.AddDays(4)] = "Founders' Day",
+        [DateTime.Today.AddDays(11)] = "Public holiday",
+    };
+
+    private static List<BitFullCalendarEvent> CreateColorEvents()
+    {
+        var today = DateTime.Today;
+        return
+        [
+            new() { Id = "1", Title = "Planning", StartDate = today.AddHours(9), EndDate = today.AddHours(10), Color = "work" },
+            new() { Id = "2", Title = "Gym", StartDate = today.AddHours(17), EndDate = today.AddHours(18), Color = "personal" },
+            new() { Id = "3", Title = "Hotfix", StartDate = today.AddDays(1).AddHours(11), EndDate = today.AddDays(1).AddHours(12), Color = "urgent" },
+            new() { Id = "4", Title = "Brand launch", StartDate = today.AddDays(2).AddHours(13), EndDate = today.AddDays(2).AddHours(15), Color = "#db2777" },
+            new() { Id = "5", Title = "Imported", StartDate = today.AddDays(3).AddHours(10), EndDate = today.AddDays(3).AddHours(11), Color = "legacy" },
         ];
     }
 

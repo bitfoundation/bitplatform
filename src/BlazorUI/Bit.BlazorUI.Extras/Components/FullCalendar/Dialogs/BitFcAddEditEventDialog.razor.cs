@@ -32,6 +32,16 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _pressStartedOnOverlay;
+
+    private async Task OnOverlayClick()
+    {
+        var close = _pressStartedOnOverlay;
+        _pressStartedOnOverlay = false;
+        if (close)
+            await OnClose.InvokeAsync();
+    }
     [Parameter] public EventCallback OnSaved { get; set; }
 
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
@@ -194,7 +204,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _description = ExistingEvent.Description;
             _startDate = ExistingEvent.StartDate;
             _endDate = ExistingEvent.EndDate;
-            _color = string.IsNullOrWhiteSpace(ExistingEvent.Color) ? defaultColor : ExistingEvent.Color;
+            _color = string.IsNullOrWhiteSpace(ExistingEvent.Color) ? defaultColor : ColorScheme.GetCanonicalId(ExistingEvent.Color);
             _resource = ExistingEvent.Resource ?? string.Empty;
             _isAllDay = ExistingEvent.IsAllDay;
             _attendees = [.. ExistingEvent.Attendees];

@@ -34,6 +34,11 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Gets or sets the template that renders the content of an event row in the agenda view and the event lists.
+    /// </summary>
+    public RenderFragment<BitFullCalendarEvent>? AgendaEventTemplate { get; set; }
+
+    /// <summary>
     /// Gets or sets the custom CSS classes for the different parts of the calendar.
     /// </summary>
     public BitFullCalendarClassStyles? Classes { get; set; }
@@ -92,6 +97,11 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
     /// Gets or sets the earliest date the calendar can navigate to and display.
     /// </summary>
     public DateTime? MinDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the template that renders extra content in each day of the month grid.
+    /// </summary>
+    public RenderFragment<BitFullCalendarCell>? MonthCellTemplate { get; set; }
 
     /// <summary>
     /// Gets or sets the template that renders an event in the month view.
@@ -153,6 +163,11 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFullCalendar);
 
+        if (AgendaEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(AgendaEventTemplate)))
+        {
+            bitFullCalendar.AgendaEventTemplate = AgendaEventTemplate;
+        }
+
         if (Classes is not null && bitFullCalendar.HasNotBeenSet(nameof(Classes)) && bitFullCalendar.Classes != Classes)
         {
             bitFullCalendar.Classes = Classes;
@@ -213,6 +228,11 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
         if (MinDate.HasValue && bitFullCalendar.HasNotBeenSet(nameof(MinDate)))
         {
             bitFullCalendar.MinDate = MinDate.Value;
+        }
+
+        if (MonthCellTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(MonthCellTemplate)))
+        {
+            bitFullCalendar.MonthCellTemplate = MonthCellTemplate;
         }
 
         if (MonthEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(MonthEventTemplate)))

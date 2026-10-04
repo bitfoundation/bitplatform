@@ -2,7 +2,8 @@
 
 @if (_rowCount > 0)
 {
-    <div class="bit-bfc-multiday-row" style="padding-inline-start:60px;">
+    var seen = new HashSet<BitFullCalendarEvent>();
+    <div class="bit-bfc-multiday-row">
         @* One column per VISIBLE weekday so the row lines up with the time grid under it when a
            work week hides some days. *@
         <div style="display:grid;grid-template-columns:repeat(@(_weekDays.Length),minmax(0,1fr));column-gap:0;">
@@ -24,11 +25,11 @@
                             var position = ev.IsSingleDay ? "none"
                                 : ev.StartDate.Date == d.Date ? "first"
                                 : evEndInclusive == d.Date ? "last" : "middle";
-                            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" IsLead="seen.Add(ev)" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                         }
                         else
                         {
-                            <div style="height:22px;"></div>
+                            <div class="bit-bfc-month-event-slot"></div>
                         }
                     }
                 </div>

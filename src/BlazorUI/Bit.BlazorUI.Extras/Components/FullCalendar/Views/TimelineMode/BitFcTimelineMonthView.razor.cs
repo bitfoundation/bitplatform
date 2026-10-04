@@ -165,7 +165,8 @@ public partial class BitFcTimelineMonthView
 
     private async Task OnSlotClickAsync(string resourceId, DateTime day)
     {
-        if (State.ReadOnly)
+        // A day outside the date window is shown for context, never as an add target.
+        if (State.ReadOnly || State.IsDateInAllowedRange(day) is false)
             return;
 
         if (OnAddClick.HasDelegate)

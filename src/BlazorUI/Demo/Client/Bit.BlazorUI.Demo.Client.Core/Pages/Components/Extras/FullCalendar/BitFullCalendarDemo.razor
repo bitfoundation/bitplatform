@@ -172,20 +172,35 @@
             <BitFullCalendar Events="recurringEvents" />
         </DemoExample>
 
-        <DemoExample Title="Event templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Event colors" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>EventColorOptions</b> is the palette the dialogs, the color filter and the agenda's grouping offer; an event
+                joins one through its <b>Color</b> id. A <b>Color</b> no option matches can be a CSS color of its own
+                (<code>#db2777</code>, <code>oklch(...)</code>); anything else takes <b>--bit-FullCalendar-event-color</b>.
+            </div>
+            <br />
+            <div style="--bit-FullCalendar-event-color:#64748b">
+                <BitFullCalendar Events="colorEvents" EventColorOptions="colorOptions" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>DayEventTemplate</b>, <b>WeekEventTemplate</b>, <b>MonthEventTemplate</b> and <b>TimelineEventTemplate</b>
-                replace the content of an event per layout. The calendar keeps its placement, colour, accessible name and
-                drag/resize behaviour.
+                replace an event's content per layout; the calendar keeps its placement, color, accessible name and
+                drag/resize. <b>MonthCellTemplate</b> adds to a month day (the holidays here) and <b>AgendaEventTemplate</b>
+                replaces an agenda row (open the Agenda view).
             </div>
             <br />
             <BitFullCalendar Events="templateEvents"
                              DayEventTemplate="EventCard"
                              WeekEventTemplate="EventCard"
-                             MonthEventTemplate="MonthBadge" />
+                             MonthEventTemplate="MonthBadge"
+                             MonthCellTemplate="HolidayCell"
+                             AgendaEventTemplate="AgendaRow" />
         </DemoExample>
 
-        <DemoExample Title="Resource timeline" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Resource timeline" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>Resources</b> enables Timeline mode: rows are resources, columns are time. Events join a row through their
                 <b>Resource</b> id, unmatched ones fall into "Unassigned", and dragging a block between rows reassigns it.
@@ -198,7 +213,7 @@
                              DefaultMode="BitFullCalendarMode.Timeline" />
         </DemoExample>
 
-        <DemoExample Title="Date bounds" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Date bounds" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>MinDate</b> and <b>MaxDate</b> fence in the reachable dates: prev/next disable at the edges, days outside
                 are dimmed and inert, and a drag or save that would land outside is refused.
@@ -209,7 +224,7 @@
             <BitText>Allowed range: <b>@boundsMin.ToString("yyyy-MM-dd")</b> to <b>@boundsMax.ToString("yyyy-MM-dd")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Booking rules" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Booking rules" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>AllowEventOverlap</b> off prevents double booking; <b>BusinessDays</b>/<b>BusinessStartHour</b>/<b>BusinessEndHour</b>
                 describe the working week, <b>HighlightBusinessHours</b> shades the rest and <b>RestrictToBusinessHours</b>
@@ -228,7 +243,7 @@
             <BitText>Last refusal: <b>@(lastRefusal ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Read-only" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Read-only" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>ReadOnly</b> removes the add affordances, dragging, resizing and the edit/delete actions; navigation,
                 filtering and reading details keep working. <b>IsEnabled="false"</b> takes the same path.
@@ -239,7 +254,7 @@
             <BitFullCalendar Events="readOnlyEvents" ReadOnly="isReadOnly" />
         </DemoExample>
 
-        <DemoExample Title="OnChange & OnChanging" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="OnChange & OnChanging" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 <b>OnChange</b> reports every add, edit and delete with the new and previous snapshots, the <b>Kind</b> and
                 the <b>Source</b> (dialog, drag or resize) - apply it to your own store so it survives the next render.
@@ -254,7 +269,7 @@
             <BitText>Last change: <b>@(lastChange ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Binding" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="Binding" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 <b>View</b>, <b>Mode</b> and <b>Date</b> are two-way bound; <b>OnViewChange</b>, <b>OnModeChange</b> and
                 <b>OnDateChange</b> report user-driven changes. <b>DefaultView</b>, <b>DefaultMode</b> and <b>DefaultDate</b>
@@ -301,7 +316,7 @@
             <BitText>Last calendar event: <b>@(bindingLog ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Loading" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="Loading" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
                 <b>OnDateChange</b> fires on the first render and whenever the visible range moves - fetch that range there,
                 and set <b>IsLoading</b> meanwhile: a progress bar runs across the top and the body is marked busy for screen
@@ -313,7 +328,7 @@
             <BitText>Loaded: <b>@(loadedRange ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Custom toolbar" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <DemoExample Title="Custom toolbar" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
                 <b>HideFilters</b>, <b>HideSettings</b> and <b>HideHeader</b> trim the toolbar. Drive the calendar from your own
                 chrome with <b>GoToDate</b>, <b>GoToToday</b>, <b>NavigateNext</b>, <b>NavigatePrevious</b>, <b>ChangeView</b>
@@ -336,7 +351,7 @@
             <BitText>Visible range: <b>@(visibleRange ?? "-")</b></BitText>
         </DemoExample>
 
-        <DemoExample Title="Localization" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <DemoExample Title="Localization" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 <b>CultureName</b> (or <b>Culture</b>) decides the calendar system, the names, the first day of the week and
                 the direction - a right-to-left culture flips the layout on its own. <b>Texts</b> translates every string,
@@ -346,18 +361,19 @@
             <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />
         </DemoExample>
 
-        <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
-                <b>AriaLabel</b> names the calendar and makes it a page region. Tab reaches each grid once and the arrow keys
-                walk it (Home/End, PageUp/PageDown too); Enter or Space on a day or slot adds an event; Alt+Arrow moves and
-                Shift+Arrow resizes a focused event; Escape closes any dialog and returns the focus. Dialog errors are tied to
-                their fields, and refusals, ranges and search results are announced.
+                <b>AriaLabel</b> names the calendar and makes it a page region. Tab reaches each grid once - a multi-day event
+                once per week row - and the arrow keys walk it, on into the next month (Home/End; PageUp/PageDown turn the
+                month, Shift the year). Enter or Space on a day or slot adds an event; Alt+Arrow moves and Shift+Arrow resizes
+                a focused event. Escape closes any dialog, and the focus returns to the event even when a keyboard edit or a
+                save redrew it. Dialog errors are tied to their fields; refusals, ranges and search results are announced.
             </div>
             <br />
             <BitFullCalendar Events="accessibilityEvents" AriaLabel="Team schedule" />
         </DemoExample>
 
-        <DemoExample Title="CSS variables" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="CSS variables" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
                 The public <b>--bit-FullCalendar-*</b> variables re-skin the calendar without overriding its selectors. They
                 inherit, so set them on <code>:root</code>, on a wrapper (as here) or on one calendar's <b>Style</b>.
@@ -377,7 +393,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
                 <b>BitParams</b> with a <b>BitFullCalendarParams</b> sets defaults for every calendar under it - here the views,
                 a hidden filter bar and one shared <b>Settings</b> object (a preference changed in one calendar's gear reaches
@@ -392,7 +408,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part: <b>Root</b>,
                 <b>Header</b>, <b>Body</b>, <b>Event</b> (every event surface, beside its own <b>CssClass</b>) and
@@ -404,7 +420,7 @@
                              Styles="calendarStyles" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
             <div>
                 <b>Dir="BitDir.Rtl"</b> renders right-to-left - toolbar, chevrons, grids, dialogs and the timeline - and the arrow
                 keys and resizing follow. Only needed when the direction differs from the culture's.
@@ -426,6 +442,20 @@
         </div>;
 
     private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span>📌 @ev.Title</span>;
+
+    private RenderFragment<BitFullCalendarCell> HolidayCell => cell =>
+        @<text>
+            @if (holidays.TryGetValue(cell.Date, out var holiday))
+            {
+                <span>🎉 @holiday</span>
+            }
+        </text>;
+
+    private RenderFragment<BitFullCalendarEvent> AgendaRow => ev =>
+        @<span class="agenda-row">
+            <strong>@ev.Title</strong>
+            <span>@ev.StartDate.ToString("ddd d MMM, HH:mm")</span>
+        </span>;
 
     private RenderFragment<BitFullCalendarResource> ResourceHeader => resource =>
         @<div class="resource-header">

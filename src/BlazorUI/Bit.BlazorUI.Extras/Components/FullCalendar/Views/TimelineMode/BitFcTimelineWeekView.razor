@@ -79,7 +79,7 @@
                 var isToday = d.Date == DateTime.Today;
                 <div class="bit-bfc-tl-day-header @(isToday ? "today" : "")" style="width:@(hoursPerDay * hourWidth)px;">
                     <span class="bit-bfc-tl-day-header-name">@d.ToString("ddd", State.Culture)</span>
-                    <span class="bit-bfc-tl-day-header-date">@d.ToString("M/d", State.Culture)</span>
+                    <span class="bit-bfc-tl-day-header-date">@BitFullCalendarHelpers.FormatShortMonthDay(d, State.Culture)</span>
                 </div>
             }
         </div>
@@ -187,11 +187,12 @@
                         var isPreview = State.IsDragging && _dragResourceId == row.Key && _dragDay == row.Day.Date && _dragHour == hour && _dragMinute == minute;
                         var startPercent = (slotIndex * slotWidthPercent).ToString("F4", inv);
                         var widthPercent = slotWidthPercent.ToString("F4", inv);
-                        <div class="@(slotIndex == 0 ? "bit-bfc-tl-cell-slot" : "bit-bfc-tl-cell-half") @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffHoursClass(row.Day, hour, minute)"
+                        <div class="@(slotIndex == 0 ? "bit-bfc-tl-cell-slot" : "bit-bfc-tl-cell-half") @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffHoursClass(row.Day, hour, minute) @(State.IsDateInAllowedRange(row.Day) ? null : "bit-bfc-out-of-range")"
                              id="@SlotElementId(row.Key, row.Day, hour, minute)"
                              style="position:absolute;top:0;bottom:0;inset-inline-start:@(startPercent)%;inset-inline-end:auto;width:@(widthPercent)%;"
                              role="@_slotRole"
-                             tabindex="@SlotTabIndex(row.Key, row.Day, hour, minute)"
+                             data-bit-bfc-roving tabindex="@SlotTabIndex(row.Key, row.Day, hour, minute)"
+                             aria-disabled="@(State.IsDateInAllowedRange(row.Day) ? null : "true")"
                              aria-label="@SlotAriaLabel(row.Label, row.Day, hour, minute)"
                              @ondragenter="() => OnDragEnter(row.Key, row.Day, hour, minute)"
                              @ondragover:preventDefault="true"

@@ -61,6 +61,24 @@ public partial class BitFcCalendarMonthView
 
     private void OnCellKeyDown((DateTime Date, KeyboardEventArgs Args) payload)
     {
+        // PageUp and PageDown turn the month (Shift: the year) and keep the day, the way every date grid pages.
+        if (payload.Args.Key is "PageUp" or "PageDown")
+        {
+            var sign = payload.Args.Key == "PageDown" ? 1 : -1;
+            var calendar = State.Culture.Calendar;
+            try
+            {
+                FocusDateBeyondGrid(payload.Args.ShiftKey
+                                        ? calendar.AddYears(payload.Date, sign)
+                                        : calendar.AddMonths(payload.Date, sign), sign);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // Paging past the first or the last date the calendar system supports goes nowhere.
+            }
+            return;
+        }
+
         // Enter and Space are the button's own activation keys, so they are left alone.
         var delta = payload.Args.Key switch
         {
@@ -84,24 +102,59 @@ public partial class BitFcCalendarMonthView
             _ => delta == 0 ? -1 : index + delta
         };
 
-        if (target < 0 || target >= _cells.Count)
+        if (target < 0 && delta == 0)
             return;
 
+        var isHomeOrEnd = payload.Args.Key is "Home" or "End";
+
         // A cell that renders no add button owns no tab stop, so the walk steps over it in the
-        // direction it was already going instead of stranding the focus on an inert cell.
+        // direction it was already going instead of stranding the focus on an inert cell - except
+        // Home and End, which walk back toward the cell they started from to stay in its row.
         var step = target - index;
         if (step != 0)
         {
-            var direction = Math.Sign(step);
-            while (target >= 0 && target < _cells.Count && IsFocusable(_cells[target]) is false)
+            var direction = isHomeOrEnd ? -Math.Sign(step) : Math.Sign(step);
+            while (target >= 0 && target < _cells.Count && target != index && IsFocusable(_cells[target]) is false)
                 target += direction;
         }
 
-        if (target < 0 || target >= _cells.Count || IsFocusable(_cells[target]) is false)
+        if (target >= 0 && target < _cells.Count && IsFocusable(_cells[target]))
+        {
+            if (target == index)
+                return;
+
+            _focusedDate = _cells[target].Date.Date;
+            _pendingCellFocus = true;
+            StateHasChanged();
+            return;
+        }
+
+        // An arrow that runs off the grid (or into the blank days a hidden neighbouring month leaves) carries on
+        // into the next or the previous month, the way the dates themselves do.
+        if (isHomeOrEnd is false)
+        {
+            var forward = delta > 0;
+            var days = Math.Abs(delta) == _columnCount ? 7 : 1;
+            FocusDateBeyondGrid(payload.Date.AddDays(forward ? days : -days), forward ? 1 : -1);
+        }
+    }
+
+    /// <summary>
+    /// Brings the month of <paramref name="date"/> into view and focuses its day: a hidden weekday moves on to the next
+    /// shown one in <paramref name="direction"/>, and a date outside the allowed window goes nowhere.
+    /// </summary>
+    private void FocusDateBeyondGrid(DateTime date, int direction)
+    {
+        date = date.Date;
+        for (var i = 0; i < 7 && State.HiddenDays.Contains(date.DayOfWeek); i++)
+            date = date.AddDays(direction);
+
+        if (State.IsDateInAllowedRange(date) is false)
             return;
 
-        _focusedDate = _cells[target].Date.Date;
+        _focusedDate = date;
         _pendingCellFocus = true;
+        State.SetSelectedDate(date);
         StateHasChanged();
     }
 

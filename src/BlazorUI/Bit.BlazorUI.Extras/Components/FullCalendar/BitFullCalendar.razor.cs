@@ -20,6 +20,13 @@ public partial class BitFullCalendar
 
 
     /// <summary>
+    /// Optional template for the content of an event row in the agenda view and in the event lists ("+N more" and a
+    /// year-view day). When provided, it replaces the default avatar, title, description and time; the row stays the
+    /// button that opens the event, so its text is the row's accessible name.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? AgendaEventTemplate { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the calendar.
     /// </summary>
     [Parameter, ResetClassBuilder] public BitFullCalendarClassStyles? Classes { get; set; }
@@ -156,6 +163,13 @@ public partial class BitFullCalendar
     /// </para>
     /// </summary>
     [Parameter, TwoWayBound] public BitFullCalendarMode Mode { get; set; } = BitFullCalendarMode.Event;
+
+    /// <summary>
+    /// Optional template for extra content in each day of the month grid, rendered under the day number and above the
+    /// events - a holiday, a price, an availability count. It receives the cell (its date, its day number in the active
+    /// calendar system, and whether it belongs to the month being shown). Blank leading and trailing days render none.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFullCalendarCell>? MonthCellTemplate { get; set; }
 
     /// <summary>
     /// Optional template for customizing event rendering in the month view.
@@ -313,6 +327,8 @@ public partial class BitFullCalendar
     /// </summary>
     public BitFullCalendarState State { get; } = new();
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
     private BitFullCalendarChangeNotifier _changeNotifier = default!;
     private BitFullCalendarColorScheme _colorScheme = new(null);
     private BitFcCalendarToast? _toast;
@@ -359,7 +375,7 @@ public partial class BitFullCalendar
         { _changeNotifier },
         { _colorScheme },
         { Settings },
-        { new BitFcParts(Classes, Styles, _Id, HideHeader, ResourceTemplate) },
+        { new BitFcParts(Classes, Styles, _Id, HideHeader, ResourceTemplate, MonthCellTemplate, AgendaEventTemplate) },
         { HideFilters, "HideFilters" },
         { HideSettings, "HideSettings" },
         { OnAddClick, "OnAddClick" },
@@ -443,6 +459,7 @@ public partial class BitFullCalendar
         try
         {
             _colorScheme = new BitFullCalendarColorScheme(EventColorOptions);
+            State.CanonicalColorId = _colorScheme.GetCanonicalId;
             var resolved = ResolveCulture();
             // Compare the calendar identity in addition to the culture name: two cultures can share
             // the same Name but resolve to different calendars (for example a culture whose calendar
@@ -525,6 +542,25 @@ public partial class BitFullCalendar
         }
 
         base.OnAfterRender(firstRender);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The key defaults the calendar handles and the focus a re-render removes are DOM concerns Blazor's events
+        // cannot reach, so the root hands them to the script once.
+        if (firstRender)
+        {
+            try
+            {
+                await _js.InvokeVoidAsync("BitBlazorUI.FullCalendar.setupRoot", RootElement);
+            }
+            catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
+            {
+                // A circuit going away (or a prerender) leaves nothing to set up.
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void ApplyBoundState()

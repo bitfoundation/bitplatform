@@ -1,10 +1,13 @@
 @namespace Bit.BlazorUI
 
-<div class="bit-bfc-overlay" @onclick="OnClose">
+@* The overlay closes the dialog only for a press that also began on it: a text selection dragged out of a field
+   and released over the overlay is not a request to throw away what was typed. *@
+<div class="bit-bfc-overlay" @onmousedown="() => _pressStartedOnOverlay = true" @onclick="OnOverlayClick">
     @* Escape dismisses the dialog, the way every modal is expected to behave; the handler sits on
        the dialog because focus is trapped inside it while it is open. *@
     <div @ref="_dialogRef" class="bit-bfc-dialog @Parts.Classes?.Dialog" style="@Parts.Styles?.Dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1"
-         @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true">
+         @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true"
+         @onmousedown="() => _pressStartedOnOverlay = false" @onmousedown:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <div>
                 <h3 id="@_dialogTitleId">@(_isEditing ? Texts.EditEventDialogTitle : Texts.AddEventDialogTitle)</h3>

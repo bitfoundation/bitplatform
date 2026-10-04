@@ -49,6 +49,14 @@ public partial class BitFcDateTimePicker : IDisposable
     /// <summary>The id of the element describing the field, typically its validation message.</summary>
     [Parameter] public string? DescribedBy { get; set; }
 
+    [CascadingParameter] public BitFullCalendarState? State { get; set; }
+
+    private readonly string _id = $"bit-bfc-dtp-{Guid.NewGuid():N}";
+    private string _TriggerId => TriggerId ?? $"{_id}-trigger";
+    private string _PanelId => $"{_id}-panel";
+    private DateTime? _focusDate;
+    private string? _pendingFocusId;
+
     private DateTime _visibleMonthAnchor;
     private int _hour;
     private int _minute;
@@ -100,24 +108,121 @@ public partial class BitFcDateTimePicker : IDisposable
     private bool IsOutOfRange(DateTime date)
         => (MinDate is { } min && date.Date < min.Date) || (MaxDate is { } max && date.Date > max.Date);
 
-    private void ToggleOpen() => _isOpen = !_isOpen;
+    private string DayId(DateTime date) => $"{_id}-{date:yyyyMMdd}";
+
+    /// <summary>
+    /// The day that owns the grid's tab stop: the one the arrow keys landed on, else the picked date, else the first
+    /// enabled day of the month shown - always one of the month shown, so the stop never sits on a muted neighbour, and
+    /// never on a disabled day, which cannot take the focus.
+    /// </summary>
+    private DateTime RovingDate
+    {
+        get
+        {
+            if (_focusDate is { } focused && IsSameCalendarMonth(focused, _visibleMonthAnchor) && IsOutOfRange(focused) is false)
+                return focused.Date;
+            if (IsSameCalendarMonth(Value, _visibleMonthAnchor) && IsOutOfRange(Value) is false)
+                return Value.Date;
+
+            for (var day = _visibleMonthAnchor.Date; IsSameCalendarMonth(day, _visibleMonthAnchor); day = day.AddDays(1))
+            {
+                if (IsOutOfRange(day) is false)
+                    return day;
+            }
+
+            return _visibleMonthAnchor.Date;
+        }
+    }
+
+    private void ToggleOpen()
+    {
+        _isOpen = !_isOpen;
+        // Opening moves the focus onto the day grid, the way a date dialog opens; closing leaves it on the trigger.
+        _focusDate = null;
+        _pendingFocusId = _isOpen ? DayId(RovingDate) : null;
+    }
+
+    private void Close()
+    {
+        _isOpen = false;
+        // The day that held the focus is about to leave the DOM, so the focus goes back to the field it belongs to
+        // instead of dropping out of the dialog the picker sits in.
+        _pendingFocusId = _TriggerId;
+    }
 
     private void OnKeyDown(KeyboardEventArgs e)
     {
         // Escape closes the popup rather than the surrounding dialog; the markup stops the event
         // there while the popup is open so the two do not close together.
         if (_isOpen && e.Key is "Escape" or "Esc")
-            _isOpen = false;
+            Close();
+    }
+
+    private void OnDayKeyDown(DateTime date, KeyboardEventArgs e)
+    {
+        var isRtl = State?.IsRtl ?? Culture.TextInfo.IsRightToLeft;
+        DateTime target;
+        try
+        {
+            target = e.Key switch
+            {
+                "ArrowRight" => date.AddDays(isRtl ? -1 : 1),
+                "ArrowLeft" => date.AddDays(isRtl ? 1 : -1),
+                "ArrowDown" => date.AddDays(7),
+                "ArrowUp" => date.AddDays(-7),
+                "PageDown" => e.ShiftKey ? ActiveCalendar.AddYears(date, 1) : ActiveCalendar.AddMonths(date, 1),
+                "PageUp" => e.ShiftKey ? ActiveCalendar.AddYears(date, -1) : ActiveCalendar.AddMonths(date, -1),
+                "Home" => date.AddDays(-(((int)date.DayOfWeek - (int)ResolvedFirstDayOfWeek + 7) % 7)),
+                "End" => date.AddDays(6 - (((int)date.DayOfWeek - (int)ResolvedFirstDayOfWeek + 7) % 7)),
+                _ => date
+            };
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return;
+        }
+
+        if (target == date)
+            return;
+
+        // A disabled day cannot take the focus, so a single step walks on over the run of them; a page that lands on
+        // one goes nowhere.
+        if (e.Key.StartsWith("Arrow", StringComparison.Ordinal))
+        {
+            var step = target > date ? 1 : -1;
+            for (var i = 0; i < 366 && IsOutOfRange(target); i++)
+                target = target.AddDays(step);
+        }
+
+        if (IsOutOfRange(target))
+            return;
+
+        _focusDate = target.Date;
+        if (IsSameCalendarMonth(target, _visibleMonthAnchor) is false)
+            _visibleMonthAnchor = GetFirstDayOfMonth(target);
+
+        _pendingFocusId = DayId(target.Date);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocusId is not { } id)
+            return;
+
+        _pendingFocusId = null;
+        await BitFcFocusInterop.TryFocusAsync(JS, id);
     }
 
     private void ShowPreviousMonth()
     {
         _visibleMonthAnchor = GetFirstDayOfMonth(ActiveCalendar.AddMonths(_visibleMonthAnchor, -1));
+        _focusDate = null;
     }
 
     private void ShowNextMonth()
     {
         _visibleMonthAnchor = GetFirstDayOfMonth(ActiveCalendar.AddMonths(_visibleMonthAnchor, 1));
+        _focusDate = null;
     }
 
     private async Task SelectDate(DateTime date)
@@ -129,7 +234,7 @@ public partial class BitFcDateTimePicker : IDisposable
         // neighboring month doesn't leave the grid on the old month (OnParametersSet won't re-anchor
         // because _lastSyncedDate now matches Value).
         _visibleMonthAnchor = GetFirstDayOfMonth(selected);
-        _isOpen = false;
+        Close();
         await ValueChanged.InvokeAsync(selected);
     }
 

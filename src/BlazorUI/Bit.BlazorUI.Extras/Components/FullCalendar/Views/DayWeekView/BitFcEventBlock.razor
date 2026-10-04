@@ -36,6 +36,8 @@
 <div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses @Parts.Classes?.Event @Event.CssClass"
      style="@($"{blockStyle}{Parts.Styles?.Event}")"
      title="@tooltip"
+     data-bit-bfc-event="@Event.Id"
+     data-bit-bfc-move="@(CanEdit ? (State.View == BitFullCalendarView.Week ? "xy" : "y") : null)"
      role="button"
      tabindex="0"
      aria-label="@BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"

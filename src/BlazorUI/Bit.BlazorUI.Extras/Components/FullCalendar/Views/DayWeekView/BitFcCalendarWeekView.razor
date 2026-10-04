@@ -28,8 +28,10 @@
             <div class="bit-bfc-week-header-time">
                 @if (State.ShowWeekNumbers)
                 {
-                    <span class="bit-bfc-weeknum-cell" aria-label="@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)">
-                        @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
+                    @* A name on a role-less span is not read, so the spoken form travels as hidden text. *@
+                    <span class="bit-bfc-weeknum-cell">
+                        <span aria-hidden="true">@string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)</span>
+                        <span class="bit-bfc-sr-only">@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)</span>
                     </span>
                 }
             </div>
@@ -105,7 +107,7 @@
                                          id="@SlotElementId(dayIndex, hour, minute)"
                                          style="top:@(topPercent)%;height:@(heightPercent)%;bottom:auto;"
                                          role="@(isOutOfRange ? null : _slotRole)"
-                                         tabindex="@SlotTabIndex(dayIndex, hour, minute)"
+                                         data-bit-bfc-roving tabindex="@SlotTabIndex(dayIndex, hour, minute)"
                                          aria-label="@(isOutOfRange ? null : HourSlotAriaLabel(d, hour, minute))"
                                          @ondragenter="() => OnDragEnterSlot(d, hour, minute)"
                                          @ondragover:preventDefault="true"

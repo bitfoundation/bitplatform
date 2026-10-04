@@ -616,6 +616,29 @@ public static class BitFullCalendarHelpers
         }
     }
 
+    /// <summary>
+    /// Formats the month and day of a date numerically in the culture's own order and calendar - its short date pattern
+    /// without the year ("10/4" in en-US, "04/10" in en-GB, "07/12" in fa-IR).
+    /// </summary>
+    public static string FormatShortMonthDay(DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+
+        // The year is dropped together with the separator that joins it to the rest, at whichever end it sits.
+        var pattern = System.Text.RegularExpressions.Regex.Replace(culture.DateTimeFormat.ShortDatePattern, @"^y+[^dM]*|[^dM]*y+[^dM]*$", "");
+        if (pattern.Contains('d') is false || pattern.Contains('M') is false)
+            pattern = "M/d";
+
+        try
+        {
+            return date.ToString(pattern, culture);
+        }
+        catch (FormatException)
+        {
+            return date.ToString("M/d", culture);
+        }
+    }
+
     /// <summary>Formats a date with an abbreviated month using the culture's field ordering and calendar.</summary>
     public static string FormatCultureDate(DateTime date, CultureInfo? culture = null)
     {

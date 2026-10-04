@@ -39,13 +39,17 @@ else
     {
         <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")" aria-hidden="true">@Cell.Day</div>
     }
+    @if (Parts.MonthCellTemplate is { } cellTemplate)
+    {
+        <div class="bit-bfc-month-cell-content">@cellTemplate(Cell)</div>
+    }
     @if (!State.ReadOnly && !isOutOfRange)
     {
         @* Roving tabindex: only one cell of the month grid is in the tab order at a time, and the
            arrow keys move both it and the focus. Enter and Space are left to the button itself. *@
         <button type="button" class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month"
                 id="@AddButtonId"
-                tabindex="@(IsRovingCell ? "0" : "-1")"
+                data-bit-bfc-roving tabindex="@(IsRovingCell ? "0" : "-1")"
                 aria-current="@(isToday ? "date" : null)"
                 aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}")"
                 @onclick="() => OnCellClick()"
@@ -65,7 +69,7 @@ else
             {
                 var position = GetBadgePosition(item.Event, Cell.Date);
                 <div class="bit-bfc-month-event-slot">
-                    <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                    <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" IsLead="@IsLeadSegment(item.Event, position)" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                 </div>
             }
             else

@@ -8,6 +8,7 @@
      style="@Parts.Styles?.Body"
      role="@(_IsTabPanel ? "tabpanel" : null)"
      aria-labelledby="@(_IsTabPanel ? _LabelledBy : null)"
+     tabindex="-1"
      aria-busy="@(IsLoading ? "true" : null)"
      @key="(State.Mode, State.View)">
     @if (IsLoading)

@@ -1,4 +1,5 @@
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @{
     var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
@@ -88,6 +89,16 @@
             list.Add(ev);
         }
     }
+
+    // The days the arrow keys walk, in date order: every day of the year that has events, one tab stop among them.
+    _eventDays = months
+        .SelectMany(m => BitFullCalendarHelpers.GetCalendarCells(m, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays)
+            .Where(c => cal.GetMonth(c.Date) == cal.GetMonth(m) && cal.GetYear(c.Date) == culturalYear && eventsByDay.ContainsKey(c.Date.Date))
+            .Select(c => c.Date.Date))
+        .Distinct()
+        .Order()
+        .ToList();
+    var rovingDate = RovingDate;
 }
 
 <div class="bit-bfc-year">
@@ -120,9 +131,13 @@
                     @if (hasEvents)
                     {
                         <button type="button" class="bit-bfc-year-day has-events"
+                                id="@DayId(cell.Date)"
+                                data-bit-bfc-roving
+                                tabindex="@(cell.Date.Date == rovingDate ? "0" : "-1")"
+                                @onkeydown="args => OnDayKeyDown(cell.Date.Date, args)"
                                 aria-label="@($"{cell.Date.ToString("D", State.Culture)}, {string.Format(State.Culture, Texts.EventListCountFormat, dayEvents.Count)}")"
                                 aria-current="@(isToday ? "date" : null)"
-                                @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
+                                @onclick="() => ShowEventsForDay(cell.Date)">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                             <span class="bit-bfc-year-day-bullets" aria-hidden="true">
                                 @foreach (var ev in dayEvents.Take(3))
@@ -146,5 +161,6 @@
 
 @if (_showEventList)
 {
-    <BitFcEventListDialog Date="_eventListDate" Events="_eventListEvents" OnClose="() => _showEventList = false" />
+    @* Read from this render's index, so an event edited or deleted from the list leaves it at once. *@
+    <BitFcEventListDialog Date="_eventListDate" Events="@(eventsByDay.TryGetValue(_eventListDate.Date, out var listed) ? listed : [])" OnClose="() => _showEventList = false" />
 }

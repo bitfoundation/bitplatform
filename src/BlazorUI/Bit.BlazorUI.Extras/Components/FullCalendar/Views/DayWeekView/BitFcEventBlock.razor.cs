@@ -78,6 +78,20 @@ public partial class BitFcEventBlock
             return;
         }
 
+        // In the week grid, Alt+Left/Right moves the block to the neighbouring shown day, following the reading
+        // direction - the keyboard's way of dragging it across columns.
+        if (e.AltKey && e.Key is "ArrowLeft" or "ArrowRight" && CanEdit && State.View == BitFullCalendarView.Week)
+        {
+            var direction = (e.Key == "ArrowRight") != State.IsRtl ? 1 : -1;
+            var days = direction;
+            while (Math.Abs(days) < 7 && State.HiddenDays.Contains(Event.StartDate.AddDays(days).DayOfWeek))
+                days += direction;
+
+            var shift = TimeSpan.FromDays(days);
+            await ApplyKeyboardEditAsync(shift, shift, BitFullCalendarChangeSource.Drag);
+            return;
+        }
+
         if (e.Key is not ("ArrowUp" or "ArrowDown") || CanEdit is false)
             return;
 

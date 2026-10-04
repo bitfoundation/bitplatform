@@ -13,6 +13,13 @@ public partial class BitFcMonthEventBadge
     [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
+    /// <summary>
+    /// True for the segment that stands for the event in the tab order and to assistive technology: a multi-day
+    /// event is drawn once per day it covers, and only the first segment of each run (a week row) is one stop -
+    /// the rest stay clickable but are skipped, instead of repeating the same event once per day.
+    /// </summary>
+    [Parameter] public bool IsLead { get; set; } = true;
+
     private string MarginStyle
     {
         get

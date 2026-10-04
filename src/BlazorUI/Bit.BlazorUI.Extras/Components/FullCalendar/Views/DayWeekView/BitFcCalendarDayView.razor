@@ -59,7 +59,7 @@
                                      id="@SlotElementId(hour, minute)"
                                      style="top:@(topPercent)%;height:@(heightPercent)%;bottom:auto;"
                                      role="@_slotRole"
-                                     tabindex="@SlotTabIndex(hour, minute)"
+                                     data-bit-bfc-roving tabindex="@SlotTabIndex(hour, minute)"
                                      aria-label="@HourSlotAriaLabel(hour, minute)"
                                      @ondragenter="() => OnDragEnterHour(hour, minute)"
                                      @ondragover:preventDefault="true"

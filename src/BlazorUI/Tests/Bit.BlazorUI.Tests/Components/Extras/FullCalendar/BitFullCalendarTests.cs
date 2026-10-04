@@ -762,8 +762,13 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { ShowWeekNumbers = true },
             BitFullCalendarView.Week);
 
-        var expected = $"W{BitFullCalendarHelpers.GetWeekNumberForRow(DateTime.Today, component.Instance.State.Culture)}";
-        Assert.AreEqual(expected, component.Find(".bit-bfc-week-header-time .bit-bfc-weeknum-cell").TextContent.Trim());
+        var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(DateTime.Today, component.Instance.State.Culture);
+        var cell = component.Find(".bit-bfc-week-header-time .bit-bfc-weeknum-cell");
+
+        // The short form is what is seen; the spoken form travels as hidden text, since a role-less span's name is not read.
+        Assert.AreEqual($"W{weekNumber}", cell.QuerySelector("[aria-hidden='true']")!.TextContent.Trim());
+        Assert.AreEqual($"Week {weekNumber}", cell.QuerySelector(".bit-bfc-sr-only")!.TextContent.Trim());
+        Assert.IsNull(cell.GetAttribute("aria-label"));
     }
 
     #endregion

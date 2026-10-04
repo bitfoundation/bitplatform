@@ -501,6 +501,20 @@
     color: var(--bit-bfc-primary-text);
 }
 
+/* What a MonthCellTemplate adds to a day: one quiet line under the number, clipped to the cell's width. */
+.bit-bfc-month-cell-content {
+    min-width: 0;
+    margin-bottom: spacing(0.25);
+    overflow: hidden;
+    font-size: $tg-fs-xs;
+    color: var(--bit-bfc-text-secondary);
+
+    /* A template that renders nothing for a day leaves no gap above its events. */
+    &:empty {
+        display: none;
+    }
+}
+
 .bit-bfc-month-events {
     display: flex;
     flex-direction: column;
@@ -550,6 +564,9 @@
     font-weight: $tg-fw-medium;
     cursor: grab;
     overflow: hidden;
+    /* The badge is one fixed-height line, so a MonthEventTemplate's text stays on it rather than wrapping out of
+       sight below. */
+    white-space: nowrap;
     border: $shp-border-width $shp-border-style transparent;
     transition: filter $mot-duration-short $mot-easing;
     user-select: none;
@@ -1323,8 +1340,15 @@
     justify-content: center;
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-bold;
-    color: $clr-ntr-white;
     flex-shrink: 0;
+}
+
+/* The initials sit on the soft chip recipe rather than on the solid event colour: white text on a full yellow,
+   green or orange falls well short of 4.5:1. */
+.bit-bfc-agenda-avatar.bit-bfc-bg {
+    background: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-event-default)) 18%, var(--bit-bfc-bg));
+    color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-event-default)) 50%, var(--bit-bfc-text));
+    border: $shp-border-width $shp-border-style color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-event-default)) 32%, var(--bit-bfc-bg));
 }
 
 .bit-bfc-agenda-info {
@@ -3082,6 +3106,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     }
 
     .bit-bfc-month-cell-day.today,
+    .bit-bfc-tl-day-header.today,
     .bit-bfc-week-header-day-num.today,
     .bit-bfc-day-header-date.today,
     .bit-bfc-year-day-number.today,
@@ -3128,9 +3153,30 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
     .bit-bfc-bullet,
     .bit-bfc-color-swatch,
-    .bit-bfc-event-detail-swatch {
+    .bit-bfc-event-detail-swatch,
+    .bit-bfc-agenda-avatar {
         forced-color-adjust: none;
         border: $shp-border-width solid CanvasText;
+    }
+
+    /* A forced palette drops background tints, which is all the off-hours shading is, so it becomes a faint hatch
+       drawn on a layer of its own - every element carrying it is positioned, and its content keeps its forced
+       colours. */
+    .bit-bfc-slot-off,
+    .bit-bfc-day-off {
+        isolation: isolate;
+    }
+
+    /* Under the content, above the forced Canvas: the stacking context above keeps the -1 inside the element. */
+    .bit-bfc-slot-off::before,
+    .bit-bfc-day-off::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        forced-color-adjust: none;
+        background: repeating-linear-gradient(45deg, transparent 0 6px, GrayText 6px 7px);
     }
 }
 

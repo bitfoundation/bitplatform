@@ -316,6 +316,35 @@ private static List<BitFullCalendarEvent> CreateRecurringEvents()
 }";
 
     private readonly string example9RazorCode = @"
+<div style=""--bit-FullCalendar-event-color:#64748b"">
+    <BitFullCalendar Events=""events"" EventColorOptions=""colorOptions"" />
+</div>";
+    private readonly string example9CsharpCode = @"
+private readonly List<BitFullCalendarColorOption> colorOptions =
+[
+    new() { Id = ""work"", Title = ""Work"", Value = ""#2563eb"" },
+    new() { Id = ""personal"", Title = ""Personal"", Value = ""#16a34a"" },
+    new() { Id = ""urgent"", Title = ""Urgent"", Value = ""#dc2626"" },
+];
+
+private readonly List<BitFullCalendarEvent> events = CreateEvents();
+
+private static List<BitFullCalendarEvent> CreateEvents()
+{
+    var today = DateTime.Today;
+    return
+    [
+        new() { Id = ""1"", Title = ""Planning"", StartDate = today.AddHours(9), EndDate = today.AddHours(10), Color = ""work"" },
+        new() { Id = ""2"", Title = ""Gym"", StartDate = today.AddHours(17), EndDate = today.AddHours(18), Color = ""personal"" },
+        new() { Id = ""3"", Title = ""Hotfix"", StartDate = today.AddDays(1).AddHours(11), EndDate = today.AddDays(1).AddHours(12), Color = ""urgent"" },
+        // A color of its own, straight from the data.
+        new() { Id = ""4"", Title = ""Brand launch"", StartDate = today.AddDays(2).AddHours(13), EndDate = today.AddDays(2).AddHours(15), Color = ""#db2777"" },
+        // No option and no CSS color: drawn in --bit-FullCalendar-event-color.
+        new() { Id = ""5"", Title = ""Imported"", StartDate = today.AddDays(3).AddHours(10), EndDate = today.AddDays(3).AddHours(11), Color = ""legacy"" },
+    ];
+}";
+
+    private readonly string example10RazorCode = @"
 <style>
     .event-card {
         gap: 2px;
@@ -327,13 +356,28 @@ private static List<BitFullCalendarEvent> CreateRecurringEvents()
         opacity: 0.8;
         font-size: 0.75rem;
     }
+
+    .agenda-row {
+        gap: 1rem;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
 </style>
 
 <BitFullCalendar Events=""events""
                  DayEventTemplate=""EventCard""
                  WeekEventTemplate=""EventCard""
-                 MonthEventTemplate=""MonthBadge"" />";
-    private readonly string example9CsharpCode = @"
+                 MonthEventTemplate=""MonthBadge""
+                 MonthCellTemplate=""HolidayCell""
+                 AgendaEventTemplate=""AgendaRow"" />";
+    private readonly string example10CsharpCode = @"
+private readonly Dictionary<DateTime, string> holidays = new()
+{
+    [DateTime.Today.AddDays(4)] = ""Founders' Day"",
+    [DateTime.Today.AddDays(11)] = ""Public holiday"",
+};
+
 private RenderFragment<BitFullCalendarEvent> EventCard => ev =>
     @<div class=""event-card"">
         <strong>@ev.Title</strong>
@@ -344,9 +388,23 @@ private RenderFragment<BitFullCalendarEvent> EventCard => ev =>
     </div>;
 
 private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span>📌 @ev.Title</span>;
+
+private RenderFragment<BitFullCalendarCell> HolidayCell => cell =>
+    @<text>
+        @if (holidays.TryGetValue(cell.Date, out var holiday))
+        {
+            <span>🎉 @holiday</span>
+        }
+    </text>;
+
+private RenderFragment<BitFullCalendarEvent> AgendaRow => ev =>
+    @<span class=""agenda-row"">
+        <strong>@ev.Title</strong>
+        <span>@ev.StartDate.ToString(""ddd d MMM, HH:mm"")</span>
+    </span>;
 " + eventsCode;
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .resource-header {
         gap: 0.5rem;
@@ -379,7 +437,7 @@ private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span>📌 @ev
                  Resources=""resources""
                  ResourceTemplate=""ResourceHeader""
                  DefaultMode=""BitFullCalendarMode.Timeline"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private RenderFragment<BitFullCalendarResource> ResourceHeader => resource =>
     @<div class=""resource-header"">
         <span class=""resource-avatar"" aria-hidden=""true"">@resource.Title[..1]</span>
@@ -390,16 +448,16 @@ private RenderFragment<BitFullCalendarResource> ResourceHeader => resource =>
     </div>;
 " + resourcesCode;
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitFullCalendar Events=""events"" MinDate=""boundsMin"" MaxDate=""boundsMax"" />
 
 <BitText>Allowed range: <b>@boundsMin.ToString(""yyyy-MM-dd"")</b> to <b>@boundsMax.ToString(""yyyy-MM-dd"")</b></BitText>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly DateTime boundsMin = DateTime.Today.AddDays(-10);
 private readonly DateTime boundsMax = DateTime.Today.AddDays(20);
 " + eventsCode;
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitToggle @bind-Value=""allowOverlap"" Text=""Allow overlapping events"" />
 <BitToggle @bind-Value=""highlightBusiness"" Text=""Highlight business hours"" />
 <BitToggle @bind-Value=""restrictBusiness"" Text=""Restrict to business hours"" />
@@ -407,7 +465,7 @@ private readonly DateTime boundsMax = DateTime.Today.AddDays(20);
 <BitFullCalendar Events=""events"" Settings=""rulesSettings"" OnRefused=""HandleRefused"" DefaultView=""BitFullCalendarView.Week"" />
 
 <BitText>Last refusal: <b>@(lastRefusal ?? ""-"")</b></BitText>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly BitFullCalendarSettings rulesSettings = new()
 {
     AllowEventOverlap = false,
@@ -454,21 +512,21 @@ private static List<BitFullCalendarEvent> CreateRuleEvents()
     ];
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitToggle @bind-Value=""isReadOnly"" Text=""Read-only"" />
 
 <BitFullCalendar Events=""events"" ReadOnly=""isReadOnly"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private bool isReadOnly = true;
 " + eventsCode;
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitToggle @bind-Value=""refusePast"" Text=""Refuse changes that start in the past"" />
 
 <BitFullCalendar Events=""events"" OnChanging=""HandleChanging"" OnChange=""HandleChange"" />
 
 <BitText>Last change: <b>@(lastChange ?? ""-"")</b></BitText>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private string? lastChange;
 private bool refusePast = true;
 
@@ -507,7 +565,7 @@ private Task HandleChange(BitFullCalendarChangeEventArgs args)
 }
 " + eventsCode;
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitChoiceGroup Horizontal
                 Label=""View""
                 TItem=""BitChoiceGroupOption<BitFullCalendarView>""
@@ -542,7 +600,7 @@ private Task HandleChange(BitFullCalendarChangeEventArgs args)
 
 <BitText>View: <b>@bindingView</b> | Mode: <b>@bindingMode</b> | Date: <b>@bindingDate.ToString(""yyyy-MM-dd"")</b></BitText>
 <BitText>Last calendar event: <b>@(bindingLog ?? ""-"")</b></BitText>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private BitFullCalendarView bindingView = BitFullCalendarView.Week;
 private BitFullCalendarMode _bindingMode = BitFullCalendarMode.Event;
 private BitFullCalendarMode bindingMode
@@ -567,11 +625,11 @@ private void HandleDateChange(BitFullCalendarDateChangeEventArgs args)
     => bindingLog = $""Range {args.Start:yyyy-MM-dd} → {args.End:yyyy-MM-dd} ({args.View})"";
 " + resourcesCode;
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitFullCalendar Events=""events"" IsLoading=""isLoading"" OnDateChange=""LoadRange"" />
 
 <BitText>Loaded: <b>@(loadedRange ?? ""-"")</b></BitText>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private List<BitFullCalendarEvent> events = [];
 private bool isLoading;
 private string? loadedRange;
@@ -600,7 +658,7 @@ private static List<BitFullCalendarEvent> CreateEventsBetween(DateTime start, Da
     return events;
 }";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitToggle @bind-Value=""hideHeader"" Text=""Hide the whole toolbar"" />
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.NavigatePrevious()"">Previous</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => calendar?.GoToToday()"">Today</BitButton>
@@ -612,7 +670,7 @@ private static List<BitFullCalendarEvent> CreateEventsBetween(DateTime start, Da
 <BitFullCalendar @ref=""calendar"" Events=""events"" HideFilters HideSettings HideHeader=""hideHeader"" />
 
 <BitText>Visible range: <b>@(visibleRange ?? ""-"")</b></BitText>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool hideHeader;
 private BitFullCalendar? calendar;
 private string? visibleRange;
@@ -625,9 +683,9 @@ private void ShowVisibleRange()
 }
 " + eventsCode;
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitFullCalendar Events=""events"" CultureName=""fa-IR"" Texts=""persianTexts"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private readonly BitFullCalendarTexts persianTexts = new()
 {
     // View & mode tabs
@@ -746,11 +804,11 @@ private readonly BitFullCalendarTexts persianTexts = new()
 };
 " + eventsCode;
 
-    private readonly string example19RazorCode = @"
-<BitFullCalendar Events=""events"" AriaLabel=""Team schedule"" />";
-    private readonly string example19CsharpCode = eventsCode;
-
     private readonly string example20RazorCode = @"
+<BitFullCalendar Events=""events"" AriaLabel=""Team schedule"" />";
+    private readonly string example20CsharpCode = eventsCode;
+
+    private readonly string example21RazorCode = @"
 <div style=""--bit-FullCalendar-accent-color:#0f766e;
             --bit-FullCalendar-accent-hover-color:#115e59;
             --bit-FullCalendar-today-background:rgba(15, 118, 110, 0.08);
@@ -762,9 +820,9 @@ private readonly BitFullCalendarTexts persianTexts = new()
             --bit-FullCalendar-height:480px;"">
     <BitFullCalendar Events=""events"" DefaultView=""BitFullCalendarView.Week"" />
 </div>";
-    private readonly string example20CsharpCode = eventsCode;
+    private readonly string example21CsharpCode = eventsCode;
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <style>
     .cascade-pair {
         gap: 1rem;
@@ -780,7 +838,7 @@ private readonly BitFullCalendarTexts persianTexts = new()
         <BitFullCalendar Events=""events2"" Views=""null"" />
     </div>
 </BitParams>";
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private readonly BitFullCalendarParams[] calendarParams =
 [
     new()
@@ -797,11 +855,11 @@ private readonly List<BitFullCalendarEvent> events1 = CreateEvents();
 private readonly List<BitFullCalendarEvent> events2 = CreateEvents();
 " + eventsCode.Replace("private readonly List<BitFullCalendarEvent> events = CreateEvents();\n\n", "").Replace("private readonly List<BitFullCalendarEvent> events = CreateEvents();\r\n\r\n", "");
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitFullCalendar Events=""events""
                  Style=""border: 2px dashed var(--bit-clr-pri)""
                  Styles=""calendarStyles"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private readonly BitFullCalendarClassStyles calendarStyles = new()
 {
     Header = ""background: var(--bit-clr-bg-sec)"",
@@ -810,7 +868,7 @@ private readonly BitFullCalendarClassStyles calendarStyles = new()
 };
 " + eventsCode;
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitFullCalendar Dir=""BitDir.Rtl"" Events=""events"" />";
-    private readonly string example23CsharpCode = eventsCode;
+    private readonly string example24CsharpCode = eventsCode;
 }

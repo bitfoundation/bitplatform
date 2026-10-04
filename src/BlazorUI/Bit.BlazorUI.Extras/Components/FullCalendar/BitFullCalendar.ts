@@ -345,6 +345,121 @@ namespace BitBlazorUI {
             });
         }
 
+        private static readonly ROVING_STOP = '.bit-bfc-body [data-bit-bfc-roving][tabindex="0"]';
+        private static readonly GRID_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End'];
+        private static roots = new WeakSet<HTMLElement>();
+
+        /**
+         * What the calendar's root needs from the DOM that Blazor's own events cannot give it:
+         * - the browser's default for the keys the calendar handles is cancelled - Alt+Arrow on an event would
+         *   otherwise also go Back a page, Space on a role="button" scroll the page, and an arrow key on a grid
+         *   scroll the grid before the roving focus catches up with it;
+         * - the focus is recovered when a re-render removes the element that held it (an event moved from the
+         *   keyboard, a view switched from a nav link, an event deleted), instead of dropping onto the page.
+         */
+        public static setupRoot(root: HTMLElement): void {
+            if (!root || FullCalendar.roots.has(root)) return;
+            FullCalendar.roots.add(root);
+
+            let lastFocused: HTMLElement | null = null;
+            let scheduled = false;
+
+            root.addEventListener('focusin', e => { lastFocused = e.target as HTMLElement; });
+            // Tabbing (or a script moving the focus) out of the calendar is leaving it, not losing the focus.
+            root.addEventListener('focusout', e => {
+                const next = e.relatedTarget as Node | null;
+                if (next && root.contains(next) === false) lastFocused = null;
+            });
+            root.addEventListener('keydown', FullCalendar.preventHandledKeyDefaults);
+
+            // A press outside the calendar is the user taking the focus elsewhere: whatever it closes on its way
+            // out (the settings popup, a picker) must not pull the focus back in.
+            const onOutsidePress = (e: PointerEvent) => {
+                if (root.isConnected === false) {
+                    document.removeEventListener('pointerdown', onOutsidePress, true);
+                    return;
+                }
+                if (root.contains(e.target as Node) === false) lastFocused = null;
+            };
+            document.addEventListener('pointerdown', onOutsidePress, true);
+
+            const observer = new MutationObserver(() => {
+                if (scheduled) return;
+                scheduled = true;
+                requestAnimationFrame(() => {
+                    scheduled = false;
+                    if (lastFocused && lastFocused.isConnected === false && FullCalendar.isFocusOnPage()) {
+                        FullCalendar.recoverFocus(root, lastFocused);
+                    }
+                });
+            });
+            observer.observe(root, { childList: true, subtree: true });
+        }
+
+        private static preventHandledKeyDefaults(e: KeyboardEvent): void {
+            if (e.defaultPrevented || e.ctrlKey || e.metaKey) return;
+            const target = e.target as HTMLElement | null;
+            if (!target || typeof target.matches !== 'function') return;
+
+            // Only the axes an event says it edits on (data-bit-bfc-move: "x", "y" or "xy"), so Alt+Left still goes
+            // Back from an event that does nothing with it.
+            if ((e.altKey || e.shiftKey) && e.key.startsWith('Arrow')) {
+                const axes = target.getAttribute('data-bit-bfc-move') ?? '';
+                const axis = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? 'x' : 'y';
+                if (axes.includes(axis)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            if ((e.key === ' ' || e.key === 'Spacebar') && target.tagName !== 'BUTTON' && target.getAttribute('role') === 'button') {
+                e.preventDefault();
+                return;
+            }
+
+            // A grid that does not page (data-bit-bfc-roving="nopage") leaves PageUp/PageDown to the page.
+            if (e.altKey === false && target.hasAttribute('data-bit-bfc-roving') && FullCalendar.GRID_KEYS.includes(e.key)
+                && (e.key.startsWith('Page') === false || target.getAttribute('data-bit-bfc-roving') !== 'nopage')) {
+                e.preventDefault();
+            }
+        }
+
+        /** True while nothing on the page holds the focus - the state an element removed under it leaves behind. */
+        private static isFocusOnPage(): boolean {
+            const active = document.activeElement;
+            return active === null || active === document.body || active === document.documentElement;
+        }
+
+        /**
+         * Puts the focus back inside the calendar after the element that held it left the DOM: on the same event
+         * when it was re-rendered elsewhere, else on the tab stop of the grid now showing, else on the body.
+         */
+        private static recoverFocus(root: HTMLElement, lost: Element | null): void {
+            if (!root || root.isConnected === false) return;
+
+            // While a dialog is still open (an event list whose row was just deleted from it) the focus stays in the
+            // topmost one, never behind it.
+            const dialogs = root.querySelectorAll<HTMLElement>('.bit-bfc-dialog');
+            const scope: HTMLElement = dialogs.length > 0 ? dialogs[dialogs.length - 1] : root;
+
+            const key = lost?.getAttribute?.('data-bit-bfc-event');
+            let target: HTMLElement | null = null;
+            if (key) {
+                const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(key) : key.replace(/"/g, '\\"');
+                target = scope.querySelector<HTMLElement>(`[data-bit-bfc-event="${escaped}"]:not([tabindex="-1"]):not([aria-hidden="true"])`);
+            }
+            target ??= scope === root
+                ? root.querySelector<HTMLElement>(FullCalendar.ROVING_STOP) ?? root.querySelector<HTMLElement>('.bit-bfc-body')
+                : FullCalendar.getDialogFocusable(scope)[0] ?? scope;
+            if (!target) return;
+
+            try {
+                target.focus({ preventScroll: true });
+            } catch {
+                target.focus();
+            }
+        }
+
         public static isMobile(): boolean {
             return window.innerWidth <= 768;
         }
@@ -384,7 +499,7 @@ namespace BitBlazorUI {
          * contained within it. Pair every setupDialog call with teardownDialog so focus is restored
          * to the previously focused element when the dialog closes.
          */
-        private static dialogFocusState = new WeakMap<HTMLElement, { previous: Element | null; handler: (e: KeyboardEvent) => void }>();
+        private static dialogFocusState = new WeakMap<HTMLElement, { previous: Element | null; root: HTMLElement | null; handler: (e: KeyboardEvent) => void }>();
 
         private static getDialogFocusable(container: HTMLElement): HTMLElement[] {
             const selector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -420,7 +535,7 @@ namespace BitBlazorUI {
             };
 
             container.addEventListener('keydown', handler);
-            FullCalendar.dialogFocusState.set(container, { previous, handler });
+            FullCalendar.dialogFocusState.set(container, { previous, root: container.closest<HTMLElement>('.bit-bfc'), handler });
 
             const focusable = FullCalendar.getDialogFocusable(container);
             (focusable[0] ?? container).focus();
@@ -437,7 +552,20 @@ namespace BitBlazorUI {
             const previous = state.previous as HTMLElement | null;
             if (previous && typeof previous.focus === 'function' && document.contains(previous)) {
                 previous.focus();
+                return;
             }
+
+            // The element that opened the dialog is gone - the event was deleted, or saved and re-rendered - so the
+            // focus goes to the same event where it now is, or to the grid, once the render has landed. Only while
+            // the focus is still in the calendar or nowhere: a dialog closed by a click elsewhere keeps that click's.
+            const root = state.root;
+            if (!root) return;
+            requestAnimationFrame(() => {
+                const active = document.activeElement;
+                if (FullCalendar.isFocusOnPage() || (active && root.contains(active))) {
+                    FullCalendar.recoverFocus(root, previous);
+                }
+            });
         }
 
         public static getLocalStorage(key: string): string | null {

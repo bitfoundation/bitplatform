@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 /// The "current time" rule of a timeline row. The day/week timelines lay an hour on
 /// <see cref="PixelsPerMinute"/> * 60 pixels and the month timeline lays a whole day on one column,
 /// so the same component serves all three: the caller says where its column starts
-/// (<see cref="ColumnOffsetPx"/>), which instant that column starts at (<see cref="DayStart"/>), and
+/// (<see cref="ColumnOffsetPx"/>), which day that column shows (<see cref="Day"/>), and
 /// how wide a minute is. The marker keeps itself current on a per-minute timer, the way the day and
 /// week grids' own indicator does.
 /// </summary>

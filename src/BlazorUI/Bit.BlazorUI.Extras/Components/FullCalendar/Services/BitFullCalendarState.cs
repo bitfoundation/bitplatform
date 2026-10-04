@@ -37,6 +37,12 @@ public class BitFullCalendarState
     public IReadOnlyList<string> SelectedColors => _selectedColors;
 
     /// <summary>
+    /// Resolves an event's color to the palette id the color filter offers, so a default-colored event is filtered with
+    /// the swatch it is drawn in. Set by the calendar from its color scheme.
+    /// </summary>
+    internal Func<string?, string>? CanonicalColorId { get; set; }
+
+    /// <summary>
     /// When <c>true</c> the calendar is presentation-only: the add affordances, drag-and-drop,
     /// resizing, and the edit/delete actions are suppressed while navigation, view switching,
     /// and filtering keep working.
@@ -1040,7 +1046,7 @@ public class BitFullCalendarState
         var result = _expandedEvents.AsEnumerable();
 
         if (_selectedColors.Count > 0)
-            result = result.Where(e => _selectedColors.Any(c => string.Equals(c, e.Color, StringComparison.OrdinalIgnoreCase)));
+            result = result.Where(e => _selectedColors.Any(c => string.Equals(c, CanonicalColorId?.Invoke(e.Color) ?? e.Color, StringComparison.OrdinalIgnoreCase)));
 
         if (SelectedAttendeeKey is not null)
             result = result.Where(e => e.Attendees.Any(a => BitFullCalendarHelpers.AttendeeFilterKey(a) == SelectedAttendeeKey));

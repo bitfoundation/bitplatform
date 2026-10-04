@@ -84,11 +84,12 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day) @(State.IsDateInAllowedRange(day) ? null : "bit-bfc-out-of-range")"
                  id="@SlotElementId(rowKey, day)"
                  style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@SlotTabIndex(rowKey, day)"
+                 data-bit-bfc-roving="nopage" tabindex="@SlotTabIndex(rowKey, day)"
+                 aria-disabled="@(State.IsDateInAllowedRange(day) ? null : "true")"
                  aria-label="@SlotAriaLabel(day, resource.Title)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"
@@ -120,11 +121,12 @@
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
             var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
-            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day)"
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "") @OffDayClass(day) @(State.IsDateInAllowedRange(day) ? null : "bit-bfc-out-of-range")"
                  id="@SlotElementId(rowKey, day)"
                  style="inset-inline-start:@(leftPx)px;width:@(dayWidth)px;"
                  role="@_slotRole"
-                 tabindex="@SlotTabIndex(rowKey, day)"
+                 data-bit-bfc-roving="nopage" tabindex="@SlotTabIndex(rowKey, day)"
+                 aria-disabled="@(State.IsDateInAllowedRange(day) ? null : "true")"
                  aria-label="@SlotAriaLabel(day, Texts.NoResourceLabel)"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
                  @ondragover:preventDefault="true"

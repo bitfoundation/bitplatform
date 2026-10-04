@@ -38,7 +38,7 @@
     else
     {
         agendaGroups = monthEvents
-            .GroupBy(e => e.Color)
+            .GroupBy(e => ColorScheme.GetCanonicalId(e.Color), StringComparer.OrdinalIgnoreCase)
             .OrderBy(g => ColorScheme.GetSortOrder(g.Key))
             .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
             .Select(g => (DateKey: (string?)null, GroupTitle: ColorScheme.GetLabel(g.Key), Items: SortAgendaItems(g)))
@@ -67,40 +67,47 @@
                 <h4 class="bit-bfc-agenda-group-title">@groupTitle</h4>
                 @foreach (var ev in items)
                 {
-                    <button type="button" class="bit-bfc-agenda-item @Parts.Classes?.Event @ev.CssClass" style="@Parts.Styles?.Event" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                    <button type="button" class="bit-bfc-agenda-item @Parts.Classes?.Event @ev.CssClass" style="@Parts.Styles?.Event" data-bit-bfc-event="@ev.Id" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
                             title="@BitFullCalendarHelpers.BuildEventTooltip(ev, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
                             @onclick="() => ShowDetails(ev)">
-                        <span class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)" aria-hidden="true">
-                            @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
-                        </span>
-                        <span class="bit-bfc-agenda-info">
-                            <span class="bit-bfc-agenda-title">@ev.Title</span>
-                            <span class="bit-bfc-agenda-desc">@ev.Description</span>
-                        </span>
-                        <span class="bit-bfc-agenda-time">
-                            @* An all-day event has no clock time to show, so the label stands in for it. *@
-                            @if (ev.IsAllDay)
-                            {
-                                @if (State.AgendaModeGroupBy != BitFullCalendarAgendaGroupBy.Date)
+                        @if (Parts.AgendaEventTemplate is { } rowTemplate)
+                        {
+                            @rowTemplate(ev)
+                        }
+                        else
+                        {
+                            <span class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)" aria-hidden="true">
+                                @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
+                            </span>
+                            <span class="bit-bfc-agenda-info">
+                                <span class="bit-bfc-agenda-title">@ev.Title</span>
+                                <span class="bit-bfc-agenda-desc">@ev.Description</span>
+                            </span>
+                            <span class="bit-bfc-agenda-time">
+                                @* An all-day event has no clock time to show, so the label stands in for it. *@
+                                @if (ev.IsAllDay)
+                                {
+                                    @if (State.AgendaModeGroupBy != BitFullCalendarAgendaGroupBy.Date)
+                                    {
+                                        @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
+                                        <span> · </span>
+                                    }
+                                    @Texts.AllDayLabel
+                                }
+                                else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
+                                {
+                                    @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
+                                    <span> - </span>
+                                    @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat, State.Culture)
+                                }
+                                else
                                 {
                                     @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
                                     <span> · </span>
+                                    @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                                 }
-                                @Texts.AllDayLabel
-                            }
-                            else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
-                            {
-                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
-                                <span> - </span>
-                                @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat, State.Culture)
-                            }
-                            else
-                            {
-                                @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
-                                <span> · </span>
-                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
-                            }
-                        </span>
+                            </span>
+                        }
                     </button>
                 }
             </div>

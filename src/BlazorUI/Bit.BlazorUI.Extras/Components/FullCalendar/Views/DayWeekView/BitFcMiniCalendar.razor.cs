@@ -50,6 +50,30 @@ public partial class BitFcMiniCalendar
 
     private void OnDayKeyDown(DateTime date, KeyboardEventArgs args)
     {
+        // PageUp and PageDown turn the shown month (Shift: the year) and keep the day, the way every date grid pages.
+        if (args.Key is "PageUp" or "PageDown")
+        {
+            var sign = args.Key == "PageDown" ? 1 : -1;
+            DateTime paged;
+            try
+            {
+                paged = args.ShiftKey ? State.Culture.Calendar.AddYears(date, sign) : State.Culture.Calendar.AddMonths(date, sign);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return;
+            }
+
+            if (State.IsDateInAllowedRange(paged) is false)
+                return;
+
+            _displayMonth = StartOfDisplayMonth(paged);
+            _focusedDate = paged.Date;
+            _pendingFocus = true;
+            StateHasChanged();
+            return;
+        }
+
         // Enter and Space are the button's own activation keys, so they are left alone.
         var delta = args.Key switch
         {
