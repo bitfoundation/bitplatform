@@ -13,16 +13,78 @@
     <BitText Typography="BitTypography.Subtitle1" Gutter>
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitText>
-    <BitText Typography="BitTypography.Body1" Gutter>
-        Pick the options below and run the command in a terminal. <code>bit new</code> asks about anything left out, installs what the project needs, and gets it building.
-        New to it? Start with <a href="/templates/getting-started">Getting started</a>.
-    </BitText>
     <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>How it works</BitText>
+        <ol class="how-it-works">
+            <li>Tell the assistant about your app, or pick the options below. Either way, the command stays ready to copy.</li>
+            <li>Copy it and paste it into a terminal. If something needs installing with administrator rights, Windows asks once.</li>
+            <li><code>bit new</code> installs what this machine is missing, creates the project, adds its first EF Core migration, trusts the folder, installs the VS Code extensions the project recommends and opens it in VS Code.</li>
+            <li>Sign in to Claude or GitHub Copilot, and start building.</li>
+        </ol>
+        <BitText Typography="BitTypography.Body2">
+            The platforms you tick only decide what is set up on this machine now; every project has the web, Android, iOS, Windows and macOS apps.
+            New to the bit CLI? <a href="/templates/getting-started">Getting started</a> shows how to install it with the .NET SDK.
+        </BitText>
+    </section>
+    <br />
+
+    <section class="section-card assistant">
+        <BitText Typography="BitTypography.H5" Gutter>Describe your project</BitText>
+        <BitText Typography="BitTypography.Body2" Gutter>
+            Tell the assistant what you're building, in your own words. It fills in the options below and asks a question or two so the project fits better.
+            You don't have to answer them: copy the command whenever you like, and go on with your day.
+        </BitText>
+        @foreach (var message in assistantMessages)
+        {
+            if (message.FromUser)
+            {
+                <BitCard Background="BitColorKind.Tertiary" Class="assistant-user-message">
+                    <BitText Element="pre">@message.Text</BitText>
+                </BitCard>
+            }
+            else
+            {
+                <BitMarkdownViewer Markdown="@message.Text" />
+            }
+        }
+        @if (isAssistantBusy)
+        {
+            <BitEllipsisLoading Size="BitSize.Small" />
+        }
+        else if (assistantMessages.Count > 0)
+        {
+            <BitStack Horizontal HorizontalAlign="BitAlignment.Start" VerticalAlign="BitAlignment.Center" Wrap Class="assistant-ready">
+                <BitText Typography="BitTypography.Body2">The command is ready.</BitText>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="Copy" OnClick="WrapHandled(CopyCommand)">@CopyButtonText</BitButton>
+            </BitStack>
+        }
+        <BitTextField Multiline
+                      Rows="4"
+                      Immediate
+                      MaxLength="4000"
+                      @bind-Value="assistantInput"
+                      Placeholder="@(assistantMessages.Count == 0 ? "e.g. A booking app for my clinic: patients book on the web and on Android, the staff manage the calendar." : "Answer, or tell it anything else that matters.")" />
+        <BitStack Horizontal HorizontalAlign="BitAlignment.End" Class="assistant-actions">
+            <BitButton IsEnabled="@(isAssistantBusy is false && string.IsNullOrWhiteSpace(assistantInput) is false)" OnClick="WrapHandled(SendToAssistant)">Send</BitButton>
+        </BitStack>
+    </section>
+    <br />
+
     <BitSticky Top="64px">
-        <CodeBox>
-            @GetFinalCommand()
-        </CodeBox>
+        <div class="command-bar">
+            <div class="command">
+                <CodeBox HideCopyButton>
+                    @GetFinalCommand()
+                </CodeBox>
+            </div>
+            <BitButton IconName="Copy" OnClick="WrapHandled(CopyCommand)">@CopyButtonText</BitButton>
+        </div>
     </BitSticky>
+    <BitText Typography="BitTypography.Body2" Class="command-hint">
+        Paste it into a terminal, then go on with your day. No bit CLI yet? Run <code>dotnet tool install --global Bit.Cli</code> first, or put <code>dnx Bit.Cli</code> in place of <code>bit</code>.
+    </BitText>
     <br />
 
     <BitGrid Columns="2"
@@ -43,7 +105,7 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Native apps now</BitText>
+                <BitText Typography="BitTypography.H6" Gutter>Platforms to set up on this machine now</BitText>
             </div>
             <BitStack Horizontal HorizontalAlign="BitAlignment.Start" Wrap>
                 <BitCheckbox Label="Android" @bind-Value="android" />
@@ -55,9 +117,27 @@
             <CodeBox>
                 @GetPlatformsCommand()
             </CodeBox>
-            The web app is always set up. Native apps need several GB of .NET workloads and make <code>bit new</code> take much longer,
-            so you may rather add them later from the project folder, e.g. <code>bit setup --platforms android</code>.
+            <BitMessage Color="BitColor.Info" Multiline>
+                This only decides what <code>bit new</code> installs and builds on this machine right now.
+                Every project has the web, Android, iOS, Windows and macOS apps, whatever you tick here.
+            </BitMessage>
+            <br />
+            The web app is always set up. Each native app adds several GB of .NET workloads and minutes of build, so the fewer you tick, the sooner the project is ready.
+            Add one any time later from the project folder, e.g. <code>bit setup --platforms android</code>.
             iOS and macOS apps need a Mac, and the Windows app needs Windows.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Open in</BitText>
+                <BitDropdown Placeholder="Choose an IDE" Items="@ide.Items" @bind-Value="@ide.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetIdeCommand()
+            </CodeBox>
+            By default <code>bit new</code> opens the project in VS Code, installs the extensions the project recommends (C# Dev Kit, Copilot, Claude Code and more), and trusts the folder,
+            so it opens without prompts. If VS Code is missing, it's installed for you.
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">

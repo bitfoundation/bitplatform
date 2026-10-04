@@ -57,9 +57,14 @@ source ~/.bashrc</CodeBox>
             and anything that's already there isn't shown at all. When an install needs it, Windows asks once for administrator permission, and on macOS and Linux sudo asks once for your password.
             <br />
             <br />
+            It also warns, only when it's sure, if virtualization is turned off in the BIOS while Docker Desktop or the Android emulator needs it,
+            if the machine has less than 24 GB of memory, or if the project's drive is a hard disk rather than an SSD.
+            <br />
+            <br />
             Then it creates the project with a certificate of its own, initializes git with <b>develop</b> and <b>main</b>, installs the .NET workloads,
-            restores the packages, builds, formats the code, adds the initial EF Core migration,
-            trusts the folder for VS Code and the AI coding tools, and opens your IDE.
+            restores the packages, builds, installs the Chromium the UI tests run in, formats the code, adds the initial EF Core migration,
+            trusts the folder for VS Code and the AI coding tools, installs the VS Code extensions the project recommends, and opens it in VS Code.
+            All that's left is signing in to Claude or GitHub Copilot.
             A step that fails doesn't stop the rest, and the summary shows how to finish it.
             <br />
             <br />
@@ -83,7 +88,7 @@ source ~/.bashrc</CodeBox>
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Check a machine</BitText>
-            After cloning a project, or on a new machine, run this in the project folder to see what's missing, and add <code>--fix</code> to install it:
+            After cloning a project, or on a new machine, run this in the project folder to see what's missing, along with the machine's memory, virtualization and drive, and add <code>--fix</code> to install it:
             <CodeBox>bit doctor</CodeBox>
         </div>
     </section>

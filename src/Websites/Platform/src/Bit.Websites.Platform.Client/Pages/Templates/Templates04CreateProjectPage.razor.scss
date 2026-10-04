@@ -43,6 +43,57 @@
     color: $bit-color-primary;
 }
 
+.how-it-works {
+    margin-top: 0;
+
+    li {
+        margin-bottom: rem2(6px);
+    }
+}
+
+.assistant {
+    display: flex;
+    flex-direction: column;
+    gap: rem2(10px);
+}
+
+::deep .assistant-user-message {
+    align-self: flex-end;
+    max-width: 85%;
+
+    pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: inherit;
+    }
+}
+
+::deep .assistant-ready {
+    gap: rem2(10px);
+}
+
+.command-bar {
+    display: flex;
+    gap: rem2(8px);
+    align-items: center;
+
+    .command {
+        flex: 1;
+        min-width: 0;
+    }
+
+    ::deep .code-box-content {
+        margin-bottom: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding-right: rem2(16px);
+    }
+}
+
+::deep .command-hint {
+    margin-top: rem2(6px);
+}
+
 .image-container {
     img {
         width: 80%;
