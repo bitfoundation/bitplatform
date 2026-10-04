@@ -132,6 +132,9 @@ namespace BitBlazorUI {
         // A key pressed there continues from wherever the navigation has got to, since the keys pressed before it
         // may not have moved the focus yet; a key pressed on any other item (e.g. a clicked one) continues from it.
         private _navIndex = -1;
+        // The element inside the list that last took the focus, until the focus moves to an element outside the list:
+        // a render that removes it (its item got deleted, or the list emptied) would otherwise drop the focus to the page.
+        private _focusTarget: Element | null = null;
 
         constructor(element: HTMLElement, scroller: HTMLElement | null, horizontal: boolean, dynamic: boolean, threshold: number, dotnetObj: DotNetObject) {
             this._element = element;
@@ -148,6 +151,8 @@ namespace BitBlazorUI {
             target.addEventListener('wheel', this._onGesture, { passive: true });
             target.addEventListener('touchstart', this._onGesture, { passive: true });
             this._element.addEventListener('keydown', this._onKeyDown);
+            this._element.addEventListener('focusin', this._onFocusIn);
+            this._element.addEventListener('focusout', this._onFocusOut);
 
             // Track viewport resizes. The observer's initial callback reports the size setup already returned;
             // notifying it would only send a stale offset that could race a scroll .NET is about to request.
@@ -176,7 +181,10 @@ namespace BitBlazorUI {
             // Track item resizes (dynamic mode).
             this._itemObserver = new ResizeObserver(entries => this._onItemsResized(entries));
 
-            this._renderObserver = new MutationObserver(() => this._applyRenderedScroll());
+            this._renderObserver = new MutationObserver(() => {
+                this._restoreFocus();
+                this._applyRenderedScroll();
+            });
             this._renderObserver.observe(this._element, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-bit-vir-scroll'] });
 
             this._syncStructure();
@@ -302,6 +310,8 @@ namespace BitBlazorUI {
             target.removeEventListener('wheel', this._onGesture);
             target.removeEventListener('touchstart', this._onGesture);
             this._element.removeEventListener('keydown', this._onKeyDown);
+            this._element.removeEventListener('focusin', this._onFocusIn);
+            this._element.removeEventListener('focusout', this._onFocusOut);
             window.removeEventListener('resize', this._onViewportResize);
             this._viewportObserver.disconnect();
             this._leadObserver.disconnect();
@@ -315,6 +325,34 @@ namespace BitBlazorUI {
             this._stickyEl = null;
             this._spacer = null;
             this._header = null;
+            this._focusTarget = null;
+        }
+
+        private _onFocusIn = (e: FocusEvent) => {
+            this._focusTarget = e.target as Element;
+        }
+
+        // Only a focus that moves to another element forgets the target: one that goes nowhere may be the removal of the
+        // target itself, which is what _restoreFocus is there for.
+        private _onFocusOut = (e: FocusEvent) => {
+            const next = e.relatedTarget as Node | null;
+            if (next && !this._element.contains(next)) {
+                this._focusTarget = null;
+            }
+        }
+
+        // When the element that had the focus is gone and the focus with it, the focus goes to the item that took the place
+        // of the removed one (the active item of the roving tabindex), or to the list itself when there is none.
+        private _restoreFocus() {
+            const target = this._focusTarget;
+            if (!target || target.isConnected || this._disposed) return;
+
+            this._focusTarget = null;
+            const active = document.activeElement;
+            if (active && active !== document.body && active !== document.documentElement) return;
+
+            const next = this._element.querySelector(`${VirtualizeInstance.ITEM_SELECTOR}[tabindex='0']`) as HTMLElement | null;
+            (next ?? this._element).focus({ preventScroll: true });
         }
 
         // "o:{offset}:{seq}" scrolls to an offset, "d:{delta}:{seq}" by a delta; each is performed once, and not at all
@@ -382,8 +420,10 @@ namespace BitBlazorUI {
             return this._horizontal ? this._scroller.clientWidth : this._scroller.clientHeight;
         }
 
+        // The lanes share the content box of the list, which the spacer fills: the padding of the root is not theirs.
         private _crossSize() {
-            return this._horizontal ? this._element.clientHeight : this._element.clientWidth;
+            const el = this._spacer && this._spacer.isConnected ? this._spacer : this._element;
+            return this._horizontal ? el.clientHeight : el.clientWidth;
         }
 
         private _scrollExtent() {

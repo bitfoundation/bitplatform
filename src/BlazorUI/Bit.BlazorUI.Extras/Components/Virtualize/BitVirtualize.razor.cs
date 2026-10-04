@@ -25,6 +25,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private int _loadedStart;
     private int _itemCount;
     private int _lanes = 1;                     // the lanes the size tree and the measurements were built for
+    private double _gap;                        // the gap the size tree was built for
     private bool _initialized;
     private bool _loading;
     private bool _fetching;
@@ -39,7 +40,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private IReadOnlyList<TItem>? _loadedItems; // current provider window
     private Dictionary<int, TItem>? _providerCache; // previously loaded provider items, keyed by absolute index
 
-    private BitVirtualizePrefixSumTree? _tree;  // dynamic mode only: one entry per track (a row, or a column when horizontal)
+    private BitVirtualizePrefixSumTree? _tree;  // dynamic mode only: one entry per track (a row, or a column when horizontal), its size plus the gap after it
     private Dictionary<object, double>? _sizeByKey; // dynamic + ItemKey (single lane): measured sizes keyed by item identity
     private Dictionary<int, double>? _laneSizes; // dynamic + Lanes: the measured size of each item, of which its track takes the largest
     private double _realTotal;                  // the rendered (capped) size of the spacer (px)
@@ -158,6 +159,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public float EstimatedItemSize { get; set; } = 50f;
 
     /// <summary>
+    /// The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.
+    /// </summary>
+    [Parameter] public float Gap { get; set; }
+
+    /// <summary>
     /// The custom template to render after the last item, inside the scroll container
     /// (for example, a loading indicator at the end of an infinite list).
     /// </summary>
@@ -197,6 +203,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// The in-memory collection of items to virtualize. Mutually exclusive with ItemsProvider.
     /// </summary>
     [Parameter] public ICollection<TItem>? Items { get; set; }
+
+    /// <summary>
+    /// A function that returns extra HTML attributes for the element of an item, which is the one that takes the
+    /// keyboard focus: an aria-selected, aria-labelledby or aria-describedby for assistive technologies, a class or a
+    /// style for the whole slot of the item. A role or an aria attribute it returns overrides the default one, while a
+    /// class or a style is appended to the ones of the component.
+    /// </summary>
+    [Parameter] public Func<TItem, IReadOnlyDictionary<string, object>?>? ItemAttributes { get; set; }
 
     /// <summary>
     /// A function that returns a stable and unique identity key for an item. When provided, rendered rows are keyed by
@@ -286,7 +300,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public bool Reversed { get; set; }
 
     /// <summary>
-    /// The ARIA role of the root element.
+    /// The ARIA role of the root element, which is a group instead while the loading or the empty content takes the place of the items.
     /// </summary>
     [Parameter] public string? Role { get; set; } = "list";
 
@@ -393,10 +407,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
 
 
+    /// <param name="scrollOffset">The scroll position along the scroll axis, relative to the start of the items.</param>
+    /// <param name="viewportSize">The size of the viewport along the scroll axis.</param>
     /// <param name="seq">The number of the latest scroll requested from here that the browser had performed when it
     /// sent this report; -1 when unknown.</param>
-    [JSInvokable("Scroll")]
     /// <param name="crossSize">The size of the list across the scroll axis; -1 when unknown.</param>
+    [JSInvokable("Scroll")]
     public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1, double crossSize = -1)
     {
         if (IsDisposed) return;
@@ -486,7 +502,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 var size = sizes[i];
                 if (idx < 0 || idx >= _itemCount || size < 0 || double.IsFinite(size) is false) continue;
 
-                if (_tree.SetSize(idx, size) != 0d)
+                if (_tree.SetSize(idx, size + _gap) != 0d)
                 {
                     changed = true;
                 }
@@ -808,6 +824,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     // Whether the items spacer (rather than the loading or the empty content) is rendered.
     private bool ShowsSpacer() => ShowsLoading() is false && ShowsEmpty() is false;
 
+    // While the loading or the empty content takes the place of the items, the root holds none of the items its role
+    // asks for (a list of no list items, but of a "No items" text): it is then a group, still named by the AriaLabel.
+    private string? GetRootRole() => ShowsSpacer() || Role.HasNoValue() ? Role : "group";
+
     private bool ShowsLoading() => _itemCount == 0 && LoadingTemplate is not null && (_initialized is false || _loading);
 
     private bool ShowsEmpty() => _itemCount == 0 && _loading is false && (Items is not null || _initialized);
@@ -822,9 +842,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private double MaxScrollOffset => Math.Max(0, GetTotalSize() - _viewportSize);
 
+    private double GapSize => Gap > 0 ? Gap : 0d;
+
     // The scroll movement (real px) the browser may coalesce before reporting it: one fixed item, since the overscan
     // covers it. Dynamic mode and a zero overscan need every movement.
-    private double ScrollThreshold => Dynamic || Overscan == 0 ? 0d : FixedSize / _ratio;
+    private double ScrollThreshold => Dynamic || Overscan == 0 ? 0d : (FixedSize + GapSize) / _ratio;
 
     private double RealFromVirtual(double value) => value / _ratio;
 
@@ -844,21 +866,27 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         _scrollOffset = VirtualFromReal(metrics.ScrollOffset);
     }
 
+    // n lanes of MinLaneSize take n * MinLaneSize plus the n - 1 gaps between them.
     private int ComputeLanes() =>
-        MinLaneSize is > 0f && _crossSize > 0 ? Math.Max(1, (int)Math.Floor(_crossSize / MinLaneSize.Value)) : Math.Max(1, Lanes);
+        MinLaneSize is > 0f && _crossSize > 0
+            ? Math.Max(1, (int)Math.Floor((_crossSize + GapSize) / (MinLaneSize.Value + GapSize)))
+            : Math.Max(1, Lanes);
 
-    // A change of the orientation invalidates the sizes measured along the old axis, and one of the lanes the sizes of
-    // the tracks, which then hold other items. Another number of lanes moves every item to another track, so the item
-    // that was first in view is kept there rather than leaving the reader somewhere else in the list.
+    // A change of the orientation invalidates the sizes measured along the old axis, one of the lanes the sizes of the
+    // tracks, which then hold other items, and one of the gap the strides the tracks are kept with. Another number of
+    // lanes (or another gap) moves every item to another offset, so the item that was first in view is kept there rather
+    // than leaving the reader somewhere else in the list.
     private void UpdateLayout()
     {
         var lanes = ComputeLanes();
-        if (Horizontal == _lastHorizontal && lanes == _lanes) return;
+        var gap = GapSize;
+        if (Horizontal == _lastHorizontal && lanes == _lanes && gap == _gap) return;
 
-        var anchor = _initialized && _initialScrollDone && _scrollOffset > 0 && lanes != _lanes && _visibleStart < _itemCount ? _visibleStart : -1;
+        var anchor = _initialized && _initialScrollDone && _scrollOffset > 0 && (lanes != _lanes || gap != _gap) && _visibleStart < _itemCount ? _visibleStart : -1;
 
         _lastHorizontal = Horizontal;
         _lanes = lanes;
+        _gap = gap;
         _laneSizes = null;
         if (_tree is not null)
         {
@@ -1169,13 +1197,13 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             var tracks = TrackCount(count);
             if (_tree is null)
             {
-                _tree = new BitVirtualizePrefixSumTree(tracks, EstimatedSize);
+                _tree = new BitVirtualizePrefixSumTree(tracks, EstimatedSize + _gap);
             }
             else
             {
                 // Keep the already measured sizes of the surviving indices so a count change
                 // (e.g. infinite-scroll append) does not throw away the measurements.
-                _tree.Resize(tracks, EstimatedSize);
+                _tree.Resize(tracks, EstimatedSize + _gap);
             }
 
             // Re-apply identity-keyed measurements so sizes follow their items across
@@ -1303,7 +1331,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private int EstimateInitialCount()
     {
-        double size = Dynamic ? EstimatedSize : FixedSize;
+        var size = (Dynamic ? EstimatedSize : FixedSize) + _gap;
         var viewport = _viewportSize > 0 ? _viewportSize : 600;
         return ((int)Math.Ceiling(viewport / size) + (Overscan * 2) + 1) * _lanes;
     }
@@ -1376,7 +1404,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             // full, when it may as well be a measured item the cache had no room for. An item without a key keeps the
             // size of its index.
             var estimateUnknown = _sizeByKey.Count < SizeCacheCap;
-            var estimate = EstimatedSize;
+            var estimate = EstimatedSize + _gap;
             var count = Math.Min(_itemList.Count, _tree.Count);
             for (var i = 0; i < count; i++)
             {
@@ -1385,7 +1413,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
                 if (_sizeByKey.TryGetValue(key, out var size))
                 {
-                    _tree.SetSize(i, size);
+                    _tree.SetSize(i, size + _gap);
                 }
                 else if (estimateUnknown)
                 {
@@ -1403,25 +1431,32 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 var key = ItemKey(_loadedItems[local]);
                 if (key is not null && _sizeByKey.TryGetValue(key, out var size))
                 {
-                    _tree.SetSize(idx, size);
+                    _tree.SetSize(idx, size + _gap);
                 }
             }
         }
     }
 
     // The items are laid out in tracks (rows, or columns when horizontal) of Lanes items each: the scroll axis is
-    // made of tracks, so every offset and size along it is that of the track an item is in.
+    // made of tracks, so every offset and size along it is that of the track an item is in. A track takes its size
+    // plus the gap after it (its stride), except the last, which has nothing after it to keep apart from.
     private int TrackOf(int index) => index / _lanes;
 
     private int TrackCount(int count) => (count + _lanes - 1) / _lanes;
 
-    private double GetTrackOffset(int track) => _tree is not null ? _tree.PrefixSum(track) : track * (double)FixedSize;
+    private double GetTrackOffset(int track) => _tree is not null ? _tree.PrefixSum(track) : track * (FixedSize + _gap);
 
     private double GetItemOffset(int index) => GetTrackOffset(TrackOf(index));
 
-    private double GetItemSize(int index) => _tree is not null ? _tree.GetSize(TrackOf(index)) : FixedSize;
+    private double GetItemSize(int index) => _tree is not null ? _tree.GetSize(TrackOf(index)) - _gap : FixedSize;
 
-    private double GetTotalSize() => _tree is not null ? _tree.Total : TrackCount(_itemCount) * (double)FixedSize;
+    private double GetTotalSize()
+    {
+        var tracks = TrackCount(_itemCount);
+        if (tracks == 0) return 0;
+
+        return (_tree is not null ? _tree.Total : tracks * (FixedSize + _gap)) - _gap;
+    }
 
     private int FindTrackAtOffset(double offset)
     {
@@ -1430,7 +1465,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (_tree is not null) return _tree.FindIndex(offset);
 
-        var track = (int)Math.Floor(offset / FixedSize);
+        var track = (int)Math.Floor(offset / (FixedSize + _gap));
         return Math.Clamp(track, 0, tracks - 1);
     }
 
@@ -1464,7 +1499,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 }
             }
 
-            if (_tree!.SetSize(track, largest) != 0d)
+            if (_tree!.SetSize(track, largest + _gap) != 0d)
             {
                 changed = true;
             }
@@ -1730,11 +1765,25 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (_lanes == 1) return style;
 
-        // Each lane is an equal share of the cross axis, taken by calc so the shares add up to the whole exactly.
+        // Each lane is an equal share of the cross axis (less the gaps between the lanes), taken by calc so the shares
+        // add up to the whole exactly.
         var lane = index % _lanes;
+        string share, start;
+        if (_gap > 0)
+        {
+            var lanesSpace = $"(100% - {FormatCssValue((_lanes - 1) * _gap)}px) / {_lanes}";
+            share = $"calc({lanesSpace})";
+            start = $"calc({lanesSpace} * {lane} + {FormatCssValue(lane * _gap)}px)";
+        }
+        else
+        {
+            share = $"calc(100% / {_lanes})";
+            start = $"calc(100% / {_lanes} * {lane})";
+        }
+
         return Horizontal
-            ? $"{style};inset-block-start:calc(100% / {_lanes} * {lane});height:calc(100% / {_lanes})"
-            : $"{style};inset-inline-start:calc(100% / {_lanes} * {lane});width:calc(100% / {_lanes})";
+            ? $"{style};inset-block-start:{start};height:{share}"
+            : $"{style};inset-inline-start:{start};width:{share}";
     }
 
     // The rendered window, plus the active (roving tabindex) item when it has scrolled out of it: removing the item
@@ -1783,6 +1832,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     }
 
     private static string FormatCssValue(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static string? GetAttributeText(IReadOnlyDictionary<string, object>? attributes, string name) =>
+        attributes is not null && attributes.TryGetValue(name, out var value) ? value?.ToString() : null;
 
 
 

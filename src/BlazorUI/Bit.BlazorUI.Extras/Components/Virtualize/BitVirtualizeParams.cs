@@ -4,9 +4,9 @@
 /// The parameters for <see cref="BitVirtualize{TItem}"/> component.
 /// </summary>
 /// <remarks>
-/// What belongs here is what the lists of an application agree on: how their items are sized and measured, how much
-/// they render ahead, the roles they expose, the templates of their loading, empty and placeholder states, and how they
-/// are styled. The data, the templates typed over the items, the keys, the sticky predicate, the events and the layout
+/// What belongs here is what the lists of an application agree on: how their items are sized, spaced and measured, how
+/// much they render ahead, the roles they expose, the templates of their loading, empty and placeholder states, and how they
+/// are styled. The data, the templates typed over the items, the keys, the item attributes, the sticky predicate, the events and the layout
 /// of one list (Horizontal, Lanes, MinLaneSize, Reversed, AlignToEnd, InitialIndex, ScrollerSelector, its header and footer) are left out on purpose:
 /// they are what makes one list the one it is.
 /// <br />
@@ -50,6 +50,11 @@ public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
     /// The assumed size in pixels of the items that have not been measured yet in dynamic mode.
     /// </summary>
     public float? EstimatedItemSize { get; set; }
+
+    /// <summary>
+    /// The space in pixels between consecutive items along the scroll axis, and between the lanes of a grid.
+    /// </summary>
+    public float? Gap { get; set; }
 
     /// <summary>
     /// The ARIA role of each item element.
@@ -133,6 +138,11 @@ public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
         if (EstimatedItemSize.HasValue && bitVirtualize.HasNotBeenSet(nameof(EstimatedItemSize)))
         {
             bitVirtualize.EstimatedItemSize = EstimatedItemSize.Value;
+        }
+
+        if (Gap.HasValue && bitVirtualize.HasNotBeenSet(nameof(Gap)))
+        {
+            bitVirtualize.Gap = Gap.Value;
         }
 
         if (ItemRole is not null && bitVirtualize.HasNotBeenSet(nameof(ItemRole)))
