@@ -181,6 +181,9 @@
         };
         private static readonly CLOSING_CHARS = [')', ']', '}', '`', '"'];
         private static readonly MODIFIER_KEYS = ['Shift', 'Control', 'Alt', 'Meta', 'AltGraph'];
+        // Everything the Tab key can land on, the preview's rendered links and details included.
+        private static readonly FOCUSABLE = 'a[href], area[href], button, input, select, textarea, summary, iframe, ' +
+            'audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
         // Auto-closing is skipped in front of anything that is not whitespace or a closer.
         private static readonly NOT_BEFORE_CLOSE = /[^\s)\]}>]/;
         // Ctrl/Cmd+Alt+<digit> heading shortcuts, keyed by physical code so they survive
@@ -614,8 +617,11 @@
             this._baseline = this.snapshot();
         }
 
+        // The Preview mode hides the textarea, and focusing a hidden element does nothing: the focus would stay
+        // wherever it was dropped (on the page's body, once a dialog or panel that held it is gone).
         public focus() {
-            this.textArea.focus();
+            const target = this.textArea.offsetParent === null && this._keyPane?.offsetParent ? this._keyPane : this.textArea;
+            target.focus();
         }
 
         public blur() {
@@ -1071,7 +1077,7 @@
             if (e.key !== 'Tab' || e.defaultPrevented || !this.root) return;
             if (!this.root.classList.contains('bit-mde-fsc') || this.root.querySelector('.bit-mde-hlp')) return;
 
-            const focusables = Array.from(this.root.querySelectorAll<HTMLElement>('button, input, textarea, [tabindex]'))
+            const focusables = Array.from(this.root.querySelectorAll<HTMLElement>(MarkdownEditorCore.FOCUSABLE))
                 .filter(el => el.tabIndex >= 0 && !(el as HTMLButtonElement).disabled && el.offsetParent !== null);
             if (!focusables.length) return;
 
@@ -1727,8 +1733,10 @@
 
             const text = editorShown ? this.textArea.scrollHeight : 0;
             const rendered = previewShown ? preview!.scrollHeight : 0;
-            // Stacked split panes share the body's height; side by side they each take all of it.
-            const stacked = editorShown && previewShown && editorPane!.offsetTop !== preview!.offsetTop;
+            // Stacked split panes share the body's height; side by side they each take all of it. Read off how far the
+            // two overlap across the line rather than off their tops, which the preview's divider pulls a pixel apart
+            // either way: side by side they share no more than that divider, stacked they share most of their width.
+            const stacked = editorShown && previewShown && this.panesOverlap(editorPane!, preview!);
 
             body.style.height = `${stacked ? text + rendered : Math.max(text, rendered)}px`;
 
@@ -1743,6 +1751,14 @@
 
             this.textArea.scrollTop = textTop;
             if (preview) preview.scrollTop = previewTop;
+        }
+
+        private panesOverlap(a: HTMLElement, b: HTMLElement) {
+            const ra = a.getBoundingClientRect();
+            const rb = b.getBoundingClientRect();
+            const shared = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+
+            return shared > Math.min(ra.width, rb.width) / 2;
         }
 
         private clearPaneHeights() {

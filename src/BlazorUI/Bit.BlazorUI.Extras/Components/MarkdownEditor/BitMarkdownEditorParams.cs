@@ -7,10 +7,11 @@
 /// What belongs here is what the editors of an application agree on: their texts (which is where a localized app
 /// sets them once), their toolbar, how they edit (the markdown spellings, the indent, the pairing and the tab
 /// behavior), what the status bar shows, how the preview renders, how images are uploaded and how they are sized
-/// and styled. The value and its events, the label, the name, the draft key, the display mode and the full-screen
-/// state are left out on purpose: they are what makes one editor the one it is.
+/// and styled, with the read-only and required states every input carries (<see cref="BitInputBaseParams{TValue}"/>).
+/// The value and its events, the label, the name, the draft key, the display mode and the full-screen state are left
+/// out on purpose: they are what makes one editor the one it is.
 /// </remarks>
-public class BitMarkdownEditorParams : BitComponentBaseParams, IBitComponentParams
+public class BitMarkdownEditorParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitMarkdownEditor"/> cascading parameters within <see cref="BitParams"/>.
@@ -129,11 +130,6 @@ public class BitMarkdownEditorParams : BitComponentBaseParams, IBitComponentPara
     public RenderFragment<string>? PreviewTemplate { get; set; }
 
     /// <summary>
-    /// Makes the editor read-only.
-    /// </summary>
-    public bool? ReadOnly { get; set; }
-
-    /// <summary>
     /// Lets the user drag the bottom edge of the editor to change its height.
     /// </summary>
     public bool? Resizable { get; set; }
@@ -225,7 +221,7 @@ public class BitMarkdownEditorParams : BitComponentBaseParams, IBitComponentPara
     {
         if (bitMarkdownEditor is null) return;
 
-        UpdateBaseParameters(bitMarkdownEditor);
+        UpdateInputBaseParameters(bitMarkdownEditor);
 
         if (AcceptedImageTypes is not null && bitMarkdownEditor.HasNotBeenSet(nameof(AcceptedImageTypes)))
         {
@@ -338,11 +334,6 @@ public class BitMarkdownEditorParams : BitComponentBaseParams, IBitComponentPara
         if (PreviewTemplate is not null && bitMarkdownEditor.HasNotBeenSet(nameof(PreviewTemplate)))
         {
             bitMarkdownEditor.PreviewTemplate = PreviewTemplate;
-        }
-
-        if (ReadOnly.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ReadOnly)))
-        {
-            bitMarkdownEditor.ReadOnly = ReadOnly.Value;
         }
 
         if (Resizable.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(Resizable)) && bitMarkdownEditor.Resizable != Resizable.Value)

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Describes how a <see cref="BitMarkdownEditorToolbarItem"/> behaves when clicked.

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -19,11 +20,21 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
         public int Handled { get; private set; }
         public int Clicked { get; private set; }
 
+        public string? Last { get; private set; }
+
         public Task OnClick(BitMarkdownEditor editor)
         {
             Clicked++;
             return Task.CompletedTask;
         }
+
+        // A handler that captures a local is a method of a compiler-made closure, not of the owner.
+        public Func<BitMarkdownEditor, Task> Capturing(string name) => _ =>
+        {
+            Last = name;
+            Clicked++;
+            return Task.CompletedTask;
+        };
 
         public Task HandleEventAsync(EventCallbackWorkItem item, object? arg)
         {
@@ -116,9 +127,10 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
 
         Assert.AreEqual("cmd:Bold", shortcuts["ctrl+b"]);
         Assert.AreEqual("cmd:Quote", shortcuts["ctrl+shift+."]);
-        Assert.AreEqual("item:save", shortcuts["ctrl+s"]);
-        Assert.AreEqual("item:rename", shortcuts["f2"]);
-        Assert.AreEqual("item:export", shortcuts["alt+e"]);
+        // A custom item is named by its position (the menus' items included), its Name being neither required nor unique.
+        Assert.AreEqual("item:2", shortcuts["ctrl+s"]);
+        Assert.AreEqual("item:3", shortcuts["f2"]);
+        Assert.AreEqual("item:5", shortcuts["alt+e"]);
         Assert.AreEqual(5, shortcuts.Count);
     }
 
@@ -131,15 +143,43 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
             parameters.Add(p => p.Toolbar, [new() { Name = "save", Type = BitMarkdownEditorToolbarItemType.Custom, OnClick = owner.OnClick, Shortcut = "Ctrl+S" }]);
         });
 
-        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("save"));
+        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("0"));
 
         Assert.AreEqual(1, owner.Clicked);
         // Run as the owner's event handler, so the owner re-renders after it.
         Assert.AreEqual(1, owner.Handled);
 
-        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("missing"));
+        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("1"));
+        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("save"));
 
         Assert.AreEqual(1, owner.Clicked);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorItemShortcutShouldTellUnnamedItemsApart()
+    {
+        var owner = new Owner();
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar,
+            [
+                new() { Type = BitMarkdownEditorToolbarItemType.Custom, OnClick = owner.Capturing("first"), Shortcut = "Ctrl+1" },
+                new() { Type = BitMarkdownEditorToolbarItemType.Custom, OnClick = owner.Capturing("second"), Shortcut = "Ctrl+2" },
+                new() { Type = BitMarkdownEditorToolbarItemType.Dropdown, Children = [new() { Name = "a", Command = BitMarkdownEditorCommand.Bold }] },
+                new() { Type = BitMarkdownEditorToolbarItemType.Dropdown, Children = [new() { Name = "b", Command = BitMarkdownEditorCommand.Italic }] },
+            ]);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("1"));
+
+        Assert.AreEqual("second", owner.Last);
+        // The closure the lambda captured its local in is not the owner, but it still runs as the owner's handler.
+        Assert.AreEqual(1, owner.Handled);
+
+        var menus = component.FindAll(".bit-mde-ddm");
+        Assert.AreEqual(2, menus.Count);
+        Assert.AreNotEqual(menus[0].Id, menus[1].Id);
+        Assert.AreEqual(menus[1].Id, component.FindAll("[aria-haspopup=menu]")[1].GetAttribute("aria-controls"));
     }
 
     [TestMethod]
@@ -156,10 +196,10 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
             ]);
         });
 
-        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("clear"));
+        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("0"));
         Assert.AreEqual(0, owner.Clicked);
 
-        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("copy"));
+        await component.InvokeAsync(() => component.Instance._OnToolbarShortcut("1"));
         Assert.AreEqual(1, owner.Clicked);
     }
 

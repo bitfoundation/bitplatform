@@ -1,4 +1,4 @@
-@import '../../../Bit.BlazorUI/Styles/functions.scss';
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
 // ancestor) re-tunes every editor under it and one set on the Style of an instance that one alone:
@@ -79,6 +79,18 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 }
 
 .bit-mde > .bit-mde-sbr {
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+}
+
+// The body paints too (a preview background, the textarea's inset rings), so it rounds the corners it lands on,
+// which its overflow then clips the panes to: the top ones with nothing above it, the bottom ones with nothing below.
+.bit-mde > .bit-mde-bdy:first-child {
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+}
+
+.bit-mde:not(:has(> .bit-mde-des, > .bit-mde-sbr)) > .bit-mde-bdy {
     border-end-start-radius: inherit;
     border-end-end-radius: inherit;
 }

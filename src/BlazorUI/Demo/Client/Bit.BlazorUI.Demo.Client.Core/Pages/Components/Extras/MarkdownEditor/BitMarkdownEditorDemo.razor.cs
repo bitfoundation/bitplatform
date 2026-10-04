@@ -91,13 +91,6 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The default text value of the editor to use at initialization.",
-        },
-        new()
-        {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
@@ -193,24 +186,10 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
-            Name = "Name",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The name of the textarea, under which its text is posted with a plain HTML form (a statically rendered page, for one).",
-        },
-        new()
-        {
             Name = "OnBlur",
             Type = "EventCallback",
             DefaultValue = "",
             Description = "Callback for when the editor loses the keyboard focus.",
-        },
-        new()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            DefaultValue = "",
-            Description = "Callback for when the editor value changes.",
         },
         new()
         {
@@ -271,20 +250,6 @@ public partial class BitMarkdownEditorDemo
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
             Description = "A custom template to render the preview pane. Receives the current markdown value and replaces the built-in BitMarkdownViewer based preview.",
-        },
-        new()
-        {
-            Name = "ReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Makes the editor read-only.",
-        },
-        new()
-        {
-            Name = "Required",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Marks the editor as a field that has to be filled in: the textarea carries the native required state and the label an asterisk.",
         },
         new()
         {
@@ -389,20 +354,6 @@ public partial class BitMarkdownEditorDemo
             Description = "A custom toolbar layout. Defaults to BitMarkdownEditorToolbar.Default when null.",
             LinkType = LinkType.Link,
             Href = "#toolbar-item",
-        },
-        new()
-        {
-            Name = "Value",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The two-way bound text value of the editor.",
-        },
-        new()
-        {
-            Name = "ValueExpression",
-            Type = "Expression<Func<string?>>?",
-            DefaultValue = "null",
-            Description = "The expression identifying the bound value, which ties the editor to a field of an EditForm: edits notify the EditContext and the field's validation messages mark the editor invalid. Set automatically by @bind-Value.",
         },
         new()
         {

@@ -31,7 +31,23 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-mde-txa").HasAttribute("required"));
+        Assert.AreEqual("true", component.Find(".bit-mde-txa").GetAttribute("aria-required"));
         Assert.IsTrue(component.Find(".bit-mde-lbl").ClassList.Contains("bit-mde-req"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldNotBlockASubmitOverItsHiddenTextArea()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Mode, BitMarkdownEditorMode.Preview);
+        });
+
+        // A browser will not submit a form over a required control it cannot focus, and says nothing about why.
+        var textArea = component.Find(".bit-mde-txa");
+        Assert.IsFalse(textArea.HasAttribute("required"));
+        Assert.AreEqual("true", textArea.GetAttribute("aria-required"));
     }
 
     [TestMethod]

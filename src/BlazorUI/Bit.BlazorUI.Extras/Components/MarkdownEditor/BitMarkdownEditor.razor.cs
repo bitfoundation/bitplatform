@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// JS-interop script handles textarea selection control, key interception and the undo/redo
 /// history (coalescing rapid typing into single steps).
 /// </summary>
-public partial class BitMarkdownEditor : BitComponentBase
+public partial class BitMarkdownEditor : BitInputBase<string?>
 {
     private string _value = string.Empty;
     private string _previewValue = string.Empty;
@@ -29,38 +29,34 @@ public partial class BitMarkdownEditor : BitComponentBase
     private int _caretColumn = 1;
     private int _selectedLength;
     private bool _internalValueChange;
+    private bool _valueChanged;
     private bool _scrollLocked;
     private string? _lastConfig;
     private IReadOnlyCollection<BitMarkdownEditorCommand> _activeFormats = [];
     private ElementReference _helpRef = default!;
     private ElementReference _helpCloseRef = default!;
     private ElementReference _findRef = default!;
-    private ElementReference _textAreaRef = default!;
+    private ElementReference _previewRef = default!;
     private CancellationTokenSource? _debounceCts;
     private DotNetObjectReference<BitMarkdownEditor>? _dotnetObj;
     private BitMarkdownEditorMode? _renderedMode;
     private string? _announcement;
-    private bool _invalid;
-    private EditContext? _editContext;
-    private FieldIdentifier? _fieldIdentifier;
-    private Expression<Func<string?>>? _fieldExpression;
-    private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
 
 
     public BitMarkdownEditor()
     {
-        _validationStateChangedHandler = (_, _) =>
+        // The textarea is uncontrolled (the script owns its value to keep the caret), so a Value set from outside
+        // has to be pushed into it; the one the editor reports itself is already there.
+        OnValueChanged += (_, _) =>
         {
-            if (UpdateInvalid()) _ = InvokeAsync(StateHasChanged);
+            if (_internalValueChange is false) _valueChanged = true;
         };
     }
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
-
-    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
 
 
@@ -149,11 +145,6 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public int ChangeDebounceTime { get; set; }
 
     /// <summary>
-    /// The default text value of the editor to use at initialization.
-    /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
-
-    /// <summary>
     /// A hint rendered below the panes (the markdown flavor accepted, what the text is for) and tied to the
     /// textarea through aria-describedby, so assistive tech reads it out with the field.
     /// </summary>
@@ -230,21 +221,10 @@ public partial class BitMarkdownEditor : BitComponentBase
     [Parameter] public string? AcceptedImageTypes { get; set; }
 
     /// <summary>
-    /// The name of the textarea, under which its text is posted with a plain HTML form (a statically rendered
-    /// page, for one), where no binding carries the value.
-    /// </summary>
-    [Parameter] public string? Name { get; set; }
-
-    /// <summary>
     /// Determines which panes of the editor are visible (edit / split / preview).
     /// </summary>
     [Parameter, TwoWayBound]
     public BitMarkdownEditorMode Mode { get; set; } = BitMarkdownEditorMode.Split;
-
-    /// <summary>
-    /// Callback for when the editor value changes.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
     /// A handler that uploads a pasted, dropped or picked image and returns the URL to reference
@@ -313,17 +293,6 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// and replaces the built-in <see cref="BitMarkdownViewer"/> based preview.
     /// </summary>
     [Parameter] public RenderFragment<string>? PreviewTemplate { get; set; }
-
-    /// <summary>
-    /// Makes the editor read-only.
-    /// </summary>
-    [Parameter] public bool ReadOnly { get; set; }
-
-    /// <summary>
-    /// Marks the editor as a field that has to be filled in: the textarea carries the native required state
-    /// (which assistive tech announces) and the label an asterisk.
-    /// </summary>
-    [Parameter] public bool Required { get; set; }
 
     /// <summary>
     /// Lets the user drag the bottom edge of the editor to change its height.
@@ -401,19 +370,6 @@ public partial class BitMarkdownEditor : BitComponentBase
     /// A custom toolbar layout. Defaults to <see cref="BitMarkdownEditorToolbar.Default"/> when null.
     /// </summary>
     [Parameter] public IReadOnlyList<BitMarkdownEditorToolbarItem>? Toolbar { get; set; }
-
-    /// <summary>
-    /// The two-way bound text value of the editor.
-    /// </summary>
-    [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnValueSet))]
-    public string? Value { get; set; }
-
-    /// <summary>
-    /// The expression identifying the bound value, which ties the editor to the field of an
-    /// <see cref="EditForm"/>: an edit notifies the form's <see cref="EditContext"/>, and the field's
-    /// validation messages mark the editor invalid. Set automatically by <c>@bind-Value</c>.
-    /// </summary>
-    [Parameter] public Expression<Func<string?>>? ValueExpression { get; set; }
 
 
 
@@ -550,7 +506,8 @@ public partial class BitMarkdownEditor : BitComponentBase
     }
 
     /// <summary>
-    /// Moves the keyboard focus into the editor textarea.
+    /// Moves the keyboard focus into the editor textarea, or into the preview pane in the Preview mode, which hides
+    /// the textarea.
     /// </summary>
     public async ValueTask Focus()
     {
@@ -558,6 +515,17 @@ public partial class BitMarkdownEditor : BitComponentBase
 
         await _js.BitMarkdownEditorFocus(_Id);
     }
+
+    /// <summary>
+    /// Gives focus to the editor textarea, or to the preview pane in the Preview mode, which hides the textarea.
+    /// </summary>
+    public override ValueTask FocusAsync() => Mode is BitMarkdownEditorMode.Preview ? _previewRef.FocusAsync() : base.FocusAsync();
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <param name="preventScroll">Whether the browser leaves the document where it is rather than scrolling the
+    /// newly focused element into view.</param>
+    public override ValueTask FocusAsync(bool preventScroll) =>
+        Mode is BitMarkdownEditorMode.Preview ? _previewRef.FocusAsync(preventScroll) : base.FocusAsync(preventScroll);
 
     /// <summary>
     /// Moves the keyboard focus out of the editor textarea.
@@ -583,23 +551,17 @@ public partial class BitMarkdownEditor : BitComponentBase
 
         _value = value ?? string.Empty;
 
+        // Binds the value, has a form validate the field as it is edited, and raises OnChange, the way every other
+        // input of a form does.
         _internalValueChange = true;
         try
         {
-            await AssignValue(value);
+            await SetCurrentValueAsync(value);
         }
         finally
         {
             _internalValueChange = false;
         }
-
-        // A form validates the field as it is edited, the way it does every other input of it.
-        if (_editContext is not null && _fieldIdentifier is { } field)
-        {
-            _editContext.NotifyFieldChanged(field);
-        }
-
-        await OnChange.InvokeAsync(value);
 
         await UpdatePreviewAsync();
     }
@@ -666,14 +628,15 @@ public partial class BitMarkdownEditor : BitComponentBase
     }
 
     /// <summary>
-    /// Invoked from JavaScript when the shortcut of a custom toolbar item is pressed in the editor.
+    /// Invoked from JavaScript when the shortcut of a custom toolbar item is pressed in the editor, with the position
+    /// of the item in the toolbar, its menus' items included, which is what its shortcut was bound under.
     /// </summary>
     [JSInvokable("OnToolbarShortcut")]
-    public async Task _OnToolbarShortcut(string name)
+    public async Task _OnToolbarShortcut(string position)
     {
-        if (IsDisposed) return;
+        if (IsDisposed || int.TryParse(position, out var index) is false || index < 0) return;
 
-        var item = FindToolbarItem(ActiveToolbar, name);
+        var item = EnumerateToolbarItems(ActiveToolbar).ElementAtOrDefault(index);
         if (item is null || item.Type is not BitMarkdownEditorToolbarItemType.Custom || IsToolbarItemDisabled(item)) return;
 
         await OnToolbarItemClick(item);
@@ -816,8 +779,6 @@ public partial class BitMarkdownEditor : BitComponentBase
         ClassBuilder.Register(() => AutoHeight ? "bit-mde-ahg" : string.Empty);
 
         ClassBuilder.Register(() => StickyToolbar ? "bit-mde-stk" : string.Empty);
-
-        ClassBuilder.Register(() => _invalid ? "bit-inv" : string.Empty);
     }
 
     // The three sizes are the public variables themselves, written on the instance: what an app sets on :root
@@ -839,8 +800,11 @@ public partial class BitMarkdownEditor : BitComponentBase
         // The initial value is seeded below, and the parameters a BitParams fills in are already in place for it.
         CascadingParameters?.UpdateParameters(this);
 
-        _value = Value ?? DefaultValue ?? string.Empty;
+        SetDefaultValue();
+
+        _value = Value ?? string.Empty;
         _previewValue = _value;
+        _valueChanged = false;
 
         base.OnInitialized();
     }
@@ -851,9 +815,30 @@ public partial class BitMarkdownEditor : BitComponentBase
         // had cascaded with it, which the base class has already put back by now.
         CascadingParameters?.UpdateParameters(this);
 
-        AttachEditContext();
-
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_valueChanged)
+        {
+            _valueChanged = false;
+
+            _value = Value ?? string.Empty;
+            _previewValue = _value;
+
+            // Before the first render there is nothing to push it into; init seeds the textarea.
+            if (IsRendered)
+            {
+                try
+                {
+                    await _js.BitMarkdownEditorSetValue(_Id, Value);
+                }
+                catch (JSDisconnectedException) { } // the circuit dropped; nothing to update
+            }
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -889,7 +874,7 @@ public partial class BitMarkdownEditor : BitComponentBase
             _dotnetObj = DotNetObjectReference.Create(this);
             _lastConfig = config.ToString();
 
-            await _js.BitMarkdownEditorInit(_Id, _textAreaRef, RootElement, _dotnetObj, Value ?? DefaultValue, config);
+            await _js.BitMarkdownEditorInit(_Id, InputElement, RootElement, _dotnetObj, Value, config);
             await ApplyScrollLock();
             return;
         }
@@ -993,19 +978,23 @@ public partial class BitMarkdownEditor : BitComponentBase
     }
 
     // A shortcut on a command item runs the command in the script with no round trip; one on a custom item calls
-    // back. The first item to claim a key keeps it.
+    // back, naming the item by its position, since nothing makes a Name unique (or even set). The first item to
+    // claim a key keeps it.
     private Dictionary<string, string>? BuildShortcuts()
     {
         Dictionary<string, string>? map = null;
+        var index = -1;
 
         foreach (var item in EnumerateToolbarItems(ActiveToolbar))
         {
+            index++;
+
             if (NormalizeShortcut(item.Shortcut) is not { } keys) continue;
 
             var action = item.Type switch
             {
                 BitMarkdownEditorToolbarItemType.Command when item.Command is { } command => $"cmd:{command}",
-                BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null => $"item:{item.Name}",
+                BitMarkdownEditorToolbarItemType.Custom when item.OnClick is not null => $"item:{index}",
                 _ => null
             };
 
@@ -1026,9 +1015,6 @@ public partial class BitMarkdownEditor : BitComponentBase
             foreach (var child in EnumerateToolbarItems(item.Children)) yield return child;
         }
     }
-
-    private static BitMarkdownEditorToolbarItem? FindToolbarItem(IEnumerable<BitMarkdownEditorToolbarItem> items, string name) =>
-        EnumerateToolbarItems(items).FirstOrDefault(i => i.Name == name);
 
     private static bool IsCommandItem(BitMarkdownEditorToolbarItem item) =>
         item.Type is BitMarkdownEditorToolbarItemType.Command ||
@@ -1114,7 +1100,8 @@ public partial class BitMarkdownEditor : BitComponentBase
 
     private string HelpTitleId => $"{_Id}-hlt";
 
-    private string GetMenuId(BitMarkdownEditorToolbarItem item) => $"{_Id}-mnu-{item.Name}";
+    // By the menu's position in the toolbar: the Name of an item is neither required nor unique.
+    private string GetMenuId(int index) => $"{_Id}-mnu-{index}";
 
     private bool HasDescription => string.IsNullOrEmpty(Description) is false || DescriptionTemplate is not null;
 
@@ -1334,9 +1321,34 @@ public partial class BitMarkdownEditor : BitComponentBase
                 // run as one of its event handlers and the component re-renders after it, the way it does after any
                 // other; a handler with no component behind it re-renders the editor alone.
                 var onClick = item.OnClick;
-                await EventCallback.Factory.Create(onClick.Target as IHandleEvent ?? (object)this, () => onClick(this)).InvokeAsync();
+                await EventCallback.Factory.Create(FindHandlerOwner(onClick.Target) ?? (object)this, () => onClick(this)).InvokeAsync();
                 break;
         }
+    }
+
+    // The target of a lambda is the component it was written in, unless the lambda captures a local (a loop
+    // variable, a parameter): then it is the closure the compiler made for that scope, which reaches the component
+    // through its "this" field, or through the closure of an enclosing scope that does.
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The fields of a closure are the ones its lambda reads, so they are never trimmed away.")]
+    private static IHandleEvent? FindHandlerOwner(object? target, int depth = 0)
+    {
+        if (target is IHandleEvent owner) return owner;
+
+        if (target is null || depth > 4) return null;
+
+        var type = target.GetType();
+        if (type.IsDefined(typeof(CompilerGeneratedAttribute), false) is false) return null;
+
+        foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+        {
+            // "<>4__this" is the component, "CS$<>8__locals*" an enclosing closure; every other field is a captured
+            // local, which may well hold some other component (an @ref) that is not the one the handler belongs to.
+            if (field.Name is not "<>4__this" && field.Name.StartsWith("CS$<>8__locals", StringComparison.Ordinal) is false) continue;
+
+            if (FindHandlerOwner(field.GetValue(target), depth + 1) is { } found) return found;
+        }
+
+        return null;
     }
 
     private async Task CloseHelp()
@@ -1493,54 +1505,6 @@ public partial class BitMarkdownEditor : BitComponentBase
         _announcement = string.Format(ActiveTexts.ModeAnnouncementFormat, ActiveTexts.GetModeLabel(Mode));
     }
 
-    // Ties the editor to the field of a cascaded EditForm: the field is the bound expression when there is one,
-    // or the Value itself while it is bound without one.
-    private void AttachEditContext()
-    {
-        if (ReferenceEquals(CascadedEditContext, _editContext) is false)
-        {
-            if (_editContext is not null) _editContext.OnValidationStateChanged -= _validationStateChangedHandler;
-
-            _editContext = CascadedEditContext;
-
-            if (_editContext is not null) _editContext.OnValidationStateChanged += _validationStateChangedHandler;
-
-            _fieldExpression = null;
-        }
-
-        if (_editContext is null)
-        {
-            _fieldIdentifier = null;
-        }
-        else if (_fieldIdentifier is null || ReferenceEquals(ValueExpression, _fieldExpression) is false)
-        {
-            // A lambda written in the markup is a new instance on every render of the parent, so the field is only
-            // rebuilt when it actually points somewhere else; comparing the instances alone would rebuild it each time.
-            var field = ValueExpression is not null
-                ? FieldIdentifier.Create(ValueExpression)
-                : ValueChanged.HasDelegate ? FieldIdentifier.Create(() => Value) : (FieldIdentifier?)null;
-
-            _fieldExpression = ValueExpression;
-            _fieldIdentifier = field;
-        }
-
-        UpdateInvalid();
-    }
-
-    // Returns true when the invalid state changed.
-    private bool UpdateInvalid()
-    {
-        var invalid = _editContext is not null && _fieldIdentifier is { } field && _editContext.GetValidationMessages(field).Any();
-
-        if (invalid == _invalid) return false;
-
-        _invalid = invalid;
-
-        ClassBuilder.Reset();
-
-        return true;
-    }
-
     // A full-screen editor covers the viewport, so a page that goes on scrolling behind it
     // moves what the user comes back to out from under them. The hold is the same counted one
     // BitModal takes, keyed by this editor's id.
@@ -1571,24 +1535,12 @@ public partial class BitMarkdownEditor : BitComponentBase
         catch (JSDisconnectedException) { } // the circuit dropped; the page goes with it
     }
 
-    private async ValueTask OnValueSet()
+    // The value is the text itself, so there is nothing that could fail to parse.
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
-        _value = Value ?? string.Empty;
-
-        if (_internalValueChange) return;
-
-        _previewValue = _value;
-
-        // The textarea is uncontrolled (JS owns its value to preserve the caret),
-        // so external changes must be pushed into it through the interop script.
-        // Before the first render there is nothing to push; init seeds the textarea.
-        if (IsRendered is false) return;
-
-        try
-        {
-            await _js.BitMarkdownEditorSetValue(_Id, Value);
-        }
-        catch (JSDisconnectedException) { } // the circuit dropped; nothing to update
+        result = value;
+        parsingErrorMessage = null;
+        return true;
     }
 
     private async Task UpdatePreviewAsync()
@@ -1627,12 +1579,6 @@ public partial class BitMarkdownEditor : BitComponentBase
         _debounceCts = null;
 
         _dotnetObj?.Dispose();
-
-        if (_editContext is not null)
-        {
-            _editContext.OnValidationStateChanged -= _validationStateChangedHandler;
-            _editContext = null;
-        }
 
         try
         {

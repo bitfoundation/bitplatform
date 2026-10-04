@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -26,8 +26,10 @@
     {
         <div role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel" aria-controls="@TextAreaId"
              style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
-            @foreach (var item in ActiveToolbar)
+            @for (var index = 0; index < ActiveToolbar.Count; index++)
             {
+                var item = ActiveToolbar[index];
+
                 if (IsToolbarItemVisible(item) is false) continue;
 
                 if (item.Type is BitMarkdownEditorToolbarItemType.Separator)
@@ -47,13 +49,13 @@
                                 aria-keyshortcuts="@GetToolbarItemKeyShortcuts(item)"
                                 aria-haspopup="menu"
                                 aria-expanded="false"
-                                aria-controls="@GetMenuId(item)"
+                                aria-controls="@GetMenuId(index)"
                                 data-cmd="@item.Name"
                                 tabindex="-1"
                                 disabled="@IsToolbarItemDisabled(item)">
                             @RenderItemContent(item)
                         </button>
-                        <div id="@GetMenuId(item)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
+                        <div id="@GetMenuId(index)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
                             @foreach (var child in item.Children ?? [])
                             {
                                 if (IsToolbarItemVisible(child) is false) continue;
@@ -151,7 +153,10 @@
 
     <div class="bit-mde-bdy bit-mde-@Mode.ToString().ToLowerInvariant()">
         <div class="bit-mde-pne bit-mde-epn">
-            <textarea @ref="_textAreaRef"
+            @* The Preview mode hides the textarea, and a browser refuses to submit a form over a required control it
+               cannot focus without saying why, so only aria-required stays on it there. *@
+            <textarea @ref="InputElement"
+                      @attributes="InputHtmlAttributes"
                       id="@TextAreaId"
                       name="@Name"
                       style="@Styles?.TextArea"
@@ -163,8 +168,8 @@
                       spellcheck="@(SpellCheck ? "true" : "false")"
                       readonly="@(ReadOnly || IsEnabled is false)"
                       disabled="@(IsEnabled is false)"
-                      required="@Required"
-                      aria-invalid="@(_invalid ? "true" : null)"
+                      required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
+                      aria-required="@(Required ? "true" : null)"
                       autocomplete="off"
                       autocapitalize="off"
                       autocorrect="off"
@@ -174,7 +179,8 @@
 
         @* The preview pane scrolls on its own, so it needs to be reachable by keyboard
            for the arrow keys to be able to scroll it. *@
-        <div style="@Styles?.Preview"
+        <div @ref="_previewRef"
+             style="@Styles?.Preview"
              class="bit-mde-pne bit-mde-ppn @Classes?.Preview"
              tabindex="0"
              role="group"
