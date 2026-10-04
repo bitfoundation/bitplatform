@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <RollForward>Major</RollForward>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -30,10 +30,10 @@
         <PackageReference Include="Spectre.Console" Version="0.57.2" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.10.0" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.12" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12" />
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-rc.1.26425.128" />
         <PackageReference Include="Tomlyn" Version="2.10.1" />
         <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.10.0" />
         <PackageReference Include="OpenTelemetry" Version="1.19.1" />

@@ -53,5 +53,5 @@ public static class RepoLayout
         => FindUpward(Path.Combine("tests", HybridHarnessName, $"{HybridHarnessName}.csproj"));
 
     public static string HybridHarnessExecutable(string configuration)
-        => Path.Combine(Path.GetDirectoryName(HybridHarnessProject())!, "bin", configuration, "net10.0-windows", $"{HybridHarnessName}.exe");
+        => Path.Combine(Path.GetDirectoryName(HybridHarnessProject())!, "bin", configuration, "net11.0-windows", $"{HybridHarnessName}.exe");
 }

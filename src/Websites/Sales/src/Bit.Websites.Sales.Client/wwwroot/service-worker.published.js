@@ -1,4 +1,4 @@
-// bit version: 10.6.2
+// bit version: 11.0.0-pre-04
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -20,7 +20,7 @@ self.externalAssets = [
         "url": "Bit.Websites.Sales.Client.bundle.scp.css"
     },
     {
-        url: "_framework/bit.blazor.web.es2019.js"
+        url: "_framework/blazor.web.js"
     }
 ];
 

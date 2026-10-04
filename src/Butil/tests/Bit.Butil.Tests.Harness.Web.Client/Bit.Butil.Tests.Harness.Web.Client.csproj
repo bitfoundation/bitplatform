@@ -4,7 +4,7 @@
          browser. It carries no pages of its own - they come from Samples.Core - only the client's startup. -->
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <!-- See the same property in Bit.Butil.Tests.Harness.Web: one framework for a publish. -->
         <TargetFrameworks Condition="'$(ButilHarnessFramework)' != ''">$(ButilHarnessFramework)</TargetFrameworks>
         <Nullable>enable</Nullable>
@@ -19,6 +19,7 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.31" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.20" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.1.26425.128" />
     </ItemGroup>
 
     <ItemGroup>

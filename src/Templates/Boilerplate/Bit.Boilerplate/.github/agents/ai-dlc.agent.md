@@ -35,7 +35,7 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
-- Run build and tests after completing all tasks: `dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
+- Run build and tests after completing all tasks: `dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
 <!--#if (aspire == true && realProject != true)-->
 - If repeated test runs are slow because every run rebuilds the database container, offer to make `src/Server/Boilerplate.Server.AppHost/Program.cs` call a bare `builder.UsePersistentContainers();` instead of only inside the `IsDedicatedEnvironment` `if`. See `.docs/20- .NET Aspire.md`
 <!--#endif-->
