@@ -1,10 +1,18 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    // The values the page splatted as plain attributes are resolved here rather than written over: a null written
+    // after the splat does not leave the attribute alone, it removes it.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+}
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@AriaLabel"
+     role="@_GetRole(ariaLabel)"
+     tabindex="@_GetTabIndex()"
+     aria-label="@ariaLabel"
+     aria-keyshortcuts="@_GetKeyShortcuts()"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">

@@ -33,8 +33,12 @@ public static class E2EEnvironment
     /// <summary><c>BROUTER_E2E_SKIP_BUILD=1</c>: the hosts were built beforehand (as CI does); do not rebuild them.</summary>
     public static bool SkipBuild { get; } = Read("BROUTER_E2E_SKIP_BUILD") == "1";
 
-    /// <summary><c>BROUTER_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser.</summary>
-    public static string? Channel { get; } = Read("BROUTER_E2E_CHANNEL");
+    /// <summary>
+    /// <c>BROUTER_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Defaults to chromium, Playwright's
+    /// bundled Chromium in its new headless mode: the default headless shell sometimes never reports the tab a
+    /// modified click opens, so waiting for that tab times out.
+    /// </summary>
+    public static string Channel { get; } = Read("BROUTER_E2E_CHANNEL") ?? "chromium";
 
     /// <summary><c>BROUTER_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
     public static string? Executable { get; } = Read("BROUTER_E2E_EXECUTABLE");

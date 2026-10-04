@@ -77,7 +77,14 @@ private readonly DateTimeOffset[] highlightedDates =
 
 <BitDatePicker Label=""ShowOutsideDays (false)"" ShowOutsideDays=""false"" />
 
-<BitDatePicker Label=""FixedWeeks (always six weeks)"" FixedWeeks />";
+<BitDatePicker Label=""FixedWeeks (always six weeks)"" FixedWeeks />
+
+<BitDatePicker Label=""MonthCount (2)"" MonthCount=""2"" IsMonthPickerVisible=""false"" />
+
+<BitDatePicker Label=""MonthCount (3) with PagedNavigation""
+               MonthCount=""3""
+               PagedNavigation
+               ShowMonthPickerAsOverlay />";
 
     private readonly string example6RazorCode = @"
 <BitDatePicker Label=""IsMonthPickerVisible"" IsMonthPickerVisible=""@isMonthPickerVisible"" />
@@ -95,27 +102,35 @@ private bool showMonthPickerAsOverlay;";
 
 <BitDatePicker Label=""TimeFormat (12-hour with AM/PM)"" ShowTimePicker TimeFormat=""BitTimeFormat.TwelveHours"" />
 
+<BitDatePicker Label=""ShowSeconds (SecondStep 15)"" ShowTimePicker ShowSeconds SecondStep=""15"" />
+
 <BitDatePicker Label=""ShowTimePickerAsOverlay"" ShowTimePicker ShowTimePickerAsOverlay />
 
-<BitDatePicker Label=""Without the now button"" ShowTimePicker ShowNowButton=""false"" />";
+<BitDatePicker Label=""Without the now button"" ShowTimePicker ShowNowButton=""false"" />
+
+<BitDatePicker Label=""HourStep 2 & MinuteStep 15"" ShowTimePicker HourStep=""2"" MinuteStep=""15"" />
+
+<BitDatePicker Label=""Working hours only, no lunch hour""
+               ShowTimePicker
+               MinuteStep=""15""
+               MinTime=""TimeSpan.FromHours(9)""
+               MaxTime=""new TimeSpan(17, 30, 0)""
+               AllowedHours=""@(h => h != 13)"" />
+
+<BitDatePicker Label=""Nothing later than now (MaxDate)"" ShowTimePicker MaxDate=""DateTimeOffset.Now"" />
+
+<BitDatePicker Label=""Slower press-and-hold spin""
+               ShowTimePicker
+               ContinuousSpinDelay=""800""
+               ContinuousSpinInterval=""200"" />";
     private readonly string example7CsharpCode = @"
 private DateTimeOffset? selectedDateTime;";
 
     private readonly string example8RazorCode = @"
-<BitDatePicker ShowTimePicker
-               Label=""HourStep = 2""
-               HourStep=""2"" />
-
-<BitDatePicker ShowTimePicker
-               Label=""MinuteStep = 15""
-               MinuteStep=""15"" />";
-
-    private readonly string example9RazorCode = @"
-<BitDatePicker Label=""Formatted Date""
+<BitDatePicker Label=""DateFormat""
                DateFormat=""dd=MM(yy)""
-               Placeholder=""Select a date"" />";
+               Placeholder=""Select a date"" />
 
-    private readonly string example10RazorCode = @"
 <BitDatePicker Label=""Text input allowed""
                AllowTextInput
                DateFormat=""dd/MM/yyyy""
@@ -126,11 +141,15 @@ private DateTimeOffset? selectedDateTime;";
                DateFormat=""dd/MM/yyyy""
                MinDate=""DateTimeOffset.Now.AddDays(-5)""
                MaxDate=""DateTimeOffset.Now.AddDays(5)""
+               DisabledDaysOfWeek=""@weekendDays""
                InvalidErrorMessage=""The date format must be dd/MM/yyyy.""
                OutOfRangeErrorMessage=""Only the ±5 days around today are allowed.""
+               DisabledDateErrorMessage=""That day of the week is not available.""
                Placeholder=""Enter a date (dd/MM/yyyy)"" />";
+    private readonly string example8CsharpCode = @"
+private readonly DayOfWeek[] weekendDays = [DayOfWeek.Friday, DayOfWeek.Saturday];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Two-way binding"" @bind-Value=""@selectedDate"" />
 <div>Selected date: @selectedDate.ToString()</div>
 
@@ -138,20 +157,53 @@ private DateTimeOffset? selectedDateTime;";
                DefaultValue=""DateTimeOffset.Now""
                OnChange=""v => changedDate = v"" />
 <div>Changed date: @(changedDate?.ToString() ?? ""-"")</div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private DateTimeOffset? changedDate;
 private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitDatePicker Label=""fa-IR culture with Farsi names""
                GoToTodayTitle=""برو به امروز""
                Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
 
 <BitDatePicker Label=""fa-IR culture with Fingilish names""
                GoToTodayTitle=""Boro be emrouz""
-               Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
+               Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />
 
-    private readonly string example13RazorCode = @"
+<BitDatePicker Label=""Every title and accessible name translated""
+               ShowTimePicker
+               ShowWeekNumbers
+               ShowClearButton
+               ShowCloseButton
+               Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()""
+               Placeholder=""یک تاریخ انتخاب کنید""
+               CalloutAriaLabel=""تقویم""
+               SelectedDateAriaAtomic=""تاریخ انتخاب‌شده {0}""
+               ClearButtonTitle=""پاک کردن تاریخ""
+               CloseButtonTitle=""بستن تقویم""
+               GoToTodayTitle=""برو به امروز""
+               GoToPrevMonthTitle=""ماه قبل""
+               GoToNextMonthTitle=""ماه بعد""
+               GoToPrevYearTitle=""سال قبل {0}""
+               GoToNextYearTitle=""سال بعد {0}""
+               GoToPrevYearRangeTitle=""بازه قبلی {0} - {1}""
+               GoToNextYearRangeTitle=""بازه بعدی {0} - {1}""
+               MonthPickerToggleTitle=""{0}، تغییر ماه""
+               YearPickerToggleTitle=""{0}، تغییر سال""
+               YearRangePickerToggleTitle=""{0} - {1}، تغییر ماه""
+               WeekNumbersHeaderTitle=""هفته""
+               WeekNumberTitle=""هفته {0}""
+               NowButtonTitle=""برو به اکنون""
+               ShowTimePickerTitle=""نمایش ساعت""
+               HideTimePickerTitle=""پنهان کردن ساعت""
+               TimePickerHourTitle=""ساعت""
+               TimePickerMinuteTitle=""دقیقه""
+               TimePickerIncreaseHourTitle=""افزایش ساعت""
+               TimePickerDecreaseHourTitle=""کاهش ساعت""
+               TimePickerIncreaseMinuteTitle=""افزایش دقیقه""
+               TimePickerDecreaseMinuteTitle=""کاهش دقیقه"" />";
+
+    private readonly string example11RazorCode = @"
 <BitDatePicker @bind-Value=""@timeZoneDate1"" ShowTimePicker />
 <div>Selected date: @timeZoneDate1?.ToString()</div>
 
@@ -168,55 +220,63 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
     <BitDatePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDate2"" ShowTimePicker />
     <div>Selected date: @timeZoneDate2?.ToString()</div>
 }";
-    private readonly string example13CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private DateTimeOffset? timeZoneDate1;
 private DateTimeOffset? timeZoneDate2;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" Standalone />
 <BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
-<BitDatePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
-<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-<BitDatePicker Label=""TimePicker"" ShowTimePicker Standalone />";
 
-    private readonly string example15RazorCode = @"
-<BitDatePicker Label=""Basic MonthPicker""
-               Placeholder=""Select a month""
-               Mode=""BitDatePickerMode.MonthPicker"" />
+<BitDatePicker Label=""Week numbers, highlighted months and a time picker""
+               Standalone
+               ShowTimePicker
+               ShowWeekNumbers
+               HighlightCurrentMonth
+               HighlightSelectedMonth />";
 
+    private readonly string example13RazorCode = @"
 <BitDatePicker @bind-Value=""monthPickerDate""
+               Label=""MonthPicker""
                Placeholder=""Select a month""
-               Label=""MonthPicker with binding""
                Mode=""BitDatePickerMode.MonthPicker"" />
-<div>Selected Date: @(monthPickerDate?.ToString(""yyyy/MM/dd HH:mm:ss"") ?? ""None"")</div>
+<div>Selected date: @(monthPickerDate?.ToString(""yyyy/MM/dd"") ?? ""None"")</div>
 
-<BitDatePicker Placeholder=""Select a month""
-               Label=""MonthPicker with Min/Max""
-               Mode=""BitDatePickerMode.MonthPicker""
-               MaxDate=""DateTimeOffset.Now.AddMonths(6)""
-               MinDate=""DateTimeOffset.Now.AddMonths(-6)"" />
-
-<BitDatePicker HighlightCurrentMonth
-               HighlightSelectedMonth
+<BitDatePicker Label=""MonthPicker with Min/Max and highlighting""
                Placeholder=""Select a month""
                Mode=""BitDatePickerMode.MonthPicker""
-               Label=""MonthPicker with highlighting"" />
+               HighlightCurrentMonth
+               HighlightSelectedMonth
+               MinDate=""DateTimeOffset.Now.AddMonths(-6)""
+               MaxDate=""DateTimeOffset.Now.AddMonths(6)"" />
+
+<BitDatePicker @bind-Value=""yearPickerDate""
+               Label=""YearPicker (year of birth)""
+               Placeholder=""Select a year""
+               Mode=""BitDatePickerMode.YearPicker""
+               DisableFuture />
+<div>Selected date: @(yearPickerDate?.ToString(""yyyy/MM/dd"") ?? ""None"")</div>
 
 <BitDatePicker Standalone
                Label=""Standalone MonthPicker""
-               Mode=""BitDatePickerMode.MonthPicker"" />";
-    private readonly string example15CsharpCode = @"
-private DateTimeOffset? monthPickerDate;";
+               Mode=""BitDatePickerMode.MonthPicker"" />
 
-    private readonly string example16RazorCode = @"
+<BitDatePicker Standalone
+               Label=""Standalone YearPicker""
+               Mode=""BitDatePickerMode.YearPicker"" />";
+    private readonly string example13CsharpCode = @"
+private DateTimeOffset? monthPickerDate;
+private DateTimeOffset? yearPickerDate;";
+
+    private readonly string example14RazorCode = @"
 <BitDatePicker Label=""Basic"" ReadOnly @bind-Value=""readOnlyDate"" />
 <BitDatePicker Label=""Text input allowed"" ReadOnly AllowTextInput @bind-Value=""readOnlyDate"" />
 <BitDatePicker Label=""Standalone"" ReadOnly Standalone @bind-Value=""readOnlyDate"" />
 <BitDatePicker Label=""Standalone with TimePicker"" ReadOnly ShowTimePicker Standalone @bind-Value=""readOnlyDate"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .day-cell {
         width: 28px;
@@ -311,7 +371,7 @@ private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
         </div>
     </CalloutFooterTemplate>
 </BitDatePicker>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private CultureInfo culture = CultureInfo.CurrentUICulture;
 
 private DateTimeOffset? presetsValue;
@@ -327,13 +387,13 @@ private async Task SelectPreset(int days)
     }
 }";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitDatePicker Label=""Responsive DatePicker""
                Responsive
                ShowWeekNumbers
                Placeholder=""Select a date"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitDatePicker Label=""OnSelectDate & OnMonthChange""
                OnSelectDate=""v => selectedDateEvent = v""
                OnMonthChange=""v => displayedMonth = v"" />
@@ -356,7 +416,7 @@ private async Task SelectPreset(int days)
                OnClose=""() => closeCount++"" />
 <div>Opened: @openCount times</div>
 <div>Closed: @closeCount times</div>";
-    private readonly string example19CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private int clickCount;
 private int clearCount;
 private int focusInCount;
@@ -366,12 +426,12 @@ private DateTimeOffset? selectedDateEvent;
 private int openCount;
 private int closeCount;";
 
-    private readonly string example20RazorCode = @"
-<BitDatePicker Label=""Try the keyboard"" ShowWeekNumbers />
+    private readonly string example18RazorCode = @"
+<BitDatePicker Label=""Try the keyboard"" ShowWeekNumbers ShowTimePicker />
 
 <BitDatePicker Label=""Try the keyboard (month picker)"" Mode=""BitDatePickerMode.MonthPicker"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -382,7 +442,7 @@ private int closeCount;";
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitDatePicker @bind-Value=""validationModel.Date"" />
+    <BitDatePicker Label=""Required date"" @bind-Value=""validationModel.Date"" />
     <ValidationMessage For=""@(() => validationModel.Date)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
@@ -390,8 +450,24 @@ private int closeCount;";
                OnClick=""() => { validationModel = new(); SuccessMessage = string.Empty; }"">
         Reset
     </BitButton>
-</EditForm>";
-    private readonly string example21CsharpCode = @"
+</EditForm>
+
+@if (string.IsNullOrEmpty(SuccessMessage) is false)
+{
+    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+}
+
+
+<BitDatePicker Label=""Appointment""
+               Description=""Pick a weekday - we are closed on weekends.""
+               ErrorMessage=""@appointmentError""
+               OnChange=""CheckAppointment"" />
+
+<BitDatePicker Label=""Invalid""
+               Invalid
+               Description=""Marked invalid by the app.""
+               AriaDescription=""Dates are stored in UTC."" />";
+    private readonly string example19CsharpCode = @"
 public class BitDatePickerValidationModel
 {
     [Required]
@@ -401,10 +477,30 @@ public class BitDatePickerValidationModel
 private string SuccessMessage = string.Empty;
 private BitDatePickerValidationModel validationModel = new();
 
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
 
-    private readonly string example22RazorCode = @"
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}
+
+private string? appointmentError;
+
+// Stands in for a check only the server can make.
+private void CheckAppointment(DateTimeOffset? date)
+{
+    appointmentError = date?.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+        ? ""We are closed on weekends - pick a weekday.""
+        : null;
+}";
+
+    private readonly string example20RazorCode = @"
 <BitDatePicker @ref=""programmaticPicker"" @bind-IsOpen=""isCalloutOpen"" Label=""Controlled callout"" />
 
 <div>IsOpen: @isCalloutOpen</div>
@@ -413,18 +509,74 @@ private void HandleInvalidSubmit() { }";
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticPicker?.CloseCalloutAndFocus()"">
     CloseCalloutAndFocus()
 </BitButton>";
-    private readonly string example22CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private bool isCalloutOpen;
 private BitDatePicker? programmaticPicker;";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitDatePicker Label=""Underlined"" Underlined />
 
 <BitDatePicker Label=""HasBorder (false)"" HasBorder=""false"" />
 
 <BitDatePicker Label=""IconLocation (Left)"" IconLocation=""BitIconLocation.Left"" />
 
-<BitDatePicker Label=""IconName"" IconName=""@BitIconName.Calendar"" />";
+<BitDatePicker Label=""IconName"" IconName=""@BitIconName.Calendar"" />
+
+<BitDatePicker Label=""ShowGoToToday (false)"" ShowGoToToday=""false"" />
+
+<BitDatePicker Label=""DropDirection (All sides)"" DropDirection=""BitDropDirection.All"" />";
+
+    private readonly string example22RazorCode = @"
+<BitDatePicker Label=""Re-skinned field and calendar""
+               ShowWeekNumbers
+               HighlightedDates=""@highlightedDates""
+               Style=""--bit-DatePicker-input-radius: 1rem;
+                      --bit-DatePicker-input-border-color: mediumpurple;
+                      --bit-DatePicker-icon-color: mediumpurple;
+                      --bit-DatePicker-focus-color: mediumpurple;
+                      --bit-DatePicker-callout-radius: 1rem;
+                      --bit-DatePicker-day-radius: 0.5rem;
+                      --bit-DatePicker-today-radius: 0.5rem;
+                      --bit-DatePicker-today-background: mediumpurple;
+                      --bit-DatePicker-selected-background: #ede7f6;
+                      --bit-DatePicker-highlighted-background: #d1c4e9;"" />
+
+<BitDatePicker Label=""Roomier calendar, same field""
+               ShowTimePicker
+               Styles=""@(new() { Callout = ""--bit-DatePicker-day-size: 2.75rem;"" +
+                                            ""--bit-DatePicker-day-font-size: 1rem;"" +
+                                            ""--bit-DatePicker-header-font-size: 1rem;"" +
+                                            ""--bit-DatePicker-time-font-size: 1.5rem;"" +
+                                            ""--bit-DatePicker-padding: 1rem;"" })"" />";
+
+    private readonly string example23RazorCode = @"
+<BitParams Parameters=""@datePickerParams"">
+    <BitDatePicker Label=""Start"" />
+
+    <BitDatePicker Label=""End"" />
+
+    <BitDatePicker Label=""Deadline""
+                   Placeholder=""Any day of the next year""
+                   MinDate=""DateTimeOffset.Now""
+                   MaxDate=""DateTimeOffset.Now.AddYears(1)"" />
+</BitParams>
+
+<BitDatePicker Label=""Anything"" />";
+    private readonly string example23CsharpCode = @"
+private readonly List<IBitComponentParams> datePickerParams =
+[
+    new BitDatePickerParams
+    {
+        ShowWeekNumbers = true,
+        FirstDayOfWeek = DayOfWeek.Monday,
+        WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
+        DisabledDaysOfWeek = [DayOfWeek.Saturday, DayOfWeek.Sunday],
+        MinDate = DateTimeOffset.Now.AddMonths(-1),
+        MaxDate = DateTimeOffset.Now.AddMonths(1),
+        Placeholder = ""Select a working day"",
+        ShowClearButton = true,
+    }
+];";
 
     private readonly string example24RazorCode = @"
 <BitDatePicker Label=""Primary"" Color=""BitColor.Primary"" HighlightCurrentMonth />
@@ -494,9 +646,11 @@ private BitDatePicker? programmaticPicker;";
                GoToTodayIcon=""@BitIconInfo.Bi(""calendar-event"")"" />";
 
     private readonly string example26RazorCode = @"
-<BitDatePicker Label=""Small"" Size=""BitSize.Small"" />
-<BitDatePicker Label=""Medium"" Size=""BitSize.Medium"" />
-<BitDatePicker Label=""Large"" Size=""BitSize.Large"" />";
+<BitDatePicker Label=""Small"" Size=""BitSize.Small"" ShowTimePicker />
+
+<BitDatePicker Label=""Medium"" Size=""BitSize.Medium"" ShowTimePicker />
+
+<BitDatePicker Label=""Large"" Size=""BitSize.Large"" ShowTimePicker />";
 
     private readonly string example27RazorCode = @"
 <style>

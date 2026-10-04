@@ -18,9 +18,8 @@ namespace Boilerplate.Tests.Features.Tenants;
 /// are both attacker-chosen free text, so that is a permanent card in a stranger's tenant list.</item>
 /// </list>
 /// <para>
-/// Driven through the shipped endpoints with per-run accounts and a per-run tenant, because <c>IStorageService</c> is
-/// registered per scope - so each scope holds its own signed-in identity and the typed proxies carry the right bearer
-/// token without any faking. The per-run tenant is left behind, exactly as <c>TenantInvitationUITests</c> leaves the
+/// Driven through the shipped endpoints with per-run accounts and a per-run tenant, because each <see cref="AppClient"/>
+/// holds its own signed-in identity - so its controllers carry the right bearer token without any faking. The per-run tenant is left behind, exactly as <c>TenantInvitationUITests</c> leaves the
 /// one it creates: its name is a Guid, so it matches no host and no later run.
 /// </para>
 /// </summary>
@@ -34,32 +33,32 @@ public partial class TenantInvitationIsolationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
-        await using var inviteeScope = server.WebApp.Services.CreateAsyncScope();
+        await using var adminClient = server.CreateAppClient();
+        await using var inviteeClient = server.CreateAppClient();
 
         // ---- The tenant admin: her own account, her own tenant, so nothing here touches the seeded store tenant ----
-        var (adminEmail, _) = await TestAccountUtils.CreateAndSignIn(server, adminScope, TestContext.CancellationToken);
+        var (adminEmail, _) = await TestAccountUtils.CreateAndSignIn(adminClient, TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, adminScope, adminEmail, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(adminClient, adminEmail, TestContext.CancellationToken);
 
         // Creating a tenant makes the creator its t-admin, with an already-accepted membership (See TenantController.Create).
-        var tenant = await adminScope.ServiceProvider.GetRequiredService<ITenantController>()
+        var tenant = await adminClient.GetController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
-        Assert.IsTrue(await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenant.Id, TestContext.CancellationToken),
+        Assert.IsTrue(await adminClient.AuthManager.SwitchTenant(tenant.Id, TestContext.CancellationToken),
             "The creator must be able to switch into the tenant she just created, otherwise her token carries no tenant and the rest of this test cannot run.");
 
         // ---- The invitee: an ordinary account that already exists, so the invitation only adds a membership ----
-        var (inviteeEmail, inviteeUserId) = await TestAccountUtils.CreateAndSignIn(server, inviteeScope, TestContext.CancellationToken);
+        var (inviteeEmail, inviteeUserId) = await TestAccountUtils.CreateAndSignIn(inviteeClient, TestContext.CancellationToken);
 
-        await adminScope.ServiceProvider.GetRequiredService<ITenantController>()
+        await adminClient.GetController<ITenantController>()
             .InviteUser(new() { Email = inviteeEmail }, TestContext.CancellationToken);
 
         var demoRoleId = await ReadTenantDemoRoleId(server, tenant.Id, TestContext.CancellationToken);
 
-        var roleManagementController = adminScope.ServiceProvider.GetRequiredService<IRoleManagementController>();
+        var roleManagementController = adminClient.GetController<IRoleManagementController>();
 
         // The invitation itself already gave her the tenant's demo role (See UserManagerExtensions.AssignDemoRole), so
         // this is the exact state in which gating on the role alone leaks her profile.
@@ -82,13 +81,13 @@ public partial class TenantInvitationIsolationTests
         // ---- Back to pending, and this time she declines it ----
         await SetInvitationAcceptedOn(server, tenant.Id, inviteeUserId, null, TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, inviteeScope, inviteeEmail, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(inviteeClient, inviteeEmail, TestContext.CancellationToken);
 
-        await inviteeScope.ServiceProvider.GetRequiredService<IUserController>()
+        await inviteeClient.GetController<IUserController>()
             .LeaveTenant(tenant.Id, TestContext.CancellationToken);
 
-        await using var assertScope = server.WebApp.Services.CreateAsyncScope();
-        var dbContext = assertScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
         Assert.IsFalse(await dbContext.TenantUsers.AnyAsync(tu => tu.TenantId == tenant.Id && tu.UserId == inviteeUserId, TestContext.CancellationToken),
             "Leaving a membership that was still pending has to delete it. Setting AcceptedOn to null on a row where it is already null changes nothing while still reporting success, and the tenant admin cannot remove it either (UserManagementController.EnsureUserIsInCurrentTenant only reaches accepted memberships) - so the invitation would be permanent.");
@@ -96,7 +95,7 @@ public partial class TenantInvitationIsolationTests
 
     private static async Task<Guid> ReadTenantDemoRoleId(AppTestServer server, Guid tenantId, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.Roles
@@ -107,7 +106,7 @@ public partial class TenantInvitationIsolationTests
 
     private static async Task AssertUserHoldsTenantRole(AppTestServer server, Guid userId, Guid roleId, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         Assert.IsTrue(await dbContext.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId, cancellationToken),
@@ -116,7 +115,7 @@ public partial class TenantInvitationIsolationTests
 
     private static async Task SetInvitationAcceptedOn(AppTestServer server, Guid tenantId, Guid userId, DateTimeOffset? acceptedOn, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         // Written directly rather than through Refresh's tenant switch: acceptance itself is already covered end to end

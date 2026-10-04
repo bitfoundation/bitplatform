@@ -25,37 +25,37 @@ public partial class UserManagementTenantScopingTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
-        await using var outsiderScope = server.WebApp.Services.CreateAsyncScope();
-        await using var globalAdminScope = server.WebApp.Services.CreateAsyncScope();
+        await using var adminClient = server.CreateAppClient();
+        await using var outsiderClient = server.CreateAppClient();
+        await using var globalAdminClient = server.CreateAppClient();
 
         // The caller: a tenant admin of her own, per-run tenant. A t-admin holds every g-admin feature except
         // Tenants_Manage_Global (See AppFeatures.GetTenantAdminFeatures), which is exactly the shape that makes both
         // guards live for her - Users_Manage lets her reach the endpoints, and the missing global feature means
         // neither guard short-circuits.
-        var (adminEmail, _) = await TestAccountUtils.CreateAndSignIn(server, adminScope, TestContext.CancellationToken);
+        var (adminEmail, _) = await TestAccountUtils.CreateAndSignIn(adminClient, TestContext.CancellationToken);
 
-        await TestAccountUtils.Elevate(server, adminScope, adminEmail, TestContext.CancellationToken);
+        await TestAccountUtils.Elevate(adminClient, adminEmail, TestContext.CancellationToken);
 
-        var tenant = await adminScope.ServiceProvider.GetRequiredService<ITenantController>()
+        var tenant = await adminClient.GetController<ITenantController>()
             .Create(new() { Name = $"t{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
         // The elevated window is stored as a claim expiry, so it survives this refresh (See AuthPolicies.ELEVATED_ACCESS)
         // and the ELEVATED_ACCESS endpoints below stay reachable.
-        Assert.IsTrue(await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenant.Id, TestContext.CancellationToken),
+        Assert.IsTrue(await adminClient.AuthManager.SwitchTenant(tenant.Id, TestContext.CancellationToken),
             "The creator must be able to switch into the tenant she just created, otherwise her token carries no tenant and the rest of this test cannot run.");
 
         // The two targets. Both are freshly auto-provisioned, so neither has a membership in her tenant; the only
         // difference between them is the g-admin role, which is the fact that must not leak.
-        var (_, outsiderUserId) = await TestAccountUtils.CreateAndSignIn(server, outsiderScope, TestContext.CancellationToken);
+        var (_, outsiderUserId) = await TestAccountUtils.CreateAndSignIn(outsiderClient, TestContext.CancellationToken);
 
-        var (_, globalAdminUserId) = await TestAccountUtils.CreateAndSignIn(server, globalAdminScope, TestContext.CancellationToken);
+        var (_, globalAdminUserId) = await TestAccountUtils.CreateAndSignIn(globalAdminClient, TestContext.CancellationToken);
 
-        await using var _ = await TestAccountUtils.MakeGlobalAdmin(server, globalAdminScope, globalAdminUserId, TestContext.CancellationToken);
+        await using var _ = await TestAccountUtils.MakeGlobalAdmin(globalAdminClient, globalAdminUserId, TestContext.CancellationToken);
 
-        var userManagement = adminScope.ServiceProvider.GetRequiredService<IUserManagementController>();
+        var userManagement = adminClient.GetController<IUserManagementController>();
 
         // Delete: a BadRequestException here is EnsureCallerCanRevokeSessionsOf answering ahead of the tenant guard.
         // It is a harmless-looking "you cannot remove a super admin" - and it is only ever said about a global admin.
@@ -80,7 +80,7 @@ public partial class UserManagementTenantScopingTests
         // tenant, hand him the g-admin role, and the 400 she must not have seen above is the correct answer here.
         await AcceptIntoTenant(server, tenant.Id, outsiderUserId, TestContext.CancellationToken);
 
-        await using var __ = await TestAccountUtils.MakeGlobalAdmin(server, outsiderScope, outsiderUserId, TestContext.CancellationToken);
+        await using var __ = await TestAccountUtils.MakeGlobalAdmin(outsiderClient, outsiderUserId, TestContext.CancellationToken);
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => userManagement.RevokeAllUserSessions(outsiderUserId, TestContext.CancellationToken),
@@ -93,7 +93,7 @@ public partial class UserManagementTenantScopingTests
     /// </summary>
     private static async Task AcceptIntoTenant(AppTestServer server, Guid tenantId, Guid userId, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.TenantUsers.AddAsync(new() { TenantId = tenantId, UserId = userId, AcceptedOn = DateTimeOffset.UtcNow }, cancellationToken);

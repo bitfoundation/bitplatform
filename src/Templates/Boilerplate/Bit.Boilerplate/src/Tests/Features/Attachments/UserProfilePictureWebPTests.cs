@@ -25,20 +25,20 @@ public partial class UserProfilePictureWebPTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        // Sign in with the seeded default account (id 8ff71671-a1d6-4f97-abb9-d87d7b47d6e7). A raw HttpClient resolved
-        // from the same scope shares the token store, so requests it sends are authenticated by AuthDelegatingHandler.
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        // Sign in with the seeded default account (id 8ff71671-a1d6-4f97-abb9-d87d7b47d6e7). The client's
+        // HttpClient shares its token store, so requests it sends are authenticated by AuthDelegatingHandler.
+        var authManager = client.AuthManager;
         await authManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+        var httpClient = client.HttpClient;
 
         // Only this test's own upload may be cleaned up below: the account is the shared seeded one, so an early
         // failure - the download, the user lookup - must leave whatever picture it already had exactly as it was.
@@ -46,7 +46,7 @@ public partial class UserProfilePictureWebPTests
 
         try
         {
-            var currentUser = await scope.ServiceProvider.GetRequiredService<IUserController>()
+            var currentUser = await client.GetController<IUserController>()
                 .GetCurrentUser(TestContext.CancellationToken);
 
             // Real, non-webp repo image served at the web root (512x512 PNG >= the 256x256 minimum, so it is not rejected

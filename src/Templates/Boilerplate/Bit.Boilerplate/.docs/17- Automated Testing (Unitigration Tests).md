@@ -69,21 +69,37 @@ The [`AppTestServer`](/src/Tests/Infrastructure/AppTestServer.cs) class is respo
 public partial class AppTestServer : IAsyncDisposable
 {
     public WebApplication WebApp { get; }
-    public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
+    public WebApplication ApiApp { get; } // The host Server.Api's services run in
+    public readonly Uri WebAppAddress = new(GenerateServerUrl());
+    public Uri ApiAppAddress { get; } // The address ApiApp listens on
 
     public AppTestServer Build(
         Action<IServiceCollection>? configureTestServices = null,
-        Action<ConfigurationManager>? configureTestConfigurations = null)
+        Action<IServiceCollection>? configureTestWebAppServices = null,
+        Action<IServiceCollection>? configureTestApiAppServices = null,
+        Action<ConfigurationManager>? configureTestConfiguration = null)
     {
-        // Creates a WebApplication with test-specific configuration
+        // Builds the app under test with test-specific configuration
         // Allows overriding services and configuration
         // Returns the configured test server
     }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        await WebApp.StartAsync(cancellationToken);
+        // Starts the app under test
     }
+
+    public AppClient CreateAppClient(); // The app as a client of the api, with a user of its own
+    public HttpClient CreateRawHttpClient(HttpMessageHandler? handler = null); // Straight to Server.Api, none of the app's handlers
+}
+
+public sealed class AppClient : IAsyncDisposable
+{
+    public AppTestServer Server { get; }
+    public IServiceProvider Services { get; } // The app's own services
+    public AuthManager AuthManager { get; }
+    public HttpClient HttpClient { get; } // Works exactly like the app's own
+    public T GetController<T>() where T : class, IAppController; // IUserController and the rest
 }
 ```
 
@@ -92,6 +108,29 @@ public partial class AppTestServer : IAsyncDisposable
 - **Service Overriding**: Replace production services with test doubles
 - **Configuration Overriding**: Modify appsettings for test scenarios
 - **Full Application Stack**: All middleware, authentication, authorization, etc. work exactly as in production
+
+**Overriding services.** Pass every lambda by name. `configureTestServices` overrides the services of Server.Web and Server.Api alike, so the test does not have to know which of the two a service lives in: prefer it. Reach for one host only when a registration makes sense there alone, such as a type built from that host's own services:
+- `configureTestWebAppServices`: Server.Web's services, the client services it hosts included.
+- `configureTestApiAppServices`: Server.Api's services.
+- `configureTestConfiguration`: Server.Web's and Server.Api's configuration alike.
+
+**Calling the api.** `server.CreateAppClient()` is the app as a client of the api, without its UI, and a test creates one per user it needs: it calls anonymously until its `AuthManager` signs a user in, and as that user from then on (See the example below).
+- `client.GetController<T>()`: the app's own client of an api controller, `IUserController` and the rest. Prefer it.
+- `client.HttpClient`: the HttpClient those clients are built on, which works exactly like the app's own. The test reaches the api the way the client does, only without the UI: `ExceptionDelegatingHandler` turns an error response into the exception the app would get, for example.
+- `server.CreateRawHttpClient()`: straight to Server.Api, with none of the app's handlers, for a test about the response itself: a status code, a header, a redirect.
+
+No browser signs in on a server built without one, so `AppTestServer` keeps `AuthManager`'s tokens in memory there (See `AddBrowserlessClientServices`). A server a browser drives has no `AppClient`: the test signs in through the browser's pages.
+
+**Which host?** The app's own services - `AuthManager`, `IStorageService` - come from an `AppClient`'s `Services`, what runs in Server.Web itself - pages, pre-rendering - from `WebApp.Services`, and what runs in Server.Api - `AppDbContext`, Hangfire, the captured e-mails - from `ApiApp.Services`.
+
+<!--#if (api == "Standalone")-->
+The api stands alone, so `ApiApp` is a host of its own next to `WebApp`, on its own address. An `AppClient`'s HttpClient calls `WebAppAddress`, and `WebApp` forwards `/api` and `/hangfire` to `ApiApp` through YARP; everything else Server.Api serves, such as `/healthz`, is only on `ApiAppAddress`.
+<!--#endif-->
+<!--#if (api == "Integrated")-->
+The api is integrated into Server.Web, so `ApiApp` is `WebApp` itself, `ApiAppAddress` is `WebAppAddress`, and all three service lambdas run on that one host, in the order they are declared.
+<!--#endif-->
+
+A method that holds more than one DI scope names each one after its host - `scopeWebApp`, `scopeApiApp`. An `AppClient` is `client`, or named after its user's role when a test has several, such as `adminClient`.
 
 ### 2. TestsAssemblyInitializer - Assembly Setup
 
@@ -135,24 +174,23 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
+        await server.Build(configureTestServices: services =>
         {
             // Replace production services with test doubles
             services.Replace(ServiceDescriptor.Scoped<IExampleService, TestExampleService>());
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        // Once the client's AuthManager signs a user in, the controllers created from it call the api as that user.
+        await using var client = server.CreateAppClient();
 
         // Perform sign-in
-        await authenticationManager.SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         // Verify the signed-in user
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
@@ -166,18 +204,19 @@ public partial class IntegrationTests
 
 ### Service Replacement
 ```csharp
-services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
+services.AddScoped<IStorageService, TestStorageService>();
 ```
 - **Why?** Browser storage doesn't exist in API tests, so we use an in-memory implementation
 - **TestStorageService**: Simple `Dictionary<string, string?>` that mimics browser storage
+- **Automatic**: `AppTestServer` registers it on every server built without a browser (See `AddBrowserlessClientServices`), so a test never does
 - **Selective Mocking**: Only mock what's necessary; everything else is real
 
 ### Service Resolution
 ```csharp
-await using var scope = server.WebApp.Services.CreateAsyncScope();
-var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+await using var client = server.CreateAppClient();
+var authManager = client.AuthManager;
 ```
-- Create a DI scope just like in production
+- An `AppClient` is one user's app, just like in production: a DI scope of its own
 - Resolve services from the actual application container
 - Services have access to real DbContext, configuration, etc.
 
@@ -207,7 +246,7 @@ public partial class UITests : AppPageTest
         await server.Build().Start(TestContext.CancellationToken);
 
         // Navigate to sign-in page
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString());
+        await Page.GotoAsync(new Uri(server.WebAppAddress, PageUrls.SignIn).ToString());
 
         // Verify page title
         await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
@@ -220,7 +259,7 @@ public partial class UITests : AppPageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         // Verify successful sign-in
-        await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
+        await Expect(Page).ToHaveURLAsync(server.WebAppAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = TestData.DefaultTestFullName })).ToBeVisibleAsync();
     }
 }
@@ -343,7 +382,7 @@ The project includes GitHub Actions workflows that run tests automatically:
 
 - name: Upload Tests Artifact
   if: failure()
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: tests-artifact
     path: ./src/Tests/TestResults

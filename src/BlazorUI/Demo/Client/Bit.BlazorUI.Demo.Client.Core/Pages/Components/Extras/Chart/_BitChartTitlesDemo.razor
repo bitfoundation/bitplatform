@@ -3,17 +3,15 @@
 <DemoExample Title="Title and subtitle" RazorCode="@basicRazorCode" CsharpCode="@basicCsharpCode" Id="titles-basic">
     <div class="example-desc">
         <code>Plugins.Title</code> and <code>Plugins.Subtitle</code> render above the plot with their own font,
-        color and alignment. The title also becomes the chart's accessible name when no
-        <code>AriaLabel</code> is given, so a titled chart is described correctly for free.
+        color and alignment. The title is also the chart's accessible name when no <code>AriaLabel</code> is set.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_titled" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Placement" RazorCode="@placementRazorCode" CsharpCode="@placementCsharpCode" Id="titles-placement">
     <div class="example-desc">
-        A title can sit on any of the four sides: top and bottom run across the chart, left and right run down
-        beside the plot. <code>Align</code> pins it to the start, center or end of that edge, and a newline in
-        the text breaks it over two lines.
+        <code>Position</code> puts the title on any side (left and right run vertically), <code>Align</code> pins
+        it to the start, center or end, and a newline in the text breaks it over two lines.
     </div>
     <div class="controls">
         <label>
@@ -39,8 +37,8 @@
 
 <DemoExample Title="Axis titles" RazorCode="@axisRazorCode" CsharpCode="@axisCsharpCode" Id="titles-axis">
     <div class="example-desc">
-        Each scale carries its own <code>Title</code>, drawn beside the axis and rotated to run along it. The
-        axis reserves the room the title needs, so it never overlaps the tick labels.
+        Each scale's <code>Title</code> is drawn along its axis, with room reserved so it never overlaps the tick
+        labels.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_axisTitles" /></div></div>
 </DemoExample>

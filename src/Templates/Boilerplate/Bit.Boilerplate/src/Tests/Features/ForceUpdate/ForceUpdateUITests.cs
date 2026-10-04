@@ -28,10 +28,10 @@ public partial class ForceUpdateUITests : AppPageTest
         var minimumBeyondAppVersion = new Version(appVersion.Major + 1, 0, 0).ToString();
 
         await server.Build(
-            configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = minimumBeyondAppVersion
+            configureTestConfiguration: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = minimumBeyondAppVersion
         ).Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // Open the Sign in page and ask for a magic link. This is the first internal API call the browser makes; the
         // server rejects it because the client version is below the raised minimum supported web app version.

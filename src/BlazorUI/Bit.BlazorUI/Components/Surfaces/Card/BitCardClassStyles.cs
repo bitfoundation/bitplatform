@@ -11,7 +11,7 @@ public class BitCardClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// The custom CSS class/style for the stretched link that covers a card with an Href.
+    /// The custom CSS class/style for the stretched link that covers a card with an Href, or the stretched button that covers a clickable one.
     /// </summary>
     public string? Link { get; set; }
 

@@ -131,10 +131,10 @@ public class SignInPanelCredentialStateTests
     public async Task MagicLink_Should_IdentifyTheRecipientByEmail_NotByUserName()
     {
         await using var server = new AppTestServer();
-        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
 
         // A per-run account, not the shared seeded one. SendOtp stamps OtpRequestedOn on whoever it is called for and
         // that state outlives the run, so issuing a code for test@bitplatform.dev here would leave a live magic link
@@ -142,7 +142,7 @@ public class SignInPanelCredentialStateTests
         // the two would race even within a single run. It also re-arms SendOtp's own resend throttle. See
         // TestAccountUtils. CreateAndSignIn leaves the account e-mail confirmed, which is what makes the call below
         // send a plain OTP e-mail carrying the magic link rather than a confirmation e-mail.
-        var (email, _) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+        var (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
 
         await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
 

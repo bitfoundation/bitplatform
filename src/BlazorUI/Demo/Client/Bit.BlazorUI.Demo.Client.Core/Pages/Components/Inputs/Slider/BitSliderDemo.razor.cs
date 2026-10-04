@@ -505,7 +505,7 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight (caption), --bit-tpg-fw-semibold (value labels)",
             Description = "Weight of the caption and of the value labels.",
         },
         new()

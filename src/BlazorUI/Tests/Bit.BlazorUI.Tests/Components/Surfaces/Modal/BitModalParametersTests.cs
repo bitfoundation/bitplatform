@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
@@ -178,6 +181,48 @@ public class BitModalParametersTests
         await merged.OnOpen.InvokeAsync();
 
         CollectionAssert.AreEqual(new[] { "open-first", "open-second" }, order);
+    }
+
+    [TestMethod]
+    public void MergeShouldCarryTheRootClassAndStyleAcrossWithTheFirstWinning()
+    {
+        var first = new BitModalParameters { Style = "--bit-Modal-radius:1rem" };
+        var second = new BitModalParameters { Class = "house", Style = "--bit-Modal-radius:0" };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        Assert.AreEqual("house", merged.Class);
+        Assert.AreEqual("--bit-Modal-radius:1rem", merged.Style);
+    }
+
+    [TestMethod]
+    public void BitModalParametersShouldCarryEveryParameterOfTheComponent()
+    {
+        // A parameter added to the Modal without its counterpart here is one a Modal shown through the service can
+        // never be given. Only the open state and the content are the service's own business.
+        var carried = typeof(BitModalParameters).GetProperties().Select(p => p.Name).ToHashSet();
+        carried.UnionWith(
+        [
+            nameof(BitModal.IsOpen),
+            nameof(BitModal.IsOpenChanged),
+            nameof(BitModal.DefaultIsOpen),
+            nameof(BitModal.ChildContent),
+        ]);
+
+        var missing = typeof(BitModal).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                      .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                      .Select(p => p.Name)
+                                      .Where(n => carried.Contains(n) is false)
+                                      .ToList();
+
+        // The base parameters that shape how one Modal looks or reads are carried too.
+        missing.AddRange(new[]
+        {
+            nameof(BitModal.AriaLabel), nameof(BitModal.Class), nameof(BitModal.Dir), nameof(BitModal.HtmlAttributes),
+            nameof(BitModal.IsEnabled), nameof(BitModal.Style), nameof(BitModal.Visibility)
+        }.Where(n => carried.Contains(n) is false));
+
+        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-// bit version: 10.6.1
+// bit version: 10.6.2
 
 // Development service worker of the FullSample. Unlike the standard Blazor template - whose
 // dev worker is a no-op so caching never hides source changes - this sample runs the full

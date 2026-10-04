@@ -20,9 +20,9 @@ public static class TestAccountUtils
     /// e-mail and id.
     /// </summary>
     public static async Task<(string email, Guid userId)> CreateAndSignIn(
-        AppTestServer server, AsyncServiceScope scope, CancellationToken cancellationToken)
+        AppClient client, CancellationToken cancellationToken)
     {
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = client.GetController<IIdentityController>();
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -31,15 +31,15 @@ public static class TestAccountUtils
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => identityController.SendOtp(new() { Email = email }, null, cancellationToken));
 
-        var captured = await server.WaitForCapturedEmail(email,
+        var captured = await client.Server.WaitForCapturedEmail(email,
             e => e.Kind is CapturedEmailKind.EmailToken, cancellationToken);
 
         // Confirming returns the token pair, exactly as ConfirmPage receives it; AuthManager is what persists it.
         var tokens = await identityController.ConfirmEmail(new() { Email = email, Token = captured.Token }, cancellationToken);
 
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
+        await client.AuthManager.StoreTokens(tokens);
 
-        var userId = await ReadUserId(server, email, cancellationToken);
+        var userId = await ReadUserId(client.Server, email, cancellationToken);
 
         return (email, userId);
     }
@@ -54,11 +54,11 @@ public static class TestAccountUtils
     /// database, and they pile up one per test run.
     /// </para>
     /// </summary>
-    public static async Task<GlobalAdminGrant> MakeGlobalAdmin(AppTestServer server, AsyncServiceScope scope, Guid userId, CancellationToken cancellationToken)
+    public static async Task<GlobalAdminGrant> MakeGlobalAdmin(AppClient client, Guid userId, CancellationToken cancellationToken)
     {
-        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scopeApiApp = client.Server.ApiApp.Services.CreateAsyncScope())
         {
-            var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var globalAdminRoleId = await dbContext.Roles
                 .Where(r => r.Name == AppRoles.GlobalAdmin)
@@ -69,7 +69,7 @@ public static class TestAccountUtils
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
+        var accessToken = await client.AuthManager
             .RefreshToken(requestedBy: nameof(MakeGlobalAdmin));
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Refreshing after the role grant should have produced a new access token.");
@@ -82,16 +82,16 @@ public static class TestAccountUtils
         //#if (multitenant == true)
         // The management controllers additionally require AuthPolicies.TENANT_SELECTED, and a freshly auto-provisioned
         // account has no tenant selected. A global admin may switch into any active tenant (See UserController.GetTenants).
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var tenants = await userController.GetTenants(cancellationToken);
         Assert.IsNotEmpty(tenants, "A global admin should see every active tenant, and the template seeds one.");
 
-        Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<AuthManager>().SwitchTenant(tenants[0].Id, cancellationToken),
+        Assert.IsTrue(await client.AuthManager.SwitchTenant(tenants[0].Id, cancellationToken),
             "Switching into the seeded tenant should succeed for a global admin.");
         //#endif
 
-        return new GlobalAdminGrant(server, userId);
+        return new GlobalAdminGrant(client.Server, userId);
     }
 
     /// <summary>Revokes the g-admin grant <see cref="MakeGlobalAdmin"/> made, when the test is done with it.</summary>
@@ -99,7 +99,7 @@ public static class TestAccountUtils
     {
         public async ValueTask DisposeAsync()
         {
-            await using var scope = server.WebApp.Services.CreateAsyncScope();
+            await using var scope = server.ApiApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             // The role id first, not ur.Role!.Name: a bulk delete whose predicate needs a join becomes a subquery over
@@ -119,16 +119,16 @@ public static class TestAccountUtils
     /// Drives the real elevation flow - request the code, read it from the captured e-mail, refresh the token pair with
     /// it - so a test that needs <see cref="AuthPolicies.ELEVATED_ACCESS"/> obtains it the way a user would.
     /// </summary>
-    public static async Task Elevate(AppTestServer server, AsyncServiceScope scope, string email, CancellationToken cancellationToken)
+    public static async Task Elevate(AppClient client, string email, CancellationToken cancellationToken)
     {
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         await userController.SendElevatedAccessToken(cancellationToken);
 
-        var captured = await server.WaitForCapturedEmail(email,
+        var captured = await client.Server.WaitForCapturedEmail(email,
             e => e.Kind is CapturedEmailKind.ElevatedAccess, cancellationToken);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
+        var accessToken = await client.AuthManager
             .RefreshToken(requestedBy: nameof(Elevate), elevatedAccessToken: captured.Token);
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "The elevation refresh should have produced a new access token.");
@@ -146,7 +146,7 @@ public static class TestAccountUtils
     /// </summary>
     public static async Task ResetOtpAndLockoutState(AppTestServer server, string email, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
@@ -161,7 +161,7 @@ public static class TestAccountUtils
 
     public static async Task<Guid> ReadUserId(AppTestServer server, string email, CancellationToken cancellationToken)
     {
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 

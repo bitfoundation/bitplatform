@@ -1,40 +1,31 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// The parameters every input component inherits from <see cref="BitInputBase{TValue}"/>, on top of the ones
-/// <see cref="BitComponentBaseParams"/> already carries.
+/// The parameters that every bit BlazorUI input component inherits from <see cref="BitInputBase{TValue}"/>,
+/// which the parameters class of an input derives from so that a <see cref="BitParams"/> cascade carries them
+/// along with the ones the component declares itself.
 /// </summary>
 /// <remarks>
-/// Only what a <see cref="BitParams"/> cascade can reasonably say about a whole group of inputs is here:
-/// a panel made read-only, a fieldset of required questions, a section taken out of validation, a set of
-/// attributes put on every underlying input element. A value, a name, a display name or a change callback
-/// belongs to one field rather than to the group around it, so none of those is cascadable.
+/// Only the parameters that describe how a whole area of a form behaves are carried here. What identifies a
+/// single field - its <see cref="BitInputBase{TValue}.Value"/>, its
+/// <see cref="BitInputBase{TValue}.DefaultValue"/>, its <see cref="BitInputBase{TValue}.Name"/> and its
+/// <see cref="BitInputBase{TValue}.DisplayName"/> - is deliberately left out, since a value shared by every
+/// input under the cascade is never what a consumer means. So is
+/// <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>, a dictionary the components write into, which they
+/// would end up sharing a single instance of, and <see cref="BitInputBase{TValue}.NoValidate"/>, which is read
+/// while the parameters are still being set and so before a cascade has been applied.
 /// </remarks>
-public abstract class BitInputBaseParams : BitComponentBaseParams
+public abstract class BitInputBaseParams<TValue> : BitComponentBaseParams
 {
     /// <summary>
-    /// Additional HTML attributes to apply to the underlying input element of the component.
-    /// <br />
-    /// <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>.
-    /// </summary>
-    public Dictionary<string, object>? InputHtmlAttributes { get; set; }
-
-    /// <summary>
-    /// Takes the component out of the validation of the EditForm it sits in.
-    /// <br />
-    /// <see cref="BitInputBase{TValue}.NoValidate"/>.
-    /// </summary>
-    public bool? NoValidate { get; set; }
-
-    /// <summary>
-    /// Makes the component read-only: still focusable and announced, but refusing every change.
+    /// Makes the input read-only.
     /// <br />
     /// <see cref="BitInputBase{TValue}.ReadOnly"/>.
     /// </summary>
     public bool? ReadOnly { get; set; }
 
     /// <summary>
-    /// Marks the component as required, which is announced through <c>aria-required</c>.
+    /// Makes the input required.
     /// <br />
     /// <see cref="BitInputBase{TValue}.Required"/>.
     /// </summary>
@@ -43,38 +34,31 @@ public abstract class BitInputBaseParams : BitComponentBaseParams
 
 
     /// <summary>
-    /// Updates the inherited input parameters of the given component with any values set on this object,
-    /// leaving alone every parameter the markup of that component has already written itself.
+    /// Updates the inherited input properties of the specified <see cref="BitInputBase{TValue}"/> instance with
+    /// any values that have been set on this object, if those properties have not already been set on the
+    /// component itself.
     /// </summary>
-    /// <param name="input">The component whose parameters will be updated. Cannot be null.</param>
-    protected void UpdateInputParameters<TValue>(BitInputBase<TValue> input)
+    /// <param name="bitInputBase">
+    /// The <see cref="BitInputBase{TValue}"/> instance whose properties will be updated. Cannot be null.
+    /// </param>
+    public void UpdateInputBaseParameters(BitInputBase<TValue> bitInputBase)
     {
-        if (input is null) return;
+        if (bitInputBase is null) return;
 
-        UpdateBaseParameters(input);
+        UpdateBaseParameters(bitInputBase);
 
-        if (InputHtmlAttributes is not null && input.InputParameterHasNotBeenSet(nameof(InputHtmlAttributes)))
+        if (ReadOnly.HasValue && bitInputBase.HasNotBeenSetOnInput(nameof(ReadOnly)))
         {
-            input.InputHtmlAttributes = InputHtmlAttributes;
+            bitInputBase.ReadOnly = ReadOnly.Value;
+
+            bitInputBase.ClassBuilder.Reset();
         }
 
-        if (NoValidate.HasValue && input.InputParameterHasNotBeenSet(nameof(NoValidate)))
+        if (Required.HasValue && bitInputBase.HasNotBeenSetOnInput(nameof(Required)))
         {
-            input.NoValidate = NoValidate.Value;
-        }
+            bitInputBase.Required = Required.Value;
 
-        if (ReadOnly.HasValue && input.InputParameterHasNotBeenSet(nameof(ReadOnly)))
-        {
-            input.ReadOnly = ReadOnly.Value;
-
-            input.ClassBuilder.Reset();
-        }
-
-        if (Required.HasValue && input.InputParameterHasNotBeenSet(nameof(Required)))
-        {
-            input.Required = Required.Value;
-
-            input.ClassBuilder.Reset();
+            bitInputBase.ClassBuilder.Reset();
         }
     }
 }

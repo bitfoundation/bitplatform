@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
@@ -1338,7 +1339,7 @@ public class BitLinkTests : BunitTestContext
         var anchor = component.Find(".bit-lnk");
 
         // A download written without a value is the browser being told to save the file under whatever name
-        // the server gives it, so the value it arrived as is handed back rather than stringified into one.
+        // the server gives it, so a splatted true comes back as the same bare attribute rather than as "True".
         Assert.IsTrue(anchor.HasAttribute("download"));
         Assert.AreEqual(string.Empty, anchor.GetAttribute("download"));
     }
@@ -1596,6 +1597,238 @@ public class BitLinkTests : BunitTestContext
         // Everything an anchor accepts goes through the splatted attributes, event handlers included - which is
         // what keeps the component from having to grow a parameter for every event the DOM already has.
         Assert.AreEqual(1, component.Instance.DoubleClickCount);
+    }
+
+    [TestMethod,
+        DataRow(BitNavMatch.Exact, "/components/link", "/components/link", true),
+        DataRow(BitNavMatch.Exact, "/components/link", "/Components/Link/", true),
+        DataRow(BitNavMatch.Exact, "/components/link", "/components/link?tab=api", true),
+        DataRow(BitNavMatch.Exact, "/components/link", "/components/link/api", false),
+        DataRow(BitNavMatch.Exact, "/components/link", "/components/button", false),
+        DataRow(BitNavMatch.Prefix, "/components", "/components/link", true),
+        DataRow(BitNavMatch.Prefix, "/components", "/components", true),
+        DataRow(BitNavMatch.Prefix, "/component", "/components/link", false),
+        DataRow(BitNavMatch.Wildcard, "/components/*", "/components/link", true),
+        DataRow(BitNavMatch.Regex, "^/components/(link|button)$", "/components/button", true)
+    ]
+    public void BitLinkShouldReportItselfCurrentWhileItsHrefMatchesTheUrl(BitNavMatch match, string href, string url, bool expected)
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo(url);
+
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Match, match);
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        Assert.AreEqual(expected ? "page" : null, anchor.GetAttribute("aria-current"));
+        Assert.AreEqual(expected, anchor.ClassList.Contains("bit-lnk-cur"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldFollowTheNavigationWithAMatch()
+    {
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        navigationManager.NavigateTo("/components/button");
+
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/components/link");
+            parameters.Add(p => p.Match, BitNavMatch.Exact);
+        });
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-current"));
+
+        navigationManager.NavigateTo("/components/link");
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("page", component.Find(".bit-lnk").GetAttribute("aria-current"));
+            Assert.IsTrue(component.Find(".bit-lnk").ClassList.Contains("bit-lnk-cur"));
+        });
+
+        navigationManager.NavigateTo("/components/image");
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-current"));
+            Assert.IsFalse(component.Find(".bit-lnk").ClassList.Contains("bit-lnk-cur"));
+        });
+    }
+
+    [TestMethod]
+    public async Task BitLinkShouldStopFollowingTheNavigationOnceDisposed()
+    {
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/components/link");
+            parameters.Add(p => p.Match, BitNavMatch.Exact);
+        });
+
+        await component.Instance.DisposeAsync();
+
+        // A navigation raised after the link is gone must not try to render it.
+        navigationManager.NavigateTo("/components/link");
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-current"));
+    }
+
+    [TestMethod,
+        DataRow("/components/link", "location"),
+        DataRow("/components/button", null)
+    ]
+    public void BitLinkShouldTakeTheKindOfCurrentFromAriaCurrentAndWhetherFromTheMatch(string url, string expected)
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo(url);
+
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/components/link");
+            parameters.Add(p => p.Match, BitNavMatch.Exact);
+            parameters.Add(p => p.AriaCurrent, BitNavAriaCurrent.Location);
+        });
+
+        // With a Match, the URL decides whether the link is the current one and AriaCurrent only which kind.
+        Assert.AreEqual(expected, component.Find(".bit-lnk").GetAttribute("aria-current"));
+    }
+
+    [TestMethod,
+        DataRow("#section"),
+        DataRow("#")
+    ]
+    public void BitLinkShouldNeverMatchAnInPageLink(string href)
+    {
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        navigationManager.NavigateTo(navigationManager.BaseUri + href);
+
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Match, BitNavMatch.Prefix);
+        });
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldNotFollowTheUrlWithoutAMatch()
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/components/link");
+
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/components/link");
+        });
+
+        Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-current"));
+        Assert.IsFalse(component.Find(".bit-lnk").ClassList.Contains("bit-lnk-cur"));
+    }
+
+    [TestMethod,
+        DataRow(BitNavAriaCurrent.Page, true),
+        DataRow(null, false)
+    ]
+    public void BitLinkShouldMarkTheCurrentLinkWithItsClass(BitNavAriaCurrent? ariaCurrent, bool expected)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.AriaCurrent, ariaCurrent);
+        });
+
+        Assert.AreEqual(expected, component.Find(".bit-lnk").ClassList.Contains("bit-lnk-cur"));
+
+        component.Render(parameters => parameters.Add(p => p.AriaCurrent, expected ? null : BitNavAriaCurrent.Step));
+
+        Assert.AreEqual(expected is false, component.Find(".bit-lnk").ClassList.Contains("bit-lnk-cur"));
+    }
+
+    [TestMethod,
+        DataRow("page", true),
+        DataRow("false", false)
+    ]
+    public void BitLinkShouldMarkASplattedAriaCurrentWithTheClassToo(string ariaCurrent, bool expected)
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object> { ["aria-current"] = ariaCurrent });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        Assert.AreEqual(ariaCurrent, anchor.GetAttribute("aria-current"));
+        Assert.AreEqual(expected, anchor.ClassList.Contains("bit-lnk-cur"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitLinkShouldMoveTheFocusOnTheFirstRenderWithAutoFocus(string href)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        // The attribute alone is only honoured while the browser parses the document, never after an
+        // interactive render, so the focus is moved from code as well - once.
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal));
+        var reference = (ElementReference)invocation.Arguments[0]!;
+
+        Assert.AreEqual(component.Find(".bit-lnk").GetAttribute("blazor:elementreference"), reference.Id);
+
+        component.Render(parameters => parameters.Add(p => p.Title, "re-rendered"));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal)));
+    }
+
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("https://bitplatform.dev", false),
+        DataRow(null, true),
+        DataRow("https://bitplatform.dev", true)
+    ]
+    public void BitLinkShouldOnlyAutoFocusADisabledLinkThatKeepsItsFocus(string href, bool allowDisabledFocus)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        Assert.AreEqual(allowDisabledFocus, component.Find(".bit-lnk").HasAttribute("autofocus"));
+        Assert.AreEqual(allowDisabledFocus, Context.JSInterop.Invocations.Any(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldReadASplattedAttributeWhateverItsCase()
+    {
+        var component = RenderComponent<BitLinkSplattedAttributesTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Attributes, new Dictionary<string, object>
+            {
+                ["TITLE"] = "the bit platform",
+                ["TARGET"] = "_blank",
+            });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        // HTML attribute names are case insensitive, and so is the deduplication between a splatted attribute
+        // and one the link writes itself - so a differently cased one would otherwise be written over with null.
+        Assert.AreEqual("the bit platform", anchor.GetAttribute("title"));
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
     }
 
     private void MatchSimpleMarkup(IRenderedComponent<BitLink> component, string href)

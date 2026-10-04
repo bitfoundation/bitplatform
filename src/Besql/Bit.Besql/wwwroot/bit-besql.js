@@ -1,5 +1,5 @@
 var BitBesql = window.BitBesql || {};
-BitBesql.version = window['bit-besql version'] = '10.6.1';
+BitBesql.version = window['bit-besql version'] = '10.6.2';
 
 BitBesql.persist = async function besqlPersist(fileName) {
 
@@ -17,16 +17,12 @@ BitBesql.persist = async function besqlPersist(fileName) {
 
     const data = window.Blazor.runtime.Module.FS.readFile(sqliteFilePath);
 
-    const blob = new Blob([data], {
-        type: 'application/octet-stream',
-        status: 200
-    });
-
     const headers = new Headers({
-        'content-length': blob.size
+        'content-type': 'application/octet-stream',
+        'content-length': data.byteLength
     });
 
-    const response = new Response(blob, {
+    const response = new Response(data, {
         headers
     });
 

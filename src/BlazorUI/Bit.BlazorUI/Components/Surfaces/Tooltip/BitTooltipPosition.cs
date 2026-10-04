@@ -1,64 +1,68 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Where the tooltip is placed around its anchor. The sides are the sides of the screen, not of the reading
+/// order; <see cref="BitTooltip.MirrorInRtl"/> swaps left and right in a right-to-left tooltip.
+/// </summary>
 public enum BitTooltipPosition
 {
     /// <summary>
-    /// The position of tooltip top of its anchor
+    /// Above the anchor, centered on it.
     /// </summary>
     Top,
 
     /// <summary>
-    /// The position of tooltip top left of its anchor
+    /// Above the anchor, off its left corner.
     /// </summary>
     TopLeft,
 
     /// <summary>
-    /// The position of tooltip top right of its anchor
+    /// Above the anchor, off its right corner.
     /// </summary>
     TopRight,
 
     /// <summary>
-    /// The position of tooltip right top of its anchor
+    /// Right of the anchor, off its top corner.
     /// </summary>
     RightTop,
 
     /// <summary>
-    /// The position of tooltip right of its anchor
+    /// Right of the anchor, centered on it.
     /// </summary>
     Right,
 
     /// <summary>
-    /// The position of tooltip right bottom of its anchor
+    /// Right of the anchor, off its bottom corner.
     /// </summary>
     RightBottom,
 
     /// <summary>
-    /// The position of tooltip bottom right of its anchor
+    /// Below the anchor, off its right corner.
     /// </summary>
     BottomRight,
 
     /// <summary>
-    /// The position of tooltip bottom of its anchor
+    /// Below the anchor, centered on it.
     /// </summary>
     Bottom,
 
     /// <summary>
-    /// The position of tooltip bottom left of its anchor
+    /// Below the anchor, off its left corner.
     /// </summary>
     BottomLeft,
 
     /// <summary>
-    /// The position of tooltip left bottom of its anchor
+    /// Left of the anchor, off its bottom corner.
     /// </summary>
     LeftBottom,
 
     /// <summary>
-    /// The position of tooltip left of its anchor
+    /// Left of the anchor, centered on it.
     /// </summary>
     Left,
 
     /// <summary>
-    /// The position of tooltip left top of its anchor
+    /// Left of the anchor, off its top corner.
     /// </summary>
     LeftTop
 }

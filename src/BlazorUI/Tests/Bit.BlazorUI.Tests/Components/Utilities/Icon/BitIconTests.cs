@@ -937,7 +937,81 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.TabIndex, "3");
         });
 
-        component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" {HIDDEN} id:ignore />");
+        // A tab stop is never hidden: aria-hidden on an element the focus lands on is a stop the screen reader
+        // has been told does not exist. With no glyph to fall back to it has no name either, which the Title
+        // docs tell the author to give it.
+        component.MarkupMatches(@$"<i tabindex=""3"" class=""{CLASS}"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldNotFallBackToAClassList()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("fa-solid fa-circle-info"));
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // "fa-solid fa-circle-info" is a class list and not a name, so it is never read out.
+        var icon = component.Find("i");
+
+        Assert.IsFalse(icon.HasAttribute("aria-label"));
+        Assert.IsFalse(icon.HasAttribute("role"));
+        Assert.IsFalse(icon.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldBeNamedByItsTitleWhateverItDraws()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("fa-solid fa-circle-info"));
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        var icon = component.Find("i");
+
+        Assert.AreEqual("img", icon.GetAttribute("role"));
+        Assert.AreEqual("More about this field", icon.GetAttribute("title"));
+        Assert.IsFalse(icon.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitIconWithANegativeTabIndexShouldStayHidden()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "-1");
+        });
+
+        component.MarkupMatches(@$"<i tabindex=""-1"" class=""{CLASS}"" {HIDDEN} id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldFallBackToTheIconNameAsAPicture()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // Focusable without a handler, it is a picture rather than a control, named the way an unnamed button is.
+        component.MarkupMatches(@$"<i role=""img"" tabindex=""0"" aria-label=""Info"" class=""{CLASS} bit-icon bit-icon--Info"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconThatIsATabStopShouldKeepItsOwnName()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.TabIndex, "0");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        component.MarkupMatches(@$"<i role=""img"" title=""More about this field"" tabindex=""0"" class=""{CLASS} bit-icon bit-icon--Info"" id:ignore />");
     }
 
     [TestMethod]
@@ -1415,6 +1489,53 @@ public class BitIconTests : BunitTestContext
         Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-dly"));
     }
 
+    [TestMethod,
+        DataRow(3, "3"),
+        DataRow(1, "1"),
+        DataRow(0, "0"),
+        DataRow(-2, "0")
+    ]
+    public void BitIconShouldRespectAnimationIterationCount(int count, string expected)
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Shake);
+            parameters.Add(p => p.AnimationIterationCount, count);
+        });
+
+        // A negative count would be dropped by the browser and leave the animation looping, so it is clamped.
+        component.MarkupMatches(@$"<i style=""--bit-ico-anm-itr:{expected}"" class=""{CLASS} bit-ico-shk bit-ico-itr"" {HIDDEN} id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconShouldLoopWithoutAnIterationCount()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Shake);
+        });
+
+        Assert.IsFalse(component.Find("i").ClassList.Contains("bit-ico-itr"));
+        Assert.IsFalse((component.Find("i").GetAttribute("style") ?? "").Contains("--bit-ico-anm-itr"));
+    }
+
+    [TestMethod]
+    public void BitIconShouldRespectAnimationIterationCountChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.Animation, BitIconAnimation.Bounce);
+            parameters.Add(p => p.AnimationIterationCount, 2);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AnimationIterationCount, (int?)null);
+        });
+
+        component.MarkupMatches(@$"<i class=""{CLASS} bit-ico-bnc"" {HIDDEN} id:ignore />");
+    }
+
     [TestMethod]
     public void BitIconShouldNotActivateFromTheKeyboardWhenDisabled()
     {
@@ -1445,7 +1566,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconParamsTest>();
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s"" class=""bit-ico bit-ico-err bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s;--bit-ico-anm-itr:3"" class=""bit-ico bit-ico-err bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm bit-ico-itr"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -1453,7 +1574,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconParamsOverrideTest>();
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s"" class=""bit-ico bit-ico-suc bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:90deg;--bit-ico-anm-dur:2s;--bit-ico-anm-itr:3"" class=""bit-ico bit-ico-suc bit-ico-lg bit-ico-out bit-ico-fxw bit-ico-cir bit-ico-inl bit-ico-trn bit-ico-spn bit-ico-anm bit-ico-itr"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]

@@ -1,56 +1,122 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Public CSS variables, read off the error UI and never declared here, so a value set on :root re-skins every
+// boundary of the app and one set on the Style of a boundary - or of any element around a group of them - re-skins
+// those alone. Styles and Classes still reach each part by name and win over these.
+//   --bit-ErrorBoundary-background              background of the error UI                        (default: $clr-bg-pri)
+//   --bit-ErrorBoundary-border                  border of the error UI                             (default: none)
+//   --bit-ErrorBoundary-radius                  corner radius of the error UI                      (default: $shp-radius-none)
+//   --bit-ErrorBoundary-padding                 padding of the error UI                            (default: spacing(3))
+//   --bit-ErrorBoundary-gap                     room between the parts                             (default: spacing(2))
+//   --bit-ErrorBoundary-align                   start, center or end: the parts, the text and the
+//                                               buttons alike                                      (default: center)
+//   --bit-ErrorBoundary-icon-color              color of the illustration or the icon              (default: $clr-err)
+//   --bit-ErrorBoundary-icon-size               size of the illustration or the icon               (default: 64px / $siz-icon-lg)
+//   --bit-ErrorBoundary-title-color             color of the title                                 (default: $clr-err-fg)
+//   --bit-ErrorBoundary-message-color           color of the message                               (default: $clr-fg-sec)
+//   --bit-ErrorBoundary-message-max-width       longest line of the message                        (default: 560px)
+//   --bit-ErrorBoundary-exception-background    background of the exception details                (default: $clr-bg-sec)
+//   --bit-ErrorBoundary-exception-color         text color of the exception details                (default: $clr-fg-sec)
+//   --bit-ErrorBoundary-exception-font-family   font family of the exception details               (default: $tg-font-family-mono)
+//   --bit-ErrorBoundary-exception-max-height    tallest the exception details get before scrolling (default: 320px)
+
 .bit-erb {
     width: 100%;
     height: 100%;
     display: flex;
-    gap: spacing(2);
-    text-align: center;
-    align-items: center;
-    padding: spacing(3);
     box-sizing: border-box;
     flex-direction: column;
     justify-content: center;
-    background-color: $clr-bg-pri;
+    gap: var(--bit-ErrorBoundary-gap, #{spacing(2)});
+    text-align: var(--bit-ErrorBoundary-align, center);
+    align-items: var(--bit-ErrorBoundary-align, center);
+    padding: var(--bit-ErrorBoundary-padding, #{spacing(3)});
+    border: var(--bit-ErrorBoundary-border, none);
+    border-radius: var(--bit-ErrorBoundary-radius, #{$shp-radius-none});
+    background-color: var(--bit-ErrorBoundary-background, #{$clr-bg-pri});
+
+    // AutoFocus parks the focus on the root so that its name and message are read out, not so that anything is
+    // operated there - and around a boundary standing in for a whole page a ring would trace the viewport's edge.
+    // Matched by the class the boundary adds with the tabindex it writes, never by the attribute: a tabindex the
+    // page wrote itself, -1 included, is a stop it asked for, so that one keeps the browser's outline.
+    &.bit-erb-anc {
+        @include focus-anchor;
+    }
+}
+
+// The part that is announced, laid out exactly as the root lays out its own parts.
+.bit-erb-hdr {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--bit-ErrorBoundary-gap, #{spacing(2)});
+    align-items: var(--bit-ErrorBoundary-align, center);
 }
 
 .bit-erb-ico {
-    color: $clr-err;
-    font-size: $siz-icon-lg;
+    color: var(--bit-ErrorBoundary-icon-color, #{$clr-err});
+    font-size: var(--bit-ErrorBoundary-icon-size, #{$siz-icon-lg});
 }
 
 .bit-erb-svg {
     flex-shrink: 0;
+    width: var(--bit-ErrorBoundary-icon-size, #{rem2(64px)});
+    height: var(--bit-ErrorBoundary-icon-size, #{rem2(64px)});
 }
 
 /* The illustration is drawn in the theme's error color rather than in two literals: the pale half is
-   the same color at a fraction of its alpha, so the glyph stays readable on it in both schemes. */
+   the same color at a fraction of its alpha, so the glyph stays readable on it in both schemes - and in a
+   forced-colors mode, where the error color is the system text color. */
 .bit-erb-svg-bg {
-    fill: translucent($clr-err, 25%);
+    fill: translucent(var(--bit-ErrorBoundary-icon-color, #{$clr-err}), 25%);
 }
 
 .bit-erb-svg-fg {
-    fill: $clr-err;
+    fill: var(--bit-ErrorBoundary-icon-color, #{$clr-err});
+}
+
+// One class each, so that a Classes.Title or Classes.Message rule of the app's - linked after this stylesheet - wins
+// over these. The color is handed to BitText through its own variable rather than written over the color it sets,
+// which leaves the two rules nothing to tie on, and lets a --bit-Text-color set in Styles.Title or Styles.Message
+// still win. The margin ties with the one of the typography variant, and wins it the way the Extras stylesheet wins
+// over the core one: by being linked after it.
+.bit-erb-ttl {
+    margin: 0;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    --bit-Text-color: var(--bit-ErrorBoundary-title-color, #{$clr-err-fg});
 }
 
 .bit-erb-msg {
-    color: $clr-fg-sec;
-    max-width: rem2(560px);
+    margin: 0;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+    max-width: var(--bit-ErrorBoundary-message-max-width, #{rem2(560px)});
+    --bit-Text-color: var(--bit-ErrorBoundary-message-color, #{$clr-fg-sec});
 }
 
 .bit-erb-exp {
-    width: 90%;
+    margin: 0;
+    width: 100%;
     overflow: auto;
     white-space: pre;
     text-align: start;
-    margin: spacing(3);
     padding: spacing(2);
-    color: $clr-fg-sec;
+    box-sizing: border-box;
     font-size: $tg-fs-xs;
-    max-height: rem2(320px);
-    background-color: $clr-bg-sec;
     border-radius: $shp-radius-surface;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    // Invisible on its own background, and the one edge the block keeps in a forced-colors mode, which takes the
+    // background away.
+    border: $shp-border-width solid transparent;
+    color: var(--bit-ErrorBoundary-exception-color, #{$clr-fg-sec});
+    max-height: var(--bit-ErrorBoundary-exception-max-height, #{rem2(320px)});
+    background-color: var(--bit-ErrorBoundary-exception-background, #{$clr-bg-sec});
+    font-family: var(--bit-ErrorBoundary-exception-font-family, #{$tg-font-family-mono});
+
+    // The block takes the focus to stay reachable with a keyboard, so it is drawn with the ring every control uses.
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-erb-ftr {
@@ -60,5 +126,5 @@
     gap: spacing(2);
     align-items: center;
     box-sizing: border-box;
-    justify-content: center;
+    justify-content: var(--bit-ErrorBoundary-align, center);
 }

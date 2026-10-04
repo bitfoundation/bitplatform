@@ -12,7 +12,11 @@
    sibling of its surface is: an element that can take the focus cannot be hidden from assistive technology
    at the same time, and an empty, unnamed layer is nothing to a screen reader either way.
    The tabindex is written ahead of the attributes of the consumer so that one of their own is the one that
-   lands, as it is for every other attribute they pass. *@
+   lands, as it is for every other attribute they pass.
+   A closed Overlay is marked inert, as a closed Panel or Modal is. The layer only turns hidden once it has
+   faded out, and until then it would still take the clicks meant for the page it is uncovering and let Tab
+   into the content it is fading away with; inert hands both back the moment it closes. A focus that was
+   inside it falls to the body, which is where Utils.restoreFocusOrigin picks it up from. *@
 <div @ref="RootElement"
      tabindex="@(TabIndex ?? "-1")"
      @attributes="HtmlAttributes"
@@ -22,7 +26,8 @@
      aria-label="@AriaLabel"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     inert="@(IsOpen is false)">
     @if (ChildContent is not null)
     {
         @* The content is given a box of its own so that a press and a click on it are told apart from the

@@ -14,13 +14,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     protected bool ValueHasBeenSet;
     protected bool DefaultValueHasBeenSet;
 
-    // The names of the parameters declared by this class that the markup actually wrote. The component's own
-    // parameters are tracked by the generated SetParametersAsync and the ones of BitComponentBase by its own,
-    // each in a set of its own, so the ones declared here need a third - which is what lets a BitParams cascade
-    // fill in an inherited parameter exactly the way it fills in the component's own: only where it was left
-    // unset, never over what the markup wrote.
-    private readonly HashSet<string> _assignedInputParameters = [];
-
 
 
     private TValue? value;
@@ -35,6 +28,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     private string? _incomingValueBeforeParsing;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+
+    // The parameters of this class are taken out of the ParameterView below before it reaches
+    // BitComponentBase, so the set that its own HasNotBeenSet reads never sees them, and the one the source
+    // generator writes only ever holds the parameters that the component itself declares. A cascade filling
+    // in what a consumer left unset therefore has no way of telling the two apart without this third set,
+    // and would overwrite a ReadOnly or a Required that was written on the component by hand.
+    private readonly HashSet<string> _assignedInputParameters = [];
 
 
 
@@ -153,12 +153,24 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
     public virtual ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
 
+    /// <summary>
+    /// Whether the named parameter of <see cref="BitInputBase{TValue}"/> was left unset on this component,
+    /// which is what a <see cref="BitParams"/> cascade fills in. It is the input tier of the very same
+    /// question that <see cref="BitComponentBase.HasNotBeenSet"/> answers for the shared parameters and the
+    /// generated member of each component answers for the ones it declares itself; a separate member because
+    /// the parameters of this class never reach either of those two sets.
+    /// </summary>
+    protected internal bool HasNotBeenSetOnInput(string name) => _assignedInputParameters.Contains(name) is false;
+
+    private protected override bool IsSetByMarkup(string name) => _assignedInputParameters.Contains(name) || base.IsSetByMarkup(name);
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
         DefaultValueHasBeenSet = false;
+
         _assignedInputParameters.Clear();
 
         var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
@@ -174,6 +186,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(DefaultValue):
+                    _assignedInputParameters.Add(nameof(DefaultValue));
                     DefaultValueHasBeenSet = true;
                     DefaultValue = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -185,6 +198,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(DisplayName):
+                    _assignedInputParameters.Add(nameof(DisplayName));
                     DisplayName = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -196,11 +210,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(Name):
+                    _assignedInputParameters.Add(nameof(Name));
                     Name = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(OnChange):
+                    _assignedInputParameters.Add(nameof(OnChange));
                     OnChange = (EventCallback<TValue?>)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -222,17 +238,20 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(Value):
+                    _assignedInputParameters.Add(nameof(Value));
                     ValueHasBeenSet = true;
                     Value = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ValueChanged):
+                    _assignedInputParameters.Add(nameof(ValueChanged));
                     ValueChanged = (EventCallback<TValue>)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ValueExpression):
+                    _assignedInputParameters.Add(nameof(ValueExpression));
                     ValueExpression = (Expression<Func<TValue>>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -266,21 +285,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
     }
-
-    /// <summary>
-    /// Whether a parameter declared by <see cref="BitInputBase{TValue}"/> itself was left unset by the markup.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="BitComponentBase.HasNotBeenSet(string)"/> answers for the parameters of the component and of
-    /// <see cref="BitComponentBase"/>, each of which is tracked in a set of its own; this answers for the ones in
-    /// between. Only the parameters a <see cref="BitParams"/> cascade may reasonably fill in for a whole group of
-    /// inputs are tracked - ReadOnly, Required, NoValidate and InputHtmlAttributes - since a value, a name or a
-    /// display name belongs to one field rather than to the group around it.
-    /// </remarks>
-    /// <param name="name">The name of the parameter to check.</param>
-    protected internal bool InputParameterHasNotBeenSet(string name) => _assignedInputParameters.Contains(name) is false;
-
-
 
     protected override void OnInitialized()
     {

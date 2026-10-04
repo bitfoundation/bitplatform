@@ -3,15 +3,14 @@
 .example-content {
     gap: 1rem;
     display: flex;
+    flex-wrap: wrap;
 }
 
 .anchor {
     width: 150px;
     padding: 4px;
-    cursor: grab;
     height: 300px;
     overflow: auto;
-    user-select: none;
     border: 1px gray solid;
 }
 
@@ -31,14 +30,21 @@
     }
 }
 
-.advanced-anchor {
-    cursor: grab;
+.scroller {
     height: 490px;
     overflow: auto;
-    user-select: none;
 }
 
 ::deep {
+    .text-indicator {
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--bit-shp-radius-full);
+        box-shadow: var(--bit-shd-popup);
+        background-color: var(--bit-clr-bg-pri);
+    }
+
     .custom-loading {
         background-color: rgb(255, 106, 0, 0.1);
     }

@@ -1,4 +1,3 @@
-using OtpNet;
 using Npgsql;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.AI;
@@ -86,7 +85,7 @@ public static class DeployedApiClientProvider
                 Email = email,
                 Password = password,
                 RememberMe = true,
-                TwoFactorCode = new Totp(Base32Encoding.ToBytes(configuration["GlobalAdminAuthenticatorKey"]!)).ComputeTotp()
+                TwoFactorCode = GlobalAdmin.TwoFactorCode(configuration["GlobalAdminAuthenticatorKey"]!)
             }, cancellationToken);
 
             return apiClient;
@@ -180,7 +179,7 @@ public static class DeployedApiClientProvider
         var connectionString = configuration.GetRequiredConnectionString("postgresdb");
 
         services.AddClientCoreProjectServices(configuration);
-        services.AddIntegrationApiOnlyTestsServices();
+        services.AddBrowserlessClientServices();
         services.AddSingleton<IJSRuntime, TestJsRuntime>();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
         services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
@@ -282,7 +281,7 @@ public static class DeployedApiClientProvider
                 Email = email,
                 Password = password,
                 RememberMe = true,
-                TwoFactorCode = new Totp(Base32Encoding.ToBytes(authenticatorKey)).ComputeTotp() // 2fa
+                TwoFactorCode = GlobalAdmin.TwoFactorCode(authenticatorKey) // 2fa
             }, CancellationToken.None);
 
             var httpClient = sp.GetRequiredService<HttpClient>();

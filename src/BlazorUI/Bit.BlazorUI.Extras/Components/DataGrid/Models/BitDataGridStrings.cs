@@ -18,6 +18,9 @@ public class BitDataGridStrings
     /// <summary>Shown when the grid has no rows to display.</summary>
     public string EmptyText { get; set; } = "No records to display.";
 
+    /// <summary>Shown instead of <see cref="EmptyText"/> when there are rows, but the filters or the search exclude them all.</summary>
+    public string NoMatchesText { get; set; } = "No records match the current filters.";
+
     /// <summary>Shown while <c>Loading</c> is true.</summary>
     public string LoadingText { get; set; } = "Loading…";
 
@@ -58,7 +61,25 @@ public class BitDataGridStrings
     public string ClearSearchLabel { get; set; } = "Clear search";
 
     /// <summary>Tooltip of a resizable column's drag handle.</summary>
-    public string ResizeColumnTitle { get; set; } = "Drag to resize, or double-click to fit the content";
+    public string ResizeColumnTitle { get; set; } = "Drag or use the arrow keys to resize; double-click or press Enter to fit the content";
+
+    /// <summary>Accessible label of a resizable column's resize handle. {0} = column title.</summary>
+    public string ResizeColumnFormat { get; set; } = "Resize {0}";
+
+    /// <summary>Accessible label of the column chooser button that moves a column one place toward the start. {0} = column title.</summary>
+    public string MoveColumnEarlierFormat { get; set; } = "Move {0} earlier";
+
+    /// <summary>Accessible label of the column chooser button that moves a column one place toward the end. {0} = column title.</summary>
+    public string MoveColumnLaterFormat { get; set; } = "Move {0} later";
+
+    /// <summary>Spoken after a column header in a multi-column sort. {0} = the column's place in the sort order.</summary>
+    public string SortPriorityFormat { get; set; } = "sort priority {0}";
+
+    /// <summary>Accessible name of the header of the row drag handle column.</summary>
+    public string ReorderColumnHeaderLabel { get; set; } = "Reorder";
+
+    /// <summary>Accessible name of the header of the detail toggle column.</summary>
+    public string DetailsColumnHeaderLabel { get; set; } = "Details";
 
     public string EditText { get; set; } = "Edit";
     public string DeleteText { get; set; } = "Delete";
@@ -99,6 +120,11 @@ public class BitDataGridStrings
     public string FilterOpLessThanOrEqual { get; set; } = "≤";
     public string FilterOpIsEmpty { get; set; } = "Is blank";
     public string FilterOpIsNotEmpty { get; set; } = "Is not blank";
+    public string FilterOpIn { get; set; } = "Is any of";
+    public string FilterOpNotIn { get; set; } = "Is none of";
+
+    /// <summary>Placeholder of the filter input while an "is any of" / "is none of" operator is selected.</summary>
+    public string FilterListPlaceholder { get; set; } = "a, b, c…";
 
     public string BooleanTrueText { get; set; } = "True";
     public string BooleanFalseText { get; set; } = "False";
@@ -175,12 +201,17 @@ public class BitDataGridStrings
     /// <summary>{0} = the search term.</summary>
     public string AnnouncementSearched { get; set; } = "Searching for {0}";
     public string AnnouncementSearchCleared { get; set; } = "Search cleared";
+
+    /// <summary>A filter or search announcement with the number of rows it leaves. {0} = the announcement, {1} = row count.</summary>
+    public string AnnouncementResultsFormat { get; set; } = "{0}. Rows: {1}";
     /// <summary>{0} = column title.</summary>
     public string AnnouncementGrouped { get; set; } = "Grouped by {0}";
     /// <summary>{0} = column title.</summary>
     public string AnnouncementUngrouped { get; set; } = "Grouping by {0} removed";
     /// <summary>Announced after a clipboard copy. {0} = the number of rows copied.</summary>
     public string AnnouncementRowsCopied { get; set; } = "{0} rows copied to the clipboard";
+    /// <summary>Announced after a column is moved from the keyboard or the column chooser. {0} = column title, {1} = its new 1-based position, {2} = the number of columns.</summary>
+    public string AnnouncementColumnMoved { get; set; } = "{0} moved to position {1} of {2}";
 
     /// <summary>Footer aggregate labels. {0} = the formatted aggregate value.</summary>
     public string AggregateSumFormat { get; set; } = "Σ {0}";

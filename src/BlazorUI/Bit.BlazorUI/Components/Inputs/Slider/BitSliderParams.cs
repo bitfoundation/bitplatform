@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 /// and the accessible names of the two ends of a range. What each slider holds of its own is not: a value,
 /// a default value, a name, the templates and the event callbacks stay on the markup of the slider itself.
 /// </remarks>
-public class BitSliderParams : BitInputBaseParams, IBitComponentParams
+public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSlider"/> cascading parameters within <see cref="BitParams"/>.
@@ -218,7 +218,7 @@ public class BitSliderParams : BitInputBaseParams, IBitComponentParams
     {
         if (bitSlider is null) return;
 
-        UpdateInputParameters(bitSlider);
+        UpdateInputBaseParameters(bitSlider);
 
         if (AriaDescription.HasValue() && bitSlider.HasNotBeenSet(nameof(AriaDescription)))
         {

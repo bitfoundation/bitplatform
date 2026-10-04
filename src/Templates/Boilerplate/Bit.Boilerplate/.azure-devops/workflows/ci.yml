@@ -45,6 +45,30 @@ jobs:
       targetType: 'inline'
       script: 'dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true'
 
+- job: test
+  displayName: 'CI test'
+
+  pool:
+    vmImage: 'ubuntu-24.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@1
+    inputs:
+      versionSpec: '24.x'
+    displayName: 'Install Node.js'
+
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build Boilerplate.Web.slnf'
+
   - task: Bash@3
     displayName: 'Install Playwright'
     inputs:

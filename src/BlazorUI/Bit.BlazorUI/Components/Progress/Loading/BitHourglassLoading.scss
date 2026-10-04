@@ -12,9 +12,9 @@
     display: block;
     border-radius: 50%;
     box-sizing: border-box;
-    margin: var(--bit-ldn-hgl-8);
+    margin: calc(8 * var(--bit-ldn-unit));
     animation: bit-ldn-hgl-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) infinite;
-    border: var(--bit-ldn-hgl-32) $shp-border-style var(--bit-ldn-color);
+    border: calc(32 * var(--bit-ldn-unit)) $shp-border-style var(--bit-ldn-color);
     border-color: var(--bit-ldn-color) transparent var(--bit-ldn-color) transparent;
 }
 

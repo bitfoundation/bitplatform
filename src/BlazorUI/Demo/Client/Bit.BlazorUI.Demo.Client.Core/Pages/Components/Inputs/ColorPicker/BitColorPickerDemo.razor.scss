@@ -30,6 +30,20 @@
     }
 
     .custom-preset-selected {
-        --bit-clp-prt-sel-clr: blueviolet;
+        --bit-ColorPicker-swatch-ring-color: blueviolet;
+    }
+
+    // The public variables are never declared by the component, so they inherit: setting them here
+    // re-skins every picker inside, whatever Size each of them is in.
+    .themed-pickers {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        --bit-ColorPicker-radius: 0.75rem;
+        --bit-ColorPicker-padding: 0.75rem;
+        --bit-ColorPicker-background: #{$bit-color-background-secondary};
+        --bit-ColorPicker-border-color: #7E4AE2;
+        --bit-ColorPicker-focus-color: #7E4AE2;
+        --bit-ColorPicker-field-background: #{$bit-color-background-primary};
     }
 }

@@ -2,14 +2,16 @@
 @inherits BitComponentBase
 
 @* The keydown handler is here as well as on the callout because the focus is usually still on the trigger
-   inside the anchor while the callout is open - it only moves into the callout for AutoFocus and TrapFocus -
-   and Escape has to dismiss the callout from wherever the keyboard actually is. The keys stop here: the
-   anchor of a callout nested in another one sits inside that one's content, so an Escape left to carry on
-   up would dismiss the callout the keyboard is still working inside of along with the one it was meant for.
+   inside the anchor while the callout is open - it only moves into the callout for AutoFocus, TrapFocus and Modal -
+   and Escape has to dismiss the callout from wherever the keyboard actually is. The keys stop here while it is
+   open: the anchor of a callout nested in another one sits inside that one's content, so an Escape left to carry
+   on up would dismiss the callout the keyboard is still working inside of along with the one it was meant for.
+   A closed callout has nothing to dismiss, so its keys carry on to whatever the anchor sits in - a toolbar
+   moving between its buttons with the arrow keys, a shortcut handler, the callout it is nested in.
    The callout itself needs none of this - it is relocated to the body while it is open, which is already
    outside of whatever it was opened from. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
-     @onkeydown="HandleOnCalloutKeyDown" @onkeydown:stopPropagation
+     @onkeydown="HandleOnRootKeyDown" @onkeydown:stopPropagation="IsOpen"
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
@@ -21,15 +23,16 @@
     {
         @* The anchor holds the consumer's own trigger, so the relationship attributes are all this
            element carries: a role or a tabindex of its own would either duplicate the tab stop of the
-           button inside it or turn a container of interactive content into an interactive element.
+           button inside it or turn a container of interactive content into an interactive element. Even
+           those only stay here until they have been moved onto that trigger (see SyncAnchorAria).
            The click stops here for the same reason the keys do on the root: the anchor of a callout
            nested in another one sits inside that one's content, where a click left to carry on up would
            reach an AutoClose callout and dismiss it - taking the callout just opened from it along too. *@
         <div @onclick="HandleOnAnchorClick" @onclick:stopPropagation
              id="@_anchorId"
-             aria-controls="@_contentId"
-             aria-haspopup="@GetAriaHasPopup()"
-             aria-expanded="@(IsOpen ? "true" : "false")"
+             aria-controls="@(_ariaOnTrigger ? null : _contentId)"
+             aria-haspopup="@(_ariaOnTrigger ? null : GetAriaHasPopup())"
+             aria-expanded="@(_ariaOnTrigger ? null : IsOpen ? "true" : "false")"
              style="@Styles?.AnchorContainer"
              class="bit-clo-acn @Classes?.AnchorContainer">
             @Anchor
@@ -57,7 +60,7 @@
        the page-level handler on the JS side. *@
     <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
          id="@_overlayId"
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         style="@GetOverlayStyles()"
          class="@GetOverlayCssClasses()">
     </div>
 }
@@ -83,7 +86,8 @@
      role="@GetRole()"
      aria-label="@AriaLabel"
      aria-labelledby="@GetAriaLabelledBy()"
-     aria-modal="@(TrapFocus ? "true" : null)"
+     aria-describedby="@AriaDescribedBy"
+     aria-modal="@(KeepsFocus ? "true" : null)"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">

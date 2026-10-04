@@ -1,15 +1,41 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a progress inherits down to whatever reads it. A parameter that says the same thing
+// (BarColor, TrackColor, Thickness, Diameter, Length, Rounded) still wins over the variable:
+//   --bit-Progress-bar-color            fill of the bar and stroke of the ring       (default: per Color)
+//   --bit-Progress-bar-text-color       readout placed Inside the bar                (default: per Color)
+//   --bit-Progress-track-color          unfilled part of every shape                 (default: $clr-bg-sec)
+//   --bit-Progress-buffer-color         the buffered second value                    (default: the bar color at 38%)
+//   --bit-Progress-stripe-color         the stripes of a Striped bar                 (default: $clr-bg-pri at 25%)
+//   --bit-Progress-stripe-size          pitch of the stripes                         (default: spacing(2))
+//   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: per Size, $siz-track-* for a bar, 1/2/4 x $siz-spinner-stroke for a ring)
+//   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: $shp-radius-none)
+//   --bit-Progress-diameter             smallest diameter of the ring                (default: per Size)
+//   --bit-Progress-length               length of a Vertical bar                     (default: spacing(20))
+//   --bit-Progress-transition-duration  how long the fill takes to follow the value  (default: $mot-duration)
+//   --bit-Progress-font-size            text size of the label and the readout       (default: per Size)
+//   --bit-Progress-label-color          color of the label                           (default: $clr-fg-pri)
+//   --bit-Progress-label-font-weight    weight of the label                          (default: $tg-fw-regular)
+//   --bit-Progress-percent-color        color of the readout beside the bar or ring  (default: $clr-fg-pri, $clr-fg-sec in a ring)
+//   --bit-Progress-percent-font-size    text size of the readout in a ring           (default: $tg-fs-xs up the ramp to $tg-fs-4xl, per the drawn size)
+//   --bit-Progress-description-color    color of the description                     (default: $clr-fg-sec)
+//   --bit-Progress-description-font-size text size of the description                (default: per Size, $tg-fs-2xs / $tg-fs-xs)
+
 .bit-prb {
     font-weight: $tg-fw-regular;
     position: relative;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-Progress-font-size, var(--bit-prb-fs));
     font-family: $tg-font-family;
-    --bit-prb-bar-color: #{$clr-pri};
-    --bit-prb-bar-on-color: #{$clr-pri-text};
+    --bit-prb-fs: #{$tg-fs-sm};
+    // The description is set a step or two below the label, and follows it up the ramp.
+    --bit-prb-des-fs: #{$tg-fs-2xs};
+    --bit-prb-bar-color: var(--bit-Progress-bar-color, #{$clr-pri});
+    --bit-prb-bar-on-color: var(--bit-Progress-bar-text-color, #{$clr-pri-text});
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
     // the ring behind the stroke and the two ends the indeterminate sweep fades into at once.
-    --bit-prb-track-color: #{$clr-bg-sec};
+    --bit-prb-track-color: var(--bit-Progress-track-color, #{$clr-bg-sec});
+    --bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});
     // Where the circular stroke starts, and which way round it goes. A <circle> path starts at three
     // o'clock and runs clockwise, so the default turn of a quarter puts the start at twelve; the mirror
     // is a plain factor rather than a conditional transform, which is what lets the two compose.
@@ -18,27 +44,32 @@
     // How much of the full circle the stroke is allowed to use, which is the whole of it until a gap
     // is cut out of the ring.
     --bit-prb-arc: 1;
-    // Matches the sizeless default thickness (2px) the C# side uses for the circular variant.
-    --bit-prb-thickness: #{$siz-track-sm};
+    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-sm});
+    // The stroke of the ring, which a design system sizes apart from its bar track: the spinner token, doubled
+    // and quadrupled up the size classes. It is only the fallback of --bit-Progress-thickness.
+    --bit-prb-ring-stroke: #{$siz-spinner-stroke};
     // The floor the circular variant is drawn at. The C# side still sizes the svg from
     // Thickness * Radius, so a ring asked to be bigger than this stays bigger; what the token adds is
     // a sensible diameter per size class, which the raw multiplication never gave.
-    --bit-prb-diameter: #{spacing(6.25)};
+    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(6.25)});
     // The pitch of the diagonal stripes, and how far the animation travels in one cycle.
-    --bit-prb-stripe-size: #{spacing(2)};
+    --bit-prb-stripe-size: var(--bit-Progress-stripe-size, #{spacing(2)});
     // How long a vertical bar is when nothing asked for a length. A horizontal one takes the width of
     // whatever it is put in, so it needs no equivalent.
-    --bit-prb-length: #{spacing(20)};
+    --bit-prb-length: var(--bit-Progress-length, #{spacing(20)});
+    --bit-prb-duration: var(--bit-Progress-transition-duration, #{$mot-duration});
 
+    // The sweep is moved by its logical inset alone: a translateX is physical, so in a right-to-left bar it
+    // would push the sweep further off the edge it enters from and leave the bar empty for half the cycle.
+    // Starting two thirds of the width before the start edge is where the old inset-plus-translate pair of a
+    // one-third-wide sweep began, so a left-to-right bar sweeps exactly as it did.
     @keyframes bit-prb-animation {
         0% {
-            inset-inline-start: -100%;
-            transform: translateX(100%);
+            inset-inline-start: -67%;
         }
 
         100% {
             inset-inline-start: 100%;
-            transform: translateX(0%);
         }
     }
 
@@ -64,6 +95,14 @@
         }
     }
 
+    // Only the start of the reveal is defined: held on it through the delay, the root is hidden, and once the
+    // zero-length animation has run it falls back to whatever visibility it had.
+    @keyframes bit-prb-reveal {
+        from {
+            visibility: hidden;
+        }
+    }
+
     @keyframes bit-prb-stripe-animation {
         0% {
             background-position-x: var(--bit-prb-stripe-size);
@@ -75,9 +114,23 @@
     }
 }
 
+// Delay: the whole indicator - and with it its role and its live region - is hidden until the delay has passed,
+// while the space it takes is kept so nothing moves when it appears. It is a one-off reveal rather than a motion,
+// so reduced motion has no say in it. The class is only there for the length of the window: the reveal replays on
+// any element built anew, so the component takes it off once the window is over.
+.bit-prb-dly {
+    animation: bit-prb-reveal 0s var(--bit-prb-delay) backwards;
+}
+
+// A prerendered progress an interactive render is about to replace is held hidden with no reveal of its own: the
+// interactive render runs the window, so the prerendered one never shows up only to be hidden again.
+.bit-prb-dlh {
+    visibility: hidden;
+}
+
 // The row the label and a readout placed on it share. It is there whenever either of them is, so a label on
 // its own is laid out in exactly the element it is laid out in beside a readout - one flex item, which is
-// what keeps its ellipsis working while the readout keeps its own width.
+// what lets it wrap in the room the readout leaves while the readout keeps its own width.
 .bit-prb-hdr {
     display: flex;
     align-items: baseline;
@@ -95,19 +148,21 @@
     }
 }
 
+// The label wraps rather than being cut off with an ellipsis: a truncated name - a long file name on a phone - is
+// lost to the reader for good, since nothing else on the page repeats it. A name with nowhere to break, such as
+// that file name, breaks anywhere.
 .bit-prb-lbl {
     display: block;
-    overflow: hidden;
-    color: $clr-fg-pri;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    color: var(--bit-Progress-label-color, #{$clr-fg-pri});
+    font-weight: var(--bit-Progress-label-font-weight, #{$tg-fw-regular});
     line-height: spacing(2.5);
     padding-bottom: spacing(1);
 }
 
 .bit-prb-pct {
     text-align: end;
-    color: $clr-fg-pri;
+    color: var(--bit-Progress-percent-color, #{$clr-fg-pri});
 }
 
 .bit-prb-pce {
@@ -166,30 +221,35 @@
     width: 100%;
     height: inherit;
     position: absolute;
+    border-radius: var(--bit-prb-radius);
     background-color: var(--bit-prb-track-color);
 }
 
+// The fill follows the value linearly, which is what reads as steady progress: an eased transition would
+// speed up and slow down on every update of a bar that is fed a new value many times a second.
 .bit-prb-buf {
     width: 0;
     height: inherit;
     position: absolute;
-    transition: width $mot-duration linear 0s;
+    border-radius: var(--bit-prb-radius);
+    transition: width var(--bit-prb-duration) linear 0s;
     // The buffer is the same progress seen faintly, so it is the bar color at low alpha rather than a
     // color of its own: every role, preset and scheme keeps it in step with the bar for free.
-    background-color: translucent(var(--bit-prb-bar-color), 38%);
+    background-color: var(--bit-Progress-buffer-color, #{translucent(var(--bit-prb-bar-color), 38%)});
 }
 
 .bit-prb-bar {
     width: 0;
     height: inherit;
     position: absolute;
-    transition: width $mot-duration linear 0s;
+    border-radius: var(--bit-prb-radius);
+    transition: width var(--bit-prb-duration) linear 0s;
     background-color: var(--bit-prb-bar-color);
 }
 
 .bit-prb-des {
-    color: $clr-fg-sec;
-    font-size: $tg-fs-2xs;
+    color: var(--bit-Progress-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));
     line-height: spacing(2.25);
 }
 
@@ -207,7 +267,8 @@
 // The stripes are a class ON the bar rather than a descendant rule, so the indeterminate sweep - which
 // paints the bar with a gradient of its own through the shorthand - cannot be outranked by them.
 .bit-prb-stp {
-    background-image: linear-gradient(45deg, translucent($clr-bg-pri, 25%) 25%, transparent 25%, transparent 50%, translucent($clr-bg-pri, 25%) 50%, translucent($clr-bg-pri, 25%) 75%, transparent 75%, transparent);
+    --bit-prb-stripe-color: var(--bit-Progress-stripe-color, #{translucent($clr-bg-pri, 25%)});
+    background-image: linear-gradient(45deg, var(--bit-prb-stripe-color) 25%, transparent 25%, transparent 50%, var(--bit-prb-stripe-color) 50%, var(--bit-prb-stripe-color) 75%, transparent 75%, transparent);
     background-size: var(--bit-prb-stripe-size) var(--bit-prb-stripe-size);
 }
 
@@ -229,13 +290,50 @@
     min-height: var(--bit-prb-diameter);
 }
 
+// The readout in the middle of the ring steps up the type ramp with the size the ring is drawn at - the component
+// picks the step, since only it knows what Diameter, Thickness and Radius make of the ring - so a large gauge
+// carries a number that can be read from across the room. A readout wider than the ring still has room for is cut
+// off with an ellipsis, which at least says that something is missing.
 .bit-prb-ctx {
     max-width: 60%;
     overflow: hidden;
-    color: $clr-fg-sec;
     position: absolute;
     white-space: nowrap;
-    font-size: $tg-fs-xs;
+    text-overflow: ellipsis;
+    color: var(--bit-Progress-percent-color, #{$clr-fg-sec});
+    font-size: var(--bit-Progress-percent-font-size, var(--bit-prb-ctx-fs, #{$tg-fs-xs}));
+}
+
+.bit-prb-fxs {
+    --bit-prb-ctx-fs: #{$tg-fs-xs};
+}
+
+.bit-prb-fsm {
+    --bit-prb-ctx-fs: #{$tg-fs-sm};
+}
+
+.bit-prb-fmd {
+    --bit-prb-ctx-fs: #{$tg-fs-md};
+}
+
+.bit-prb-flg {
+    --bit-prb-ctx-fs: #{$tg-fs-lg};
+}
+
+.bit-prb-fxl {
+    --bit-prb-ctx-fs: #{$tg-fs-xl};
+}
+
+.bit-prb-f2x {
+    --bit-prb-ctx-fs: #{$tg-fs-2xl};
+}
+
+.bit-prb-f3x {
+    --bit-prb-ctx-fs: #{$tg-fs-3xl};
+}
+
+.bit-prb-f4x {
+    --bit-prb-ctx-fs: #{$tg-fs-4xl};
 }
 
 .bit-prb-crt,
@@ -251,14 +349,14 @@
 }
 
 .bit-prb-cbf {
-    stroke: translucent(var(--bit-prb-bar-color), 38%);
-    transition: stroke-dasharray $mot-duration-short $mot-easing;
+    stroke: var(--bit-Progress-buffer-color, #{translucent(var(--bit-prb-bar-color), 38%)});
+    transition: stroke-dasharray var(--bit-prb-duration) linear;
     stroke-dasharray: calc(3.141 * var(--bit-prb-buffer, 0%) * 0.8 * var(--bit-prb-arc)), 500%;
 }
 
 .bit-prb-cbr {
     stroke: var(--bit-prb-bar-color);
-    transition: stroke-dasharray $mot-duration-short $mot-easing;
+    transition: stroke-dasharray var(--bit-prb-duration) linear;
     stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8 * var(--bit-prb-arc)), 500%;
 }
 
@@ -307,11 +405,7 @@
 // Rounded: a pill in linear mode, a round stroke cap in circular mode. The track is rounded with the
 // bar so the two ends of an empty bar are not square while the filled one is round.
 .bit-prb-rnd {
-    .bit-prb-trc,
-    .bit-prb-buf,
-    .bit-prb-bar {
-        border-radius: $shp-radius-full;
-    }
+    --bit-prb-radius: #{$shp-radius-full};
 
     .bit-prb-cbf,
     .bit-prb-cbr,
@@ -369,7 +463,7 @@
         width: 100%;
         height: 0;
         inset-block-end: 0;
-        transition: height $mot-duration linear 0s;
+        transition: height var(--bit-prb-duration) linear 0s;
     }
 
     .bit-prb-ind {
@@ -433,29 +527,32 @@
 
 
 .bit-prb-sm {
-    font-size: $tg-fs-xs;
-    --bit-prb-thickness: #{$siz-track-sm};
-    --bit-prb-diameter: #{spacing(4)};
+    --bit-prb-fs: #{$tg-fs-xs};
+    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-sm});
+    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(4)});
 }
 
 .bit-prb-md {
-    font-size: $tg-fs-sm;
-    --bit-prb-thickness: #{$siz-track-md};
-    --bit-prb-diameter: #{spacing(6.25)};
+    --bit-prb-fs: #{$tg-fs-sm};
+    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-md});
+    --bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);
+    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(6.25)});
 }
 
 .bit-prb-lg {
-    font-size: $tg-fs-md;
-    --bit-prb-thickness: #{$siz-track-lg};
-    --bit-prb-diameter: #{spacing(9)};
+    --bit-prb-fs: #{$tg-fs-md};
+    --bit-prb-des-fs: #{$tg-fs-xs};
+    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-lg});
+    --bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);
+    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(9)});
 }
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 @each $role, $tokens in $bit-color-roles {
     .bit-prb-#{$role} {
-        --bit-prb-bar-color: #{role($tokens, main)};
-        --bit-prb-bar-on-color: #{role($tokens, on)};
+        --bit-prb-bar-color: var(--bit-Progress-bar-color, #{role($tokens, main)});
+        --bit-prb-bar-on-color: var(--bit-Progress-bar-text-color, #{role($tokens, on)});
     }
 }
 

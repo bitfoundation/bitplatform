@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @using System.Globalization
 @inherits BitInputBase<TimeSpan?>
 
@@ -8,15 +8,22 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
+    @*
+        The label is attached to the input only where the input is the control being operated. A standalone
+        picker carries its value in an input nobody can see or tab to, so a label pointing at it would send
+        the focus off the screen on every click; it moves the focus to the dial instead, which is the part
+        that is actually there, and the dial takes the name of the field along with it.
+    *@
     @if (LabelTemplate is not null)
     {
-        <label id="@_labelId" for="@_inputId">
+        <label id="@_labelId" for="@(Standalone ? null : _inputId)" @onclick="HandleOnLabelClick">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-ctp-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+        <label style="@Styles?.Label" class="bit-ctp-lbl @Classes?.Label" id="@_labelId"
+               for="@(Standalone ? null : _inputId)" @onclick="HandleOnLabelClick">
             @Label
         </label>
     }
@@ -67,14 +74,16 @@
         @*
             The value carrier of a standalone picker, so that one still posts and validates like any other
             field. It is invisible, so it is taken out of the tab order: a tab stop nobody can see is a
-            place the focus disappears into on the way to the dial, which is the part being operated.
+            place the focus disappears into on the way to the dial, which is the part being operated. It is
+            kept out of the accessibility tree along with it - the dial carries the name and reads out the
+            value, so an unreachable text box beside it would only be a second copy of the same field.
         *@
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
                type="text"
                name="@Name"
                id="@_inputId"
                tabindex="-1"
-               aria-label="@AriaLabel"
+               aria-hidden="true"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(IsEnabled is false)"
@@ -97,15 +106,20 @@
 *@
 <div @ref="_calloutRef"
      id="@_calloutId"
-     style="@Styles?.Callout"
+     style="@GetCalloutStyle()"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">
     @*
         The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
         off and the focus leaving it dismisses it; standalone it is a group of controls that is part of the page
         like any other, where announcing a dialog would announce one the user can never leave.
+
+        Escape is handled here rather than on the dial, so it dismisses the picker from whatever part of it
+        holds the focus - the toolbar, an action button, anything a template put inside - and not only from
+        the one control that happens to own a key handler of its own.
     *@
     <div @attributes=@CalloutHtmlAttributes
+         @onkeydown="HandleOnCalloutKeyDown"
          role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
          aria-label="@CalloutAriaLabel"
@@ -129,6 +143,11 @@
         @*
             The meridiem pair goes either beside the time in the toolbar or under the clock, so it is built
             once here and dropped into whichever of the two AmPmInClock asks for.
+
+            It is the hour it moves - by the twelve hours between one half of the day and the other - so it
+            answers to whether the hour is a part this picker edits. In a mode that only edits the minutes or
+            the seconds it is shown but not offered: the half is still what the read-out is to be understood
+            against, and a pair that could be pressed there would move a part the mode says is left alone.
         *@
         @{
             RenderFragment amPmButtons =@<div style="@Styles?.AmPmContainer"
@@ -141,7 +160,7 @@
                         title="@_culture.DateTimeFormat.AMDesignator"
                         aria-pressed="@(isAm ? "true" : "false")"
                         style="@GetAmButtonStyle(isAm)"
-                        disabled="@(IsInteractive is false)"
+                        disabled="@(IsMeridiemEnabled is false)"
                         class="bit-ctp-apb @(isAm ? $"bit-ctp-aps {Classes?.SelectedButtons}" : "bit-ctp-ina") @Classes?.AmButton">
                     @_culture.DateTimeFormat.AMDesignator
                 </button>
@@ -150,7 +169,7 @@
                         title="@_culture.DateTimeFormat.PMDesignator"
                         aria-pressed="@(isAm ? "false" : "true")"
                         style="@GetPmButtonStyle(isAm)"
-                        disabled="@(IsInteractive is false)"
+                        disabled="@(IsMeridiemEnabled is false)"
                         class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : $"bit-ctp-aps {Classes?.SelectedButtons}") @Classes?.PmButton">
                     @_culture.DateTimeFormat.PMDesignator
                 </button>
@@ -165,12 +184,14 @@
                     @*
                         The name of a toolbar button carries the part it switches to and the value it is showing:
                         the title alone would leave a screen reader saying "select hour" on a button that reads
-                        "07", and the number alone would not say what pressing it does.
+                        "07", and the number alone would not say what pressing it does. A part that has not been
+                        set yet reads out as the title alone - the placeholder the button shows in its place is a
+                        pair of dashes, and "select hour dash dash" is not a name.
                     *@
                     <button @onclick="HandleOnHourClick"
                             type="button"
                             title="@HourButtonTitle"
-                            aria-label="@($"{HourButtonTitle} {GetHourString()}")"
+                            aria-label="@GetPartButtonLabel(HourButtonTitle, _hour, GetHourString())"
                             aria-pressed="@(IsHourView ? "true" : "false")"
                             style="@GetHourButtonStyle()"
                             disabled="@(IsEnabled is false)"
@@ -183,7 +204,7 @@
                     <button @onclick="HandleOnMinuteClick"
                             type="button"
                             title="@MinuteButtonTitle"
-                            aria-label="@($"{MinuteButtonTitle} {GetMinuteString()}")"
+                            aria-label="@GetPartButtonLabel(MinuteButtonTitle, _minute, GetMinuteString())"
                             aria-pressed="@(IsMinuteView ? "true" : "false")"
                             style="@GetMinuteButtonStyle()"
                             disabled="@(IsEnabled is false)"
@@ -198,7 +219,7 @@
                         <button @onclick="HandleOnSecondClick"
                                 type="button"
                                 title="@SecondButtonTitle"
-                                aria-label="@($"{SecondButtonTitle} {GetSecondString()}")"
+                                aria-label="@GetPartButtonLabel(SecondButtonTitle, _second, GetSecondString())"
                                 aria-pressed="@(IsSecondView ? "true" : "false")"
                                 style="@GetSecondButtonStyle()"
                                 disabled="@(IsEnabled is false)"
@@ -223,10 +244,18 @@
         *@
         <div style="@Styles?.Body" class="bit-ctp-bdy @Classes?.Body">
             <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
+                @if (IsClockNamedByLabelTemplate)
+                {
+                    <span id="@_clockLabelId" class="bit-ctp-lvr">@ViewTitle</span>
+                }
                 @*
                     A listbox rather than a plain drawing: the numbers are the options of the current view and the
                     pointer is the selection, which is what lets a screen reader read out what the dial is on and
                     the keyboard move it without every number having to be a tab stop of its own.
+
+                    A standalone picker has no field to carry the state of the value: the input it posts through
+                    is hidden from assistive technology, so the dial - the control the person actually operates -
+                    is what says the value is required and what says it was rejected.
                 *@
                 <div @ref="_clockRef"
                      @onkeydown="HandleOnClockKeyDown"
@@ -237,9 +266,12 @@
                      role="listbox"
                      tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
                      data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
-                     aria-label="@ViewTitle"
+                     aria-label="@(IsClockNamedByLabelTemplate ? null : ClockAriaLabel)"
+                     aria-labelledby="@(IsClockNamedByLabelTemplate ? $"{_labelId} {_clockLabelId}" : null)"
                      aria-disabled="@(IsEnabled ? null : "true")"
                      aria-readonly="@(ReadOnly ? "true" : null)"
+                     aria-required="@(Standalone && Required ? "true" : null)"
+                     aria-invalid="@(Standalone && ValueInvalid is true ? "true" : null)"
                      aria-activedescendant="@_activeDescendantId"
                      style="@Styles?.ClockFace"
                      class="bit-ctp-clf @Classes?.ClockFace">

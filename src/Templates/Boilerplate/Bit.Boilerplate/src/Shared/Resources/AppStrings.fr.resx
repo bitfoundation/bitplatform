@@ -1031,9 +1031,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>Le jeton 2FA a été généré et envoyé.</value>
   </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Saisissez le jeton d’accès élevé envoyé ou le code de votre application d’authentification pour continuer.</value>
-  </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} est votre code dans Boilerplate.</value>
   </data>
@@ -2156,4 +2153,61 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Utiliser l'assistant de cette application en votre nom.</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>Vérifier</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>Confirmez que c'est bien vous</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>Cette modification affecte la sécurité de votre compte.</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>Utiliser l'empreinte digitale ou Face ID</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>Aucun code à attendre.</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>Saisissez votre code à 6 chiffres</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>Ce code n'a pas fonctionné. Vérifiez-le et réessayez.</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>Ouvrez votre application d'authentification et saisissez le code qu'elle affiche pour ce compte.</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>Vérifiez ci-dessus, ou demandez plutôt un code.</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>Envoyez-moi un code</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>Renvoyer le code</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>Renvoyer dans {0:m\:ss}</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>Un code est déjà en route. Utilisez celui-ci, ou demandez-en un autre après son expiration.</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>votre adresse e-mail</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>votre téléphone</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>vos autres appareils connectés</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>Aucune adresse e-mail ni aucun numéro de téléphone confirmé n'est associé à ce compte pour y envoyer un code.</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>Nous avons envoyé un code à {0}.</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>Nous avons envoyé un code à {0} et {1}.</value>
+  </data>
 </root>

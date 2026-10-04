@@ -32,7 +32,8 @@
 //                                        own to inherit                                      (default: per size, 9rem / 12rem / 15rem)
 //   --bit-Slider-gap                     room between the track and the labels beside it     (default: spacing(1))
 //   --bit-Slider-font-size               size of the caption and the value labels            (default: per size, from the type ramp)
-//   --bit-Slider-font-weight             weight of the caption and the value labels          (default: $tg-fw-semibold)
+//   --bit-Slider-font-weight             weight of the caption and the value labels          (default: caption $tg-field-label-font-weight,
+//                                                                                                      value labels $tg-fw-semibold)
 //   --bit-Slider-letter-spacing          tracking of the caption and the value labels        (default: $tg-ctrl-letter-spacing)
 //   --bit-Slider-label-color             color of the caption above the slider               (default: $clr-fg-pri)
 //   --bit-Slider-value-color             color of the value labels beside the track          (default: $clr-fg-pri)
@@ -460,7 +461,7 @@
     box-sizing: border-box;
     overflow-wrap: break-word;
     font-size: var(--bit-sld-font-size);
-    font-weight: var(--bit-Slider-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-Slider-font-weight, #{$tg-field-label-font-weight});
     letter-spacing: var(--bit-Slider-letter-spacing, #{$tg-ctrl-letter-spacing});
 }
 
