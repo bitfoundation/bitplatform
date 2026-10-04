@@ -188,7 +188,8 @@
 
         &.bit-tgl-chk {
             --bit-tgl-trk-clr-bg: var(--bit-Toggle-checked-hover-background, var(--bit-tgl-clr-hover));
-            --bit-tgl-trk-clr-brd: transparent;
+            // the stroke of the checked track has no hover state of its own, so it keeps the resting one
+            --bit-tgl-trk-clr-brd: var(--bit-Toggle-checked-border-color, transparent);
             --bit-tgl-thb-clr: var(--bit-Toggle-checked-thumb-color, var(--bit-tgl-clr-text));
         }
     }

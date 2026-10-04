@@ -546,10 +546,6 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => Merged ? "bit-otp-mrg" : string.Empty);
 
-        // The base class registers the very same class for a failing validation, so it is only added here
-        // when it is not already there, otherwise it would end up in the class attribute twice.
-        ClassBuilder.Register(() => Invalid && ValueInvalid is not true ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => IsReadOnly ? "bit-otp-rdl" : string.Empty);
 
         ClassBuilder.Register(() => IsLoading ? "bit-otp-ldg" : string.Empty);
@@ -717,6 +713,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     // consumer, so a Clear of its own must not be refused by the very state it has just switched on.
     private bool IsReadOnly => ReadOnly || IsLoading;
 
+    protected override bool HasError => Invalid;
+
     private bool HasFocusedStyling => Classes?.Focused is not null || Styles?.Focused is not null;
 
     // The Length is a plain parameter, so a component that shrank between the render that laid the inputs
@@ -818,7 +816,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     // have been splatted has to be carried over here rather than being dropped.
     private string? GetAriaInvalid()
     {
-        if (Invalid || ValueInvalid is true) return "true";
+        if (IsInvalid) return "true";
 
         return InputHtmlAttributes?.TryGetValue("aria-invalid", out var ariaInvalid) is true
                 ? ariaInvalid?.ToString()

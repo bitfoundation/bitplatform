@@ -43,13 +43,7 @@ public partial class BitToggleDemo
 <BitToggle Label=""Disabled"" OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" IsEnabled=""false"" />
 
 
-<BitToggle Label=""Day / night"" Size=""BitSize.Large"">
-    <ThumbTemplate Context=""isOn"">
-        <span style=""font-size:0.75rem"">@(isOn ? ""🌞"" : ""🌜"")</span>
-    </ThumbTemplate>
-</BitToggle>
-
-<BitToggle Label=""Busy"" Size=""BitSize.Large"" Loading>
+<BitToggle Label=""Day / night"">
     <ThumbTemplate Context=""isOn"">
         <span style=""font-size:0.75rem"">@(isOn ? ""🌞"" : ""🌜"")</span>
     </ThumbTemplate>
@@ -94,7 +88,12 @@ public partial class BitToggleDemo
 
 <BitToggle Label=""Loading"" Loading />
 <BitToggle Label=""Loading and on"" Loading Value=""true"" />
-<BitToggle Label=""Loading with icons"" Loading OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />";
+<BitToggle Label=""Loading with icons"" Loading OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />
+<BitToggle Label=""Loading with a template"" Loading>
+    <ThumbTemplate Context=""isOn"">
+        <span style=""font-size:0.75rem"">@(isOn ? ""🌞"" : ""🌜"")</span>
+    </ThumbTemplate>
+</BitToggle>";
     private readonly string example6CsharpCode = @"
 private bool isSaving;
 private bool savedValue;
@@ -248,6 +247,29 @@ private void LogOnBlur()
 }";
 
     private readonly string example10RazorCode = @"
+<BitToggle Label=""Auto renew""
+           Description=""The subscription is renewed one day before it expires."" />
+
+
+<div style=""max-width:32rem"">
+    <BitToggle FullWidth Inline
+               Label=""Offline mode""
+               Description=""Keep a copy of the last synced data on this device."" />
+
+    <BitToggle FullWidth Inline
+               Label=""Usage statistics""
+               Description=""Send anonymous usage data to help us prioritize what to build next."" />
+</div>
+
+
+<BitToggle Label=""Beta features"">
+    <DescriptionTemplate>
+        Turning this on opts you into features that are still changing.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </DescriptionTemplate>
+</BitToggle>";
+
+    private readonly string example11RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -277,7 +299,7 @@ private void LogOnBlur()
         <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">privacy settings</BitLink>.
     </ErrorMessageTemplate>
 </BitToggle>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool twoFactorEnabled;
 
 private BitToggleValidationModel validationModel = new();
@@ -290,29 +312,6 @@ public class BitToggleValidationModel
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
-
-    private readonly string example11RazorCode = @"
-<BitToggle Label=""Auto renew""
-           Description=""The subscription is renewed one day before it expires."" />
-
-
-<div style=""max-width:32rem"">
-    <BitToggle FullWidth Inline
-               Label=""Offline mode""
-               Description=""Keep a copy of the last synced data on this device."" />
-
-    <BitToggle FullWidth Inline
-               Label=""Usage statistics""
-               Description=""Send anonymous usage data to help us prioritize what to build next."" />
-</div>
-
-
-<BitToggle Label=""Beta features"">
-    <DescriptionTemplate>
-        Turning this on opts you into features that are still changing.
-        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
-    </DescriptionTemplate>
-</BitToggle>";
 
     private readonly string example12RazorCode = @"
 <BitToggle Label=""Focus me with Tab, flip me with Space"" />
@@ -364,7 +363,7 @@ private async Task FocusTheToggle()
 <BitParams Parameters=""@toggleParams"">
     <BitToggle Label=""Offline mode"" Description=""Keep a copy of the last synced data on this device."" />
     <BitToggle Label=""Usage statistics"" />
-    <BitToggle Label=""Delete after export"" Color=""BitColor.Error"" OnText=""Deleting"" OffText=""Keeping"" />
+    <BitToggle Label=""Delete after export"" OnText=""Deleting"" OffText=""Keeping"" />
 </BitParams>
 
 <BitToggle Label=""Outside the cascade, and back to the defaults"" />";
@@ -377,8 +376,6 @@ private readonly BitToggleParams[] toggleParams =
         FullWidth = true,
         OnText = ""On"",
         OffText = ""Off"",
-        Size = BitSize.Small,
-        Color = BitColor.Success,
         LabelPosition = BitLabelPosition.Start
     }
 ];";

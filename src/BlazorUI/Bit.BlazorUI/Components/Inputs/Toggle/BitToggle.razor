@@ -9,12 +9,8 @@
     var autoFocus = AutoFocus && (IsEnabled || AllowDisabledFocus);
 }
 
-@* Stopping propagation on the root covers both the button click and the click a label forwards to it.
-   The native tooltip sits here rather than on the track, so it answers a hover anywhere on the toggle -
-   the label is the larger target of the two, and on a disabled toggle the tooltip is usually there to say
-   why. It is written before the splatted attributes, so a title the page wrote by hand still wins. *@
+@* stopping propagation on the root covers both the button click and the click a label forwards to it *@
 <div @ref="RootElement"
-     title="@Title"
      @attributes="HtmlAttributes"
      @onclick:stopPropagation="StopPropagation"
      id="@_Id"
@@ -22,11 +18,15 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    @* the label carries an id rather than only a for, since a button takes its accessible name from
-       aria-labelledby and never from an associated label element *@
+    @* The label carries an id rather than only a for, since a button takes its accessible name from
+       aria-labelledby and never from an associated label element.
+       The native tooltip is written on the label, on the row of the switch and on the switch itself rather
+       than on the root: that way it answers a hover on the label - the larger target, and on a disabled
+       toggle the one that still answers the pointer - without popping up over the error line, the
+       description or a link inside either of them. *@
     @if (HasLabel)
     {
-        <label id="@_labelId" for="@_buttonId" style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label">
+        <label id="@_labelId" for="@_buttonId" title="@Title" style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label">
             @if (LabelTemplate is not null)
             {
                 @LabelTemplate
@@ -38,10 +38,12 @@
         </label>
     }
 
-    <div style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
+    <div title="@Title" style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
         @* A busy toggle turns clicks away just like a disabled one does, so aria-disabled says so rather than
            leaving assistive technologies to offer a change that never lands - and it is what carries the
-           disabled state on its own once AllowDisabledFocus has dropped the native attribute. *@
+           disabled state on its own once AllowDisabledFocus has dropped the native attribute.
+           The title is repeated on the button because only there does it reach the switch itself: it is the
+           accessible name of last resort for a toggle with no other, and its description otherwise. *@
         <button @ref="_buttonRef"
                 @onblur="HandleOnBlur"
                 @onclick="HandleOnClick"
@@ -51,6 +53,7 @@
                 role="@Role"
                 type="button"
                 id="@_buttonId"
+                title="@Title"
                 style="@Styles?.Button"
                 class="bit-tgl-btn @Classes?.Button"
                 autofocus="@autoFocus"
@@ -153,10 +156,18 @@
     }
 
     @* A status rather than an alert: a rejected state must not steal the focus or interrupt what is being
-       read, only be announced once the reader is done with the current sentence. It is rendered whether or
-       not it has anything to say, because a live region that arrives with its text already in it is the one
-       thing screen readers are known to miss. *@
-    <span role="status" class="bit-tgl-dsc">@LiveText</span>
+       read, only be announced once the reader is done with the current sentence. Once a toggle is wired for
+       an error message it is rendered whether or not it has anything to say, because a live region that
+       arrives with its text already in it is the one thing screen readers are known to miss.
+       The message sits in a keyed element so that every announcement replaces the element rather than only
+       rewriting its text: the same message said twice in a row would otherwise change nothing in the DOM. *@
+    @if (_hasLiveRegion)
+    {
+        <span role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              class="bit-tgl-dsc"><span @key="_liveTextId">@_liveText</span></span>
+    }
 
     @* The form value carrier: hidden from both the tab order and assistive technologies, which the switch
        button in front of it already covers. Required deliberately stays off it: the native attribute on a

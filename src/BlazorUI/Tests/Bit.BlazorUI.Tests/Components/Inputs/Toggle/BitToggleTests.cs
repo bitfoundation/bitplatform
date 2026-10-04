@@ -1021,12 +1021,20 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
+            parameters.Add(p => p.Label, "A label");
             parameters.Add(p => p.Title, title);
+            parameters.Add(p => p.Description, "A description");
+            parameters.Add(p => p.ErrorMessage, "An error");
         });
 
-        // the tooltip sits on the root, so a hover anywhere on the toggle - its label included - brings it up
-        Assert.AreEqual(title, com.Find(".bit-tgl").GetAttribute("title"));
-        Assert.IsFalse(com.Find("button").HasAttribute("title"));
+        // the switch keeps it as its name or description of last resort, the label and the row of the switch
+        // answer a hover with it, and the lines under the toggle keep to their own content
+        Assert.AreEqual(title, com.Find("button").GetAttribute("title"));
+        Assert.AreEqual(title, com.Find(".bit-tgl-lbl").GetAttribute("title"));
+        Assert.AreEqual(title, com.Find(".bit-tgl-cnt").GetAttribute("title"));
+        Assert.IsFalse(com.Find(".bit-tgl").HasAttribute("title"));
+        Assert.IsFalse(com.Find(".bit-tgl-des").HasAttribute("title"));
+        Assert.IsFalse(com.Find(".bit-tgl-erm").HasAttribute("title"));
     }
 
     [TestMethod, DataRow("A detailed description")]
@@ -1699,7 +1707,7 @@ public class BitToggleTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-inl"));
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-fwi"));
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-tic"));
-        Assert.AreEqual("Cascaded title", root.GetAttribute("title"));
+        Assert.AreEqual("Cascaded title", com.Find("button").GetAttribute("title"));
         Assert.AreEqual("Cascaded text", com.Find(".bit-tgl-stx").TextContent.Trim());
     }
 
@@ -1820,15 +1828,54 @@ public class BitToggleTests : BunitTestContext
     [TestMethod]
     public void BitToggleLiveRegionShouldBeRenderedEmptyUntilThereIsAMessage()
     {
-        var com = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Label, "Live region"));
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Live region");
+            parameters.Add(p => p.ErrorMessage, null);
+        });
 
         // a live region that arrives with its text already in it is the one thing screen readers are known
-        // to miss, so the region is always in the markup and only its text comes and goes
+        // to miss, so a toggle wired for a message has the region in the markup and only its text comes and goes
         Assert.AreEqual(string.Empty, com.Find("[role=status]").TextContent.Trim());
 
         com.Render(parameters => parameters.Add(p => p.ErrorMessage, "Rejected by the server."));
 
         Assert.AreEqual("Rejected by the server.", com.Find("[role=status]").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.ErrorMessage, null));
+
+        Assert.AreEqual(string.Empty, com.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleWithoutAnErrorMessageShouldNotRenderALiveRegion()
+    {
+        var com = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Label, "No live region"));
+
+        Assert.AreEqual(0, com.FindAll("[role=status]").Count);
+    }
+
+    [TestMethod]
+    public void BitToggleShouldAnnounceTheSameErrorMessageAgainAfterAnotherAttempt()
+    {
+        const string message = "Rejected by the server.";
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, message);
+            parameters.Add(p => p.OnChanging, (BitToggleChangeArgs args) => args.Cancel = true);
+        });
+
+        var liveTextId = typeof(BitToggle).GetField("_liveTextId", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+        var before = (int)liveTextId.GetValue(com.Instance)!;
+
+        com.Find("button").Click();
+
+        // the message sits in a keyed element, so a rejection with the very same message re-keys it and the
+        // element is replaced, rather than leaving a live region in which nothing changed and nothing is read out
+        Assert.AreEqual(message, com.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(before + 1, (int)liveTextId.GetValue(com.Instance)!);
     }
 
     [TestMethod]

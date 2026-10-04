@@ -770,10 +770,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // that need it.
         ClassBuilder.Register(() => HasDescription || HasErrorMessage ? "bit-nfl-hds" : string.Empty);
 
-        // The base class already marks a value the EditContext rejected, so the forced state only adds the
-        // class where that one did not, instead of rendering it twice on a field that is invalid both ways.
-        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-nfl-sm",
@@ -1317,7 +1313,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     // A message saying what is wrong with the value is a rejection of it, so it marks the field the same way
     // the forced state does instead of drawing a red line under a field that still looks accepted.
-    private bool HasError => Invalid || HasErrorMessage;
+    protected override bool HasError => Invalid || HasErrorMessage;
 
     /// <summary>
     /// The ids the input points aria-describedby at, in reading order: what is wrong with the value first,

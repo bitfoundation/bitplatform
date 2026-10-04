@@ -959,10 +959,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-tpc-req" : string.Empty);
 
-        // A rejection the application asserted on its own, which the EditContext knows nothing about and
-        // so never registers the invalid class for. It gives the same look an invalid bound value does.
-        ClassBuilder.Register(() => HasError ? "bit-inv" : string.Empty);
-
         // A read-only picker is not a switched off one: the buttons of the callout carry the disabled
         // attribute there only to keep them from being pressed, and this class takes the look of one back
         // off them.
@@ -2051,11 +2047,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     // A rejection the app decided on its own, which the EditContext knows nothing about. A message is
     // one: a field that says what is wrong with its value is a field saying the value is wrong.
-    private bool HasError => Invalid || HasErrorMessage;
-
-    // What the picker reports to assistive technologies as the state of its value: either the rejection
-    // the EditContext produced or the one the app asserted here.
-    private bool IsInvalid => ValueInvalid is true || HasError;
+    protected override bool HasError => Invalid || HasErrorMessage;
 
     // Every piece of text that describes the field rather than names it, in reading order: what is wrong
     // with the value first, then the visible helper text, then the one written for a screen reader alone.

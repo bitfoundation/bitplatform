@@ -922,8 +922,6 @@ public partial class BitToggleDemo
             FullWidth = true,
             OnText = "On",
             OffText = "Off",
-            Size = BitSize.Small,
-            Color = BitColor.Success,
             LabelPosition = BitLabelPosition.Start
         }
     ];

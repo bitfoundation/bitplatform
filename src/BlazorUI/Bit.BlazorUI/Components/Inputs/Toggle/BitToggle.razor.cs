@@ -12,6 +12,11 @@ public partial class BitToggle : BitInputBase<bool>
 {
     private bool _isChanging;
     private bool _autoLoading;
+    private bool _hasAttempted;
+    private bool _hasLiveRegion;
+    private int _liveTextId;
+    private string? _liveText;
+    private string? _announcedLiveText;
     private string? _errorId;
     private string? _labelId;
     private string? _buttonId;
@@ -368,11 +373,13 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The native tooltip of the toggle, shown when the pointer rests anywhere on it.
+    /// The native tooltip of the toggle, shown when the pointer rests on its label, its track or its state text.
     /// </summary>
     /// <remarks>
-    /// It sits on the root rather than on the track, so the label answers a hover as well - which is what
-    /// keeps it reachable on a disabled toggle, whose track itself stops answering the pointer.
+    /// The label answers a hover as well as the track does - which is what keeps the tooltip reachable on a
+    /// disabled toggle, whose track itself stops answering the pointer - while the error line and the
+    /// description under the toggle keep to their own content. On the switch itself it is also the accessible
+    /// name of last resort, and its description when the toggle is named otherwise.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
@@ -443,11 +450,6 @@ public partial class BitToggle : BitInputBase<bool>
         // wrapping on through a class of its own rather than by widening what the description class means.
         ClassBuilder.Register(() => HasErrorMessage ? "bit-tgl-her" : string.Empty);
 
-        // The invalid look is already registered by the base class for a value the EditContext rejected, so
-        // a state rejected by the app is only marked here when the base has not marked it already - two
-        // identical classes on one element say nothing the one does not.
-        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
@@ -487,6 +489,14 @@ public partial class BitToggle : BitInputBase<bool>
         // a label swapped from the outside is reflected by the accessible name along with the visible one.
         SetStateText();
 
+        // The live region is only rendered for a toggle that is wired to say something through it - one whose
+        // ErrorMessage is written at all, even as a null for now - so a page of plain switches does not carry
+        // an empty live region per switch. Once there it stays, since it has to be on the page before the
+        // text that is meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false || ErrorMessage.HasValue();
+
+        SyncLiveRegion();
+
         base.OnParametersSet();
     }
 
@@ -519,24 +529,7 @@ public partial class BitToggle : BitInputBase<bool>
     {
         if (_isChanging) return;
 
-        _isChanging = true;
-
-        // read once, so the flag that is cleared in the end is the one that was raised in the
-        // beginning even if the parameter is swapped while the change is still running
-        var autoLoading = AutoLoading;
-
-        if (autoLoading) SetAutoLoading(true);
-
-        try
-        {
-            await ChangeValueAsync(value);
-        }
-        finally
-        {
-            _isChanging = false;
-
-            if (autoLoading) SetAutoLoading(false);
-        }
+        await RunChangeAsync(() => ChangeValueAsync(value));
     }
 
 
@@ -576,12 +569,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// A message saying what is wrong with the state is a rejection of it, so it marks the toggle the same
     /// way the flag does instead of leaving a red line under a switch that still looks accepted.
     /// </remarks>
-    private bool HasError => Invalid || HasErrorMessage;
-
-    /// <summary>
-    /// Whether the switch reports itself as invalid, from the app or from the cascading EditContext.
-    /// </summary>
-    private bool IsInvalid => HasError || ValueInvalid is true;
+    protected override bool HasError => Invalid || HasErrorMessage;
 
     /// <summary>
     /// What the live region carries, which is the plain error message and nothing else.
@@ -648,23 +636,47 @@ public partial class BitToggle : BitInputBase<bool>
 
         // Held for the whole handler rather than only around the change itself, so a click landing while an
         // awaited OnClick or OnChanging is still running is dropped instead of racing the change it precedes.
+        await RunChangeAsync(async () =>
+        {
+            await OnClick.InvokeAsync(e);
+
+            await ChangeValueAsync(CurrentValue is false);
+        });
+    }
+
+    private async Task RunChangeAsync(Func<Task> change)
+    {
         _isChanging = true;
 
+        // read once, so the flag that is cleared in the end is the one that was raised in the
+        // beginning even if the parameter is swapped while the change is still running
         var autoLoading = AutoLoading;
 
         if (autoLoading) SetAutoLoading(true);
 
         try
         {
-            await OnClick.InvokeAsync(e);
-
-            await ChangeValueAsync(CurrentValue is false);
+            await change();
         }
         finally
         {
             _isChanging = false;
 
-            if (autoLoading) SetAutoLoading(false);
+            // What the app made of the attempt is only known once its callbacks are done, so that is when it
+            // is announced - and an error it still shows is said again even when it is the very message the
+            // last attempt was refused with, which is a rejection all the same.
+            var announced = SyncLiveRegion(_hasAttempted);
+
+            _hasAttempted = false;
+
+            if (autoLoading)
+            {
+                SetAutoLoading(false);
+            }
+            else if (announced && IsDisposed is false)
+            {
+                StateHasChanged();
+            }
         }
     }
 
@@ -693,6 +705,8 @@ public partial class BitToggle : BitInputBase<bool>
         // reaches OnChanging either - a veto callback should not be asked about a change that cannot happen.
         if (InvalidValueBinding()) return;
 
+        _hasAttempted = true;
+
         if (OnChanging.HasDelegate)
         {
             var args = new BitToggleChangeArgs(newValue);
@@ -712,6 +726,33 @@ public partial class BitToggle : BitInputBase<bool>
         if (IsDisposed) return;
 
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Brings the live region in step with the message, announcing it only when it is not what was said last.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is announced while a change is in flight: the parameters may come and go several times as the
+    /// callbacks of the change re-render the page, and only where they land once the change is over is its
+    /// outcome. The text sits in a keyed element so every announcement replaces the element rather than only
+    /// rewriting its text - the same message said twice would otherwise change nothing in the DOM, and a live
+    /// region that did not change is one nothing is read out of.
+    /// </remarks>
+    /// <param name="reannounce">Says a message again even when it is the one that was said last.</param>
+    /// <returns>Whether the live region has something new to render.</returns>
+    private bool SyncLiveRegion(bool reannounce = false)
+    {
+        if (_isChanging) return false;
+
+        var text = LiveText;
+
+        if (text == _announcedLiveText && (reannounce is false || text is null)) return false;
+
+        _announcedLiveText = text;
+        _liveText = text;
+        _liveTextId++;
+
+        return true;
     }
 
     private void SetStateText()
