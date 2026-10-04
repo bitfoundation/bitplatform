@@ -1656,6 +1656,7 @@
             if (!this.config.autoHeight || !this.root) {
                 const body = this.root?.querySelector<HTMLElement>('.bit-mde-bdy');
                 if (body) body.style.height = '';
+                this.clearPaneHeights();
                 return;
             }
 
@@ -1707,6 +1708,8 @@
             const body = this.root?.querySelector<HTMLElement>('.bit-mde-bdy');
             if (!body || !this.root) return;
 
+            this.clearPaneHeights();
+
             if (!this.config.autoHeight || this.root.classList.contains('bit-mde-fsc')) {
                 body.style.height = '';
                 return;
@@ -1729,8 +1732,23 @@
 
             body.style.height = `${stacked ? text + rendered : Math.max(text, rendered)}px`;
 
+            // Wrapped flex lines would share out the body's height evenly rather than by what each pane holds, so
+            // stacked panes are given their own share of the room the min- and max-height left the body.
+            if (stacked) {
+                const room = body.clientHeight;
+                const textHeight = text + rendered > 0 ? Math.round(room * text / (text + rendered)) : Math.round(room / 2);
+                editorPane!.style.height = `${textHeight}px`;
+                preview!.style.height = `${room - textHeight}px`;
+            }
+
             this.textArea.scrollTop = textTop;
             if (preview) preview.scrollTop = previewTop;
+        }
+
+        private clearPaneHeights() {
+            const editorPane = this.textArea?.parentElement;
+            if (editorPane) editorPane.style.height = '';
+            if (this._keyPane) this._keyPane.style.height = '';
         }
 
         private saveDraft() {

@@ -789,9 +789,13 @@ public partial class BitMarkdownEditor : BitComponentBase
                 await AssignFullScreen(FullScreen is false);
                 await InvokeAsync(StateHasChanged);
                 break;
+            case "help" when _showHelp:
+                await CloseHelp();
+                await InvokeAsync(StateHasChanged);
+                break;
             case "help":
-                _showHelp = _showHelp is false;
-                _focusHelp = _showHelp;
+                _showHelp = true;
+                _focusHelp = true;
                 await InvokeAsync(StateHasChanged);
                 break;
         }
@@ -1345,11 +1349,10 @@ public partial class BitMarkdownEditor : BitComponentBase
 
     private async Task OnHelpKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is "Escape")
+        // The shortcut that opened the dialog closes it too, keyed by the physical key as the script keys it.
+        if (e.Key is "Escape" || ((e.CtrlKey || e.MetaKey) && e.Code is "Slash"))
         {
-            _showHelp = false;
-            // Return focus to the editor when the dialog closes.
-            await Focus();
+            await CloseHelp();
         }
     }
 
