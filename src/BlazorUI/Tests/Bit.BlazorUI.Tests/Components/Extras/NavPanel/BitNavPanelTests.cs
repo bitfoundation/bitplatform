@@ -1205,8 +1205,45 @@ public class BitNavPanelTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        // A panel without a search box hands the focus to the first item of the nav instead.
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count));
+        // A panel without a search box hands the focus to the first item of the nav instead - after the modal
+        // drawer has taken it onto itself, so it is inside the drawer whether or not the item takes it.
+        component.WaitForAssertion(() =>
+        {
+            var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+            Assert.AreEqual(2, focused.Count);
+            Assert.AreEqual(component.Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+            Assert.AreNotEqual(component.Instance.RootElement.Id, ((ElementReference)focused[1].Arguments[0]!).Id);
+        });
+    }
+
+    [TestMethod]
+    public void BitNavPanelOpenColumnThatBecomesADrawerShouldTakeTheFocus()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        SetDrawerScreen(component, false);
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-col")));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // The screen shrinks below the breakpoint while the panel is open: the column it was is now a modal drawer
+        // over the page, so the keyboard is moved into it exactly as if it had just been opened.
+        SetDrawerScreen(component, true);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("-1", component.Find(".bit-npn").GetAttribute("tabindex"));
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+
+            var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+            Assert.AreEqual(1, focused.Count);
+            Assert.AreEqual(component.Instance.RootElement.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
+        });
     }
 
     [TestMethod]
@@ -1845,10 +1882,33 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Add(p => p.DrawerBreakpoint, breakpoint);
         });
 
+        // Until the browser has reported the screen, the stylesheet splits the screens at the breakpoint itself.
         Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains(cssClass));
         // The overlay is shown on the same screens as the drawer, so it carries the same class.
         Assert.IsTrue(component.Find(".bit-npn-ovl").ClassList.Contains(cssClass));
         Assert.AreEqual(query, component.FindComponent<BitMediaQuery>().Instance.ScreenQuery);
+
+        // Once it has, the shape it reported is the class, so the stylesheet follows the live theme breakpoints
+        // the media query is built from, exactly like the dialog role and the scroll lock do.
+        SetDrawerScreen(component, true);
+
+        component.WaitForAssertion(() =>
+        {
+            var root = component.Find(".bit-npn");
+
+            Assert.IsTrue(root.ClassList.Contains("bit-npn-drw"));
+            Assert.IsFalse(root.ClassList.Contains(cssClass));
+            Assert.IsTrue(component.Find(".bit-npn-ovl").ClassList.Contains("bit-npn-drw"));
+        });
+
+        SetDrawerScreen(component, false);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-col"));
+            // A column has no overlay at all.
+            Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
+        });
     }
 
     [TestMethod]
@@ -1863,7 +1923,7 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
-        Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-bal"));
+        Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-drw"));
         Assert.AreEqual(0, component.FindComponents<BitMediaQuery>().Count);
 
         component.WaitForAssertion(() =>
@@ -1891,7 +1951,8 @@ public class BitNavPanelTests : BunitTestContext
 
         var root = component.Find(".bit-npn");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-npn-bnv"));
+        Assert.IsTrue(root.ClassList.Contains("bit-npn-col"));
+        Assert.AreEqual(0, component.FindAll(".bit-npn-ovl").Count);
         Assert.AreEqual(0, component.FindComponents<BitMediaQuery>().Count);
         Assert.IsNull(root.GetAttribute("role"));
 
