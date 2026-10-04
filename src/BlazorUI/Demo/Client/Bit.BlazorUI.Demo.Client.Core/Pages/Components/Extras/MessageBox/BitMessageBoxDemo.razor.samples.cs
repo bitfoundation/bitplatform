@@ -253,7 +253,7 @@ private async Task ShowTimedMessageBox()
 <BitButton OnClick=""ShowConfirm"">Confirm</BitButton>
 <BitButton Color=""BitColor.Error"" OnClick=""ShowDangerousConfirm"">Delete something</BitButton>
 
-<div>Last answer: <b>@confirmResult</b></div>";
+<div>Last answer: <b>@(confirmResult?.ToString() ?? ""-"")</b></div>";
     private readonly string example11CsharpCode = @"
 [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
 
@@ -276,13 +276,16 @@ private async Task ShowDangerousConfirm()
         YesText = ""Delete forever"",
         NoText = ""Keep it"",
         DefaultButton = BitMessageBoxResult.No,
-        IconAriaLabel = ""Error""
+        IconAriaLabel = ""Error"",
+        // A click beside the box does not dismiss it; Escape still does.
+        Modal = new() { Blocking = true }
     });
 }";
 
     private readonly string example12RazorCode = @"
 <BitButton OnClick=""ShowPrompt"">Rename</BitButton>
 <BitButton OnClick=""ShowValidatedPrompt"">New folder</BitButton>
+<BitButton OnClick=""ShowPasswordPrompt"">Password</BitButton>
 <BitButton OnClick=""ShowMultilinePrompt"">Feedback</BitButton>
 
 <div>Last answer: <b>@(promptResult ?? ""null"")</b></div>";
@@ -303,13 +306,44 @@ private async Task ShowValidatedPrompt()
         Title = ""New folder"",
         Body = ""Folders hold the files of a project."",
         Label = ""Name"",
+        Description = ""Up to 40 characters, no slashes."",
         Placeholder = ""Untitled folder"",
+        AutoComplete = ""off"",
         MaxLength = 40,
         Required = true,
         RequiredMessage = ""Give the folder a name."",
         Validator = v => v!.IndexOfAny(['/', '\\']) >= 0 ? ""A name cannot hold a slash."" : null,
+        AsyncValidator = IsFolderNameTaken,
         OkText = ""Create""
     });
+}
+
+// Stands in for a call to the server, which is the only one that knows the folders already there.
+private static async Task<string?> IsFolderNameTaken(string? name)
+{
+    await Task.Delay(800);
+
+    return string.Equals(name?.Trim(), ""Projects"", StringComparison.OrdinalIgnoreCase) ? ""A folder with this name already exists."" : null;
+}
+
+private async Task ShowPasswordPrompt()
+{
+    var password = await messageBoxService.Prompt(new()
+    {
+        Title = ""Delete the account?"",
+        Body = ""Enter your password to confirm."",
+        Color = BitColor.Error,
+        Label = ""Password"",
+        InputType = BitInputType.Password,
+        AutoComplete = ""current-password"",
+        CanRevealPassword = true,
+        Required = true,
+        OkText = ""Delete"",
+        PrimaryButtonColor = BitColor.Error
+    });
+
+    // The password itself is the caller's to check; only whether one was given is shown here.
+    promptResult = password is null ? null : ""(a password)"";
 }
 
 private async Task ShowMultilinePrompt()

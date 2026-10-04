@@ -767,6 +767,34 @@ public partial class BitMessageBoxDemo
             [
                 new()
                 {
+                    Name = "AsyncValidator",
+                    Type = "Func<string?, Task<string?>>?",
+                    DefaultValue = "null",
+                    Description = "An asynchronous check (a server call) run on answering, after Required and Validator accept the value: return an error message to refuse it, or null to accept it. The field shows it is busy meanwhile, and an edit takes its message away."
+                },
+                new()
+                {
+                    Name = "AutoComplete",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The autocomplete attribute of the text field, such as off, username or current-password."
+                },
+                new()
+                {
+                    Name = "CanRevealPassword",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Adds a button to a Password field that shows what was typed."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The help text under the text field, which also describes it."
+                },
+                new()
+                {
                     Name = "InputType",
                     Type = "BitInputType?",
                     DefaultValue = "null",
@@ -998,7 +1026,9 @@ public partial class BitMessageBoxDemo
             YesText = "Delete forever",
             NoText = "Keep it",
             DefaultButton = BitMessageBoxResult.No,
-            IconAriaLabel = "Error"
+            IconAriaLabel = "Error",
+            // A click beside the box does not dismiss it; Escape still does.
+            Modal = new() { Blocking = true }
         });
     }
 
@@ -1014,13 +1044,44 @@ public partial class BitMessageBoxDemo
             Title = "New folder",
             Body = "Folders hold the files of a project.",
             Label = "Name",
+            Description = "Up to 40 characters, no slashes.",
             Placeholder = "Untitled folder",
+            AutoComplete = "off",
             MaxLength = 40,
             Required = true,
             RequiredMessage = "Give the folder a name.",
             Validator = v => v!.IndexOfAny(['/', '\\']) >= 0 ? "A name cannot hold a slash." : null,
+            AsyncValidator = IsFolderNameTaken,
             OkText = "Create"
         });
+    }
+
+    // Stands in for a call to the server, which is the only one that knows the folders already there.
+    private static async Task<string?> IsFolderNameTaken(string? name)
+    {
+        await Task.Delay(800);
+
+        return string.Equals(name?.Trim(), "Projects", StringComparison.OrdinalIgnoreCase) ? "A folder with this name already exists." : null;
+    }
+
+    private async Task ShowPasswordPrompt()
+    {
+        var password = await messageBoxService.Prompt(new()
+        {
+            Title = "Delete the account?",
+            Body = "Enter your password to confirm.",
+            Color = BitColor.Error,
+            Label = "Password",
+            InputType = BitInputType.Password,
+            AutoComplete = "current-password",
+            CanRevealPassword = true,
+            Required = true,
+            OkText = "Delete",
+            PrimaryButtonColor = BitColor.Error
+        });
+
+        // The password itself is the caller's to check; only whether one was given is shown here.
+        promptResult = password is null ? null : "(a password)";
     }
 
     private async Task ShowMultilinePrompt()

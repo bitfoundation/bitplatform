@@ -12,6 +12,34 @@
 public class BitMessageBoxPromptParameters : BitMessageBoxParameters
 {
     /// <summary>
+    /// Checks the answer against something only reachable asynchronously - a server that knows whether a name is taken -
+    /// after <see cref="Required"/> and <see cref="Validator"/> have accepted it: return an error message to refuse it and
+    /// show the message under the field, or <c>null</c> to accept it.
+    /// </summary>
+    /// <remarks>
+    /// It runs only when the box is answered (the affirmative button, or Enter in the field), with the field showing that it
+    /// is busy, and the value it accepted is the one handed back - an edit made while it runs is not. An edit after it refused
+    /// a value takes its message away, since the message is about a value that is no longer there.
+    /// </remarks>
+    public Func<string?, Task<string?>>? AsyncValidator { get; set; }
+
+    /// <summary>
+    /// The value of the autocomplete attribute of the text field, such as <c>off</c>, <c>username</c> or
+    /// <c>current-password</c>, which is what a browser or a password manager fills it in by.
+    /// </summary>
+    public string? AutoComplete { get; set; }
+
+    /// <summary>
+    /// Adds a button to a <see cref="BitInputType.Password"/> field that shows what was typed.
+    /// </summary>
+    public bool? CanRevealPassword { get; set; }
+
+    /// <summary>
+    /// The help text shown under the text field, which the field is also described by.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// The type of the text field, such as <see cref="BitInputType.Password"/> or <see cref="BitInputType.Email"/>.
     /// The default is <see cref="BitInputType.Text"/>.
     /// </summary>

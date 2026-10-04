@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -343,6 +344,184 @@ public class BitMessageBoxPromptTests : BunitTestContext
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 
         await prompting;
+    }
+
+    [TestMethod]
+    public async Task PromptShouldPassTheNewFieldOptionsDown()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "Delete the account?",
+            Body = "Enter your password to confirm.",
+            Label = "Password",
+            Description = "The one you sign in with.",
+            InputType = BitInputType.Password,
+            AutoComplete = "current-password",
+            CanRevealPassword = true
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        var input = container.Find(".bit-msb .bit-tfl-inp");
+        Assert.AreEqual("current-password", input.GetAttribute("autocomplete"));
+        Assert.AreEqual("done", input.GetAttribute("enterkeyhint"));
+        Assert.IsTrue(container.Find(".bit-msb .bit-tfl-des").TextContent.Contains("The one you sign in with."));
+        Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-rpb").Count);
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        await prompting;
+    }
+
+    [TestMethod]
+    public async Task PromptShouldLeaveTheReturnKeyOfAMultilineFieldAlone()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters { Title = "Feedback", Body = "Anything?", Multiline = true });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb textarea.bit-tfl-inp").Count));
+
+        Assert.IsNull(container.Find(".bit-msb .bit-tfl-inp").GetAttribute("enterkeyhint"));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        await prompting;
+    }
+
+    [TestMethod]
+    public async Task PromptShouldRefuseAValueTheAsyncValidatorRefusesAndClearItsMessageOnEdit()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        var check = new TaskCompletionSource<string?>();
+        var checkedValues = new List<string?>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Value = "Projects",
+            AsyncValidator = v => { checkedValues.Add(v); return check.Task; }
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+
+        // The field says it is busy while the check runs.
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        Assert.IsFalse(prompting.IsCompleted);
+
+        check.SetResult("A folder with this name already exists.");
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-lod").Count);
+            Assert.IsTrue(container.Find(".bit-msb .bit-tfl-erm").TextContent.Contains("already exists"));
+        });
+        Assert.IsFalse(prompting.IsCompleted);
+
+        // The message is about a value that is no longer there once the field is edited.
+        container.Find(".bit-msb .bit-tfl-inp").Input("Projects 2");
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+
+        check = new TaskCompletionSource<string?>();
+        check.SetResult(null);
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+
+        Assert.AreEqual("Projects 2", await prompting);
+        CollectionAssert.AreEqual(new[] { "Projects", "Projects 2" }, checkedValues);
+    }
+
+    [TestMethod]
+    public async Task PromptShouldNotRunTheAsyncValidatorOnAValueTheSyncChecksRefuse()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        var asyncRuns = 0;
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Required = true,
+            AsyncValidator = _ => { asyncRuns++; return Task.FromResult<string?>(null); }
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-erm").Count));
+
+        Assert.AreEqual(0, asyncRuns);
+
+        // Dismissing is never checked.
+        container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        Assert.IsNull(await prompting);
+        Assert.AreEqual(0, asyncRuns);
+    }
+
+    [TestMethod]
+    public async Task PromptShouldNotShowAnAsyncRefusalOfAValueEditedWhileItWasChecked()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        var check = new TaskCompletionSource<string?>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Value = "Projects",
+            AsyncValidator = _ => check.Task
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+
+        container.Find(".bit-msb .bit-tfl-inp").Input("Projects 2");
+
+        check.SetResult("A folder with this name already exists.");
+
+        // Refused, but the message about "Projects" is not shown under "Projects 2".
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+        Assert.AreEqual(0, container.FindAll(".bit-msb .bit-tfl-erm").Count);
+        Assert.IsFalse(prompting.IsCompleted);
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
+
+        Assert.IsNull(await prompting);
+    }
+
+    [TestMethod]
+    public async Task PromptShouldReturnTheValueTheAsyncValidatorAccepted()
+    {
+        var container = RenderComponent<BitModalContainer>();
+        var check = new TaskCompletionSource<string?>();
+
+        var prompting = MessageBoxService.Prompt(new BitMessageBoxPromptParameters
+        {
+            Title = "New folder",
+            Body = "The name of the folder:",
+            Value = "Reports",
+            AsyncValidator = _ => check.Task
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-inp").Count));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb .bit-tfl-lod").Count));
+
+        // An edit made while the check runs is not what the check said yes to.
+        container.Find(".bit-msb .bit-tfl-inp").Input("Reports/2026");
+
+        check.SetResult(null);
+
+        Assert.AreEqual("Reports", await prompting);
     }
 
     [TestMethod]

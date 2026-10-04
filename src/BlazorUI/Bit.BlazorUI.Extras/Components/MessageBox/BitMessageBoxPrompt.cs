@@ -30,6 +30,17 @@ internal sealed class BitMessageBoxPromptState(BitMessageBoxPromptParameters par
 
     public string? Error { get; private set; }
 
+    /// <summary>
+    /// Whether the <see cref="BitMessageBoxPromptParameters.AsyncValidator"/> is still working out its answer.
+    /// </summary>
+    public bool Validating { get; private set; }
+
+    /// <summary>
+    /// The value the last accepted answer was checked with, which is the one handed back: an edit made while an
+    /// asynchronous check runs is not what that check said yes to.
+    /// </summary>
+    public string? AcceptedValue { get; private set; }
+
     // Set by the first refused answer: from then on every edit re-checks the value.
     private bool _refused;
 
@@ -42,11 +53,48 @@ internal sealed class BitMessageBoxPromptState(BitMessageBoxPromptParameters par
     /// Checks the value before the box is answered with it, and moves the focus back onto the field when it is refused -
     /// which is where the error that explains why is read out.
     /// </summary>
-    public bool TryAccept()
+    public async Task<bool> TryAcceptAsync()
     {
+        var value = Value;
+
         Error = Validate();
 
+        if (Error is null && Parameters.AsyncValidator is not null)
+        {
+            Validating = true;
+            Changed?.Invoke(false);
+
+            try
+            {
+                Error = await Parameters.AsyncValidator(value);
+            }
+            catch
+            {
+                // A validator that throws does not leave the field busy behind the failure it reports.
+                Validating = false;
+                Changed?.Invoke(false);
+                throw;
+            }
+
+            Validating = false;
+
+            // A refusal of a value that was edited while the check ran is about a value that is no longer there: the
+            // answer is still refused, but what the field shows is what the synchronous checks say about its current value.
+            if (Error is not null && Value != value)
+            {
+                _refused = true;
+                Error = Validate();
+                Changed?.Invoke(false);
+                return false;
+            }
+        }
+
         _refused |= Error is not null;
+
+        if (Error is null)
+        {
+            AcceptedValue = value;
+        }
 
         Changed?.Invoke(Error is not null);
 
@@ -55,7 +103,8 @@ internal sealed class BitMessageBoxPromptState(BitMessageBoxPromptParameters par
 
     /// <summary>
     /// Re-checks the value after an edit, but only once an answer has been refused: a field is not told it is wrong
-    /// while it is still being typed into for the first time. Returns whether the error changed.
+    /// while it is still being typed into for the first time. Only the synchronous checks run, so a message the asynchronous
+    /// one gave - about a value that is no longer there - goes away. Returns whether the error changed.
     /// </summary>
     public bool Revalidate()
     {
@@ -114,7 +163,7 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusPending is false || _field is null) return;
+        if (_focusPending is false || _field is null || State.Validating) return;
 
         _focusPending = false;
 
@@ -152,32 +201,41 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
         builder.AddComponentParameter(11, nameof(BitTextField.AutoFocus), true);
         builder.AddComponentParameter(12, nameof(BitTextField.SelectOnFocus), true);
         builder.AddComponentParameter(13, nameof(BitTextField.ErrorMessage), State.Error);
+        builder.AddComponentParameter(14, nameof(BitTextField.Loading), State.Validating);
 
         // Only what the caller set is handed over, so a BitParams around the container still has the last word on the rest.
-        if (parameters.Required is true) builder.AddComponentParameter(14, nameof(BitTextField.Required), true);
-        if (parameters.Label.HasValue()) builder.AddComponentParameter(15, nameof(BitTextField.Label), parameters.Label);
-        if (parameters.Placeholder.HasValue()) builder.AddComponentParameter(16, nameof(BitTextField.Placeholder), parameters.Placeholder);
-        if (parameters.InputType.HasValue) builder.AddComponentParameter(17, nameof(BitTextField.Type), parameters.InputType);
-        if (parameters.MaxLength.HasValue) builder.AddComponentParameter(18, nameof(BitTextField.MaxLength), parameters.MaxLength.Value);
+        if (parameters.Required is true) builder.AddComponentParameter(15, nameof(BitTextField.Required), true);
+        if (parameters.Label.HasValue()) builder.AddComponentParameter(16, nameof(BitTextField.Label), parameters.Label);
+        if (parameters.Placeholder.HasValue()) builder.AddComponentParameter(17, nameof(BitTextField.Placeholder), parameters.Placeholder);
+        if (parameters.Description.HasValue()) builder.AddComponentParameter(18, nameof(BitTextField.Description), parameters.Description);
+        if (parameters.InputType.HasValue) builder.AddComponentParameter(19, nameof(BitTextField.Type), parameters.InputType);
+        if (parameters.CanRevealPassword is true) builder.AddComponentParameter(20, nameof(BitTextField.CanRevealPassword), true);
+        if (parameters.AutoComplete.HasValue()) builder.AddComponentParameter(21, nameof(BitTextField.AutoComplete), parameters.AutoComplete);
+        if (parameters.MaxLength.HasValue) builder.AddComponentParameter(22, nameof(BitTextField.MaxLength), parameters.MaxLength.Value);
         if (parameters.Multiline is true)
         {
-            builder.AddComponentParameter(19, nameof(BitTextField.Multiline), true);
-            builder.AddComponentParameter(20, nameof(BitTextField.Rows), 3);
+            builder.AddComponentParameter(23, nameof(BitTextField.Multiline), true);
+            builder.AddComponentParameter(24, nameof(BitTextField.Rows), 3);
         }
-        if (parameters.Size.HasValue) builder.AddComponentParameter(21, nameof(BitTextField.Size), parameters.Size);
-        builder.AddComponentParameter(22, nameof(BitTextField.OnKeyDown), EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleKeyDown));
-        if (parameters.Dir.HasValue) builder.AddComponentParameter(23, nameof(BitTextField.Dir), parameters.Dir);
-        builder.AddComponentParameter(24, nameof(BitTextField.Class), "bit-msb-pfl");
+        else
+        {
+            // Enter answers a single-line prompt, so an on-screen keyboard labels its return key as the end of the task.
+            builder.AddComponentParameter(25, nameof(BitTextField.EnterKeyHint), "done");
+        }
+        if (parameters.Size.HasValue) builder.AddComponentParameter(26, nameof(BitTextField.Size), parameters.Size);
+        builder.AddComponentParameter(27, nameof(BitTextField.OnKeyDown), EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleKeyDown));
+        if (parameters.Dir.HasValue) builder.AddComponentParameter(28, nameof(BitTextField.Dir), parameters.Dir);
+        builder.AddComponentParameter(29, nameof(BitTextField.Class), "bit-msb-pfl");
 
         // A field with no visible label of its own is named by the question above it - or, where that is markup, by the
         // title of the box - so it is never announced as a bare "edit text". The name is the words themselves: the field
         // writes its own aria-labelledby, which leaves no room for one pointing at the question.
         if (State.FieldAriaLabel is { } ariaLabel)
         {
-            builder.AddComponentParameter(25, nameof(BitTextField.AriaLabel), ariaLabel);
+            builder.AddComponentParameter(30, nameof(BitTextField.AriaLabel), ariaLabel);
         }
 
-        builder.AddComponentReferenceCapture(28, field => _field = (BitTextField)field);
+        builder.AddComponentReferenceCapture(31, field => _field = (BitTextField)field);
         builder.CloseComponent();
 
         builder.CloseElement();

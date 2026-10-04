@@ -139,8 +139,8 @@ public class BitMessageBoxService(BitModalService modalService)
     /// The box has an Ok and a Cancel button unless <see cref="BitMessageBoxParameters.Buttons"/> says otherwise. Only the
     /// affirmative answer (Ok, or Yes) returns the value - an empty string for an empty field - and only once
     /// <see cref="BitMessageBoxPromptParameters.Required"/> and <see cref="BitMessageBoxPromptParameters.Validator"/> have
-    /// accepted it: a refused value stays in the field with the reason under it, and the box stays open. Enter in the field
-    /// answers the way the affirmative button does.
+    /// accepted it - then <see cref="BitMessageBoxPromptParameters.AsyncValidator"/>, if there is one: a refused value stays in
+    /// the field with the reason under it, and the box stays open. Enter in the field answers the way the affirmative button does.
     /// </remarks>
     public async Task<string?> Prompt(BitMessageBoxPromptParameters parameters, CancellationToken cancellationToken)
     {
@@ -156,7 +156,7 @@ public class BitMessageBoxService(BitModalService modalService)
 
         var result = await Show(parameters, id, BitMessageBoxButtons.OkCancel, isQuestion: false, prompt, cancellationToken);
 
-        return result == affirmative ? prompt.Value ?? string.Empty : null;
+        return result == affirmative ? prompt.AcceptedValue ?? string.Empty : null;
     }
 
     /// <summary>
@@ -358,7 +358,7 @@ public class BitMessageBoxService(BitModalService modalService)
             });
             result[nameof(BitMessageBox.OnBeforeResult)] = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(this, async args =>
             {
-                if (args.Result == state.Affirmative && state.TryAccept() is false)
+                if (args.Result == state.Affirmative && await state.TryAcceptAsync() is false)
                 {
                     args.Cancel = true;
                     return;

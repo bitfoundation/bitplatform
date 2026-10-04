@@ -296,7 +296,8 @@
         <DemoExample Title="Confirmation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>Confirm</b> returns <b>true</b> only for Ok or Yes - a refusal or a dismissal is <b>false</b>.
-                <b>BitMessageBoxParameters</b> sets everything else, including the modal through its <b>Modal</b> member.
+                <b>BitMessageBoxParameters</b> sets everything else, including the modal through its <b>Modal</b> member
+                (the second one is <b>Blocking</b>: a click beside it does not dismiss it).
             </div>
             <br />
             <div class="example-buttons">
@@ -304,19 +305,22 @@
                 <BitButton Color="BitColor.Error" OnClick="ShowDangerousConfirm">Delete something</BitButton>
             </div>
             <br />
-            <div>Last answer: <b>@confirmResult</b></div>
+            <div>Last answer: <b>@(confirmResult?.ToString() ?? "-")</b></div>
         </DemoExample>
 
         <DemoExample Title="Prompt" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>Prompt</b> asks for text and returns it, or <b>null</b> when dismissed. The field takes the focus and Enter
-                answers (Ctrl+Enter when <b>Multiline</b>). <b>Required</b> and <b>Validator</b> refuse a value with a message
-                under the field; <b>Label</b>, <b>Placeholder</b>, <b>InputType</b> and <b>MaxLength</b> shape it.
+                answers (Ctrl+Enter when <b>Multiline</b>). <b>Required</b>, <b>Validator</b> and <b>AsyncValidator</b> (a server
+                check, run on answering while the field shows it is busy) refuse a value with a message under the field;
+                <b>Label</b>, <b>Description</b>, <b>Placeholder</b>, <b>InputType</b>, <b>AutoComplete</b> and <b>MaxLength</b>
+                shape it. Try naming the new folder "Projects".
             </div>
             <br />
             <div class="example-buttons">
                 <BitButton OnClick="ShowPrompt">Rename</BitButton>
                 <BitButton OnClick="ShowValidatedPrompt">New folder</BitButton>
+                <BitButton OnClick="ShowPasswordPrompt">Password</BitButton>
                 <BitButton OnClick="ShowMultilinePrompt">Feedback</BitButton>
             </div>
             <br />
