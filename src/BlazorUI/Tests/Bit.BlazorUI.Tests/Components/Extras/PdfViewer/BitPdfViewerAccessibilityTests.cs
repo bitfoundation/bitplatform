@@ -444,28 +444,30 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(true, 1)]
-    [DataRow(false, 0)]
-    public async Task BitPdfViewerShouldMoveFocusOntoTheSurfaceWhenTheFocusedSidebarCloses(bool sidebarHasFocus, int focusCalls)
+    public async Task BitPdfViewerShouldHandFocusBackToTheSurfaceWhenASidebarCloses()
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.PdfViewer.sidebarHasFocus", _ => true).SetResult(sidebarHasFocus);
-
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        // The script tracks where focus is from the first render on, so a closing panel
+        // needs no round trip to ask it.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.registerFocusTracker"].Count);
+
+        // Opening a panel takes nothing out of the DOM.
         await component.InvokeAsync(() => component.Instance.OnShortcut("sidebar"));
-        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restorePanelFocus"].Count);
 
         // F4 from a thumbnail takes the panel - and the focus inside it - out of the DOM.
+        // Whether focus was in it is the script's to say: focus the reader had elsewhere
+        // (a host button, say) is not taken from them.
         await component.InvokeAsync(() => component.Instance.OnShortcut("sidebar"));
 
         Assert.AreEqual(BitPdfSidebar.None, component.Instance.Sidebar);
-        // Focus the reader had elsewhere (a host button, say) is not taken from them.
         component.WaitForAssertion(() =>
-            Assert.AreEqual(before + focusCalls, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count));
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restorePanelFocus"].Count));
     }
 
     [TestMethod]
