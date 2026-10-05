@@ -25,9 +25,10 @@ public partial class BitRichTextEditor
             return;
         }
 
-        // Rebuild every time: FieldIdentifier.Create(ValueExpression) can resolve to a different
-        // model instance even when the same expression delegate is reused (e.g. the bound model
-        // was swapped), so caching on the expression instance alone can notify a stale field.
+        // Rebuilt on every parameter set and before every change notification, never cached on the
+        // expression instance: FieldIdentifier.Create(ValueExpression) can resolve to a different
+        // model instance even when the same expression is reused (e.g. the bound model was swapped),
+        // so caching on the expression alone can notify a stale field.
         _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
         _hasField = true;
     }
@@ -44,8 +45,9 @@ public partial class BitRichTextEditor
         get
         {
             if (Invalid || ErrorMessage.HasValue()) return true;
-            if (CascadedEditContext is null || ValueExpression is null) return false;
-            EnsureField();
+            // Read several times per render, so it reads the field OnParametersSet last resolved rather than
+            // walking the expression again on each read.
+            if (CascadedEditContext is null) return false;
             return _hasField && CascadedEditContext.GetValidationMessages(_fieldIdentifier).Any();
         }
     }
