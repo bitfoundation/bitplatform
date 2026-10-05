@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Threading.RateLimiting;
+﻿using System.Threading.RateLimiting;
 using Bit.Butil.Demo.Client.Docs;
 using ModelContextProtocol.Protocol;
 using Bit.Butil.Demo.Server.Components;
@@ -29,16 +28,6 @@ builder.Services.AddDemoServices();
 // The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it.
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
-
-// The commit this server was built from, which the SDK's Source Link appends to the informational
-// version ("10.6.1+<sha>"): a release bitplatform.dev/mcp?v= serves is built out of its tag, so a
-// link at develop would show code other than what the answers describe. A build outside a git
-// checkout has no commit to name and falls back to develop.
-var sourceRevision = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+') is [_, .., var commit] &&
-    commit.Length >= 7 && commit.All(char.IsAsciiHexDigit)
-        ? commit
-        : "develop";
-
 builder.Services.AddMcpServer(options =>
 {
     options.ServerInfo = new Implementation
@@ -46,7 +35,7 @@ builder.Services.AddMcpServer(options =>
         Name = "bit-butil",
         Title = "Bit.Butil - the browser platform for Blazor",
         Version = ButilApiCatalog.Version,
-        WebsiteUrl = $"https://github.com/bitfoundation/bitplatform/tree/{sourceRevision}/src/Butil"
+        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Butil"
     };
 
     // The one field a server gets to write directly into the model's context, once, before it has
