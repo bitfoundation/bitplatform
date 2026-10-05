@@ -93,7 +93,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION}}" --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -115,10 +115,6 @@ jobs:
       run: |
           sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' AdminPanel/src/Server/AdminPanel.Server.Api/Infrastructure/Data/AppDbContext.cs
       
-    - name: Generate CSS/JS files
-      run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish Server Web
       run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
@@ -240,7 +236,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --theme Material --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --theme Material --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -252,8 +248,6 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
 
-    - name: Generate CSS/JS files
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-restore -c Release
       
     - name: Publish
       run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
@@ -297,7 +291,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-browsers --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -314,9 +308,6 @@ jobs:
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
-
-    - name: Generate CSS/JS files
-      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     # Needed for delta packages. Fails on the first run, when the bucket is empty.
     - name: Download previous releases from R2
@@ -364,7 +355,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-browsers --no-format --no-migration --no-trust
 
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -395,10 +386,6 @@ jobs:
         Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
-    - name: Generate CSS/JS files
-      run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
       run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
@@ -451,7 +438,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-restore --no-build --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-browsers --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -482,10 +469,6 @@ jobs:
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-    - name: Generate CSS/JS files
-      run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
       run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios

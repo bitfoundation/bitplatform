@@ -35,7 +35,7 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --no-browsers -p:Configuration=Release -p:Version="$(APP_VERSION)" --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
@@ -52,12 +52,6 @@ jobs:
       folderPath: './'
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
-
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish'
@@ -133,7 +127,7 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --platforms windows --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --platforms windows --no-browsers --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
@@ -150,12 +144,6 @@ jobs:
       folderPath: './'
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
-
-  - task: Bash@3
-    displayName: 'Generate CSS/JS files'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"'
 
   - task: Bash@3
     displayName: 'Publish'
@@ -186,7 +174,7 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
     displayName: 'Prepare this machine with bit setup'
 
   - task: DownloadSecureFile@1
@@ -215,11 +203,6 @@ jobs:
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
   
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish aab'

@@ -262,7 +262,8 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Checkout source code
    - Setup .NET SDK (from global.json)
-   - bit setup: Node.js when the runner lacks it, and the wasm-tools workload
+   - bit setup: Node.js when the runner lacks it, the wasm-tools workload, and a Release build
+     with the job's Version, which also generates the CSS/JS from TypeScript and SCSS
    ```
 
 2. **Localization with `bit translate`**
@@ -281,9 +282,6 @@ This is the **core deployment workflow** that handles building and deploying all
 
 4. **Build Process**
    ```bash
-   # Generate CSS/JS from TypeScript and SCSS
-   dotnet build -t:BeforeBuildTasks -c Release -p:Version="1.0.0"
-   
    # Publish self-contained Linux binary (Using Linux is optional)
    dotnet publish -c Release --self-contained -r linux-x64 \
      -p:Version="1.0.0" -p:Environment=Production
@@ -337,7 +335,8 @@ This is the **core deployment workflow** that handles building and deploying all
 
 1. **Environment Setup & Configuration**
    ```yaml
-   - Setup .NET SDK, then bit setup for Node.js when the runner lacks it
+   - Setup .NET SDK, then bit setup for Node.js when the runner lacks it, and a build that
+     generates the CSS/JS files
    - Translate resource files (`bit translate`)
    - Update appsettings.json:
      - ServerAddress: Environment-specific API URL
@@ -346,9 +345,6 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build & Package with Velopack**
    ```bash
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
-   
    # Publish for Windows x86 (32-bit for wider compatibility)
    dotnet publish -c Release -r win-x86 --self-contained \
      -p:Version="1.0.0" -p:Environment=Production
@@ -395,11 +391,9 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build Android App Bundle (AAB)**
 ```bash
-# Install Node.js when missing, the MAUI Android workload and what the Android SDK lacks
-dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
-   
-# Generate CSS/JS files
-dotnet build -t:BeforeBuildTasks -c Release
+# Install Node.js when missing, the MAUI Android workload and what the Android SDK lacks,
+# then build, which generates the CSS/JS files
+dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
    
 # Publish signed AAB (Or APK if needed)
 dotnet publish -c Release \
@@ -441,7 +435,8 @@ dotnet publish -c Release \
    ```yaml
    - Setup .NET SDK
    - Setup Xcode 26.6 (latest)
-   - bit setup: Node.js when the runner lacks it, and the MAUI workload
+   - bit setup: Node.js when the runner lacks it, the MAUI workload, and a build that
+     generates the CSS/JS files
    - Translate resources (`bit translate`)
    - Update appsettings.json with ServerAddress
    ```
@@ -460,9 +455,6 @@ dotnet publish -c Release \
 
 3. **Build iOS App Package (IPA)**
    ```bash
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
-   
    # Publish and sign IPA
    dotnet publish \
      -p:ApplicationId=com.company.app \

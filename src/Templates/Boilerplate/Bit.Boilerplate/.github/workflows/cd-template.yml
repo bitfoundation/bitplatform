@@ -32,7 +32,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION }}" --yes
 
       - name: Translate .resx files
         env:
@@ -51,11 +51,6 @@ jobs:
 #if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
-
-      - name: Generate CSS/JS files
-        run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-          dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
 
       - name: Publish
         run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
@@ -176,7 +171,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --platforms windows --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --platforms windows --no-browsers --yes
 
       - name: Translate .resx files
         env:
@@ -192,9 +187,6 @@ jobs:
         env:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
-
-      - name: Generate CSS/JS files
-        run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
 
       - name: Publish
         run: |
@@ -225,7 +217,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -247,11 +239,6 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
-
-      - name: Generate CSS/JS files
-        run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-          dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
 
       - name: Publish aab
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-android
@@ -284,7 +271,7 @@ jobs:
           xcode-version: '26.6'
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --platforms ios --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --platforms ios --no-browsers --yes
 
       - name: Translate .resx files
         env:
@@ -313,11 +300,6 @@ jobs:
           issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
-
-      - name: Generate CSS/JS files
-        run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
-          dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="${{ vars.APP_VERSION }}"
 
       - name: Build ipa
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-ios

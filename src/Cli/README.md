@@ -105,7 +105,7 @@ It installs missing tools, build tools and packages, builds, installs Playwright
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships do it like this, before they publish:
 
 ```bash
-dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
+dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
 ```
 
 A CI build job lets bit build too, with its own MSBuild properties, and skips the browsers it won't test with:
@@ -114,7 +114,7 @@ A CI build job lets bit build too, with its own MSBuild properties, and skips th
 dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 ```
 
-A job that publishes in Release keeps `--no-restore --no-build`: bit builds Debug, and the Release publish would take the unminified JavaScript of that build as up to date.
+A job that publishes lets bit build first too, so its CSS and JS are generated before `dotnet publish`. A web job passes `-p:Configuration=Release` and its `-p:Version`, so the publish reuses that build; a native job builds Debug, and its Release publish rebuilds the JavaScript, which bit Boilerplate regenerates whenever the Environment changes.
 
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
