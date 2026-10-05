@@ -1,141 +1,264 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
-.bit-mdv {
-    all: revert;
-    width: 100%;
-    color: $clr-fg-pri;
-    line-height: 1.6;
-    overflow-wrap: break-word;
+// Public CSS variables. Read with a fallback and never declared, so they inherit: set them on :root, on an
+// ancestor, or on one viewer's Style.
+//
+// --bit-MarkdownViewer-color                    text color of the document
+// --bit-MarkdownViewer-font-family              font of the document
+// --bit-MarkdownViewer-font-size                font size of the document; its headings and code spans scale with it
+// --bit-MarkdownViewer-line-height              line height of the document
+// --bit-MarkdownViewer-block-spacing            room under each block (paragraph, list, table, code block, ...)
+// --bit-MarkdownViewer-scroll-margin            room kept above a heading or footnote an in-page link scrolls to
+// --bit-MarkdownViewer-heading-color            text color of the headings
+// --bit-MarkdownViewer-heading-font-family      font of the headings
+// --bit-MarkdownViewer-heading-font-weight      weight of the headings
+// --bit-MarkdownViewer-heading-border-color     rule under the h1 and h2 headings
+// --bit-MarkdownViewer-link-color               text color of the links
+// --bit-MarkdownViewer-link-hover-color         text color of a link under the pointer
+// --bit-MarkdownViewer-link-decoration          text-decoration-line of the links at rest
+// --bit-MarkdownViewer-code-font-family         font of the code spans, code blocks and math
+// --bit-MarkdownViewer-code-color               text color of the code spans
+// --bit-MarkdownViewer-code-background          background of the code spans
+// --bit-MarkdownViewer-code-radius              corner radius of the code spans
+// --bit-MarkdownViewer-code-block-color         text color of the code blocks
+// --bit-MarkdownViewer-code-block-background    background of the code blocks
+// --bit-MarkdownViewer-code-block-padding       padding of the code blocks
+// --bit-MarkdownViewer-code-block-radius        corner radius of the code blocks
+// --bit-MarkdownViewer-blockquote-color         text color of the block quotes
+// --bit-MarkdownViewer-blockquote-border-color  bar down the start edge of the block quotes
+// --bit-MarkdownViewer-table-border-color       borders of the table cells
+// --bit-MarkdownViewer-table-header-background  background of the header row
+// --bit-MarkdownViewer-table-stripe-background  background of every second body row
+// --bit-MarkdownViewer-table-cell-padding       padding of the table cells
+// --bit-MarkdownViewer-rule-color               color of the thematic break (hr)
+// --bit-MarkdownViewer-rule-thickness           thickness of the thematic break (hr)
+// --bit-MarkdownViewer-mark-color               text color of the highlighted (==mark==) text
+// --bit-MarkdownViewer-mark-background          background of the highlighted (==mark==) text
+// --bit-MarkdownViewer-container-background     background of the ::: containers
+// --bit-MarkdownViewer-note-color               NOTE alerts, note/info containers
+// --bit-MarkdownViewer-tip-color                TIP alerts, tip/success containers
+// --bit-MarkdownViewer-important-color          IMPORTANT alerts
+// --bit-MarkdownViewer-warning-color            WARNING alerts, warning containers
+// --bit-MarkdownViewer-caution-color            CAUTION alerts, caution/danger containers
 
-    * {
+// The element rules below are written for the markup the renderers emit, and stop at what a template or a
+// typesetter put into the document (the content of `.bit-mdv-tpl` and `.math`), so a component drawn by a
+// template keeps its own styles. A viewer nested in a template is the renderers' markup again.
+$_own: ':not(:where(:is(.bit-mdv-tpl, .math) *:not(.bit-mdv-tpl .bit-mdv, .bit-mdv-tpl .bit-mdv *)))';
+
+// One element rule: `.bit-mdv :where(<selector>)<own>`, which weighs one class. That is enough to win over a page
+// reset written for bare elements (Tailwind's preflight, Bootstrap's reboot), and still loses to any rule an
+// author writes for a class of their own inside the document.
+@mixin own($selector) {
+    :where(#{$selector})#{$_own} {
+        @content;
+    }
+}
+
+$_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
+
+// The reset is zero-weight, so the Class of the viewer always wins over it.
+:where(.bit-mdv) {
+    all: revert;
+}
+
+.bit-mdv {
+    width: 100%;
+    overflow-wrap: break-word;
+    color: var(--bit-MarkdownViewer-color, #{$clr-fg-pri});
+    font-size: var(--bit-MarkdownViewer-font-size, inherit);
+    font-family: var(--bit-MarkdownViewer-font-family, inherit);
+    line-height: var(--bit-MarkdownViewer-line-height, 1.6);
+
+    // Every element the renderers write starts from the browser's own styles rather than from whatever the page
+    // reset, and the rules below take it from there. A nested viewer's root is left to its own rule, and an icon to
+    // its presentation attributes, which a revert would discard along with the page's styles.
+    @include own('*:not(.bit-mdv, .bit-mdv-alert-icon, .bit-mdv-alert-icon *)') {
         all: revert;
     }
 
-    > *:first-child {
+    > :first-child {
         margin-top: 0;
     }
 
-    > *:last-child {
+    > :last-child {
         margin-bottom: 0;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
+    // What an in-page link (a permalink, a footnote, a table of contents) scrolls to stops this far below the top
+    // of the viewport, so it is not left under a sticky app bar.
+    @include own('[id]') {
+        scroll-margin-block-start: var(--bit-MarkdownViewer-scroll-margin, 0);
+    }
+
+    // The wrapper a template is drawn into takes no box of its own.
+    .bit-mdv-tpl {
+        display: contents;
+    }
+
+    @include own('h1, h2, h3, h4, h5, h6') {
         margin-top: 1.5em;
         margin-bottom: 0.5em;
-        font-weight: $tg-fw-semibold;
+        color: var(--bit-MarkdownViewer-heading-color, inherit);
+        font-family: var(--bit-MarkdownViewer-heading-font-family, inherit);
+        font-weight: var(--bit-MarkdownViewer-heading-font-weight, #{$tg-fw-semibold});
         line-height: 1.25;
     }
 
-    h1 {
+    @include own('h1, h2') {
+        padding-bottom: 0.3em;
+        border-bottom: $shp-border-width $shp-border-style var(--bit-MarkdownViewer-heading-border-color, #{$clr-brd-sec});
+    }
+
+    @include own('h1') {
         font-size: 2em;
-        padding-bottom: 0.3em;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
     }
 
-    h2 {
+    @include own('h2') {
         font-size: 1.5em;
-        padding-bottom: 0.3em;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
     }
 
-    h3 {
+    @include own('h3') {
         font-size: 1.25em;
     }
 
-    h4 {
+    @include own('h4') {
         font-size: 1em;
     }
 
-    h5 {
+    @include own('h5') {
         font-size: 0.875em;
     }
 
-    h6 {
+    @include own('h6') {
         font-size: 0.85em;
-        color: $clr-fg-sec;
+        color: var(--bit-MarkdownViewer-heading-color, #{$clr-fg-sec});
     }
 
-    p {
+    @include own('p') {
         margin-top: 0;
-        margin-bottom: 1em;
+        margin-bottom: $_block-spacing;
     }
 
-    a {
-        color: $clr-pri;
-        text-decoration: none;
+    // The surfaces below (code, stripes, containers) are translucent washes of the text color rather than
+    // a background token, so they read on whatever the document sits on - the page, a card, a sidebar.
+    //
+    // Links are underlined at rest: a color difference alone is not enough to tell a link from the text around it
+    // (WCAG 1.4.1), and the brand color of every theme does not reach 3:1 against body text. The text keeps the
+    // color it is legible in, so the pointer is answered with a heavier line rather than a lighter color.
+    @include own('a') {
+        border-radius: $shp-radius-xs;
+        color: var(--bit-MarkdownViewer-link-color, #{$clr-pri-fg});
+        text-decoration-line: var(--bit-MarkdownViewer-link-decoration, underline);
+        text-underline-offset: 0.2em;
 
         &:hover {
-            text-decoration: underline;
+            color: var(--bit-MarkdownViewer-link-hover-color, var(--bit-MarkdownViewer-link-color, #{$clr-pri-fg}));
+            text-decoration-line: underline;
+            text-decoration-thickness: $shp-border-width-thick;
+        }
+
+        &:focus-visible {
+            @include focus-ring;
         }
     }
 
-    code {
+    // What only a screen reader meets - the heading of the footnotes, the notice a link opening in a new tab adds to
+    // its name: out of the flow rather than hidden, since display:none would hide it from the reader it is written
+    // for, and out of a copied selection.
+    .bit-mdv-sr-only,
+    .bit-mdv-new-tab {
+        border: 0;
+        padding: 0;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        clip-path: inset(50%);
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    // A code span is a run inside a line of any size - a heading's as much as a paragraph's - so it is sized
+    // against that line rather than taken from the ramp, which would shrink it to body size inside a heading.
+    @include own('code') {
         margin: 0;
         padding: 0.2em 0.4em;
         font-size: 85%;
-        border-radius: $shp-radius-control;
-        background-color: $clr-bg-sec;
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        border-radius: var(--bit-MarkdownViewer-code-radius, #{$shp-radius-control});
+        color: var(--bit-MarkdownViewer-code-color, inherit);
+        background-color: var(--bit-MarkdownViewer-code-background, #{translucent($clr-fg-pri, 8%)});
+        font-family: var(--bit-MarkdownViewer-code-font-family, #{$tg-font-family-mono});
     }
 
-    pre {
-        padding: 16px;
+    // A code block is focusable, so a line wider than the document can be scrolled to with the keyboard alone.
+    @include own('pre') {
+        margin-top: 0;
+        margin-bottom: $_block-spacing;
+        padding: var(--bit-MarkdownViewer-code-block-padding, #{spacing(2)});
         overflow: auto;
-        font-size: 85%;
+        font-size: $tg-fs-sm;
         line-height: 1.45;
-        border-radius: $shp-radius-surface;
-        margin-bottom: 1em;
-        background-color: $clr-bg-sec;
+        border-radius: var(--bit-MarkdownViewer-code-block-radius, #{$shp-radius-surface});
+        color: var(--bit-MarkdownViewer-code-block-color, inherit);
+        background-color: var(--bit-MarkdownViewer-code-block-background, #{translucent($clr-fg-pri, 5%)});
+        font-family: var(--bit-MarkdownViewer-code-font-family, #{$tg-font-family-mono});
 
-        code {
-            margin: 0;
-            padding: 0;
-            border: 0;
-            font-size: 100%;
-            background: transparent;
-            white-space: pre;
+        &:focus-visible {
+            @include focus-ring;
         }
     }
 
-    blockquote {
-        margin: 0 0 1em 0;
-        padding: 0 1em;
-        color: $clr-fg-sec;
-        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
+    @include own('pre code') {
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        color: inherit;
+        background: transparent;
+        white-space: pre;
     }
 
-    ul,
-    ol {
+    @include own('blockquote') {
+        margin: 0 0 $_block-spacing 0;
+        padding: 0 1em;
+        color: var(--bit-MarkdownViewer-blockquote-color, #{$clr-fg-sec});
+        border-inline-start: $shp-border-width-thick $shp-border-style var(--bit-MarkdownViewer-blockquote-border-color, #{$clr-brd-pri});
+    }
+
+    @include own('ul, ol') {
         margin-top: 0;
-        margin-bottom: 1em;
+        margin-bottom: $_block-spacing;
         padding-inline-start: 2em;
     }
 
-    li + li {
+    @include own('li + li') {
         margin-top: 0.25em;
     }
 
-    li.task-list-item {
+    @include own('li.task-list-item') {
         list-style-type: none;
     }
 
-    .task-list-item-checkbox {
+    @include own('.task-list-item-checkbox') {
         margin-block: 0;
         margin-inline: -1.4em 0.5em;
         vertical-align: middle;
+
+        &:focus-visible {
+            @include focus-ring;
+        }
     }
 
-    hr {
-        height: 0.25em;
+    // Drawn as a border rather than as a background, so it survives forced colors, where every background is
+    // painted over with the canvas.
+    @include own('hr') {
+        height: 0;
         padding: 0;
         margin: 1.5em 0;
         border: 0;
-        background-color: $clr-brd-pri;
+        border-top: var(--bit-MarkdownViewer-rule-thickness, 0.25em) $shp-border-style var(--bit-MarkdownViewer-rule-color, #{$clr-brd-pri});
     }
 
     // The table scrolls inside its wrapper rather than by becoming a block itself, so it keeps
@@ -143,60 +266,62 @@
     .bit-mdv-table-wrapper {
         max-width: 100%;
         overflow-x: auto;
-        margin-bottom: 1em;
+        margin-bottom: $_block-spacing;
+        border-radius: $shp-radius-xs;
 
         &:focus-visible {
-            outline: $shp-border-width-thick $shp-border-style $clr-pri;
-            outline-offset: 2px;
+            @include focus-ring;
         }
     }
 
-    table {
+    @include own('table') {
         width: max-content;
         max-width: 100%;
         border-collapse: collapse;
-
-        th,
-        td {
-            padding: 6px 13px;
-            border: $shp-border-width $shp-border-style $clr-brd-pri;
-        }
-
-        th {
-            font-weight: $tg-fw-semibold;
-        }
-
-        tr:nth-child(2n) {
-            background-color: $clr-bg-sec;
-        }
     }
 
-    img {
+    @include own('th, td') {
+        padding: var(--bit-MarkdownViewer-table-cell-padding, #{spacing(0.75) spacing(1.625)});
+        border: $shp-border-width $shp-border-style var(--bit-MarkdownViewer-table-border-color, #{$clr-brd-pri});
+    }
+
+    @include own('th') {
+        font-weight: $tg-fw-semibold;
+        background-color: var(--bit-MarkdownViewer-table-header-background, transparent);
+    }
+
+    @include own('tbody tr:nth-child(2n)') {
+        background-color: var(--bit-MarkdownViewer-table-stripe-background, #{translucent($clr-fg-pri, 4%)});
+    }
+
+    @include own('img') {
         max-width: 100%;
         box-sizing: content-box;
     }
 
     // Emphasis extras. <sub> and <sup> keep the line height they sit on, and the two "changed
     // text" marks read as such without borrowing the link or the error colour.
-    sub,
-    sup {
-        font-size: $tg-fs-2xs;
+    @include own('sub, sup') {
+        font-size: $tg-fs-xs;
         line-height: 0;
     }
 
-    ins {
+    @include own('ins') {
         text-decoration: underline;
     }
 
-    mark {
+    // A translucent wash of the warning color under the text's own color, so the highlight stays legible on
+    // either scheme (a solid light fill under the light text of a dark theme is not).
+    @include own('mark') {
         padding: 0 0.2em;
         border-radius: $shp-radius-xs;
-        color: $clr-fg-pri;
-        background-color: $clr-wrn-light;
+        color: var(--bit-MarkdownViewer-mark-color, inherit);
+        background-color: var(--bit-MarkdownViewer-mark-background, #{translucent($clr-wrn, 35%)});
     }
 
     // The heading permalink stays out of the way until the heading is hovered or the link itself
-    // is focused, so it never competes with the heading it belongs to.
+    // is focused, so it never competes with the heading it belongs to. Where there is no hover to
+    // reveal it (a touch screen), it is always shown.
     .bit-mdv-anchor {
         margin-inline-start: 0.35em;
         color: $clr-fg-sec;
@@ -207,14 +332,13 @@
         &:focus-visible {
             opacity: 1;
         }
+
+        @media (hover: none) {
+            opacity: 1;
+        }
     }
 
-    h1:hover > .bit-mdv-anchor,
-    h2:hover > .bit-mdv-anchor,
-    h3:hover > .bit-mdv-anchor,
-    h4:hover > .bit-mdv-anchor,
-    h5:hover > .bit-mdv-anchor,
-    h6:hover > .bit-mdv-anchor {
+    :is(h1, h2, h3, h4, h5, h6):hover > .bit-mdv-anchor {
         opacity: 1;
     }
 
@@ -223,17 +347,17 @@
     // reaches for most get the same colour vocabulary the alerts use, so a page that mixes both
     // does not read as two design systems.
     .markdown-container {
-        margin-bottom: 1em;
+        margin-bottom: $_block-spacing;
         padding: 0.75em 1em;
         border-radius: $shp-radius-surface;
         border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
-        background-color: $clr-bg-sec;
+        background-color: var(--bit-MarkdownViewer-container-background, #{translucent($clr-fg-pri, 4%)});
 
-        > *:first-child {
+        > :first-child {
             margin-top: 0;
         }
 
-        > *:last-child {
+        > :last-child {
             margin-bottom: 0;
         }
     }
@@ -243,11 +367,16 @@
     details.markdown-container {
         > summary {
             cursor: pointer;
+            border-radius: $shp-radius-xs;
             font-weight: $tg-fw-semibold;
             line-height: 1.2;
+
+            &:focus-visible {
+                @include focus-ring;
+            }
         }
 
-        > *:not(summary):first-of-type {
+        > summary + * {
             margin-top: 0.5em;
         }
     }
@@ -258,71 +387,112 @@
         line-height: 1.2;
     }
 
+    // GitHub alerts. Each kind is a tinted rule down the inline start edge plus a coloured
+    // title, so the kind survives both a monochrome print and a screen reader. The titles are
+    // colored with the role foregrounds, which are tuned to be read on the page.
+    .markdown-alert {
+        margin-bottom: $_block-spacing;
+        padding: 0.5em 1em;
+        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
+
+        > :first-child {
+            margin-top: 0;
+        }
+
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .markdown-alert-title {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+        margin-bottom: 0.25em;
+        font-weight: $tg-fw-semibold;
+        line-height: 1;
+    }
+
+    // Sized with the title it stands beside, whatever a page's reset does to an svg.
+    .bit-mdv-alert-icon {
+        flex: none;
+        width: 1em;
+        height: 1em;
+        display: block;
+    }
+
+    .markdown-alert-note,
     .markdown-container-note,
     .markdown-container-info {
-        border-inline-start-color: $clr-inf;
-
-        > .markdown-container-title {
-            color: $clr-inf;
-        }
+        --bit-mdv-kind-clr: var(--bit-MarkdownViewer-note-color, #{$clr-inf-fg});
     }
 
+    .markdown-alert-tip,
     .markdown-container-tip,
     .markdown-container-success {
-        border-inline-start-color: $clr-suc;
-
-        > .markdown-container-title {
-            color: $clr-suc;
-        }
+        --bit-mdv-kind-clr: var(--bit-MarkdownViewer-tip-color, #{$clr-suc-fg});
     }
 
+    .markdown-alert-important {
+        --bit-mdv-kind-clr: var(--bit-MarkdownViewer-important-color, #{$clr-pri-fg});
+    }
+
+    .markdown-alert-warning,
     .markdown-container-warning {
-        border-inline-start-color: $clr-wrn;
-
-        > .markdown-container-title {
-            color: $clr-wrn;
-        }
+        --bit-mdv-kind-clr: var(--bit-MarkdownViewer-warning-color, #{$clr-wrn-fg});
     }
 
+    .markdown-alert-caution,
     .markdown-container-caution,
     .markdown-container-danger {
-        border-inline-start-color: $clr-err;
+        --bit-mdv-kind-clr: var(--bit-MarkdownViewer-caution-color, #{$clr-err-fg});
+    }
 
-        > .markdown-container-title {
-            color: $clr-err;
+    :is(.markdown-alert, .markdown-container):is(
+        .markdown-alert-note, .markdown-alert-tip, .markdown-alert-important, .markdown-alert-warning, .markdown-alert-caution,
+        .markdown-container-note, .markdown-container-info, .markdown-container-tip, .markdown-container-success,
+        .markdown-container-warning, .markdown-container-caution, .markdown-container-danger) {
+        border-inline-start-color: var(--bit-mdv-kind-clr);
+
+        > :is(.markdown-alert-title, .markdown-container-title) {
+            color: var(--bit-mdv-kind-clr);
         }
     }
 
     // Definition lists. The term leads and its definitions are indented under it, which is the
     // shape a reader already expects from a glossary.
-    dl {
+    @include own('dl') {
         margin-top: 0;
-        margin-bottom: 1em;
+        margin-bottom: $_block-spacing;
     }
 
-    dt {
+    @include own('dt') {
         margin-top: 0.75em;
         font-weight: $tg-fw-semibold;
     }
 
-    dd {
+    @include own('dt:first-child') {
+        margin-top: 0;
+    }
+
+    @include own('dd') {
         margin-inline-start: 2em;
     }
 
     // A figure is the picture and its caption as one block, so the caption is set apart from the
     // body text it would otherwise be mistaken for.
-    figure {
-        margin: 0 0 1em 0;
+    @include own('figure') {
+        margin: 0 0 $_block-spacing 0;
     }
 
-    figcaption {
+    @include own('figcaption') {
         margin-top: 0.5em;
-        font-size: $tg-fs-xs;
+        font-size: $tg-fs-sm;
         color: $clr-fg-sec;
     }
 
     // An abbreviation announces that it can be expanded, without the underline reading as a link.
-    abbr[title] {
+    @include own('abbr[title]') {
         cursor: help;
         text-decoration: underline dotted;
     }
@@ -330,7 +500,7 @@
     // Mathematics is left as the TeX it is until a typesetter on the page replaces it; until then
     // it at least reads as something set apart from the prose.
     .math {
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        font-family: var(--bit-MarkdownViewer-code-font-family, #{$tg-font-family-mono});
     }
 
     // Display style is centred on a line of its own whether the run was written as a block or
@@ -338,7 +508,7 @@
     .math-display {
         display: block;
         overflow-x: auto;
-        margin-bottom: 1em;
+        margin-bottom: $_block-spacing;
         text-align: center;
     }
 
@@ -356,86 +526,21 @@
         text-align: end;
     }
 
-    // GitHub alerts. Each kind is a tinted rule down the inline start edge plus a coloured
-    // title, so the kind survives both a monochrome print and a screen reader.
-    .markdown-alert {
-        margin-bottom: 1em;
-        padding: 0.5em 1em;
-        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
-
-        > *:first-child {
-            margin-top: 0;
-        }
-
-        > *:last-child {
-            margin-bottom: 0;
-        }
-    }
-
-    .markdown-alert-title {
-        display: flex;
-        gap: 0.5em;
-        align-items: center;
-        margin-bottom: 0.25em;
-        font-weight: $tg-fw-semibold;
-        line-height: 1;
-    }
-
-    .markdown-alert-note {
-        border-inline-start-color: $clr-inf;
-
-        > .markdown-alert-title {
-            color: $clr-inf;
-        }
-    }
-
-    .markdown-alert-tip {
-        border-inline-start-color: $clr-suc;
-
-        > .markdown-alert-title {
-            color: $clr-suc;
-        }
-    }
-
-    .markdown-alert-important {
-        border-inline-start-color: $clr-pri;
-
-        > .markdown-alert-title {
-            color: $clr-pri;
-        }
-    }
-
-    .markdown-alert-warning {
-        border-inline-start-color: $clr-wrn;
-
-        > .markdown-alert-title {
-            color: $clr-wrn;
-        }
-    }
-
-    .markdown-alert-caution {
-        border-inline-start-color: $clr-err;
-
-        > .markdown-alert-title {
-            color: $clr-err;
-        }
-    }
-
     // Footnotes: the section is set apart and typographically quieter than the body it
     // annotates, and each marker stays small enough not to disturb the line it sits on.
     .footnote-ref {
-        font-size: $tg-fs-2xs;
+        font-size: $tg-fs-xs;
         line-height: 0;
     }
 
     .footnotes {
-        font-size: $tg-fs-xs;
+        font-size: $tg-fs-sm;
         color: $clr-fg-sec;
 
         > hr {
-            height: $shp-border-width;
             margin: 2em 0 1em 0;
-            background-color: $clr-brd-sec;
+            border-top-width: $shp-border-width;
+            border-top-color: var(--bit-MarkdownViewer-rule-color, #{$clr-brd-sec});
         }
 
         > ol {
@@ -454,17 +559,37 @@
     display: inline;
     width: auto;
 
-    > * {
+    > :not(.bit-mdv-tpl) {
         display: inline;
     }
 
     > ul,
     > ol,
-    > table,
+    > .bit-mdv-table-wrapper,
     > pre,
     > blockquote {
         display: inline-block;
         vertical-align: top;
+    }
+}
+
+// Forced colors paint every background over with the canvas, so whatever a background was telling apart (a code
+// span, a code block, a highlight) gets an outline instead, and the highlight takes the system's own colors.
+@media (forced-colors: active) {
+    .bit-mdv {
+        @include own('code, pre') {
+            outline: $shp-border-width solid transparent;
+        }
+
+        @include own('pre code') {
+            outline: none;
+        }
+
+        @include own('mark') {
+            forced-color-adjust: none;
+            color: MarkText;
+            background-color: Mark;
+        }
     }
 }
 
@@ -473,21 +598,11 @@
 // bottom of one.
 @media print {
     .bit-mdv {
-        pre,
-        blockquote,
-        table,
-        figure,
-        .markdown-alert,
-        .markdown-container {
+        @include own('pre, blockquote, table, figure, .markdown-alert, .markdown-container') {
             break-inside: avoid;
         }
 
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
+        @include own('h1, h2, h3, h4, h5, h6') {
             break-after: avoid;
         }
 

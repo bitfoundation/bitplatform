@@ -28,4 +28,13 @@
         flex-direction: column;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
+
+    /* The Style & Class example. */
+    .custom-class {
+        box-shadow: 0 0 1rem tomato;
+    }
+
+    .custom-toolbar {
+        font-weight: bold;
+    }
 }
