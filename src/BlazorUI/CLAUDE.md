@@ -48,9 +48,14 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
   types many pages list come from `Models/DemoSharedEnums` (`DemoSharedEnums.BitColor()` in the page's
   `componentSubEnums`), with one anchor id per type. A page passes `description:` for its own line above
   the table and `.Only(...)` for the members it supports (BitPagination's eight general colors; a name
-  that is not a member throws), and keeps a table of its own only when the members mean something
-  different there (BitLoading's pixel sizes) - still under the shared table's anchor id.
-  `DemoSharedEnumsTests` pins every shared table to its enum, its descriptions and its unique id.
+  that is not a member throws, as does naming none), and keeps a table of its own only when the members
+  mean something different there (BitLoading's pixel sizes) - still under the shared table's anchor
+  id, and a type of its own never under a shared one (BitPersonaSize is `persona-size-enum`). A
+  default that holds on one page only goes in that page's parameter description, not in the table. A
+  shared table reads its members and values off the enum and writes only the prose, which is the
+  enum's own XML documentation copied out (a WebAssembly page has none to read): changing one means
+  changing the other. `DemoSharedEnumsTests` pins the prose to the XML documentation and every page's
+  anchor ids to the shared ones.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
 - **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -

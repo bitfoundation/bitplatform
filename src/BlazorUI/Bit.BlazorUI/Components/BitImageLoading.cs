@@ -7,7 +7,8 @@
 public enum BitImageLoading
 {
     /// <summary>
-    /// The default behavior, eager tells the browser to load the image as soon as the img element is processed.
+    /// Tells the browser to load the image as soon as the img element is processed, which is what a browser does with
+    /// an img that has no loading attribute.
     /// </summary>
     Eager,
 

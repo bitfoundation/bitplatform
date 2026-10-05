@@ -1,9 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// This allows a browser to display an appropriate virtual keyboard.
-/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode"/>
+/// Defines the inputmode html attribute, which is what lets a browser display an appropriate virtual keyboard.
 /// </summary>
+/// <remarks>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode"/>
+/// </remarks>
 public enum BitInputMode
 {
     /// <summary>
@@ -27,7 +29,7 @@ public enum BitInputMode
     Numeric,
 
     /// <summary>
-    /// A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key
+    /// A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key.
     /// </summary>
     Tel,
 

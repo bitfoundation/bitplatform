@@ -1,4 +1,8 @@
 ﻿namespace Bit.BlazorUI;
+
+/// <summary>
+/// Defines how the item template of a nav is rendered.
+/// </summary>
 public enum BitNavItemTemplateRenderMode
 {
     /// <summary>

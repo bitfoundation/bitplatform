@@ -6,7 +6,7 @@
 public enum BitIconPosition
 {
     /// <summary>
-    /// Icon renders before the content (default).
+    /// Icon renders before the content.
     /// </summary>
     Start,
 

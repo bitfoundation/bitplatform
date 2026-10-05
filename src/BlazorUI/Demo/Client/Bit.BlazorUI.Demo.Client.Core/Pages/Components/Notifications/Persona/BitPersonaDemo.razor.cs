@@ -442,7 +442,7 @@ public partial class BitPersonaDemo
             Type = "BitPersonaSize",
             DefaultValue = "BitPersonaSize.Size48",
             LinkType = LinkType.Link,
-            Href = "#size-enum",
+            Href = "#persona-size-enum",
             Description = "Decides the size of the control.",
         },
         new()
@@ -931,7 +931,7 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Id = "size-enum",
+            Id = "persona-size-enum",
             Name = "BitPersonaSize",
             Items =
             [
