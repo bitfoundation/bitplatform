@@ -165,13 +165,14 @@ public class BitDataGridPrerenderTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
+            // Only the rows past the window already read are read again: the two reads never overlap.
             Assert.AreEqual(2, requests.Count);
             Assert.AreEqual(EstimatedWindow, requests[0].Take);
-            Assert.AreEqual(0, requests[1].Skip);
-            Assert.IsTrue(requests[1].Take > EstimatedWindow);
+            Assert.AreEqual(EstimatedWindow, requests[1].Skip);
+            Assert.IsTrue(requests[1].Take > 0);
 
             var rows = RenderedRows(component.Markup);
-            Assert.AreEqual(requests[1].Take, rows.Count);
+            Assert.AreEqual(EstimatedWindow + requests[1].Take, rows.Count);
             Assert.AreEqual(rows.Count, rows.Distinct().Count());
         });
     }

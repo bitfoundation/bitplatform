@@ -82,6 +82,23 @@ public class BitNavBarPrerenderTests
         AssertSelected(document, "Settings");
     }
 
+    [TestMethod]
+    public async Task BitNavBarShouldNotRaiseOnSelectItemBeforeInteractivity()
+    {
+        // A prerender only draws the selection: the interactive render that replaces it reports it, after its
+        // first render, where a handler is free to call JavaScript or navigate.
+        var raised = 0;
+        var document = await Prerender("/profile", new()
+        {
+            [nameof(BitNavBar<BitNavBarOption>.OnSelectItem)] = EventCallback.Factory.Create<BitNavBarOption>(new object(), _ => raised++),
+        },
+            Option("Home", "/"),
+            Option("Profile", "/profile"));
+
+        AssertSelected(document, "Profile");
+        Assert.AreEqual(0, raised);
+    }
+
 
 
     private static void AssertSelected(IDocument document, string text)

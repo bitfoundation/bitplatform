@@ -217,10 +217,13 @@ public partial class BitFullCalendar
     [Parameter] public EventCallback<BitFullCalendarChangingEventArgs> OnChanging { get; set; }
 
     /// <summary>
-    /// Raised when the visible date range changes - as the calendar initializes (awaited, so the events fetched
-    /// for it are in a prerendered page), and afterwards whenever the user
+    /// Raised when the visible date range changes - on first render, and afterwards whenever the user
     /// navigates with the prev/next/today buttons, switches views, or the grid shape changes. The
     /// callback receives the inclusive start and end dates of the new range together with the active view.
+    /// A prerendered or statically rendered calendar has no first render in the browser, so there the first
+    /// range is raised as the calendar initializes, and awaited, so the events fetched for it are in the HTML
+    /// sent before the page is interactive; a handler calling JavaScript there is let fail quietly, and the
+    /// interactive render that replaces a prerendered calendar raises it again, as it initializes anew.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarDateChangeEventArgs> OnDateChange { get; set; }
 
@@ -538,12 +541,14 @@ public partial class BitFullCalendar
         // Raise the single coalesced date-range change (if any) now that all parameter-driven
         // setters have run, so consumers see only the final resolved range rather than each
         // intermediate one produced while applying parameters.
-        // The very first range is left to OnParametersSetAsync, which raises the range the state ends up showing anyway.
+        // A prerender leaves the very first range to OnParametersSetAsync, which raises the range the state ends up
+        // showing anyway.
         if (_pendingDateChange is { } pending)
         {
             _pendingDateChange = null;
-            if (_initialDateChangeRaised)
+            if (_initialDateChangeRaised || _js.IsRuntimeInvalid() is false)
             {
+                _initialDateChangeRaised = true;
                 InvokeAsync(() => OnDateChange.InvokeAsync(pending));
             }
         }
@@ -560,30 +565,53 @@ public partial class BitFullCalendar
 
     protected override async Task OnParametersSetAsync()
     {
-        // Consumers commonly fetch the events for the range the calendar is about to show, so the
-        // initial range is reported like every later one instead of only after the first navigation.
-        // It is reported here, and awaited, rather than after the first render: a prerender or a static
-        // SSR page never renders a second time, so only the events fetched before it ends make it into
-        // the HTML sent before the page is interactive (each render of a prerendered page, the server's
-        // and the interactive one, is a calendar of its own that reports it once). The range is the
-        // state's alone, so nothing it needs waits for the browser.
-        if (_initialDateChangeRaised is false && OnDateChange.HasDelegate)
+        // A prerender or a static SSR page never renders a second time, so the first range is reported here, and
+        // awaited, rather than after the first render (see OnAfterRender): only the events fetched before it ends
+        // make it into the HTML sent before the page is interactive. The range is the state's alone, so nothing it
+        // needs waits for the browser. An interactive calendar keeps reporting it after its first render, where a
+        // handler is free to call JavaScript and to use the calendar's own.
+        if (_initialDateChangeRaised is false && OnDateChange.HasDelegate && _js.IsRuntimeInvalid())
         {
-            _initialDateChangeRaised = true;
-            var (start, end) = State.GetVisibleRange();
-            // This range may never have travelled through the state's own channel, so tell it the range
-            // has been reported - otherwise a first navigation that lands right back on it (pressing
-            // "Today" while today is already showing) would report the same range a second time.
-            State.MarkCurrentRangeReported();
-            await OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
+            try
             {
-                Start = start,
-                End = end,
-                View = State.View
-            });
+                await RaiseInitialDateChangeAsync();
+            }
+            catch (InvalidOperationException ex) when (ex.Message.StartsWith("JavaScript interop calls cannot be issued", StringComparison.Ordinal))
+            {
+                // A handler that calls JavaScript cannot do so before the page is interactive; the interactive
+                // render that replaces this one is a calendar of its own, which reports the range again.
+            }
         }
 
         await base.OnParametersSetAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Consumers commonly fetch the events for the range the calendar is about to show, so the
+        // initial range is reported like every later one instead of only after the first navigation.
+        if (firstRender && _initialDateChangeRaised is false && OnDateChange.HasDelegate)
+        {
+            InvokeAsync(RaiseInitialDateChangeAsync);
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+    private Task RaiseInitialDateChangeAsync()
+    {
+        _initialDateChangeRaised = true;
+        var (start, end) = State.GetVisibleRange();
+        // This range may never have travelled through the state's own channel, so tell it the range
+        // has been reported - otherwise a first navigation that lands right back on it (pressing
+        // "Today" while today is already showing) would report the same range a second time.
+        State.MarkCurrentRangeReported();
+        return OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
+        {
+            Start = start,
+            End = end,
+            View = State.View
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

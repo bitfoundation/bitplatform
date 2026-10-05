@@ -43,6 +43,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
 
@@ -481,11 +483,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         _selectionDirty = true;
     }
 
-    // Called by an option as it registers in the automatic mode. Once the nav has rendered, the match is only
-    // flagged, so a batch of options added together collapses into the single pass of OnAfterRender. The options
-    // of the first render register during the very render a prerender (or a static SSR page) sends as HTML,
-    // though, and neither of those ever gets to an after-render pass: an option pointing at the current URL is
-    // matched right away there instead, so that HTML already carries the selection. Only a matching option runs
+    // Called by an option as it registers in the automatic mode. The match is only flagged, so a batch of options
+    // added together collapses into the single pass of OnAfterRender. A prerender (or a static SSR page) never
+    // gets to an after-render pass, though, so there an option of the first render pointing at the current URL is
+    // matched right away instead, and the HTML it sends already carries the selection. Only a matching option runs
     // the match, which keeps the first render from scanning the whole tree once per option; and the match still
     // runs over the whole tree rather than selecting the option itself, so an option that registers later and
     // wins the match (a child of a parent that matches by its prefix) still takes the selection over.
@@ -493,16 +494,18 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     {
         MarkSelectionDirty();
 
-        if (IsRendered || IsCurrentUrlItem(item) is false) return;
+        if (IsRendered || _js.IsRuntimeInvalid() is false || IsCurrentUrlItem(item) is false) return;
 
-        SetSelectedItemByCurrentUrl();
+        SetSelectedItemByCurrentUrl(isPrerender: true);
     }
 
     // Only a navigation can re-select the item that is already selected (a Reselectable nav reports the
     // destination the reader went back to): every other match - the one of the first render, the ones after the
     // items or the matching rules changed - is the nav re-checking where it already is, and reporting that as a
-    // selection would fire OnSelectItem for nothing the reader did.
-    internal void SetSelectedItemByCurrentUrl(bool isNavigation = false)
+    // selection would fire OnSelectItem for nothing the reader did. A prerender selects without the callback
+    // altogether: it is only drawing the page, and the interactive render that replaces it reports the selection
+    // after its own first render, where a handler is free to call JavaScript or navigate.
+    internal void SetSelectedItemByCurrentUrl(bool isNavigation = false, bool isPrerender = false)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
@@ -511,7 +514,15 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         if (isNavigation is false && IsSelected(currentItem)) return;
 
-        _ = SetSelectedItem(currentItem);
+        _ = isPrerender ? AssignPrerenderedSelection(currentItem) : SetSelectedItem(currentItem);
+    }
+
+    private async Task AssignPrerenderedSelection(TItem? item)
+    {
+        if (await AssignSelectedItem(item) is false) return;
+
+        RefreshOptions();
+        StateHasChanged();
     }
 
 

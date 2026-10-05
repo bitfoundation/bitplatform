@@ -207,9 +207,38 @@ public class BitImagePrerenderTests : BunitTestContext
 
 
 
-    // Answers the way Utils.getImageProgress reads an img: 2 finished, 1 painting, 0 nothing on screen (or broken).
+    [TestMethod]
+    public void BitImageShouldNotAskTheBrowserAboutAnImageOfAPageThatWasNeverPrerendered()
+    {
+        Context.AddBunitPersistentComponentState();
+
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(b => b.AddContent(0, "loading...")));
+        });
+
+        // Nothing was on screen before this render, so the image is the component's from the start: hidden behind
+        // its loading template, and faded in when it arrives.
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.getImageProgress"].Count);
+        Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
+        Assert.AreEqual(1, component.FindAll(".bit-img-tpl").Count);
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-fde"));
+    }
+
+
+
+    // Answers the way Utils.getImageProgress reads an img: 2 finished, 1 painting, 0 nothing on screen (or broken),
+    // to the interactive render that replaces a prerendered one, which the prerender carries over in the state.
     private void SetupImage(bool complete, int naturalWidth)
     {
+        var state = Context.AddBunitPersistentComponentState();
+        state.Persist("BitPrerendered", true);
+
         Context.JSInterop.Setup<int>("BitBlazorUI.Utils.getImageProgress", _ => true)
                          .SetResult(naturalWidth > 0 ? (complete ? 2 : 1) : 0);
     }

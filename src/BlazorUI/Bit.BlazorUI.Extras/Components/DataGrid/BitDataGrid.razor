@@ -399,7 +399,7 @@
                                far the user scrolls (previously every loaded row stayed in the DOM).
                                The JS near-end watcher keeps working unchanged: Virtualize's spacer
                                elements preserve the viewport's real scrollHeight. *@
-                            @RenderVirtualRows(_infiniteItems)
+                            RenderVirtualRows(__builder, _infiniteItems);
                         }
                         else
                         {
@@ -472,7 +472,7 @@
                 }
                 else if (UseVirtualization)
                 {
-                    @RenderVirtualRows(_pageItems)
+                    RenderVirtualRows(__builder, _pageItems);
                 }
                 else
                 {
@@ -545,7 +545,7 @@
     // it and Virtualize only virtualizes the rows after them. Rendered the same way before and after the grid is
     // interactive, the rows a visitor sees first are never swapped out for Virtualize's own - which would blank the
     // body until its JS had measured - and the DOM stays bounded, by this window more.
-    private RenderFragment RenderVirtualRows(IReadOnlyList<TItem> rows) => __builder =>
+    private void RenderVirtualRows(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, IReadOnlyList<TItem> rows)
     {
         var head = Math.Min(rows.Count, EstimatedRowWindow);
         @* A stand-in for the spacer Virtualize renders above its first row, so these rows keep the nth-child parity
@@ -559,13 +559,16 @@
         @* Virtualize's own leading spacer comes next: this one evens it out, so the stripes run on unbroken across
            the seam between these rows and Virtualize's. *@
         <div style="height: 0px; flex-shrink: 0;" aria-hidden="true"></div>
-        <Virtualize Items="new RowsAfter(rows, head)" ItemSize="RowHeight" Context="item" TItem="TItem">
+        <Virtualize Items="GetRowsAfter(rows, head)" ItemSize="RowHeight" Context="item" TItem="TItem">
             <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
         </Virtualize>
-    };
+    }
 
-    // The skeleton row standing in for a row still being read.
-    private RenderFragment PlaceholderRow => __builder =>
+    // The skeleton row standing in for a row still being read, cached: it is rendered once per row of a window.
+    private RenderFragment? _placeholderRow;
+    private RenderFragment PlaceholderRow => _placeholderRow ??= RenderPlaceholderRow;
+
+    private void RenderPlaceholderRow(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
     {
         <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
              style="grid-template-columns:var(--bit-dtg-template);min-height:@RowHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)px;">
@@ -573,7 +576,7 @@
                 <span class="bit-dtg-skeleton"></span>
             </div>
         </div>
-    };
+    }
 
     // The empty cells a row with nothing to say under the row-number, reorder, detail and selection columns (the
     // header banners, the filter row, the footer) still owes them: pinned like those columns' own cells, and numbered.

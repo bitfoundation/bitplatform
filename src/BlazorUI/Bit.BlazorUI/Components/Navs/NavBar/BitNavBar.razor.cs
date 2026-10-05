@@ -74,9 +74,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         // The options of the first render register during the very render a prerender (or a static SSR page)
         // sends as HTML, and neither of those ever gets to the after-render pass that resolves the selection
-        // waiting for them, so the option that selection is waiting for is selected as it registers instead.
-        // Every later option is left to that pass, which handles a whole batch of them at once.
-        if (IsRendered) return;
+        // waiting for them, so there the option that selection is waiting for is selected as it registers instead.
+        // Every other option is left to that pass, which handles a whole batch of them at once.
+        if (IsRendered || _js.IsRuntimeInvalid() is false) return;
 
         await SelectRegisteringOption(item);
     }
@@ -830,18 +830,33 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         return _currentUrlMatcher.IsCurrent(item);
     }
 
-    // Selects an option of the first render as it registers, when it is the one the selection is waiting for:
-    // the one pointing at the current URL in the automatic mode, the one carrying the pending SelectedKey or
+    // Selects an option of a prerender as it registers, when it is the one the selection is waiting for: the one
+    // pointing at the current URL in the automatic mode, the one carrying the pending SelectedKey or
     // DefaultSelectedKey in the manual one. Only such an option runs the lookup, which keeps the first render
     // from scanning every option once per option. The options of the first render register in their markup
     // order, so the first of them to match is the one the lookup over the whole bar would have picked as well.
+    // The URL match selects without OnSelectItem: a prerender is only drawing the page, and the interactive render
+    // that replaces it reports the selection after its own first render, where a handler is free to call
+    // JavaScript or navigate.
     private async Task SelectRegisteringOption(TItem item)
     {
         if (Mode is BitNavMode.Automatic)
         {
             if (IsCurrentUrlItem(item) is false) return;
 
-            await SetSelectedItemByCurrentUrl();
+            var currentItem = _items.FirstOrDefault(IsCurrentUrlItem);
+
+            if (IsSelected(currentItem)) return;
+
+            // A SelectedKey bound one way holds the selection, as it does in SetSelectedItem.
+            if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
+            if (await AssignSelectedItem(currentItem) is false) return;
+
+            await SyncSelectedKey();
+
+            RefreshOptions();
+            StateHasChanged();
             return;
         }
 

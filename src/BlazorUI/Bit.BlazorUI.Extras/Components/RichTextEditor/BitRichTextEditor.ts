@@ -347,9 +347,13 @@ namespace BitBlazorUI {
             // when no policy is set) before it reaches the DOM.
             const next = RichTextEditor.sanitize(editor, html ?? '');
             // The markup may already be there - the first set of a value the component rendered into the surface
-            // itself (prerendered) - in which case the DOM is left alone, but the facts below are still reported:
-            // nothing else counts the content the surface started with.
-            if (editor.innerHTML !== next) {
+            // itself (prerendered) - in which case the DOM is left alone, but the facts below are still reported
+            // once: nothing else counts the content the surface started with. Every later set of the markup
+            // already there is a no-op, as it has always been.
+            const unchanged = editor.innerHTML === next;
+            if (unchanged && editor._factsReported) return;
+
+            if (unchanged === false) {
                 const focused = document.activeElement === editor;
                 const hasContent = editor.innerHTML.trim().length > 0;
                 if (focused && hasContent) {
@@ -369,8 +373,10 @@ namespace BitBlazorUI {
             // The content changed programmatically (e.g. a bound Value assignment), not via a user
             // edit: refresh the cached content facts so count-dependent state stays accurate, but
             // do not route this through the user-change callback (OnContentChanged) or emit an edit.
-            if (editor._dotNetRef)
+            if (editor._dotNetRef) {
                 editor._dotNetRef.invokeMethodAsync('OnFactsChanged', RichTextEditor.computeFacts(editor));
+                editor._factsReported = true;
+            }
         }
 
         public static focus(editor: any) {

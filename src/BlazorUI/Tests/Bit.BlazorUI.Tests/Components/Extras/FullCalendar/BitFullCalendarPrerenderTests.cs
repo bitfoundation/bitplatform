@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
@@ -43,6 +44,15 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitFullCalendarShouldPrerenderWhenTheRangeHandlerCallsJavaScript()
+    {
+        // JavaScript cannot be called before the page is interactive; the interactive render reports the range again.
+        var html = await Prerenderer.RenderAsync<JsCallingHost>();
+
+        StringAssert.Contains(html, "bit-bfc");
+    }
+
+    [TestMethod]
     public void BitFullCalendarShouldRaiseTheInitialRangeOnceWhenInteractive()
     {
         var host = RenderComponent<RangeLoadingHost>(parameters => parameters.Add(p => p.View, BitFullCalendarView.Week));
@@ -69,6 +79,28 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
 
         Assert.AreEqual(1, ranges.Count);
         Assert.AreEqual(new DateTime(2031, 6, 1), ranges[0].Start);
+    }
+
+    /// <summary>
+    /// An app page whose range handler calls JavaScript.
+    /// </summary>
+    private sealed class JsCallingHost : ComponentBase
+    {
+        [Inject] private IJSRuntime Js { get; set; } = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitFullCalendar>(0);
+            builder.AddComponentParameter(1, nameof(BitFullCalendar.CultureName), "en-US");
+            builder.AddComponentParameter(2, nameof(BitFullCalendar.DefaultDate), Anchor);
+            builder.AddComponentParameter(3, nameof(BitFullCalendar.OnDateChange), EventCallback.Factory.Create<BitFullCalendarDateChangeEventArgs>(this, HighlightRangeAsync));
+            builder.CloseComponent();
+        }
+
+        private async Task HighlightRangeAsync(BitFullCalendarDateChangeEventArgs range)
+        {
+            await Js.InvokeVoidAsync("highlightRange", range.Start, range.End);
+        }
     }
 
     /// <summary>

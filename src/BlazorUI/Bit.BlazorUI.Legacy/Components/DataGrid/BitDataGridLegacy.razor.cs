@@ -536,8 +536,11 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
             {
                 if (_virtualizeComponent is not null)
                 {
-                    // Rows read ahead of Virtualize belong to the query being replaced.
-                    DropPreInteractiveRows();
+                    // Rows read ahead of Virtualize belong to the query being replaced. Still on screen (Virtualize
+                    // has not answered yet), they turn into placeholders rather than going: Virtualize renders
+                    // nothing until its JS has measured, so dropping them would blank the body.
+                    _preInteractiveVirtualizedItems = null;
+                    _preInteractiveItemsAfter = 0;
                     await _virtualizeComponent.RefreshDataAsync();
                 }
                 else if (_hasRendered is false)
@@ -633,10 +636,12 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
     // Answers Virtualize's request from the window read before it was mounted, when that window covers it.
     private ItemsProviderResult<(int, TGridItem)>? TakePreInteractiveWindow(ItemsProviderRequest request)
     {
-        if (_preInteractiveVirtualizedItems is not { } items || request.StartIndex != 0) return null;
+        // An empty request (the one Virtualize makes when refreshed before its JS has measured) is no reason to use
+        // the window up: the request that follows its measuring is the one it answers.
+        if (_preInteractiveVirtualizedItems is not { } items || request.StartIndex != 0 || request.Count == 0) return null;
         if (request.Count > items.Count && items.Count < _ariaBodyRowCount) return null;
 
-        DropPreInteractiveRowsAfterVirtualizeRenders();
+        DropPreInteractiveRowsAfterVirtualizeRenders(hasRows: items.Count > 0 || _ariaBodyRowCount == 0);
 
         return new ItemsProviderResult<(int, TGridItem)>(
             items: items.Take(request.Count).Select((x, i) => ValueTuple.Create(i + 2, x)),
@@ -644,10 +649,14 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
     }
 
     // Virtualize now has rows of its own: the ones rendered in its place go, once it has rendered them (this
-    // is called before they are handed to it) - dropping them sooner would blank the body in between.
-    private void DropPreInteractiveRowsAfterVirtualizeRenders()
+    // is called before they are handed to it) - dropping them sooner would blank the body in between. An answer
+    // without rows (to the empty request Virtualize makes when refreshed before its JS has measured) gives it
+    // nothing to replace them with, so they stay - unless there is nothing to show at all. A request abandoned
+    // on the way (debounced, cancelled) never gets here, which leaves them to the request that superseded it;
+    // Virtualize renders no placeholder of its own before its first answer, which tells it how many rows there are.
+    private void DropPreInteractiveRowsAfterVirtualizeRenders(bool hasRows)
     {
-        if (_preInteractiveRowsShown is false) return;
+        if (_preInteractiveRowsShown is false || hasRows is false) return;
 
         DropPreInteractiveRows();
         _ = InvokeAsync(async () =>
@@ -731,7 +740,7 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
 
             await (Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount) ?? Task.CompletedTask);
 
-            DropPreInteractiveRowsAfterVirtualizeRenders();
+            DropPreInteractiveRowsAfterVirtualizeRenders(hasRows: providerResult.Items.Count > 0 || _ariaBodyRowCount == 0);
 
             // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
             // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have

@@ -22,9 +22,9 @@ namespace Bit.BlazorUI;
 /// <see cref="LoadingTemplate"/> and an <see cref="ErrorTemplate"/> stand in its place, and a
 /// <see cref="FallbackSrc"/> is tried once before the error state is reached at all. While the image
 /// is hidden its <see cref="Alt"/> is still announced, so a screen reader is never left with less than
-/// the frame. All of that starts with the first render in the browser: a prerendered or a statically
-/// rendered page has no load event to follow, so until then the image is left to the browser and shown
-/// while it loads, with its <see cref="PlaceholderSrc"/> under it rather than over it.
+/// the frame. A prerendered or a statically rendered page has no load event to follow, so there all of
+/// that starts with the first render in the browser: until then the image is left to the browser and
+/// shown while it loads, with its <see cref="PlaceholderSrc"/> under it rather than over it.
 /// <br />
 /// What the browser itself decides is reachable rather than reimplemented: <see cref="Loading"/>,
 /// <see cref="Decoding"/>, <see cref="FetchPriority"/>, <see cref="CrossOrigin"/> and
@@ -68,11 +68,12 @@ public partial class BitImage : BitComponentBase
     private bool _placeholderFaded;
 
     /// <summary>
-    /// Whether the component has rendered in the browser yet, which only the first OnAfterRenderAsync can
-    /// tell. A prerender and a static render never get that far, so everything they produce comes from
-    /// before it - see <see cref="_isLeftToBrowser"/>.
+    /// Whether the image is the browser's until the first render in the browser takes it over (see
+    /// <see cref="_isLeftToBrowser"/>): a prerendered or a statically rendered one, which never gets that far, and
+    /// the one of the interactive render that replaces a prerendered one (see <see cref="BitPrerender"/>). An image
+    /// of a page that was never prerendered is the component's from the start, so it costs no look at the browser.
     /// </summary>
-    private bool _hasRendered;
+    private bool _awaitsTakeOver;
 
     /// <summary>
     /// Whether the browser was already painting the image when the component took it over (see
@@ -118,15 +119,16 @@ public partial class BitImage : BitComponentBase
 
     private bool _isPlaceholderLeaving => _loadingState is BitImageState.Loaded && FadeIn && _placeholderFaded is false;
 
-    // Until the component has rendered in the browser the image is left to the browser, shown while it loads the
-    // way an img with nothing around it is. That is all a prerendered page shows before it is interactive and all
+    // Until a prerendered component has rendered in the browser the image is left to the browser, shown while it
+    // loads the way an img with nothing around it is. That is all a prerendered page shows before it is interactive and all
     // a statically rendered one ever shows, and neither has a load event coming to take a hidden image out of
     // hiding: nothing attaches a handler to their img at all. The interactive render that replaces a prerendered
     // one renders it the same way, so the hand-over changes nothing on screen, and the first render in the
     // browser is where the component takes the image over (see TakeOverFromBrowserAsync) - unless the browser is
-    // already painting it by then, which keeps it the browser's until it has finished. An img with nothing to
-    // load has nothing for the browser to show either, so it is hidden from the start as it always is.
-    private bool _isLeftToBrowser => (_hasRendered is false || _isKeptByBrowser) &&
+    // already painting it by then, which keeps it the browser's until it has finished. A page that was never
+    // prerendered has nothing on screen to keep, so its image is the component's from its first render. An img
+    // with nothing to load has nothing for the browser to show either, so it is hidden from the start as it always is.
+    private bool _isLeftToBrowser => (_awaitsTakeOver || _isKeptByBrowser) &&
                                      _loadingState is BitImageState.Loading &&
                                      (_src.HasValue() || Srcset.HasValue() || _hasSources);
 
@@ -162,6 +164,8 @@ public partial class BitImage : BitComponentBase
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
 
@@ -699,6 +703,13 @@ public partial class BitImage : BitComponentBase
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitImageParams))]
+    protected override void OnInitialized()
+    {
+        _awaitsTakeOver = BitPrerender.IsHandOver(_services, _js);
+
+        base.OnInitialized();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -802,15 +813,14 @@ public partial class BitImage : BitComponentBase
     /// <see cref="OnLoad"/> as it always does; the state it would move to is already reached. An image the browser
     /// is still painting stays the browser's until that event, for the same reason. Only an image with nothing of it
     /// on screen yet goes back to the loading state as the component shows it - hidden, behind its
-    /// <see cref="LoadingTemplate"/> or its <see cref="PlaceholderSrc"/> - to be revealed by that event; that is also
-    /// where the first render of a component that was never prerendered lands, the img having only just been
-    /// inserted, so it takes nothing away that was on screen there either.
+    /// <see cref="LoadingTemplate"/> or its <see cref="PlaceholderSrc"/> - to be revealed by that event. A component
+    /// of a page that was never prerendered never gets here: its image was the component's from its first render.
     /// </remarks>
     private async Task TakeOverFromBrowserAsync()
     {
         if (_isLeftToBrowser is false)
         {
-            _hasRendered = true;
+            _awaitsTakeOver = false;
             return;
         }
 
@@ -825,7 +835,7 @@ public partial class BitImage : BitComponentBase
         catch (JSDisconnectedException) { } // the circuit is gone, there is nothing left to show
         catch (JSException) { } // an image that cannot be asked about is shown the way the component shows any other
 
-        _hasRendered = true;
+        _awaitsTakeOver = false;
 
         // A load or an error event, a new source or a reload that landed while the browser was being asked is
         // newer than its answer, which is then about an image that is no longer the one on screen.

@@ -677,6 +677,8 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     private bool _serverVirtualizeEmpty;
     // The first window of rows, read before Virtualize is mounted and rendered in its place until it has rows of its
     // own (see LoadServerHeadAsync); _serverHeadLoad is that read, still to be handed to Virtualize's first request.
+    // _serverHeadLoading has placeholder rows stand in instead: while that read is in flight, or after a refresh
+    // Virtualize has not answered yet.
     private BitDataGridReadResult<TItem>? _serverHead;
     private bool _serverHeadLoading;
     private Task? _serverHeadLoad;
@@ -1170,10 +1172,13 @@ public partial class BitDataGrid<TItem> : BitComponentBase
                 // superseding it (a new load version) keeps it from committing the old query's rows, total and
                 // aggregates over the ones Virtualize is about to read. Done unconditionally: _serverHeadLoading
                 // can already be cleared by a window Virtualize answered while that read is still pending.
+                // Stand-ins still on screen (Virtualize has not answered yet) turn into placeholders rather than
+                // going: Virtualize renders nothing until its JS has measured, so dropping them would blank the body.
+                var standInsShown = _serverHead is not null || _serverHeadLoading;
                 ResetLoadCancellation();
                 _serverHead = null;
                 _serverHeadLoad = null;
-                _serverHeadLoading = false;
+                _serverHeadLoading = standInsShown;
                 await _serverVirtualize.RefreshDataAsync();
             }
             else
@@ -1211,41 +1216,54 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     private async ValueTask<ItemsProviderResult<TItem>> ProvideVirtualizedRowsAsync(ItemsProviderRequest request)
     {
-        // Virtualize's first request usually asks for no more than the window already read to render before it was
-        // mounted (see LoadServerHeadAsync), so that window answers it rather than a second read of the same rows. It
-        // answers once: every later request reads afresh, as it always has.
-        BitDataGridReadResult<TItem>? result = null;
-        if (_serverHeadLoad is { } headLoad)
+        // Virtualize's first request starts inside the window already read to render before it was mounted (see
+        // LoadServerHeadAsync), so that window answers as much of it as it holds and only the rows past it are read -
+        // the window is sized for an assumed viewport, which the measured one rarely matches exactly. It answers once:
+        // every later request reads afresh, as it always has.
+        BitDataGridReadResult<TItem>? head = null;
+        if (request.Count > 0 && _serverHeadLoad is { } headLoad)
         {
             _serverHeadLoad = null;
-            await headLoad;
-            if (_serverHead is { } head && request.StartIndex == 0
-                && (request.Count <= head.Items.Count || head.Items.Count >= head.TotalCount))
+            try
             {
-                var items = head.Items.Count > request.Count ? head.Items.Take(request.Count).ToList() : head.Items;
-                result = new BitDataGridReadResult<TItem>(items, head.TotalCount) { Aggregates = head.Aggregates };
+                await headLoad;
+            }
+            catch
+            {
+                // A failed read was already reported by the RefreshAsync that awaited it; this request reads afresh.
+            }
+
+            if (_serverHead is { } h && request.StartIndex < h.Items.Count)
+            {
+                head = h;
             }
         }
 
-        if (result is null)
+        BitDataGridReadResult<TItem>? result;
+        if (head is null)
         {
-            var read = CreateServerWindowRequest(request.StartIndex, request.Count, request.CancellationToken);
-            try
+            result = await ReadServerWindowAsync(request.StartIndex, request.Count, request.CancellationToken);
+        }
+        else
+        {
+            var end = Math.Min(request.StartIndex + request.Count, head.TotalCount);
+            var fromHead = head.Items.Skip(request.StartIndex).Take(Math.Max(0, end - request.StartIndex)).ToList();
+            var restStart = request.StartIndex + fromHead.Count;
+            if (restStart >= end)
             {
-                result = await OnRead!(read);
+                result = new BitDataGridReadResult<TItem>(fromHead, head.TotalCount) { Aggregates = head.Aggregates };
             }
-            catch (OperationCanceledException) when (request.CancellationToken.IsCancellationRequested)
+            else
             {
-                // Superseded by a newer scroll window; Virtualize discards this result, so the content is
-                // irrelevant - just keep the last known total.
-                return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+                var rest = await ReadServerWindowAsync(restStart, end - restStart, request.CancellationToken);
+                result = rest is null ? null : new BitDataGridReadResult<TItem>([.. fromHead, .. rest.Items], rest.TotalCount) { Aggregates = rest.Aggregates };
             }
         }
 
         // An OnRead that never observes the token can still complete normally after cancellation.
         // Mirroring LoadServerDataAsync's stale-response guard, bail out before committing anything so
         // this superseded window can't overwrite state the newer request owns.
-        if (request.CancellationToken.IsCancellationRequested)
+        if (result is null || request.CancellationToken.IsCancellationRequested)
             return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
 
         var previousAggregates = _footerAggregates;
@@ -1256,13 +1274,18 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // footer aggregates with an explicit re-render - as well as the end of the rows rendered in
         // Virtualize's place, which it now has rows of its own to replace. That render is deferred
         // until Virtualize has rendered those rows (this method returns them to it first): dropping
-        // the stand-ins sooner would blank the body in between.
+        // the stand-ins sooner would blank the body in between. A window without rows (the empty one
+        // Virtualize asks for when refreshed before its JS has measured) gives it nothing to replace
+        // them with, so they stay - unless there is nothing to show at all.
         var empty = result.TotalCount == 0;
         var footerChanged = ShowFooter && !FooterAggregatesEqual(previousAggregates, _footerAggregates);
-        var standInsShown = _serverHead is not null || _serverHeadLoading;
-        _serverHead = null;
-        _serverHeadLoading = false;
-        if (empty != _serverVirtualizeEmpty || footerChanged || standInsShown)
+        var standInsDropped = (_serverHead is not null || _serverHeadLoading) && (result.Items.Count > 0 || empty);
+        if (standInsDropped)
+        {
+            _serverHead = null;
+            _serverHeadLoading = false;
+        }
+        if (empty != _serverVirtualizeEmpty || footerChanged || standInsDropped)
         {
             _serverVirtualizeEmpty = empty;
             _ = InvokeAsync(async () =>
@@ -1311,6 +1334,21 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         CommitServerWindow(result, 0);
     }
 
+    // Reads a window of a server-virtualized grid for Virtualize; null when a newer window superseded it.
+    private async Task<BitDataGridReadResult<TItem>?> ReadServerWindowAsync(int skip, int take, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await OnRead!(CreateServerWindowRequest(skip, take, cancellationToken));
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Superseded by a newer scroll window; Virtualize discards this result, so the content is
+            // irrelevant - the caller just keeps the last known total.
+            return null;
+        }
+    }
+
     private BitDataGridReadRequest CreateServerWindowRequest(int skip, int take, CancellationToken cancellationToken) => new()
     {
         Skip = skip,
@@ -1350,10 +1388,22 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // The CSS height, in px, of a spacer standing in for that many rows.
     private string SpacerHeight(int rows) => (Math.Max(0, rows) * RowHeight).ToString(CultureInfo.InvariantCulture);
 
+    // The view RenderVirtualRows hands Virtualize, kept across renders while it views the same rows from the same row.
+    private RowsAfter? _rowsAfter;
+
+    private RowsAfter GetRowsAfter(IReadOnlyList<TItem> rows, int start) =>
+        _rowsAfter is { } cached && ReferenceEquals(cached.Rows, rows) && cached.Start == start
+            ? cached
+            : _rowsAfter = new RowsAfter(rows, start);
+
     // The rows of a list after its first ones, as the ICollection Virtualize takes, without copying them; an IList so
     // that the Skip/Take Virtualize reads its window with index straight into the list.
     private sealed class RowsAfter(IReadOnlyList<TItem> rows, int start) : IList<TItem>
     {
+        public IReadOnlyList<TItem> Rows => rows;
+
+        public int Start => start;
+
         public TItem this[int index]
         {
             get => (uint)index < (uint)Count ? rows[start + index] : throw new ArgumentOutOfRangeException(nameof(index));
