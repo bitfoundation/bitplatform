@@ -52,6 +52,8 @@ public sealed record NewRequest
 
     public bool NoOpen { get; init; }
 
+    public bool GitHubRepo { get; init; }
+
     public IReadOnlyDictionary<string, string> TemplateValues { get; init; } = new Dictionary<string, string>();
 
     public IReadOnlyList<string> ExtraTemplateArguments { get; init; } = [];
@@ -78,6 +80,7 @@ public static class NewCommand
         var noMigration = new Option<bool>("--no-migration") { Description = "Don't add the initial EF Core migration." };
         var noTrust = new Option<bool>("--no-trust") { Description = "Don't mark the folder as trusted for VS Code and the AI coding tools." };
         var noOpen = new Option<bool>("--no-open") { Description = "Don't open an IDE." };
+        var gitHubRepo = new Option<bool>("--github-repo") { Description = "Create a private GitHub repository and push develop and main to it. Needs the GitHub pipeline; installs the GitHub CLI and signs in when needed." };
 
         var command = new Command("new", "Create a bit Boilerplate project and get it ready to run: tools, workloads, packages, build, git, migration, trust and IDE.")
         {
@@ -93,7 +96,8 @@ public static class NewCommand
             noFormat,
             noMigration,
             noTrust,
-            noOpen
+            noOpen,
+            gitHubRepo
         };
 
         shared.AddTo(command);
@@ -159,6 +163,7 @@ public static class NewCommand
                 NoMigration = parseResult.GetValue(noMigration),
                 NoTrust = parseResult.GetValue(noTrust),
                 NoOpen = parseResult.GetValue(noOpen),
+                GitHubRepo = parseResult.GetValue(gitHubRepo),
                 TemplateValues = values,
                 ExtraTemplateArguments = [.. parseResult.UnmatchedTokens]
             };

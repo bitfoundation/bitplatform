@@ -28,6 +28,8 @@ public sealed record ToolNeeds
 
     public bool NativeWebAssembly { get; init; }
 
+    public bool GitHubRepo { get; init; }
+
     public IReadOnlySet<Platform> Platforms { get; init; } = new HashSet<Platform> { Platform.Web };
 
     public string? Ide { get; init; }

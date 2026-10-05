@@ -115,7 +115,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         if (passwordless.Succeeded)
             return true;
 
-        if (cli.IsInteractive is false)
+        if (cli.HasTerminal is false)
             return false;
 
         cli.Console.Out.WriteLine();
@@ -148,7 +148,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             ? $"Running {actions.Count} administrator step(s)"
             : "Waiting for administrator permission (Windows will ask once)";
 
-        if (cli.Environment.IsElevated is false && cli.IsInteractive is false && cli.Environment.IsCI is false)
+        if (cli.Environment.IsElevated is false && cli.HasTerminal is false && cli.Environment.IsCI is false)
         {
             foreach (var action in actions)
             {

@@ -20,15 +20,16 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
 1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command.
-2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, and for native apps Windows long paths, the Windows Hypervisor Platform the Android emulator uses, and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system.
+2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, and for native apps Windows long paths, the Windows Hypervisor Platform the Android emulator uses, and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while Docker Desktop or the Android emulator needs it, less than 24 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own.
 5. Initializes git with `develop` and `main`, and commits.
 6. Installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. Then it installs the Chromium that Playwright runs the UI tests with.
 7. Runs `dotnet format`, and commits that on its own.
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
-9. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
-10. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
+9. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
+10. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
+11. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
 
 A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly build tools and the first build.
 
@@ -79,7 +80,8 @@ And these of its own:
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
 | `--template-package <nupkg>` | Create from a local Bit.Boilerplate package, the way this repository's CI does. |
-| `-y, --yes` | Install the tools the project needs and create it without asking. |
+| `--github-repo` | Create a private GitHub repository for the project and push to it. Needs the GitHub pipeline, the default. |
+| `-y, --yes` | Install the tools the project needs and create it without asking. Windows' permission prompt, `sudo`'s password and the GitHub sign-in still show when there's a terminal. |
 | `--non-interactive` | Never ask; fail when a required value is missing. |
 | `--dry-run` | Show the plan and change nothing. |
 | `--no-setup` | Only create the project: nothing is installed, restored or built. Run `bit setup` in its folder later. |
@@ -172,6 +174,7 @@ Without a map, the newest `obj/**/bit-minifier.map` under the current folder is 
 - **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones, with `code --install-extension`.
 - **Playwright's Chromium**, in Playwright's own browser folder, with the driver the project's tests were built with.
 - **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. On macOS and Linux, `sudo` asks for your password once.
+- **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, and telemetry not sent yet.
 

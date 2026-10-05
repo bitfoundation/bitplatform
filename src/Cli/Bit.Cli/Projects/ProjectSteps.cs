@@ -404,6 +404,62 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
         return commit.Succeeded ? "committed" : null;
     }
 
+    public async Task<bool> CanSignInToGitHubAsync(CancellationToken cancellationToken)
+    {
+        if (cli.HasTerminal is false || Runner.FindExecutable("gh") is null)
+            return false;
+
+        return (await Gh(["auth", "status"], cancellationToken)).Succeeded is false;
+    }
+
+    public async Task<StepResult> GitHubSignInAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        var login = await Runner.RunAsync(new ProcessSpec
+        {
+            FileName = "gh",
+            Arguments = ["auth", "login", "--web", "--git-protocol", "https", "--hostname", "github.com"],
+            WorkingDirectory = project.Directory,
+            Interactive = true,
+            Timeout = TimeSpan.FromMinutes(15)
+        }, cancellationToken);
+
+        return login.Succeeded
+            ? StepResult.Succeeded("Signed in to GitHub")
+            : StepResult.Warning("Not signed in to GitHub", "the sign-in didn't finish", "gh auth login --web");
+    }
+
+    public async Task<StepResult> GitHubRepositoryAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        const string title = "Couldn't create the GitHub repo";
+        var push = "git push -u origin develop main && gh repo edit --default-branch develop";
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && gh repo create {ProcessSpec.Quote(project.Name)} --private --source . --remote origin && gh auth setup-git && {push}";
+
+        if (project.GitReady is false)
+            return StepResult.Skipped("Skipped the GitHub repo", "git has nothing committed to push");
+
+        if (Runner.FindExecutable("gh") is null)
+            return StepResult.Failed(title, "the GitHub CLI isn't installed", followUp, resultCode: "tool.gh.missing", hint: "Install it from https://cli.github.com");
+
+        if ((await Gh(["auth", "status"], cancellationToken)).Succeeded is false)
+            return StepResult.Warning("Didn't create the GitHub repo", "you aren't signed in to GitHub", $"gh auth login --web && {followUp}", resultCode: "github.signin");
+
+        var create = await Gh(["repo", "create", project.Name, "--private", "--source", ".", "--remote", "origin"], cancellationToken, progress);
+
+        if (create.Succeeded is false)
+            return StepResult.FromProcess(create, "", title, followUp);
+
+        await Gh(["auth", "setup-git"], cancellationToken);
+        var pushed = await Git(["push", "-u", "origin", "develop", "main"], cancellationToken);
+
+        if (pushed.Succeeded is false)
+            return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
+
+        await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
+
+        return StepResult.Succeeded("Created a private GitHub repo", url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed");
+    }
+
     private async Task<string?> CommitPathAsync(string path, string message, CancellationToken cancellationToken)
     {
         if (project.GitReady is false)
@@ -412,6 +468,11 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
         await Git(["add", "--", path], cancellationToken);
         var commit = await Git(["commit", "-q", "-m", message, "--", path], cancellationToken);
         return commit.Succeeded ? "committed" : null;
+    }
+
+    private Task<ProcessResult> Gh(string[] arguments, CancellationToken cancellationToken, Action<string>? progress = null)
+    {
+        return Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = arguments, WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
     }
 
     private Task<ProcessResult> Git(string[] arguments, CancellationToken cancellationToken, string? workingDirectory = null)

@@ -243,6 +243,73 @@ public class ProjectStepTests
         Assert.IsEmpty(ci.Runner.Calls);
     }
 
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_BePrivateWithDevelopAndMain()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("github.com/contoso-dev/Contoso", result.Detail);
+
+        var calls = host.Runner.Calls.Select(c => c.CommandLine).ToList();
+        var create = calls.IndexOf("gh repo create Contoso --private --source . --remote origin");
+        var push = calls.IndexOf("git push -u origin develop main");
+        var defaultBranch = calls.IndexOf("gh repo edit --default-branch develop");
+
+        Assert.IsTrue(create >= 0 && create < push && push < defaultBranch, string.Join(Environment.NewLine, calls));
+        Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_WaitForTheGitHubCliAndASignIn()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        var steps = new ProjectSteps(host.Services, project);
+
+        var missing = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Failed, missing.Status);
+
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "auth status", 1, "You are not logged into any GitHub hosts.");
+
+        var signedOut = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+        Assert.AreEqual(StepStatus.Warning, signedOut.Status);
+        StringAssert.StartsWith(signedOut.FollowUp, "gh auth login --web && cd ");
+        StringAssert.Contains(signedOut.FollowUp, "gh repo create Contoso --private --source . --remote origin");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["repo", "create", ..]));
+
+        project.GitReady = false;
+        Assert.AreEqual(StepStatus.Skipped, (await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None)).Status);
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_NeedATerminalButNotPrompts()
+    {
+        using var host = new TestHost(prompter: new ScriptedPrompter());
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "auth status", 1);
+        host.Services.DisablePrompts();
+
+        Assert.IsTrue(await new ProjectSteps(host.Services, project).CanSignInToGitHubAsync(CancellationToken.None));
+
+        host.Runner.On("gh", "auth status", 0);
+        Assert.IsFalse(await new ProjectSteps(host.Services, project).CanSignInToGitHubAsync(CancellationToken.None));
+
+        using var noTerminal = new TestHost();
+        noTerminal.Runner.Executables["gh"] = "/usr/bin/gh";
+        noTerminal.Runner.On("gh", "auth status", 1);
+        Assert.IsFalse(await new ProjectSteps(noTerminal.Services, CreateFakeProject(noTerminal, "Contoso")).CanSignInToGitHubAsync(CancellationToken.None));
+    }
+
     private static void WriteRecommendations(ProjectContext project, params string[] extensions)
     {
         var folder = Directory.CreateDirectory(Path.Combine(project.Directory, ".vscode")).FullName;

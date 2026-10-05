@@ -5,14 +5,14 @@ namespace Bit.Cli;
 
 public sealed class CliServices : IDisposable
 {
-    private readonly bool customPrompter;
+    private readonly IPrompter? customPrompter;
 
     public CliServices(CliEnvironment environment, CliConsole console, IPrompter? prompter = null, IProcessRunner? runner = null, CliLog? log = null)
     {
         Environment = environment;
         Console = console;
         Log = log ?? CliLog.None;
-        customPrompter = prompter is not null;
+        customPrompter = prompter;
         Prompter = prompter ?? (IsInteractive ? new SpectrePrompter(console.Out) : new NonInteractivePrompter());
         Runner = runner ?? new ProcessRunner(environment, Log);
         Settings = CliSettings.Load(environment);
@@ -35,9 +35,10 @@ public sealed class CliServices : IDisposable
 
     public bool NonInteractive { get; private set; }
 
-    public bool IsInteractive => NonInteractive is false && (customPrompter
-        ? Prompter.CanPrompt
-        : Environment.IsCI is false && Environment.IsInputRedirected is false && Console.IsInteractive);
+    public bool IsInteractive => NonInteractive is false && HasTerminal;
+
+    public bool HasTerminal => customPrompter?.CanPrompt
+        ?? Environment.IsCI is false && Environment.IsInputRedirected is false && Console.IsInteractive;
 
     public void DisablePrompts()
     {

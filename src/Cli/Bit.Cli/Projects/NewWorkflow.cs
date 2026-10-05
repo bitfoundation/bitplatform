@@ -40,6 +40,12 @@ public sealed class NewWorkflow(CliServices cli)
         if (ProjectName.Validate(name) is { } nameError)
             return UsageError($"{nameError} Try: bit new {ProjectName.Suggest(name)}");
 
+        if (request.GitHubRepo && string.Equals(selection["pipeline"], "GitHub", StringComparison.OrdinalIgnoreCase) is false)
+            return UsageError("--github-repo needs the GitHub pipeline (--pipeline GitHub).");
+
+        if (request.GitHubRepo && request.NoGit)
+            return UsageError("--github-repo pushes the project's git repository, so it can't go with --no-git.");
+
         var directory = Path.GetFullPath(request.Output ?? name, cli.Environment.CurrentDirectory);
 
         if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
@@ -51,7 +57,7 @@ public sealed class NewWorkflow(CliServices cli)
             return UsageError(platformError);
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request) };
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request) };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -114,6 +120,16 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoMigration is false)
         {
             await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
+        }
+
+        if (request.GitHubRepo)
+        {
+            if (context.Exists && context.GitReady && await projectSteps.CanSignInToGitHubAsync(cancellationToken))
+            {
+                await steps.RunAsync("github-login", "Signing in to GitHub in your browser", projectSteps.GitHubSignInAsync, cancellationToken, needsTerminal: true);
+            }
+
+            await RunProjectStepAsync(steps, context, "github-repo", "Creating a private GitHub repo", projectSteps.GitHubRepositoryAsync, cancellationToken);
         }
 
         if (request.NoTrust is false)
@@ -433,6 +449,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoBuild is false && cli.Environment.IsCI is false) stepsList.Add("Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
+        if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
         if (ide is not IdeLocator.None) stepsList.Add($"open in {IdeLocator.Title(ide)}");

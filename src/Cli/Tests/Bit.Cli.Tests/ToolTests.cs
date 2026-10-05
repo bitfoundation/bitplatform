@@ -244,6 +244,23 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task TheGitHubCli_Should_OnlyBeCheckedForAGitHubRepository()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("gh");
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "gh"));
+
+        var gh = (await CheckAsync(host, new ToolNeeds { GitHubRepo = true })).Single(c => c.Tool.Id == "gh");
+
+        Assert.IsTrue(gh.Needed);
+        CollectionAssert.Contains(gh.Action!.Commands.Select(c => c.CommandLine).ToList(), "apt-get install -y gh");
+    }
+
+    [TestMethod]
     public void DescribeTool_Should_SayWhyAndHow()
     {
         var check = new ToolCheck(ToolCatalog.Find("node")!, new ToolStatus(ToolState.Outdated, "18.0.0", "20 or later is needed"), true, "the build runs npm",

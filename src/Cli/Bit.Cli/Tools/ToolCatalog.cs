@@ -11,6 +11,7 @@ public static partial class ToolCatalog
     [
         new DotnetSdkTool(),
         new GitTool(),
+        new GitHubCliTool(),
         new NodeTool(),
         new HomebrewTool(),
         new WslTool(),
@@ -118,6 +119,34 @@ public static partial class ToolCatalog
         };
 
         public override string? ManualInstructions(ToolContext context) => "https://git-scm.com/downloads";
+    }
+
+    private sealed class GitHubCliTool : Tool
+    {
+        public override string Id => "gh";
+
+        public override string Name => "GitHub CLI";
+
+        public override bool AppliesTo(ToolContext context) => context.Needs.GitHubRepo;
+
+        public override string Why(ToolContext context) => "creates the project's private GitHub repository and pushes develop and main to it";
+
+        public override bool IsNeeded(ToolContext context) => true;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            var result = await context.RunAsync("gh", ["--version"], cancellationToken);
+            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.Environment.Os switch
+        {
+            HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install the GitHub CLI", "GitHub.cli"),
+            HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install the GitHub CLI", "gh"),
+            _ => context.PackageManagers.LinuxInstall(Id, "Install the GitHub CLI", "gh", "gh", "github-cli")
+        };
+
+        public override string? ManualInstructions(ToolContext context) => "https://cli.github.com";
     }
 
     private sealed class NodeTool : Tool
