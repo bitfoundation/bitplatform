@@ -25,6 +25,12 @@ public sealed class BitChartLegendOptions
     public bool Reverse { get; set; }
     /// <summary>Allow clicking a legend item to toggle dataset/data visibility.</summary>
     public bool OnClickToggle { get; set; } = true;
+    /// <summary>
+    /// Brings a series forward while its legend item is hovered or focused, by fading every other one - the series,
+    /// or the slice of a pie, doughnut or polar-area chart. How far the others fade is the public
+    /// <c>--bit-Chart-inactive-opacity</c> custom property.
+    /// </summary>
+    public bool HighlightOnHover { get; set; } = true;
     public BitChartLegendLabelOptions Labels { get; set; } = new();
     public string? Title { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 
 namespace Bit.BlazorUI;
@@ -13,6 +14,25 @@ public partial class BitProgress : BitComponentBase
     private double? _lastAnnouncedStep;
     private string? _announcement;
     private int _announcementGeneration;
+    private bool _cascadeChanged;
+    private bool _delayDecided;
+    private bool _isDelaying;
+    private bool _holdsForInteractivity;
+    private int _delayInEffect;
+    private CancellationTokenSource? _delayCts;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the progress component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple progress components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitProgressParams.ParamName)]
+    public BitProgressParams? CascadingParameters { get; set; }
 
 
 
@@ -73,6 +93,20 @@ public partial class BitProgress : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// How long, in milliseconds, the progress stays hidden after it is first rendered. An operation that finishes
+    /// within that window never shows an indicator at all, which is better than one that flashes up and vanishes.
+    /// The space it takes is kept, so nothing moves when it appears, and it is hidden from assistive technology
+    /// for as long as it is hidden from sight.
+    /// </summary>
+    /// <remarks>
+    /// The window opens once, with the first render, and is never opened again: a Delay given to a progress that
+    /// is already on screen does not hide it, and one taken away while the window is open shows it at once. A
+    /// progress prerendered ahead of an interactive render stays hidden until that render has run its window,
+    /// rather than showing up in the prerendered page and vanishing again when the interactive one takes over.
+    /// </remarks>
+    [Parameter] public int Delay { get; set; }
 
     /// <summary>
     /// Text describing or supplementing the operation.
@@ -172,8 +206,9 @@ public partial class BitProgress : BitComponentBase
     /// <summary>
     /// The composite format string the percentage readout is written with, applied to the percentage itself -
     /// "{0:F0} %" by default. It is formatted on the current culture, since it is text the reader sees.
+    /// A malformed format string falls back to the default rather than failing the render.
     /// </summary>
-    [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
+    [Parameter] public string PercentNumberFormat { get; set; } = DefaultPercentNumberFormat;
 
     /// <summary>
     /// Where the percentage readout of a linear progress is placed: under the bar aligned to its end
@@ -325,6 +360,8 @@ public partial class BitProgress : BitComponentBase
         });
 
         ClassBuilder.Register(() => _IsVertical ? "bit-prb-ver" : string.Empty);
+
+        ClassBuilder.Register(() => _isDelaying ? (_holdsForInteractivity ? "bit-prb-dlh" : "bit-prb-dly") : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -340,11 +377,150 @@ public partial class BitProgress : BitComponentBase
         return base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitProgressParams))]
     protected override void OnParametersSet()
     {
+        ApplyCascade();
+
+        UpdateDelay();
+
         UpdateAnnouncement();
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The window is timed from the first render that has an after-render at all, which is an interactive one:
+        // a static page has no one to end it for, and reveals itself through the stylesheet instead.
+        if (firstRender is false || _isDelaying is false) return;
+
+        _delayCts = new CancellationTokenSource();
+
+        _ = WaitOutDelayAsync(_delayCts.Token);
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            _delayCts?.Cancel();
+            _delayCts?.Dispose();
+            _delayCts = null;
+        }
+
+        await base.DisposeAsync(disposing);
+    }
+
+    /// <summary>
+    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
+    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
+    /// </summary>
+    internal void TakeFromCascade<T>(string name, T value, Func<BitProgress, T> get, Action<BitProgress, T> set)
+    {
+        if (IsSetByMarkup(name)) return;
+
+        // A value the cascade supplies again unchanged is no change: the class and style strings built from it the
+        // last time still hold, so they are only rebuilt when something the cascade gives actually moves.
+        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
+
+        set(this, value);
+
+        _cascadeChanged = true;
+    }
+
+    private void ApplyCascade()
+    {
+        if (CascadingParameters is null) return;
+
+        _cascadeChanged = false;
+
+        CascadingParameters.UpdateParameters(this);
+
+        if (_cascadeChanged is false) return;
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+    }
+
+
+    // The window is decided on the first pass, once the cascade has had its say, and only ever closed after that.
+    // Opening it again later would hide a progress the reader is already watching; and since the stylesheet's
+    // reveal replays on any new element, the class is dropped as soon as the window is over, so nothing that
+    // recreates the root afterwards can hide it again.
+    private void UpdateDelay()
+    {
+        if (_delayDecided is false)
+        {
+            _delayDecided = true;
+
+            if (Delay <= 0) return;
+
+            _isDelaying = true;
+            _delayInEffect = Delay;
+
+            // A prerender is followed by an interactive render that builds the root anew and so starts the reveal
+            // over, which would show the prerendered progress and then hide it again. The prerendered one is held
+            // hidden instead, and the interactive render runs the window. A statically rendered page has no render
+            // mode and nothing to follow it, so it reveals itself through the stylesheet.
+            _holdsForInteractivity = IsPrerendering();
+
+            ClassBuilder.Reset();
+
+            return;
+        }
+
+        if (_isDelaying && Delay <= 0)
+        {
+            EndDelay();
+        }
+    }
+
+    // Only from net9.0 on does the framework say how a component is rendered; before it, a prerender cannot be told
+    // from a static render, and both reveal themselves through the stylesheet.
+    private bool IsPrerendering()
+    {
+#if NET9_0_OR_GREATER
+        return AssignedRenderMode is not null && RendererInfo.IsInteractive is false;
+#else
+        return false;
+#endif
+    }
+
+    private void EndDelay()
+    {
+        _isDelaying = false;
+
+        _delayCts?.Cancel();
+        _delayCts?.Dispose();
+        _delayCts = null;
+
+        ClassBuilder.Reset();
+    }
+
+    private async Task WaitOutDelayAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(_delayInEffect, token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed || token.IsCancellationRequested) return;
+
+        await InvokeAsync(() =>
+        {
+            if (IsDisposed || _isDelaying is false) return;
+
+            EndDelay();
+
+            StateHasChanged();
+        });
     }
 
 
@@ -436,11 +612,14 @@ public partial class BitProgress : BitComponentBase
         }
     }
 
+    // The length the window opened with, not the current Delay: a change of it mid-window would retime the reveal.
+    private string? _DelayStyle => _isDelaying && _holdsForInteractivity is false ? $"--bit-prb-delay: {_delayInEffect}ms;" : null;
+
     private string? _RootStyle
     {
         get
         {
-            var prefix = _SegmentStyle + _GapStyle + _ColorStyle;
+            var prefix = _SegmentStyle + _GapStyle + _DiameterStyle + _ColorStyle + _DelayStyle;
 
             return prefix.HasNoValue() ? StyleBuilder.Value : prefix + StyleBuilder.Value;
         }
@@ -460,7 +639,7 @@ public partial class BitProgress : BitComponentBase
     /// What the screen reader is told the progress currently is. With a <see cref="Value"/> it is that
     /// value in its own unit, so the range it is read against is the Min/Max pair rather than 0..100.
     /// </summary>
-    private string? _AriaValueNow => Indeterminate ? null : Css(Value.HasValue ? Math.Clamp(Value.Value, Min, Math.Max(Min, Max)) : _Percent);
+    private string? _AriaValueNow => Indeterminate ? null : Css(Value.HasValue ? (double.IsNaN(Value.Value) ? Min : Math.Clamp(Value.Value, Min, Math.Max(Min, Max))) : _Percent);
 
     private string? _AriaValueMin => Indeterminate ? null : Css(Value.HasValue ? Min : 0);
 
@@ -506,8 +685,20 @@ public partial class BitProgress : BitComponentBase
     private static string Css(double value) => value.ToString(CultureInfo.InvariantCulture);
 
     // The readout is consumer-facing text, so it stays on the current culture - only the format string
-    // is defended, since a null one would take the whole render down with it.
-    private string FormatPercent(double percent) => string.Format(PercentNumberFormat ?? "{0:F0} %", percent);
+    // is defended, since a null or malformed one ("{0:F0 %", "{1}") would take the whole render down with it.
+    private string FormatPercent(double percent)
+    {
+        try
+        {
+            return string.Format(PercentNumberFormat ?? DefaultPercentNumberFormat, percent);
+        }
+        catch (FormatException)
+        {
+            return string.Format(DefaultPercentNumberFormat, percent);
+        }
+    }
+
+    private const string DefaultPercentNumberFormat = "{0:F0} %";
 
     // The live region says something once per step crossed, and once more at completion. Announcing
     // every change instead would make a screen reader unusable for as long as the operation runs; the
@@ -537,7 +728,12 @@ public partial class BitProgress : BitComponentBase
 
         var value = AriaValueText.HasValue() ? AriaValueText! : FormatPercent(milestone);
 
-        _announcement = Label.HasValue() ? $"{Label}: {value}" : value;
+        // The announcement is prefixed with the name the bar is known by, which is the AriaLabel when there is
+        // one - it wins over the visible label for the name too - so a bar without a visible label still says
+        // what it is that advanced.
+        var name = AriaLabel.HasValue() ? AriaLabel : Label;
+
+        _announcement = name.HasValue() ? $"{name}: {value}" : value;
 
         // A progress that was reset and climbed back reaches the same milestone with the same words,
         // and a live region that ends up holding the text it already held is a change of nothing. The
@@ -545,14 +741,16 @@ public partial class BitProgress : BitComponentBase
         _announcementGeneration++;
     }
 
-    private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
+    // A percentage computed as done / total is NaN while the total is still zero, and a NaN clamps to itself: it
+    // is read as nothing done rather than written out as "width: NaN%" and aria-valuenow="NaN".
+    private static double Normalize(double? value) => double.IsNaN(value.GetValueOrDefault()) ? 0 : Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
     private double ToPercent(double value)
     {
         var max = Math.Max(Min, Max);
         var range = max - Min;
 
-        return range <= 0 ? 0 : Math.Clamp((value - Min) / range * 100, 0, 100);
+        return range <= 0 || double.IsNaN(value) ? 0 : Math.Clamp((value - Min) / range * 100, 0, 100);
     }
 
     private int GetThickness() => Math.Max(0, Thickness ?? Size switch
@@ -574,18 +772,68 @@ public partial class BitProgress : BitComponentBase
     // diameter token of the current size.
     private int GetDiameter() => Diameter.HasValue ? Math.Max(0, Diameter.Value) : GetThickness() * Math.Max(0, Radius);
 
-    private string? GetCircleStyle()
+    // Pinning the token to the explicit diameter turns the stylesheet's floor into an exact size, so a
+    // Diameter smaller than the size default still shrinks the ring.
+    private string? _DiameterStyle => Circular && Diameter.HasValue ? $"--bit-prb-diameter: {GetDiameter()}px;" : null;
+
+    // The readout in the middle of the ring is set on a step of the type ramp picked by the size the ring is drawn
+    // at, so a large gauge carries a number that can be read from across the room while every size stays on the
+    // ramp a preset re-skins. Only the step is chosen here; its size is the theme's.
+    private string _RingReadoutClass
     {
-        // Pinning the token to the explicit diameter turns the stylesheet's floor into an exact size,
-        // so a Diameter smaller than the size default still shrinks the ring.
-        return Diameter.HasValue ? $"--bit-prb-diameter: {GetDiameter()}px;" : null;
+        get
+        {
+            var step = GetReadoutStep(GetDiameter());
+
+            // Without a Diameter the ring is never drawn below the diameter token of its size, and the large one's
+            // is already big enough for the step above the smallest.
+            if (Diameter.HasValue is false && Size == BitSize.Large)
+            {
+                step = Math.Max(step, 1);
+            }
+
+            return _RingReadoutSteps[step];
+        }
     }
+
+    // The readout box is 60% of the ring wide and a default readout ("100 %", "85.7 %") is about three of its em
+    // wide, so a step fits once the ring is five times its font size across: 70px for the 14px step of the default
+    // ramp, 160px for the 32px one. A ramp a preset makes wider than that is cut off with an ellipsis rather than
+    // silently.
+    private static int GetReadoutStep(int diameter) => diameter switch
+    {
+        >= 160 => 7,
+        >= 140 => 6,
+        >= 120 => 5,
+        >= 100 => 4,
+        >= 90 => 3,
+        >= 80 => 2,
+        >= 70 => 1,
+        _ => 0
+    };
+
+    private static readonly string[] _RingReadoutSteps =
+    [
+        "bit-prb-ctx bit-prb-fxs",
+        "bit-prb-ctx bit-prb-fsm",
+        "bit-prb-ctx bit-prb-fmd",
+        "bit-prb-ctx bit-prb-flg",
+        "bit-prb-ctx bit-prb-fxl",
+        "bit-prb-ctx bit-prb-f2x",
+        "bit-prb-ctx bit-prb-f3x",
+        "bit-prb-ctx bit-prb-f4x"
+    ];
 
     // What "thick" means depends on which way the bar runs: the height of a horizontal one, the stroke
     // of a ring, and - for a vertical one - the width, which the container already carries for all
-    // three of its children.
+    // three of its children. A ring is not drawn from the track tokens: a design system sizes its spinner
+    // stroke apart from its bar track (Material has 4px tracks and 4px spinners, Fluent 2 1px tracks), so an
+    // unset Thickness falls back to the per-size multiple of the spinner stroke token the stylesheet declares.
+    // The circle is drawn at 40% of the diameter, so a stroke wider than 20% of it would spill past the edge of the
+    // svg and be cut off; a percentage stroke is read against the size the ring is actually drawn at, which is what
+    // keeps a thick stroke on a small ring (or a ring floored by the diameter token) whole.
     private string _ThicknessDeclaration => Circular
-        ? $"stroke-width: {GetThickness()}px;"
+        ? (Thickness is null ? "stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%);" : $"stroke-width: min({GetThickness()}px, 20%);")
         : _IsVertical ? string.Empty : $"height: {GetThicknessStyleValue()};";
 
     // ... and so does the axis the value is drawn along.

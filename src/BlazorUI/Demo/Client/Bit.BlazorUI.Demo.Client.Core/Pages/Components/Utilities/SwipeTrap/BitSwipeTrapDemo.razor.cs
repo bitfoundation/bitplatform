@@ -13,10 +13,17 @@ public partial class BitSwipeTrapDemo
         },
         new()
         {
+            Name = "KeyboardTrigger",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the arrow keys raise OnTrigger in their own direction while the trap itself has the focus. Makes the trap a tab stop, names the keys in aria-keyshortcuts and honors a Horizontal or Vertical OrientationLock. The event carries zero distances and a PointerType of \"keyboard\"."
+        },
+        new()
+        {
             Name = "OnStart",
             Type = "EventCallback<BitSwipeTrapEventArgs>",
             DefaultValue = "",
-            Description = "The event callback for when the swipe action starts on the container of the swipe trap.",
+            Description = "Raised when a swipe starts on the trap.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-event-args",
         },
@@ -25,7 +32,7 @@ public partial class BitSwipeTrapDemo
             Name = "OnMove",
             Type = "EventCallback<BitSwipeTrapEventArgs>",
             DefaultValue = "",
-            Description = "The event callback for when the swipe action moves on the container of the swipe trap.",
+            Description = "Raised while a swipe moves, at most once per Throttle milliseconds.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-event-args",
         },
@@ -34,7 +41,7 @@ public partial class BitSwipeTrapDemo
             Name = "OnEnd",
             Type = "EventCallback<BitSwipeTrapEventArgs>",
             DefaultValue = "",
-            Description = "The event callback for when the swipe action ends on the container of the swipe trap.",
+            Description = "Raised when a swipe is released, or canceled (IsCanceled) by the browser, by leaving the trap before it was trapped, or by Escape.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-event-args",
         },
@@ -43,7 +50,7 @@ public partial class BitSwipeTrapDemo
             Name = "OnTrigger",
             Type = "EventCallback<BitSwipeTrapTriggerArgs>",
             DefaultValue = "",
-            Description = "The event callback for when the swipe action triggers based on the Trigger or TriggerVelocity constraints.",
+            Description = "Raised on the release of a swipe that passed Trigger or was flicked faster than TriggerVelocity, and on an arrow key with KeyboardTrigger.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-trigger-args",
         },
@@ -52,7 +59,7 @@ public partial class BitSwipeTrapDemo
             Name = "OrientationLock",
             Type = "BitSwipeOrientation?",
             DefaultValue = "null",
-            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions. A Horizontal or Vertical lock is fixed for the whole gesture, whichever direction it starts in: the locked axis is the only one trapped and the only one reported, while the other axis keeps its default browser behavior (via a matching touch-action) and always reports zero. Auto instead locks to the first axis the gesture moves along.",
+            Description = "Locks the trap to one axis. Horizontal and Vertical trap and report only that axis for the whole gesture, leaving the other to the browser (it reads zero); Auto locks to the axis the gesture moves along first.",
             LinkType = LinkType.Link,
             Href = "#swipe-orientation",
         },
@@ -61,42 +68,42 @@ public partial class BitSwipeTrapDemo
             Name = "SkipSelector",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A CSS selector of descendant elements on which starting a swipe is ignored (e.g. inputs or nested interactive elements)."
+            Description = "A CSS selector of descendants on which a swipe never starts, such as inputs or nested sliders."
         },
         new()
         {
             Name = "Threshold",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The distance in pixels a gesture must cover before the swipe trap takes it over and stops the default behavior. It is also what resolves the axis a diagonal gesture is moving along (default is 0)."
+            Description = "The distance in pixels a gesture covers before the trap takes it over; it also decides the axis of a diagonal one. Defaults to 0."
         },
         new()
         {
             Name = "Throttle",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The throttle time in milliseconds to apply a delay between periodic calls to raise the OnMove event (default is 0, meaning no throttling)."
+            Description = "The least time in milliseconds between two OnMove events; the latest move of a window still arrives when it closes. Defaults to 0 (no throttling)."
         },
         new()
         {
             Name = "TouchOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Ignores mouse swipes, trapping only touch (and pen) gestures."
+            Description = "Ignores mouse swipes, trapping only touch and pen gestures."
         },
         new()
         {
             Name = "Trigger",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The swiping point to trigger and call the OnTrigger event: either a fraction of the element's width/height (values less than 1) or an absolute value in pixels (default is 0.25m)."
+            Description = "How far a swipe travels before its release triggers: a fraction of the trap's size per axis below 1, pixels from 1 up. Defaults to 0.25."
         },
         new()
         {
             Name = "TriggerVelocity",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The swiping velocity in pixels per millisecond that triggers and calls the OnTrigger event on release (a flick), even if the swiping distance has not reached the Trigger point (default is 0, meaning disabled)."
+            Description = "The release velocity in px/ms that triggers a flick short of Trigger. Defaults to 0 (off)."
         },
     ];
 
@@ -163,7 +170,7 @@ public partial class BitSwipeTrapDemo
                     Name = "IsCanceled",
                     Type = "bool",
                     DefaultValue = "false",
-                    Description = "Whether the swipe action ended by being canceled (e.g. the browser took the gesture over) instead of a normal release. Only meaningful in the OnEnd event."
+                    Description = "Whether the swipe was canceled (the browser took it over, it left the trap before being trapped, or Escape was pressed) rather than released. Only meaningful in OnEnd."
                 },
                 new()
                 {
@@ -224,7 +231,7 @@ public partial class BitSwipeTrapDemo
                     Name = "PointerType",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The type of the pointer that performed the swipe action: \"mouse\", \"touch\" or \"pen\"."
+                    Description = "The type of the pointer that performed the swipe action: \"mouse\", \"touch\" or \"pen\" - or \"keyboard\" for an arrow key with KeyboardTrigger."
                 },
                 new()
                 {
@@ -235,6 +242,28 @@ public partial class BitSwipeTrapDemo
                 },
             ]
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-SwipeTrap-cursor",
+            DefaultValue = "inherit",
+            Description = "Pointer cursor over the trap at rest, e.g. grab.",
+        },
+        new()
+        {
+            Name = "--bit-SwipeTrap-swiping-cursor",
+            DefaultValue = "grabbing",
+            Description = "Pointer cursor while a swipe is being trapped.",
+        },
+        new()
+        {
+            Name = "--bit-SwipeTrap-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring color of a trap the keyboard can reach (KeyboardTrigger).",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -278,8 +307,8 @@ public partial class BitSwipeTrapDemo
 
 
     private bool isTriggeredBasic;
-    BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
-    BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
+    private BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
+    private BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
     private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
     {
         swipeTrapEventArgsBasic = args;
@@ -308,6 +337,7 @@ public partial class BitSwipeTrapDemo
 
     private BitSwipeTrapTriggerArgs? triggerArgsFractional;
     private BitSwipeTrapTriggerArgs? triggerArgsAbsolute;
+    private BitSwipeTrapTriggerArgs? triggerArgsFlick;
     private void HandleOnTriggerFractional(BitSwipeTrapTriggerArgs args)
     {
         triggerArgsFractional = args;
@@ -316,12 +346,18 @@ public partial class BitSwipeTrapDemo
     {
         triggerArgsAbsolute = args;
     }
+    private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
+    {
+        triggerArgsFlick = args;
+    }
 
 
     private decimal diffXHorizontalLock;
     private decimal diffYHorizontalLock;
     private decimal diffXVerticalLock;
     private decimal diffYVerticalLock;
+    private decimal diffXAutoLock;
+    private decimal diffYAutoLock;
     private void HandleOnMoveHorizontalLock(BitSwipeTrapEventArgs args)
     {
         diffXHorizontalLock = args.DiffX;
@@ -342,8 +378,6 @@ public partial class BitSwipeTrapDemo
         diffXVerticalLock = 0;
         diffYVerticalLock = 0;
     }
-    private decimal diffXAutoLock;
-    private decimal diffYAutoLock;
     private void HandleOnMoveAutoLock(BitSwipeTrapEventArgs args)
     {
         diffXAutoLock = args.DiffX;
@@ -385,35 +419,48 @@ public partial class BitSwipeTrapDemo
     }
 
 
-    private decimal diffXPanel;
-    private bool isPanelOpen;
-    private void OpenPanel()
+    private decimal diffXTouchOnly;
+    private decimal diffYTouchOnly;
+    private decimal diffXSkip;
+    private decimal diffYSkip;
+    private int moveCountDisabled;
+    private void HandleOnMoveTouchOnly(BitSwipeTrapEventArgs args)
     {
-        isPanelOpen = true;
+        diffXTouchOnly = args.DiffX;
+        diffYTouchOnly = args.DiffY;
     }
-    private void ClosePanel()
+    private void HandleOnEndTouchOnly(BitSwipeTrapEventArgs args)
     {
-        isPanelOpen = false;
+        diffXTouchOnly = 0;
+        diffYTouchOnly = 0;
     }
-    private void HandleOnMovePanel(BitSwipeTrapEventArgs args)
+    private void HandleOnMoveSkip(BitSwipeTrapEventArgs args)
     {
-        diffXPanel = args.DiffX;
+        diffXSkip = args.DiffX;
+        diffYSkip = args.DiffY;
     }
-    private void HandleOnEndPanel(BitSwipeTrapEventArgs args)
+    private void HandleOnEndSkip(BitSwipeTrapEventArgs args)
     {
-        diffXPanel = 0;
+        diffXSkip = 0;
+        diffYSkip = 0;
     }
-    private void HandleOnTriggerPanel(BitSwipeTrapTriggerArgs args)
+    private void HandleOnMoveDisabled(BitSwipeTrapEventArgs args)
     {
-        if (args.Direction == BitPlacement.Left)
-        {
-            diffXPanel = 0;
-            ClosePanel();
-        }
+        moveCountDisabled++;
     }
-    private string GetPanelStyle()
+
+
+    private string? cardAction;
+    private string? cardPointerType;
+    private string? cardLastEnd;
+    private void HandleOnTriggerKeyboard(BitSwipeTrapTriggerArgs args)
     {
-        return diffXPanel < 0 ? $"transform: translateX({diffXPanel}px)" : "";
+        cardAction = args.Direction == BitPlacement.Right ? "Archived" : "Snoozed";
+        cardPointerType = args.PointerType;
+    }
+    private void HandleOnEndKeyboard(BitSwipeTrapEventArgs args)
+    {
+        cardLastEnd = args.IsCanceled ? "canceled" : "released";
     }
 
 
@@ -437,14 +484,18 @@ public partial class BitSwipeTrapDemo
     {
         if (args.Direction == BitPlacement.Right)
         {
-            deletingIndex = index;
-            listTcs = new();
-            isListDialogOpen = true;
-            await listTcs.Task;
-            isListDialogOpen = false;
-            diffXList[index] = 0;
-            deletingIndex = -1;
+            await ConfirmDeleteList(index);
         }
+    }
+    private async Task ConfirmDeleteList(int index)
+    {
+        deletingIndex = index;
+        listTcs = new();
+        isListDialogOpen = true;
+        await listTcs.Task;
+        isListDialogOpen = false;
+        diffXList[index] = 0;
+        deletingIndex = -1;
     }
     private string GetRowStyle(int index)
     {
@@ -469,47 +520,6 @@ public partial class BitSwipeTrapDemo
     }
 
 
-    private bool isFlicked;
-    private BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsFlick;
-    private void HandleOnTriggerFlick(BitSwipeTrapTriggerArgs args)
-    {
-        isFlicked = true;
-        swipeTrapTriggerArgsFlick = args;
-        _ = Task.Delay(3000).ContinueWith(async _ =>
-        {
-            isFlicked = false;
-            swipeTrapTriggerArgsFlick = null;
-            await InvokeAsync(StateHasChanged);
-        });
-    }
-
-
-    private decimal diffXTouchOnly;
-    private decimal diffYTouchOnly;
-    private decimal diffXSkip;
-    private decimal diffYSkip;
-    private void HandleOnMoveTouchOnly(BitSwipeTrapEventArgs args)
-    {
-        diffXTouchOnly = args.DiffX;
-        diffYTouchOnly = args.DiffY;
-    }
-    private void HandleOnEndTouchOnly(BitSwipeTrapEventArgs args)
-    {
-        diffXTouchOnly = 0;
-        diffYTouchOnly = 0;
-    }
-    private void HandleOnMoveSkip(BitSwipeTrapEventArgs args)
-    {
-        diffXSkip = args.DiffX;
-        diffYSkip = args.DiffY;
-    }
-    private void HandleOnEndSkip(BitSwipeTrapEventArgs args)
-    {
-        diffXSkip = 0;
-        diffYSkip = 0;
-    }
-
-
     private decimal? diffXPanelAdvanced;
     private BitPlacement? direction;
     private BitPlacement? panelOpen;
@@ -526,6 +536,18 @@ public partial class BitSwipeTrapDemo
         panelOpen = null;
         diffXPanelAdvanced = null;
     }
+    private void TogglePanelAdvanced(BitPlacement side)
+    {
+        if (panelOpen == side)
+        {
+            ClosePanelAdvanced();
+        }
+        else
+        {
+            OpenPanelAdvanced(side);
+        }
+    }
+    private string IsPanelOpenAdvanced(BitPlacement side) => panelOpen == side ? "true" : "false";
     private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
     {
         diffXPanelAdvanced = args.DiffX;
@@ -583,7 +605,7 @@ public partial class BitSwipeTrapDemo
         {
             return "transform: translateX(0px)";
         }
-        else if((panelOpen.HasValue is false && direction == BitPlacement.Right) || (panelOpen == BitPlacement.Left && direction == BitPlacement.Left))
+        else if ((panelOpen.HasValue is false && direction == BitPlacement.Right) || (panelOpen == BitPlacement.Left && direction == BitPlacement.Left))
         {
             return diffXPanelAdvanced switch
             {
@@ -614,5 +636,29 @@ public partial class BitSwipeTrapDemo
         }
 
         return string.Empty;
+    }
+
+
+    private BitSwipeTrapTriggerArgs? triggerArgsCascaded;
+    private BitSwipeTrapTriggerArgs? triggerArgsCascadedOwn;
+    private readonly BitSwipeTrapParams[] swipeTrapParams =
+    [
+        new() { OrientationLock = BitSwipeOrientation.Horizontal, Trigger = 60m, KeyboardTrigger = true }
+    ];
+    private void HandleOnTriggerCascaded(BitSwipeTrapTriggerArgs args)
+    {
+        triggerArgsCascaded = args;
+    }
+    private void HandleOnTriggerCascadedOwn(BitSwipeTrapTriggerArgs args)
+    {
+        triggerArgsCascadedOwn = args;
+    }
+
+
+    private string? rtlCardAction;
+    private void HandleOnTriggerRtl(BitSwipeTrapTriggerArgs args)
+    {
+        // The directions are physical, so in a right-to-left layout the end of the line is on the left.
+        rtlCardAction = args.Direction == BitPlacement.Left ? "بایگانی شد" : "به تعویق افتاد";
     }
 }

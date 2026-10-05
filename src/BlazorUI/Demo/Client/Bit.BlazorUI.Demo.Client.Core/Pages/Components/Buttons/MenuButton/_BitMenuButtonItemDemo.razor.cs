@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonItemDemo
 {
@@ -14,7 +14,17 @@ public partial class _BitMenuButtonItemDemo
     private bool twoWayIsOpen;
 
     private bool itemIsLoading;
-    private bool itemAutoIsLoading;
+
+    private string? submenuClickedItem;
+
+    private readonly BitMenuButtonParams[] menuButtonParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            IconName = BitIconName.Filter
+        }
+    ];
 
     private static List<BitMenuButtonItem> basicItems =
     [
@@ -35,6 +45,20 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Item A (Default)", Key = "A", IconName = BitIconName.Emoji, Style = "color: brown"  },
         new() { Text = "Item C (Styled)", Key = "B", IconName = BitIconName.Emoji, Style = "color: tomato; border-color: brown; background-color: peachpuff;" },
         new() { Text = "Item B (Classed)", Key = "C", IconName = BitIconName.Emoji2, Class = "custom-item" }
+    ];
+
+    private static List<BitMenuButtonItem> destructiveItems =
+    [
+        new() { Text = "Edit", Key = "edit", IconName = BitIconName.Edit },
+        new() { Text = "Duplicate", Key = "duplicate", IconName = BitIconName.Copy },
+        new() { IsSeparator = true },
+        new()
+        {
+            Text = "Delete",
+            Key = "delete",
+            IconName = BitIconName.Delete,
+            Style = "--bit-MenuButton-item-color: var(--bit-clr-err);"
+        }
     ];
 
     private static List<BitMenuButtonItem> basicItemsOnClick =
@@ -65,16 +89,89 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Delete", Icon = BitIconInfo.Fa("solid trash") }
     ];
 
-    private static List<BitMenuButtonItem> separatorItems =
+    private static List<BitMenuButtonItem> groupedItems =
     [
-        new() { Text = "New", Key = "new", IconName = BitIconName.Add },
-        new() { Text = "Open", Key = "open", IconName = BitIconName.OpenFile },
+        new() { Text = "Document", IsHeader = true },
+        new() { Text = "New", Key = "new", IconName = BitIconName.Add, SecondaryText = "Ctrl+N" },
+        new() { Text = "Open", Key = "open", IconName = BitIconName.OpenFile, SecondaryText = "Ctrl+O" },
         new() { IsSeparator = true },
-        new() { Text = "Save", Key = "save", IconName = BitIconName.Save },
+        new() { Text = "Save", Key = "save", IconName = BitIconName.Save, SecondaryText = "Ctrl+S" },
         new() { Text = "Save as", Key = "save-as", IconName = BitIconName.SaveAs },
         new() { IsSeparator = true },
-        new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete }
+        new() { Text = "Danger zone", IsHeader = true },
+        new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete, SecondaryText = "Del" }
     ];
+
+    private static List<BitMenuButtonItem> checkableItems =
+    [
+        new() { Text = "Name", Key = "name", Checkable = true, IsChecked = true },
+        new() { Text = "Status", Key = "status", Checkable = true, IsChecked = true },
+        new() { Text = "Owner", Key = "owner", Checkable = true },
+        new() { Text = "Reset to defaults", Key = "reset", IconName = BitIconName.Refresh }
+    ];
+
+    private static List<BitMenuButtonItem> checkableItems2 =
+    [
+        new() { Text = "Wrap lines", Key = "wrap", Checkable = true, IsChecked = true },
+        new() { Text = "Show whitespace", Key = "whitespace", Checkable = true }
+    ];
+
+    private static List<BitMenuButtonItem> submenuItems =
+    [
+        new() { Text = "Text box", Key = "text", IconName = BitIconName.TextBox },
+        new()
+        {
+            Text = "Chart", Key = "chart", IconName = BitIconName.BarChart4,
+            ChildItems =
+            [
+                new() { Text = "Common", IsHeader = true },
+                new() { Text = "Bar", Key = "bar", IconName = BitIconName.BarChartHorizontal },
+                new() { Text = "Line", Key = "line", IconName = BitIconName.LineChart },
+                new() { IsSeparator = true },
+                new()
+                {
+                    Text = "More", Key = "more", IconName = BitIconName.More,
+                    ChildItems =
+                    [
+                        new() { Text = "Scatter", Key = "scatter" },
+                        new() { Text = "Bubble", Key = "bubble", IsEnabled = false }
+                    ]
+                }
+            ]
+        },
+        new() { Text = "Table", Key = "table", IconName = BitIconName.Table }
+    ];
+
+    private static List<BitMenuButtonItem> shareItems =
+    [
+        new() { Text = "Copy link", Key = "copy", IconName = BitIconName.Link, SecondaryText = "Ctrl+C" },
+        new()
+        {
+            Text = "Send to", Key = "send", IconName = BitIconName.Send,
+            ChildItems =
+            [
+                new() { Text = "Email", Key = "email", IconName = BitIconName.Mail, SecondaryText = "Ctrl+E" },
+                new() { Text = "Teams", Key = "teams", IconName = BitIconName.TeamsLogo },
+                new() { Text = "Printer", Key = "printer", IconName = BitIconName.Print, IsEnabled = false }
+            ]
+        }
+    ];
+
+    private static List<BitMenuButtonItem> sortItems =
+    [
+        new() { Text = "Name", Key = "name", RadioGroup = "sort", IsChecked = true },
+        new() { Text = "Date modified", Key = "date", RadioGroup = "sort" },
+        new() { Text = "Size", Key = "size", RadioGroup = "sort" }
+    ];
+
+    private static List<BitMenuButtonItem> ariaLabelItems =
+    [
+        new() { Key = "share", IconName = BitIconName.Share, AriaLabel = "Share this page" },
+        new() { Key = "print", IconName = BitIconName.Print, AriaLabel = "Print this page" }
+    ];
+
+    private static List<BitMenuButtonItem> longItems =
+        Enumerable.Range(1, 20).Select(i => new BitMenuButtonItem { Text = $"Item {i}", Key = i.ToString() }).ToList();
 
     private static List<BitMenuButtonItem> linkItems =
     [
@@ -101,19 +198,25 @@ public partial class _BitMenuButtonItemDemo
     {
         twoWaySelectedItem = basicItems[2];
 
+        // The item's own OnClick is a plain Action the component invokes directly, so it can run off
+        // the renderer's dispatcher - StateHasChanged called raw from here throws under Blazor Server.
         Action<BitMenuButtonItem> onClick = item =>
         {
             eventsClickedItem = $"{item.Text}";
-            StateHasChanged();
+            _ = InvokeAsync(StateHasChanged);
         };
 
         basicItemsOnClick.ForEach(i => i.OnClick = onClick);
+
+        checkableItems[^1].OnClick = _ =>
+        {
+            checkableItems[0].IsChecked = true;
+            checkableItems[1].IsChecked = true;
+            checkableItems[2].IsChecked = false;
+        };
     }
 
-    private async Task HandleOnLoadingClick()
-    {
-        itemAutoIsLoading = true;
-        await Task.Delay(2000);
-        itemAutoIsLoading = false;
-    }
+    private async Task HandleOnSaveClick() => await Task.Delay(2000);
+
+    private async Task HandleOnRefreshClick() => await Task.Delay(2000);
 }

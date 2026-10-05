@@ -58,17 +58,16 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IIdentityController>();
             services.AddScoped(_ => identityController);
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         // RefreshToken bails out before calling the controller when there is no stored refresh token.
-        await scope.ServiceProvider.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
+        await client.Services.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var plainRefresh = authManager.RefreshToken(requestedBy: nameof(ATenantSwitch_DuringAnInFlightRefresh_Should_StillReachTheServer));
         var tenantSwitch = authManager.SwitchTenant(requestedTenantId, TestContext.CancellationToken);
@@ -106,15 +105,14 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IIdentityController>();
             services.AddScoped(_ => identityController);
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
+        await using var client = server.CreateAppClient();
+        await client.Services.GetRequiredService<IStorageService>().SetItem("refresh_token", "a-refresh-token");
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         var first = authManager.RefreshToken(requestedBy: "first");
         var second = authManager.RefreshToken(requestedBy: "second");
@@ -143,14 +141,13 @@ public partial class AuthManagerRefreshCoordinationTests
         await using var server = new AppTestServer();
         await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             services.RemoveAll<IStorageService>();
             services.AddScoped<IStorageService, ThrowsWhenTheRefreshTokenIsRead>();
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
-        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+        var authManager = client.AuthManager;
 
         // Two callers, because the second joins the first's shared source rather than starting its own - so a source
         // that is never completed strands both, which is the shape the defect takes in the app.

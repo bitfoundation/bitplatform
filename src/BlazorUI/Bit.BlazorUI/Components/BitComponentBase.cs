@@ -262,7 +262,16 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         ParametersCache = null;
 
-        return base.SetParametersAsync(ParameterView.Empty);
+        var restore = RestoreDroppedCascadeParameters();
+
+        return restore.IsCompletedSuccessfully ? base.SetParametersAsync(ParameterView.Empty) : SetParametersAfterAsync(restore);
+    }
+
+    private async Task SetParametersAfterAsync(Task restore)
+    {
+        await restore;
+
+        await base.SetParametersAsync(ParameterView.Empty);
     }
 
 
@@ -477,6 +486,20 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         return _VoidElements.Contains(element);
     }
 
+    /// <summary>
+    /// Resolves the tag a page names for the root of a component that writes content into it.
+    /// </summary>
+    /// <remarks>
+    /// The name is used as written, less its surrounding whitespace, while it is a name a tag can have and one that can
+    /// hold content; anything else - a void element included - falls back to the given default.
+    /// </remarks>
+    private protected static string ResolveContentElement(string? element, string fallback)
+    {
+        element = element?.Trim();
+
+        return element.HasValue() && IsValidElement(element!) && IsVoidElement(element!) is false ? element! : fallback;
+    }
+
     // The obsolete four (basefont, bgsound, frame and keygen) are in the list the HTML parser itself treats as void,
     // so a browser drops their content just the same and they belong here with the rest.
     private static readonly HashSet<string> _VoidElements = new(StringComparer.OrdinalIgnoreCase)
@@ -515,8 +538,20 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </returns>
     public async ValueTask DisposeAsync()
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
+        try
+        {
+            await DisposeAsync(true);
+        }
+        // A circuit on its way down cancels the interop calls that are still in flight rather than refusing them
+        // with a JSDisconnectedException, so a component unregistering its listeners is answered with a
+        // cancellation - which the renderer then logs as an unhandled disposal error. Every DisposeAsync
+        // override would otherwise have to catch it beside the JSDisconnectedException it already catches, and
+        // there is nothing a disposal could do about it in any case: the component is going, and so is the page.
+        catch (OperationCanceledException) { }
+        finally
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 
     /// <summary>

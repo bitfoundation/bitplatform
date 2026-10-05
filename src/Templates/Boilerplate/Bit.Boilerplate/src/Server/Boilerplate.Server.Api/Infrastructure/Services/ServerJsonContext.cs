@@ -22,6 +22,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 [JsonSerializable(typeof(CloudflarePurgeResponse))]
 //#endif
 [JsonSerializable(typeof(AuthenticatorResponse))]
+[JsonSerializable(typeof(AuthenticatorAssertionRawResponse))]
 [JsonSerializable(typeof(ClientIdMetadataDocument))]
 public partial class ServerJsonContext : JsonSerializerContext
 {

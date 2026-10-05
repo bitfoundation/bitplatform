@@ -356,7 +356,7 @@ This is the **core deployment workflow** that handles building and deploying all
      -p:Version="1.0.0" -p:Environment=Production
    
    # Create installer with Velopack
-   dnx vpk@1.2.0 -- pack \
+   dnx vpk@1.2.161 -- pack \
      -u com.company.app \           # Application ID
      -v 1.0.0 \                     # Version
      -p .\publish-result \          # Published files location
@@ -563,8 +563,8 @@ build_api_blazor:
   runs-on: ubuntu-24.04
   steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-dotnet@v5
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-dotnet@v6
+    - uses: actions/setup-node@v7
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 

@@ -20,7 +20,48 @@ public static class BitChartColorUtil
         "#34495e"  // navy
     };
 
-    public static string Palette(int i) => DefaultPalette[((i % DefaultPalette.Length) + DefaultPalette.Length) % DefaultPalette.Length];
+    public static string Palette(int i) => DefaultPalette[PaletteIndex(i)];
+
+    /// <summary>
+    /// The color the chart paints a series with when the dataset names none: the public
+    /// <c>--bit-Chart-series-color-N</c> custom property (1-based), falling back to the matching entry of
+    /// <see cref="DefaultPalette"/>. A stylesheet re-skins every chart's default palette by setting those
+    /// properties on <c>:root</c>, an ancestor, or a chart's own <c>Style</c>.
+    /// </summary>
+    public static string SeriesColor(int i)
+    {
+        int index = PaletteIndex(i);
+        return $"var(--bit-Chart-series-color-{index + 1}, {DefaultPalette[index]})";
+    }
+
+    private static int PaletteIndex(int i) => ((i % DefaultPalette.Length) + DefaultPalette.Length) % DefaultPalette.Length;
+
+    /// <summary>
+    /// The color at the given opacity (0-1). A literal hex/rgb color is folded into an rgba value as
+    /// <see cref="WithAlpha"/> does; anything else - a custom property, a named or an hsl color - cannot be
+    /// read here, so the browser is asked to do it with <c>color-mix</c>, which keeps a themed series color
+    /// translucent instead of handing it back opaque.
+    /// </summary>
+    public static string Translucent(string color, double alpha)
+    {
+        if (string.IsNullOrWhiteSpace(color) || TryParse(color, out _, out _, out _, out _)) return WithAlpha(color, alpha);
+
+        double percent = Math.Clamp(alpha, 0, 1) * 100;
+        return $"color-mix(in srgb, {color} {percent.ToString("0.###", CultureInfo.InvariantCulture)}%, transparent)";
+    }
+
+    /// <summary>
+    /// Lightens (positive factor) or darkens (negative) a color the way <see cref="Adjust"/> does, and does
+    /// the same for a color only the browser can read by mixing it with white or black.
+    /// </summary>
+    public static string Shade(string color, double factor)
+    {
+        if (string.IsNullOrWhiteSpace(color) || TryParse(color, out _, out _, out _, out _)) return Adjust(color, factor);
+
+        double percent = Math.Clamp(Math.Abs(factor), 0, 1) * 100;
+        string with = factor >= 0 ? "white" : "black";
+        return $"color-mix(in srgb, {color}, {with} {percent.ToString("0.###", CultureInfo.InvariantCulture)}%)";
+    }
 
     /// <summary>Returns the color with the given alpha (0-1), parsing hex/rgb/rgba.</summary>
     public static string WithAlpha(string color, double alpha)

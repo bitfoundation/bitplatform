@@ -49,12 +49,18 @@ public static class WebApplicationExtensions
 
             // The detailed report of the health checks page: behind its feature and never cached, as it carries each
             // failure's exception. Always 200, since the status is in the body and the client throws on a 503.
-            app.MapHealthChecks("/healthz", new HealthCheckOptions
+            HealthCheckOptions healthzOptions = new()
             {
                 Predicate = _ => true,
                 ResultStatusCodes = { [HealthStatus.Unhealthy] = StatusCodes.Status200OK },
                 ResponseWriter = WriteHealthReport
-            }).RequireAuthorization(healthzAuthorization ?? [new AuthorizeAttribute(AppFeatures.System.Operations_View)]);
+            };
+
+            foreach (var path in new[] { "/healthz", "/healthz/v1" })
+            {
+                app.MapHealthChecks(path, healthzOptions)
+                   .RequireAuthorization(healthzAuthorization ?? [new AuthorizeAttribute(AppFeatures.System.Operations_View)]);
+            }
 
             return app;
         }

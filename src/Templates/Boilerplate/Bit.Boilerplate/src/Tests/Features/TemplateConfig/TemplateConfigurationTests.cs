@@ -231,6 +231,7 @@ public class TemplateConfigurationTests
             "src/Tests/Features/Identity/UITests.cs",
             "src/Tests/Features/Identity/BunitUITests.cs",
             "src/Tests/Features/Identity/TestData.cs",
+            "src/Tests/Features/Identity/SignInPanelUtils.cs", // UITests.cs calls it unconditionally, so it ships wherever that does.
         ];
 
         var (templateRoot, template) = LoadTemplateJson();

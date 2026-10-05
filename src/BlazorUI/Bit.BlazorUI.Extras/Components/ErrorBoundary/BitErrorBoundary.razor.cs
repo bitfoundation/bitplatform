@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -20,18 +21,25 @@ namespace Bit.BlazorUI;
 /// (<see cref="RecoverKeys"/>), and cascades itself to its content so that any descendant can hand it
 /// an exception.
 /// </remarks>
-public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
+public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, IDisposable
 {
     private BitDir? _dir;
     private bool _copied;
     private bool _isDisposed;
     private int _copyToken;
     private bool _autoFocusPending;
+    private bool _announcedByFocus;
     private bool _recoverKeysSeen;
     private object?[]? _recoverKeys;
     private ElementReference _rootRef;
     private Exception? _capturedException;
     private BitErrorBoundaryContext? _context;
+    private readonly string _uniqueId = BitShortId.NewId();
+
+    // The parameters the markup set on the latest render, which a params object must never write over, and what the
+    // boundary remembers of that object - the same engine every BitComponentBase puts back a dropped default with.
+    private readonly HashSet<string> _setByMarkup = new(StringComparer.OrdinalIgnoreCase);
+    private BitCascadeTracker? _cascadeTracker;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -45,6 +53,16 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     /// Gets or sets the component direction to be cascaded from an ancestor component.
     /// </summary>
     [CascadingParameter] protected BitDir? CascadingDir { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the error boundary.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple error boundaries
+    /// through the <see cref="BitParams"/> component. A parameter the boundary's own markup sets always wins.
+    /// </remarks>
+    [CascadingParameter(Name = BitErrorBoundaryParams.ParamName)]
+    public BitErrorBoundaryParams? CascadingParameters { get; set; }
 
 
 
@@ -153,6 +171,18 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
+    /// The heading level (1 to 6) of the title of the default error UI.
+    /// <br />
+    /// The default value is <strong>3</strong>.
+    /// </summary>
+    /// <remarks>
+    /// A screen reader lists the page by its headings, so the title takes the level that fits the outline it lands
+    /// in - 1 for a boundary standing in for a whole page, deeper for one around a widget - while its look stays
+    /// the same. A value out of the range is clamped into it.
+    /// </remarks>
+    [Parameter] public int? HeadingLevel { get; set; }
+
+    /// <summary>
     /// Prevents rendering the Home button of the default error UI.
     /// </summary>
     [Parameter] public bool HideHomeButton { get; set; }
@@ -174,6 +204,8 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
     /// <summary>
     /// The text of the Home button.
+    /// <br />
+    /// The default value is <strong>"Home"</strong>.
     /// </summary>
     [Parameter] public string? HomeText { get; set; }
 
@@ -286,11 +318,15 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
     /// <summary>
     /// The text of the Recover button.
+    /// <br />
+    /// The default value is <strong>"Recover"</strong>.
     /// </summary>
     [Parameter] public string? RecoverText { get; set; }
 
     /// <summary>
     /// The text of the Refresh button.
+    /// <br />
+    /// The default value is <strong>"Refresh"</strong>.
     /// </summary>
     [Parameter] public string? RefreshText { get; set; }
 
@@ -310,7 +346,9 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public bool ShowCopyButton { get; set; }
 
     /// <summary>
-    /// Whether the actual exception information should be shown or not.
+    /// Renders the full text of the caught exception in the default error UI.
+    /// <br />
+    /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
     /// This renders the exception's full text, stack trace and all. It is what a developer needs to see
@@ -330,10 +368,13 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     [Parameter] public BitErrorBoundaryClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The header title of the boundary.
+    /// The title of the default error UI, which also names it for assistive technologies.
     /// <br />
     /// The default value is <strong>"Oops, Something went wrong..."</strong>.
     /// </summary>
+    /// <remarks>
+    /// An empty value drops the heading altogether, and the error UI's name with it.
+    /// </remarks>
     [Parameter] public string? Title { get; set; }
 
 
@@ -421,6 +462,20 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
 
 
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // Whatever the markup passes arrives on every render of the parent, so what is in this view is exactly what
+        // the markup sets - which is what a params object must never write over.
+        _setByMarkup.Clear();
+
+        foreach (var parameter in parameters)
+        {
+            _setByMarkup.Add(parameter.Name);
+        }
+
+        return base.SetParametersAsync(parameters);
+    }
+
     protected override void OnInitialized()
     {
         _navigationManager.LocationChanged += HandleLocationChanged;
@@ -428,8 +483,13 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitErrorBoundaryParams))]
     protected override void OnParametersSet()
     {
+        RestoreDroppedCascadeParameters();
+
+        CascadingParameters?.UpdateParameters(this);
+
         var keys = RecoverKeys?.ToArray();
 
         // The first pass has nothing to compare against: a boundary has caught nothing yet when its
@@ -454,6 +514,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         // the error UI appears and never again on the renders that follow it - a reader who tabbed away
         // from the error is not dragged back to it by an unrelated re-render.
         _autoFocusPending = AutoFocus;
+
+        // Whether the focus, rather than an alert, is what announces this error: only a titled error UI has a name
+        // for the focus to read out. It holds for the error it was latched for, so that an AutoFocus changed while
+        // the error UI is up never takes the alert away from an error the focus was never moved to.
+        _announcedByFocus = AutoFocus && _Title.HasValue();
 
         if (NoLogging is false)
         {
@@ -500,9 +565,15 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         }
         catch (Exception)
         {
-            // A boundary that cannot move the focus - a torn-down circuit, an error UI replaced by a
-            // template with no root element of the boundary's - is still a boundary, and losing the
-            // error UI over it would be the one failure worth avoiding here.
+            // A boundary that cannot move the focus - a torn-down circuit, a root in a hidden container - is
+            // still a boundary, and losing the error UI over it would be the one failure worth avoiding here.
+            // What it must not lose either is the announcement the focus was standing in for, so the header
+            // takes its alert back.
+            if (_isDisposed || _announcedByFocus is false) return;
+
+            _announcedByFocus = false;
+
+            StateHasChanged();
         }
     }
 
@@ -523,6 +594,22 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
 
 
+    /// <summary>
+    /// Whether the markup left the named parameter unset on the latest render, which is where a params object may
+    /// supply it.
+    /// </summary>
+    internal bool HasNotBeenSet(string name) => _setByMarkup.Contains(name) is false;
+
+    bool IBitCascadeTarget.IsSetByMarkup(string name) => _setByMarkup.Contains(name);
+
+    BitDir? IBitCascadeTarget.OwnDir
+    {
+        get => _dir;
+        set => _dir = value;
+    }
+
+
+
     /// <summary>The class list of the error UI's root element.</summary>
     /// <remarks>
     /// A class the page put in the HtmlAttributes dictionary is merged in rather than left to the splat,
@@ -531,6 +618,7 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     private string _RootClass => string.Join(' ', new[]
     {
         "bit-erb",
+        _IsFocusAnchor ? "bit-erb-anc" : null,
         Dir == BitDir.Rtl ? "bit-rtl" : null,
         Classes?.Root,
         Class,
@@ -573,6 +661,53 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
 
     /// <summary>The heading the error UI carries, which an explicitly empty Title drops.</summary>
     private string? _Title => Title ?? "Oops, Something went wrong...";
+
+    /// <summary>The level of the title's heading element, clamped into the range HTML has headings for.</summary>
+    private int _HeadingLevel => Math.Clamp(HeadingLevel ?? 3, 1, 6);
+
+    /// <summary>The id of the title, which names the error UI.</summary>
+    private string _TitleId => $"{_uniqueId}-title";
+
+    /// <summary>The id of the message, which describes the error UI.</summary>
+    private string _MessageId => $"{_uniqueId}-message";
+
+    /// <summary>Whether the icon, the title and the message leave anything for the header to hold.</summary>
+    private bool _HasHeader => HideIcon is false || _HasHeaderText;
+
+    /// <summary>
+    /// Whether the header holds anything a screen reader can read out - the icon is decoration, hidden from it.
+    /// </summary>
+    private bool _HasHeaderText => _Title.HasValue() || Message.HasValue();
+
+    /// <summary>
+    /// Whether the page made the root a live region of its own through HtmlAttributes, which is then what announces
+    /// the error, in the way the page asked for - a polite one included.
+    /// </summary>
+    private bool _AnnouncedByPage => _Splat("aria-live") is not null
+                                  || _Splat("role")?.Trim().ToLowerInvariant() is "alert" or "status" or "log" or "marquee" or "timer";
+
+    /// <summary>
+    /// The role of the header, which is what announces the error. Only the header is announced rather than the
+    /// whole error UI: a live region is read out in full, and a stack trace and a row of button names are noise
+    /// after the one sentence that matters. It is dropped where there is nothing in it to read out, where the page
+    /// made the root a live region of its own - an alert nested in it would announce the error a second time, and
+    /// assertively where the page asked for a polite announcement - and where the focus moved to a titled error UI
+    /// announces its name and message already, so that an alert on top does not read them twice.
+    /// </summary>
+    private string? _HeaderRole => _HasHeaderText && _AnnouncedByPage is false && _announcedByFocus is false ? "alert" : null;
+
+    /// <summary>
+    /// The role of the root: a group named by the title, and otherwise - with no text in the header to hold the
+    /// alert - the alert itself, so that the error UI never appears without a word. What it reads out then is the
+    /// rest of the error UI, its buttons included, which is still better than nothing at all.
+    /// </summary>
+    private string? _RootRole => _Splat("role") ?? (_Title.HasValue() ? "group" : (_HasHeaderText ? null : "alert"));
+
+    /// <summary>
+    /// Whether the root takes the focus only because AutoFocus parks it there: a tabindex the page wrote itself is a
+    /// stop it asked for, and keeps the browser's outline.
+    /// </summary>
+    private bool _IsFocusAnchor => AutoFocus && _Splat("tabindex") is null;
 
     /// <summary>The accessible name of the exception details block, which an explicitly empty one drops.</summary>
     private string? _ExceptionLabel => ExceptionLabel is null ? "Exception details" : (ExceptionLabel.HasValue() ? ExceptionLabel : null);
@@ -634,6 +769,26 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
     };
 
     /// <summary>
+    /// Puts back every parameter the params object a <see cref="BitParams"/> cascades supplied before and no longer
+    /// does, before what it supplies now is applied.
+    /// </summary>
+    private void RestoreDroppedCascadeParameters()
+    {
+        var current = CascadingParameters;
+
+        // Nothing supplied now and nothing before, which is where every boundary outside a BitParams stays.
+        if (current is null && _cascadeTracker is null) return;
+
+        var map = BitCascadeMap.For(GetType());
+
+        if (map is null) return;
+
+        // What the engine hands back is for running the setup hooks of the parameters it put back, and the
+        // boundary's parameters have none: the render this OnParametersSet leads to is all a restored value needs.
+        (_cascadeTracker ??= new()).RestoreDropped(this, map, current);
+    }
+
+    /// <summary>
     /// Whether two readings of <see cref="RecoverKeys"/> differ, counting the list appearing or
     /// disappearing altogether as a difference and two empty readings as none.
     /// </summary>
@@ -672,6 +827,7 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IDisposable
         _copied = false;
         _copyToken++;
         _autoFocusPending = false;
+        _announcedByFocus = false;
 
         // Renders on its own only when it had an exception to clear, which is why the captured-but-not-
         // yet-thrown case has to ask for the render itself.

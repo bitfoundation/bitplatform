@@ -1,10 +1,7 @@
 ﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
-        The items are provided as a custom generic type, and <code>NameSelectors</code> says which of its members
-        stands for the key, the title, the description, the body and everything else the list reads. The list
-        renders one <BitLink Href="/components/accordion">BitAccordion</BitLink> per item and owns their
-        expand/collapse state, so nothing has to be wired up by hand. By default it works in single-expand mode:
-        opening one panel closes the one that was open.
+        <code>Items</code> takes any class, and <code>NameSelectors</code> maps its members to the key, the title, the
+        description, the body and the rest. One panel is open at a time by default.
     </div>
     <br />
     <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
@@ -12,10 +9,8 @@
 
 <DemoExample Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        <code>Multiple</code> lets more than one item stay open at the same time; each header then toggles only its
-        own panel. <code>MaxExpanded</code> puts a ceiling on how many of them may be open at once: opening one
-        more closes the panel that has been open the longest, so a click always opens the panel it was aimed at
-        rather than being turned away by a header that answers nothing.
+        <code>Multiple</code> lets several panels stay open. <code>MaxExpanded</code> caps them: opening one more
+        closes the panel open the longest.
     </div>
     <br />
     <div class="example-content">
@@ -24,84 +19,82 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div>At most two panels open at once:</div>
+        <div>MaxExpanded="2":</div>
         <BitAccordionList Multiple MaxExpanded="2" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="DefaultExpanded" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
+<DemoExample Title="DefaultExpanded & Collapsible" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>
-        <code>DefaultExpandedKey</code> (single-expand) and <code>DefaultExpandedKeys</code> (multiple-expand) say
-        which items start open, leaving the list in charge of everything that happens afterwards. An item can also
-        open itself through the member mapped to <code>IsExpanded</code>, which the defaults take precedence over.
-        A key that is not given is generated from the position of the item, so a key member of your own keeps it
-        readable.
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>Single (DefaultExpandedKey):</div>
-        <BitAccordionList Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" DefaultExpandedKey="users" />
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>Multiple (DefaultExpandedKeys):</div>
-        <BitAccordionList Multiple Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" DefaultExpandedKeys="@(["general", "advanced"])" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Collapsible" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
-    <div>
-        <code>Collapsible="false"</code> keeps one panel open at all times: the header of the last expanded item
-        stops answering the pointer and the keyboard and reports itself as <code>aria-disabled</code>, which is
-        the state the WAI-ARIA authoring practices ask for a header whose panel cannot be closed. Another item can
-        still take its place, and it is only the header that is closed off - <code>Collapse</code>,
-        <code>Toggle</code> and <code>CollapseAll</code> still drive the list.
+        <code>DefaultExpandedKey</code> and <code>DefaultExpandedKeys</code> pick the panels that start open, by the
+        member the <code>Key</code> selector maps. <code>Collapsible="false"</code> keeps one panel open at all times;
+        its header then reports <code>aria-disabled</code>.
     </div>
     <br />
-    <BitAccordionList Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" Collapsible="false" DefaultExpandedKey="general" />
-</DemoExample>
-
-<DemoExample Title="Icons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
-    <div>
-        <code>ExpanderIconName</code> replaces the chevron of every item, and each item can override it through the
-        member mapped to it. <code>ExpandedExpanderIconName</code> swaps the icon while the panel is open - which
-        reports the state on its own, so the rotation is dropped along with it - while
-        <code>NoExpanderRotation</code> keeps the icon still without swapping it and <code>HideExpanderIcon</code>
-        removes it altogether. <code>ExpanderIconPlacement</code> moves the expander to the start of the header, and
-        the member mapped to <code>IconName</code> draws an icon of the item ahead of its title.
+    <div class="example-content">
+        <div>DefaultExpandedKey:</div>
+        <BitAccordionList DefaultExpandedKey="users" Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Per-item expander icon and leading icon:</div>
+        <div>DefaultExpandedKeys:</div>
+        <BitAccordionList Multiple
+                          DefaultExpandedKeys="@(["general", "advanced"])"
+                          Items="keyedItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Collapsible="false":</div>
+        <BitAccordionList Collapsible="false"
+                          DefaultExpandedKey="general"
+                          Items="keyedItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Icons" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
+    <div>
+        <code>ExpanderIconName</code> replaces every chevron and <code>ExpandedExpanderIconName</code> swaps it while
+        open; each item can set its own, plus a leading <code>IconName</code>. <code>ExpanderIconPlacement</code> moves
+        the expander to the start, <code>NoExpanderRotation</code> stops it turning and <code>HideExpanderIcon</code>
+        removes it.
+    </div>
+    <br />
+    <div class="example-content">
+        <div>Per-item icons:</div>
         <BitAccordionList Items="iconItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Swapped while expanded (ExpandedExpanderIconName):</div>
-        <BitAccordionList Items="basicItems"
+        <div>ExpandedExpanderIconName:</div>
+        <BitAccordionList ExpanderIconName="@BitIconName.Add"
+                          ExpandedExpanderIconName="@BitIconName.Remove"
+                          Items="basicItems"
                           TItem="Section"
-                          NameSelectors="nameSelectors"
-                          ExpanderIconName="@BitIconName.Add"
-                          ExpandedExpanderIconName="@BitIconName.Remove" />
+                          NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>At the start of the header (ExpanderIconPlacement):</div>
-        <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors" ExpanderIconPlacement="BitPlacement.Start" />
+        <div>ExpanderIconPlacement:</div>
+        <BitAccordionList ExpanderIconPlacement="BitPlacement.Start"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Without an expander icon (HideExpanderIcon):</div>
+        <div>HideExpanderIcon:</div>
         <BitAccordionList HideExpanderIcon Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Actions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+<DemoExample Title="Actions" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        <code>ActionsTemplate</code> renders content beside the header of every item, outside of the toggle button
-        and of the heading it sits in, so it can hold interactive elements of its own - a menu, a delete button, a
-        switch - without nesting a control inside another one. An item can also carry its own actions through the
-        member mapped to <code>Actions</code>, which take precedence over the template.
+        <code>ActionsTemplate</code> renders beside each header, outside the toggle button, so it can hold buttons and
+        menus of its own. An item's own <code>Actions</code> wins over it.
     </div>
     <br />
     <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors">
@@ -117,160 +110,13 @@
     <div>Last action: <b>@actionedTitle</b></div>
 </DemoExample>
 
-<DemoExample Title="Disabled & Read-only" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
+<DemoExample Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>
-        An item mapped to <code>IsEnabled = false</code> is greyed out and its header leaves the tab order, while
-        the member mapped to <code>ReadOnly</code> is for the panel that has to stay as it is rather than the one
-        that is turned off: it keeps the colors of a live item and its place in the tab order, reports itself as
-        <code>aria-disabled</code>, and still raises <code>OnItemClick</code> so the page can say why nothing
-        moved. Both can be set for the whole list or per item, and the item value wins.
+        <code>HeaderTemplate</code> and <code>BodyTemplate</code> replace the whole header and panel;
+        <code>TitleTemplate</code> and <code>ExpanderTemplate</code> replace only their part. Each gets the item as
+        its context, and an item's own template wins.
     </div>
     <br />
-    <BitAccordionList Multiple
-                      Items="stateItems"
-                      TItem="Section"
-                      NameSelectors="nameSelectors"
-                      DefaultExpandedKeys="@(["locked"])"
-                      OnItemClick="(Section item) => { if (item.Locked is true) readOnlyClickCount++; }" />
-    <br />
-    <div>Clicks on the read-only header: <b>@readOnlyClickCount</b></div>
-</DemoExample>
-
-<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
-    <div>
-        <code>OnExpand</code>, <code>OnCollapse</code> and <code>OnToggle</code> report the item that moved -
-        including the one single-expand mode closes on its own to make room.
-    </div>
-    <br />
-    <BitAccordionList Items="basicItems"
-                      TItem="Section"
-                      NameSelectors="nameSelectors"
-                      OnExpand="(Section item) => expandedTitle = item.Name"
-                      OnCollapse="(Section item) => collapsedTitle = item.Name"
-                      OnToggle="(Section item) => toggledTitle = item.Name" />
-    <br />
-    <div>Last expanded: <b>@expandedTitle</b></div>
-    <div>Last collapsed: <b>@collapsedTitle</b></div>
-    <div>Last toggled: <b>@toggledTitle</b></div>
-    <br /><br />
-    <div>Each item can also have its own click handler.</div>
-    <br />
-    <BitAccordionList Items="eventsItems" TItem="Section" NameSelectors="nameSelectors" />
-    <div>Item click count: <b>@clickCounter</b></div>
-</DemoExample>
-
-<DemoExample Title="Cancelling a toggle" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
-    <div>
-        <code>OnToggling</code> runs before an item moves and can leave it where it is by setting
-        <code>Cancel</code> on its arguments. They carry the item, its key, whether it is about to expand and what
-        asked for the change - a click on the header, or one of the public methods. The callback is awaited, so it
-        can also load the content of the panel or ask for a confirmation first, and nothing else toggles the list
-        while it runs - the header it was asked about says as much while it waits, reporting itself as
-        <code>aria-busy</code> and taking a busy cursor, rather than going on looking like a toggle that answers
-        at once.
-    </div>
-    <br />
-    <BitCheckbox @bind-Value="lockToggling" Label="Refuse every toggle" />
-    <BitCheckbox @bind-Value="slowToggling" Label="Take a second to decide" />
-    <br />
-    <BitAccordionList Items="basicItems"
-                      TItem="Section"
-                      NameSelectors="nameSelectors"
-                      OnToggling="HandleOnToggling" />
-    <br />
-    <div>Last request: <b>@togglingReport</b></div>
-</DemoExample>
-
-<DemoExample Title="Binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
-    <div>
-        <code>@@bind-ExpandedKey</code> (single-expand) and <code>@@bind-ExpandedKeys</code> (multiple-expand) hand
-        the open state to the page: the list reports every change through them, and a value written from outside
-        moves the panels the same way a click does.
-    </div>
-    <br />
-    <BitButtonGroup Toggle Items="bindingButtons" TItem="BitButtonGroupItem" @bind-ToggleKey="boundExpandedKey" />
-    <br />
-    <div>Bound expanded key: <b>@boundExpandedKey</b></div>
-    <br />
-    <BitAccordionList @bind-ExpandedKey="boundExpandedKey" Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" />
-    <br /><br />
-    <div>Bound expanded keys: <b>@string.Join(", ", boundExpandedKeys)</b></div>
-    <br />
-    <BitAccordionList Multiple @bind-ExpandedKeys="boundExpandedKeys" Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" />
-</DemoExample>
-
-<DemoExample Title="Programmatic control" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
-    <div>
-        <code>Expand</code>, <code>Collapse</code> and <code>Toggle</code> drive a single item by key,
-        <code>ExpandAll</code> (multiple-expand mode only) and <code>CollapseAll</code> drive all of them, and
-        <code>FocusItem</code> puts the keyboard on the header of one. <code>IsExpanded</code> and
-        <code>GetExpandedKeys</code> read the state back. None of them is turned away by <code>ReadOnly</code> or
-        <code>Collapsible</code>: what those close off is the way in from the header, not the one the app uses.
-    </div>
-    <br />
-    <div class="example-content">
-        <BitStack Horizontal Wrap>
-            <BitButton OnClick="@(() => accordionListRef!.ExpandAll())">Expand all</BitButton>
-            <BitButton OnClick="@(() => accordionListRef!.CollapseAll())">Collapse all</BitButton>
-            <BitButton OnClick="@(() => accordionListRef!.Toggle("users"))">Toggle Users</BitButton>
-            <BitButton OnClick="@(() => accordionListRef!.FocusItem("advanced"))">Focus Advanced</BitButton>
-        </BitStack>
-    </div>
-    <br />
-    <BitAccordionList @ref="accordionListRef" Multiple @bind-ExpandedKeys="programmaticKeys" Items="keyedItems" TItem="Section" NameSelectors="nameSelectors" />
-    <br />
-    <div>Expanded keys: <b>@string.Join(", ", programmaticKeys)</b></div>
-</DemoExample>
-
-<DemoExample Title="Content rendering" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
-    <div>
-        By default every panel is rendered up front and stays in the DOM. <code>LazyContent</code> holds the first
-        render of a panel back until it is opened, so a heavy panel costs nothing until it is asked for, and keeps
-        it afterwards - whatever state it holds survives a collapse. <code>UnmountOnCollapse</code> goes the other
-        way and drops the content again on every close, so nothing it holds keeps running behind a closed header.
-        <code>MaxHeight</code> caps a panel and lets it scroll inside the item rather than growing it; the
-        scrolling region takes a tab stop of its own so the keyboard can reach it.
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>LazyContent &amp; UnmountOnCollapse (watch the render timestamps):</div>
-        <BitAccordionList Multiple LazyContent Items="lazyItems" TItem="Section" NameSelectors="nameSelectors" />
-        <BitAccordionList Multiple UnmountOnCollapse Items="unmountItems" TItem="Section" NameSelectors="nameSelectors" />
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>MaxHeight:</div>
-        <BitAccordionList Items="longItems" TItem="Section" NameSelectors="nameSelectors" MaxHeight="100px" DefaultExpandedKey="long-1" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Transition" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
-    <div>
-        <code>TransitionDuration</code> sets the length of the expand/collapse animation of every item in
-        milliseconds, overriding the duration of the theme; <code>0</code> turns it off. A reduced-motion
-        preference still collapses it to nothing, unless <code>ForceAnimation</code> opts out of that.
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>No animation (0):</div>
-        <BitAccordionList TransitionDuration="0" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>Slowed down (1500):</div>
-        <BitAccordionList TransitionDuration="1500" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
-    <div>
-        <code>HeaderTemplate</code> replaces the whole header of every item and <code>BodyTemplate</code> its panel,
-        while <code>TitleTemplate</code> and <code>ExpanderTemplate</code> take the place of only the title and only
-        the expander, leaving the rest of the header as it is. Each of them receives the item as its context, and an
-        item that carries a template of its own through <code>NameSelectors</code> takes precedence over the one of
-        the list.
-    </div>
-    <br /><br />
     <div class="example-content">
         <div>HeaderTemplate &amp; BodyTemplate:</div>
         <BitAccordionList Items="templateItems" TItem="Section" NameSelectors="nameSelectors">
@@ -297,78 +143,188 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Accessibility" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Disabled & Read-only" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        Every header is a button inside a heading, tied to its panel with <code>aria-controls</code> and
-        <code>aria-expanded</code>, and every panel is a region named by its own header - the structure the
-        WAI-ARIA accordion pattern asks for. <code>HeadingLevel</code> puts the headers at the right depth of the
-        heading outline of the page (3 by default, clamped to 1..6). <code>Navigable</code>, which is on by
-        default, adds the ArrowUp, ArrowDown, Home and End keys on top of Tab: they move the focus between the
-        headers without scrolling the page under it, wrap around at both ends - <code>NoNavigationLoop</code>
-        stops them there instead - and skip the disabled items, while the same keys pressed inside a panel are
-        left to whatever the panel holds. <code>NoContentRegion</code> drops the landmark role from the panels,
-        which the authoring practices ask for beyond about six panels that can all be open at once, and
-        <code>AriaLabel</code> names the list itself. A header that does not name itself - an icon-only
-        <code>HeaderTemplate</code> - takes a <code>HeaderAriaLabel</code> of its own, which names both the toggle
-        and the panel it opens.
+        <code>IsEnabled="false"</code> greys an item out and takes it out of the tab order. <code>ReadOnly</code>
+        keeps it focusable and in its colors but frozen (<code>aria-disabled</code>), and still raises
+        <code>OnItemClick</code>. Both work for the whole list or per item.
     </div>
     <br />
     <BitAccordionList Multiple
-                      Items="basicItems"
+                      DefaultExpandedKeys="@(["locked"])"
+                      OnItemClick="(Section item) => { if (item.Locked is true) readOnlyClickCount++; }"
+                      Items="stateItems"
                       TItem="Section"
-                      NameSelectors="nameSelectors"
-                      HeadingLevel="2"
-                      NoContentRegion
-                      NoNavigationLoop
-                      AriaLabel="Application settings" />
+                      NameSelectors="nameSelectors" />
+    <br />
+    <div>Clicks on the read-only header: <b>@readOnlyClickCount</b></div>
 </DemoExample>
 
-<DemoExample Title="Printing" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <div>
-        A collapsed panel is hidden outright, so a list of them prints as a column of bare headers.
-        <code>ExpandOnPrint</code> opens every panel for the print stylesheet alone - what is on screen stays
-        exactly where the reader left it - and lifts the cap of <code>MaxHeight</code> with it, since paper does
-        not scroll. What is not in the DOM at all cannot be printed by any of this: the panels of a
-        <code>LazyContent</code> list that were never opened, and every closed panel of a list using
-        <code>UnmountOnCollapse</code>, still print as bare headers.
+        <code>OnExpand</code>, <code>OnCollapse</code> and <code>OnToggle</code> report every item that moves,
+        including the one single-expand mode closes. Each item can also have its own <code>OnClick</code>.
     </div>
     <br />
-    <div>Leave these closed and open the print preview of the browser (Ctrl+P): only the first list carries its text onto the page.</div>
+    <BitAccordionList OnExpand="(Section item) => expandedTitle = item.Name"
+                      OnCollapse="(Section item) => collapsedTitle = item.Name"
+                      OnToggle="(Section item) => toggledTitle = item.Name"
+                      Items="eventsItems"
+                      TItem="Section"
+                      NameSelectors="nameSelectors" />
+    <br />
+    <div>Last expanded: <b>@expandedTitle</b></div>
+    <div>Last collapsed: <b>@collapsedTitle</b></div>
+    <div>Last toggled: <b>@toggledTitle</b></div>
+    <div>Header clicks: <b>@clickCounter</b></div>
+</DemoExample>
+
+<DemoExample Title="Cancelling a toggle" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+    <div>
+        <code>OnToggling</code> runs before an item moves; set <code>Cancel</code> to keep it where it is, and read
+        <code>Reason</code> for what asked. It is awaited, so it can confirm or load data first, while the header
+        reports <code>aria-busy</code>.
+    </div>
+    <br />
+    <BitCheckbox @bind-Value="lockToggling" Label="Refuse every toggle" />
+    <BitCheckbox @bind-Value="slowToggling" Label="Take a second to decide" />
+    <br />
+    <BitAccordionList OnToggling="HandleOnToggling" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    <br />
+    <div>Last request: <b>@togglingReport</b></div>
+</DemoExample>
+
+<DemoExample Title="Binding & methods" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+    <div>
+        <code>@@bind-ExpandedKey</code> and <code>@@bind-ExpandedKeys</code> hand the open state to the page.
+        <code>Expand</code>, <code>Collapse</code>, <code>Toggle</code>, <code>ExpandAll</code> (Multiple only),
+        <code>CollapseAll</code> and <code>FocusItem</code> drive it from code, and are not blocked by
+        <code>ReadOnly</code> or <code>Collapsible</code>.
+    </div>
     <br />
     <div class="example-content">
-        <div>Printed with their content:</div>
-        <BitAccordionList ExpandOnPrint Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+        <div>@@bind-ExpandedKey:</div>
+        <BitButtonGroup Toggle Items="bindingButtons" TItem="BitButtonGroupItem" @bind-ToggleKey="boundExpandedKey" />
+        <BitAccordionList @bind-ExpandedKey="boundExpandedKey"
+                          Items="keyedItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Printed as bare headers:</div>
-        <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+        <div>Methods &amp; @@bind-ExpandedKeys:</div>
+        <BitStack Horizontal Wrap>
+            <BitButton OnClick="@(() => accordionListRef!.ExpandAll())">Expand all</BitButton>
+            <BitButton OnClick="@(() => accordionListRef!.CollapseAll())">Collapse all</BitButton>
+            <BitButton OnClick="@(() => accordionListRef!.Toggle("users"))">Toggle Users</BitButton>
+            <BitButton OnClick="@(() => accordionListRef!.FocusItem("advanced"))">Focus Advanced</BitButton>
+        </BitStack>
+        <BitAccordionList @ref="accordionListRef"
+                          Multiple
+                          @bind-ExpandedKeys="programmaticKeys"
+                          Items="keyedItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+        <div>Expanded keys: <b>@string.Join(", ", programmaticKeys)</b></div>
     </div>
 </DemoExample>
 
-<DemoExample Title="Gap & NoBorder" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Content rendering" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>
-        <code>Gap</code> sets the space in pixels between the items - <code>0</code> stacks them into one block -
-        and <code>NoBorder</code> drops the outline of every item and fills it with the secondary background
-        instead, for a flat list that leans on the surface it sits on.
+        Panels render up front by default. <code>LazyContent</code> renders a panel on its first open and keeps it;
+        <code>UnmountOnCollapse</code> removes it again on every close. Watch the timestamps.
+    </div>
+    <br />
+    <div class="example-content">
+        <div>LazyContent:</div>
+        <BitAccordionList Multiple LazyContent Items="lazyItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Gap:</div>
-        <BitAccordionList Gap="0" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
-    </div>
-    <br /><br />
-    <div class="example-content">
-        <div>NoBorder:</div>
-        <BitAccordionList NoBorder Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+        <div>UnmountOnCollapse:</div>
+        <BitAccordionList Multiple UnmountOnCollapse Items="unmountItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Empty content" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="MaxHeight & Transition" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
     <div>
-        <code>EmptyContent</code> is what the list draws in place of the items while it has none, so a collection
-        that is still loading, or one a filter has emptied, says so instead of leaving a blank where a list is
-        meant to be.
+        <code>MaxHeight</code> caps a panel, which then scrolls and takes a tab stop so the keyboard can scroll it.
+        <code>TransitionDuration</code> sets the animation in milliseconds (<code>0</code> turns it off); a
+        reduced-motion preference still wins unless <code>ForceAnimation</code> is set.
+    </div>
+    <br />
+    <div class="example-content">
+        <div>MaxHeight="100px":</div>
+        <BitAccordionList MaxHeight="100px"
+                          DefaultExpandedKey="long-1"
+                          Items="longItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>TransitionDuration="0":</div>
+        <BitAccordionList TransitionDuration="0" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>TransitionDuration="1500":</div>
+        <BitAccordionList TransitionDuration="1500" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Find & print" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+    <div>
+        <code>HiddenUntilFound</code> keeps closed panels searchable: find-in-page opens the item around a match
+        through the list, so <code>OnToggling</code> sees it with the <code>Reveal</code> reason.
+        <code>ExpandOnPrint</code> prints every panel open. Content that is not in the DOM (an unopened
+        <code>LazyContent</code> panel, <code>UnmountOnCollapse</code>) cannot be found or printed.
+    </div>
+    <br />
+    <div>Search the page (Ctrl+F) for <b>refund</b> or <b>invoice</b>, or open the print preview (Ctrl+P).</div>
+    <br />
+    <BitAccordionList HiddenUntilFound ExpandOnPrint Items="faqItems" TItem="Section" NameSelectors="nameSelectors" />
+</DemoExample>
+
+<DemoExample Title="Scroll into view" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
+    <div>
+        <code>ScrollIntoViewOnExpand</code> scrolls a newly opened item into view - only as far as needed, and
+        instantly under reduced motion. <code>ExpandAll</code> scrolls to nothing.
+    </div>
+    <br />
+    <div>Open the last panels: the box follows them.</div>
+    <br />
+    <div class="scroll-box">
+        <BitAccordionList ScrollIntoViewOnExpand Items="scrollItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Joined, Gap & NoBorder" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+    <div>
+        <code>Joined</code> fuses the items into one surface: one shared line between neighbours, rounded outer
+        corners only. <code>Gap</code> spaces separate items (in pixels), and <code>NoBorder</code> trades the outline
+        for a filled background.
+    </div>
+    <br />
+    <div class="example-content">
+        <div>Joined:</div>
+        <BitAccordionList Joined Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Joined &amp; NoBorder:</div>
+        <BitAccordionList Joined NoBorder Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Gap="16" &amp; NoBorder:</div>
+        <BitAccordionList Gap="16" NoBorder Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Empty content" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
+    <div>
+        <code>EmptyContent</code> renders while the list has no items.
     </div>
     <br />
     <BitCheckbox @bind-Value="showEmptyItems" Label="Show the items" />
@@ -380,70 +336,107 @@
     </BitAccordionList>
 </DemoExample>
 
-<DemoExample Title="Scroll into view" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
     <div>
-        <code>ScrollIntoViewOnExpand</code> brings the item that has just been expanded into view, so a panel
-        opened at the bottom of the window is not left off the screen it was opened on. The item is moved as
-        little as the browser can move it, so nothing happens to one that is already in view, and the scroll is
-        instant rather than smooth for a reader who has asked for less motion. It covers the ways a single panel opens:
-        a click on its header, <code>Expand</code>, <code>Toggle</code> and the bound keys - <code>ExpandAll</code> scrolls to nothing, since there is no one panel it opened.
+        Each header is a button inside a heading, wired to a region panel as the WAI-ARIA accordion pattern asks.
+        <code>HeadingLevel</code> sets the level (3 by default). The arrow, Home and End keys move between headers
+        (<code>Navigable</code>, on by default), wrapping around unless <code>NoNavigationLoop</code> is set.
+        <code>NoContentRegion</code> drops the region role for long lists, <code>AriaLabel</code> (or an
+        <code>aria-labelledby</code>) names the list, and an item's <code>HeaderAriaLabel</code> names an icon-only
+        header.
     </div>
     <br />
-    <div>Open the last panels of this box: the list follows them without the box being scrolled by hand.</div>
+    <BitAccordionList Multiple
+                      HeadingLevel="2"
+                      NoContentRegion
+                      NoNavigationLoop
+                      AriaLabel="Application settings"
+                      Items="basicItems"
+                      TItem="Section"
+                      NameSelectors="nameSelectors" />
+</DemoExample>
+
+<DemoExample Title="Cascading parameters" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+    <div>
+        A <code>BitParams</code> with a <code>BitAccordionListParams</code> sets the defaults of every list inside it;
+        a list's own parameters win.
+    </div>
     <br />
-    <div class="scroll-box">
-        <BitAccordionList ScrollIntoViewOnExpand Items="scrollItems" TItem="Section" NameSelectors="nameSelectors" />
+    <BitParams Parameters="@accordionListParams">
+        <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+        <br />
+        <BitAccordionList Joined="false" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
+    </BitParams>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+    <div>
+        <code>Background</code> and <code>Border</code> take a <code>BitColorKind</code> and repaint every item, hover
+        shades included. A <code>Transparent</code> background on a <code>Joined</code>, <code>NoBorder</code> list
+        leaves only the lines between the items: a flush list for a FAQ or a sidebar.
+    </div>
+    <br />
+    <div class="example-content">
+        <div>Background="Secondary" &amp; Border="Tertiary":</div>
+        <BitAccordionList Background="BitColorKind.Secondary"
+                          Border="BitColorKind.Tertiary"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Background="Tertiary" &amp; Border="Transparent":</div>
+        <BitAccordionList Background="BitColorKind.Tertiary"
+                          Border="BitColorKind.Transparent"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Flush (Background="Transparent", Joined &amp; NoBorder):</div>
+        <BitAccordionList Joined
+                          NoBorder
+                          Background="BitColorKind.Transparent"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
     <div>
-        <code>Background</code> and <code>Border</code> take a <code>BitColorKind</code> and repaint every item of
-        the list, down to the shades its header takes under the pointer.
-    </div>
-    <br />
-    <BitAccordionList Items="basicItems"
-                      TItem="Section"
-                      NameSelectors="nameSelectors"
-                      Background="BitColorKind.Secondary"
-                      Border="BitColorKind.Tertiary" />
-    <br />
-    <BitAccordionList Items="basicItems"
-                      TItem="Section"
-                      NameSelectors="nameSelectors"
-                      Background="BitColorKind.Tertiary"
-                      Border="BitColorKind.Transparent" />
-</DemoExample>
-
-<DemoExample Title="External Icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
-    <div>
-        <code>ExpanderIcon</code>, <code>ExpandedExpanderIcon</code> and the member mapped to <code>Icon</code>
-        take a <code>BitIconInfo</code> rather than the name of a built-in icon, so the list can be dressed in the
-        icons of any library that draws them from CSS classes. <code>BitIconInfo.Css</code> takes the classes as
-        they are, while <code>BitIconInfo.Fa</code> and <code>BitIconInfo.Bi</code> spell out the prefixes of
-        FontAwesome and Bootstrap Icons.
+        <code>ExpanderIcon</code>, <code>ExpandedExpanderIcon</code> and an item's <code>Icon</code> take a
+        <code>BitIconInfo</code>, for icon libraries such as FontAwesome (<code>BitIconInfo.Fa</code>) and Bootstrap
+        Icons (<code>BitIconInfo.Bi</code>).
     </div>
     <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <br />
     <div class="example-content">
         <div>FontAwesome:</div>
-        <BitAccordionList Items="faItems" TItem="Section" NameSelectors="nameSelectors" ExpanderIcon="@BitIconInfo.Fa("solid angle-down")" />
+        <BitAccordionList ExpanderIcon="@BitIconInfo.Fa("solid angle-down")"
+                          Items="faItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Bootstrap:</div>
-        <BitAccordionList Items="biItems" TItem="Section" NameSelectors="nameSelectors" ExpanderIcon="@BitIconInfo.Bi("chevron-down")" />
+        <BitAccordionList ExpanderIcon="@BitIconInfo.Bi("chevron-down")"
+                          Items="biItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
     <div>
-        <code>Size</code> drives the padding of the headers and of the panels and the type scale of every item -
-        the title, the description, the icons and the text of the panel - so a list can be tuned to how much room
-        it is given.
+        <code>Size</code> scales the padding and the type of every item.
     </div>
-    <br /><br />
+    <br />
     <div class="example-content">
         <div>Small:</div>
         <BitAccordionList Size="BitSize.Small" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
@@ -460,39 +453,53 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
     <div>
-        <code>Style</code> and <code>Class</code> dress the root element of the list, while <code>Styles</code> and
-        <code>Classes</code> reach each part of every item on its own - the header, the title, the expander icon,
-        the panel and everything between them. Two of their slots are states rather than parts:
-        <code>ItemExpanded</code> is added to an item only while its panel is open and <code>ItemExpandedIcon</code>
-        only to its expander icon while it is. An item can also carry a style and a class of its own through
-        <code>NameSelectors</code>.
+        <code>Style</code> and <code>Class</code> dress the list root; <code>Styles</code> and <code>Classes</code>
+        reach every part of every item, with <code>ItemExpanded</code> and <code>ItemExpandedIcon</code> applied only
+        while open. The <code>--bit-AccordionList-*</code> and <code>--bit-Accordion-*</code> CSS variables restyle
+        all the items from one place.
+    </div>
+    <br />
+    <div class="example-content">
+        <div>Style &amp; Class:</div>
+        <BitAccordionList Gap="8"
+                          Style="border: 1px solid var(--bit-clr-pri); border-radius: 0.5rem; padding: 0.5rem;"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+        <BitAccordionList Gap="8" Class="custom-item" Items="basicItems" TItem="Section" NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Component's style &amp; class:</div>
-        <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors" Gap="8" Style="border: 1px solid var(--bit-clr-pri); border-radius: 0.5rem; padding: 0.5rem;" />
-        <BitAccordionList Items="basicItems" TItem="Section" NameSelectors="nameSelectors" Gap="8" Class="custom-item" />
+        <div>Styles &amp; Classes:</div>
+        <BitAccordionList Styles="@(new() { ItemTitle = "color: tomato;", ItemHeader = "background-color: var(--bit-clr-bg-sec);" })"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
+        <BitAccordionList Classes="@(new() { ItemTitle = "custom-title", ItemExpanded = "custom-expanded" })"
+                          Items="basicItems"
+                          TItem="Section"
+                          NameSelectors="nameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div><b>Styles</b> &amp; <b>Classes</b>:</div>
-        <BitAccordionList Items="basicItems"
+        <div>CSS variables:</div>
+        <BitAccordionList Style="--bit-AccordionList-gap: 2px; --bit-Accordion-radius: 0; --bit-Accordion-title-color: var(--bit-clr-pri); --bit-Accordion-header-expanded-background: var(--bit-clr-bg-sec);"
+                          Items="basicItems"
                           TItem="Section"
-                          NameSelectors="nameSelectors"
-                          Styles="@(new() { ItemTitle = "color: tomato;", ItemHeader = "background-color: var(--bit-clr-bg-sec);" })" />
-        <BitAccordionList Items="basicItems"
+                          NameSelectors="nameSelectors" />
+        <BitAccordionList Joined
+                          Style="--bit-Accordion-border-color: var(--bit-clr-pri); --bit-AccordionList-divider-color: var(--bit-clr-brd-sec);"
+                          Items="basicItems"
                           TItem="Section"
-                          NameSelectors="nameSelectors"
-                          Classes="@(new() { ItemTitle = "custom-title", ItemExpanded = "custom-expanded" })" />
+                          NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
     <div>
-        <code>Dir="BitDir.Rtl"</code> mirrors the whole list: the expander icon moves to the other end of the
-        header and the padding follows the writing direction with it.
+        <code>Dir="BitDir.Rtl"</code> mirrors the whole list.
     </div>
     <br />
     <BitAccordionList Dir="BitDir.Rtl" Items="rtlItems" TItem="Section" NameSelectors="nameSelectors" />

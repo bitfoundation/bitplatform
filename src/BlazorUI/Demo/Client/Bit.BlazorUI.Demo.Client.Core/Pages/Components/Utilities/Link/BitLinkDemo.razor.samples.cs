@@ -3,77 +3,56 @@
 public partial class BitLinkDemo
 {
     private readonly string example1RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic Link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled Link</BitLink>
-";
+<div>Read the <BitLink Href=""https://github.com/bitfoundation/bitplatform"">bit platform source</BitLink> on GitHub.</div>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic link</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled link</BitLink>";
 
     private readonly string example2RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Underlined>Underlined link</BitLink>";
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"">Underlined on hover (default)</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Underlined>Always underlined</BitLink>
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" NoUnderline>Never underlined</BitLink>";
 
     private readonly string example3RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" NoUnderline>NoUnderline link</BitLink>";
+<BitLink IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Leading icon</BitLink>
+<BitLink IconName=""@BitIconName.ChevronRight"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">Trailing icon</BitLink>";
 
     private readonly string example4RazorCode = @"
-<BitLink IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a leading icon</BitLink>
-<BitLink IconName=""@BitIconName.NavigateExternalInline"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a trailing icon</BitLink>
-<BitLink IconName=""@BitIconName.Download"" Underlined Href=""https://github.com/bitfoundation/bitplatform"">Icon on an underlined link</BitLink>";
+<BitLink Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>
 
-    private readonly string example5RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Blank"">Blank target link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Parent"">Parent target link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Self"">Self target link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""@BitLinkTarget.Top"">Top target link</BitLink>";
+<BitLink Target=""@BitLinkTarget.Blank"" NewTabHint=""(در زبانه جدید باز می‌شود)"" Href=""https://github.com/bitfoundation/bitplatform"">Announced with a translated hint</BitLink>
 
-    private readonly string example6RazorCode = @"
-<BitLink Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Announced as opening in a new tab</BitLink>
-
-<BitLink Target=""_blank"" NewTabHint=""(در زبانه جدید باز می‌شود)"" Href=""https://github.com/bitfoundation/bitplatform"">Announced with a translated sentence</BitLink>
-
-<BitLink Target=""_blank"" NoNewTabHint IconName=""@BitIconName.OpenInNewWindow"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">
-    Opens in a new tab (said in the text already)
+<BitLink Target=""@BitLinkTarget.Blank"" NoNewTabHint IconName=""@BitIconName.OpenInNewWindow"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">
+    GitHub (opens in a new tab)
 </BitLink>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitLink Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download="""">Download the bit logo</BitLink>
 <BitLink IconName=""@BitIconName.Download"" Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download=""bit-platform-logo.svg"">Download with a custom file name</BitLink>";
 
-    private readonly string example8RazorCode = @"
-<BitLink Title=""github.com/bitfoundation/bitplatform"" Href=""https://github.com/bitfoundation/bitplatform"">Hover to see the full address</BitLink>";
+    private readonly string example6RazorCode = @"
+<BitLink Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">nofollow noreferrer</BitLink>
+<BitLink Rel=""BitLinkRels.Sponsored | BitLinkRels.Ugc"" Href=""https://github.com/bitfoundation/bitplatform"">sponsored ugc</BitLink>
+<BitLink Rel=""BitLinkRels.Opener"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">opener (no automatic noopener)</BitLink>";
 
-    private readonly string example9RazorCode = @"
-<BitLink IconName=""@BitIconName.Download""
-         AriaDescription=""PDF, 2.4 megabytes""
-         Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg""
-         Download="""">
-    Download the brand guidelines
-</BitLink>";
+    private readonly string example7RazorCode = @"
+<BitLink OnClick=""() => buttonClickCount++"">A button link (clicked @buttonClickCount times)</BitLink>
 
-    private readonly string example10RazorCode = @"
-<BitLink OnClick=""HandleOnClick"">Click to navigate to the bit platform GitHub repo!</BitLink>
-
-<BitLink OnClick=""() => clickCount++"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Link with both Href and OnClick</BitLink>
-<div>OnClick count: @clickCount</div>
+<BitLink OnClick=""() => anchorClickCount++"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">
+    An anchor with OnClick (clicked @anchorClickCount times)
+</BitLink>
 
 <div class=""clickable-container"" @onclick=""() => containerClickCount++"">
     A clickable container (clicked @containerClickCount times):
-    <BitLink StopPropagation OnClick=""() => linkClickCount++"">Link with StopPropagation (clicked @linkClickCount times)</BitLink>
-</div>";
-    private readonly string example10CsharpCode = @"
-[Inject] private NavigationManager Navigation { get; set; } = default!;
+    <BitLink StopPropagation OnClick=""() => innerClickCount++"">StopPropagation (clicked @innerClickCount times)</BitLink>
+</div>
 
-private int clickCount;
-private int linkClickCount;
-private int containerClickCount;
-
-private void HandleOnClick()
-{
-    Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
-}";
-
-    private readonly string example11RazorCode = @"
 <BitLink PreventDefault OnClick=""HandleGuardedClick"" Href=""https://github.com/bitfoundation/bitplatform"">Ask before leaving</BitLink>
 <div>@guardMessage</div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example7CsharpCode = @"
+private int buttonClickCount;
+private int anchorClickCount;
+private int innerClickCount;
+private int containerClickCount;
 private string? guardMessage;
 
 private void HandleGuardedClick()
@@ -83,141 +62,155 @@ private void HandleGuardedClick()
     guardMessage = ""The navigation was suppressed. This is where a confirmation would go."";
 }";
 
-    private readonly string example12RazorCode = @"
-<BitLink Style=""scroll-margin: 110px"" Id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
-<br />
-Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-<br />
-Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-<br />
-In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-shaped into meaning, and the emotions ready to resonate with every reader.
-<br />
-In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-each word has the power to transform into something extraordinary. Here lies the start of something new-an
-opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-begins here, in this quiet moment where everything is possible.
-<br />
-Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
-These words stand as temporary guides, placeholders that whisper of what is to come.
-They hold the promise of stories waiting to unfold, ideas eager to take shape, and
-connections that will soon emerge to inspire and resonate. This is not an empty page;
-it is a canvas, rich with potential and ready to transform into something meaningful.
-<br />
-For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
-the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
-and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
-purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
-what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
-starting point. The possibilities are endless, and the journey begins now.
-<br />
-<BitLink Style=""scroll-margin: 110px"" Id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>";
+    private readonly string example8RazorCode = @"
+<BitLink Href=""#article-end"">Go to the end of the article</BitLink>
 
-    private readonly string example13RazorCode = @"
-<BitLink Rel=""BitLinkRels.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
-<BitLink Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>
-<BitLink Rel=""BitLinkRels.Sponsored | BitLinkRels.Ugc"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (sponsored & ugc)</BitLink>
-<BitLink Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Blank target link with an automatic noopener rel</BitLink>";
+<div class=""article"">
+    <p id=""article-start"" style=""scroll-margin: 110px"">
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions and
+        dreams. These placeholder words stand for the beginning, a moment where everything is still to come.
+    </p>
+    <p>
+        Soon these lines will turn into narratives that provoke thought and resonate with those who read them.
+        Until then they are the scaffolding of something remarkable, a bridge between the empty page of now
+        and the stories of tomorrow.
+    </p>
+    <p id=""article-end"" style=""scroll-margin: 110px"">
+        In this space potential reigns: each word can still become something extraordinary. Whether it is a
+        tale of adventure, a reflection of truth or an idea that sparks change, these lines are yours to fill.
+    </p>
+</div>
 
-    private readonly string example14RazorCode = @"
-<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Disabled link (skipped by Tab)</BitLink>
-<BitLink IsEnabled=""false"" AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled link with AllowDisabledFocus (focusable)</BitLink>";
+<BitLink Href=""#article-start"">Back to the start of the article</BitLink>";
 
-    private readonly string example15RazorCode = @"
-<BitLink AriaCurrent=""BitNavAriaCurrent.Page"" Underlined Href=""/components/link"">Link (this page)</BitLink>
-<BitLink Href=""/components/button"">Button</BitLink>
-<BitLink Href=""/components/image"">Image</BitLink>";
+    private readonly string example9RazorCode = @"
+<nav aria-label=""Components"">
+    <BitLink Match=""BitNavMatch.Prefix"" Href=""/components"">Components</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" Href=""/components/button"">Button</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" Href=""/components/link"">Link</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" Href=""/components/image"">Image</BitLink>
+</nav>
 
-    private readonly string example16RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"">
-    <BitText Typography=""BitTypography.H4"">Link with default color!</BitText>
-    <BitText Typography=""BitTypography.Subtitle1"">this text color is coming from the link itself.</BitText>
+
+<ol aria-label=""Checkout"">
+    @for (var i = 0; i < checkoutSteps.Length; i++)
+    {
+        var step = i;
+        <li>
+            <BitLink AriaCurrent=""@(currentStep == step ? BitNavAriaCurrent.Step : null)"" OnClick=""() => currentStep = step"">
+                @checkoutSteps[step]
+            </BitLink>
+        </li>
+    }
+</ol>";
+    private readonly string example9CsharpCode = @"
+private int currentStep;
+private readonly string[] checkoutSteps = [""Cart"", ""Shipping"", ""Payment""];";
+
+    private readonly string example10RazorCode = @"
+<BitLink Title=""github.com/bitfoundation/bitplatform"" Href=""https://github.com/bitfoundation/bitplatform"">Hover for the full address</BitLink>
+
+<BitLink IconName=""@BitIconName.Download"" AriaDescription=""SVG, 12 kilobytes"" Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Download="""">
+    Download the brand guidelines
 </BitLink>
 
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" NoColor>
-    <BitText>Link with NoColor!</BitText>
+
+<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Disabled (skipped by Tab)</BitLink>
+<BitLink IsEnabled=""false"" AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled (still focusable)</BitLink>
+
+<BitLink OnClick=""() => focusTargetRef.FocusAsync()"">Focus the link below</BitLink>
+<BitLink @ref=""focusTargetRef"" Href=""https://github.com/bitfoundation/bitplatform"">The focus lands here</BitLink>";
+    private readonly string example10CsharpCode = @"
+private BitLink focusTargetRef = default!;";
+
+    private readonly string example11RazorCode = @"
+<div style=""--bit-Link-underline-offset: 0.25em; --bit-Link-underline-thickness: 2px; --bit-Link-underline-color: var(--bit-clr-sec); --bit-Link-visited-color: var(--bit-clr-ter);"">
+    Set on the container: <BitLink Underlined Href=""https://github.com/bitfoundation/bitplatform"">an offset, thicker underline</BitLink>,
+    and <BitLink Underlined Href=""/components/link"">a visited link</BitLink> in its own color.
+</div>
+
+<nav aria-label=""Components"" style=""--bit-Link-color: var(--bit-clr-fg-sec); --bit-Link-current-color: var(--bit-clr-fg-pri); --bit-Link-current-font-weight: 600;"">
+    <BitLink Match=""BitNavMatch.Exact"" NoUnderline Href=""/components/button"">Button</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" NoUnderline Href=""/components/link"">Link</BitLink>
+    <BitLink Match=""BitNavMatch.Exact"" NoUnderline Href=""/components/image"">Image</BitLink>
+</nav>
+
+<BitLink Style=""--bit-Link-color: var(--bit-clr-fg-pri); --bit-Link-hover-color: var(--bit-clr-sec-fg); --bit-Link-font-weight: 600; --bit-Link-icon-gap: 8px;""
+         IconName=""@BitIconName.ChevronRight""
+         IconPlacement=""BitPlacement.End""
+         Href=""https://github.com/bitfoundation/bitplatform"">
+    Set on one link
 </BitLink>";
 
-    private readonly string example17RazorCode = @"
-<BitLink Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary Color Link (default)</BitLink>
-<BitLink Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary Color Link</BitLink>
-<BitLink Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary Color Link</BitLink>
-<BitLink Color=""BitColor.Info"" Href=""https://github.com/bitfoundation/bitplatform"">Info Color Link</BitLink>
-<BitLink Color=""BitColor.Success"" Href=""https://github.com/bitfoundation/bitplatform"">Success Color Link</BitLink>
-<BitLink Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning Color Link</BitLink>
-<BitLink Color=""BitColor.SevereWarning"" Href=""https://github.com/bitfoundation/bitplatform"">SevereWarning Color Link</BitLink>
-<BitLink Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error Color Link</BitLink>
+    private readonly string example12RazorCode = @"
+<BitParams Parameters=""linkParams"">
+    <BitLink Href=""https://bitplatform.dev"">bit platform</BitLink>
+    <BitLink Href=""https://github.com/bitfoundation/bitplatform"">bit platform on GitHub</BitLink>
+    <BitLink Underlined=""false"" Href=""https://github.com/bitfoundation/bitplatform/issues"">Its own Underlined, the cascaded rest</BitLink>
+</BitParams>";
+    private readonly string example12CsharpCode = @"
+private readonly BitLinkParams[] linkParams =
+[
+    new()
+    {
+        Underlined = true,
+        Target = BitLinkTarget.Blank,
+        IconName = BitIconName.OpenInNewWindow,
+        IconPlacement = BitPlacement.End,
+    }
+];";
+
+    private readonly string example13RazorCode = @"
+<BitLink Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
+<BitLink Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
+<BitLink Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary</BitLink>
+<BitLink Color=""BitColor.Info"" Href=""https://github.com/bitfoundation/bitplatform"">Info</BitLink>
+<BitLink Color=""BitColor.Success"" Href=""https://github.com/bitfoundation/bitplatform"">Success</BitLink>
+<BitLink Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
+<BitLink Color=""BitColor.SevereWarning"" Href=""https://github.com/bitfoundation/bitplatform"">SevereWarning</BitLink>
+<BitLink Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
 
 <div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
-    <BitLink Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground Color Link</BitLink>
-    <BitLink Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground Color Link</BitLink>
-    <BitLink Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground Color Link</BitLink>
+    <BitLink Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground</BitLink>
+    <BitLink Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground</BitLink>
+    <BitLink Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground</BitLink>
 </div>
 
-<BitLink Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground Color Link</BitLink>
-<BitLink Color=""BitColor.SecondaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryForeground Color Link</BitLink>
-<BitLink Color=""BitColor.TertiaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryForeground Color Link</BitLink>
+<BitLink Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
+<BitLink Color=""BitColor.SecondaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryForeground</BitLink>
+<BitLink Color=""BitColor.TertiaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryForeground</BitLink>
+<BitLink Color=""BitColor.PrimaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBorder</BitLink>
+<BitLink Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder</BitLink>
+<BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder</BitLink>
 
-<BitLink Color=""BitColor.PrimaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBorder Color Link</BitLink>
-<BitLink Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder Color Link</BitLink>
-<BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder Color Link</BitLink>
 
-
-<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Primary (default)</BitLink>
+<BitLink IsEnabled=""false"" Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
 <BitLink IsEnabled=""false"" Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Tertiary"" Href=""https://github.com/bitfoundation/bitplatform"">Tertiary</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Info"" Href=""https://github.com/bitfoundation/bitplatform"">Info</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Success"" Href=""https://github.com/bitfoundation/bitplatform"">Success</BitLink>
 <BitLink IsEnabled=""false"" Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.SevereWarning"" Href=""https://github.com/bitfoundation/bitplatform"">SevereWarning</BitLink>
 <BitLink IsEnabled=""false"" Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
-
-<div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
-    <BitLink IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBackground</BitLink>
-    <BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBackground</BitLink>
-    <BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBackground</BitLink>
-</div>
-
 <BitLink IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryForeground</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryForeground</BitLink>
 
-<BitLink IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryBorder</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">SecondaryBorder</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder</BitLink>";
 
-    private readonly string example18RazorCode = @"
+<BitLink NoColor Href=""https://github.com/bitfoundation/bitplatform"">
+    <BitText Typography=""BitTypography.H6"">A card-like link</BitText>
+    <BitText Typography=""BitTypography.Body2"">Its text keeps the colors BitText gives it.</BitText>
+</BitLink>";
+
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitLink Icon=""@BitIconInfo.Fa(""brands github"")"" Href=""https://github.com/bitfoundation/bitplatform"">bit platform on GitHub</BitLink>
-<BitLink Icon=""@BitIconInfo.Fa(""solid arrow-up-right-from-square"")"" IconPlacement=""BitPlacement.End"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>
-
-
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitLink Icon=""@BitIconInfo.Bi(""github"")"" Href=""https://github.com/bitfoundation/bitplatform"">bit platform on GitHub</BitLink>
-<BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPlacement=""BitPlacement.End"" Target=""_blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>";
+<BitLink Icon=""@BitIconInfo.Fa(""brands github"")"" Href=""https://github.com/bitfoundation/bitplatform"">FontAwesome</BitLink>
+<BitLink Icon=""@BitIconInfo.Fa(""solid arrow-up-right-from-square"")"" IconPlacement=""BitPlacement.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">FontAwesome, trailing</BitLink>
+<BitLink Icon=""@BitIconInfo.Bi(""github"")"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap</BitLink>
+<BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPlacement=""BitPlacement.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap, trailing</BitLink>";
 
-    private readonly string example19RazorCode = @"
-<BitLink Size=""BitSize.Small"" Href=""https://github.com/bitfoundation/bitplatform"">Small link</BitLink>
-<BitLink Size=""BitSize.Medium"" Href=""https://github.com/bitfoundation/bitplatform"">Medium link</BitLink>
-<BitLink Size=""BitSize.Large"" Href=""https://github.com/bitfoundation/bitplatform"">Large link</BitLink>
-<BitLink Size=""BitSize.Large"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">The icon follows the size</BitLink>";
+    private readonly string example15RazorCode = @"
+<BitLink Size=""BitSize.Small"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Small</BitLink>
+<BitLink Size=""BitSize.Medium"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Medium</BitLink>
+<BitLink Size=""BitSize.Large"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Large</BitLink>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -226,10 +219,10 @@ starting point. The possibilities are endless, and the journey begins now.
     }
 </style>
 
-<BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
+<BitLink Style=""color: goldenrod; font-weight: bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example17RazorCode = @"
 <div dir=""rtl"">
     <BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ</BitLink>
     <BitLink Dir=""BitDir.Rtl"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ با آیکن</BitLink>

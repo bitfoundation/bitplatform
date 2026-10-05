@@ -81,6 +81,11 @@ public class BitModalParameters
     public Func<Task<bool>>? CanClose { get; set; }
 
     /// <summary>
+    /// The CSS class(es) of the root element of the Modal, added next to the Root of <see cref="Classes"/>.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitModal component.
     /// </summary>
     public BitModalClassStyles? Classes { get; set; }
@@ -267,6 +272,12 @@ public class BitModalParameters
     public bool? ShowCloseButton { get; set; }
 
     /// <summary>
+    /// The CSS style of the root element of the Modal, added next to the Root of <see cref="Styles"/> - the place
+    /// to set the public <c>--bit-Modal-*</c> CSS variables of the Modals shown through the service.
+    /// </summary>
+    public string? Style { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
     /// </summary>
     public BitModalClassStyles? Styles { get; set; }
@@ -293,6 +304,24 @@ public class BitModalParameters
 
 
     /// <summary>
+    /// A copy of this set that can be changed without reaching this one: what the change handed to
+    /// <see cref="BitModalReferenceBase{TReference, TParameters}.Update(Action{TParameters})"/> is applied to, so a
+    /// set shared between showings - one every confirmation of an app is shown with - is never changed under the
+    /// other modals. The attributes and the per-part classes and styles are copied too, being objects of their own
+    /// that such a change reaches into.
+    /// </summary>
+    internal BitModalParameters Copy()
+    {
+        var copy = (BitModalParameters)MemberwiseClone();
+
+        copy.HtmlAttributes = new(HtmlAttributes ?? []);
+        copy.Classes = BitModalClassStyles.Merge(Classes, null);
+        copy.Styles = BitModalClassStyles.Merge(Styles, null);
+
+        return copy;
+    }
+
+    /// <summary>
     /// Merges two sets of <see cref="BitModalParameters"/> giving precedence to the values of the first one.
     /// </summary>
     public static BitModalParameters? Merge(BitModalParameters? params1, BitModalParameters? params2)
@@ -315,6 +344,7 @@ public class BitModalParameters
             Blocking = params1.Blocking ?? params2.Blocking,
             Body = params1.Body ?? params2.Body,
             CanClose = params1.CanClose ?? params2.CanClose,
+            Class = params1.Class ?? params2.Class,
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             CloseButtonTitle = params1.CloseButtonTitle ?? params2.CloseButtonTitle,
             CloseIcon = params1.CloseIcon ?? params2.CloseIcon,
@@ -350,6 +380,7 @@ public class BitModalParameters
             ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             ShowCloseButton = params1.ShowCloseButton ?? params2.ShowCloseButton,
+            Style = params1.Style ?? params2.Style,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,

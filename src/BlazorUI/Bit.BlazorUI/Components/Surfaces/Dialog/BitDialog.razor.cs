@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Dialogs are temporary pop-ups that take focus from the page or app and require people to interact with them.
@@ -56,6 +58,9 @@ public partial class BitDialog : BitComponentBase
     // Whether the focus trap is currently registered on the JS side, so it is torn down exactly once
     // and only when it was actually set up.
     private bool _focusTrapped;
+    // The same for the Escape key, which the JS side answers through OnEscape (see SetupEscape).
+    private bool _escapeRegistered;
+    private DotNetObjectReference<BitDialog> _dotnetObj = default!;
     // Whether an element was remembered on the JS side when this Dialog opened, so the close sequence
     // only tries to hand the focus back when there is something to hand it back to.
     private bool _focusSaved;
@@ -87,6 +92,19 @@ public partial class BitDialog : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the dialog component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple dialog components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitDialogParams.ParamName)]
+    public BitDialogParams? CascadingParameters { get; set; }
 
 
 
@@ -192,7 +210,7 @@ public partial class BitDialog : BitComponentBase
     /// The default value is <strong>true</strong>.
     /// </summary>
     /// <remarks>
-    /// A blocking Dialog (<see cref="IsBlocking"/>) ignores the Escape key whatever this is set to, since
+    /// A blocking Dialog (<see cref="Blocking"/>) ignores the Escape key whatever this is set to, since
     /// the point of a blocking Dialog is that it can only be answered with one of its buttons.
     /// <br />
     /// The key is listened for on the Dialog itself rather than on the document, which is what keeps a
@@ -200,8 +218,28 @@ public partial class BitDialog : BitComponentBase
     /// focus is inside the Dialog, which it is by default and stays for as long as
     /// <see cref="TrapFocus"/> holds it there. A Dialog that has turned <see cref="AutoFocus"/> off and
     /// placed the focus somewhere else on the page is a Dialog the key no longer reaches.
+    /// <br />
+    /// An Escape that something inside the Dialog answers first is left to it: a combo box, a search box or a
+    /// date picker closing the list it has open, and an IME composition being cancelled, close that and
+    /// nothing else - neither dismissing the Dialog nor counting as a refused dismissal. So does a control that
+    /// prevents the default of the key, natively or with <c>@onkeydown:preventDefault</c>, which is how content
+    /// of your own claims the Escape it acts on.
     /// </remarks>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// Dismisses the Dialog when its overlay is clicked.
+    /// <br />
+    /// The default value is <strong>true</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The counterpart of <see cref="CloseOnEscape"/>: turn it off for a Dialog holding work a stray click
+    /// outside would throw away, while the Escape key - a deliberate gesture - still closes it. A click it
+    /// refuses is answered the way every refused dismissal is (a shake and <see cref="OnDismissPrevented"/>).
+    /// <see cref="Blocking"/> refuses the click whatever this is set to, and a modeless Dialog has no
+    /// overlay to click.
+    /// </remarks>
+    [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
 
     /// <summary>
     /// The general color of the Dialog, which its Ok and Cancel buttons are painted in.
@@ -280,7 +318,7 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public string? Height { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
+    /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
     /// </summary>
     [Parameter] public bool? IsAlert { get; set; }
 
@@ -291,7 +329,7 @@ public partial class BitDialog : BitComponentBase
     /// A blocking Dialog also ignores the Escape key, so the only ways out of it are its own buttons and
     /// the parent closing it.
     /// </remarks>
-    [Parameter] public bool IsBlocking { get; set; }
+    [Parameter] public bool Blocking { get; set; }
 
     /// <summary>
     /// Whether the Cancel button of the Dialog can be pressed.
@@ -316,14 +354,14 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public bool IsDraggable { get; set; }
 
     /// <summary>
-    /// Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). if true: IsBlocking is ignored, there will be no overlay.
+    /// Whether the Dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the Dialog). if true: Blocking is ignored, there will be no overlay.
     /// </summary>
     /// <remarks>
     /// A modeless Dialog leaves the page behind it clickable and does not trap the focus, so it is
     /// announced with <c>aria-modal="false"</c>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public bool IsModeless { get; set; }
+    public bool Modeless { get; set; }
 
     /// <summary>
     /// Whether the Ok button of the Dialog can be pressed.
@@ -462,7 +500,8 @@ public partial class BitDialog : BitComponentBase
 
     /// <summary>
     /// A callback function for when a dismissal was refused: the Escape key on a Dialog that does not take
-    /// it, a click on the overlay of a blocking one, or a closing <see cref="OnDismissing"/> turned down.
+    /// it, a click on the overlay of one that does not take that (<see cref="CloseOnOverlayClick"/>,
+    /// <see cref="Blocking"/>), or a closing <see cref="OnDismissing"/> turned down.
     /// </summary>
     /// <remarks>
     /// The Dialog answers a refused dismissal on its own by shaking, so the gesture is not simply swallowed.
@@ -725,7 +764,7 @@ public partial class BitDialog : BitComponentBase
         });
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-dlg-abs" : string.Empty);
-        ClassBuilder.Register(() => IsModeless ? "bit-dlg-mls" : string.Empty);
+        ClassBuilder.Register(() => Modeless ? "bit-dlg-mls" : string.Empty);
         ClassBuilder.Register(() => (FullWidth || FullSize) ? "bit-dlg-fwi" : string.Empty);
         ClassBuilder.Register(() => (FullHeight || FullSize) ? "bit-dlg-fhe" : string.Empty);
     }
@@ -747,6 +786,8 @@ public partial class BitDialog : BitComponentBase
         _subtitleId = $"BitDialog-{UniqueId}-subtitle";
         _messageId = $"BitDialog-{UniqueId}-message";
 
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         // The uncontrolled starting state, which only applies while the consumer is not driving IsOpen
         // itself. It is read once here rather than every time the parameters are set, so that closing an
         // uncontrolled Dialog is not undone by the next render.
@@ -756,6 +797,16 @@ public partial class BitDialog : BitComponentBase
         }
 
         return base.OnInitializedAsync();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDialogParams))]
+    protected override void OnParametersSet()
+    {
+        // The cascade fills in what the dialog left unset before anything reads it: the classes, the size and
+        // the behavior of the showing are all taken off the values it hands over.
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -823,6 +874,9 @@ public partial class BitDialog : BitComponentBase
         await SyncDragHandlers();
         if (Overtaken()) return;
 
+        await SetupEscape();
+        if (Overtaken()) return;
+
         // Reset before ToggleScroll: when AutoToggleScroll is false it returns early without
         // recalculating, which would otherwise leave a stale top-offset from a previous open.
         _offsetTop = 0;
@@ -864,6 +918,9 @@ public partial class BitDialog : BitComponentBase
         _dismissPreventedGeneration++;
 
         await DisposeFocusTrap();
+        if (Overtaken()) return;
+
+        await DisposeEscape();
         if (Overtaken()) return;
 
         await RemoveDragHandlers();
@@ -998,6 +1055,29 @@ public partial class BitDialog : BitComponentBase
         await InvokeJs(_js.BitUtilsDisposeFocusTrap(_containerId));
     }
 
+    // The Escape key is answered on the JS side, which is the only side that can tell - as the key is pressed -
+    // whether it belongs to the Dialog or to something inside it, and which then calls OnEscape only for a key
+    // that is the Dialog's. Deciding there costs no round trip of its own: the Dialog is not asked afterwards
+    // whether to act on a key it has already been sent. It listens on the root, so the key is answered from
+    // anywhere in the Dialog - the root included, which is where a press on the overlay lands the focus.
+    private async Task SetupEscape()
+    {
+        if (_escapeRegistered) return;
+
+        _escapeRegistered = true;
+
+        await InvokeJs(_js.BitUtilsSetupSurfaceEscape(_Id, _dotnetObj));
+    }
+
+    private async Task DisposeEscape()
+    {
+        if (_escapeRegistered is false) return;
+
+        _escapeRegistered = false;
+
+        await InvokeJs(_js.BitUtilsDisposeSurfaceEscape(_Id));
+    }
+
     private async Task SaveFocus()
     {
         await InvokeJs(_js.BitUtilsStoreFocus(_containerId));
@@ -1014,7 +1094,7 @@ public partial class BitDialog : BitComponentBase
 
     // A modal Dialog traps by default and a modeless one does not, since the page behind a modeless
     // Dialog is meant to stay usable - by the keyboard as much as by the pointer.
-    private bool ShouldTrapFocus => TrapFocus ?? (IsModeless is false);
+    private bool ShouldTrapFocus => TrapFocus ?? (Modeless is false);
 
     private async Task InvokeJs(ValueTask task)
     {
@@ -1163,7 +1243,7 @@ public partial class BitDialog : BitComponentBase
         // is the same story: an OnDismissing that is still deciding has not finished either.
         if (_isLoading || _isDismissing) return;
 
-        if (IsBlocking)
+        if (Blocking || CloseOnOverlayClick is false)
         {
             await PreventDismiss(BitDialogDismissReason.OverlayClick);
             return;
@@ -1172,21 +1252,30 @@ public partial class BitDialog : BitComponentBase
         await DismissDialog(e, BitDialogDismissReason.OverlayClick);
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    [JSInvokable("OnEscape")]
+    public async Task _OnEscape()
     {
-        if (e.Key is not "Escape") return;
-
+        // Escape pressed inside the Dialog, which the JS side only reports once it has made sure the key is the
+        // Dialog's own rather than something's inside it: a combo box or a search box closing the popup it has
+        // open, a date picker closing its calendar, a control that took the key, an IME composition being
+        // cancelled, a Dialog opened from inside this one (see Utils.setupSurfaceEscape). Closing the Dialog on
+        // any of those would throw away the very field the user was still working in.
+        // Nothing is awaited before these are read, so an Ok callback that started after the key was pressed
+        // holds the Dialog shut as surely as one that was already running.
         if (IsEnabled is false || IsOpen is false || _isLoading || _isDismissing) return;
 
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
-        if (CloseOnEscape is false || IsBlocking)
+        if (CloseOnEscape is false || Blocking)
         {
             await PreventDismiss(BitDialogDismissReason.Escape);
             return;
         }
 
         await DismissDialog(new MouseEventArgs(), BitDialogDismissReason.Escape);
+
+        // Called from the JS side rather than as an event handler of the markup, so nothing re-renders it on its own.
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
@@ -1275,9 +1364,9 @@ public partial class BitDialog : BitComponentBase
         _ => null
     };
 
-    private string GetRole() => (IsAlert ?? (IsBlocking && IsModeless is false)) ? "alertdialog" : "dialog";
+    private string GetRole() => (IsAlert ?? (Blocking && Modeless is false)) ? "alertdialog" : "dialog";
 
-    private string GetAriaModal() => (IsModeless is false).ToString().ToLowerInvariant();
+    private string GetAriaModal() => (Modeless is false).ToString().ToLowerInvariant();
 
     private string? GetLabelledBy()
     {
@@ -1348,12 +1437,15 @@ public partial class BitDialog : BitComponentBase
     // presets each keep the width of their own dialog (Fluent 2: 600px, Material: 560px, Cupertino: 270px).
     // It is capped at the area the Dialog is positioned in as well, so it can never be wider than the screen.
     //
+    // The public --bit-Dialog-max-width moves that ceiling for every Dialog it reaches - set on :root, on an
+    // ancestor or on the Style of one - while leaving the ones given a size of their own alone.
+    //
     // It is emitted here rather than declared in the stylesheet so that it applies only where nothing else
     // has already decided how wide the Dialog is: a Dialog given a width of its own would otherwise be
     // squeezed back under this, and a full-width one is asking for the whole of the area by name.
     private string? DefaultMaxWidth => (Width.HasValue() || FullWidth || FullSize)
                                         ? null
-                                        : $"--bit-dlg-mxw:min(100%,var({BitCss.Var.Size.DialogMaxWidth}));";
+                                        : $"--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var({BitCss.Var.Size.DialogMaxWidth})));";
 
     // An attribute selector rather than an id one, since an id is only a valid CSS identifier by accident:
     // a consumer-supplied Id can hold characters (a leading digit, a dot, a colon) that would make "#id"
@@ -1383,6 +1475,8 @@ public partial class BitDialog : BitComponentBase
 
         try
         {
+            await DisposeEscape();
+
             if (_internalIsOpen)
             {
                 await DisposeFocusTrap();
@@ -1406,6 +1500,8 @@ public partial class BitDialog : BitComponentBase
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }

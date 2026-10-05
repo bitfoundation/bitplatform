@@ -1,8 +1,32 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every text and
+// one set on the Style of an instance - or of any element around a group of them - re-skins those alone. A parameter
+// always wins over its variable: Color and Foreground over the color, Typography="Inherit" and Monospace over the
+// families.
+//   --bit-Text-color                     text color when no Color or Foreground is set   (default: the color around it)
+//   --bit-Text-font-family               font family of every variant but Inherit        (default: $tg-font-family)
+//   --bit-Text-heading-font-family       font family of the H1 to H6 variants            (default: --bit-Text-font-family)
+//   --bit-Text-monospace-font-family     font family of a Monospace text                 (default: $tg-font-family-mono)
+//   --bit-Text-gutter                    bottom margin of a Gutter text                  (default: $tg-gutter-size)
+//   --bit-Text-decoration-color          color of the Underline and Strikethrough lines  (default: the text color)
+//   --bit-Text-decoration-thickness      thickness of those lines                        (default: auto, from the font)
+//   --bit-Text-underline-offset          gap between the baseline and the underline      (default: auto, from the font)
+//   --bit-Text-disabled-opacity          opacity of a text whose IsEnabled is false      (default: $opa-dis)
+
 .bit-txt {
-    color: inherit;
-    font-family: $tg-font-family;
+    // In the color property currentcolor is the color inherited from the parent, so this is the "inherit" it always
+    // was until a variable says otherwise.
+    color: var(--bit-Text-color, currentcolor);
+    font-family: var(--bit-Text-font-family, #{$tg-font-family});
+
+    // A run of text only takes the focus where a page made it focusable, and one the keyboard can tab to is drawn
+    // with the ring every other control uses. A tabindex of -1 is a text focused only by script - the heading
+    // FocusOnNavigate moves the focus to after a navigation, a message a form's validation points at - which gets
+    // no ring of its own, so the outline the app already resets on those elements stays its decision.
+    &:focus-visible:not([tabindex="-1"]) {
+        @include focus-ring;
+    }
 }
 
 .bit-txt-h1 {
@@ -51,6 +75,18 @@
     font-weight: $tg-h6-font-weight;
     line-height: $tg-h6-line-height;
     letter-spacing: $tg-h6-letter-spacing;
+}
+
+// The heading variants can be set in a family of their own - a display face over a text face is the commonest pairing
+// a brand asks for - and otherwise keep the one every other variant is set in. The variant decides it, not the tag:
+// an h2 drawn as Body1 reads like body copy, and a span drawn as H1 like a heading.
+.bit-txt-h1,
+.bit-txt-h2,
+.bit-txt-h3,
+.bit-txt-h4,
+.bit-txt-h5,
+.bit-txt-h6 {
+    font-family: var(--bit-Text-heading-font-family, var(--bit-Text-font-family, #{$tg-font-family}));
 }
 
 .bit-txt-subtitle1 {
@@ -221,8 +257,15 @@
     font-style: italic;
 }
 
+.bit-txt-und,
+.bit-txt-stk {
+    text-decoration-color: var(--bit-Text-decoration-color, currentcolor);
+    text-decoration-thickness: var(--bit-Text-decoration-thickness, auto);
+}
+
 .bit-txt-und {
     text-decoration-line: underline;
+    text-underline-offset: var(--bit-Text-underline-offset, auto);
 }
 
 .bit-txt-stk {
@@ -246,7 +289,7 @@
 // is deliberately left where the variant put it, since a bare "monospace" keyword would take the browser's own
 // monospace default size with it and come out visibly smaller than the text around it.
 .bit-txt-mno {
-    font-family: $tg-font-family-mono;
+    font-family: var(--bit-Text-monospace-font-family, #{$tg-font-family-mono});
 }
 
 .bit-txt-nsl {
@@ -316,7 +359,7 @@
 }
 
 .bit-txt-gutter {
-    margin-bottom: $tg-gutter-size;
+    margin-bottom: var(--bit-Text-gutter, #{$tg-gutter-size});
 }
 
 
@@ -369,8 +412,11 @@
 
 // Out of the page but still in the accessibility tree: a zero-sized box would be dropped from it by some screen
 // readers, so the text keeps a pixel of its own and is clipped away from it. Declared last so that it wins over
-// the display of the block and of the clamp above.
-.bit-txt-vhd {
+// the display of the block and of the clamp above. It comes back into view while the keyboard focus is on it or on
+// anything inside it, so that a skip link is never focused while drawn nowhere (WCAG 2.4.7). A tabindex of -1 is
+// focus moved there by script - FocusOnNavigate landing on a visually hidden page title - and keeps it hidden. The
+// condition sits in :where so the rule weighs no more than the one class a page overrides it with.
+.bit-txt-vhd:where(:not(:focus-visible:not([tabindex="-1"]), :has(:focus-visible:not([tabindex="-1"])))) {
     padding: 0;
     width: 1px;
     height: 1px;
@@ -385,5 +431,12 @@
 // A disabled run of text is dimmed rather than recolored, so that it keeps whichever of the color roles it was
 // given and only reads as unavailable. It is not interactive to begin with, so there is nothing else to turn off.
 .bit-txt.bit-dis {
-    opacity: $opa-dis;
+    opacity: var(--bit-Text-disabled-opacity, #{$opa-dis});
+
+    // A forced-colors mode repaints every color role, and a gradient, in the ordinary text color, which takes away
+    // what the dimming was saying, so a disabled text is painted in GrayText, the system color for it, the way a
+    // disabled label or link is. The gradient classes give the glyph fill back to currentcolor, so this reaches them.
+    @media (forced-colors: active) {
+        color: GrayText;
+    }
 }

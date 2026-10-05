@@ -1,0 +1,26 @@
+@using Bit.BlazorUI
+
+@* Covers BitSnackBarParams: the cascaded values fill in the parameters a snack bar did not set itself and never
+   overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitSnackBarParams[]
+                         {
+                             new()
+                             {
+                                 Position = BitPosition.TopCenter,
+                                 Size = BitSize.Large,
+                                 Variant = BitVariant.Outline,
+                                 ShowIcon = true,
+                                 AutoDismiss = true,
+                                 AutoDismissTime = TimeSpan.FromSeconds(30),
+                                 Offset = "2rem",
+                                 MaxWidth = "20rem",
+                                 TransitionDuration = 0,
+                                 DismissAriaLabel = "Dismiss",
+                                 Classes = new() { Root = "cascaded-root", Container = "cascaded-item" },
+                                 Styles = new() { Root = "margin: 1px;" },
+                             }
+                         })">
+    <BitSnackBar />
+    <BitSnackBar Position="BitPosition.BottomStart" Size="BitSize.Small" DismissAriaLabel="Close it" />
+</BitParams>

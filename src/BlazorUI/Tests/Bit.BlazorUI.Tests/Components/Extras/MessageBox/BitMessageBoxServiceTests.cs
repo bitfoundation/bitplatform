@@ -460,4 +460,98 @@ public class BitMessageBoxServiceTests : BunitTestContext
         Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
         CollectionAssert.AreEqual(new[] { BitMessageBoxResult.None, BitMessageBoxResult.Ok }, seen);
     }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldShowAQuestionAsAnAlertDialog()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var confirming = MessageBoxService.Confirm("Publish", "Publish these changes?");
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.IsTrue(await confirming);
+
+        var asking = MessageBoxService.Show("Save", "Save the changes?", BitMessageBoxButtons.YesNo);
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='alertdialog']").Count));
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.Yes, await asking);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldLeaveAQuestionAPlainDialogWhereTheCallerSaysSo()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var confirming = MessageBoxService.Confirm(new BitMessageBoxParameters
+        {
+            Title = "Publish",
+            Modal = new BitModalParameters { IsAlert = false }
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll("[role='dialog']").Count));
+
+        Assert.AreEqual(0, container.FindAll("[role='alertdialog']").Count);
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.IsTrue(await confirming);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldCloseTheMessageBoxWhenTheShowingIsCancelled()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        using var cts = new System.Threading.CancellationTokenSource();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body" }, cts.Token);
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        cts.Cancel();
+
+        Assert.AreEqual(BitMessageBoxResult.None, await showing);
+
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldAnswerACancelledConfirmationWithARefusal()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        using var cts = new System.Threading.CancellationTokenSource();
+
+        var confirming = MessageBoxService.Confirm(new BitMessageBoxParameters
+        {
+            Title = "Title",
+            // A guard is the user's say over a dismissal; the page taking its question back is not one.
+            Modal = new BitModalParameters { CanClose = () => Task.FromResult(false) }
+        }, cts.Token);
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        cts.Cancel();
+
+        Assert.IsFalse(await confirming);
+
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldNotShowAShowingCancelledBeforehand()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var result = await MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title" }, new System.Threading.CancellationToken(canceled: true));
+
+        Assert.AreEqual(BitMessageBoxResult.None, result);
+        Assert.AreEqual(0, container.FindAll(".bit-msb").Count);
+    }
 }

@@ -1,0 +1,14 @@
+@using Bit.BlazorUI
+
+<BitButtonGroup TItem="BitButtonGroupOption">
+    <BitButtonGroupOption Text="First" Key="a" />
+    @if (ShowMiddle)
+    {
+        <BitButtonGroupOption Text="Middle" Key="b" />
+    }
+    <BitButtonGroupOption Text="Last" Key="c" />
+</BitButtonGroup>
+
+@code {
+    [Parameter] public bool ShowMiddle { get; set; } = true;
+}

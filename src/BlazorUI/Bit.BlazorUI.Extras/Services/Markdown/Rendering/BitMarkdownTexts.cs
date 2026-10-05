@@ -37,7 +37,7 @@ public class BitMarkdownTexts
     /// <summary>The title of a <c>&gt; [!CAUTION]</c> alert.</summary>
     public string AlertCaution { get; set; } = "Caution";
 
-    /// <summary>The accessible name of the footnotes section.</summary>
+    /// <summary>The heading of the footnotes section, read by a screen reader only.</summary>
     public string Footnotes { get; set; } = "Footnotes";
 
     /// <summary>The accessible name of a footnote's back-link, given the footnote's number.</summary>
@@ -49,6 +49,15 @@ public class BitMarkdownTexts
     /// </summary>
     public string FootnoteBackReferenceOccurrence { get; set; } = "Back to reference {0}-{1}";
 
+    /// <summary>
+    /// Read out after the text of a link that opens in a new tab, which a screen reader does not
+    /// otherwise announce. It is not shown, and an empty string leaves it out.
+    /// </summary>
+    public string NewTab { get; set; } = "(opens in a new tab)";
+
+    /// <summary>The accessible name of a code block, which scrolls and so is a tab stop.</summary>
+    public string CodeBlock { get; set; } = "Code block";
+
     /// <summary>The accessible name of the scrollable region a table sits in.</summary>
     public string Table { get; set; } = "Table";
 
@@ -58,7 +67,10 @@ public class BitMarkdownTexts
     /// <summary>The accessible name of a permalink whose heading has no text of its own.</summary>
     public string PermalinkToSection { get; set; } = "Permalink to this section";
 
-    /// <summary>The accessible name of an interactive task-list checkbox, given its number.</summary>
+    /// <summary>
+    /// The accessible name of an interactive task-list checkbox whose item has no text to be named
+    /// after, given its number.
+    /// </summary>
     public string Task { get; set; } = "Task {0}";
 
     /// <summary>Returns the title of the given alert kind.</summary>

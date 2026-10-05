@@ -77,6 +77,16 @@ public partial class _BitChartLocalizationDemo
         }
     };
 
+    private readonly BitChartTexts _persianTexts = new()
+    {
+        RoleDescription = "نمودار",
+        LegendAriaLabel = "راهنمای نمودار",
+        PositionFormat = "{0} از {1}",
+        SeriesPositionFormat = "سری {0} از {1}",
+        DatasetLabelFormat = "مجموعه {0}",
+        Series = "سری"
+    };
+
     private BitChartData Persian() => new()
     {
         Labels = { "بهار", "تابستان", "پاییز", "زمستان" },
@@ -107,8 +117,24 @@ private readonly BitChartOptions _currency = new()
     Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Ticks = new BitChartTickOptions { Format = ""C0"" } } }
 };";
 
-    private readonly string rtlRazorCode = @"<BitChart Dir=""BitDir.Rtl"" Type=""BitChartType.Bar"" Data=""Persian()"" Options=""_rtl"" />";
+    private readonly string rtlRazorCode = @"
+<BitChart Dir=""BitDir.Rtl""
+          Type=""BitChartType.Bar""
+          Data=""Persian()""
+          Options=""_rtl""
+          Texts=""_persianTexts""
+          NavigationHint=""با کلیدهای جهت‌نما میان فصل‌ها و سری‌ها حرکت کنید."" />";
     private readonly string rtlCsharpCode = @"
+private readonly BitChartTexts _persianTexts = new()
+{
+    RoleDescription = ""نمودار"",
+    LegendAriaLabel = ""راهنمای نمودار"",
+    PositionFormat = ""{0} از {1}"",
+    SeriesPositionFormat = ""سری {0} از {1}"",
+    DatasetLabelFormat = ""مجموعه {0}"",
+    Series = ""سری""
+};
+
 private readonly BitChartOptions _rtl = new()
 {
     Plugins = new BitChartPluginOptions

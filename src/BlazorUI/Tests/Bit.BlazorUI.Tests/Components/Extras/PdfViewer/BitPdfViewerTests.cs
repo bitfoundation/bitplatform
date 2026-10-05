@@ -2026,14 +2026,14 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
 
-        var region = component.Find(".bit-pdv-sr");
+        var region = component.Find(".bit-pdv-sr[role='status']");
         Assert.AreEqual("status", region.GetAttribute("role"));
         Assert.AreEqual("polite", region.GetAttribute("aria-live"));
 
         await component.InvokeAsync(() => component.Instance.GoToPage(2));
 
         component.WaitForAssertion(() =>
-            Assert.AreEqual("Page 2 of 3", component.Find(".bit-pdv-sr").TextContent.Trim()));
+            Assert.AreEqual("Page 2 of 3", component.Find(".bit-pdv-sr[role='status']").TextContent.Trim()));
     }
 
     [TestMethod]

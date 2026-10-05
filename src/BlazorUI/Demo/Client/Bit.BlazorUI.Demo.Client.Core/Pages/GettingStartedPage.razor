@@ -220,9 +220,10 @@ dotnet add package Bit.BlazorUI.Legacy</CodeBox>
                 </BitText>
                 <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices();</CodeBox>
 
-                <BitText Element="p">It registers five services:</BitText>
+                <BitText Element="p">It registers six services:</BitText>
                 <ul>
                     <li><code>BitModalService</code> - opens a modal from C# instead of from markup.</li>
+                    <li><code>BitSnackBarService</code> - shows a notification from any component, through the layout's <code>&lt;BitSnackBar ServiceHost /&gt;</code>.</li>
                     <li><code>BitThemeManager</code> - switches preset, toggles dark mode, overrides tokens at runtime.</li>
                     <li><code>BitThemeNotifications</code> - raises <code>ThemeChanged</code> when any of that happens.</li>
                     <li><code>BitExternalThemeLoader</code> - pulls a preset stylesheet in on demand.</li>

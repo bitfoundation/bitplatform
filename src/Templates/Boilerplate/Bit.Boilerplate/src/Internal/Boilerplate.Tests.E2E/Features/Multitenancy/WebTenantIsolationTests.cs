@@ -110,14 +110,16 @@ public partial class WebTenantIsolationTests : AppTestBase
 
         var panel = await AiChatPanel.Open(page);
         var answer = await panel.Ask(question);
+        var shown = await panel.ReadProductCards();
 
         await AiAnswerJudge.AssertAnswer(question,
             $"""
-            The assistant offers the car "{productName}" (a BYD) from its catalogue. It must not offer or recommend any
-            Mercedes-Benz, BMW, Ford, Nissan or Tesla car - those belong to another store, and naming one means it
-            searched the wrong catalogue. Saying it has no such car fails as well.
+            The assistant offers the car "{productName}" (a BYD) from its catalogue, in the answer or on the cards listed
+            after it, which the answer talks about. It must not offer or recommend any Mercedes-Benz, BMW, Ford, Nissan or
+            Tesla car - those belong to another store, and naming one means it searched the wrong catalogue. Saying it has
+            no such car fails as well.
             """,
-            answer, TestContext.CancellationToken);
+            $"{answer}{Environment.NewLine}{Environment.NewLine}Cards shown: {string.Join("; ", shown)}", TestContext.CancellationToken);
     }
 
     /// <summary>

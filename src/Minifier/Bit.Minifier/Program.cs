@@ -55,13 +55,7 @@ try
     var started = DateTime.UtcNow;
     var minifier = new AssemblyMinifier(options);
     var results = minifier.Run();
-    foreach (var result in results)
-    {
-        Console.WriteLine($"Bit.Minifier: {result.Name} {result.OriginalSize:N0} -> {result.MinifiedSize:N0} bytes ({result.RemovedAttributes:N0} attributes removed, {result.RenamedMembers:N0} names shortened)");
-    }
-    var before = results.Sum(r => r.OriginalSize);
-    var after = results.Sum(r => r.MinifiedSize);
-    Console.WriteLine($"Bit.Minifier: {results.Count} assemblies, {before:N0} -> {after:N0} bytes (-{before - after:N0}) in {(DateTime.UtcNow - started).TotalSeconds:N1}s");
+    if (results.Count > 0) Report.Write(results, DateTime.UtcNow - started, options.Aggressive);
     // an assembly minified around rather than minified is worth a warning of its own: the publish is fine, and a
     // release that quietly stopped shrinking what it used to shrink is what nobody would otherwise notice
     if (minifier.Skipped.Count > 0)

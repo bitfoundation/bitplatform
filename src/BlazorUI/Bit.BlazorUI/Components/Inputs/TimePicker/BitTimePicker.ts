@@ -7,13 +7,13 @@ namespace BitBlazorUI {
         private static readonly _buttonKeys =
             ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End'];
 
-        // What the hour, minute and second inputs take on top of what a number input does by itself: the four
-        // keys the picker steps and jumps the value with, plus the space bar, which types nothing into a
-        // number field and would only scroll the page behind the callout. The arrows are left out - a number
-        // input steps itself with them, which is exactly what the picker wants them to do.
-        private static readonly _timeInputKeys = ['PageUp', 'PageDown', 'Home', 'End', ' '];
+        // The keys the hour, minute and second inputs are stepped and jumped with, which the picker moves the
+        // value with itself, plus the space bar, which types nothing into a number field and would only scroll
+        // the page behind the callout. The arrows are among them: a number input would step itself with them,
+        // stopping at its min and max rather than wrapping the way the spin buttons do.
+        private static readonly _timeInputKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
 
-        public static setup(callout: HTMLElement, input: HTMLInputElement | null, trapFocus: boolean): string {
+        public static setup(callout: HTMLElement, input: HTMLInputElement | null, trapFocus: boolean, dotnetObj: DotNetObject): string {
             const bitController = new BitController();
 
             // Blazor cannot preventDefault per key, so the keys the picker acts on are stopped here instead -
@@ -48,6 +48,36 @@ namespace BitBlazorUI {
 
                     event.preventDefault();
                 }
+            }, { signal: bitController.controller.signal });
+
+            // Shift+wheel over a focused time input is a value change on the .NET side, so the horizontal scroll
+            // the browser would do with it is cancelled here - Blazor's own wheel handler cannot, being
+            // registered passively. Whether the input takes the wheel at all is read off the element itself,
+            // which .NET keeps up to date as part of its render; the focus requirement is the same one the .NET
+            // handler applies.
+            callout.addEventListener('wheel', e => {
+                if ((e as WheelEvent).shiftKey === false) return;
+
+                const target = e.target as HTMLElement | null;
+                if (target === null || target.classList.contains('bit-tpc-tin') === false) return;
+                if (target.dataset.bitWheel !== '1') return;
+                if (document.activeElement !== target) return;
+
+                e.preventDefault();
+            }, { passive: false, signal: bitController.controller.signal });
+
+            // A whole time pasted into one of the time inputs - "14:30", "2:30 PM" - is a time rather than a
+            // part of one, which a number input would only refuse. It is handed to .NET to be read the way a
+            // typed time is; a bare number is left to the input, which takes it as the part it is.
+            callout.addEventListener('paste', e => {
+                const target = e.target as HTMLElement | null;
+                if (target === null || target.classList.contains('bit-tpc-tin') === false) return;
+
+                const text = (e as ClipboardEvent).clipboardData?.getData('text')?.trim();
+                if (!text || /^\d+$/.test(text)) return;
+
+                e.preventDefault();
+                dotnetObj.invokeMethodAsync('OnPaste', text);
             }, { signal: bitController.controller.signal });
 
             // The field works the callout with the very keys the browser scrolls the page with, so their

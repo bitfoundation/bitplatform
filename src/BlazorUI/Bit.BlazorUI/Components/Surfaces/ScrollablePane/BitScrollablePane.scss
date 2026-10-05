@@ -1,16 +1,34 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root, on
+// any ancestor, or on the Style of a single pane. They are resolved in one place - the root rule below -
+// into the private variables every other rule reads.
+//
+//   --bit-ScrollablePane-scrollbar-size                thickness of the Modern scrollbar         (default: spacing(0.75), 6px)
+//   --bit-ScrollablePane-scrollbar-thumb-color         Modern thumb at rest                      (default: $clr-fg-ter)
+//   --bit-ScrollablePane-scrollbar-thumb-hover-color   Modern thumb under the pointer            (default: $clr-fg-ter-hover)
+//   --bit-ScrollablePane-scrollbar-thumb-active-color  Modern thumb while it is dragged          (default: $clr-fg-ter-active)
+//   --bit-ScrollablePane-scrollbar-thumb-radius        corner of the Modern thumb                (default: $shp-radius-full)
+//   --bit-ScrollablePane-scrollbar-track-color         Modern track                              (default: transparent)
+//   --bit-ScrollablePane-fade-size                     how far the Fade reaches into the pane    (default: spacing(4), 2rem; FadeSize wins)
+//   --bit-ScrollablePane-focus-color                   focus ring of a focusable pane            (default: the global --bit-shd-focus-ring)
+//
+// Firefox has no scrollbar pseudo-elements, so there the Modern bar is the standard thin one: it takes the
+// thumb and track colors, but not the size, the radius or the hover and active colors.
+
 .bit-scp {
     overflow: auto;
 
-    // The thickness and the three colors of the scrollbar the Modern style draws, and how far the Fade
-    // reaches into the pane. They are declared here rather than only where they are read, so a pane can
-    // retune any of them from its own Style attribute without having to know which class implements it.
-    --bit-scp-sbs: #{spacing(0.75)};
-    --bit-scp-sbc: #{$clr-fg-ter};
-    --bit-scp-sbch: #{$clr-fg-ter-hover};
-    --bit-scp-sbca: #{$clr-fg-ter-active};
-    --bit-scp-fsz: #{spacing(4)};
+    // The private names were the only customization points before the public ones existed and are still
+    // read everywhere below, so a pane that sets one of them on its own Style keeps working; FadeSize
+    // writes --bit-scp-fsz inline, which is what lets it win over an inherited --bit-ScrollablePane-fade-size.
+    --bit-scp-sbs: var(--bit-ScrollablePane-scrollbar-size, #{spacing(0.75)});
+    --bit-scp-sbc: var(--bit-ScrollablePane-scrollbar-thumb-color, #{$clr-fg-ter});
+    --bit-scp-sbch: var(--bit-ScrollablePane-scrollbar-thumb-hover-color, #{$clr-fg-ter-hover});
+    --bit-scp-sbca: var(--bit-ScrollablePane-scrollbar-thumb-active-color, #{$clr-fg-ter-active});
+    --bit-scp-sbr: var(--bit-ScrollablePane-scrollbar-thumb-radius, #{$shp-radius-full});
+    --bit-scp-sbt: var(--bit-ScrollablePane-scrollbar-track-color, transparent);
+    --bit-scp-fsz: var(--bit-ScrollablePane-fade-size, #{spacing(4)});
 
     // A disabled pane is not interactive, which for a box whose whole interaction is scrolling means the
     // wheel, the drag and the content inside it alike. The keyboard half of it is the tabindex, which the
@@ -23,8 +41,23 @@
     // A pane is only ever focused because Focusable (or a TabIndex) put it in the tab order, and a tab stop
     // with nothing to show for itself is one a keyboard reader loses. focus-visible rather than focus, so a
     // pane clicked with the pointer is not ringed.
+    //
+    // The default ring is the library's own - the global --bit-shd-focus-ring, so an app that re-shapes that
+    // one re-shapes this one too. Only a pane given a --bit-ScrollablePane-focus-color composes a ring of its
+    // own in that color, which has to be written out here: the composite substitutes its var()s where it is
+    // declared, on :root, and nothing set further down could reach it. Which of the two applies is decided
+    // without a fallback on purpose: a custom property that reads an unset variable with none is invalid,
+    // and an invalid --bit-scp-fcr is what hands box-shadow over to the global ring.
     &:focus-visible {
         @include focus-ring;
+
+        --bit-scp-fcr:
+            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) var(--bit-ScrollablePane-focus-color);
+
+        box-shadow: var(--bit-scp-fcr, var(--bit-shd-focus-ring,
+            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus}));
     }
 }
 
@@ -108,7 +141,7 @@
     }
 
     &::-webkit-scrollbar-track {
-        background: transparent;
+        background: var(--bit-scp-sbt);
     }
 
     // Where the two scrollbars meet. Left unpainted it is a square of the UA's own track color sitting in
@@ -118,7 +151,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        border-radius: $shp-radius-full;
+        border-radius: var(--bit-scp-sbr);
         background-color: var(--bit-scp-sbc);
 
         &:hover {
@@ -136,9 +169,10 @@
 }
 
 // The overlay behavior of a modern operating system, for the scrollbar the theme draws: the thumb is
-// only painted while the pointer is over the pane, while something inside it holds the focus, or while
-// the pane itself does - so it is never hidden from a reader who is scrolling it with the keyboard.
-// Only the color goes away: the bar keeps its room, so nothing in the pane moves as it comes and goes.
+// only painted while the pointer is over the pane, while the keyboard has put the focus inside it or on the
+// pane itself, and for a moment after each scroll - so it is never hidden from a reader who is
+// scrolling it with the keyboard, a touch or a flick. Only the color goes away: the bar keeps its room,
+// so nothing in the pane moves as it comes and goes.
 //
 // Which of those the pane is in is written onto the element by the browser side rather than matched here
 // with :hover and :focus-within, because Chromium does not repaint a ::-webkit-scrollbar pseudo-element
@@ -151,6 +185,10 @@
 // A drag is left out of it: the pointer leaves the pane the moment a drag of it captures the pointer,
 // and a bar that vanished under the hand dragging the pane is the one place it must not go.
 .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
     &::-webkit-scrollbar-thumb {
         background-color: transparent;
 
@@ -178,11 +216,41 @@
 @supports not selector(::-webkit-scrollbar-thumb) {
     .bit-scp-mod {
         scrollbar-width: thin;
-        scrollbar-color: var(--bit-scp-sbc) transparent;
+        scrollbar-color: var(--bit-scp-sbc) var(--bit-scp-sbt);
     }
 
     .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
         scrollbar-color: transparent transparent;
+    }
+}
+
+// Forced colors mode: a thumb painted in the theme's colors could vanish into the track, or be hidden by
+// AutoHideScrollbar from a reader who relies on it, so the Modern bar is drawn in the reader's own system
+// colors and never hidden. It is an override that comes after the rendering rather than a guard around it,
+// because a guard has to be negated - `not all and (forced-colors: active)` - and an engine that does not
+// know the feature evaluates the whole of that query to false, which would take the Modern bar away from
+// every browser too old to have forced colors at all. A matched ::-webkit-scrollbar rule cannot be taken
+// back to the system bar, so the parts are repainted, with the forcing lifted off them alone. The second
+// selector matches the auto hiding rule's specificity, so the idle state paints the same bar.
+@media (forced-colors: active) {
+    .bit-scp-mod,
+    .bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {
+        scrollbar-color: auto;
+
+        &::-webkit-scrollbar-track {
+            forced-color-adjust: none;
+            background: Canvas;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            forced-color-adjust: none;
+            background-color: CanvasText;
+
+            &:hover,
+            &:active {
+                background-color: Highlight;
+            }
+        }
     }
 }
 
@@ -224,6 +292,42 @@
 
         &[data-bit-scp-fr] {
             --bit-scp-fie: var(--bit-scp-fsz);
+        }
+
+        // A mask clips whatever is painted outside the border box and fades whatever sits in a faded band,
+        // and the focus ring is both - so a focusable pane that fades would take the focus with nothing on
+        // the screen to show for it. The fade is set aside while the keyboard is on the pane itself.
+        &:focus-visible {
+            mask-image: none;
+        }
+    }
+
+    // A faded band is text drawn at a fraction of its contrast, which a reader who asked the system for
+    // more contrast - or for colors of their own - asked not to be shown. The edge still says there is more
+    // through the scrollbar, which forced colors mode keeps on the screen.
+    @media (forced-colors: active), (prefers-contrast: more) {
+        .bit-scp-fad {
+            mask-image: none;
+        }
+    }
+}
+
+// Paper does not scroll. A faded band is only content printed too faintly to read, so the fade is never
+// printed; and ExpandOnPrint prints the whole of the content rather than the part the pane was showing. The
+// sizes and the overflow are written into the style attribute, so lifting them takes !important. The block
+// sits at the end of the file because the mask it drops is declared at the same specificity above.
+@media print {
+    .bit-scp-fad {
+        mask-image: none;
+    }
+
+    .bit-scp-eop {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+
+        &.bit-scp-hor {
+            white-space: normal;
         }
     }
 }

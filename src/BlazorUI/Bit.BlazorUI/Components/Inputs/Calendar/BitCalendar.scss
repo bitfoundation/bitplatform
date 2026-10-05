@@ -1,6 +1,65 @@
 @import "../../../Styles/functions.scss";
+@import "../../../Styles/color-role-maps.scss";
+
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// calendar and one set on the Style of an instance re-skins that one alone:
+//   --bit-Calendar-background                background behind the whole calendar          (default: transparent)
+//   --bit-Calendar-radius                    corner radius of the calendar and of the
+//                                            overlay of the event dialog                  (default: $shp-radius-control)
+//   --bit-Calendar-padding                   padding of each picker pane                   (default: spacing(1.5))
+//   --bit-Calendar-color                     text color of the cells and the headers       (default: $clr-fg-pri)
+//   --bit-Calendar-divider-color             color of the rule between the panes, beside
+//                                            the week numbers and between event items     (default: $clr-brd-sec)
+//   --bit-Calendar-focus-color               color of the keyboard focus ring              (default: the role's focus color)
+//   --bit-Calendar-disabled-color            text color of a disabled cell                 (default: $clr-fg-dis)
+//   --bit-Calendar-hover-background          background of a cell on hover                 (default: $clr-bg-pri-hover)
+//   --bit-Calendar-active-background         background of a cell while pressed            (default: $clr-bg-pri-active)
+//   --bit-Calendar-day-size                  width and height of a day cell, which the
+//                                            week numbers, the weekday headers and the
+//                                            navigation buttons line up with              (default: per Size)
+//   --bit-Calendar-day-font-size             text size of the day cells and of the
+//                                            headers that line up with them               (default: per Size)
+//   --bit-Calendar-day-radius                corner radius of a day cell                   (default: $shp-radius-control)
+//   --bit-Calendar-outside-day-color         text color of a day of an adjacent month      (default: $clr-fg-sec)
+//   --bit-Calendar-selected-background       background of the selected day                (default: $clr-bg-sec)
+//   --bit-Calendar-selected-color            text color of the selected day                (default: the cell color)
+//   --bit-Calendar-selected-border-color     color of the ring drawn around the selected
+//                                            day                                          (default: $clr-brd-pri)
+//   --bit-Calendar-today-background          background of today, and of the highlighted
+//                                            current month                                (default: the Color role's main color)
+//   --bit-Calendar-today-color               text color of today                           (default: the Color role's on-color)
+//   --bit-Calendar-today-hover-background    background of today on hover, and of the
+//                                            highlighted current month and the selected
+//                                            AM/PM button                                  (default: the Color role's hover color)
+//   --bit-Calendar-today-active-background   background of today while pressed, and of
+//                                            the selected AM/PM button                     (default: the Color role's active color)
+//   --bit-Calendar-today-radius              corner radius of today                        (default: $shp-radius-full)
+//   --bit-Calendar-highlighted-background    background of a HighlightedDates day          (default: $clr-bg-ter)
+//   --bit-Calendar-week-number-color         text color of a week number                   (default: $clr-fg-sec)
+//   --bit-Calendar-week-number-background    background of a week number                   (default: $clr-bg-sec)
+//   --bit-Calendar-event-color               color of an event indicator dot the event
+//                                            itself named no color for                    (default: the Color role's main color)
+//   --bit-Calendar-event-size                diameter of an event indicator dot            (default: spacing(0.5))
+//   --bit-Calendar-event-gap                 space between the dots of a day carrying
+//                                            more than one event                          (default: spacing(0.25))
+
+// The default size, declared as a mixin so the root can fall back to it without a size class. The two values
+// an author can override are named apart from the ones they feed (see the indirection on .bit-cal below), so
+// a size class and a CSS variable never fight over the same property.
+@mixin cal-size-medium {
+    --bit-cal-cell-size-def: #{spacing(3.5)};
+    --bit-cal-cell-fs-def: #{$tg-fs-sm};
+    --bit-cal-mcell-w: #{spacing(6)};
+    --bit-cal-mcell-h: #{spacing(5.17)};
+    --bit-cal-tcell-size: #{spacing(3.75)};
+    --bit-cal-pane-min-w: #{spacing(26)};
+}
 
 .bit-cal {
+    // The public overrides resolve here, once, so every part that lines up with a day - the week numbers, the
+    // empty cells, the weekday headers, the navigation buttons - stays in step with the day cells.
+    --bit-cal-cell-size: var(--bit-Calendar-day-size, var(--bit-cal-cell-size-def));
+    --bit-cal-cell-fs: var(--bit-Calendar-day-font-size, var(--bit-cal-cell-fs-def));
     margin: 0;
     padding: 0;
     box-shadow: none;
@@ -10,6 +69,12 @@
     box-sizing: border-box;
     font-size: $tg-fs-lg;
     font-family: $tg-font-family;
+    // The radius sits on the element the background is painted on, so it is the calendar's own surface that
+    // is rounded - the header and footer slots inside it included, which is more than the pickers alone.
+    border-radius: var(--bit-Calendar-radius, #{$shp-radius-control});
+    background-color: var(--bit-Calendar-background, transparent);
+
+    @include cal-size-medium;
 
     &.bit-dis {
         .bit-cal-cnt {
@@ -19,13 +84,18 @@
         }
 
         .bit-cal-tdv,
+        .bit-cal-tin,
+        .bit-cal-tbt,
         .bit-cal-pkt,
         .bit-cal-nbt,
+        .bit-cal-gtb,
+        .bit-cal-gtn,
         .bit-cal-wlb,
+        .bit-cal-wnm,
         .bit-cal-dbt,
         .bit-cal-pkb,
         .bit-cal-ptb {
-            color: $clr-fg-dis;
+            color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-cal-dbt {
@@ -34,19 +104,47 @@
             }
         }
     }
+
+    // A value the EditContext rejected: the calendar is a grid rather than a field with a border to redden,
+    // so the rule is drawn around the whole control, and the cells' focus ring follows it into the error
+    // color so a keyboard user is not shown two different states at once.
+    &.bit-inv {
+        .bit-cal-cnt {
+            outline: $shp-border-width $shp-border-style $clr-err;
+        }
+
+        --bit-cal-clr-focus: #{$clr-err-focus};
+    }
 }
 
 .bit-cal-cnt {
     display: flex;
     font-weight: $tg-fw-regular;
-    top: spacing(4.25);
     outline: transparent;
     box-sizing: border-box;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-Calendar-radius, #{$shp-radius-control});
 }
 
+// The two slots a calendar can be given content of its own in: a caption above the pickers and a row of
+// actions below them. Both are laid out by whatever is put in them; only the padding is the calendar's.
+.bit-cal-hdr,
+.bit-cal-ftr {
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    font-size: $tg-fs-sm;
+    padding: var(--bit-Calendar-padding, #{spacing(1.5)});
+}
+
+.bit-cal-hdr {
+    padding-bottom: 0;
+}
+
+.bit-cal-ftr {
+    padding-top: 0;
+}
+
+// The selection as words, for a screen reader alone.
 .bit-cal-sdt {
     height: 0;
     border: 0;
@@ -61,20 +159,17 @@
     margin: 0;
     display: flex;
     box-shadow: none;
-    padding: spacing(1.5);
-    min-width: spacing(26);
     box-sizing: content-box;
     flex-flow: column nowrap;
+    min-width: var(--bit-cal-pane-min-w);
+    padding: var(--bit-Calendar-padding, #{spacing(1.5)});
 }
 
-.bit-cal-dgd {
-    border-spacing: 0;
-    position: relative;
-    text-align: center;
-    font-size: inherit;
-    table-layout: fixed;
-    margin-top: spacing(0.5);
-    border-collapse: collapse;
+// A strip of months is wider than a single one, and what holds it is not always as wide as it asks for -
+// a phone, a column of a form - so the months wrap onto the next line instead of overflowing it. Each of
+// them keeps its own padding, which is what leaves them evenly apart however they end up laid out.
+.bit-cal-mcv .bit-cal-cnt {
+    flex-wrap: wrap;
 }
 
 .bit-cal-grd {
@@ -87,6 +182,7 @@
     width: 100%;
     display: flex;
     flex-flow: row nowrap;
+    justify-content: space-evenly;
 }
 
 .bit-cal-wlb {
@@ -94,17 +190,17 @@
     padding: 0;
     border: none;
     font-weight: $tg-fw-regular;
-    color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
-    font-size: $tg-fs-xs;
-    line-height: spacing(3.5);
     animation-fill-mode: both;
-    animation-duration: $mot-duration-long;
     animation-name: bit-fade-in;
+    width: var(--bit-cal-cell-size);
+    height: var(--bit-cal-cell-size);
+    font-size: var(--bit-cal-cell-fs);
+    line-height: var(--bit-cal-cell-size);
+    animation-duration: $mot-duration-long;
     animation-timing-function: $mot-easing;
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
 }
 
 .bit-cal-dbt {
@@ -113,82 +209,94 @@
     display: flex;
     cursor: pointer;
     overflow: visible;
-    color: $clr-fg-pri;
     position: relative;
-    width: spacing(3.5);
     align-items: center;
-    height: spacing(3.5);
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
-    font-size: $tg-fs-xs;
-    line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
-    border-radius: $shp-radius-control;
+    width: var(--bit-cal-cell-size);
+    height: var(--bit-cal-cell-size);
+    line-height: var(--bit-cal-cell-size);
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    font-size: var(--bit-cal-cell-fs);
+    border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    // Only what a state actually changes is transitioned, so the cell that is hovered or selected eases
+    // rather than snapping - and collapses to nothing under prefers-reduced-motion, which the duration
+    // token carries on its own.
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
-        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
+        color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
     }
 
+    // The grid moves the focus with the arrow keys, so the focused day has to be visible as such - and above
+    // its neighbors, whose backgrounds would otherwise clip the ring. The ring is drawn without an offset:
+    // the cells of a week sit against one another, and a gap between the cell and its ring would be filled
+    // with the background of the day next to it.
     &:focus-visible {
         z-index: 1;
-        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+        @include focus-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)), 0);
     }
 }
 
+// The placeholder of a day of an adjacent month while ShowOutsideDays is off, and of a day outside the
+// range the calendar can represent: it keeps the columns of the week aligned without rendering a day.
 .bit-cal-dbe {
-    width: spacing(3.5);
-    height: spacing(3.5);
+    width: var(--bit-cal-cell-size);
+    height: var(--bit-cal-cell-size);
 }
 
 .bit-cal-dhl {
     font-weight: $tg-fw-semibold;
-    background-color: $clr-bg-ter;
+    background-color: var(--bit-Calendar-highlighted-background, #{$clr-bg-ter});
 }
 
 .bit-cal-dbs {
-    background-color: $clr-bg-sec;
+    color: var(--bit-Calendar-selected-color, var(--bit-Calendar-color, #{$clr-fg-pri}));
+    background-color: var(--bit-Calendar-selected-background, #{$clr-bg-sec});
 
     &::after {
         inset: 0;
         content: "";
         position: absolute;
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
+        border-radius: inherit;
+        border: $shp-border-width $shp-border-style var(--bit-Calendar-selected-border-color, #{$clr-brd-pri});
     }
 }
 
 .bit-cal-dbo {
     font-weight: $tg-fw-regular;
-    color: $clr-fg-sec;
+    color: var(--bit-Calendar-outside-day-color, #{$clr-fg-sec});
 }
 
 .bit-cal-dtd {
     font-weight: $tg-fw-semibold;
-    border-radius: 50%;
-    color: var(--bit-cal-clr-txt);
-    background-color: var(--bit-cal-clr);
+    border-radius: var(--bit-Calendar-today-radius, #{$shp-radius-full});
+    color: var(--bit-Calendar-today-color, var(--bit-cal-clr-txt));
+    background-color: var(--bit-Calendar-today-background, var(--bit-cal-clr));
 
     @media(hover: hover) {
         &:hover {
-            background-color: var(--bit-cal-clr-hover);
+            background-color: var(--bit-Calendar-today-hover-background, var(--bit-cal-clr-hover));
         }
     }
 
     &:active {
-        background-color: var(--bit-cal-clr-active);
+        background-color: var(--bit-Calendar-today-active-background, var(--bit-cal-clr-active));
     }
 }
 
@@ -196,24 +304,24 @@
     margin: 0;
     display: flex;
     font-weight: $tg-fw-regular;
-    color: $clr-fg-sec;
-    width: spacing(3.5);
     align-items: center;
-    height: spacing(3.5);
     box-sizing: border-box;
-    font-size: $tg-fs-xs;
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
-    background-color: $clr-bg-sec;
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
+    width: var(--bit-cal-cell-size);
+    height: var(--bit-cal-cell-size);
+    font-size: var(--bit-cal-cell-fs);
+    color: var(--bit-Calendar-week-number-color, #{$clr-fg-sec});
+    background-color: var(--bit-Calendar-week-number-background, #{$clr-bg-sec});
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
 }
 
 .bit-cal-pkh {
     width: 100%;
     position: relative;
-    height: spacing(3.5);
     display: inline-flex;
-    line-height: spacing(5.5);
+    height: var(--bit-cal-cell-size);
+    line-height: var(--bit-cal-cell-size);
 }
 
 .bit-cal-tph {
@@ -229,7 +337,6 @@
     overflow: hidden;
     font-weight: $tg-fw-semibold;
     text-align: start;
-    color: $clr-fg-pri;
     position: relative;
     white-space: nowrap;
     align-items: center;
@@ -240,22 +347,28 @@
     // without the row having to run past the wrapper - see the header floor at the end of this file.
     padding: 0 spacing(0.75);
     font-size: $tg-fs-sm;
-    line-height: spacing(3.5);
     animation-fill-mode: both;
-    animation-duration: $mot-duration-long;
     animation-name: bit-fade-show;
     background-color: transparent;
-    border-radius: $shp-radius-control;
+    line-height: var(--bit-cal-cell-size);
+    animation-duration: $mot-duration-long;
     animation-timing-function: $mot-easing;
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
 }
 
 .bit-cal-ptb {
     cursor: pointer;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)), 0);
     }
 }
 
@@ -273,23 +386,33 @@
     display: block;
     cursor: pointer;
     overflow: visible;
-    color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
     outline: transparent;
-    font-size: $tg-fs-xs;
-    min-width: spacing(3.5);
-    min-height: spacing(3.5);
-    line-height: spacing(3.5);
     background-color: transparent;
-    border-radius: $shp-radius-control;
+    width: var(--bit-cal-cell-size);
+    height: var(--bit-cal-cell-size);
+    min-width: var(--bit-cal-cell-size);
+    min-height: var(--bit-cal-cell-size);
+    line-height: var(--bit-cal-cell-size);
+    font-size: var(--bit-cal-cell-fs);
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:active {
+        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)), 0);
     }
 
     &:disabled {
@@ -298,7 +421,7 @@
 
         .bit-icon,
         .bit-cal-ico {
-            color: $clr-fg-dis;
+            color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
         }
     }
 }
@@ -309,24 +432,30 @@
     cursor: pointer;
     aspect-ratio: 1;
     overflow: visible;
-    color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    width: spacing(3.75);
     outline: transparent;
-    line-height: spacing(3.75);
-    font-size: $tg-fs-xs;
     background-color: transparent;
-    border-radius: $shp-radius-control;
+    width: var(--bit-cal-tcell-size);
+    line-height: var(--bit-cal-tcell-size);
+    font-size: var(--bit-cal-cell-fs);
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-hover;
+        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+    }
+
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)), 0);
     }
 
     i {
@@ -337,30 +466,29 @@
     }
 
     &:disabled {
-        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
+        color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
 
         i {
-            color: $clr-fg-dis;
+            color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
         }
     }
 }
 
 .bit-cal-dvd {
     top: 0;
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
 }
 
 .bit-cal-mwp {
     margin: 0;
     display: flex;
-    overflow: hidden;
     box-shadow: none;
-    padding: spacing(1.5);
-    min-width: spacing(26);
     box-sizing: content-box;
     flex-flow: column nowrap;
+    min-width: var(--bit-cal-pane-min-w);
+    padding: var(--bit-Calendar-padding, #{spacing(1.5)});
 }
 
 .bit-cal-pkr {
@@ -378,50 +506,61 @@
     border: none;
     cursor: pointer;
     overflow: hidden;
-    width: spacing(6);
-    color: $clr-fg-pri;
     position: relative;
     white-space: nowrap;
     outline: transparent;
-    max-width: spacing(7);
-    font-size: $tg-fs-xs;
     text-overflow: ellipsis;
-    line-height: spacing(5.17);
     background-color: transparent;
-    border-radius: $shp-radius-control;
+    width: var(--bit-cal-mcell-w);
+    line-height: var(--bit-cal-mcell-h);
+    font-size: var(--bit-cal-cell-fs);
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
+    &:active {
+        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+    }
+
+    // The month and year grids move the focus with the arrow keys just as the day grid does, so the cell the
+    // keyboard is on has to say so.
+    &:focus-visible {
+        z-index: 1;
+        @include focus-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)), 0);
+    }
+
     &:disabled {
-        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
+        color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
     }
 }
 
 .bit-cal-psm {
     font-weight: $tg-fw-semibold;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-Calendar-selected-background, #{$clr-bg-sec});
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
 
 .bit-cal-pcm {
-    color: var(--bit-cal-clr-txt);
-    background-color: var(--bit-cal-clr);
+    color: var(--bit-Calendar-today-color, var(--bit-cal-clr-txt));
+    background-color: var(--bit-Calendar-today-background, var(--bit-cal-clr));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-cal-clr-txt);
-            background-color: var(--bit-cal-clr-hover);
+            color: var(--bit-Calendar-today-color, var(--bit-cal-clr-txt));
+            background-color: var(--bit-Calendar-today-hover-background, var(--bit-cal-clr-hover));
         }
     }
 }
@@ -454,6 +593,7 @@
     font-size: $tg-fs-xl;
     justify-content: center;
     font-weight: $tg-font-weight;
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
 }
 
 .bit-cal-am-pm {
@@ -473,13 +613,16 @@
     overflow: hidden;
     text-align: center;
     align-items: center;
-    width: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
     font-size: $tg-fs-lg;
     -moz-appearance: textfield; // Firefox
     font-weight: $tg-font-weight;
-    background-color: $clr-bg-pri;
+    width: var(--bit-cal-tcell-size);
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    // Transparent like every other part of the calendar, so the two number inputs sit on whatever surface
+    // the calendar itself is painted with rather than punching two opaque squares through a tinted one.
+    background-color: transparent;
 
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
@@ -489,24 +632,28 @@
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
     }
 
     &:focus {
-        @include focus-underline-ring;
+        @include focus-underline-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)));
         border: none;
     }
 }
 
+// The two halves of the day are labelled buttons, so they carry the tracking and the case a design system
+// gives the label of an interactive control (Material upper-cases them; Fluent leaves both alone).
 .bit-cal-bam,
 .bit-cal-bpm {
     font-size: $tg-fs-sm;
     font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 }
 
 .bit-cal-bns {
-    color: var(--bit-cal-clr-txt);
-    background-color: var(--bit-cal-clr);
+    color: var(--bit-Calendar-today-color, var(--bit-cal-clr-txt));
+    background-color: var(--bit-Calendar-today-background, var(--bit-cal-clr));
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -514,12 +661,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-cal-clr-hover);
+            background-color: var(--bit-Calendar-today-hover-background, var(--bit-cal-clr-hover));
         }
     }
 
     &:active {
-        background-color: var(--bit-cal-clr-active);
+        background-color: var(--bit-Calendar-today-active-background, var(--bit-cal-clr-active));
     }
 }
 
@@ -528,21 +675,36 @@
     display: flex;
     overflow: hidden;
     box-shadow: none;
-    padding: spacing(1.5);
     box-sizing: content-box;
     flex-flow: column nowrap;
+    padding: var(--bit-Calendar-padding, #{spacing(1.5)});
+}
+
+// The dots of a day sit in a row of their own along the bottom of its cell, so a second and a third stay
+// centered under the number instead of each having to know where the others are.
+.bit-cal-evc {
+    left: 50%;
+    display: flex;
+    position: absolute;
+    pointer-events: none;
+    gap: var(--bit-Calendar-event-gap, #{spacing(0.25)});
+    bottom: spacing(0.125);
+    transform: translateX(-50%);
 }
 
 .bit-cal-evi {
-    left: 50%;
-    position: absolute;
-    border-radius: 50%;
-    width: spacing(0.5);
-    height: spacing(0.5);
-    bottom: spacing(0.125);
-    background-color: var(--bit-cal-clr);
-    transform: translateX(-50%);
-    transition: transform $mot-duration $mot-easing;
+    flex: none;
+    border-radius: $shp-radius-full;
+    width: var(--bit-Calendar-event-size, #{spacing(0.5)});
+    height: var(--bit-Calendar-event-size, #{spacing(0.5)});
+    background-color: var(--bit-cal-evt-clr, var(--bit-Calendar-event-color, var(--bit-cal-clr)));
+}
+
+// Today is painted with the Color role's main color, which is what a dot of no color of its own is painted
+// with too - so on today the dot falls back to the color that reads against it instead of disappearing into
+// it. An event that named a color keeps it, here as everywhere else.
+.bit-cal-dtd .bit-cal-evi {
+    background-color: var(--bit-cal-evt-clr, var(--bit-Calendar-event-color, var(--bit-cal-clr-txt)));
 }
 
 .bit-cal-eov {
@@ -553,196 +715,222 @@
     position: absolute;
     align-items: center;
     justify-content: center;
-    border-radius: $shp-radius-control;
     background-color: $clr-bg-overlay;
+    border-radius: var(--bit-Calendar-radius, #{$shp-radius-control});
+    animation: bit-cal-eov-in $mot-duration-short $mot-easing-decelerate;
 }
 
+// The dialog is a header that stays put above a list that scrolls, rather than one box that scrolls whole:
+// the date it is headed with is the only thing on the surface that says which day is open, so it is the one
+// thing that must not scroll away from the events it names.
 .bit-cal-emc {
+    @include focus-anchor;
+    display: flex;
     cursor: default;
+    overflow: hidden;
     max-height: 80%;
-    overflow-y: auto;
-    color: $clr-fg-pri;
-    padding: spacing(1.5);
+    gap: spacing(1);
+    padding: $spa-dialog;
+    box-sizing: border-box;
     min-width: spacing(20);
-    max-width: spacing(30);
+    flex-flow: column nowrap;
+    // The overlay is only as wide as the calendar it covers, which a small one is narrower than the dialog's
+    // own ceiling - so the ceiling is whichever of the two is smaller and the dialog never runs past its edge.
+    max-width: min(#{spacing(30)}, 100%);
+    box-shadow: $box-shadow-dialog;
     background-color: $clr-bg-pri;
-    border-radius: $shp-radius-popup;
-    border: $shp-border-width $shp-border-style $clr-brd-sec;
-    box-shadow: $box-shadow-md;
+    border-radius: $shp-radius-dialog;
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
+    animation: bit-cal-emc-in $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-cal-emh {
+    flex: none;
     display: flex;
-    font-weight: $tg-fw-semibold;
+    gap: spacing(1);
     align-items: center;
-    font-size: $tg-fs-sm;
-    margin-bottom: spacing(1);
+    font-size: $tg-fs-md;
+    font-weight: $tg-fw-semibold;
     justify-content: space-between;
+    padding-bottom: spacing(0.75);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
 }
 
 .bit-cal-emx {
+    padding: 0;
+    flex: none;
     border: none;
+    display: flex;
     cursor: pointer;
+    line-height: 1;
+    align-items: center;
     color: $clr-fg-sec;
-    font-size: $tg-fs-sm;
+    font-size: $tg-fs-md;
+    justify-content: center;
     background-color: transparent;
-    border-radius: $shp-radius-control;
-    padding: spacing(0.25) spacing(1);
+    // The 24px floor of WCAG 2.2's target-size minimum: the glyph alone is a few pixels short of it.
+    width: spacing(3);
+    height: spacing(3);
+    border-radius: $shp-radius-full;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            color: var(--bit-Calendar-color, #{$clr-fg-pri});
+            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-Calendar-focus-color, var(--bit-cal-clr-focus)));
     }
 }
 
-.bit-cal-emi {
-    padding: spacing(0.75) 0;
-    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+// The events of the day are a list of them, so they are marked up as one - a screen reader then says how
+// many there are before reading the first. The list is also what scrolls, so a day with a dozen events keeps
+// its date and its close button on screen.
+.bit-cal-eml {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex: 1 1 auto;
+    list-style: none;
+    overflow-y: auto;
+    gap: spacing(0.5);
+    scrollbar-width: thin;
+    flex-flow: column nowrap;
+}
 
-    &:first-of-type {
-        padding-top: 0;
-        border-top: none;
+// Each event is a card of its own with a stripe of its color down its side - the dot of the day cell, said
+// again beside the event the dot stood for - rather than a hairline between one run of three lines and the
+// next.
+.bit-cal-emi {
+    position: relative;
+    padding: spacing(0.75) spacing(1);
+    padding-inline-start: spacing(1.5);
+    background-color: $clr-bg-sec;
+    border-radius: $shp-radius-surface;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block: spacing(0.75);
+        inset-inline-start: spacing(0.5);
+        width: spacing(0.375);
+        border-radius: $shp-radius-full;
+        background-color: var(--bit-cal-evt-clr, var(--bit-Calendar-event-color, var(--bit-cal-clr)));
     }
+}
+
+// The default template lays the title out beside the time it runs at, with the body under both, so a list of
+// events reads as a column of titles rather than as three lines each. Only the default one: a template of an
+// app's own is laid out by the app, so the card stops at the surface and the stripe.
+.bit-cal-emi-dft {
+    display: grid;
+    align-items: baseline;
+    column-gap: spacing(1);
+    grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .bit-cal-eit {
-    font-weight: $tg-fw-semibold;
+    min-width: 0;
+    grid-column: 1;
     font-size: $tg-fs-sm;
-    margin-bottom: spacing(0.25);
+    overflow-wrap: break-word;
+    font-weight: $tg-fw-semibold;
 }
 
+// The time is a chip of the dialog's own background on the card's, so it reads as a tag on the title rather
+// than as a second line of it, and its digits are tabular so the times of a list line up under one another.
 .bit-cal-eis {
+    grid-column: 2;
+    justify-self: end;
+    white-space: nowrap;
     color: $clr-fg-sec;
     font-size: $tg-fs-xs;
-    margin-bottom: spacing(0.25);
+    background-color: $clr-bg-pri;
+    border-radius: $shp-radius-chip;
+    font-variant-numeric: tabular-nums;
+    padding: spacing(0.125) spacing(0.5);
 }
 
 .bit-cal-eib {
     font-size: $tg-fs-xs;
-    color: $clr-fg-pri;
     white-space: pre-wrap;
+    grid-column: 1 / -1;
+    margin-top: spacing(0.5);
+    overflow-wrap: break-word;
+    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+}
+
+// The details are put on top of the calendar rather than appearing in its place: the overlay fades the days
+// back and the dialog grows the last of the way in over them. Both are timed by the motion token, so
+// prefers-reduced-motion collapses them to nothing on its own.
+@keyframes bit-cal-eov-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes bit-cal-emc-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 
-.bit-cal-pri {
-    --bit-cal-clr: #{$clr-pri};
-    --bit-cal-clr-txt: #{$clr-pri-text};
-    --bit-cal-clr-hover: #{$clr-pri-hover};
-    --bit-cal-clr-active: #{$clr-pri-active};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-cal-#{$role} {
+        --bit-cal-clr: #{role($tokens, main)};
+        --bit-cal-clr-txt: #{role($tokens, on)};
+        --bit-cal-clr-hover: #{role($tokens, hover)};
+        --bit-cal-clr-active: #{role($tokens, active)};
+        --bit-cal-clr-focus: #{role($tokens, focus)};
+    }
+
+    // The color of a single event, set on its own dot and on the stripe of its card in the details dialog,
+    // so a day can carry several colors at once in both places.
+    .bit-cal-evi-#{$role},
+    .bit-cal-emi-#{$role} {
+        --bit-cal-evt-clr: #{role($tokens, main)};
+    }
 }
 
-.bit-cal-sec {
-    --bit-cal-clr: #{$clr-sec};
-    --bit-cal-clr-txt: #{$clr-sec-text};
-    --bit-cal-clr-hover: #{$clr-sec-hover};
-    --bit-cal-clr-active: #{$clr-sec-active};
+
+.bit-cal-sm {
+    --bit-cal-cell-size-def: #{spacing(3)};
+    --bit-cal-cell-fs-def: #{$tg-fs-xs};
+    --bit-cal-mcell-w: #{spacing(5.25)};
+    --bit-cal-mcell-h: #{spacing(4.5)};
+    --bit-cal-tcell-size: #{spacing(3.25)};
+    --bit-cal-pane-min-w: #{spacing(23)};
 }
 
-.bit-cal-ter {
-    --bit-cal-clr: #{$clr-ter};
-    --bit-cal-clr-txt: #{$clr-ter-text};
-    --bit-cal-clr-hover: #{$clr-ter-hover};
-    --bit-cal-clr-active: #{$clr-ter-active};
+.bit-cal-md {
+    @include cal-size-medium;
 }
 
-.bit-cal-inf {
-    --bit-cal-clr: #{$clr-inf};
-    --bit-cal-clr-txt: #{$clr-inf-text};
-    --bit-cal-clr-hover: #{$clr-inf-hover};
-    --bit-cal-clr-active: #{$clr-inf-active};
+.bit-cal-lg {
+    --bit-cal-cell-size-def: #{spacing(4.25)};
+    --bit-cal-cell-fs-def: #{$tg-fs-md};
+    --bit-cal-mcell-w: #{spacing(7)};
+    --bit-cal-mcell-h: #{spacing(6)};
+    --bit-cal-tcell-size: #{spacing(4.5)};
+    --bit-cal-pane-min-w: #{spacing(31)};
 }
 
-.bit-cal-suc {
-    --bit-cal-clr: #{$clr-suc};
-    --bit-cal-clr-txt: #{$clr-suc-text};
-    --bit-cal-clr-hover: #{$clr-suc-hover};
-    --bit-cal-clr-active: #{$clr-suc-active};
-}
-
-.bit-cal-wrn {
-    --bit-cal-clr: #{$clr-wrn};
-    --bit-cal-clr-txt: #{$clr-wrn-text};
-    --bit-cal-clr-hover: #{$clr-wrn-hover};
-    --bit-cal-clr-active: #{$clr-wrn-active};
-}
-
-.bit-cal-swr {
-    --bit-cal-clr: #{$clr-swr};
-    --bit-cal-clr-txt: #{$clr-swr-text};
-    --bit-cal-clr-hover: #{$clr-swr-hover};
-    --bit-cal-clr-active: #{$clr-swr-active};
-}
-
-.bit-cal-err {
-    --bit-cal-clr: #{$clr-err};
-    --bit-cal-clr-txt: #{$clr-err-text};
-    --bit-cal-clr-hover: #{$clr-err-hover};
-    --bit-cal-clr-active: #{$clr-err-active};
-}
-
-.bit-cal-pbg {
-    --bit-cal-clr: #{$clr-bg-pri};
-    --bit-cal-clr-txt: #{$clr-fg-pri};
-    --bit-cal-clr-hover: #{$clr-bg-pri-hover};
-    --bit-cal-clr-active: #{$clr-bg-pri-active};
-}
-
-.bit-cal-sbg {
-    --bit-cal-clr: #{$clr-bg-sec};
-    --bit-cal-clr-txt: #{$clr-fg-pri};
-    --bit-cal-clr-hover: #{$clr-bg-sec-hover};
-    --bit-cal-clr-active: #{$clr-bg-sec-active};
-}
-
-.bit-cal-tbg {
-    --bit-cal-clr: #{$clr-bg-ter};
-    --bit-cal-clr-txt: #{$clr-fg-pri};
-    --bit-cal-clr-hover: #{$clr-bg-ter-hover};
-    --bit-cal-clr-active: #{$clr-bg-ter-active};
-}
-
-.bit-cal-pfg {
-    --bit-cal-clr: #{$clr-fg-pri};
-    --bit-cal-clr-txt: #{$clr-bg-pri};
-    --bit-cal-clr-hover: #{$clr-fg-pri-hover};
-    --bit-cal-clr-active: #{$clr-fg-pri-active};
-}
-
-.bit-cal-sfg {
-    --bit-cal-clr: #{$clr-fg-sec};
-    --bit-cal-clr-txt: #{$clr-bg-pri};
-    --bit-cal-clr-hover: #{$clr-fg-sec-hover};
-    --bit-cal-clr-active: #{$clr-fg-sec-active};
-}
-
-.bit-cal-tfg {
-    --bit-cal-clr: #{$clr-fg-ter};
-    --bit-cal-clr-txt: #{$clr-bg-pri};
-    --bit-cal-clr-hover: #{$clr-fg-ter-hover};
-    --bit-cal-clr-active: #{$clr-fg-ter-active};
-}
-
-.bit-cal-pbr {
-    --bit-cal-clr: #{$clr-brd-pri};
-    --bit-cal-clr-txt: #{$clr-fg-pri};
-    --bit-cal-clr-hover: #{$clr-brd-pri-hover};
-    --bit-cal-clr-active: #{$clr-brd-pri-active};
-}
-
-.bit-cal-sbr {
-    --bit-cal-clr: #{$clr-brd-sec};
-    --bit-cal-clr-txt: #{$clr-fg-pri};
-    --bit-cal-clr-hover: #{$clr-brd-sec-hover};
-    --bit-cal-clr-active: #{$clr-brd-sec-active};
-}
-
-.bit-cal-tbr {
-    --bit-cal-clr: #{$clr-brd-ter};
-    --bit-cal-clr-txt: #{$clr-fg-pri};
-    --bit-cal-clr-hover: #{$clr-brd-ter-hover};
-    --bit-cal-clr-active: #{$clr-brd-ter-active};
-}
 
 // --- month header floor ---
 // The header of the day view names the month in full, and the day wrapper it sits in is floored by a
@@ -750,9 +938,70 @@
 // longest month name already overruns that floor at the Fluent 14px base ("September 2024" wants 125px
 // of the 124px the arrows leave it) and overruns it further under a preset that sets a larger one, so
 // the label was silently ellipsised. The button therefore carries its own floor in em: it is read
-// against the button's own font, so it tracks whatever step the active ramp puts here, and the day
+// against the label's own font, so it tracks whatever step the active ramp puts here, and the day
 // rows distribute the few extra pixels evenly (space-evenly) rather than leaving a gap at one end.
-// Only the day view takes it - the month view's header is a bare year and needs none of the room.
-.bit-cal-dwp .bit-cal-ptb {
+// Both spellings of the header take it - the button that opens the month picker and the plain label
+// standing in for it - since either of them can be the one naming the month. Only the day view does:
+// the month view's header is a bare year and needs none of the room.
+.bit-cal-dwp .bit-cal-ptb,
+.bit-cal-dwp .bit-cal-pkt {
     min-width: 8.75em;
+}
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, which strips every
+// background the calendar paints - and with them today, the selection, the highlighted days and the
+// meridiem that is in force, all of which are conveyed by a background alone. Each is re-established with
+// a border or a system color, so the states stay distinguishable.
+@media (forced-colors: active) {
+    .bit-cal-dbt,
+    .bit-cal-pkb {
+        &:disabled {
+            color: GrayText;
+        }
+    }
+
+    .bit-cal-dtd,
+    .bit-cal-pcm,
+    .bit-cal-bns {
+        color: HighlightText;
+        background-color: Highlight;
+        forced-color-adjust: none;
+    }
+
+    .bit-cal-dbs::after {
+        border-color: CanvasText;
+    }
+
+    .bit-cal-dhl {
+        outline: $shp-border-width dotted CanvasText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-cal-evi {
+        background-color: CanvasText;
+        forced-color-adjust: none;
+    }
+
+    // Today is painted Highlight in this palette, which CanvasText does not have to read against.
+    .bit-cal-dtd .bit-cal-evi {
+        background-color: HighlightText;
+    }
+
+    // The card of an event and the stripe down its side are both a background, which this palette strips:
+    // the card is given an edge of its own instead and the stripe keeps a system color.
+    .bit-cal-emi {
+        border: $shp-border-width $shp-border-style CanvasText;
+
+        &::before {
+            background-color: CanvasText;
+            forced-color-adjust: none;
+        }
+    }
+
+    // An outline rather than a border: it gives the calendar an edge in a palette that strips every
+    // background without taking a couple of pixels out of the grid to do it.
+    .bit-cal-cnt {
+        outline: $shp-border-width $shp-border-style CanvasText;
+    }
 }

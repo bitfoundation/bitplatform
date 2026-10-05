@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Describes a single button (or separator) in the BitMarkdownEditor toolbar.
@@ -18,9 +18,16 @@ public class BitMarkdownEditorToolbarItem
     public string Title { get; init; } = string.Empty;
 
     /// <summary>
-    /// Raw inline SVG markup rendered inside the button.
+    /// Raw inline markup rendered inside the button: an SVG, or the element of an external icon font
+    /// (<c>&lt;i class="fa-solid fa-floppy-disk"&gt;&lt;/i&gt;</c>). Takes precedence over <see cref="IconName"/>.
     /// </summary>
     public string Icon { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The name of a built-in Fabric MDL2 icon (e.g. <c>BitIconName.Save</c>) drawn inside the button
+    /// when <see cref="Icon"/> is empty.
+    /// </summary>
+    public string? IconName { get; init; }
 
     /// <summary>
     /// How the item behaves when activated.
@@ -33,12 +40,17 @@ public class BitMarkdownEditorToolbarItem
     public BitMarkdownEditorCommand? Command { get; init; }
 
     /// <summary>
-    /// Optional human readable shortcut hint, e.g. "Ctrl+B".
+    /// The keyboard shortcut of the item, e.g. <c>"Ctrl+B"</c>: shown in its tooltip and announced through
+    /// <c>aria-keyshortcuts</c>. On a <see cref="BitMarkdownEditorToolbarItemType.Command"/> or a
+    /// <see cref="BitMarkdownEditorToolbarItemType.Custom"/> item it is also bound - pressed in the editor, it runs the
+    /// item, ahead of a built-in shortcut on the same keys - and a custom one is listed in the shortcuts panel.
+    /// A bound shortcut needs Ctrl/Cmd or Alt unless it is a function key (<c>"F2"</c>), so it cannot swallow typing.
     /// </summary>
     public string? Shortcut { get; init; }
 
     /// <summary>
-    /// Callback used when <see cref="Type"/> is <see cref="BitMarkdownEditorToolbarItemType.Custom"/>.
+    /// Callback used when <see cref="Type"/> is <see cref="BitMarkdownEditorToolbarItemType.Custom"/>, handed the editor.
+    /// A handler written in a component is run as that component's event handler, so it re-renders afterwards.
     /// </summary>
     public Func<BitMarkdownEditor, Task>? OnClick { get; init; }
 
@@ -49,7 +61,9 @@ public class BitMarkdownEditorToolbarItem
     public IReadOnlyList<BitMarkdownEditorToolbarItem>? Children { get; init; }
 
     /// <summary>
-    /// Optional short text label rendered inside the button (used by dropdown menu items).
+    /// A short text rendered beside the icon: the label of a menu item, or of a toolbar button that is worth
+    /// spelling out (a "Save" or a "Publish"). An item named like one of the default toolbar shows its localized title
+    /// (see <see cref="BitMarkdownEditorTexts"/>) instead, so what is on screen is also what is read out.
     /// </summary>
     public string? Text { get; init; }
 

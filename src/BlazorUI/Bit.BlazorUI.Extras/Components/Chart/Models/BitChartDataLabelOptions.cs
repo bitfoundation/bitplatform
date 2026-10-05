@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 public sealed class BitChartDataLabelOptions
 {
     public bool Display { get; set; }
-    public string Color { get; set; } = "var(--bit-clr-fg-pri, #1A1A1A)";
+    public string Color { get; set; } = "var(--bit-Chart-data-label-color, var(--bit-clr-fg-pri))";
     public BitChartFont Font { get; set; } = new();
     /// <summary>Simple value formatter.</summary>
     public Func<double, string>? Formatter { get; set; }

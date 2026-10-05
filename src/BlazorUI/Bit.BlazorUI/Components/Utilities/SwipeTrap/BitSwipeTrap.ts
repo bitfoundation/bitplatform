@@ -12,6 +12,7 @@ namespace BitBlazorUI {
             orientationLock: BitSwipeOrientation,
             touchOnly: boolean,
             skipSelector: string | null,
+            keyboardTrigger: boolean,
             dotnetObj: DotNetObject) {
 
             // A setup for an id that is still registered would leave the previous listeners attached and
@@ -32,6 +33,9 @@ namespace BitBlazorUI {
             let activeTouch = false;
             let suppressNextClick = false;
             let pointerType = '';
+            // Where the press landed: a touch keeps being delivered to it even once it has left the page, so a
+            // gesture that started on a node that is gone will never see its end reach the trap.
+            let startTarget: EventTarget | null = null;
             let samples: { t: number, x: number, y: number }[] = [];
             let orientation = BitSwipeOrientation.None;
             // How far the surface has to be dragged is a fraction of how big it is, so the box is measured
@@ -39,7 +43,18 @@ namespace BitBlazorUI {
             // is registered would otherwise be weighed against a box it no longer has.
             let bcr = element.getBoundingClientRect();
             const hasTouch = Utils.isTouchDevice();
-            const throttledMove = Utils.throttle((sx: number, sy: number, dx: number, dy: number, vx: number, vy: number, pt: string, dur: number) => dotnetObj.invokeMethodAsync('OnMove', sx, sy, dx, dy, vx, vy, pt, dur), throttle);
+
+            // The calls into .NET that nothing awaits must not surface as unhandled rejections: a key or a move
+            // that arrives while the circuit is down, or after a re-setup has disposed this reference, is dropped.
+            const invoke = (method: string, ...args: any[]) => {
+                dotnetObj.invokeMethodAsync(method, ...args).catch(() => { });
+            };
+
+            // OnMove is throttled on both edges: the first move of a window goes at once and the latest one is held
+            // for the end of the window, so a pointer that comes to rest is reported where it rests rather than where
+            // the last window began. The held move belongs to its gesture alone - reset() drops it, since OnEnd
+            // carries the final position anyway - and a new gesture starts with a fresh window.
+            const throttledMove = Utils.throttle((...args: any[]) => invoke('OnMove', ...args), throttle, { trailing: true });
 
             const isTouchEvent = (e: TouchEvent | PointerEvent): e is TouchEvent => 'changedTouches' in e;
 
@@ -91,17 +106,38 @@ namespace BitBlazorUI {
                 touchId = pointerId = -1;
                 diffX = diffY = 0;
                 pointerType = '';
+                startTarget = null;
                 samples = [];
                 orientation = BitSwipeOrientation.None;
+                throttledMove.cancel();
                 element.classList.remove('bit-stp-swp');
+                window.removeEventListener('keydown', onEscape, true);
             };
 
+            // A touch gesture whose end can no longer reach the trap: the node under the finger was removed from the
+            // page, so its touchend went with it. Such a gesture holds nothing any more - the keys it would take are
+            // given back, and it is called off the moment anything asks about it.
+            const isStale = () => active && activeTouch && startTarget instanceof Node && startTarget !== element && !startTarget.isConnected;
+
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                if (active) {
+                    // A second finger must not restart an in-progress gesture. But a gesture whose end never reached
+                    // the trap - the element under the finger was removed from the page, so its touchend went with it
+                    // - would hold the trap forever, so a press that proves it over calls it off instead: the tracked
+                    // pointer pressed again (a mouse is not pressed twice without a release in between), or a touch
+                    // list the tracked finger is no longer in.
+                    const stale = isTouchEvent(e)
+                        ? activeTouch && !Array.prototype.some.call(e.touches, (t: Touch) => t.identifier === touchId)
+                        : !activeTouch && e.pointerId === pointerId;
+                    if (!stale) return;
+
+                    cancelGesture(e).catch(() => { });
+                }
+
                 // A gesture that was trapped arms a click suppressor; a new press means the click it was
                 // waiting for never came, and the press's own click must not be the one that is swallowed.
                 suppressNextClick = false;
 
-                if (active) return; // a second finger must not restart an in-progress gesture
                 if (element.classList.contains('bit-dis')) return;
 
                 // A gesture that starts on an opted-out descendant (an input, a nested slider) is the
@@ -131,6 +167,7 @@ namespace BitBlazorUI {
                 startX = getX(e);
                 startY = getY(e);
                 startTime = e.timeStamp;
+                startTarget = e.target;
                 active = true;
 
                 bcr = element.getBoundingClientRect();
@@ -223,6 +260,13 @@ namespace BitBlazorUI {
                     // is not a swipe: what follows only applies once the movement is past the tap slop.
                     if (Math.abs(diffX) <= TAP_SLOP && Math.abs(diffY) <= TAP_SLOP) return;
 
+                    if (!trapped) {
+                        // Escape puts a swipe back the way it puts back a native drag-and-drop. The key is listened for
+                        // on the window, since the focus is wherever it was before the press, and only once the gesture
+                        // is a swipe: a press that has not moved is not one, and its Escape is the page's.
+                        window.addEventListener('keydown', onEscape, true);
+                    }
+
                     trapped = true;
 
                     // Once the movement is far enough to be trapped it is a swipe, not a click, so the
@@ -291,6 +335,13 @@ namespace BitBlazorUI {
                 if (isTouchEvent(e)) {
                     if (!getTouch(e)) return; // another finger was canceled, not the tracked one
                 } else if ((e as PointerEvent).pointerId !== pointerId) return;
+
+                await cancelGesture(e);
+            };
+
+            // A gesture that is called off rather than released: the browser took it over, the pointer left the box
+            // before it was trapped, or Escape put it back. Nothing triggers, and OnEnd reports it as canceled.
+            const cancelGesture = async (e: Event): Promise<void> => {
                 const sX = startX;
                 const sY = startY;
                 const dX = diffX;
@@ -305,6 +356,52 @@ namespace BitBlazorUI {
                 await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, dX, dY, 0, 0, pT, true, dur);
             };
 
+            // The press is still down after an Escape, so the release and the click that follow it would land as a
+            // gesture's - the release finds no gesture any more, and the click of a trapped swipe is swallowed as ever.
+            // The key goes no further: it was the swipe's, not the dialog's or the overlay's the trap may sit in.
+            const onEscape = async (e: KeyboardEvent): Promise<void> => {
+                if (e.key !== 'Escape' || !trapped) return;
+
+                // A gesture that can no longer end is called off, but the key is not its to take: it goes on to
+                // the dialog or the overlay it was meant for.
+                if (isStale()) {
+                    await cancelGesture(e);
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                await cancelGesture(e);
+            };
+
+            // The keyboard's alternative to the swipe: an arrow key pressed on the trap itself triggers in its own
+            // direction. Only the trap's own keys are taken - a key pressed on a descendant is the descendant's, a
+            // modified one is the browser's, a held one is one swipe rather than a stream of them - and only along
+            // an axis a lock leaves to the trap. The direction values are the ones of BitPlacement.
+            const onKeyDown = (e: KeyboardEvent) => {
+                if (isStale()) cancelGesture(e).catch(() => { });
+                if (!keyboardTrigger || active) return;
+                if (e.target !== element) return;
+                if (e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                if (element.classList.contains('bit-dis')) return;
+
+                const horizontal = orientationLock !== BitSwipeOrientation.Vertical;
+                const vertical = orientationLock !== BitSwipeOrientation.Horizontal;
+
+                let direction = -1;
+                if (horizontal && e.key === 'ArrowRight') direction = 5;
+                else if (horizontal && e.key === 'ArrowLeft') direction = 4;
+                else if (vertical && e.key === 'ArrowUp') direction = 0;
+                else if (vertical && e.key === 'ArrowDown') direction = 1;
+                if (direction < 0) return;
+
+                // The arrow keys scroll the page by default, which is not what a key the trap answers to should do.
+                e.preventDefault();
+
+                invoke('OnKeyTrigger', direction);
+            };
+
             const onLeave = async (e: PointerEvent): Promise<void> => {
                 // Before the pointer is captured, leaving the element's box abandons the gesture; once it
                 // is captured (the swipe is trapped) the pointer may roam and the gesture ends on pointerup.
@@ -312,6 +409,19 @@ namespace BitBlazorUI {
                 if (element.hasPointerCapture?.(e.pointerId)) return;
 
                 await onCancel(e);
+            };
+
+            // A capture taken away while its gesture is still on - the trap was hidden, or a script released it - is
+            // followed by no release the trap would see, so the gesture is called off here. The capture a release ends
+            // is lost after that release, when there is no gesture left to call off.
+            // The event bubbles, so only the trap's own capture counts: a descendant's - the one a pen gets on the
+            // child it pressed, handed over the moment the trap captures the pointer, or one a nested slider takes
+            // and releases - is lost while the gesture goes on.
+            const onLostCapture = async (e: PointerEvent): Promise<void> => {
+                if (e.target !== element) return;
+                if (!active || activeTouch || e.pointerId !== pointerId) return;
+
+                await cancelGesture(e);
             };
 
             // The browser's own drag-and-drop takes the gesture over when it starts on an image, a link or
@@ -346,7 +456,9 @@ namespace BitBlazorUI {
             element.addEventListener('pointerup', onEnd);
             element.addEventListener('pointercancel', onCancel);
             element.addEventListener('pointerleave', onLeave);
+            element.addEventListener('lostpointercapture', onLostCapture);
             element.addEventListener('dragstart', onDragStart);
+            element.addEventListener('keydown', onKeyDown);
             // The click is swallowed in the capture phase so it never reaches the child it was aimed at.
             element.addEventListener('click', onClick, true);
 
@@ -365,7 +477,9 @@ namespace BitBlazorUI {
                 element.removeEventListener('pointerup', onEnd);
                 element.removeEventListener('pointercancel', onCancel);
                 element.removeEventListener('pointerleave', onLeave);
+                element.removeEventListener('lostpointercapture', onLostCapture);
                 element.removeEventListener('dragstart', onDragStart);
+                element.removeEventListener('keydown', onKeyDown);
                 element.removeEventListener('click', onClick, true);
 
                 reset(); // a dispose mid-gesture must not leave the swiping class behind

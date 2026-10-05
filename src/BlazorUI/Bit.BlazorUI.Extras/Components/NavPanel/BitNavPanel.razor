@@ -2,22 +2,28 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (IsOpen && NoOverlay is false && IsEnabled)
+@* Only the drawer has an overlay, so once the browser has reported a column there is none to render; until
+   then the stylesheet hides it on the screens the column is on. *@
+@if (IsOpen && NoOverlay is false && IsEnabled && (_screenChecked is false || _isDrawer))
 {
     @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
        of the accessibility tree instead of being announced as a control of its own. A disabled panel draws
        none at all: nothing of it answers a click while it is disabled, and an overlay over a page that
        nothing left can dismiss is a page that cannot be used any more. *@
     <div style="@Styles?.Overlay"
-         class="bit-npn-ovl @Classes?.Overlay"
+         class="bit-npn-ovl @_ShapeClass @Classes?.Overlay"
          aria-hidden="true"
          @onclick="HandleOverlayClick"></div>
 }
 
 @* Reports which of its two shapes the panel currently has: the off-canvas drawer of a small screen, or the
    column of a wide one. Nothing is rendered through it - the shape itself is CSS - but the page it covers
-   and the focus it holds while it covers one are decided in C#, and only the browser knows which it is. *@
-<BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.LtMd" OnChange="HandleScreenChange" />
+   and the focus it holds while it covers one are decided in C#, and only the browser knows which it is.
+   A breakpoint that gives the same shape on every screen (Never, Always) has nothing to ask it. *@
+@if (_ScreenQuery is not null)
+{
+    <BitMediaQuery NoWrapper ScreenQuery="_ScreenQuery" OnChange="HandleScreenChange" />
+}
 
 @{
     var isToggled = _IsToggled;
@@ -38,27 +44,54 @@
             else
             {
                 <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
-                    @if (IconUrl.HasValue())
-                    {
-                        var logoLabel = IconAriaLabel ?? AriaLabel ?? DefaultLogoAriaLabel;
+                    @{
+                        var hasLogo = IconUrl.HasValue();
+                        var hasHeaderText = HeaderText.HasValue();
+                        // The rail has no room for the logo or the title, so the outermost element of the two is
+                        // what is hidden: a link left behind with nothing visible in it would still be a tab stop.
+                        var brandStyle = isToggled ? "display:none;" : "";
+                    }
 
+                    @if (hasLogo || hasHeaderText)
+                    {
                         if (IconNavUrl.HasValue())
                         {
                             @* The logo itself is decorative, so the link it sits in is the one carrying the
-                               name: a link whose only content is an image with an empty alt has none at all. *@
-                            <a href="@IconNavUrl" aria-label="@logoLabel">
-                                <img src="@IconUrl"
-                                     alt=""
-                                     class="bit-npn-img @Classes?.HeaderIcon"
-                                     style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                               name: a link whose only content is an image with an empty alt has none at all.
+                               A link showing a title is named by that title, the text a voice user reads out
+                               to activate it, unless IconAriaLabel says otherwise. *@
+                            <a href="@IconNavUrl"
+                               class="bit-npn-hln"
+                               style="@brandStyle"
+                               aria-label="@(IconAriaLabel ?? (hasHeaderText ? null : AriaLabel ?? DefaultLogoAriaLabel))">
+                                @if (hasLogo)
+                                {
+                                    <img src="@IconUrl"
+                                         alt=""
+                                         class="bit-npn-img @Classes?.HeaderIcon"
+                                         style="@Styles?.HeaderIcon" />
+                                }
+                                @if (hasHeaderText)
+                                {
+                                    <span class="bit-npn-htx @Classes?.HeaderText" style="@Styles?.HeaderText">@HeaderText</span>
+                                }
                             </a>
                         }
                         else
                         {
-                            <img src="@IconUrl"
-                                 alt="@(IconAriaLabel ?? AriaLabel ?? string.Empty)"
-                                 class="bit-npn-img @Classes?.HeaderIcon"
-                                 style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                            if (hasLogo)
+                            {
+                                @* A logo beside a title says nothing the title does not, so it is left unnamed
+                                   unless IconAriaLabel gives it a name of its own. *@
+                                <img src="@IconUrl"
+                                     alt="@(IconAriaLabel ?? (hasHeaderText ? string.Empty : AriaLabel ?? string.Empty))"
+                                     class="bit-npn-img @Classes?.HeaderIcon"
+                                     style="@brandStyle @Styles?.HeaderIcon" />
+                            }
+                            if (hasHeaderText)
+                            {
+                                <span class="bit-npn-htx @Classes?.HeaderText" style="@brandStyle @Styles?.HeaderText">@HeaderText</span>
+                            }
                         }
                     }
 
@@ -227,7 +260,8 @@
 <div @ref="RootElement" @attributes="GetRootAttributes()"
      id="@_Id"
      role="@(isModal ? "dialog" : null)"
-     aria-modal="@(isModal && NoFocusTrap is false ? "true" : null)"
+     aria-modal="@(_IsTrappingDrawer ? "true" : null)"
+     tabindex="@(_IsTrappingDrawer ? "-1" : null)"
      aria-label="@(isModal ? (AriaLabel ?? DefaultPanelAriaLabel) : null)"
      style="@GetPanelStyle(isToggled)"
      class="@((ClassBuilder.Value + $"{(isToggled ? $" bit-npn-tgl {Classes?.Toggled}" : "")}").Trim())"

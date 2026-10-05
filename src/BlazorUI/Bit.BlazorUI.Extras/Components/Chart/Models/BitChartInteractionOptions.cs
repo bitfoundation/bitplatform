@@ -22,7 +22,7 @@ public sealed class BitChartInteractionOptions
     public bool Crosshair { get; set; } = true;
 
     /// <summary>Color of the crosshair line.</summary>
-    public string CrosshairColor { get; set; } = "var(--bit-clr-fg-sec, rgba(0,0,0,0.45))";
+    public string CrosshairColor { get; set; } = "var(--bit-Chart-crosshair-color, var(--bit-clr-fg-sec))";
 
     /// <summary>
     /// Show the active index in a small chip where the crosshair meets the index axis, so the reader can

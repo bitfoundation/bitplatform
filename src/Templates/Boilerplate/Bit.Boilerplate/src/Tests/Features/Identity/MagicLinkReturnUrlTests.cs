@@ -24,12 +24,12 @@ public partial class MagicLinkReturnUrlTests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The ShortId is the human-friendly id the product page URL uses. Ignore the tenant-aware global query filter
         // here: without an HttpContext the current tenant can't be resolved, so an un-ignored read would throw.
         int productShortId;
-        await using (var scope = server.WebApp.Services.CreateAsyncScope())
+        await using (var scope = server.ApiApp.Services.CreateAsyncScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -47,6 +47,8 @@ public partial class MagicLinkReturnUrlTests : AppPageTest
 
         // Open the user menu (the header's BitDropMenu) and click its "Sign in" entry. That link carries the current page
         // (this product page) as its return-url; opening the menu's Sign in navigates to the Sign in page carrying it.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator("header .bit-drm-btn").First.ClickAsync();
         await Page.Locator(".app-menu-callout").GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn }).ClickAsync();
 

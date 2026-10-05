@@ -47,16 +47,16 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
 
         await using var server = new AppTestServer(Context);
 
-        await server.Build(services =>
+        await server.Build(configureTestServices: services =>
         {
             services.Replace(ServiceDescriptor.Singleton<IChatClient>(chatClient));
         },
-        configuration =>
+        configureTestConfiguration: configuration =>
         {
             configuration["AI:OpenAI:ChatApiKey"] = "fake-key-never-used-by-these-tests";
         }).Start(TestContext.CancellationToken);
 
-        await SignInWithPassword(server.WebAppServerAddress, StoreAdminEmail, StoreAdminPassword);
+        await SignInWithPassword(server.WebAppAddress, StoreAdminEmail, StoreAdminPassword);
 
         const string question = "How do I install the PWA version of this app?";
         const string answer = "Open your browser's menu and choose Install.";
@@ -111,8 +111,7 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await SignInPanelUtils.FillCredentials(Page, email, password);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(serverAddress.ToString());

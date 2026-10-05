@@ -23,8 +23,7 @@ public partial class MauiDeviceCoordinator : IBitDeviceCoordinator
         }
 
         // The theme's own page background, so the status bar and the WebView below it meet without a seam.
-        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(
-            BitExtraThemeSurfaces.BackgroundPrimary[isDark ? BitExtraThemePresets.Fluent2Dark : BitExtraThemePresets.Fluent2Light]));
+        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(AppThemePresets.Background(isDark)));
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>

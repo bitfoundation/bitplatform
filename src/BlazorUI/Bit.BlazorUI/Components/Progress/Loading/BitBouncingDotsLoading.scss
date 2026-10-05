@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--bit-ldn-bnd-6);
+    gap: calc(6 * var(--bit-ldn-unit));
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
@@ -10,22 +10,24 @@
 .bit-ldn-bnd-chl {
     border-radius: 50%;
     display: inline-block;
-    width: var(--bit-ldn-bnd-15);
-    height: var(--bit-ldn-bnd-15);
+    width: calc(15 * var(--bit-ldn-unit));
+    height: calc(15 * var(--bit-ldn-unit));
     background: var(--bit-ldn-color);
     animation: bit-ldn-bnd-anm calc(0.85s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
+// The stagger is a negative delay - the same lag of 0.15s between the dots, taken a loop earlier - so every
+// dot is already moving when the loader appears instead of the later ones sitting still until their turn.
 .bit-ldn-bnd-ch1 {
     animation-delay: calc(0s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-bnd-ch2 {
-    animation-delay: calc(0.15s * var(--bit-ldn-mot-factor, 1));
+    animation-delay: calc(-0.7s * var(--bit-ldn-mot-factor, 1));
 }
 
 .bit-ldn-bnd-ch3 {
-    animation-delay: calc(0.3s * var(--bit-ldn-mot-factor, 1));
+    animation-delay: calc(-0.55s * var(--bit-ldn-mot-factor, 1));
 }
 
 @keyframes bit-ldn-bnd-anm {

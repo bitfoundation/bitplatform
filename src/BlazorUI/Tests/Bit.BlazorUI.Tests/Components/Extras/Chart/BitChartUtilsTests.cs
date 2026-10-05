@@ -66,6 +66,30 @@ public class BitChartUtilsTests
     }
 
     [TestMethod]
+    public void SeriesColorShouldReadThePublicVariableOverThePalette()
+    {
+        Assert.AreEqual("var(--bit-Chart-series-color-1, #36a2eb)", BitChartColorUtil.SeriesColor(0));
+        Assert.AreEqual(BitChartColorUtil.SeriesColor(0), BitChartColorUtil.SeriesColor(BitChartColorUtil.DefaultPalette.Length));
+        Assert.AreEqual("var(--bit-Chart-series-color-10, #34495e)", BitChartColorUtil.SeriesColor(-1));
+    }
+
+    [TestMethod]
+    public void TranslucentShouldFoldALiteralColorAndMixAnyOther()
+    {
+        Assert.AreEqual("rgba(51,102,153,0.4)", BitChartColorUtil.Translucent("#336699", 0.4));
+        Assert.AreEqual("color-mix(in srgb, var(--x) 40%, transparent)", BitChartColorUtil.Translucent("var(--x)", 0.4));
+        Assert.AreEqual("color-mix(in srgb, red 20%, transparent)", BitChartColorUtil.Translucent("red", 0.2));
+    }
+
+    [TestMethod]
+    public void ShadeShouldMixAColorItCannotReadWithWhiteOrBlack()
+    {
+        Assert.AreEqual(BitChartColorUtil.Adjust("#808080", 0.5), BitChartColorUtil.Shade("#808080", 0.5));
+        Assert.AreEqual("color-mix(in srgb, var(--x), white 8%)", BitChartColorUtil.Shade("var(--x)", 0.08));
+        Assert.AreEqual("color-mix(in srgb, var(--x), black 10%)", BitChartColorUtil.Shade("var(--x)", -0.1));
+    }
+
+    [TestMethod]
     public void PaletteShouldCycleAndHandleNegativeIndexes()
     {
         int n = BitChartColorUtil.DefaultPalette.Length;

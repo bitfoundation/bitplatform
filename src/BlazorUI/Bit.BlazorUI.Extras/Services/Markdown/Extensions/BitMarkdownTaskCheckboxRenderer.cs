@@ -24,9 +24,12 @@ public sealed class BitMarkdownTaskCheckboxRenderer : BitMarkdownNodeRenderer
         if (task.Checked) b.AddAttribute(4, "checked", true);
         if (interactive)
         {
-            // A checkbox with no visible label of its own is named after the item it opens, which
-            // is the text right beside it.
-            b.AddAttribute(5, "aria-label", string.Format(CultureInfo.CurrentCulture, r.Texts.Task, task.Index + 1));
+            // A checkbox with no label element of its own is named after the item it opens - the
+            // text right beside it, so the name a reader hears is the one they see. Only an item
+            // with no text falls back to its number.
+            b.AddAttribute(5, "aria-label", string.IsNullOrWhiteSpace(task.Label)
+                ? string.Format(CultureInfo.CurrentCulture, r.Texts.Task, task.Index + 1)
+                : task.Label);
             b.AddAttribute(6, "onchange", task.OnChange!.Value);
         }
         b.CloseElement();

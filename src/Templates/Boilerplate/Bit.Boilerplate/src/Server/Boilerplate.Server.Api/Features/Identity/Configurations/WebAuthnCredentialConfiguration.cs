@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+//#if (database == "MySql")
+using Fido2NetLib.Objects;
+//#endif
 
 namespace Boilerplate.Server.Api.Features.Identity.Configurations;
 

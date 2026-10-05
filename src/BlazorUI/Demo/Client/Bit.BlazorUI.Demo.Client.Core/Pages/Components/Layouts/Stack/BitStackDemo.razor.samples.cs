@@ -49,44 +49,10 @@ public partial class BitStackDemo
 </BitStack>";
 
     private readonly string example2RazorCode = @"
-<BitSlider Label=""Gap between items"" Max=""5"" ValueFormat=""0.0 rem"" Step=""0.1"" @bind-Value=""@gap"" />
-
-<BitStack Gap=""@($""{gap.ToString(CultureInfo.InvariantCulture)}rem"")"" Class=""stack"">
-    <div class=""item"">Item 1</div>
-    <div class=""item"">Item 2</div>
-    <div class=""item"">Item 3</div>
-</BitStack>
-
-<BitStack Horizontal Wrap HorizontalGap=""2rem"" VerticalGap=""0.25rem"" Class=""stack"">
-    @for (int i = 1; i <= 12; i++)
-    {
-        <div class=""item"">Item @i</div>
-    }
-</BitStack>
-
-<BitStack AutoHeight HorizontalAlign=""BitAlignment.Stretch"" Class=""stack"">
-    <div class=""item"">Item 1</div>
-    <BitSeparator />
-    <div class=""item"">Item 2</div>
-</BitStack>";
-    private readonly string example2CsharpCode = @"
-private double gap = 1;
-";
-
-    private readonly string example3RazorCode = @"
-<BitStack Horizontal Wrap Gap=""2rem"">
+<BitStack Horizontal>
     <BitToggle @bind-Value=""isHorizontal"" Text=""Horizontal"" />
     <BitToggle @bind-Value=""isReversed"" Text=""Reversed"" />
 </BitStack>
-
-<BitChoiceGroup @bind-Value=""direction""
-                Horizontal
-                Label=""Direction""
-                TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
-    <BitChoiceGroupOption Text=""LTR"" Value=""BitDir.Ltr"" />
-    <BitChoiceGroupOption Text=""RTL"" Value=""BitDir.Rtl"" />
-    <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
-</BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""horizontalAlign""
                 Horizontal
@@ -116,8 +82,7 @@ private double gap = 1;
     <BitChoiceGroupOption Text=""Stretch"" Value=""BitAlignment.Stretch"" />
 </BitChoiceGroup>
 
-<BitStack Dir=""direction""
-          Class=""stack""
+<BitStack Class=""stack""
           Reversed=""isReversed""
           Horizontal=""isHorizontal""
           VerticalAlign=""verticalAlign""
@@ -131,15 +96,14 @@ private double gap = 1;
 <BitStack Alignment=""BitAlignment.Center"" Class=""stack"" Style=""height:8rem"">
     <div class=""item"">Centered</div>
 </BitStack>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool isReversed;
 private bool isHorizontal;
-private BitDir direction;
 private BitAlignment verticalAlign;
 private BitAlignment horizontalAlign;
 ";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example3RazorCode = @"
 <style>
     .square {
         color: var(--bit-clr-pri-text);
@@ -185,16 +149,41 @@ private BitAlignment horizontalAlign;
     }
 </BitStack>
 
-<BitStack Horizontal Wrap WrapMd=""false"" Gap=""0.5rem"" Class=""stack"" AutoHeight>
+<BitStack Horizontal Wrap WrapMd=""false"" Class=""stack"">
     @for (int i = 1; i <= 16; i++)
     {
         <div class=""square"">@i</div>
     }
 </BitStack>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private double stackHeight = 15;
 private bool isWrapReversed;
 private BitAlignment alignContent;
+";
+
+    private readonly string example4RazorCode = @"
+<BitSlider Label=""Gap between items"" Max=""5"" ValueFormat=""0.0 rem"" Step=""0.1"" @bind-Value=""@gap"" />
+
+<BitStack Gap=""@($""{gap.ToString(CultureInfo.InvariantCulture)}rem"")"" Class=""stack"">
+    <div class=""item"">Item 1</div>
+    <div class=""item"">Item 2</div>
+    <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack Horizontal Wrap HorizontalGap=""2rem"" VerticalGap=""0.25rem"" Class=""stack"">
+    @for (int i = 1; i <= 12; i++)
+    {
+        <div class=""item"">Item @i</div>
+    }
+</BitStack>
+
+<BitStack HorizontalAlign=""BitAlignment.Stretch"" Class=""stack"">
+    <div class=""item"">Item 1</div>
+    <BitSeparator />
+    <div class=""item"">Item 2</div>
+</BitStack>";
+    private readonly string example4CsharpCode = @"
+private double gap = 1;
 ";
 
     private readonly string example5RazorCode = @"
@@ -220,13 +209,13 @@ private BitAlignment alignContent;
     <div class=""item"">Item 3</div>
 </BitStack>
 
-<BitStack HorizontalMd Gap=""0.25rem"" GapMd=""3rem"" Class=""stack"" AutoHeight>
+<BitStack HorizontalMd Gap=""0.25rem"" GapMd=""3rem"" Class=""stack"">
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
 </BitStack>
 
-<BitStack Horizontal Wrap Gap=""0.5rem"" HorizontalGapMd=""3rem"" HorizontalGapLg=""5rem"" Class=""stack"" AutoHeight>
+<BitStack Horizontal Wrap Gap=""0.5rem"" HorizontalGapMd=""3rem"" HorizontalGapLg=""5rem"" Class=""stack"">
     @for (int i = 1; i <= 8; i++)
     {
         <div class=""item"">Item @i</div>
@@ -300,14 +289,14 @@ private BitAlignment alignContent;
     <div class=""item"">Item 3</div>
 </BitStack>
 
-<BitStack Horizontal Gap=""0.5rem"" Class=""host"" AutoHeight Style=""width:20rem"">
+<BitStack Horizontal Gap=""0.5rem"" Class=""host"" Style=""width:20rem"">
     @for (int i = 1; i <= 8; i++)
     {
         <div class=""square"">@i</div>
     }
 </BitStack>
 
-<BitStack Horizontal NoShrinkContent Gap=""0.5rem"" Class=""host"" AutoHeight Style=""width:20rem"">
+<BitStack Horizontal NoShrinkContent Gap=""0.5rem"" Class=""host"" Style=""width:20rem"">
     @for (int i = 1; i <= 8; i++)
     {
         <div class=""square"">@i</div>
@@ -482,6 +471,31 @@ private BitAlignment alignContent;
 </div>";
 
     private readonly string example12RazorCode = @"
+<BitParams Parameters=""@stackParams"">
+    <BitStack Class=""stack"">
+        <div class=""item"">Item 1</div>
+        <div class=""item"">Item 2</div>
+        <div class=""item"">Item 3</div>
+    </BitStack>
+
+    <BitStack Horizontal=""false"" Class=""stack"">
+        <div class=""item"">Its own Horizontal=""false""</div>
+        <div class=""item"">The cascaded rest</div>
+    </BitStack>
+</BitParams>";
+    private readonly string example12CsharpCode = @"
+private readonly BitStackParams[] stackParams =
+[
+    new()
+    {
+        Horizontal = true,
+        Gap = ""0.5rem"",
+        VerticalAlign = BitAlignment.Center,
+        AutoHeight = true,
+    }
+];";
+
+    private readonly string example13RazorCode = @"
 <BitStack Horizontal Size=""BitSize.Small"" Class=""stack"" AutoHeight>
     <div class=""item"">Small</div>
     <div class=""item"">Small</div>
@@ -500,7 +514,7 @@ private BitAlignment alignContent;
     <div class=""item"">Large</div>
 </BitStack>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-stack {
         padding: 1rem;
@@ -519,9 +533,17 @@ private BitAlignment alignContent;
 <BitStack Horizontal AutoHeight Class=""custom-stack"">
     <div class=""item"">Class</div>
     <div class=""item"">on the stack</div>
-</BitStack>";
+</BitStack>
 
-    private readonly string example14RazorCode = @"
+<div style=""--bit-Stack-gap:0.25rem"">
+    <BitStack Horizontal AutoHeight Class=""stack"">
+        <div class=""item"">A tight</div>
+        <div class=""item"">default</div>
+        <div class=""item"">gap</div>
+    </BitStack>
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitStack Horizontal Dir=""BitDir.Rtl"" Class=""stack"">
     <div class=""item"">یک</div>
     <div class=""item"">دو</div>

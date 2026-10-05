@@ -25,7 +25,7 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         await server.Build().Start(TestContext.CancellationToken);
 
         // The home page is public, so opening it needs no sign-in.
-        await Page.GotoAsync(server.WebAppServerAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GotoAsync(server.WebAppAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var callout = Page.Locator(".app-menu-callout");
 
@@ -106,6 +106,8 @@ public partial class TimeZoneSelectionUITests : AppPageTest
     /// </summary>
     private async Task OpenTimeZonePanel(ILocator callout)
     {
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
         await Expect(callout).ToBeVisibleAsync();
 

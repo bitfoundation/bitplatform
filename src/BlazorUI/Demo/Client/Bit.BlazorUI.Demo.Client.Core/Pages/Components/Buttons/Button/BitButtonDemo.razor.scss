@@ -16,6 +16,42 @@
     max-width: 20rem;
 }
 
+// Narrow enough that the label of the button inside it has to wrap, or be clamped by NoWrap.
+.narrow-container {
+    max-width: 18rem;
+}
+
+// A surface whose color the buttons on it are meant to keep matching, which is the case FixedColor is for.
+.fixed-color-surface {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    align-items: flex-start;
+    background-color: var(--bit-clr-bg-ter);
+}
+
+.float-container {
+    position: relative;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.float-container-content {
+    height: 300px;
+    overflow: auto;
+    padding: 0.5rem;
+}
+
+// The public CSS variables are inherited, so one set here re-skins every button inside this row
+// without the stylesheet ever naming a class of the component.
+.compact-buttons {
+    --bit-Button-gap: 0.25rem;
+    --bit-Button-font-size: 0.75rem;
+    --bit-Button-padding: 0 0.75rem;
+    --bit-Button-min-height: 1.75rem;
+}
+
 ::deep {
     .custom-class {
         border-radius: 1rem;

@@ -381,9 +381,9 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.Decorative, decorative);
         });
 
-        var role = decorative ? "none" : "separator";
+        var aria = decorative ? @"role=""none"" aria-hidden=""true""" : @"role=""separator""";
 
-        component.MarkupMatches(@$"<div role=""{role}"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        component.MarkupMatches(@$"<div {aria} class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -645,8 +645,10 @@ public class BitSeparatorTests : BunitTestContext
             parameters.Add(p => p.LineStyle, lineStyle);
         });
 
+        // Solid has a class of its own, unlike the unset default, so that it wins over the line-style variable.
         var cssClass = lineStyle switch
         {
+            BitLineStyle.Solid => "bit-spr-sld ",
             BitLineStyle.Dashed => "bit-spr-dsh ",
             BitLineStyle.Dotted => "bit-spr-dot ",
             BitLineStyle.Double => "bit-spr-dbl ",
@@ -976,5 +978,119 @@ public class BitSeparatorTests : BunitTestContext
 
         // Both tiers render their class; the stylesheet declares the Color tier last, so it wins.
         component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-bsg bit-spr-btr bit-spr-err bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow("li", "LI"),
+        DataRow(" li ", "LI"),
+        DataRow("section", "SECTION"),
+        DataRow("div", "DIV"),
+        DataRow(null, "DIV"),
+        DataRow("", "DIV"),
+        DataRow("hr", "DIV"),
+        DataRow("img", "DIV"),
+        DataRow("li onclick", "DIV"),
+        DataRow("<li>", "DIV")
+    ]
+    public void BitSeparatorShouldRespectElement(string? element, string expectedTagName)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        var root = component.Find(".bit-spr");
+
+        Assert.AreEqual(expectedTagName, root.TagName);
+        // Whatever tag it renders, it is a separator to assistive technologies and holds its content.
+        Assert.AreEqual("separator", root.GetAttribute("role"));
+        Assert.AreEqual("Bit Blazor UI", component.Find(".bit-spr-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRespectElementChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        Assert.AreEqual("DIV", component.Find(".bit-spr").TagName);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "li");
+        });
+
+        Assert.AreEqual("LI", component.Find(".bit-spr").TagName);
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldKeepASplattedAriaLabelledbyUnlessDecorative()
+    {
+        var component = RenderComponent<BitSeparatorAriaLabelledbyTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // A name the page points at elsewhere is kept as written rather than replaced by the content's id...
+        Assert.AreEqual("shipping-heading", separators[0].GetAttribute("aria-labelledby"));
+        // ...while a decorative separator is not a separator to name at all.
+        Assert.IsFalse(separators[1].HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldHideOnlyAnEmptyDecorativeSeparator()
+    {
+        var component = RenderComponent<BitSeparatorAriaHiddenTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // An empty decorative separator is hidden outright...
+        Assert.AreEqual("true", separators[0].GetAttribute("aria-hidden"));
+        // ...one with content keeps the content readable...
+        Assert.IsFalse(separators[1].HasAttribute("aria-hidden"));
+        // ...an announced one is never hidden...
+        Assert.IsFalse(separators[2].HasAttribute("aria-hidden"));
+        // ...and an aria-hidden the page splats on is kept as written.
+        Assert.AreEqual("false", separators[3].GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldUnhideADecorativeSeparatorGivenContentAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Decorative, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-spr").GetAttribute("aria-hidden"));
+
+        component.Render(parameters =>
+        {
+            parameters.AddChildContent("Bit Blazor UI");
+        });
+
+        Assert.IsFalse(component.Find(".bit-spr").HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldKeepTheAttributesThePageSplatsOn()
+    {
+        var component = RenderComponent<BitSeparatorSplattedAttributesTest>();
+
+        var separators = component.FindAll(".bit-spr");
+
+        // A plain aria-label names the separator rather than being written over with the null of the parameter...
+        Assert.AreEqual("End of shipping", separators[0].GetAttribute("aria-label"));
+        // ...and wins over the content, which then does not name it as well.
+        Assert.AreEqual("End of shipping", separators[1].GetAttribute("aria-label"));
+        Assert.IsFalse(separators[1].HasAttribute("aria-labelledby"));
+        // Attribute names are case insensitive, so a differently cased one is the same attribute, kept as written.
+        Assert.AreEqual("shipping-heading", separators[2].GetAttribute("aria-labelledby"));
+        Assert.AreEqual("false", separators[3].GetAttribute("aria-hidden"));
+        // The root attributes the component builds itself are joined with, or yield to, the splatted ones.
+        Assert.IsTrue(separators[4].ClassList.Contains("bit-spr"));
+        Assert.IsTrue(separators[4].ClassList.Contains("page-class"));
+        StringAssert.Contains(separators[4].GetAttribute("style"), "margin: 0");
+        Assert.AreEqual("rtl", separators[4].GetAttribute("dir"));
+        Assert.AreEqual("page-id", separators[4].GetAttribute("id"));
     }
 }

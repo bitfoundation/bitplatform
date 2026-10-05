@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Carousel;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Carousel;
 
 public partial class BitCarouselDemo
 {
@@ -25,7 +25,7 @@ public partial class BitCarouselDemo
             Name = "AutoPlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables/disables the auto scrolling of the slides."
+            Description = "Enables/disables the auto scrolling of the slides. It pauses while hovered, focused or in a hidden tab, and starts paused under prefers-reduced-motion unless ForceAnimation is set."
         },
         new()
         {
@@ -62,7 +62,7 @@ public partial class BitCarouselDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the carousel, applied to the dot of the current page and the next/prev and play/pause buttons.",
+            Description = "The general color of the carousel, applied to the dot of the current page, the next/prev and play/pause buttons, and the focus ring.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -89,6 +89,15 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "DotsPosition",
+            Type = "BitCarouselDotsPosition?",
+            DefaultValue = "null",
+            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End.",
+            LinkType = LinkType.Link,
+            Href = "#dots-position-enum",
+        },
+        new()
+        {
             Name = "DotTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
@@ -99,7 +108,7 @@ public partial class BitCarouselDemo
             Name = "DragThreshold",
             Type = "int",
             DefaultValue = "20",
-            Description = "The distance (in pixels) the pointer has to travel over the carousel before it moves to another page."
+            Description = "The distance (in pixels) the pointer has to travel over the carousel before it moves to another page. The click that ends a longer drag is swallowed, so a link or a button under the pointer is not followed."
         },
         new()
         {
@@ -292,6 +301,13 @@ public partial class BitCarouselDemo
             Type = "int",
             DefaultValue = "1",
             Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount, and a non-infinite carousel moves by fewer items near its ends so its first and last pages always stay full. Together with VisibleItemsCount it also decides where the carousel stops, which is what the dots stand for and what OnChange reports."
+        },
+        new()
+        {
+            Name = "SelectedPage",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The page (1 based, like GoTo) the carousel is showing, bindable two ways with @bind-SelectedPage. Setting it moves the carousel there, every move writes it back, and it takes the place of DefaultPage on the first render. Out of range values are clamped and written back.",
         },
         new()
         {
@@ -601,6 +617,19 @@ public partial class BitCarouselDemo
     [
         new()
         {
+            Id = "dots-position-enum",
+            Name = "BitCarouselDotsPosition",
+            Description = "Where the dots of the carousel are placed around its slides.",
+            Items =
+            [
+                new() { Name = "Bottom", Description = "Below the slides.", Value = "0" },
+                new() { Name = "Top", Description = "Above the slides.", Value = "1" },
+                new() { Name = "Start", Description = "In a column beside the slides, at the start of the reading direction.", Value = "2" },
+                new() { Name = "End", Description = "In a column beside the slides, at the end of the reading direction.", Value = "3" },
+            ]
+        },
+        new()
+        {
             Id = "color-kind-enum",
             Name = "BitColorKind",
             Description = "Defines the color kinds available in the bit BlazorUI.",
@@ -658,7 +687,7 @@ public partial class BitCarouselDemo
         {
             Name = "CurrentPage",
             Type = "int",
-            Description = "The zero based index of the page the carousel is currently showing.",
+            Description = "The zero based index of the page the carousel is currently showing (SelectedPage minus one).",
         },
         new()
         {
@@ -682,7 +711,7 @@ public partial class BitCarouselDemo
         {
             Name = "IsPaused",
             Type = "bool",
-            Description = "Whether the auto scrolling has been paused through Pause or the play/pause button.",
+            Description = "Whether the auto scrolling has been paused through Pause or the play/pause button, or started paused under reduced motion.",
         },
         new()
         {
@@ -730,12 +759,153 @@ public partial class BitCarouselDemo
 
 
 
-    private int number = 1;
-    private int currentPage;
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Carousel-height",
+            DefaultValue = "spacing(25)",
+            Description = "Height of the carousel. Style or a class on one carousel can set its height directly as well.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-gap",
+            DefaultValue = "0px",
+            Description = "Space between the slides; the Gap parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-easing",
+            DefaultValue = "--bit-mot-easing",
+            Description = "Timing function of the slide and fade motion.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-focus-color",
+            DefaultValue = "--bit-clr-pri-focus (the Color role's focus color)",
+            Description = "Focus ring color of the carousel and of its buttons and dots.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-color",
+            DefaultValue = "--bit-clr-fg-pri (the Color role's main color)",
+            Description = "Glyph color of the next/prev and play/pause buttons, and the color of templated dots.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-hover-color",
+            DefaultValue = "--bit-clr-fg-pri-hover (the Color role's hover color)",
+            Description = "The same glyphs while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-background",
+            DefaultValue = "transparent",
+            Description = "Background of the next/prev and play/pause buttons; a translucent scrim keeps them legible over busy slides.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-hover-background",
+            DefaultValue = "The rest background",
+            Description = "Background of the buttons while hovered.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-opacity",
+            DefaultValue = "0.5",
+            Description = "Opacity of the buttons at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-hover-opacity",
+            DefaultValue = "0.9",
+            Description = "Opacity of the buttons while hovered.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-size",
+            DefaultValue = "Per Size, 1.5 times the icon size (--bit-siz-icon-sm / -md / -lg)",
+            Description = "Glyph size of the next/prev buttons.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-button-width",
+            DefaultValue = "10%",
+            Description = "Hit area of the next/prev buttons across the scrolling axis (their height in a vertical carousel).",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the dots.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-hover-color",
+            DefaultValue = "--bit-clr-brd-pri-hover",
+            Description = "Color of a hovered dot.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-current-color",
+            DefaultValue = "The Accent / Color role's main color",
+            Description = "Color of the dot of the current page (the text color of a templated one).",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-current-hover-color",
+            DefaultValue = "The Accent / Color role's hover color",
+            Description = "Color of the current dot while hovered.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-size",
+            DefaultValue = "Per Size (8px / 10px / 14px)",
+            Description = "Diameter of the dots.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-current-length",
+            DefaultValue = "Twice the dot size",
+            Description = "Length of the current dot along the dots row (its height in a Start/End column); the dot size makes it a circle again.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dot-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of the dots.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dots-gap",
+            DefaultValue = "The room that keeps the dots 24px apart",
+            Description = "Space between the dots. The default meets the WCAG 2.2 target spacing for dots smaller than 24px.",
+        },
+        new()
+        {
+            Name = "--bit-Carousel-dots-margin",
+            DefaultValue = "spacing(1.25)",
+            Description = "Space between the slides and the dots, on whichever side DotsPosition puts them.",
+        },
+    ];
+
+
+
+    private int selectedPage = 2;
+    private int changedIndex;
     private BitCarousel carousel = default!;
 
-    private int thumbsCurrentPage;
-    private BitCarousel thumbsCarousel = default!;
+    private int thumbsPage = 1;
+
+    private readonly BitCarouselParams[] carouselParams =
+    [
+        new()
+        {
+            InfiniteScrolling = true,
+            HideDots = true,
+            AnimationDuration = 0.3,
+        }
+    ];
 
     private async Task GoNext()
     {
@@ -745,10 +915,5 @@ public partial class BitCarouselDemo
     private async Task GoPrev()
     {
         await carousel.GoPrev();
-    }
-
-    private async Task GoTo()
-    {
-        await carousel.GoTo(number);
     }
 }

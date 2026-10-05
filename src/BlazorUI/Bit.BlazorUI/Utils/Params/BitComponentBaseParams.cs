@@ -7,6 +7,8 @@ public abstract class BitComponentBaseParams
 {
     /// <summary>
     /// Gets or sets the accessible label for the component, used by assistive technologies.
+    /// Every component that reads this params object is announced by the same name, so only share it between
+    /// components that do the same thing.
     /// <br />
     /// <see cref="BitComponentBase.AriaLabel"/>.
     /// </summary>
@@ -36,6 +38,7 @@ public abstract class BitComponentBaseParams
 
     /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
+    /// A nested params object of the same type adds its entries to these instead of replacing them.
     /// <br />
     /// <see cref="BitComponentBase.HtmlAttributes"/>.
     /// </summary>
@@ -43,6 +46,7 @@ public abstract class BitComponentBaseParams
 
     /// <summary>
     /// Gets or sets the unique identifier for the component's root element.
+    /// Every component that reads this params object gets the same id, so only share it with a single component.
     /// <br />
     /// <see cref="BitComponentBase.Id"/>.
     /// </summary>
@@ -53,7 +57,7 @@ public abstract class BitComponentBaseParams
     /// <br />
     /// <see cref="BitComponentBase.IsEnabled"/>.
     /// </summary>
-    public bool? IsEnabled { get; set; } = true;
+    public bool? IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.
@@ -89,26 +93,30 @@ public abstract class BitComponentBaseParams
     {
         if (bitComponentBase is null) return;
 
+        // This runs on every render of every component under the BitParams, so a value that drives the class or
+        // the style of the root only resets the builder when it differs from the one the component already holds:
+        // an unchanged one would rebuild both strings on every render for nothing.
+
         if (AriaLabel.HasValue() && bitComponentBase.HasNotBeenSet(nameof(AriaLabel)))
         {
             bitComponentBase.AriaLabel = AriaLabel;
         }
 
-        if (Class.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Class)))
+        if (Class.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Class)) && bitComponentBase.Class != Class)
         {
             bitComponentBase.Class = Class;
 
             bitComponentBase.ClassBuilder.Reset();
         }
 
-        if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)))
+        if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)) && bitComponentBase.Dir != Dir)
         {
             bitComponentBase.Dir = Dir.Value;
 
             bitComponentBase.ClassBuilder.Reset();
         }
 
-        if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)))
+        if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)) && bitComponentBase.ForceAnimation != ForceAnimation)
         {
             bitComponentBase.ForceAnimation = ForceAnimation.Value;
 
@@ -130,14 +138,14 @@ public abstract class BitComponentBaseParams
             bitComponentBase.Id = Id;
         }
 
-        if (IsEnabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(IsEnabled)))
+        if (IsEnabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(IsEnabled)) && bitComponentBase.IsEnabled != IsEnabled)
         {
             bitComponentBase.IsEnabled = IsEnabled.Value;
 
             bitComponentBase.ClassBuilder.Reset();
         }
 
-        if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)))
+        if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)) && bitComponentBase.Style != Style)
         {
             bitComponentBase.Style = Style;
 
@@ -149,7 +157,7 @@ public abstract class BitComponentBaseParams
             bitComponentBase.TabIndex = TabIndex;
         }
 
-        if (Visibility.HasValue && bitComponentBase.HasNotBeenSet(nameof(Visibility)))
+        if (Visibility.HasValue && bitComponentBase.HasNotBeenSet(nameof(Visibility)) && bitComponentBase.Visibility != Visibility)
         {
             bitComponentBase.Visibility = Visibility.Value;
 

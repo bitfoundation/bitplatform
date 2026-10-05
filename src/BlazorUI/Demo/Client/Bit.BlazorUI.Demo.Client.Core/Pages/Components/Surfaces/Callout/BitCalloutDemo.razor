@@ -6,30 +6,19 @@
 
 <DemoPage Name="Callout"
           SecondaryNames="@(["Popover", "Popup"])"
-          Description="Callout is an anchored surface that hosts any content - a tip, a form, a filter panel, a menu - next to an anchor of its own, next to any element on the page, or at a point a right-click happened, without blocking what is behind it. It places itself where there is room, on the side and the alignment asked for wherever they fit, points at its anchor with an optional arrow, and keeps following it for as long as it is open. It opens on a click or on hover and closes on an outside click or the Escape key, and it can take the keyboard over, dim the page behind it, nest inside another callout, and become a swipeable panel on the small screens."
+          Description="Callout is an anchored surface for any content - a tip, a form, a filter panel, a menu - placed next to an anchor of its own, any element on the page, or a point on the screen. It picks the side with room, follows its anchor while open, points at it with an optional arrow, opens on a click or on hover, closes on an outside click or Escape, and can trap the keyboard, dim the page, nest, and become a swipeable panel on small screens."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
           GitHubUrl="Surfaces/Callout/BitCallout.razor"
           GitHubDemoUrl="Surfaces/Callout/BitCalloutDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            The <b>Anchor</b> is what the callout is positioned against and what toggles it on a click, and
-            <b>Content</b> (an alias of ChildContent) is what the callout holds. The anchor is a plain
-            container around whatever is put in it, so it should hold the focusable element the user
-            activates - a button, most of the time. <b>IsEnabled</b> turns the whole callout off, down to
-            the Open, OpenAt and Toggle methods, and closes one that was already open.
-        </div>
-        <br />
-        <div>
-            <b>NoOverlay</b> leaves the page its own clicks while the callout is open, by not rendering the
-            overlay that otherwise covers the page and takes the click that dismisses the callout. Whatever
-            is underneath stays usable - an outside click still dismisses the callout, but it also reaches
-            what it landed on. <b>DefaultIsOpen</b> is the state the callout starts in and then manages
-            itself, so the third one here is already open when the page loads; it is given NoOverlay as
-            well, since a callout that opens with the page would otherwise spend the first click made
-            anywhere on it on dismissing itself.
+            The <b>Anchor</b> positions and toggles the callout; put a focusable trigger (a button) in it. <b>Content</b>
+            is what it holds. <b>NoOverlay</b> leaves the page clickable while it is open, <b>DefaultIsOpen</b> sets the
+            state it starts in, and <b>IsEnabled="false"</b> turns it off entirely.
         </div>
         <br />
         <div class="example-box">
@@ -38,9 +27,7 @@
                     <BitButton>Show callout</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        This is the callout content.
-                    </div>
+                    <div class="callout-content">This is the callout content.</div>
                 </Content>
             </BitCallout>
 
@@ -49,9 +36,7 @@
                     <BitButton Variant="BitVariant.Outline">NoOverlay</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        The page keeps its own clicks while this callout is open.
-                    </div>
+                    <div class="callout-content">The page keeps its own clicks.</div>
                 </Content>
             </BitCallout>
 
@@ -60,9 +45,16 @@
                     <BitButton Variant="BitVariant.Text">DefaultIsOpen</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        This callout owns its own open state.
-                    </div>
+                    <div class="callout-content">Open from the start.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout IsEnabled="false">
+                <Anchor>
+                    <BitButton IsEnabled="false">Disabled</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Never shown.</div>
                 </Content>
             </BitCallout>
         </div>
@@ -70,10 +62,9 @@
 
     <DemoExample Title="External anchor" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
-            The callout does not have to render its own anchor: <b>AnchorId</b> points it at the id of any
-            element on the page and <b>AnchorEl</b> at an element reference, which is the one to reach for
-            when the anchor has no id of its own. Both leave the opening to the consumer, so the callout is
-            driven through its <b>Toggle</b>, <b>Open</b> and <b>Close</b> methods, or through IsOpen.
+            <b>AnchorId</b> or <b>AnchorEl</b> places the callout against any element on the page. Opening it is then up
+            to you, through <b>Toggle</b>, <b>Open</b> and <b>Close</b> (or IsOpen); closing hands the focus back to what
+            opened it.
         </div>
         <br />
         <div class="example-box">
@@ -93,22 +84,116 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Context menu" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
-            <b>OpenAt</b> opens the callout at a point on the screen instead of against an anchor, which is
-            what a context menu needs. It takes the coordinates directly, or the mouse event they came from,
-            so a right-click handler is the whole of it. The point is placed against exactly as an anchor
-            would be, so the menu still flips to the side with the most room and is still kept within the
-            screen. Calling it again while the callout is open moves it to the new point rather than closing
-            and reopening it, and the anchor takes over again the next time anything else opens the callout.
+            <b>IsOpen</b> is two-way bindable, so anything can open the callout and its own content can close it.
         </div>
         <br />
+        <div class="example-box">
+            <BitButton OnClick="() => isOpen = true">Show callout</BitButton>
+
+            <BitCallout @bind-IsOpen="isOpen">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Anchor</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        <BitStack Gap="1rem">
+                            <div>Close it from inside.</div>
+                            <BitStack Horizontal Gap="0.5rem">
+                                <BitButton OnClick="() => isOpen = false">Done</BitButton>
+                                <BitButton OnClick="() => isOpen = false" Variant="BitVariant.Outline">Cancel</BitButton>
+                            </BitStack>
+                        </BitStack>
+                    </div>
+                </Content>
+            </BitCallout>
+        </div>
+        <br />
+        <div>IsOpen: @isOpen</div>
+    </DemoExample>
+
+    <DemoExample Title="Open on hover" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            A context menu is what <BitLink Href="#example1">NoOverlay</BitLink> is there for: with the
-            overlay in the way, the second right-click would land on it, so the browser would show its own
-            menu over the callout instead of the callout moving to the new point. The callout is still
-            dismissed by an interaction outside of it - a click anywhere else on the page, or a right-click
-            the page does not take for itself.
+            <b>OpenOnHover</b> opens on pointer enter and closes once the pointer has left both the anchor and the callout.
+            <b>HoverOpenDelay</b> ignores a pointer passing by; <b>HoverCloseDelay</b> (150ms) bridges the way into the
+            callout. A click still toggles it, so keyboard and touch users get in too, and Escape closes it wherever the
+            focus is.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCallout OpenOnHover>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Hover me</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Opened on hover.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout OpenOnHover HoverOpenDelay="500" HoverCloseDelay="500">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Delayed (500ms)</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Opening and closing both waited half a second.</div>
+                </Content>
+            </BitCallout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Dismissal" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            An outside click, Escape, or the page scrolling away closes a callout. <b>AutoClose</b> adds a click inside it
+            (for action lists); <b>NoDismissOnScroll</b> keeps it open, following its anchor, while the page scrolls;
+            <b>NoDismissOnEscape</b> and <b>NoDismissOnOutsideClick</b> take ways out away, leaving the content to close it.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCallout AutoClose>
+                <Anchor>
+                    <BitButton>AutoClose (@autoCloseAction)</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        <BitStack Gap="0.25rem">
+                            <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Renamed")">Rename</BitButton>
+                            <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Duplicated")">Duplicate</BitButton>
+                            <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Deleted")">Delete</BitButton>
+                        </BitStack>
+                    </div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout NoDismissOnScroll>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">NoDismissOnScroll</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Scroll the page: this one follows its anchor.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout NoDismissOnEscape NoDismissOnOutsideClick @ref="callout3">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">No auto dismiss</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        <BitStack Gap="1rem">
+                            <div>Neither Escape nor an outside click closes this one.</div>
+                            <BitButton OnClick="() => callout3.Close()">Close</BitButton>
+                        </BitStack>
+                    </div>
+                </Content>
+            </BitCallout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Context menu" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>OpenAt</b> opens the callout at a point (coordinates or a mouse event) instead of an anchor, and moves an
+            open one to the new point. Pair it with <b>NoOverlay</b> so the next right-click reaches the page.
         </div>
         <br />
         <div class="example-box">
@@ -116,7 +201,7 @@
                 Right-click anywhere in here
             </div>
 
-            <BitCallout AutoClose NoOverlay MinWidth="12rem" @ref="contextCallout">
+            <BitCallout AutoClose NoOverlay @ref="contextCallout">
                 <div class="callout-content">
                     <BitStack Gap="0.25rem">
                         <BitButton FullWidth Variant="BitVariant.Text" OnClick="@(() => contextAction = "Cut")">Cut</BitButton>
@@ -130,186 +215,52 @@
         <div>Last action: @contextAction</div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Placement" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            <b>IsOpen</b> is two-way bindable, so the open state can be owned by the page: anything can open
-            the callout and its own content can close it. <b>DefaultIsOpen</b>, in the
-            <BitLink Href="#example1">Basic</BitLink> example above, is the uncontrolled version of the same
-            thing - the state the callout starts in, which it then manages itself - and it is only read when
-            IsOpen is not bound.
+            <b>Placement</b> asks for a side and flips to the opposite one when there is no room, unless <b>NoFlip</b>; without
+            a Placement, <b>Direction</b> picks among top and bottom (the default) or <b>All</b> sides. <b>Alignment</b> lines
+            it up across that side, <b>AlignmentOffset</b> slides it inwards, <b>Gap</b> spaces it from the anchor and
+            <b>CollisionPadding</b> from the screen edges.
+        </div>
+        <br />
+        <div>
+            It follows its anchor changing size (and moving, with NoDismissOnScroll); <b>Reposition</b> covers its own
+            content changing. <b>MaxWindowWidth</b> lets it hang off a narrow screen instead of sliding back onto it.
+        </div>
+        <br />
+        <div class="placement-controls">
+            <BitChoiceGroup Horizontal Label="Side" TItem="BitChoiceGroupOption<string>" TValue="string" @bind-Value="placementSide">
+                <BitChoiceGroupOption Text="Auto" Value="@("Auto")" />
+                <BitChoiceGroupOption Text="Top" Value="@("Top")" />
+                <BitChoiceGroupOption Text="Bottom" Value="@("Bottom")" />
+                <BitChoiceGroupOption Text="Start" Value="@("Start")" />
+                <BitChoiceGroupOption Text="End" Value="@("End")" />
+            </BitChoiceGroup>
+            <BitChoiceGroup Horizontal Label="Alignment" TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement" @bind-Value="placementAlignment">
+                <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+                <BitChoiceGroupOption Text="Center" Value="BitPlacement.Center" />
+                <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
+            </BitChoiceGroup>
+            <BitNumberField Label="Gap" @bind-Value="placementGap" Min="0" Max="64" Style="max-width:8rem" />
+            <BitNumberField Label="AlignmentOffset" @bind-Value="placementOffset" Min="0" Max="64" Style="max-width:8rem" />
+            <BitCheckbox Label="NoFlip" @bind-Value="placementNoFlip" />
         </div>
         <br />
         <div class="example-box">
-            <BitButton OnClick="() => isOpen = true">Show callout</BitButton>
-
-            <BitCallout @bind-IsOpen="isOpen">
+            <BitCallout Placement="PlacementSide" Alignment="placementAlignment" Gap="placementGap" AlignmentOffset="placementOffset" NoFlip="placementNoFlip">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Anchor</BitButton>
+                    <BitButton>A wide anchor to place against</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        This is the callout content.
-                        <br />
-                        You can even close it from here!
-                        <br /><br />
-                        <div>
-                            <BitButton OnClick="() => isOpen = false">Done</BitButton>
-                            <BitButton OnClick="() => isOpen = false" Variant="BitVariant.Outline">Cancel</BitButton>
-                        </div>
-                    </div>
+                    <div class="callout-content">Placed by the options above.</div>
                 </Content>
             </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Open on hover" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            <b>OpenOnHover</b> opens the callout when the pointer enters the anchor and closes it when the
-            pointer leaves both the anchor and the callout, which is what a hover card is expected to do.
-            <b>HoverOpenDelay</b> keeps a pointer that is only passing over the anchor from opening it, and
-            <b>HoverCloseDelay</b> (150ms by default) bridges the gap between the anchor and the callout so
-            that moving from one to the other does not close what the pointer is on its way to. The anchor
-            keeps toggling the callout on a click, and the mode turns itself off on the touch screens, where
-            hovering does not exist - so the keyboard and the finger are both left with a way in. The pointer
-            is tracked over the anchor the callout renders itself, so this mode goes with <b>Anchor</b>
-            rather than with an external one.
         </div>
         <br />
         <div class="example-box">
-            <BitCallout OpenOnHover Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Hover me</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        This callout opened on hover.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout OpenOnHover Gap="8" HoverOpenDelay="500" HoverCloseDelay="500">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Delayed (500ms)</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        Both the opening and the closing waited half a second.
-                    </div>
-                </Content>
-            </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Arrow" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            <b>ShowArrow</b> draws a beak on the edge of the callout that faces the anchor, centred on the
-            anchor and kept clear of the rounded corners of the callout. It follows the callout wherever it
-            is placed - above, below or beside the anchor - and is painted in the same color as the callout,
-            border included. <b>ArrowSize</b> sets the side of the square it is cut out of, in pixels (12 by
-            default), and a bigger beak is kept further from the corners of the callout so the rounding never
-            cuts it. <b>ArrowPadding</b> is that distance from the corners (16px by default, never less than
-            the arrow itself): a wider one pulls the beak back towards the middle of a callout aligned with
-            the edge of a wide anchor, and a narrower one lets it sit closer to the corner and nearer to what
-            it points at. Pair it with a <b>Gap</b> to leave the beak room to stand out of the anchor.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitCallout ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton>With an arrow</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        This callout points at its anchor.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout ShowArrow Gap="8" Border="BitColorKind.Secondary" Background="BitColorKind.Secondary">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Arrow with a border</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        The beak takes the border of the callout too.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout ShowArrow ArrowSize="20" Gap="12">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">ArrowSize of 20px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        A beak twice the size of the default one.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout ShowArrow ArrowPadding="64" Gap="8" MinWidth="16rem">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">ArrowPadding of 64px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        The beak is held 64px away from the corners of the callout.
-                    </div>
-                </Content>
-            </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Positioning" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>
-            <b>Direction</b> declares which sides the callout may be placed on, and it picks the one with the
-            most room among them: <b>TopAndBottom</b> (the default) keeps it above or below the anchor, while
-            <b>All</b> also lets it move beside the anchor when neither of those has room, where it is aligned
-            with the top of the anchor. <b>Placement</b> asks for one side by name and wins over Direction where it
-            has the room; it is a preference rather than a demand, so a callout that does not fit there is
-            placed on the opposite side, and only when neither fits does Direction decide as usual - unless
-            <b>NoFlip</b> holds it to the side it was asked for whatever the room there, which is what a
-            layout that has to stay put needs. <b>Alignment</b> runs across that choice: it lines the callout up with the <b>Start</b> edge of
-            the anchor (the default), with its <b>Center</b>, or with its <b>End</b> edge - horizontally for
-            a callout above or below the anchor, vertically for one beside it - and the callout is still slid
-            back onto the screen afterwards if the alignment would hang it off an edge.
-            <b>AlignmentOffset</b> slides the callout along that same axis, inwards from whichever edge the
-            alignment picked, so the same value moves a Start-aligned callout and an End-aligned one towards
-            each other and a centered one not at all. <b>Gap</b> is the
-            distance in pixels the callout keeps from the anchor, on whichever side it ends up on, and
-            <b>CollisionPadding</b> is the distance it keeps from the edges of the screen - the room to leave
-            around it, and around a fixed header or toolbar it should not end up under.
-        </div>
-        <br />
-        <div>
-            The placement is kept up to date for as long as the callout is open: it follows the page
-            scrolling and resizing under it, the visible area changing as a mobile keyboard comes and goes,
-            and an anchor that changes size, and it hides itself while its anchor is scrolled out of sight
-            rather than pointing at nothing. <b>Reposition</b> covers what it cannot see - a content of its
-            own that has grown or shrunk - and lays it out again without replaying its entry animation.
-            <b>MaxWindowWidth</b> is the window width below which the callout may hang off the end of the
-            screen instead of being slid back onto it, for the layouts that scroll sideways on narrow screens
-            and would otherwise have the callout pulled away from the anchor it belongs to.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitCallout Direction="BitDropDirection.TopAndBottom">
-                <Anchor>
-                    <BitButton>TopAndBottom</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        @for (int i = 1; i < 23; i++)
-                        {
-                            <div>Callout content @i</div>
-                        }
-                    </div>
-                </Content>
-            </BitCallout>
-
             <BitCallout Direction="BitDropDirection.All">
                 <Anchor>
-                    <BitButton>All</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Direction: All</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
@@ -321,35 +272,13 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Placement="BitPlacement.Top" ShowArrow Gap="8">
+            <BitCallout CollisionPadding="24" Direction="BitDropDirection.All">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Placement: Top</BitButton>
+                    <BitButton Variant="BitVariant.Outline">CollisionPadding of 24px</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
-                        Placed above the anchor whenever there is room above it.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Placement="BitPlacement.End" ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Placement: End</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        Placed beside the anchor, on the side the content ends at.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Placement="BitPlacement.Top" NoFlip ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Placement: Top, NoFlip</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        @for (int i = 1; i < 13; i++)
+                        @for (int i = 1; i < 25; i++)
                         {
                             <div>Callout content @i</div>
                         }
@@ -357,72 +286,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout Alignment="BitPlacement.Center" ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">A wide anchor, centered alignment</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">Centered on the anchor.</div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Alignment="BitPlacement.End" ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">A wide anchor, end alignment</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">Lined up with the end edge.</div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Placement="BitPlacement.End" Alignment="BitPlacement.Center" ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">Beside, centered</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        @for (int i = 1; i < 5; i++)
-                        {
-                            <div>Callout content @i</div>
-                        }
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout AlignmentOffset="32" ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">AlignmentOffset of 32px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        Slid 32px in from the start edge of the anchor.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Alignment="BitPlacement.End" AlignmentOffset="32" ShowArrow Gap="8">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Text">End alignment, offset of 32px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        The same value, running in from the end edge instead.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Gap="16">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Gap of 16px</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        This callout keeps 16px away from its anchor.
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout @ref="callout4" Placement="BitPlacement.Top" ShowArrow Gap="8" MinWidth="14rem">
+            <BitCallout @ref="callout4" Placement="BitPlacement.Top" Gap="8">
                 <Anchor>
                     <BitButton Variant="BitVariant.Outline">Reposition</BitButton>
                 </Anchor>
@@ -438,31 +302,95 @@
                     </div>
                 </Content>
             </BitCallout>
+        </div>
+    </DemoExample>
 
-            <BitCallout CollisionPadding="24" Direction="BitDropDirection.All" MinWidth="14rem">
+    <DemoExample Title="Surface" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <b>Background</b> and <b>Border</b> take a color kind; <b>NoShadow</b> drops the elevation.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCallout Background="BitColorKind.Secondary">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">CollisionPadding of 24px</BitButton>
+                    <BitButton>Background</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        @for (int i = 1; i < 25; i++)
-                        {
-                            <div>Callout content @i</div>
-                        }
-                    </div>
+                    <div class="callout-content">A secondary background.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout Border="BitColorKind.Primary">
+                <Anchor>
+                    <BitButton>Border</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">A primary border.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout NoShadow Border="BitColorKind.Secondary">
+                <Anchor>
+                    <BitButton>NoShadow</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">No elevation, only a border.</div>
                 </Content>
             </BitCallout>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Sizing" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Arrow" RazorCode="@example9RazorCode" Id="example9">
         <div>
-            A callout is only as wide as its content needs by default. <b>Width</b>, <b>MinWidth</b> and
-            <b>MaxWidth</b> take CSS values and size it directly - a width or a maximum width is one a long
-            content wraps inside rather than stretching the callout past it - while <b>MaxHeight</b> caps it
-            and scrolls whatever is left over. <b>SetCalloutWidth</b> widens the callout to at least the width of the anchor and
-            <b>FixedCalloutWidth</b> holds it to at most that width, so a wider content wraps instead of
-            stretching it; both are applied after the callout is measured, so they take precedence over Width.
+            <b>ShowArrow</b> points a beak at the anchor from wherever the callout lands, painted like the surface; give it
+            a <b>Gap</b> to stand in. <b>ArrowSize</b> (12px) sizes it and <b>ArrowPadding</b> (16px) keeps it off the
+            corners.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitCallout ShowArrow Gap="8">
+                <Anchor>
+                    <BitButton>With an arrow</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">Points at its anchor.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout ShowArrow Gap="8" Placement="BitPlacement.End" Border="BitColorKind.Secondary" Background="BitColorKind.Secondary">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Beside, with a border</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">The beak takes the border too.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout ShowArrow ArrowSize="20" Gap="12">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">ArrowSize of 20px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">A bigger beak.</div>
+                </Content>
+            </BitCallout>
+
+            <BitCallout ShowArrow ArrowPadding="64" Gap="8">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">ArrowPadding of 64px</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">The beak is held 64px away from the corners of the callout.</div>
+                </Content>
+            </BitCallout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Sizing" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            A callout is as wide as its content. <b>Width</b>, <b>MinWidth</b> and <b>MaxWidth</b> take CSS values and wrap
+            the content; <b>MaxHeight</b> caps it and scrolls the rest. <b>SetCalloutWidth</b> makes it at least as wide as
+            the anchor and <b>FixedCalloutWidth</b> no wider; both win over Width.
         </div>
         <br />
         <div class="example-box">
@@ -488,7 +416,7 @@
 
             <BitCallout MaxHeight="12rem" MinWidth="14rem">
                 <Anchor>
-                    <BitButton>MaxHeight</BitButton>
+                    <BitButton>MaxHeight &amp; MinWidth</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
@@ -502,16 +430,16 @@
 
             <BitCallout SetCalloutWidth>
                 <Anchor>
-                    <BitButton>A wide anchor with SetCalloutWidth</BitButton>
+                    <BitButton Variant="BitVariant.Outline">A wide anchor with SetCalloutWidth</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">Short content, anchor-wide callout.</div>
+                    <div class="callout-content">Short content.</div>
                 </Content>
             </BitCallout>
 
             <BitCallout FixedCalloutWidth>
                 <Anchor>
-                    <BitButton>A wide anchor with FixedCalloutWidth</BitButton>
+                    <BitButton Variant="BitVariant.Outline">A wide anchor with FixedCalloutWidth</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">
@@ -522,23 +450,11 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Header &amp; footer" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Header &amp; footer" RazorCode="@example11RazorCode" Id="example11">
         <div>
-            <b>Header</b> and <b>Footer</b> lay the callout out as a column of the two of them around a body
-            that takes the scrolling, so a title and a row of actions stay put while a long content scrolls
-            between them. The callout wires the three parts up itself: the body is what is capped to the room
-            the viewport leaves, less the heights of the header and the footer, so the callout is never
-            taller than the screen it is shown on and nothing is cut off. The header is also what names the
-            callout to the screen readers unless AriaLabel names it directly, which is the accessible name a
-            callout that reports itself as a dialog is required to have.
-        </div>
-        <br />
-        <div>
-            The same layout can be built by hand out of the consumer's own elements, which is what a content
-            with more than three parts to it needs: <b>ScrollContainerId</b> hands the scrolling over to an
-            element inside the content, <b>HeaderId</b> and <b>FooterId</b> name the elements above and below
-            it whose heights come off the cap, and <b>ScrollOffset</b> is any further vertical space to keep
-            out of it. All three win over the parts the callout renders itself.
+            <b>Header</b> and <b>Footer</b> stay put while the body between them scrolls, and the header names the callout
+            for screen readers. For more parts, wire up your own elements with <b>ScrollContainerId</b>, <b>HeaderId</b>,
+            <b>FooterId</b> and <b>ScrollOffset</b>.
         </div>
         <br />
         <div class="example-box">
@@ -582,14 +498,10 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Responsive" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Responsive" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            <b>ResponsiveMode</b> turns the callout into a panel on small screens (under 600px), which slides
-            in from an edge of the screen and is swiped away along the same axis it slid in on. <b>Panel</b>
-            takes its edge from <b>PanelPlacement</b> - Start or End for a side panel - while <b>Top</b> and
-            <b>Bottom</b> are sheets that come down from the top or up from the bottom. Point
-            <b>ScrollContainerId</b> at the scrollable element inside the content so the swipe gesture does
-            not fight its scrolling. Resize the window to see it.
+            <b>ResponsiveMode</b> turns the callout into a swipeable panel under 600px: <b>Panel</b> slides in from the
+            <b>PanelPlacement</b> edge, while <b>Top</b> and <b>Bottom</b> are sheets. Resize the window to see it.
         </div>
         <br />
         <div class="example-box">
@@ -603,7 +515,6 @@
                             <BitText Typography="BitTypography.Subtitle1">Filters</BitText>
                             <BitCheckbox Label="Active" />
                             <BitCheckbox Label="Archived" />
-                            <BitCheckbox Label="Draft" />
                         </BitStack>
                     </div>
                 </Content>
@@ -619,7 +530,6 @@
                             <BitText Typography="BitTypography.Subtitle1">Filters</BitText>
                             <BitCheckbox Label="Active" />
                             <BitCheckbox Label="Archived" />
-                            <BitCheckbox Label="Draft" />
                         </BitStack>
                     </div>
                 </Content>
@@ -630,13 +540,7 @@
                     <BitButton>Top sheet</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        <BitStack Gap="0.5rem">
-                            <BitText Typography="BitTypography.Subtitle1">Swipe up to dismiss it</BitText>
-                            <BitCheckbox Label="Active" />
-                            <BitCheckbox Label="Archived" />
-                        </BitStack>
-                    </div>
+                    <div class="callout-content">Swipe up to dismiss it.</div>
                 </Content>
             </BitCallout>
 
@@ -645,117 +549,25 @@
                     <BitButton>Bottom sheet</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        <BitStack Gap="0.5rem">
-                            <BitText Typography="BitTypography.Subtitle1">Swipe down to dismiss it</BitText>
-                            <BitCheckbox Label="Active" />
-                            <BitCheckbox Label="Archived" />
-                        </BitStack>
-                    </div>
+                    <div class="callout-content">Swipe down to dismiss it.</div>
                 </Content>
             </BitCallout>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Surface" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Focus &amp; modal" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
-            <b>Background</b> paints the callout in one of the background color kinds of the library and
-            <b>Border</b> draws a border in one of the border kinds; the beak of an arrowed callout takes
-            both, so it always matches the surface it points out of. <b>NoShadow</b> drops the elevation,
-            for a callout that leans on its border instead.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitCallout Background="BitColorKind.Secondary">
-                <Anchor>
-                    <BitButton>Background</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">A secondary background.</div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Border="BitColorKind.Primary">
-                <Anchor>
-                    <BitButton>Border</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">A primary border.</div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout NoShadow Border="BitColorKind.Secondary">
-                <Anchor>
-                    <BitButton>NoShadow</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">No elevation, only a border.</div>
-                </Content>
-            </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Modal" RazorCode="@example12RazorCode" Id="example12">
-        <div>
-            <b>Modal</b> dims the page behind the callout and holds it still while the callout is open, so
-            the callout reads as the only thing in play - the wheel and the touch are the callout's, and the
-            page cannot scroll the callout away underneath it. The overlay still dismisses it on a click, and
-            pairing it with <b>TrapFocus</b> is what makes the callout modal to the keyboard and to the
-            screen readers as well as to the eye.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitCallout Modal>
-                <Anchor>
-                    <BitButton>Modal</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">The page behind is dimmed.</div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout Modal TrapFocus>
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Modal with TrapFocus</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        <BitStack Gap="1rem">
-                            <BitTextField Label="Name" />
-                            <BitTextField Label="Email" />
-                            <BitButton>Submit</BitButton>
-                        </BitStack>
-                    </div>
-                </Content>
-            </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Keyboard &amp; focus" RazorCode="@example13RazorCode" Id="example13">
-        <div>
-            The anchor carries the relationship of the callout for the screen readers (aria-haspopup,
-            aria-controls and aria-expanded), and <b>Escape</b> closes the callout from either side of it -
-            from inside the callout, and from the trigger in the anchor, where the focus stays unless the
-            callout was asked to take it. Whenever the callout is closed while the focus is in it, the focus
-            goes back to the anchor, so the keyboard never ends up at the top of the page.
+            <b>AutoFocus</b> moves the focus in on opening, to a <b>data-autofocus</b> element if there is one.
+            <b>TrapFocus</b> keeps Tab inside and makes the callout a modal dialog for screen readers. <b>Modal</b> dims
+            the page, stops it scrolling and traps the focus too. <b>Role</b>, <b>AriaLabel</b>, <b>AriaLabelledBy</b> and
+            <b>AriaDescribedBy</b> say what the callout is.
         </div>
         <br />
         <div>
-            <b>AutoFocus</b> moves the focus into the callout as soon as it opens, to its first focusable
-            element - or to whichever element in the content carries a <b>data-autofocus</b> attribute, for
-            the callouts whose first focusable element is not the one worth starting at - so a pointer user
-            reaches the content without an extra Tab too. <b>TrapFocus</b> goes
-            further and keeps the keyboard inside: Tab and Shift+Tab cycle within the callout instead of
-            running on into the page behind it, and the callout reports itself as a modal dialog to the
-            screen readers. It is what a callout hosting a form or a filter panel needs, and it implies
-            AutoFocus. <b>Role</b> overrides the ARIA role for the cases those two do not cover, and
-            <b>AriaLabel</b> names the callout where its content does not - which makes it a group unless a
-            role of its own says otherwise, since a name on a plain container is one no screen reader
-            announces. A callout that renders a <b>Header</b> is named by it without either of the two, so a
-            dialog always has the accessible name it is required to have. The rest is wired up on its own:
-            the trigger inside the anchor reports the callout with aria-controls and aria-expanded, and it
-            names what it opens with aria-haspopup only where the callout really is one of the kinds that
-            property can name - a dialog, a menu, a listbox, a tree or a grid.
+            Without a trap, Tab on the trigger goes into the callout, and Tab past its end moves on in the page and closes
+            it. Escape closes it from the trigger or from inside, and the focus goes back to the trigger. The trigger reports
+            the callout through aria-controls and aria-expanded, and through aria-haspopup when it is a dialog, a menu, a
+            listbox, a tree or a grid.
         </div>
         <br />
         <div class="example-box">
@@ -766,23 +578,8 @@
                 <Content>
                     <div class="callout-content">
                         <BitStack Gap="1rem">
-                            <BitTextField Label="Name" />
-                            <BitButton>Submit</BitButton>
-                        </BitStack>
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout AutoFocus>
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">AutoFocus (data-autofocus)</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        <BitStack Gap="1rem">
                             <BitButton Variant="BitVariant.Text">Dismiss</BitButton>
                             <BitTextField Label="Name" InputHtmlAttributes="@(new() { { "data-autofocus", "" } })" />
-                            <BitButton>Submit</BitButton>
                         </BitStack>
                     </div>
                 </Content>
@@ -790,8 +587,11 @@
 
             <BitCallout TrapFocus>
                 <Anchor>
-                    <BitButton>TrapFocus</BitButton>
+                    <BitButton Variant="BitVariant.Outline">TrapFocus</BitButton>
                 </Anchor>
+                <Header>
+                    <div class="section-bar">Contact</div>
+                </Header>
                 <Content>
                     <div class="callout-content">
                         <BitStack Gap="1rem">
@@ -803,9 +603,24 @@
                 </Content>
             </BitCallout>
 
+            <BitCallout Modal AriaLabelledBy="modal-title" AriaDescribedBy="modal-text" @ref="modalCallout">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Modal</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">
+                        <BitStack Gap="1rem">
+                            <b id="modal-title">Heads up</b>
+                            <div id="modal-text">The page behind is dimmed and holds still.</div>
+                            <BitButton OnClick="() => modalCallout.Close()">OK</BitButton>
+                        </BitStack>
+                    </div>
+                </Content>
+            </BitCallout>
+
             <BitCallout Role="status" AriaLabel="Sync status">
                 <Anchor>
-                    <BitButton Variant="BitVariant.Outline">Role &amp; AriaLabel</BitButton>
+                    <BitButton Variant="BitVariant.Text">Role &amp; AriaLabel</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">Everything is up to date.</div>
@@ -814,57 +629,11 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Dismissal" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Nesting" RazorCode="@example14RazorCode" Id="example14">
         <div>
-            A callout is dismissed by a click outside of it, by the Escape key, and by the page scrolling or
-            resizing under it. <b>AutoClose</b> adds a click inside it to that list, which is what an action
-            list is expected to do: picking an item completes the interaction. <b>NoDismissOnEscape</b> and
-            <b>NoDismissOnOutsideClick</b> each take one of the ways out away - the second also stops a
-            scroll or a resize from dismissing it, re-anchoring it to its anchor instead - for the callouts
-            that are only meant to be closed through their own content.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitCallout AutoClose>
-                <Anchor>
-                    <BitButton>AutoClose (@autoCloseAction)</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        <BitStack Gap="0.25rem">
-                            <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Renamed")">Rename</BitButton>
-                            <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Duplicated")">Duplicate</BitButton>
-                            <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Deleted")">Delete</BitButton>
-                        </BitStack>
-                    </div>
-                </Content>
-            </BitCallout>
-
-            <BitCallout NoDismissOnEscape NoDismissOnOutsideClick @ref="callout3">
-                <Anchor>
-                    <BitButton Variant="BitVariant.Outline">No auto dismiss</BitButton>
-                </Anchor>
-                <Content>
-                    <div class="callout-content">
-                        Neither Escape nor an outside click closes this one.
-                        <br /><br />
-                        <BitButton OnClick="() => callout3.Close()">Close</BitButton>
-                    </div>
-                </Content>
-            </BitCallout>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Nesting" RazorCode="@example15RazorCode" Id="example15">
-        <div>
-            Opening a callout normally takes over from the one that is already open, which is how two
-            unrelated callouts stay from piling up on each other. A callout whose anchor lives inside another
-            one is the exception: it is nested in it, so the outer callout stays open underneath it, and any
-            number of levels can be stacked that way. Everything that follows from being open follows the
-            stack too - dismissing the outer callout takes the inner ones with it, Escape peels off the
-            innermost one, and a scroll or a resize re-anchors all of them at once. Any component that opens
-            a callout of its own nests the same way, so a dropdown, a date picker or a menu button can sit
-            inside a callout without closing it.
+            Opening a callout closes any other open one, except the one its anchor sits in: that one stays open beneath
+            it. Dismissing the outer one closes the inner ones, and Escape peels off the innermost. Dropdowns, date pickers
+            and menus nest the same way.
         </div>
         <br />
         <div class="example-box">
@@ -907,13 +676,10 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Lazy rendering" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="Lazy rendering" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
-            The content of a callout is in the page whether the callout is open or not, so that whatever
-            state it holds survives the callout closing. <b>LazyRender</b> keeps it out until the callout is
-            first opened, for the contents expensive enough that rendering one behind a closed callout is a
-            cost of its own - a calendar, a long list, a chart. It is only the first opening that is
-            deferred: the content stays from then on, so its state still survives every close after that.
+            The content is rendered even while the callout is closed, so its state survives a close. <b>LazyRender</b>
+            defers it to the first opening, then keeps it.
         </div>
         <br />
         <div class="example-box">
@@ -923,10 +689,7 @@
                 </Anchor>
                 <Content>
                     <div class="callout-content">
-                        <BitStack Gap="0.5rem">
-                            <BitText Typography="BitTypography.Subtitle2">Pick a date</BitText>
-                            <BitCalendar @bind-Value="lazyDate" />
-                        </BitStack>
+                        <BitCalendar @bind-Value="lazyDate" />
                     </div>
                 </Content>
             </BitCallout>
@@ -937,22 +700,17 @@
                 </Anchor>
                 <Content>
                     <div class="callout-content">
-                        <BitStack Gap="0.5rem">
-                            <BitText Typography="BitTypography.Subtitle2">Pick a date</BitText>
-                            <BitCalendar @bind-Value="eagerDate" />
-                        </BitStack>
+                        <BitCalendar @bind-Value="eagerDate" />
                     </div>
                 </Content>
             </BitCallout>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Events" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
-            <b>OnToggle</b> fires on every change of the open state and is handed the new one, while
-            <b>OnOpen</b> and <b>OnDismiss</b> split that in two. All three fire however the callout was
-            closed: an outside click, the Escape key, a swipe on a responsive panel, or another callout
-            taking over.
+            <b>OnToggle</b> gets the new state on every change; <b>OnOpen</b> and <b>OnDismiss</b> split it in two. All
+            three fire however the callout was closed.
         </div>
         <br />
         <div class="example-box">
@@ -969,23 +727,93 @@
         <div>Toggled: @toggleCount, Opened: @openCount, Dismissed: @dismissCount</div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>
-            <b>Style</b> and <b>Class</b> land on the root element, which is the container of the anchor -
-            the callout itself is rendered outside of it and relocated to the body while it is open, so the
-            way to reach it is <b>Styles</b> and <b>Classes</b>. Those carry a value per part: Root,
-            AnchorContainer, Content, Header, Body, Footer, Arrow, Overlay, and Opened, which is applied to
-            the root only while the callout is open.
+            <b>BitParams</b> with a <b>BitCalloutParams</b> sets defaults for every callout inside it. A callout's own
+            parameters win; only the unset ones are filled in.
         </div>
         <br />
-        <div>
-            Where the callout ended up is on the callout and on its arrow as it is laid out, so a style can
-            follow the placement without knowing it in advance: <b>data-bit-cal-pos</b> is the physical side
-            of the anchor the callout was placed on (below, above, left or right) and
-            <b>data-bit-cal-align</b> is how it was lined up across that side (start, center or end). Both
-            are rewritten on every layout pass, so a callout that flips while it is open never keeps the
-            side it started on.
+        <div class="example-box">
+            <BitParams Parameters="@calloutParams">
+                <BitCallout>
+                    <Anchor>
+                        <BitButton>Cascaded</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div class="callout-content">Arrow, gap, border and side come from the cascade.</div>
+                    </Content>
+                </BitCallout>
+
+                <BitCallout>
+                    <Anchor>
+                        <BitButton Variant="BitVariant.Outline">Cascaded too</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div class="callout-content">The same defaults.</div>
+                    </Content>
+                </BitCallout>
+
+                <BitCallout Placement="BitPlacement.Bottom" ShowArrow="false">
+                    <Anchor>
+                        <BitButton Variant="BitVariant.Text">Own Placement, no arrow</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div class="callout-content">Its own values win.</div>
+                    </Content>
+                </BitCallout>
+            </BitParams>
+
+            <BitCallout>
+                <Anchor>
+                    <BitButton Variant="BitVariant.Text">Outside the cascade</BitButton>
+                </Anchor>
+                <Content>
+                    <div class="callout-content">No defaults here.</div>
+                </Content>
+            </BitCallout>
         </div>
+    </DemoExample>
+
+    <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Reach for the <b>--bit-Callout-*</b> CSS variables first (listed in the API section). The callout moves to the
+            body while open, so set them on <b>:root</b>, on the callout's <b>Style</b> (copied onto the callout, its arrow
+            and its overlay) or through BitParams. <b>Style</b> and <b>Class</b> land on the root around the anchor;
+            <b>Styles</b> and <b>Classes</b> reach each part. The callout and its arrow carry <b>data-bit-cal-pos</b>
+            (below, above, left or right) and <b>data-bit-cal-align</b> for styles that follow the placement.
+        </div>
+        <br />
+        <div><b>CSS variables</b>:</div>
+        <br />
+        <div class="example-box">
+            <BitCallout ShowArrow Gap="12"
+                        Style="--bit-Callout-background: #1e293b; --bit-Callout-color: #f8fafc; --bit-Callout-radius: 1rem; --bit-Callout-padding: 1rem; --bit-Callout-arrow-size: 16px;">
+                <Anchor>
+                    <BitButton>Inverted</BitButton>
+                </Anchor>
+                <Content>
+                    A dark surface, rounder corners and a bigger beak.
+                </Content>
+            </BitCallout>
+
+            <BitCallout MaxWidth="16rem"
+                        Styles="@(new() { Root = "--bit-Callout-border-width: 2px; --bit-Callout-border-color: #7c3aed; --bit-Callout-divider-color: #ddd6fe; --bit-Callout-shadow: none; --bit-Callout-padding: 0.75rem;" })">
+                <Anchor>
+                    <BitButton Variant="BitVariant.Outline">Outlined</BitButton>
+                </Anchor>
+                <Header>
+                    <b>Outlined</b>
+                </Header>
+                <Content>
+                    A border instead of elevation; the padding goes inside the header, the body and the footer.
+                </Content>
+                <Footer>
+                    <BitButton Variant="BitVariant.Text">Got it</BitButton>
+                </Footer>
+            </BitCallout>
+        </div>
+        <br />
+        <div><b>Style</b> & <b>Class</b>:</div>
         <br />
         <div class="example-box">
             <BitCallout Style="background-color: #ff634733; border-radius: 4px;">
@@ -1005,7 +833,11 @@
                     <div class="callout-content">This is the callout content.</div>
                 </Content>
             </BitCallout>
-
+        </div>
+        <br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-box">
             <BitCallout Styles="@(new() { Root = "--anchor-color: #2e8b5775;",
                                           Opened = "--anchor-color: #04cb5b75;",
                                           AnchorContainer = "background-color: var(--anchor-color); border-radius: 4px;",
@@ -1033,10 +865,7 @@
 
     <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
-            Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay the callout out right-to-left. The direction travels
-            with the callout to the body, where it is relocated while it is open, so its content is laid out
-            in it too; the placement mirrors along with it, aligning the callout with the right edge of its
-            anchor and preferring the left side when it has to move beside it.
+            Use BitCallout in right-to-left (RTL); the direction travels with the callout and its placement mirrors.
         </div>
         <br />
         <div class="example-box" dir="rtl">
@@ -1045,9 +874,7 @@
                     <BitButton>نمایش کال‌اوت</BitButton>
                 </Anchor>
                 <Content>
-                    <div class="callout-content">
-                        این محتوای کال‌اوت است.
-                    </div>
+                    <div class="callout-content">این محتوای کال‌اوت است.</div>
                 </Content>
             </BitCallout>
 

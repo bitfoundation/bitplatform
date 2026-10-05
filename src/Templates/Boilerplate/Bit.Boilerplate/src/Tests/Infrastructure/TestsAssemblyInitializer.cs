@@ -114,9 +114,9 @@ public partial class TestsAssemblyInitializer
     //#endif
     private static async Task InitializeDatabase(AppTestServer testServer)
     {
-        if (testServer.WebApp.Environment.IsDevelopment())
+        if (testServer.ApiApp.Environment.IsDevelopment())
         {
-            await using var scope = testServer.WebApp.Services.CreateAsyncScope();
+            await using var scope = testServer.ApiApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             //#if (database  == 'Sqlite')
             //#if (IsInsideProjectTemplate == true)

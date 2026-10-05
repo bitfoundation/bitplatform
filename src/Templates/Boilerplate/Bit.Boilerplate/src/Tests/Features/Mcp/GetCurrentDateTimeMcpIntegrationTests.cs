@@ -1,6 +1,7 @@
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Time.Testing;
+using Boilerplate.Tests.Features.DevMcp;
 
 namespace Boilerplate.Tests.Features.Mcp;
 
@@ -31,25 +32,22 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.AddIntegrationApiOnlyTestsServices();
-
+        await server.Build(
             // Even though GetCurrentDateTime works fine with the real clock, fake the TimeProvider so the tool returns
             // an instant we control and can assert on exactly.
-            services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
-        }).Start(TestContext.CancellationToken);
+            configureTestServices: services => services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider)))
+            .Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var client = server.CreateAppClient();
 
         // Before signing in, pin that /mcp actually REJECTS an anonymous caller. This guard once shipped commented out
         // (748225ec87, restored by 6cf854a66a), and every other line of this test authenticates first - so without this
         // probe, removing RequireAuthorization() again would leave the whole suite green while /mcp (whose tools can
         // drive any user's connected client session) goes anonymous. Asserted on the raw HTTP status rather than
-        // through the MCP client, whose transport wraps/obscures the 401 - and through a bare HttpClient rather than
-        // the DI one, whose handler chain attaches auth and turns the non-success status into an exception.
+        // through the MCP client, whose transport wraps/obscures the 401 - and through a raw HttpClient rather than
+        // the app's, whose handler chain attaches auth and turns the non-success status into an exception.
         // This exercises Server.Web's mapping (Program.Middlewares.cs); Server.Api's own MapMcp stays mirror-protected.
-        using (var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+        using (var anonymousHttpClient = server.CreateRawHttpClient())
         {
             using var anonymousRequest = new HttpRequestMessage(HttpMethod.Post, "mcp");
             anonymousRequest.Content = new StringContent("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""",
@@ -65,19 +63,19 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         // The /mcp endpoint is behind RequireAuthorization(), so sign in with the seeded default account first and reuse
         // the resulting bearer token to authenticate the MCP transport.
-        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var accessToken = await scope.ServiceProvider.GetRequiredService<IStorageService>().GetItem("access_token");
+        var accessToken = await client.Services.GetRequiredService<IStorageService>().GetItem("access_token");
         Assert.IsNotNull(accessToken, "Sign-in should have stored an access token to authenticate the MCP request.");
 
         // Connect a real MCP client to the server's Streamable HTTP endpoint, carrying the bearer token.
         var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
-            Endpoint = new Uri(server.WebAppServerAddress, "mcp"),
+            Endpoint = new Uri(server.ApiAppAddress, "mcp"),
             TransportMode = HttpTransportMode.StreamableHttp,
             AdditionalHeaders = new Dictionary<string, string>
             {
@@ -106,5 +104,36 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
         Assert.Contains(expectedUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture), text,
             $"Tool result did not contain the faked current date/time. Result: '{text}'.");
         Assert.Contains("UTC", text, $"Tool result did not mention the requested timezone. Result: '{text}'.");
+    }
+
+    /// <summary>
+    /// <c>/mcp/v1</c> is the same server under the api version the controllers carry, behind the same authorization -
+    /// and still the chatbot's tools rather than /dev-mcp's, which <c>ConfigureSessionOptions</c> picks by path.
+    /// </summary>
+    [TestMethod]
+    public async Task McpEndpoint_Should_AnswerUnderTheApiVersionToo()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized,
+            await DevMcpTestUtils.ProbeInitialize(server, "mcp/v1", accessToken: null, TestContext.CancellationToken),
+            "The versioned path must reject an anonymous caller, exactly as /mcp does.");
+
+        await using var client = server.CreateAppClient();
+
+        await client.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        await using var mcpClient = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "mcp/v1", TestContext.CancellationToken);
+
+        var tools = await mcpClient.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
+
+        Assert.Contains(t => t.Name == "GetCurrentDateTime", tools, "/mcp/v1 must advertise the chatbot tools.");
+        Assert.DoesNotContain(t => t.Name == "GetHangfireStats", tools, "/dev-mcp's tools belong to /dev-mcp alone.");
     }
 }

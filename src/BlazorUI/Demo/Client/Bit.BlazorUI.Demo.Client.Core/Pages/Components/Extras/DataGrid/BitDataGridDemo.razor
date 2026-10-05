@@ -7,9 +7,10 @@
             Description="BitDataGrid displays an information-rich collection of items with sorting, searching, filtering, paging, grouping, selection, inline editing, virtualization and Excel/CSV export." />
 
 <DemoPage Name="DataGrid"
-          Description="BitDataGrid displays an information-rich collection of items and gives people the tools to work through it: sorting, quick search and per-column filters, paging, grouping with aggregates, selection and inline editing, resizable/reorderable/frozen columns, master-detail and tree rows, keyboard cell navigation, row and column virtualization, and CSV/Excel export of everything matching or just the selection. Bind a list, an IQueryable that a provider such as EF Core executes at the source, or a callback for server-side paging or infinite scrolling. Use a data grid when information density is critical."
+          Description="BitDataGrid displays an information-rich data table and gives people the tools to work through it: sorting, quick search and per-column filters, paging, grouping with aggregates, selection, inline editing, resizable/reorderable/frozen columns, master-detail and tree rows, keyboard cell navigation, row and column virtualization, and CSV/Excel export. Bind a list, an IQueryable executed at the source, or a callback for server-side paging or infinite scrolling. Use a data grid when information density is critical."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="DataGrid/BitDataGrid.razor"
@@ -31,61 +32,79 @@
 
         <DemoExample Title="Basic &amp; sorting" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                Bind a collection, declare columns, and you get sorting out of the box.
-                Click a header to sort ascending → descending → unsorted - or set <code>AllowUnsorted="false"</code>
-                (on the grid or on one column) to cycle between ascending and descending only, for data whose
-                source order means nothing. Hold Ctrl (or ⌘) and click additional headers for multi-column sorting.
-                <br /><br />
-                The item type flows from the grid to its columns automatically (no per-column TItem needed),
-                a column binds to its property with the strongly typed Property selector (the string-based
-                Field parameter also remains available), and columns can be wrapped in an optional
-                <BitTag Reversed Text="Columns" Color="BitColor.SecondaryBackground" /> element.
+                Bind <b>Items</b> and declare the columns; <b>Property</b> binds a column with a typed selector. A header click sorts
+                ascending, descending, then unsorted (<b>AllowUnsorted="false"</b> drops the last step), and Ctrl/⌘ or Shift+click adds a
+                column to the sort. <b>AriaLabel</b> names the grid for screen readers - or <b>AriaLabelledBy</b>, pointing at a visible heading.
             </div>
             <br />
-            <BitDataGrid Items="@basicProducts" Height="430px" MultiSort="true">
+            <BitDataGrid Items="@basicProducts" Height="430px" AriaLabel="Products">
                 <Columns>
                     <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
                     <BitDataGridColumn Property="p => p.Name" Width="220px" />
                     <BitDataGridColumn Property="p => p.Category" />
                     <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
                     <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" />
+                    <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" AllowUnsorted="false" />
                 </Columns>
             </BitDataGrid>
         </DemoExample>
 
         <DemoExample Title="Filtering &amp; paging" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                A quick-filter row sits under the header; the pager controls page size and navigation.
-                Typed filters are used for numeric, date, boolean and enum columns (like Price, Stock and Category),
-                while text columns (like Name and Supplier) use case-insensitive text filtering.
-                <br /><br />
-                This example binds columns with the string-based <BitTag Reversed Text="Field" Color="BitColor.SecondaryBackground" /> parameter -
-                useful when column definitions come from configuration - instead of the strongly typed Property selector used elsewhere.
+                <b>Filterable</b> adds a filter row whose editor follows each column's type and filters as you type (<b>FilterDebounce</b>).
+                <b>FilterOperators</b> adds an operator picker
+                (including <i>Is blank</i>, and <i>Is any of</i> taking a comma-separated list), which a column can opt out of.
+                A column's <b>FilterTemplate</b> replaces its editor - here a multi-select applying <b>In</b>. <b>Pageable</b> pages the rows,
+                and <b>ShowToolbar</b> shows <i>Clear filters</i> while a filter is on. These columns bind by <b>Field</b> name.
             </div>
             <br />
             <BitDataGrid Items="@filterProducts" Height="430px"
-                         Filterable="true" Pageable="true" PageSize="10"
-                         PagerPlacement="BitPlacement.Bottom"
-                         ShowToolbar="true" ShowCsvExport="true">
+                         Filterable="true" FilterOperators="true"
+                         Pageable="true" PageSize="10" ShowToolbar="true">
                 <BitDataGridColumn Field="Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
                 <BitDataGridColumn Field="Name" Width="220px" />
-                <BitDataGridColumn Field="Category" />
-                <BitDataGridColumn Field="Supplier" />
+                <BitDataGridColumn Field="Category">
+                    <FilterTemplate>
+                        <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="categoryFilterItems"
+                                     MultiSelect Size="BitSize.Small" Placeholder="All"
+                                     AriaLabel="@context.Label" IsEnabled="context.IsEnabled"
+                                     Values="@(context.Value as IEnumerable<string?>)"
+                                     ValuesChanged="values => context.ApplyAsync(BitDataGridFilterOperator.In, values?.ToList())" />
+                    </FilterTemplate>
+                </BitDataGridColumn>
+                <BitDataGridColumn Field="Supplier" FilterOperators="false" />
                 <BitDataGridColumn Field="Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Field="Stock" Align="BitTextAlign.End" />
+                <BitDataGridColumn Field="ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Selection" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Quick search" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                <code>SelectionMode</code> picks between single-row selection (a click anywhere on the row)
-                and multiple selection with per-row checkboxes and a select-all box in the header, which
-                covers the rows of the current page and shows the indeterminate state while only some are
-                selected. <code>SelectedItems</code> is two-way bindable, and the selection is tracked by
-                the row's <code>KeyField</code> rather than by object reference, so it survives a refresh
-                that re-materializes the rows. Switching modes drops a selection the new mode can't hold;
-                <code>IsRowSelectionDisabled</code> excludes individual rows (select-all skips them).
+                <b>ShowSearchBox</b> searches every column at once, matching the text each cell shows; <b>Searchable="false"</b> leaves a
+                column out. <b>SearchText</b> is two-way bindable, and <b>SearchDebounce</b> (300 ms) turns a burst of typing into one search.
+            </div>
+            <br />
+            <BitDataGrid Items="@searchProducts" Height="430px"
+                         ShowSearchBox="true" @bind-SearchText="searchTerm"
+                         Pageable="true" PageSize="10">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Searchable="false" />
+            </BitDataGrid>
+            <br />
+            <BitText>@(string.IsNullOrEmpty(searchTerm) ? "No search term." : $"Searching for \"{searchTerm}\".")</BitText>
+        </DemoExample>
+
+        <DemoExample Title="Selection" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>SelectionMode</b> picks a row click (Single, which makes the cells navigable so Space selects too) or checkboxes with a
+                select-all box (Multiple); Shift+click selects a range.
+                <b>SelectedItems</b> is two-way bindable and tracked by <b>KeyField</b>, and <b>IsRowSelectionDisabled</b> locks rows out -
+                discontinued products here. <b>RowHeader</b> makes Name the header of its row: screen readers announce it from row to row,
+                and it names each checkbox.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -97,54 +116,80 @@
             </BitStack>
             <br />
             <BitDataGrid Items="@selectionProducts" Height="420px" KeyField="p => p.Id"
-                         SelectionMode="selectionMode" @bind-SelectedItems="selectedProducts" Pageable="true" PageSize="10">
+                         SelectionMode="selectionMode" @bind-SelectedItems="selectedProducts"
+                         IsRowSelectionDisabled="p => p.Discontinued"
+                         Pageable="true" PageSize="10">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" RowHeader="true" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Discontinued" Align="BitTextAlign.Center" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Keyboard &amp; clipboard" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>CellNavigation</b> makes the cells a single tab stop (the APG grid pattern): the arrows, Home/End, Ctrl+Home/End and
+                Page Up/Down move between them, Space toggles the row, Shift+Space extends the range and Ctrl+A selects every row - so the
+                row checkboxes leave the tab order.
+                With <b>ClipboardCopy</b>, Ctrl/⌘+C copies the selected rows as tab-separated text that pastes into Excel as columns.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="SelectAllRows">Select all</BitButton>
+                <BitButton OnClick="ClearRowSelection" Variant="BitVariant.Outline">Clear selection</BitButton>
+                <BitButton OnClick="CopySelection" IsEnabled="clipboardSelection.Count > 0">Copy selection</BitButton>
+                <BitText>@clipboardStatus</BitText>
+            </BitStack>
+            <br />
+            <BitDataGrid @ref="clipboardGrid" TItem="Product" Items="@clipboardProducts" Height="430px" KeyField="p => p.Id"
+                         SelectionMode="BitSelectionMode.Multiple" @bind-SelectedItems="clipboardSelection"
+                         CellNavigation="true" ClipboardCopy="true">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
                 <BitDataGridColumn Property="p => p.Category" />
                 <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Inline editing" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Inline editing" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                Add, edit, save, cancel and delete rows through a command column, with the editor picked from
-                each column's type: text, number, checkbox (a tri-state select for a nullable <code>bool?</code>),
-                date, date-and-time (offsets and sub-minute precision preserved) and enum. Edits are buffered
-                and only written to the row on Save, so Cancel always leaves it untouched.
-                <code>Editable="false"</code> keeps a column read-only while the rest of the row is edited,
-                and <code>EditTemplate</code> supplies your own editor for a column.
+                <b>Editable</b> adds a command column and <b>NewItemFactory</b> an <i>Add</i> button. Editors follow each column's type,
+                edits are buffered until saved, and <b>Validate</b> blocks an invalid value (clear a name, or enter a negative price).
+                <b>EditMode</b> edits the whole row (Save/Cancel) or one cell at a time: Enter, F2 or a double-click opens it, and typing
+                into a text or number cell opens it with what you type; Enter, Tab or leaving it saves; Esc cancels; Delete removes the focused row. A row double-click here calls <b>BeginEdit</b> via <b>OnRowDoubleClick</b>.
             </div>
             <br />
-            @* TItem stays explicit here: EventCallback parameters (OnRowSave/OnRowDelete/OnRowCreate)
-               bound to method groups cannot participate in generic type inference. *@
-            <BitDataGrid TItem="Product" Items="@editProducts" Height="460px"
-                         Editable="true" NewItemFactory="CreateProduct"
-                         OnRowSave="OnSave" OnRowDelete="OnDelete" OnRowCreate="OnCreate"
-                         ShowToolbar="true" Pageable="true" PageSize="10" KeyField="p => p.Id">
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton Variant="@(editMode == BitDataGridEditMode.Row ? BitVariant.Fill : BitVariant.Outline)"
+                           OnClick="() => editMode = BitDataGridEditMode.Row">Row</BitButton>
+                <BitButton Variant="@(editMode == BitDataGridEditMode.Cell ? BitVariant.Fill : BitVariant.Outline)"
+                           OnClick="() => editMode = BitDataGridEditMode.Cell">Cell</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid @ref="editGrid" TItem="Product" Items="@editProducts" Height="460px" KeyField="p => p.Id"
+                         Editable="true" EditMode="editMode" NewItemFactory="CreateProduct" CellNavigation="true"
+                         OnRowSave="OnSave" OnRowCancel="OnCancel" OnRowDelete="OnDelete" OnRowCreate="OnCreate"
+                         OnRowDoubleClick="EditOnDoubleClick"
+                         Pageable="true" PageSize="10">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Editable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="200px" />
+                <BitDataGridColumn Property="p => p.Name" Width="200px" Validate="(p, v) => ValidateName(p, v)" />
                 <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" Validate="(p, v) => ValidatePrice(p, v)" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Validate="(p, v) => ValidateStock(p, v)" />
                 <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
-                <BitDataGridColumn Property="p => p.Discontinued" Title="Discontinued" Align="BitTextAlign.Center" />
+                <BitDataGridColumn Property="p => p.Discontinued" Align="BitTextAlign.Center" />
             </BitDataGrid>
             <br />
             <BitText>@editStatus</BitText>
         </DemoExample>
 
-        <DemoExample Title="Grouping &amp; aggregates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Grouping &amp; aggregates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
-                Click the ⊞ button in a groupable column header to group by it (click again to ungroup).
-                Each group is collapsible and shows its own aggregates; the footer shows grand totals.
-                Group by both Category and Supplier to see multi-level grouping.
-                Beyond the built-in <code>Aggregate</code> types, <code>AggregateBy</code> computes a custom
-                aggregate - here the Supplier column counts distinct suppliers per group and overall.
-                <code>GroupsInitiallyCollapsed</code> opens a grouped grid as a compact list of headers to
-                drill into, and <code>ExpandAllGroupsAsync</code>/<code>CollapseAllGroupsAsync</code> flip
-                every level at once - including groups that don't exist yet, so the choice survives a
-                regrouping or a data refresh.
+                <b>Groupable</b> adds a ⊞ toggle to the headers; group by Category, then Supplier, for nested groups. Each group shows its
+                columns' <b>Aggregate</b>, <b>ShowFooter</b> shows the grand totals, and <b>AggregateBy</b> computes a custom one.
+                <b>GroupsInitiallyCollapsed</b> opens the groups closed; <b>ExpandAllGroupsAsync</b> / <b>CollapseAllGroupsAsync</b> flip them all.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -153,7 +198,7 @@
             </BitStack>
             <br />
             <BitDataGrid @ref="groupGrid" TItem="Product" Items="@groupProducts" Height="500px"
-                         Groupable="true" ShowFooter="true" Sortable="true">
+                         Groupable="true" ShowFooter="true">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Groupable="false" />
                 <BitDataGridColumn Property="p => p.Name" Width="200px" Groupable="false" />
                 <BitDataGridColumn Property="p => p.Category" />
@@ -167,116 +212,110 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Templates &amp; detail rows" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
-                Customize any cell, header or footer, and expand rows to reveal detail content.
-                Click the ▸ toggle on the left of a row to expand its detail panel.
-                A template-only column (no <code>Field</code>) is not sortable by default - give it a
-                <code>SortBy</code> key selector to sort it, like the computed Value column here.
-                When the ordering itself is the unusual part rather than the key, a column can also
-                supply its own <code>Comparer</code> - the Stock column sorts in-stock rows ahead of
-                out-of-stock ones instead of by the raw number.
+                <b>Template</b>, <b>HeaderTemplate</b> and <b>FooterTemplate</b> render any markup. A template-only column sorts by its
+                <b>SortBy</b> key, and <b>Comparer</b> replaces the ordering itself - Stock sorts in-stock rows first.
             </div>
             <br />
-            <BitDataGrid Items="@templateProducts" Height="470px" Sortable="true" ShowFooter="true">
-                <DetailTemplate Context="p">
-                    <BitStack Horizontal Wrap Gap="2rem">
-                        <div><strong>Supplier</strong><br />@p.Supplier</div>
-                        <div><strong>Released</strong><br />@p.ReleaseDate.ToString("D")</div>
-                        <div><strong>Inventory value</strong><br />@((p.Price * p.Stock).ToString("C2"))</div>
-                        <div><strong>Status</strong><br />@(p.Discontinued ? "Discontinued" : "Active")</div>
-                    </BitStack>
+            <BitDataGrid Items="@templateProducts" Height="470px" ShowFooter="true">
+                <BitDataGridColumn Property="p => p.Name" Width="220px">
+                    <HeaderTemplate>📦 Product</HeaderTemplate>
+                </BitDataGridColumn>
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Rating">
+                    <Template Context="p">
+                        <span role="img" aria-label="@($"{p.Rating} out of 5")" title="@p.Rating">
+                            @for (var i = 0; i < 5; i++)
+                            {
+                                <span style="color:@(i < Math.Round(p.Rating, MidpointRounding.AwayFromZero) ? "#f5a623" : "#ccc")">★</span>
+                            }
+                        </span>
+                    </Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End"
+                                   Aggregate="BitDataGridAggregateType.Sum">
+                    <FooterTemplate Context="agg">Total: @agg.FormattedValue</FooterTemplate>
+                </BitDataGridColumn>
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Comparer="stockComparer">
+                    <Template Context="p">
+                        <BitTag Text="@(p.Stock == 0 ? "Out of stock" : $"{p.Stock} in stock")"
+                                Color="@(p.Stock == 0 ? BitColor.Error : BitColor.Success)" />
+                    </Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn ColumnId="Value" Title="Value" Align="BitTextAlign.End"
+                                   SortBy="@(p => p.Price * p.Stock)">
+                    <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
+                </BitDataGridColumn>
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Detail rows" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>DetailTemplate</b> renders anything under a row - here a nested grid. A row opens from its ▸ toggle, from a click on
+                the row (<b>ExpandDetailOnRowClick</b>) or from code; <b>ShowDetailToggle="false"</b> hides the toggle column,
+                <b>ExpandedDetailItems</b> is bindable and <b>OnDetailToggle</b> reports each change.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="ExpandAllDetails">Expand all</BitButton>
+                <BitButton OnClick="CollapseAllDetails" Variant="BitVariant.Outline">Collapse all</BitButton>
+                <BitText>@detailStatus</BitText>
+            </BitStack>
+            <br />
+            <BitDataGrid @ref="detailGrid" TItem="SupplierModel" Items="@suppliers" Height="520px"
+                         ExpandDetailOnRowClick="true" OnDetailToggle="OnDetailToggled">
+                <DetailTemplate Context="supplier">
+                    <BitDataGrid Items="supplier.Products" AriaLabel="@($"Products of {supplier.Name}")">
+                        <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                        <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                        <BitDataGridColumn Property="p => p.Category" />
+                        <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                    </BitDataGrid>
                 </DetailTemplate>
                 <Columns>
-                    <BitDataGridColumn Property="p => p.Name" Width="220px">
-                        <HeaderTemplate>📦 Product</HeaderTemplate>
-                    </BitDataGridColumn>
-                    <BitDataGridColumn Property="p => p.Category" />
-                    <BitDataGridColumn Property="p => p.Rating" Title="Rating">
-                        <Template Context="p">
-                            <span title="@p.Rating">
-                                @for (var i = 0; i < 5; i++)
-                                {
-                                    <span style="color:@(i < Math.Round(p.Rating, MidpointRounding.AwayFromZero) ? "#f5a623" : "#ccc")">★</span>
-                                }
-                            </span>
-                        </Template>
-                    </BitDataGridColumn>
-                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End"
-                                       Aggregate="BitDataGridAggregateType.Sum">
-                        <FooterTemplate Context="agg">
-                            <span>Total: @agg.FormattedValue</span>
-                        </FooterTemplate>
-                    </BitDataGridColumn>
-                    <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Comparer="stockComparer">
-                        <Template Context="p">
-                            <BitTag Text="@(p.Stock == 0 ? "Out of stock" : $"{p.Stock} in stock")"
-                                    Color="@(p.Stock == 0 ? BitColor.Error : BitColor.Success)" />
-                        </Template>
-                    </BitDataGridColumn>
-                    <BitDataGridColumn ColumnId="Value" Title="Value" Align="BitTextAlign.End"
-                                       SortBy="@(p => p.Price * p.Stock)">
-                        <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
-                    </BitDataGridColumn>
+                    <BitDataGridColumn Property="p => p.Name" Title="Supplier" Width="260px" />
+                    <BitDataGridColumn Property="p => p.ProductCount" Title="Products" Align="BitTextAlign.End" />
+                    <BitDataGridColumn Property="p => p.TotalStock" Title="Total stock" Format="N0" Align="BitTextAlign.End" />
+                    <BitDataGridColumn Property="p => p.AveragePrice" Title="Avg price" Format="C2" Align="BitTextAlign.End" />
                 </Columns>
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Resize, reorder &amp; freeze columns" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Column layout" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                Drag column edges to resize, drag headers to reorder, and pin columns in place.
-                <b>Double-click</b> a column edge to auto-fit the column to its widest rendered content
-                (also available from code as <code>AutoFitColumnAsync</code> /
-                <code>AutoFitAllColumnsAsync</code>). <code>MinWidth</code> and <code>MaxWidth</code>
-                bound both the drag and the fit. The ID and Name columns are frozen, staying visible
-                while you scroll horizontally; <code>FrozenEnd</code> pins to the opposite edge instead.
+                <b>Resizable</b>: drag a header's edge, double-click it to fit the content, or focus it and use the arrow keys (Home/End go
+                to <b>MinWidth</b>/<b>MaxWidth</b>, Enter fits). <b>Reorderable</b>: drag a header, press Ctrl+←/→ on it, or use the arrows in
+                the <b>ShowColumnChooser</b> panel, which also hides columns. Dragging works with touch and pen too. <b>Frozen</b> and
+                <b>FrozenEnd</b> pin columns to an edge, and <b>Group</b> banners adjacent columns under one header.
             </div>
             <br />
-            <BitDataGrid Items="@columnsProducts" Height="430px"
-                         Resizable="true" Reorderable="true">
+            <BitDataGrid Items="@columnsProducts" Height="460px"
+                         Resizable="true" Reorderable="true" ShowColumnChooser="true">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Align="BitTextAlign.End" Frozen="true" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" Frozen="true" />
-                <BitDataGridColumn Property="p => p.Category" Width="160px" />
-                <BitDataGridColumn Property="p => p.Supplier" Width="200px" />
-                <BitDataGridColumn Property="p => p.Price" Width="160px" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Width="140px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Width="140px" Format="N1" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" MinWidth="120" MaxWidth="400" Frozen="true" Group="Identity" />
+                <BitDataGridColumn Property="p => p.Category" Width="160px" Group="Identity" />
+                <BitDataGridColumn Property="p => p.Supplier" Width="200px" Group="Identity" />
+                <BitDataGridColumn Property="p => p.Price" Width="160px" Format="C2" Align="BitTextAlign.End" Group="Commercials" />
+                <BitDataGridColumn Property="p => p.Stock" Width="140px" Align="BitTextAlign.End" Group="Commercials" />
                 <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Width="160px" Format="yyyy-MM-dd" />
+                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" />
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Column header groups" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Column spanning" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
-                Set <code>Group</code> on consecutive columns to render them under a single spanning header cell -
-                a second header row that banners related columns together. Only adjacent columns sharing the
-                same name join one span, so reordering the columns reshapes the banners; a column with no
-                <code>Group</code> simply leaves a gap above it.
+                <b>ColSpan</b> lets a cell cover the next columns of its row: a discontinued product's name spans Category, and a premium
+                price spans Stock. Assistive technologies get the span through <i>aria-colspan</i>.
             </div>
             <br />
-            <BitDataGrid Items="@columnGroupsProducts" Height="460px" Sortable="true" Bordered="true">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Name" Width="200px" Group="Identity" />
-                <BitDataGridColumn Property="p => p.Category" Group="Identity" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" Group="Commercials" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Group="Commercials" />
-                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" Group="Quality" />
-                <BitDataGridColumn Property="p => p.Supplier" Group="Quality" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Column spanning" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-            <div>
-                Provide a <code>ColSpan</code> function on a column to let a single cell span several columns based on its row.
-                Discontinued rows span the Name cell over Category; premium rows span Price over Stock.
-            </div>
-            <br />
-            <BitDataGrid Items="@spanningProducts" Height="460px" Bordered="true">
+            <BitDataGrid Items="@spanningProducts" Height="460px">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" ColSpan="p => NameSpan(p)">
                     <Template Context="p">
                         @if (p.Discontinued)
                         {
-                            <span class="span-banner">⚠ @p.Name - discontinued (no further details)</span>
+                            <span class="span-banner">⚠ @p.Name - discontinued</span>
                         }
                         else
                         {
@@ -301,10 +340,145 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Virtualization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Borders, striping &amp; row numbers" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                Render very large datasets smoothly - only visible rows hit the DOM.
-                Virtualization requires a fixed <code>Height</code> and <code>RowHeight</code>.
+                <b>Bordered</b>, <b>Striped</b> and <b>Hoverable</b> are on by default. <b>ShowRowNumbers</b> numbers the rows by their place
+                in the whole data set - page 2 starts at 9 - and is never exported.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="() => bordered = !bordered">Borders: @(bordered ? "on" : "off")</BitButton>
+                <BitButton OnClick="() => striped = !striped">Striping: @(striped ? "on" : "off")</BitButton>
+                <BitButton OnClick="() => hoverable = !hoverable">Hover: @(hoverable ? "on" : "off")</BitButton>
+                <BitButton OnClick="() => rowNumbers = !rowNumbers">Row numbers: @(rowNumbers ? "on" : "off")</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid Items="@borderStripeProducts" Height="420px"
+                         Bordered="bordered" Striped="striped" Hoverable="hoverable" ShowRowNumbers="rowNumbers"
+                         Pageable="true" PageSize="8">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Frozen="true" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Row &amp; cell styling" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+            <div>
+                <b>RowClass</b> and <b>RowStyle</b> style a row from its data - out-of-stock rows turn red, premium ones bold;
+                a column's <b>CellClassSelector</b> and <b>CellStyleSelector</b> do the same for its own cells - low stock in amber.
+                <b>ShowCellTooltips</b> gives every cell its full text as a tooltip (a column opts out with <b>ShowTooltip="false"</b>):
+                narrow the Name column and hover a name.
+            </div>
+            <br />
+            @* The row class lands on an element the grid renders, so the page's scoped CSS needs a
+               plain wrapper of its own to hang ::deep off (see the stylesheet tab). *@
+            <div class="styled-rows">
+                <BitDataGrid Items="@styledRowProducts" Height="430px" Resizable="true"
+                             ShowCellTooltips="true"
+                             RowClass="RowClassFor" RowStyle="RowStyleFor">
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                    <BitDataGridColumn Property="p => p.Name" Width="160px" />
+                    <BitDataGridColumn Property="p => p.Supplier" Width="140px" />
+                    <BitDataGridColumn Property="p => p.Category" ShowTooltip="false" />
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                    <BitDataGridColumn TItem="Product" Property="p => p.Stock" Align="BitTextAlign.End" CellStyleSelector="StockStyleFor" />
+                </BitDataGrid>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Text wrapping &amp; row height" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>WrapCellText</b> wraps long values (and headers) instead of cutting them off, and the row grows to fit; a column overrides it
+                with <b>WrapText</b>. <b>RowHeight</b> (36) is every row's minimum height, and <b>RowHeightSelector</b> sets it per row - premium
+                products here. Wrapping is off while <b>Virtualize</b> is on, which needs every row at exactly RowHeight.
+            </div>
+            <br />
+            <BitButton OnClick="() => wrapCellText = !wrapCellText">Wrapping: @(wrapCellText ? "on" : "off")</BitButton>
+            <br /><br />
+            <BitDataGrid Items="@wrapProducts" Height="430px" Resizable="true"
+                         WrapCellText="wrapCellText" RowHeightSelector="RowHeightOf">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" WrapText="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="160px" />
+                <BitDataGridColumn TItem="Product" Title="Description" Width="280px">
+                    <Template Context="product">@DescriptionOf(product)</Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Width="100px" Align="BitTextAlign.End" WrapText="false" />
+                <BitDataGridColumn Property="p => p.Stock" Width="90px" Align="BitTextAlign.End" WrapText="false" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Empty &amp; loading states" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                With no rows the grid shows a message, or your <b>EmptyTemplate</b>. <b>Loading</b> shows a spinner - or your
+                <b>LoadingTemplate</b> - in place of the rows and marks the grid <i>aria-busy</i>.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitButton OnClick="() => emptyHasData = false">Clear data</BitButton>
+                <BitButton OnClick="SimulateLoading" Variant="BitVariant.Outline">Simulate loading</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid Items="@EmptyCurrent" Height="320px" Loading="emptyLoading">
+                <LoadingTemplate>
+                    <BitSpinnerLoading Label="Fetching the latest products…" />
+                </LoadingTemplate>
+                <EmptyTemplate>
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        <BitText Typography="BitTypography.H6">Nothing here yet</BitText>
+                        <BitButton OnClick="() => emptyHasData = true">Load sample data</BitButton>
+                    </BitStack>
+                </EmptyTemplate>
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                    <BitDataGridColumn Property="p => p.Name" Width="240px" />
+                    <BitDataGridColumn Property="p => p.Category" />
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                </Columns>
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Tree data" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                <b>ChildrenSelector</b> turns <b>Items</b> into the roots of a tree (a <i>treegrid</i> whose rows carry their level and
+                expanded state). Sorting keeps the hierarchy, and a search or filter prunes it to the matching branches.
+                <b>TreeInitiallyExpanded</b> sets how it opens; <b>ExpandAllAsync</b> / <b>CollapseAllAsync</b> drive it from code.
+                With <b>CellNavigation</b>, → and ← open and close a node from its first cell, and ← on a child goes to its parent.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitButton OnClick="ExpandAll">Expand all</BitButton>
+                <BitButton OnClick="CollapseAll" Variant="BitVariant.Outline">Collapse all</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid @ref="treeGrid" Items="@fileRoots" Height="460px" KeyField="n => n.Id"
+                         ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
+                         ShowSearchBox="true" Filterable="true" CellNavigation="true">
+                <BitDataGridColumn Property="p => p.Name" Width="320px" />
+                <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="120px" />
+                <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Modified" Format="yyyy-MM-dd" Align="BitTextAlign.End" />
+            </BitDataGrid>
+            <br /><br />
+            <div>
+                <b>ChildrenProvider</b> loads a node's children on its first expand (cached afterwards), and <b>HasChildrenSelector</b>
+                tells an unloaded node whether to offer a toggle. Each folder below takes 600 ms to load.
+            </div>
+            <br />
+            <BitDataGrid Items="@lazyTreeRoots" Height="360px" KeyField="n => n.Id"
+                         ChildrenProvider="LoadChildrenAsync" HasChildrenSelector="IsFolder">
+                <BitDataGridColumn Property="p => p.Name" Width="280px" />
+                <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="110px" />
+                <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Modified" Format="yyyy-MM-dd" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Virtualization" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+            <div>
+                <b>Virtualize</b> renders only the rows in view (it needs a <b>Height</b>), and <b>VirtualizeColumns</b> does the same for
+                columns, which then need pixel widths. This grid has 42 columns; try 100,000 rows.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -315,30 +489,28 @@
             </BitStack>
             <br />
             <BitDataGrid Items="@virtualProducts" Height="520px"
-                         Virtualize="true" RowHeight="36" Sortable="true" Filterable="true">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitTextAlign.End" Filterable="false" />
+                         Virtualize="true" VirtualizeColumns="true">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitTextAlign.End" Frozen="true" />
                 <BitDataGridColumn Property="p => p.Name" Width="240px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Supplier" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" />
+                @for (var m = 1; m <= 40; m++)
+                {
+                    var month = m;
+                    <BitDataGridColumn ColumnId="@($"m{month}")" Title="@($"M{month:00}")" Width="110px" Align="BitTextAlign.End">
+                        <Template Context="product">@((product.Id * 37 + month * 13) % 1000)</Template>
+                    </BitDataGridColumn>
+                }
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Server-side data" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Server-side data" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
-                Set the <code>OnRead</code> callback to take over sorting, filtering, searching and paging
-                (e.g. against a database). Each request carries the page window, the active sort, filter and
-                group descriptors, the quick-search term and a <code>CancellationToken</code> the grid cancels
-                when a newer request supersedes it - so a stale response can never overwrite fresher data.
-                Return the page plus the grand <code>TotalCount</code>, and optionally
-                <code>Aggregates</code> computed over the whole matching set so the footer shows real totals
-                rather than per-page numbers. This example simulates a backend with a small delay.
+                <b>OnRead</b> hands sorting, filtering, searching and paging to your code: each request carries the page window, the
+                descriptors, the search term and a <i>CancellationToken</i> the grid cancels when a newer request replaces it. Return the
+                rows and the <b>TotalCount</b>.
             </div>
             <br />
-            <BitDataGrid OnRead="LoadServerData" Height="430px"
-                         Pageable="true" PageSize="10" Sortable="true" Filterable="true" Loading="serverLoading">
+            <BitDataGrid OnRead="LoadServerData" Height="430px" Loading="serverLoading"
+                         Pageable="true" PageSize="10" Filterable="true">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
                 <BitDataGridColumn Property="p => p.Category" />
@@ -348,99 +520,100 @@
             </BitDataGrid>
             <br />
             <BitText>@serverLastRequest</BitText>
-        </DemoExample>
-
-        <DemoExample Title="Infinite scrolling" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <br /><br />
             <div>
-                Set <code>OnLoadMore</code> instead of binding <code>Items</code>. The grid appends the next batch
-                automatically as the user scrolls toward the end - with no total count or paging UI. A fixed
-                <code>Height</code> is required. CSV/Excel exports issue a single request with
-                <code>Take = null</code> ("all rows"), so the handler should honor a <code>null</code> Take.
+                With <b>Virtualize</b> instead of paging, rows are fetched as they scroll into view - 100,000 here. The result's
+                <b>Aggregates</b> fill the footer with totals over the whole matching set.
             </div>
             <br />
-            <BitDataGrid OnLoadMore="LoadMore" LoadMoreBatchSize="40"
-                         Height="520px" RowHeight="40" Sortable="true">
+            <BitDataGrid OnRead="LoadVirtualServerData" Virtualize="true" Height="480px" RowHeight="40"
+                         Filterable="true" ShowFooter="true">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitTextAlign.End" Frozen="true" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="240px" />
+                <BitDataGridColumn Property="p => p.Category" Width="140px" />
+                <BitDataGridColumn Property="p => p.Supplier" Width="180px" />
+                <BitDataGridColumn Property="p => p.Price" Width="140px" Format="C2" Align="BitTextAlign.End" Aggregate="BitDataGridAggregateType.Sum" AggregateFormat="C0" />
+                <BitDataGridColumn Property="p => p.Stock" Width="120px" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Infinite scrolling" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                <b>OnLoadMore</b> appends the next <b>LoadMoreBatchSize</b> rows as the user nears the end - no total, no pager - and stops at a
+                short batch. It needs a <b>Height</b>. An export asks once for every row with <i>Take = null</i>.
+            </div>
+            <br />
+            <BitDataGrid OnLoadMore="LoadMore" LoadMoreBatchSize="40" Height="520px" RowHeight="40">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Name" Width="240px" />
                 <BitDataGridColumn Property="p => p.Category" />
                 <BitDataGridColumn Property="p => p.Supplier" />
                 <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" />
             </BitDataGrid>
             <br />
             <BitText>@infiniteLog</BitText>
         </DemoExample>
 
-        <DemoExample Title="Tree view (hierarchical rows)" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="IQueryable data source" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
-                Set the <code>ChildrenSelector</code> parameter to a function that returns each item's direct children.
-                The grid then treats <code>Items</code> as the root nodes and renders expand/collapse toggles with
-                indentation, and reports itself to assistive tech as a <code>treegrid</code> whose rows carry their
-                own depth (<code>aria-level</code>) and expanded state. <code>TreeInitiallyExpanded</code> decides
-                how it opens, and <code>ExpandAllAsync</code>/<code>CollapseAllAsync</code> drive it from code.
-                Sorting applies within each set of siblings, so the hierarchy is preserved.
-                Searching and filtering work on the hierarchy rather than flattening it: the tree is pruned
-                to the branches that contain a match, those branches open themselves so nothing hides behind
-                a collapsed ancestor, and a folder that matches keeps its whole subtree. Clearing the term
-                restores the expand state you had - the grid never writes to it.
+                Bind an <b>IQueryable&lt;T&gt;</b> - an EF Core <i>DbSet</i>, say - and the filters, sorts, search and paging become an
+                expression the provider runs at the source, so only the current page is materialized.
             </div>
             <br />
-            <BitStack Horizontal Wrap>
-                <BitButton OnClick="ExpandAll">Expand all</BitButton>
-                <BitButton OnClick="CollapseAll">Collapse all</BitButton>
-            </BitStack>
-            <br />
-            <BitDataGrid Items="@fileRoots" Height="460px" Sortable="true"
-                         ShowToolbar="true" ShowSearchBox="true" Filterable="true"
-                         ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true"
-                         KeyField="n => n.Id" @ref="treeGrid">
-                <BitDataGridColumn Property="p => p.Name" Title="Name" Width="320px" />
-                <BitDataGridColumn Property="p => p.Kind" Title="Type" Width="120px" />
-                <BitDataGridColumn Property="p => p.Size" Title="Size (bytes)" Format="N0" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Modified" Format="yyyy-MM-dd" Align="BitTextAlign.End" />
+            <BitDataGrid Items="@queryableProducts" Height="430px"
+                         Filterable="true" Pageable="true" PageSize="10">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Master detail" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="Export" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
-                The <code>DetailTemplate</code> can render anything - including another <code>BitDataGrid</code>.
-                Each supplier expands to show a nested, sortable grid of the products it provides.
+                <b>ShowCsvExport</b> and <b>ShowExcelExport</b> download every matching row (not just the page) as CSV or a real .xlsx with
+                typed cells, an AutoFilter, frozen panes for <b>Frozen</b> columns and merged cells for <b>ColSpan</b>;
+                <b>ExcelExportStyled</b> adds the grid's current colors. <b>ExportValue</b> exports a template column's value,
+                <b>Exportable="false"</b> leaves a column out, and <b>ExportFileName</b> names the files. In code, every export method also
+                takes <i>selectedOnly</i>.
             </div>
             <br />
-            <BitDataGrid Items="@suppliers" Height="520px" Sortable="true">
-                <DetailTemplate Context="supplier">
-                    <BitStack Horizontal Wrap Gap="2rem">
-                        <div><strong>Products:</strong> @supplier.Products.Count</div>
-                        <div><strong>Total stock:</strong> @supplier.Products.Sum(p => p.Stock).ToString("N0")</div>
-                        <div><strong>Avg price:</strong> @supplier.Products.Average(p => p.Price).ToString("C2")</div>
-                        <div><strong>Active:</strong> @supplier.Products.Count(p => !p.Discontinued)</div>
-                    </BitStack>
-                    <br />
-                    <BitDataGrid Items="supplier.Products" Sortable="true" Bordered="true" Striped="true">
-                        <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                        <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                        <BitDataGridColumn Property="p => p.Category" />
-                        <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                        <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                    </BitDataGrid>
-                </DetailTemplate>
-                <Columns>
-                    <BitDataGridColumn Property="p => p.Name" Title="Supplier" Width="260px" />
-                    <BitDataGridColumn Property="p => p.ProductCount" Title="Products" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.TotalStock" Title="Total stock" Format="N0" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.AveragePrice" Title="Avg price" Format="C2" Align="BitTextAlign.End" />
-                </Columns>
+            <BitDataGrid Items="@exportProducts" Height="460px" Filterable="true"
+                         ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true" ExportFileName="products">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Align="BitTextAlign.End" Frozen="true" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" Frozen="true" ColSpan="p => NameSpan(p)">
+                    <Template Context="p">
+                        @if (p.Discontinued)
+                        {
+                            <span class="span-banner">⚠ @p.Name - discontinued</span>
+                        }
+                        else
+                        {
+                            @p.Name
+                        }
+                    </Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn Property="p => p.Category" Width="170px" />
+                <BitDataGridColumn Property="p => p.Price" Width="150px" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Width="130px" Format="d" />
+                <BitDataGridColumn Property="p => p.Supplier" Width="200px" Exportable="false" />
+                <BitDataGridColumn ColumnId="Value" Title="Value" Width="140px" Align="BitTextAlign.End"
+                                   SortBy="@(p => p.Price * p.Stock)" ExportValue="@(p => p.Price * p.Stock)" Format="C0">
+                    <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
+                </BitDataGridColumn>
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Row reordering" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="Row reordering" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
-                Set <code>RowReorderable="true"</code> to show a drag handle on each row. Grab the ⠿ handle and drop it
-                onto another row. The grid reorders the bound list in place and raises <code>OnRowReorder</code>.
+                <b>RowReorderable</b> adds a ⠿ handle: drag it onto another row (mouse, touch or pen), or focus it and press ↑/↓. The grid
+                moves the item in the bound list and raises <b>OnRowReorder</b>. It pauses while the view is sorted, filtered or grouped.
             </div>
             <br />
-            <BitDataGrid TItem="Product" Items="@reorderProducts" Height="460px"
+            <BitDataGrid TItem="Product" Items="@reorderProducts" Height="460px" KeyField="p => p.Id"
                          RowReorderable="true" OnRowReorder="OnReorder" Sortable="false">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
@@ -451,11 +624,10 @@
             <BitText>@reorderLog</BitText>
         </DemoExample>
 
-        <DemoExample Title="Cell events &amp; context menu" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="Cell events &amp; context menu" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" CodeFiles="@example23CodeFiles" Id="example23">
             <div>
-                The grid raises <code>OnCellClick</code>, <code>OnCellDoubleClick</code> and <code>OnCellContextMenu</code>
-                with the row, column and the underlying mouse event. Here <code>OnCellContextMenu</code> opens a custom
-                context menu at the pointer position (right-click any cell).
+                <b>OnCellClick</b>, <b>OnCellDoubleClick</b> and <b>OnCellContextMenu</b> report the row, the column, the value and the mouse
+                event; right-click a cell for a custom menu. <b>OnRowClick</b> and <b>OnRowDoubleClick</b> report the row alone.
             </div>
             <br />
             <BitDataGrid @ref="cellEventsGrid" TItem="Product" Items="@cellEventsProducts" Height="420px"
@@ -484,396 +656,11 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Keyboard cell navigation" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <DemoExample Title="Programmatic control" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
             <div>
-                Set <code>CellNavigation="true"</code> to enable a roving tab stop. Use arrow keys, Home/End,
-                Ctrl+Home/End, PageUp/PageDown to move, Enter/F2 to edit (Esc to cancel), and Delete to
-                delete the focused row (requires <code>Editable</code>).
-            </div>
-            <br />
-            <BitDataGrid Items="@cellNavProducts" Height="460px"
-                         CellNavigation="true" Sortable="true" Editable="true" OnRowSave="(Product _) => {}"
-                         OnRowDelete="(Product p) => cellNavProducts.Remove(p)">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Editable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Format="N1" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Variable row height" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
-            <div>
-                Pass <code>RowHeightSelector</code> a function that returns the desired height (in pixels) for a given row.
-                Here premium products (price over $500) get a taller row.
-            </div>
-            <br />
-            <BitDataGrid Items="@variableHeightProducts" Height="480px" Sortable="true"
-                         RowHeightSelector="RowHeight">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Name" Width="260px">
-                    <Template Context="p">
-                        <div>
-                            <div><strong>@p.Name</strong></div>
-                            @if (p.Price > 500)
-                            {
-                                <div class="muted">Premium · @p.Supplier · released @p.ReleaseDate.ToString("MMM yyyy")</div>
-                            }
-                        </div>
-                    </Template>
-                </BitDataGridColumn>
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Empty &amp; loading states" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
-            <div>
-                Supply an <code>EmptyTemplate</code> to customize the placeholder shown when there is no data,
-                or rely on the built-in "No records to display" message. The busy state is the same story:
-                setting <code>Loading</code> shows a spinner (and marks the grid <code>aria-busy</code>),
-                and a <code>LoadingTemplate</code> replaces that spinner with your own skeleton or message.
-            </div>
-            <br />
-            <BitStack Horizontal Wrap>
-                <BitButton OnClick="() => emptyHasData = false">Clear data</BitButton>
-                <BitButton OnClick="() => emptyHasData = true">Load data</BitButton>
-                <BitButton OnClick="SimulateLoading" Variant="BitVariant.Outline">Simulate loading</BitButton>
-            </BitStack>
-            <br />
-            <BitDataGrid Items="@EmptyCurrent" Height="320px" Sortable="true" Loading="emptyLoading">
-                <LoadingTemplate>
-                    <BitSpinnerLoading Label="Fetching the latest products…" />
-                </LoadingTemplate>
-                <EmptyTemplate>
-                    <BitStack HorizontalAlign="BitAlignment.Center">
-                        <div style="font-size:2rem">📭</div>
-                        <BitText Typography="BitTypography.H6">Nothing here yet</BitText>
-                        <BitText>Try loading the sample data to populate the grid.</BitText>
-                        <BitButton OnClick="() => emptyHasData = true">Load sample data</BitButton>
-                    </BitStack>
-                </EmptyTemplate>
-                <Columns>
-                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Name" Width="240px" />
-                    <BitDataGridColumn Property="p => p.Category" />
-                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                </Columns>
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Borders, striping &amp; row numbers" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
-            <div>
-                Toggle column/row borders and alternate-row striping using the <code>Bordered</code> and
-                <code>Striped</code> parameters. <code>ShowRowNumbers</code> adds the line-number gutter
-                desktop grids put on the leading edge: it counts the row's position in the <b>whole</b>
-                dataset, so it keeps going across pages (turn to page 2 and the numbers continue at 9)
-                and across virtualized windows instead of restarting. It is chrome rather than data, so
-                exports and clipboard copies never carry it.
-            </div>
-            <br />
-            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
-                <BitButton OnClick="() => bordered = !bordered">Borders: @(bordered ? "on" : "off")</BitButton>
-                <BitButton OnClick="() => striped = !striped">Striping: @(striped ? "on" : "off")</BitButton>
-                <BitButton OnClick="() => rowNumbers = !rowNumbers">Row numbers: @(rowNumbers ? "on" : "off")</BitButton>
-            </BitStack>
-            <br />
-            <BitDataGrid Items="@borderStripeProducts" Height="420px"
-                         Bordered="bordered" Striped="striped" ShowRowNumbers="rowNumbers"
-                         Sortable="true" Pageable="true" PageSize="8">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Frozen="true" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Filter operators" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
-            <div>
-                Set <code>FilterOperators</code> to let users pick the comparison for each filter instead of the fixed
-                default: text columns offer contains / doesn't contain / starts with / ends with / = / ≠,
-                while number and date columns offer = ≠ &gt; ≥ &lt; ≤. Every type also ends with
-                <b>Is blank</b> / <b>Is not blank</b>, the two criteria that need no value at all - picking one
-                applies immediately and the editor beside it disappears, since there is nothing left to type.
-                Changing any other operator re-applies the current filter text under it.
-                Individual columns can override the grid-level setting - the Supplier column opts out here,
-                keeping its fixed default filter.
-            </div>
-            <br />
-            <BitDataGrid Items="@operatorProducts" Height="430px"
-                         Filterable="true" FilterOperators="true" ShowToolbar="true">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Supplier" FilterOperators="false" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="yyyy-MM-dd" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Edit validation" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
-            <div>
-                Give a column a <code>Validate</code> function to check proposed edits. While any editor holds an
-                invalid value, the message renders under it and Save is blocked. Edits are buffered - the underlying
-                object is only modified when Save is clicked, so Cancel always leaves the row untouched.
-                Try clearing the Name, or entering a negative Price or Stock.
-            </div>
-            <br />
-            <BitDataGrid Items="@validationProducts" Height="430px"
-                         Editable="true" KeyField="p => p.Id" Pageable="true" PageSize="8">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Editable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" Validate="(p, v) => ValidateName(p, v)" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" Validate="(p, v) => ValidatePrice(p, v)" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Validate="(p, v) => ValidateStock(p, v)" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="State persistence" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
-            <div>
-                <code>GetState()</code> captures the user-adjustable state - page, page size, search term, sorts,
-                filters, groups (including which of them are open) and the per-column visibility, width and
-                order - as a serializable snapshot;
-                <code>ApplyStateAsync()</code> restores it. The snapshot survives a JSON round trip to local
-                storage or a user-preferences store: filter values come back as <code>JsonElement</code>s and
-                are re-coerced to each column's own type on restore. Entries for columns that no longer exist
-                are ignored. Adjust the grid (sort, filter, resize, hide columns, change page), save the state,
-                shuffle things around, then restore.
-            </div>
-            <br />
-            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
-                <BitButton OnClick="SaveGridState">Save state</BitButton>
-                <BitButton OnClick="RestoreGridState" IsEnabled="savedGridState is not null" Variant="BitVariant.Outline">Restore state</BitButton>
-                <BitText>@gridStateStatus</BitText>
-            </BitStack>
-            <br />
-            <BitDataGrid @ref="stateGrid" Items="@stateProducts" Height="430px"
-                         Sortable="true" Filterable="true" Resizable="true"
-                         Pageable="true" PageSize="10" ShowToolbar="true" ShowColumnChooser="true">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Server-side virtualization" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
-            <div>
-                Combine <code>Virtualize</code> with <code>OnRead</code> (and no paging) to browse an arbitrarily large
-                remote dataset: row windows are fetched on demand as you scroll - this example simulates 100,000 rows.
-                The footer shows <b>server-provided aggregates</b> (via <code>BitDataGridReadResult.Aggregates</code>)
-                computed over the whole filtered dataset, and the Rating column is pinned to the end edge
-                with <code>FrozenEnd</code>.
-            </div>
-            <br />
-            <BitDataGrid OnRead="LoadVirtualServerData" Virtualize="true"
-                         Height="480px" RowHeight="40" Sortable="true" Filterable="true" ShowFooter="true">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="90px" Align="BitTextAlign.End" Frozen="true" Filterable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="240px" />
-                <BitDataGridColumn Property="p => p.Category" Width="140px" />
-                <BitDataGridColumn Property="p => p.Supplier" Width="180px" />
-                <BitDataGridColumn Property="p => p.Price" Width="140px" Format="C2" Align="BitTextAlign.End" Aggregate="BitDataGridAggregateType.Sum" AggregateFormat="C0" />
-                <BitDataGridColumn Property="p => p.Stock" Width="120px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Localization" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
-            <div>
-                Every user-visible string - pager, empty/loading texts, filter placeholders, edit buttons,
-                aria-labels and screen-reader announcements - comes from the <code>Strings</code> parameter
-                (a <code>BitDataGridStrings</code>). Assign a customized instance to localize the grid; this
-                example renders a Persian (RTL) grid.
-            </div>
-            <br />
-            <BitDataGrid Items="@localizedProducts" Height="420px"
-                         Direction="BitDir.Rtl" Strings="@persianStrings"
-                         Filterable="true" Pageable="true" PageSize="8">
-                <BitDataGridColumn Property="p => p.Id" Title="شناسه" Width="90px" Align="BitTextAlign.End" Filterable="false" />
-                <BitDataGridColumn Property="p => p.Name" Title="نام" Width="220px" />
-                <BitDataGridColumn Property="p => p.Price" Title="قیمت" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Title="موجودی" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="IQueryable data source" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
-            <div>
-                Bind an <code>IQueryable&lt;T&gt;</code> to <code>Items</code> and the grid translates filtering,
-                sorting and paging into <b>expression trees</b> composed onto the queryable - so a remote LINQ
-                provider such as EF Core executes them at the source (SQL <code>WHERE</code>/<code>ORDER BY</code>/<code>OFFSET</code>)
-                and only the current page is ever materialized. This example uses an in-memory queryable;
-                bind <code>dbContext.Products</code> the same way.
-            </div>
-            <br />
-            <BitDataGrid Items="@queryableProducts" Height="430px"
-                         Sortable="true" Filterable="true" Pageable="true" PageSize="10">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Supplier" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Excel export" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
-            <div>
-                <code>ShowExcelExport</code> adds a toolbar button that downloads the full (filtered/sorted)
-                data as a real <code>.xlsx</code> workbook - generated in-process with no external library.
-                Numbers, booleans and dates are written as native cell types, so the sheet can compute,
-                sort and date-filter on them instead of on text, and the workbook mirrors the grid's
-                layout: a bold, frozen header row carrying Excel's own AutoFilter, the grid's column
-                widths, frozen columns as Excel freeze panes and <code>ColSpan</code> cells as merged cells.
-                With <code>ExcelExportStyled</code> the workbook also carries the grid's <b>current visual
-                theme</b> - the rendered header/row colors, the striped alternating background, the border
-                color and bold/italic fonts are sampled from the live DOM at export time, so whatever theme
-                is active (light, dark, custom) is what lands in the file.
-                Exports always cover <b>all</b> matching rows, not just the rendered ones: server and
-                infinite-scrolling modes fetch the full set through <code>OnRead</code>/<code>OnLoadMore</code>,
-                and tree mode includes collapsed branches. <code>ExportFileName</code> names the downloaded
-                files (<code>products.csv</code> / <code>products.xlsx</code> here), and the CSV is written
-                with CRLF line endings and a UTF-8 byte-order mark so Excel opens accented text correctly.
-            </div>
-            <br />
-            <BitDataGrid Items="@excelProducts" Height="430px"
-                         Filterable="true" Pageable="true" PageSize="10" Striped="true"
-                         ExportFileName="products"
-                         ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="d" Width="120px" />
-                <BitDataGridColumn Property="p => p.Discontinued" Align="BitTextAlign.Center" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Export with complex layouts" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
-            <div>
-                This grid combines a master-detail <code>DetailTemplate</code>, frozen ID/Name columns and
-                <code>ColSpan</code> spanning (discontinued rows span Name over Category) - try scrolling,
-                expanding details and filtering, then export. The <b>Excel</b> file mirrors the layout:
-                the frozen ID/Name columns (plus the header row) become a freeze pane and each spanning
-                cell becomes a merged cell. The data stays faithful in both formats: frozen columns keep
-                their declared order, a templated field column (Name) exports the raw field value rather
-                than its markup, and detail content is not exported (master rows only). A column without a
-                bound field has nothing to write, so it is skipped - unless it is given an
-                <code>ExportValue</code> selector, which is how the computed Value column here exports a
-                real number that spreadsheet formulas can work on. The reverse is <code>Exportable="false"</code>,
-                which keeps a purely presentational column out of the file - the Supplier column opts out here.
-                <b>CSV</b> has no layout concepts, so it stays flat - there every column exports its own
-                value, including the Category a span covers.
-            </div>
-            <br />
-            <BitDataGrid Items="@complexExportProducts" Height="460px" Bordered="true"
-                         Sortable="true" Filterable="true"
-                         ShowToolbar="true" ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true">
-                <DetailTemplate Context="p">
-                    <BitStack Horizontal Wrap Gap="2rem">
-                        <div><strong>Supplier:</strong> @p.Supplier</div>
-                        <div><strong>Rating:</strong> @p.Rating.ToString("N1")</div>
-                        <div><strong>Released:</strong> @p.ReleaseDate.ToString("yyyy-MM-dd")</div>
-                        <div><strong>Discontinued:</strong> @(p.Discontinued ? "Yes" : "No")</div>
-                    </BitStack>
-                </DetailTemplate>
-                <Columns>
-                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Align="BitTextAlign.End" Frozen="true" Filterable="false" />
-                    <BitDataGridColumn Property="p => p.Name" Width="220px" Frozen="true" ColSpan="p => NameSpan(p)">
-                        <Template Context="p">
-                            @if (p.Discontinued)
-                            {
-                                <span class="span-banner">⚠ @p.Name - discontinued</span>
-                            }
-                            else
-                            {
-                                @p.Name
-                            }
-                        </Template>
-                    </BitDataGridColumn>
-                    <BitDataGridColumn Property="p => p.Category" Width="170px" />
-                    <BitDataGridColumn Property="p => p.Price" Width="150px" Format="C2" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Stock" Width="130px" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Supplier" Width="200px" Exportable="false" />
-                    <BitDataGridColumn ColumnId="Value" Title="Value" Width="140px" Align="BitTextAlign.End"
-                                       SortBy="@(p => p.Price * p.Stock)"
-                                       ExportValue="@(p => p.Price * p.Stock)" Format="C0">
-                        <Template Context="p">@((p.Price * p.Stock).ToString("C0"))</Template>
-                    </BitDataGridColumn>
-                </Columns>
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Lazy tree loading" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
-            <div>
-                Set <code>ChildrenProvider</code> (instead of <code>ChildrenSelector</code>) to fetch a node's
-                children <b>asynchronously on first expand</b> - e.g. from a backend - with the results cached for
-                later toggles. Pair it with <code>HasChildrenSelector</code> so unloaded nodes know whether to
-                render an expand toggle. Expanding a folder below simulates a 600&nbsp;ms backend call.
-            </div>
-            <br />
-            <BitDataGrid Items="@lazyTreeRoots" Height="430px"
-                         ChildrenProvider="LoadChildrenAsync" HasChildrenSelector="IsFolder"
-                         KeyField="n => n.Id" Sortable="false">
-                <BitDataGridColumn Property="p => p.Name" Width="280px" />
-                <BitDataGridColumn Property="p => p.Kind" Width="110px" />
-                <BitDataGridColumn Property="p => p.Size" Align="BitTextAlign.End" Format="N0" />
-                <BitDataGridColumn Property="p => p.Modified" Format="yyyy-MM-dd" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Touch drag &amp; drop" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
-            <div>
-                Row and column reordering work with <b>touch and pen</b> as well as mouse: pointer-event based
-                drag-and-drop drives the same reorder pipeline on devices where native HTML5 drag-and-drop
-                doesn't fire. Try it on a touchscreen - drag the ⠿ handle to move a row, or drag a column
-                header to reorder columns; the drop target is highlighted while dragging.
-            </div>
-            <br />
-            <BitDataGrid Items="@touchReorderProducts" Height="430px"
-                         RowReorderable="true" Reorderable="true" Sortable="false" KeyField="p => p.Id">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Column virtualization" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
-            <div>
-                <code>VirtualizeColumns</code> renders only the columns in (and near) the horizontal viewport,
-                replacing scrolled-out runs with spacer cells - for grids with very many columns. This example
-                declares 40 measurement columns (plus a frozen ID column) but only the visible window exists in
-                the DOM while you scroll horizontally. Combine it with row <code>Virtualize</code> for large
-                datasets in both dimensions. Columns need explicit pixel widths.
-            </div>
-            <br />
-            <BitDataGrid Items="@wideProducts" Height="430px"
-                         VirtualizeColumns="true" Virtualize="true" RowHeight="36" Sortable="false">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Frozen="true" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Name" Width="200px" />
-                @for (var m = 1; m <= 40; m++)
-                {
-                    var month = m;
-                    <BitDataGridColumn ColumnId="@($"m{month}")" Title="@($"M{month:00}")" Width="110px" Align="BitTextAlign.End">
-                        <Template Context="product">@(((product.Id * 37 + month * 13) % 1000))</Template>
-                    </BitDataGridColumn>
-                }
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Programmatic control" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32">
-            <div>
-                Everything a user can do through the UI is also a public API on the grid: drive sorting,
-                filtering, grouping, paging and refresh from code with <code>SortByAsync</code> /
-                <code>ClearSortsAsync</code>, <code>ApplyFilterAsync</code> / <code>ClearFiltersAsync</code>,
-                <code>GroupByAsync</code> / <code>UngroupAsync</code>, <code>GoToPageAsync</code>,
-                <code>SetPageSizeAsync</code>, <code>SearchAsync</code> and <code>RefreshAsync</code>.
-                The traffic runs the other way too: <code>OnSortChange</code>, <code>OnFilterChange</code>,
-                <code>OnGroupChange</code> and <code>OnPageChange</code> report every view change - however
-                it was made - so a parent can react to it or persist it. The log below is written by them.
+                Everything the UI does is public API: <b>SortByAsync</b>, <b>ApplyFilterAsync</b>, <b>GroupByAsync</b>, <b>GoToPageAsync</b>,
+                <b>SetPageSizeAsync</b>, <b>MoveColumnAsync</b>, <b>SearchAsync</b>, <b>RefreshAsync</b> and more. <b>OnSortChange</b>,
+                <b>OnFilterChange</b>, <b>OnGroupChange</b> and <b>OnPageChange</b> report each change however it was made.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -885,12 +672,12 @@
                 <BitButton OnClick="ApiUngroup" Variant="BitVariant.Outline">Ungroup</BitButton>
                 <BitButton OnClick="ApiGoToPage3">Go to page 3</BitButton>
                 <BitButton OnClick="ApiPageSize50">Page size 50</BitButton>
+                <BitButton OnClick="ApiPriceFirst">Move Price first</BitButton>
                 <BitButton OnClick="ApiRefresh" Variant="BitVariant.Outline">Refresh</BitButton>
             </BitStack>
             <br />
             <BitDataGrid @ref="apiGrid" TItem="Product" Items="@apiProducts" Height="430px"
-                         Sortable="true" Filterable="true" Groupable="true"
-                         Pageable="true" PageSize="10"
+                         Filterable="true" Groupable="true" Pageable="true" PageSize="10"
                          OnSortChange="OnApiSortChange" OnFilterChange="OnApiFilterChange"
                          OnGroupChange="OnApiGroupChange" OnPageChange="OnApiPageChange">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" Groupable="false" />
@@ -903,206 +690,132 @@
             <BitText>@apiLog</BitText>
         </DemoExample>
 
-        <DemoExample Title="Detail rows from the row &amp; from code" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33">
+        <DemoExample Title="State persistence" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
             <div>
-                The ▸ toggle column is not the only way into a detail row: <code>ExpandDetailOnRowClick</code>
-                expands the <code>DetailTemplate</code> from a click anywhere on the row (and
-                <kbd>Enter</kbd> on a focused cell), so <code>ShowDetailToggle="false"</code> can hide the
-                column altogether. It combines with selection - the click below both selects the row and
-                expands it. The same state is reachable from code with <code>ExpandDetailAsync</code>,
-                <code>CollapseDetailAsync</code>, <code>ToggleDetailAsync</code>,
-                <code>ExpandAllDetailsAsync</code> and <code>CollapseAllDetailsAsync</code>, or declaratively
-                by binding <code>ExpandedDetailItems</code>. Every change raises <code>OnDetailToggle</code>.
+                <b>OnStateChange</b> hands over a <b>GetState</b> snapshot - page and page size, search, sorts, filters, groups and which are
+                open, and each column's order, width and visibility - after every change. Store it, then give it to <b>ApplyStateAsync</b>
+                on a new grid; recreate this one to see. A JSON round trip is fine: filter values are converted back to their column's type.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
-                <BitButton OnClick="ExpandAllDetails">Expand all</BitButton>
-                <BitButton OnClick="CollapseAllDetails" Variant="BitVariant.Outline">Collapse all</BitButton>
-                <BitButton OnClick="ToggleFirstDetail" Variant="BitVariant.Outline">Toggle the first row</BitButton>
+                <BitButton OnClick="() => RecreateGrid(restore: true)" IsEnabled="savedGridState is not null">Recreate &amp; restore</BitButton>
+                <BitButton OnClick="() => RecreateGrid(restore: false)" Variant="BitVariant.Outline">Recreate fresh</BitButton>
+                <BitText>@gridStateStatus</BitText>
             </BitStack>
             <br />
-            <BitDataGrid @ref="detailGrid" TItem="Product" Items="@detailProducts" Height="430px"
-                         ShowDetailToggle="false"
-                         ExpandDetailOnRowClick="true"
-                         CellNavigation="true"
-                         OnDetailToggle="OnDetailToggled"
-                         SelectionMode="BitSelectionMode.Single"
-                         KeyField="p => p.Id">
-                <DetailTemplate Context="p">
-                    <BitStack Horizontal Wrap Gap="2rem">
-                        <div><strong>Supplier</strong><br />@p.Supplier</div>
-                        <div><strong>Released</strong><br />@p.ReleaseDate.ToString("D")</div>
-                        <div><strong>Inventory value</strong><br />@((p.Price * p.Stock).ToString("C2"))</div>
-                        <div><strong>Status</strong><br />@(p.Discontinued ? "Discontinued" : "Active")</div>
-                    </BitStack>
-                </DetailTemplate>
-                <Columns>
+            <BitDataGrid @key="stateGridKey" @ref="stateGrid" TItem="Product" Items="@stateProducts" Height="430px"
+                         Filterable="true" Resizable="true" Reorderable="true" ShowColumnChooser="true"
+                         Pageable="true" PageSize="10" OnStateChange="SaveGridState">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+            <div>
+                Every string the grid renders or announces - pager, messages, placeholders, buttons, accessible names and live-region
+                announcements - comes from <b>Strings</b>. Override what you need; the rest keeps its English default.
+            </div>
+            <br />
+            <BitDataGrid Items="@localizedProducts" Height="420px" Strings="@germanStrings"
+                         ShowSearchBox="true" Filterable="true" Pageable="true" PageSize="8">
+                <BitDataGridColumn Property="p => p.Id" Title="Nr." Width="80px" Align="BitTextAlign.End" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Title="Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Price" Title="Preis" Format="C2" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Stock" Title="Bestand" Align="BitTextAlign.End" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
+            <div>
+                <b>IsEnabled="false"</b> keeps the data readable - a focused cell still moves and copies - but disables every control and
+                gesture in the grid, which reports <i>aria-disabled</i>.
+            </div>
+            <br />
+            <BitToggle @bind-Value="gridEnabled" Label="Enabled" Inline />
+            <br />
+            <BitDataGrid Items="@disabledProducts" Height="380px" IsEnabled="gridEnabled"
+                         SelectionMode="BitSelectionMode.Multiple" CellNavigation="true" ClipboardCopy="true"
+                         Filterable="true" Resizable="true" Pageable="true" PageSize="8">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+            </BitDataGrid>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
+            <div>
+                <b>BitParams</b> carries a <b>BitDataGridParams</b> to every grid under it - the defaults an app wants everywhere,
+                <b>Strings</b> included. Both grids here take row numbers, a filter row and pages of 5 from it; they are defaults, not
+                overrides, so the second grid keeps the <b>Striped</b> it sets itself.
+            </div>
+            <br />
+            <BitParams Parameters="@dataGridParams">
+                <BitDataGrid Items="@cascadingProducts" AriaLabel="Cascaded defaults">
                     <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
                     <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                    <BitDataGridColumn Property="p => p.Category" />
                     <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-                </Columns>
-            </BitDataGrid>
-            <br />
-            <BitText>@detailStatus</BitText>
-        </DemoExample>
-
-        <DemoExample Title="Quick search" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34">
-            <div>
-                <code>ShowSearchBox</code> puts a single search field in the toolbar that filters across
-                <b>every</b> searchable column at once - the grid-wide counterpart of the per-column filter row.
-                Matching is case-insensitive and runs against the text each column renders, so users search
-                exactly what they see (a formatted price matches on its formatted form). A column opts out with
-                <code>Searchable="false"</code> - the Stock column here - and the term is two-way bindable
-                through <code>SearchText</code>, so it can also be driven from your own field or persisted with
-                the rest of the grid state. The box searches as you type, coalescing a burst of keystrokes into
-                one search after <code>SearchDebounce</code> milliseconds of quiet (300 by default; set
-                <code>0</code> to apply every keystroke, which a small in-memory grid can afford but a remote
-                one should not). In server and infinite modes the term arrives as
-                <code>BitDataGridReadRequest.Search</code>; over an <code>IQueryable</code> it is translated
-                into a single <code>OR</code> of <code>Contains</code> predicates the provider runs at the source;
-                and a tree grid prunes itself to the branches that contain a match.
-            </div>
-            <br />
-            <BitDataGrid Items="@searchProducts" Height="430px"
-                         ShowToolbar="true" ShowSearchBox="true" @bind-SearchText="searchTerm"
-                         Sortable="true" Pageable="true" PageSize="10">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Supplier" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" Searchable="false" />
-            </BitDataGrid>
-            <br />
-            <BitText>@(string.IsNullOrEmpty(searchTerm) ? "No search term." : $"Searching for \"{searchTerm}\".")</BitText>
-        </DemoExample>
-
-        <DemoExample Title="Conditional row styling &amp; cell tooltips" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" CodeFiles="@example35CodeFiles" Id="example35">
-            <div>
-                <code>RowClass</code> and <code>RowStyle</code> take a function of the row and return a CSS class
-                or inline style for it, so the data can speak for itself: out-of-stock rows are flagged red here
-                and premium rows are tinted. Both run per row and are appended after the grid's own classes and
-                layout style, so they win any property they repeat.
-                <code>ShowCellTooltips</code> gives every value cell a native tooltip with its full text - the
-                answer to a value the column is too narrow to show - and a column can opt in or out on its own
-                with <code>ShowTooltip</code>. Narrow the Name column and hover a long product name to see it.
-            </div>
-            <br />
-            @* The row class lands on an element the grid renders, so the page's scoped CSS needs a
-               plain wrapper of its own to hang ::deep off (see the stylesheet tab). *@
-            <div class="styled-rows">
-                <BitDataGrid Items="@styledRowProducts" Height="430px" Sortable="true" Resizable="true"
-                             ShowCellTooltips="true"
-                             RowClass="RowClassFor" RowStyle="RowStyleFor">
+                </BitDataGrid>
+                <br />
+                <BitDataGrid Items="@cascadingProducts" AriaLabel="Its own Striped" Striped="true">
                     <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Name" Width="160px" />
-                    <BitDataGridColumn Property="p => p.Supplier" Width="140px" />
-                    <BitDataGridColumn Property="p => p.Category" ShowTooltip="false" />
+                    <BitDataGridColumn Property="p => p.Name" Width="220px" />
                     <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                    <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
+                </BitDataGrid>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style &amp; Class" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" CodeFiles="@example29CodeFiles" Id="example29">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part on its own - the toolbar, the
+                header row and cells, the rows, a selected row, the cells, the footer, the pager and more.
+            </div>
+            <br />
+            <div class="styled-grid">
+                <BitDataGrid Items="@styleProducts" Height="300px" Style="box-shadow: var(--bit-shd-sm);"
+                             Classes="@(new() { HeaderCell = "custom-header-cell", SelectedRow = "custom-selected-row" })"
+                             Styles="@(new() { Root = "border-radius: 1rem;", Pager = "justify-content: center;" })"
+                             SelectionMode="BitSelectionMode.Multiple" @bind-SelectedItems="styleSelection"
+                             Pageable="true" PageSize="5">
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                    <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
                 </BitDataGrid>
             </div>
-        </DemoExample>
-
-        <DemoExample Title="Clipboard, range selection &amp; selected-rows export" RazorCode="@example36RazorCode" CsharpCode="@example36CsharpCode" Id="example36">
+            <br /><br />
             <div>
-                Selection behaves the way desktop grids do: click a checkbox, then <kbd>Shift</kbd>+click another
-                to select the whole run between them. With <code>CellNavigation</code> on, a focused cell also
-                answers <kbd>Space</kbd> (toggle the row), <kbd>Ctrl</kbd>+<kbd>A</kbd> (select every row of the
-                view) and - once <code>ClipboardCopy</code> is set - <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>C</kbd>,
-                which copies the selected rows (or the focused one) to the system clipboard as tab-separated text
-                with a header line, ready to paste into Excel or Sheets as real columns.
-                The same operations are public API: <code>SelectAllAsync</code>,
-                <code>ClearSelectionAsync</code> and <code>CopyToClipboardAsync</code>.
-                Every export takes the selection too: passing <code>selectedOnly: true</code> to
-                <code>ExportCsvAsync</code>, <code>ExportExcelAsync</code>, <code>ToCsvAsync</code> or
-                <code>ToExcelAsync</code> narrows the file to the selected rows, written in view order rather
-                than in the order they were picked.
+                The grid also reads <BitLink Href="#css-variables-section">CSS variables</BitLink>. They inherit, so a value on <i>:root</i> or
+                an ancestor restyles every grid below it, and one on <b>Style</b> restyles one grid. Here: a compact, accent-colored grid.
             </div>
             <br />
-            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
-                <BitButton OnClick="SelectAllRows">Select all</BitButton>
-                <BitButton OnClick="ClearRowSelection" Variant="BitVariant.Outline">Clear selection</BitButton>
-                <BitButton OnClick="CopySelection" IsEnabled="clipboardSelection.Count > 0">Copy selection</BitButton>
-                <BitButton OnClick="ExportSelection" IsEnabled="clipboardSelection.Count > 0" Variant="BitVariant.Outline">Export selection</BitButton>
-                <BitText>@clipboardStatus</BitText>
-            </BitStack>
-            <br />
-            <BitDataGrid @ref="clipboardGrid" TItem="Product" Items="@clipboardProducts" Height="430px"
-                         ExportFileName="selection"
-                         SelectionMode="BitSelectionMode.Multiple" @bind-SelectedItems="clipboardSelection"
-                         CellNavigation="true" ClipboardCopy="true" Sortable="true" KeyField="p => p.Id">
+            <BitDataGrid Items="@styleProducts" Height="300px" ShowRowNumbers="true"
+                         SelectionMode="BitSelectionMode.Multiple"
+                         Style="--bit-DataGrid-cell-padding: 2px 8px;
+                                --bit-DataGrid-font-size: var(--bit-tpg-fs-xs);
+                                --bit-DataGrid-header-background: var(--bit-clr-pri);
+                                --bit-DataGrid-header-color: var(--bit-clr-pri-text);
+                                --bit-DataGrid-selected-background: var(--bit-clr-suc-tint);
+                                --bit-DataGrid-accent-color: var(--bit-clr-suc);
+                                --bit-DataGrid-border-radius: 0;">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
                 <BitDataGridColumn Property="p => p.Category" />
                 <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Text wrapping" RazorCode="@example37RazorCode" CsharpCode="@example37CsharpCode" Id="example37">
+        <DemoExample Title="RTL" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
             <div>
-                By default a cell keeps its value on one line and ellipsises whatever doesn't fit, which is
-                what makes a dense grid scannable. <code>WrapCellText</code> flips that for grids whose
-                content is prose: headers and cells wrap onto as many lines as they need and each row grows
-                to fit its tallest cell, so nothing is hidden behind a tooltip. A column overrides the grid
-                with <code>WrapText</code> - the ID, price and stock columns here stay on one line, because a
-                short value has nothing to gain from wrapping and a ragged column is harder to compare down.
-                Wrapping is deliberately inert while <code>Virtualize</code> is on: virtualization needs every
-                row to be exactly <code>RowHeight</code> tall, which a wrapped row is not.
+                <b>Dir="BitDir.Rtl"</b> mirrors the grid: frozen columns, arrows and keyboard navigation follow the reading direction.
+                Without it, the grid takes a cascaded <b>BitDir</b>, or else the page's direction.
             </div>
             <br />
-            <BitButton OnClick="() => wrapCellText = !wrapCellText">Wrapping: @(wrapCellText ? "on" : "off")</BitButton>
-            <br /><br />
-            <BitDataGrid Items="@wrapProducts" Height="430px" Sortable="true" Resizable="true"
-                         WrapCellText="wrapCellText">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" WrapText="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="160px" />
-                <BitDataGridColumn TItem="Product" Title="Description" Width="280px">
-                    <Template Context="product">@DescriptionOf(product)</Template>
-                </BitDataGridColumn>
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Width="100px" Align="BitTextAlign.End" WrapText="false" />
-                <BitDataGridColumn Property="p => p.Stock" Width="90px" Align="BitTextAlign.End" WrapText="false" />
-            </BitDataGrid>
-        </DemoExample>
-
-        <DemoExample Title="Row double-click &amp; editing from code" RazorCode="@example38RazorCode" CsharpCode="@example38CsharpCode" Id="example38">
-            <div>
-                <code>OnRowDoubleClick</code> is the row-level counterpart of <code>OnCellDoubleClick</code>:
-                it reports the row itself, which is what "open this record" hangs off in most applications.
-                Paired with the editing lifecycle - <code>BeginEdit</code>, <code>CommitEditAsync</code>,
-                <code>CancelEditAsync</code>, <code>AddNewRowAsync</code>, <code>DeleteRowAsync</code> and the
-                <code>EditingItem</code> the grid currently holds open - it turns the double-click into the
-                edit gesture spreadsheets have trained everyone to expect, alongside (not instead of) the
-                command column's own buttons. The row still commits with <kbd>Enter</kbd> and cancels with
-                <kbd>Esc</kbd>.
-            </div>
-            <br />
-            <BitDataGrid @ref="rowEventGrid" TItem="Product" Items="@rowEventProducts" Height="430px"
-                         Sortable="true" KeyField="p => p.Id"
-                         Editable="true" CellNavigation="true"
-                         OnRowDoubleClick="EditOnDoubleClick"
-                         OnRowSave="OnRowEventSaved" OnRowCancel="OnRowEventCancelled">
-                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Editable="false" />
-                <BitDataGridColumn Property="p => p.Name" Width="220px" />
-                <BitDataGridColumn Property="p => p.Category" />
-                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
-            </BitDataGrid>
-            <br />
-            <BitText>@rowEventStatus</BitText>
-        </DemoExample>
-
-        <DemoExample Title="RTL" RazorCode="@example39RazorCode" CsharpCode="@example39CsharpCode" Id="example39" PreventRenderForMcpClient>
-            <div>
-                Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
-            </div>
-            <br />
-            <BitDataGrid Items="@rtlProducts" Height="420px"
-                         Direction="BitDir.Rtl"
-                         Sortable="true" Pageable="true" PageSize="8">
+            <BitDataGrid Items="@rtlProducts" Height="420px" Dir="BitDir.Rtl" Strings="@persianStrings"
+                         Resizable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn Property="p => p.Id" Title="شناسه" Width="90px" Align="BitTextAlign.End" Frozen="true" />
                 <BitDataGridColumn Property="p => p.Name" Title="نام" Width="220px" />
                 <BitDataGridColumn Property="p => p.Category" Title="دسته‌بندی">
@@ -1115,4 +828,3 @@
 
     </Examples>
 </DemoPage>
-

@@ -1,20 +1,100 @@
 ﻿@import "../../Styles/extra-variables.scss";
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
+// ancestor) re-tunes every viewer under it and one set on the Style of an instance that one alone:
+//   --bit-PdfViewer-color                          text and glyphs of the chrome                (default: $clr-fg-pri)
+//   --bit-PdfViewer-background                     backdrop behind the pages                    (default: $clr-bg-sec-dark)
+//   --bit-PdfViewer-border-color                   outer border                                 (default: $clr-brd-sec)
+//   --bit-PdfViewer-border-width                   outer border width                           (default: $shp-border-width)
+//   --bit-PdfViewer-border-radius                  outer corner radius                          (default: $shp-radius-surface)
+//   --bit-PdfViewer-divider-color                  lines between the toolbar, sidebars and pages (default: $clr-brd-sec)
+//   --bit-PdfViewer-focus-color                    every focus indicator of the viewer          (default: $clr-pri-focus)
+//   --bit-PdfViewer-font-family                    font of the chrome                           (default: $tg-font-family)
+//   --bit-PdfViewer-height                         height of the viewer                         (default: min(780px, 85dvh))
+//   --bit-PdfViewer-width                          width of the viewer                          (default: auto)
+//   --bit-PdfViewer-toolbar-background             background of the toolbar                    (default: $clr-bg-sec)
+//   --bit-PdfViewer-button-size                    square of a toolbar button                   (default: spacing(3.75))
+//   --bit-PdfViewer-button-radius                  corner radius of a toolbar button            (default: $shp-radius-button)
+//   --bit-PdfViewer-button-hover-background        a button under the pointer                   (default: $clr-bg-sec-hover)
+//   --bit-PdfViewer-button-active-color            glyph of a pressed (on) toggle               (default: $clr-pri-text)
+//   --bit-PdfViewer-button-active-background       background of a pressed (on) toggle          (default: $clr-pri)
+//   --bit-PdfViewer-button-active-hover-background ... under the pointer                        (default: $clr-pri-hover)
+//   --bit-PdfViewer-field-background               the page box, find box and dropdowns         (default: $clr-bg-pri)
+//   --bit-PdfViewer-field-border-color             ... their border                             (default: $clr-brd-pri)
+//   --bit-PdfViewer-sidebar-background             background of the side panels                (default: $clr-bg-sec)
+//   --bit-PdfViewer-sidebar-width                  width of the bookmarks/attachments/layers panel (default: spacing(29))
+//   --bit-PdfViewer-item-hover-background          a sidebar row under the pointer              (default: $clr-bg-sec-hover)
+//   --bit-PdfViewer-selection-color                current thumbnail, current bookmark, checked layer (default: $clr-pri)
+//   --bit-PdfViewer-surface-padding                space around the pages                       (default: spacing(2))
+//   --bit-PdfViewer-page-gap                       space between the pages                      (default: spacing(2))
+//   --bit-PdfViewer-page-background                paper of a page                              (default: #fff)
+//   --bit-PdfViewer-page-shadow                    elevation of a page                          (default: $box-shadow-card)
+//   --bit-PdfViewer-page-filter                    filter over a page and a thumbnail (a dark reading mode) (default: none)
+//   --bit-PdfViewer-placeholder-background         a page that has not painted yet              (default: #f0f0f0)
+//   --bit-PdfViewer-progress-color                 the loading bar                              (default: $clr-pri)
+//   --bit-PdfViewer-progress-track-color           the track under the loading bar              (default: $clr-pri-light)
+//   --bit-PdfViewer-progress-height                thickness of the loading bar                 (default: $siz-track-sm)
+//   --bit-PdfViewer-text-selection-background      selected document text                       (default: $clr-pri at 35%)
+//   --bit-PdfViewer-search-match-background        a find match                                 (default: $clr-wrn)
+//   --bit-PdfViewer-search-match-color             ... its text                                 (default: $clr-wrn-text)
+//   --bit-PdfViewer-search-current-background      the match being walked to                    (default: $clr-swr)
+//   --bit-PdfViewer-search-current-color           ... its text                                 (default: $clr-swr-text)
+//   --bit-PdfViewer-presentation-background        backdrop of presentation mode                (default: #000)
+
+$pdv-color: var(--bit-PdfViewer-color, #{$clr-fg-pri});
+$pdv-divider: var(--bit-PdfViewer-divider-color, #{$clr-brd-sec});
+$pdv-focus: var(--bit-PdfViewer-focus-color, #{$clr-pri-focus});
+$pdv-button-hover-background: var(--bit-PdfViewer-button-hover-background, #{$clr-bg-sec-hover});
+$pdv-button-active-color: var(--bit-PdfViewer-button-active-color, #{$clr-pri-text});
+$pdv-button-active-background: var(--bit-PdfViewer-button-active-background, #{$clr-pri});
+$pdv-button-active-hover-background: var(--bit-PdfViewer-button-active-hover-background, #{$clr-pri-hover});
+$pdv-field-background: var(--bit-PdfViewer-field-background, #{$clr-bg-pri});
+$pdv-field-border: var(--bit-PdfViewer-field-border-color, #{$clr-brd-pri});
+$pdv-sidebar-background: var(--bit-PdfViewer-sidebar-background, #{$clr-bg-sec});
+$pdv-sidebar-width: var(--bit-PdfViewer-sidebar-width, #{spacing(29)});
+$pdv-item-hover-background: var(--bit-PdfViewer-item-hover-background, #{$clr-bg-sec-hover});
+$pdv-selection: var(--bit-PdfViewer-selection-color, #{$clr-pri});
+$pdv-page-background: var(--bit-PdfViewer-page-background, #fff);
+$pdv-page-filter: var(--bit-PdfViewer-page-filter, none);
+$pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0);
+
+// A ring drawn inside the element, for the parts that sit in a scroll container (or fill one) whose overflow would
+// clip a ring drawn outside.
+@mixin pdv-inset-ring {
+    outline: none;
+    box-shadow: inset 0 0 0 $shp-focus-ring-width #{$pdv-focus};
+
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
+
 .bit-pdv {
     display: flex;
     overflow: hidden;
     position: relative;
     flex-direction: column;
-    /* Default height adapts to the viewport so the viewer stays usable on small
-       screens; the Height parameter overrides it via an inline style. The vh
-       line is a fallback for browsers without dvh support. */
-    height: min(#{rem2(780px)}, 85vh);
-    height: min(#{rem2(780px)}, 85dvh);
-    background: $clr-bg-sec-dark;
-    font-family: $tg-font-family;
-    border-radius: $shp-radius-surface;
-    border: $shp-border-width $shp-border-style $clr-brd-sec;
+    color: $pdv-color;
+    // The default height adapts to the viewport so the viewer stays usable on small screens; the Height
+    // parameter sets the variable on the instance. The vh line is for the engines without dvh support.
+    height: var(--bit-PdfViewer-height, min(#{rem2(780px)}, 85vh));
+    width: var(--bit-PdfViewer-width, auto);
+    font-family: var(--bit-PdfViewer-font-family, #{$tg-font-family});
+    background: var(--bit-PdfViewer-background, #{$clr-bg-sec-dark});
+    border-radius: var(--bit-PdfViewer-border-radius, #{$shp-radius-surface});
+    border: var(--bit-PdfViewer-border-width, #{$shp-border-width}) $shp-border-style var(--bit-PdfViewer-border-color, #{$clr-brd-sec});
+
+    @supports (height: 1dvh) {
+        height: var(--bit-PdfViewer-height, min(#{rem2(780px)}, 85dvh));
+    }
+}
+
+// A disabled viewer keeps showing its document, but its chrome is inert (the markup says so) and looks it.
+.bit-pdv.bit-dis .bit-pdv-toolbar,
+.bit-pdv.bit-dis .bit-pdv-body > [inert] {
+    opacity: $opa-dis;
 }
 
 /* Top loading bar (indeterminate). Animates transform/opacity only so it keeps
@@ -23,11 +103,11 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
     z-index: 20;
     overflow: hidden;
     position: absolute;
-    background: $clr-pri-light;
+    height: var(--bit-PdfViewer-progress-height, #{$siz-track-sm});
+    background: var(--bit-PdfViewer-progress-track-color, #{$clr-pri-light});
 }
 
 .bit-pdv-progress-bar {
@@ -36,12 +116,28 @@
     width: 40%;
     height: 100%;
     position: absolute;
-    background: $clr-pri;
     will-change: transform;
-    border-radius: 0 3px 3px 0;
+    border-radius: 0 $shp-radius-full $shp-radius-full 0;
+    background: var(--bit-PdfViewer-progress-color, #{$clr-pri});
     // Not a spinner, so it scales its own duration by the shared loop factor: stretched under
     // reduced motion, restored inside a ForceAnimation subtree.
     animation: bit-pdv-progress-slide calc(1.1s * #{$mot-loop-factor}) ease-in-out infinite;
+}
+
+// A determinate bar is the whole track, scaled to the fraction from the inline-start edge: transform
+// again, so moving it costs no layout.
+.bit-pdv-progress-bar.bit-pdv-det {
+    width: 100%;
+    animation: none;
+    border-radius: 0;
+    transform-origin: left center;
+    transition: transform $mot-duration $mot-easing;
+}
+
+// A right-to-left viewer mirrors the whole track, so the determinate bar fills from the inline-start edge and the
+// indeterminate one sweeps the way the text reads.
+.bit-rtl .bit-pdv-progress {
+    transform: scaleX(-1);
 }
 
 @keyframes bit-pdv-progress-slide {
@@ -60,7 +156,7 @@
     inset: 0;
     position: absolute;
     overflow: hidden;
-    background: #f0f0f0;
+    background: $pdv-placeholder-background;
 }
 
 .bit-pdv-page-placeholder::after {
@@ -68,7 +164,7 @@
     inset: 0;
     position: absolute;
     transform: translateX(-100%);
-    background: linear-gradient(100deg, transparent 25%, #dcdcdc 50%, transparent 75%);
+    background: linear-gradient(100deg, transparent 25%, color-mix(in srgb, #{$pdv-placeholder-background} 88%, #000) 50%, transparent 75%);
     animation: bit-pdv-shimmer 1.4s linear infinite;
 }
 
@@ -91,12 +187,12 @@
     display: flex;
     gap: spacing(1.5);
     flex-wrap: wrap;
-    color: $clr-fg-pri;
+    color: $pdv-color;
     align-items: center;
     font-size: $tg-fs-sm;
-    background: $clr-bg-sec;
     padding: spacing(0.8) spacing(1.2);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    background: var(--bit-PdfViewer-toolbar-background, #{$clr-bg-sec});
+    border-bottom: $shp-border-width $shp-border-style $pdv-divider;
 }
 
 .bit-pdv-group {
@@ -112,7 +208,6 @@
 .bit-pdv-title {
     flex: 1;
     min-width: 0;
-    opacity: 0.9;
     overflow: hidden;
     font-weight: $tg-fw-semibold;
     text-align: center;
@@ -123,18 +218,24 @@
 .bit-pdv-btn {
     padding: 0;
     border: none;
-    width: spacing(3.75);
-    height: spacing(3.75);
+    flex-shrink: 0;
     cursor: pointer;
-    color: $clr-fg-pri;
+    color: $pdv-color;
     align-items: center;
     display: inline-flex;
     background: transparent;
     justify-content: center;
-    border-radius: $shp-radius-control;
+    width: var(--bit-PdfViewer-button-size, #{spacing(3.75)});
+    height: var(--bit-PdfViewer-button-size, #{spacing(3.75)});
+    border-radius: var(--bit-PdfViewer-button-radius, #{$shp-radius-button});
+    transition: background-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 
     &:hover:not(:disabled) {
-        background: $clr-bg-sec-hover;
+        background: $pdv-button-hover-background;
+    }
+
+    &:focus-visible {
+        @include focus-ring($pdv-focus);
     }
 
     &:disabled {
@@ -143,18 +244,18 @@
     }
 
     &.bit-pdv-act {
-        color: $clr-pri-text;
-        background: $clr-pri;
+        color: $pdv-button-active-color;
+        background: $pdv-button-active-background;
 
         &:hover:not(:disabled) {
-            background: $clr-pri-hover;
+            background: $pdv-button-active-hover-background;
         }
     }
 
     svg {
         fill: none;
-        width: rem2(18px);
-        height: rem2(18px);
+        width: $siz-icon-md;
+        height: $siz-icon-md;
         stroke: currentColor;
         stroke-width: 2;
         stroke-linecap: round;
@@ -168,22 +269,38 @@
     align-items: center;
 }
 
+// The text fields of the chrome: the page box, the find box and the dropdowns.
+.bit-pdv-search-input,
+.bit-pdv-page-input,
+.bit-pdv-select {
+    height: $siz-ctrl-sm;
+    color: $pdv-color;
+    font-size: $tg-fs-xs;
+    font-family: inherit;
+    background: $pdv-field-background;
+    border-radius: $shp-radius-control;
+    border: $shp-border-width $shp-border-style $pdv-field-border;
+
+    &:focus-visible {
+        @include focus-ring($pdv-focus, 0);
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+}
+
 .bit-pdv-search-input {
     width: spacing(19);
-    height: $siz-ctrl-sm;
-    color: $clr-fg-pri;
-    font-size: $tg-fs-xs;
-    background: $clr-bg-pri;
     padding: 0 spacing(0.8);
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-pdv-search-count {
     text-align: center;
-    color: $clr-fg-sec;
     min-width: spacing(5);
     font-size: $tg-fs-xs;
+    color: $clr-fg-sec;
     font-variant-numeric: tabular-nums;
 }
 
@@ -194,14 +311,8 @@
 }
 
 .bit-pdv-page-input {
-    width: spacing(5.25);
-    height: $siz-ctrl-sm;
-    color: $clr-fg-pri;
     text-align: center;
-    font-size: $tg-fs-xs;
-    background: $clr-bg-pri;
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    width: spacing(5.25);
 }
 
 .bit-pdv-page-total {
@@ -213,6 +324,15 @@
     color: $clr-fg-sec;
 }
 
+// The page navigation and zoom out / the level / zoom in step through numbers, which read left to right, in a
+// right-to-left viewer too.
+.bit-pdv-ltr {
+    display: flex;
+    direction: ltr;
+    gap: spacing(0.5);
+    align-items: center;
+}
+
 .bit-pdv-zoom {
     text-align: center;
     min-width: spacing(5.5);
@@ -220,16 +340,10 @@
 }
 
 .bit-pdv-select {
-    height: $siz-ctrl-sm;
-    color: $clr-fg-pri;
-    font-size: $tg-fs-xs;
-    background: $clr-bg-pri;
     padding: 0 spacing(0.5);
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
-/* Body: optional thumbnail sidebar + scrollable surface */
+/* Body: optional sidebar + scrollable surface */
 .bit-pdv-body {
     flex: 1;
     display: flex;
@@ -239,66 +353,90 @@
     position: relative;
 }
 
+// The side panels share their frame: the thumbnails keep their own width, which the 130px thumbnail sets.
+.bit-pdv-thumbs,
+.bit-pdv-outline,
+.bit-pdv-attachments,
+.bit-pdv-layers {
+    flex-shrink: 0;
+    overflow: auto;
+    color: $pdv-color;
+    background: $pdv-sidebar-background;
+    border-inline-end: $shp-border-width $shp-border-style $pdv-divider;
+}
+
+.bit-pdv-outline,
+.bit-pdv-attachments,
+.bit-pdv-layers {
+    width: $pdv-sidebar-width;
+    max-width: 50%;
+    font-size: $tg-fs-sm;
+}
+
 .bit-pdv-thumbs {
     display: flex;
-    flex-shrink: 0;
     gap: spacing(1.5);
-    overflow-y: auto;
     width: spacing(19);
     flex-direction: column;
-    background: $clr-bg-sec;
     padding: spacing(1.5) spacing(1);
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-pdv-thumb {
     line-height: 0;
     cursor: pointer;
-    background: #fff;
     position: relative;
+    background: $pdv-page-background;
     border-radius: $shp-radius-surface;
     border: $shp-border-width-thick $shp-border-style transparent;
+    transition: border-color $mot-duration $mot-easing;
+
+    &:hover:not(.bit-pdv-act) {
+        border-color: $pdv-field-border;
+    }
+
+    &:focus-visible {
+        @include focus-ring($pdv-focus);
+    }
 
     &.bit-pdv-act {
-        border-color: $clr-pri;
+        border-color: $pdv-selection;
     }
 }
 
 .bit-pdv-thumb-svg {
     line-height: 0;
+    filter: $pdv-page-filter;
     contain: strict; /* explicit inline width/height, same isolation as .bit-pdv-page */
 }
 
 .bit-pdv-thumb-label {
-    inset-inline-end: 4px;
-    bottom: 2px;
+    bottom: spacing(0.25);
+    inset-inline-end: spacing(0.5);
     line-height: 1.4;
     position: absolute;
     padding: 0 spacing(0.5);
     color: $clr-ntr-white;
     font-size: $tg-fs-xs;
     background: $clr-bg-overlay;
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-xs;
 }
 
 .bit-pdv-surface {
     flex: 1;
     overflow: auto;
-    padding: spacing(2);
     scroll-behavior: smooth;
+    padding: var(--bit-PdfViewer-surface-padding, #{spacing(2)});
+
+    // The surface is a scroll container that fills the body, so its ring is drawn inside it.
+    &:focus-visible {
+        @include pdv-inset-ring;
+    }
 }
 
 /* Bookmarks (document outline) sidebar */
 .bit-pdv-outline {
-    flex-shrink: 0;
-    overflow: auto;
-    width: spacing(29);
-    color: $clr-fg-pri;
-    background: $clr-bg-sec;
-    font-size: $tg-fs-sm;
     padding-block: spacing(1);
     padding-inline: spacing(1) spacing(0.5);
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 
     > .bit-pdv-outline-list {
         padding-inline-start: 0;
@@ -312,20 +450,34 @@
     padding-inline-start: spacing(1.5);
 }
 
-/* The treeitem is the whole <li>, children included, so the hover and the fill are
-   scoped to its OWN row - hovering a nested bookmark must not also light up every
-   ancestor it happens to sit inside. */
+/* The treeitem is the whole <li>, children included, so the hover, the fill and the
+   focus ring are scoped to its OWN row - hovering a nested bookmark must not also light
+   up every ancestor it happens to sit inside. */
 .bit-pdv-outline-node {
     cursor: pointer;
 
     > .bit-pdv-outline-row {
-        border-radius: $shp-radius-surface;
-        padding: spacing(0.4) spacing(0.7);
+        border-radius: $shp-radius-sm;
+        padding: 0 spacing(0.5);
+        transition: background-color $mot-duration $mot-easing;
     }
 
     &:hover > .bit-pdv-outline-row {
-        color: $clr-pri-text;
-        background: $clr-pri;
+        background: $pdv-item-hover-background;
+    }
+
+    // The bookmark that points at the page in front of the reader.
+    &[aria-selected="true"] > .bit-pdv-outline-row {
+        color: $pdv-selection;
+        font-weight: $tg-fw-semibold;
+    }
+
+    &:focus-visible {
+        outline: none;
+
+        > .bit-pdv-outline-row {
+            @include pdv-inset-ring;
+        }
     }
 
     &.bit-pdv-dis {
@@ -336,7 +488,6 @@
         }
 
         &:hover > .bit-pdv-outline-row {
-            color: $clr-fg-dis;
             background: transparent;
         }
     }
@@ -353,26 +504,45 @@
     display: grid;
     color: $clr-fg-sec;
     place-items: center;
+    text-align: center;
+}
+
+// A failed load: the message in the chrome's own color, under an error glyph that says what kind of
+// message it is without leaning on the text's color for it.
+.bit-pdv-error {
+    gap: spacing(1);
+    color: $pdv-color;
+    place-content: center;
+
+    > svg {
+        fill: none;
+        stroke-width: 2;
+        stroke: $clr-err;
+        stroke-linecap: round;
+        width: $siz-icon-lg;
+        height: $siz-icon-lg;
+    }
 }
 
 .bit-pdv-pages {
     display: flex;
-    gap: spacing(2);
     margin: 0 auto;
     min-width: 100%;
     align-items: center;
     width: fit-content;
     flex-direction: column;
+    gap: var(--bit-PdfViewer-page-gap, #{spacing(2)});
 }
 
 /* Pdf pages paint on white regardless of the theme. */
 .bit-pdv-page {
     line-height: 0;
     flex-shrink: 0;
-    background: #fff;
     overflow: hidden;
     position: relative;
-    box-shadow: $box-shadow-card;
+    background: $pdv-page-background;
+    filter: $pdv-page-filter;
+    box-shadow: var(--bit-PdfViewer-page-shadow, #{$box-shadow-card});
     /* Pages always carry an explicit inline width/height, so full containment is
        safe. It isolates each page's (potentially huge) subtree: inserting or
        evicting one page no longer forces style/layout work across the rest of
@@ -385,7 +555,7 @@
    the size containment of .bit-pdv-page (which needs an explicit height) so the
    aspect-ratio can derive the height. */
 .bit-pdv-page-loading {
-    width: min(100%, 620px);
+    width: min(100%, #{rem2(620px)});
     aspect-ratio: 8.5 / 11;
     contain: layout paint;
 }
@@ -393,6 +563,13 @@
 .bit-pdv-page .bit-pdv-html-page,
 .bit-pdv-thumb-svg .bit-pdv-html-page {
     line-height: normal;
+}
+
+/* The link hotspots of a page are transparent - the words they cover are painted beneath - so the
+   keyboard's ring is the one thing that shows where focus is. Drawn inside the hotspot: the page
+   clips whatever falls outside it. */
+.bit-pdv-page .bit-pdv-html-page a:focus-visible {
+    @include pdv-inset-ring;
 }
 
 /* The coalesced selection/text layer sits on top of the painted content. Its
@@ -411,7 +588,20 @@
 .bit-pdv-page .bit-pdv-html-page span[data-bit-pdv-sel]::selection,
 .bit-pdv-thumb-svg .bit-pdv-html-page span[data-bit-pdv-sel]::selection {
     color: transparent;
-    background: color-mix(in srgb, #{$clr-pri} 35%, transparent);
+    background: var(--bit-PdfViewer-text-selection-background, color-mix(in srgb, #{$clr-pri} 35%, transparent));
+}
+
+/* The find matches, painted with the CSS Custom Highlight API so the page markup is
+   never touched. A highlight takes the custom properties of the text it paints, so
+   the variables set on the viewer (or above it) reach it. */
+::highlight(bit-pdv-search) {
+    color: var(--bit-PdfViewer-search-match-color, #{$clr-wrn-text});
+    background-color: var(--bit-PdfViewer-search-match-background, #{$clr-wrn});
+}
+
+::highlight(bit-pdv-search-current) {
+    color: var(--bit-PdfViewer-search-current-color, #{$clr-swr-text});
+    background-color: var(--bit-PdfViewer-search-current-background, #{$clr-swr});
 }
 
 /* Find options (match case, whole word): compact text toggles beside the query
@@ -425,15 +615,21 @@
     align-items: center;
     display: inline-flex;
     font-size: $tg-fs-xs;
+    font-family: inherit;
     justify-content: center;
     min-width: spacing(3.25);
     background: transparent;
     font-weight: $tg-fw-semibold;
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: var(--bit-PdfViewer-button-radius, #{$shp-radius-button});
+    border: $shp-border-width $shp-border-style $pdv-field-border;
+    transition: background-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 
     &:hover:not(:disabled) {
-        background: $clr-bg-sec-hover;
+        background: $pdv-button-hover-background;
+    }
+
+    &:focus-visible {
+        @include focus-ring($pdv-focus);
     }
 
     &:disabled {
@@ -442,13 +638,22 @@
     }
 
     &.bit-pdv-act {
-        color: $clr-pri-text;
-        background: $clr-pri;
-        border-color: $clr-pri;
+        color: $pdv-button-active-color;
+        background: $pdv-button-active-background;
+        border-color: $pdv-button-active-background;
 
         &:hover:not(:disabled) {
-            background: $clr-pri-hover;
+            background: $pdv-button-active-hover-background;
         }
+    }
+
+    svg {
+        fill: none;
+        width: $siz-icon-sm;
+        height: $siz-icon-sm;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
     }
 }
 
@@ -458,8 +663,10 @@
     display: flex;
     align-items: center;
     gap: spacing(0.25);
+    min-height: spacing(3);
 }
 
+// 24px, the smallest pointer target WCAG 2.5.8 accepts beside the row it folds.
 .bit-pdv-outline-toggle {
     padding: 0;
     border: none;
@@ -468,26 +675,31 @@
     color: $clr-fg-sec;
     align-items: center;
     display: inline-flex;
-    width: spacing(2.25);
-    height: spacing(2.25);
+    width: spacing(3);
+    height: spacing(3);
     background: transparent;
     justify-content: center;
 
     svg {
         fill: none;
-        width: rem2(14px);
-        height: rem2(14px);
+        width: $siz-icon-sm;
+        height: $siz-icon-sm;
         stroke: currentColor;
         stroke-width: 2;
         stroke-linecap: round;
         stroke-linejoin: round;
         transform: rotate(90deg);
-        transition: transform calc(#{$mot-duration} * 1) $mot-easing;
+        transition: transform $mot-duration $mot-easing;
     }
 
     &.bit-pdv-col svg {
         transform: rotate(0deg);
     }
+}
+
+// A folded branch points the way it will open, which in a right-to-left tree is to the left.
+.bit-rtl .bit-pdv-outline-toggle.bit-pdv-col svg {
+    transform: rotate(180deg);
 }
 
 /* A leaf keeps the toggle's width so every label in the tree starts on the same
@@ -524,6 +736,10 @@
     background: $clr-bg-pri;
     box-shadow: $box-shadow-dialog;
     border-radius: $shp-radius-dialog;
+
+    &:focus-visible {
+        @include focus-ring($pdv-focus);
+    }
 }
 
 .bit-pdv-dialog-head {
@@ -615,14 +831,9 @@
 /* Attachments sidebar: one row per embedded file, activated to save it. */
 .bit-pdv-attachments {
     display: flex;
-    flex-shrink: 0;
-    overflow: auto;
     gap: spacing(0.5);
-    width: spacing(29);
     flex-direction: column;
-    background: $clr-bg-sec;
     padding: spacing(1) spacing(0.5);
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-pdv-attachments > div {
@@ -637,17 +848,21 @@
     cursor: pointer;
     border: none;
     text-align: start;
-    color: $clr-fg-pri;
+    color: inherit;
     flex-direction: column;
     background: transparent;
     font-size: $tg-fs-sm;
     font-family: inherit;
     padding: spacing(0.5) spacing(0.7);
-    border-radius: $shp-radius-surface;
+    border-radius: $shp-radius-sm;
+    transition: background-color $mot-duration $mot-easing;
 
     &:hover {
-        color: $clr-pri-text;
-        background: $clr-pri;
+        background: $pdv-item-hover-background;
+    }
+
+    &:focus-visible {
+        @include pdv-inset-ring;
     }
 }
 
@@ -658,7 +873,7 @@
 }
 
 .bit-pdv-attachment-meta {
-    opacity: 0.75;
+    color: $clr-fg-sec;
     font-size: $tg-fs-xs;
     font-variant-numeric: tabular-nums;
 }
@@ -680,14 +895,28 @@
     color: $clr-fg-pri;
     height: $siz-ctrl-md;
     font-size: $tg-fs-sm;
+    font-family: inherit;
+    box-sizing: border-box;
     background: $clr-bg-pri;
     padding: 0 spacing(0.8);
     border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
+    &:focus-visible {
+        @include focus-ring($pdv-focus, 0);
+    }
+
     &[aria-invalid="true"] {
         border-color: $clr-err;
+
+        &:focus-visible {
+            @include focus-ring($clr-err-focus, 0);
+        }
     }
+}
+
+.bit-pdv-password-error {
+    color: $clr-err;
 }
 
 .bit-pdv-dialog-actions {
@@ -716,6 +945,10 @@
         background: $clr-bg-sec-hover;
     }
 
+    &:focus-visible {
+        @include focus-ring($pdv-focus);
+    }
+
     &.bit-pdv-act {
         color: $clr-pri-text;
         background: $clr-pri;
@@ -731,34 +964,35 @@
    re-renders the pages, so the panel is the document's own layer switchboard. */
 .bit-pdv-layers {
     display: flex;
-    flex-shrink: 0;
-    overflow: auto;
     gap: spacing(0.25);
-    width: spacing(25);
     flex-direction: column;
-    background: $clr-bg-sec;
     padding: spacing(1) spacing(0.5);
-    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-pdv-layer {
     gap: spacing(0.6);
     display: flex;
     cursor: pointer;
-    color: $clr-fg-pri;
     align-items: center;
     font-size: $tg-fs-sm;
     padding: spacing(0.4) spacing(0.7);
-    border-radius: $shp-radius-surface;
+    border-radius: $shp-radius-sm;
+    transition: background-color $mot-duration $mot-easing;
 
     &:hover {
-        background: $clr-bg-sec-hover;
+        background: $pdv-item-hover-background;
+    }
+
+    &:has(input:focus-visible) {
+        @include pdv-inset-ring;
     }
 
     input {
+        margin: 0;
         flex-shrink: 0;
         cursor: pointer;
-        accent-color: $clr-pri;
+        outline: none;
+        accent-color: $pdv-selection;
         width: $siz-sel-sm;
         height: $siz-sel-sm;
     }
@@ -773,7 +1007,7 @@
 /* While a pdf is being dragged over a viewer that accepts drops, the surface says
    so - a drop target that looks identical to a non-target is not a drop target. */
 .bit-pdv-dropping .bit-pdv-surface {
-    outline: $shp-border-width-thick $shp-border-style $clr-pri;
+    outline: $shp-border-width-thick $shp-border-style $pdv-focus;
     outline-offset: calc(-1 * #{$shp-border-width-thick});
 }
 
@@ -822,8 +1056,12 @@
 
     /* The input is invisible, and so is its focus ring: the button shape shows it. */
     &:has(.bit-pdv-file:focus-visible) {
-        outline: $shp-border-width-thick $shp-border-style $clr-pri;
-        outline-offset: calc(-1 * #{$shp-border-width-thick});
+        @include focus-ring($pdv-focus);
+    }
+
+    &:has(.bit-pdv-file:disabled) {
+        cursor: default;
+        color: $clr-fg-dis;
     }
 }
 
@@ -836,15 +1074,18 @@
     cursor: pointer;
     overflow: hidden;
     position: absolute;
+
+    &:disabled {
+        cursor: default;
+    }
 }
 
 /* Fullscreen (and presentation mode, which uses it): the viewer becomes the whole
-   screen. The height is normally an inline style from the Height parameter, so it
-   takes !important to override - this is the one place where the element's own
-   sizing must lose. */
+   screen. The rule outranks the root's own, whatever height the Height parameter or
+   the variable asks for. */
 .bit-pdv:fullscreen {
     width: 100%;
-    height: 100% !important;
+    height: 100%;
     max-height: none;
     border: none;
     border-radius: 0;
@@ -860,7 +1101,7 @@
     padding: 0;
     display: grid;
     place-items: center;
-    background: #000;
+    background: var(--bit-PdfViewer-presentation-background, #000);
 }
 
 /* Smooth scrolling is motion the reader did not ask for; honour the preference,
@@ -871,10 +1112,52 @@
     }
 }
 
+@media (forced-colors: active) {
+    // A page is a picture of the document, not chrome: a forced palette would paint the invisible selection
+    // layer in CanvasText right over the painted glyphs and wash the document's own colors out.
+    .bit-pdv-page,
+    .bit-pdv-thumb-svg {
+        forced-color-adjust: none;
+    }
+
+    // A forced palette drops every background, which is all that told the pressed toggles, the current
+    // thumbnail and the current bookmark apart; Highlight survives it.
+    .bit-pdv-btn.bit-pdv-act,
+    .bit-pdv-opt.bit-pdv-act,
+    .bit-pdv-dialog-btn.bit-pdv-act {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background: Highlight;
+        border-color: Highlight;
+    }
+
+    .bit-pdv-thumb.bit-pdv-act {
+        border-color: Highlight;
+    }
+
+    .bit-pdv-outline-node[aria-selected="true"] > .bit-pdv-outline-row {
+        color: Highlight;
+    }
+
+    .bit-pdv-btn:disabled,
+    .bit-pdv-opt:disabled,
+    .bit-pdv-outline-node.bit-pdv-dis > .bit-pdv-outline-row {
+        color: GrayText;
+    }
+
+    .bit-pdv-progress-bar {
+        background: Highlight;
+    }
+
+    .bit-pdv-error > svg {
+        stroke: CanvasText;
+    }
+}
+
 /* A full toolbar is wider than a phone. Rather than wrapping it into three rows
-   that eat the document, drop the controls a reader can reach another way: the
-   layout dropdowns (also on the public API), the first/last buttons (the page box
-   goes anywhere) and the file name. Everything essential stays. */
+   that eat the document, it stays one row that scrolls sideways, and the file name -
+   the one part that is not a control - shrinks to make room, keeping a few
+   characters and its ellipsis so the document is still named. */
 @media (max-width: 45rem) {
     .bit-pdv-toolbar {
         gap: spacing(1);
@@ -890,6 +1173,13 @@
     }
 
     .bit-pdv-title {
-        display: none;
+        min-width: 4rem;
+    }
+
+    // Side panels cover most of a phone; they may take more of it than the half they get on a wide screen.
+    .bit-pdv-outline,
+    .bit-pdv-attachments,
+    .bit-pdv-layers {
+        max-width: 80%;
     }
 }

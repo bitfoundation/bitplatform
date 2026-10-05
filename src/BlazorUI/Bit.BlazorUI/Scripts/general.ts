@@ -1,4 +1,4 @@
-﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.6.1';
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.6.2';
 
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
@@ -52,7 +52,7 @@ window.addEventListener('scroll', (e: Event) => {
 
     // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
     // component instead, so that it follows what it points at rather than being left behind by it.
-    if (currentCallout.noDismiss) {
+    if (currentCallout.noScrollDismiss) {
         repositionOnNextFrame();
         return;
     }
@@ -81,7 +81,7 @@ window.addEventListener('resize', () => {
 
     // See the scroll handler above: a callout that opted out of being dismissed by the page moving
     // under it follows its component instead.
-    if (BitBlazorUI.Callouts.current.noDismiss) {
+    if (BitBlazorUI.Callouts.current.noScrollDismiss) {
         BitBlazorUI.Callouts.reposition();
         return;
     }
@@ -116,21 +116,10 @@ document.addEventListener('contextmenu', (e: MouseEvent) => {
 // (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
 // listen to visualViewport directly. Reposition is a no-op when no callout is open.
 if (window.visualViewport) {
-    let settleTimer: ReturnType<typeof setTimeout> | null = null;
-    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => {
-        // Track the viewport live while it changes (throttled)...
-        BitBlazorUI.Callouts.reposition();
-
-        // ...and guarantee one final reposition after it settles. The keyboard animates the page
-        // scroll/visual-viewport over a few hundred ms; a leading-edge throttle can drop the last
-        // frame, leaving the callout anchored to a mid-scroll position of its component. Re-running
-        // once the burst of events stops lands it on the final, settled geometry.
-        if (settleTimer != null) clearTimeout(settleTimer);
-        settleTimer = setTimeout(() => {
-            settleTimer = null;
-            BitBlazorUI.Callouts.reposition();
-        }, 100);
-    }, 16);
+    // Track the viewport live while it changes, throttled on both edges: the keyboard animates the page
+    // scroll/visual-viewport over a few hundred ms, and a throttle that dropped the last frame would leave the
+    // callout anchored to a mid-scroll position of its component rather than to the final, settled geometry.
+    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => BitBlazorUI.Callouts.reposition(), 16, { trailing: true });
     window.visualViewport.addEventListener('resize', onVisualViewportChange);
     window.visualViewport.addEventListener('scroll', onVisualViewportChange);
 }

@@ -11,6 +11,7 @@ public partial class BitFcMiniCalendar
     private Type? _lastSyncedCalendarType;
 
     private readonly string _gridId = "bit-bfc-mini-cal-" + Guid.NewGuid().ToString("N");
+    private string _titleId => $"{_gridId}-title";
 
     // Roving tabindex: the mini calendar is a single tab stop the arrow keys walk, rather than one
     // stop per rendered day sitting between the day view and whatever follows it.
@@ -37,7 +38,7 @@ public partial class BitFcMiniCalendar
 
             var firstSelectable = _cells.FirstOrDefault(c => c.CurrentMonth && IsSelectable(c))
                                   ?? _cells.FirstOrDefault(IsSelectable);
-            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? DateTime.Today;
+            return (firstSelectable ?? _cells.FirstOrDefault())?.Date.Date ?? State.Today;
         }
     }
 
@@ -49,6 +50,30 @@ public partial class BitFcMiniCalendar
 
     private void OnDayKeyDown(DateTime date, KeyboardEventArgs args)
     {
+        // PageUp and PageDown turn the shown month (Shift: the year) and keep the day, the way every date grid pages.
+        if (args.Key is "PageUp" or "PageDown")
+        {
+            var sign = args.Key == "PageDown" ? 1 : -1;
+            DateTime paged;
+            try
+            {
+                paged = args.ShiftKey ? State.Culture.Calendar.AddYears(date, sign) : State.Culture.Calendar.AddMonths(date, sign);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return;
+            }
+
+            if (State.IsDateInAllowedRange(paged) is false)
+                return;
+
+            _displayMonth = StartOfDisplayMonth(paged);
+            _focusedDate = paged.Date;
+            _pendingFocus = true;
+            StateHasChanged();
+            return;
+        }
+
         // Enter and Space are the button's own activation keys, so they are left alone.
         var delta = args.Key switch
         {

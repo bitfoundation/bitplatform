@@ -32,6 +32,8 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
             b.OpenElement(8, "th");
             b.AddAttribute(9, "scope", "col");
             AddAlignment(b, table, c);
+            if (r.AutoDirection)
+                b.AddAttribute(14, "dir", "auto");
             r.WriteNodes(b, table.Header[c]);
             b.CloseElement();
         }
@@ -46,6 +48,9 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
             {
                 b.OpenElement(13, "td");
                 AddAlignment(b, table, c);
+                // Each cell takes the direction of its own text under automatic direction, as a paragraph does.
+                if (r.AutoDirection)
+                    b.AddAttribute(15, "dir", "auto");
                 r.WriteNodes(b, row[c]);
                 b.CloseElement();
             }

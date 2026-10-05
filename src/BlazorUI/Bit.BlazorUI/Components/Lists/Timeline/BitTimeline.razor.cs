@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -9,6 +10,17 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 {
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the timeline component.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple timeline components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitTimelineParams.ParamName)]
+    public BitTimelineParams? CascadingParameters { get; set; }
 
 
 
@@ -40,7 +52,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
 
     /// <summary>
-    /// Defines whether to render timeline children horizontally.
+    /// Where the dot of each item sits along its item, with the contents of the item aligned to it.
+    /// Start pins the dot to the first line of an item whose contents run over several lines.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitTimelineDotAlignment? DotAlignment { get; set; }
+
+    /// <summary>
+    /// Renders the timeline horizontally.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Horizontal { get; set; }
@@ -68,12 +87,21 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
+    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the contents on
+    /// both sides of it, or along its Start or End edge, with the contents of each item stacked on one side of it.
+    /// Reversed and Alternate only apply to the centered line.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitTimelineLinePosition? LinePosition { get; set; }
+
+    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitTimelineNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback that is called when an item is clicked.
+    /// The callback that is called when an item is clicked. A clickable item is rendered as a button, whose contents
+    /// are read as its name, so its templates should hold no links or controls of their own.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
@@ -83,7 +111,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Renders the items in the reverse order, so the last item of the list is rendered first.
+    /// Renders the items in the reverse order, so the last item of the list is painted first.
+    /// The reading and the focus order keep the order of the list.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReverseOrder { get; set; }
@@ -95,7 +124,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     public bool Reversed { get; set; }
 
     /// <summary>
-    /// The size of timeline, Possible values: Small | Medium | Large
+    /// The size of the timeline, which sets the size of the dots and of the text.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -157,6 +186,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitColor.Warning => "bit-tln-wrn",
             BitColor.SevereWarning => "bit-tln-swr",
             BitColor.Error => "bit-tln-err",
+            BitColor.PrimaryBackground => "bit-tln-pbg",
+            BitColor.SecondaryBackground => "bit-tln-sbg",
+            BitColor.TertiaryBackground => "bit-tln-tbg",
+            BitColor.PrimaryForeground => "bit-tln-pfg",
+            BitColor.SecondaryForeground => "bit-tln-sfg",
+            BitColor.TertiaryForeground => "bit-tln-tfg",
+            BitColor.PrimaryBorder => "bit-tln-pbr",
+            BitColor.SecondaryBorder => "bit-tln-sbr",
+            BitColor.TertiaryBorder => "bit-tln-tbr",
             _ => "bit-tln-pri"
         });
 
@@ -165,6 +203,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => Reversed ? "bit-tln-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Alternate ? "bit-tln-alt" : string.Empty);
+
+        // The centered dot is what the stylesheet paints on its own, so only the other two carry a class.
+        ClassBuilder.Register(() => DotAlignment switch
+        {
+            BitTimelineDotAlignment.Start => "bit-tln-das",
+            BitTimelineDotAlignment.End => "bit-tln-dae",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => ReverseOrder ? "bit-tln-rvo" : string.Empty);
 
@@ -176,6 +222,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitTimelineTruncateLine.Start => "bit-tln-tls",
             BitTimelineTruncateLine.End => "bit-tln-tle",
             BitTimelineTruncateLine.Both => "bit-tln-tlb",
+            _ => string.Empty
+        });
+
+        // The centered line is what the stylesheet paints on its own, so only the other two carry a class.
+        ClassBuilder.Register(() => LinePosition switch
+        {
+            BitTimelineLinePosition.Start => "bit-tln-lps",
+            BitTimelineLinePosition.End => "bit-tln-lpe",
             _ => string.Empty
         });
 
@@ -209,8 +263,11 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimelineParams))]
     protected override Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Note: no Items.Any() guard here, so a transition from a populated collection to an empty one
         // still runs the comparison and clears _items instead of leaving the previous items rendered.
         if (ChildContent is null && Options is null)
@@ -296,6 +353,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitColor.Warning => " bit-tln-iwr",
                 BitColor.SevereWarning => " bit-tln-isw",
                 BitColor.Error => " bit-tln-ier",
+                BitColor.PrimaryBackground => " bit-tln-ipbg",
+                BitColor.SecondaryBackground => " bit-tln-isbg",
+                BitColor.TertiaryBackground => " bit-tln-itbg",
+                BitColor.PrimaryForeground => " bit-tln-ipfg",
+                BitColor.SecondaryForeground => " bit-tln-isfg",
+                BitColor.TertiaryForeground => " bit-tln-itfg",
+                BitColor.PrimaryBorder => " bit-tln-ipbr",
+                BitColor.SecondaryBorder => " bit-tln-isbr",
+                BitColor.TertiaryBorder => " bit-tln-itbr",
                 _ => " bit-tln-ipr"
             });
         }

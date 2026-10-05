@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Footer;
@@ -1052,6 +1053,7 @@ public class BitFooterTests : BunitTestContext
         Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-anm"));
         Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-wrp"));
         Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-ved"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-esc"));
         StringAssert.Contains(footers[0].GetAttribute("style")!, "--bit-ftr-gap:1rem");
 
         // The second one sets its own color and gap, which the cascading parameters must not overwrite.
@@ -1067,5 +1069,327 @@ public class BitFooterTests : BunitTestContext
                              .ToArray();
 
         CollectionAssert.AreEqual(new object[] { 80, 80 }, offsets);
+
+        StringAssert.Contains(footers[0].GetAttribute("style")!, "--bit-ftr-max-width:60rem");
+
+        // ElevateOnScroll, ScrollPadding and ScrollTarget reach the script as well.
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
+
+        Assert.IsTrue(setups.All(i => true.Equals(i.Arguments[4]) && "#shell".Equals(i.Arguments[5]) && true.Equals(i.Arguments[6])));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectACascadedHidden()
+    {
+        var component = RenderComponent<CascadingValue<BitFooterParams>>(parameters =>
+        {
+            parameters.Add(p => p.Name, BitFooterParams.ParamName);
+            parameters.Add(p => p.Value, new BitFooterParams { Hidden = true, Fixed = true, Elevated = true });
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitFooter>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        // A cascaded Hidden hides the footer exactly like its own would: slid away, animatable and inert.
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-anm"));
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-fix"));
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-elv"));
+        Assert.IsTrue(footer.HasAttribute("inert"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotAddTheSafeAreaInsetToTheHeightOfAStickyFooterOutrankedByAbsolute()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Absolute, true);
+        });
+
+        // Absolute outranks Sticky, so the footer renders pinned to its container and has no device inset to make room for.
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-abs"));
+        Assert.AreEqual("height:56px", component.Find(".bit-ftr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldNotBeInertWhenOnlyTheScrollHidesIt()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+
+        var footer = component.Find(".bit-ftr");
+
+        // A footer slid away by the scroll comes back when something inside it takes the focus, which an
+        // inert footer could never receive, so only the explicit Hidden takes it out of reach.
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsFalse(footer.HasAttribute("inert"));
+    }
+
+    [TestMethod]
+    [DataRow("1200px")]
+    [DataRow("75rem")]
+    [DataRow(null)]
+    public void BitFooterShouldRespectMaxWidth(string? maxWidth)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.MaxWidth, maxWidth);
+        });
+
+        var style = component.Find(".bit-ftr").GetAttribute("style");
+
+        if (maxWidth is null)
+        {
+            Assert.IsNull(style);
+        }
+        else
+        {
+            Assert.AreEqual($"--bit-ftr-max-width:{maxWidth}", style);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(true, false, false, true)]
+    [DataRow(false, true, false, true)]
+    [DataRow(false, true, true, false)]
+    [DataRow(false, false, true, false)]
+    [DataRow(false, false, false, false)]
+    public void BitFooterShouldSetTheScriptUpForScrollPaddingOnAPinnedFooterOnly(bool @fixed, bool sticky, bool absolute, bool expected)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, @fixed);
+            parameters.Add(p => p.Sticky, sticky);
+            parameters.Add(p => p.Absolute, absolute);
+        });
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
+
+        Assert.AreEqual(expected ? 1 : 0, setups.Length);
+
+        if (expected)
+        {
+            // Reveal was not asked for, so the script only keeps the scroll padding in step.
+            Assert.AreEqual(false, setups[0].Arguments[3]);
+            Assert.AreEqual(true, setups[0].Arguments[6]);
+        }
+    }
+
+    [TestMethod]
+    public void BitFooterShouldHandTheScrollTargetToTheScript()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.ScrollTarget, "#pane-one");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.ScrollTarget, "#pane-two");
+        });
+
+        // The target is read by the script when it is set up, so a change of it sets the listener up again.
+        var targets = Context.JSInterop.Invocations
+                             .Where(i => i.Identifier == "BitBlazorUI.Footers.setup")
+                             .Select(i => i.Arguments[5])
+                             .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { "#pane-one", "#pane-two" }, targets);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldRevealItselfWhenRevealIsTurnedOffButScrollPaddingKeepsTheScript()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, false);
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        // The script stays attached for the scroll padding, but it no longer drives the reveal, so the footer
+        // must not stay stuck in the hidden state it was left in.
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+            Assert.IsTrue(component.Instance.IsRevealed);
+        });
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectElevateOnScroll(bool elevateOnScroll)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, elevateOnScroll);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        // The transition is in place from the start so the very first shadow fades in, and the footer
+        // stays flat until the script reports content underneath it.
+        Assert.AreEqual(elevateOnScroll, footer.ClassList.Contains("bit-ftr-esc"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-elv"));
+        Assert.IsFalse(component.Instance.IsOverlapping);
+
+        var setup = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
+
+        Assert.AreEqual(elevateOnScroll ? 1 : 0, setup.Length);
+
+        if (elevateOnScroll)
+        {
+            Assert.AreEqual(false, setup[0].Arguments[3]);
+            Assert.AreEqual(true, setup[0].Arguments[4]);
+        }
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldToggleTheElevatedClassOnOverlapChange()
+    {
+        var states = new List<bool>();
+
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.OnOverlapChanged, (bool v) => states.Add(v));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnOverlapChange(true));
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-elv"));
+        Assert.IsTrue(component.Instance.IsOverlapping);
+
+        await component.InvokeAsync(() => component.Instance._OnOverlapChange(true));
+        await component.InvokeAsync(() => component.Instance._OnOverlapChange(false));
+
+        Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-elv"));
+        Assert.IsFalse(component.Instance.IsOverlapping);
+
+        // The repeated state is not raised twice.
+        CollectionAssert.AreEqual(new[] { true, false }, states);
+    }
+
+    [TestMethod]
+    public void BitFooterShouldPreferElevatedOverElevateOnScroll()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Elevated, true);
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-elv"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-esc"));
+
+        // The overlap state is still reported, so the script stays attached.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotSetTheScrollScriptUpForAnElevateOnScrollFooterInTheFlow()
+    {
+        RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldDropTheScrollShadowWhenElevateOnScrollIsTurnedOff()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnOverlapChange(true));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, false);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-elv"));
+            Assert.IsFalse(component.Instance.IsOverlapping);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldClearTheScrollStatesWhenTheScriptIsSetUpAgain()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+        await component.InvokeAsync(() => component.Instance._OnOverlapChange(true));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.RevealOffset, 50);
+        });
+
+        // The new registration starts from a revealed footer with nothing underneath it and only reports what
+        // differs from that, so the states the old one left behind must not survive the re-setup.
+        component.WaitForAssertion(() =>
+        {
+            var footer = component.Find(".bit-ftr");
+
+            Assert.IsFalse(footer.ClassList.Contains("bit-ftr-hdn"));
+            Assert.IsFalse(footer.ClassList.Contains("bit-ftr-elv"));
+            Assert.IsTrue(component.Instance.IsRevealed);
+            Assert.IsFalse(component.Instance.IsOverlapping);
+        });
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
     }
 }

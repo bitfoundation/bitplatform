@@ -21,12 +21,18 @@ public sealed class BitMarkdownDefinitionListRenderer : BitMarkdownNodeRenderer
 
             case BitMarkdownDefinitionTermNode term:
                 b.OpenElement(1, "dt");
+                if (r.AutoDirection)
+                    b.AddAttribute(3, "dir", "auto");
                 r.WriteNodes(b, term.Inlines);
                 b.CloseElement();
                 break;
 
             case BitMarkdownDefinitionDescriptionNode description:
                 b.OpenElement(2, "dd");
+                // A one-paragraph definition writes its text straight into the <dd>, so the <dd> is what
+                // takes the direction of it under automatic direction.
+                if (r.AutoDirection)
+                    b.AddAttribute(4, "dir", "auto");
                 // A definition of a single paragraph reads as part of the list rather than as a
                 // block of its own, exactly like a tight list item.
                 if (description.Children.Count == 1 && description.Children[0] is BitMarkdownParagraphNode only)

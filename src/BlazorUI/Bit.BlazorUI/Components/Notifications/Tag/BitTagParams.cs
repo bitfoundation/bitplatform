@@ -22,6 +22,12 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Keeps a disabled tag that is a control focusable and discoverable by assistive technologies, reporting
+    /// the state through aria-disabled instead of the native disabled attribute.
+    /// </summary>
+    public bool? AllowDisabledFocus { get; set; }
+
+    /// <summary>
     /// What a selected tag that is a link reports itself as through aria-current.
     /// </summary>
     public BitNavAriaCurrent? AriaCurrent { get; set; }
@@ -100,6 +106,12 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     /// The URL of a picture to show in place of the icon of the tag.
     /// </summary>
     public string? IconUrl { get; set; }
+
+    /// <summary>
+    /// The text a link tag opening a new tab is announced with. The default is "(opens in a new tab)"; an
+    /// empty value takes the announcement off.
+    /// </summary>
+    public string? NewTabHint { get; set; }
 
     /// <summary>
     /// Keeps the content of the tag on a single line and ends it with an ellipsis where it does not fit.
@@ -202,6 +214,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTag);
 
+        if (AllowDisabledFocus.HasValue && bitTag.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        {
+            bitTag.AllowDisabledFocus = AllowDisabledFocus.Value;
+        }
+
         if (AriaCurrent.HasValue && bitTag.HasNotBeenSet(nameof(AriaCurrent)))
         {
             bitTag.AriaCurrent = AriaCurrent.Value;
@@ -281,6 +298,13 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (IconUrl.HasValue() && bitTag.HasNotBeenSet(nameof(IconUrl)))
         {
             bitTag.IconUrl = IconUrl;
+        }
+
+        // an empty hint is a value of its own - the one that takes the announcement off - so only null is
+        // what leaves the tag to its default.
+        if (NewTabHint is not null && bitTag.HasNotBeenSet(nameof(NewTabHint)))
+        {
+            bitTag.NewTabHint = NewTabHint;
         }
 
         if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)))

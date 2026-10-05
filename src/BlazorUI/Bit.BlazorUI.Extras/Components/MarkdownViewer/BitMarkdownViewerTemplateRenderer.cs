@@ -28,21 +28,50 @@ internal sealed class BitMarkdownViewerTemplateRenderer : BitMarkdownNodeRendere
     };
 
     // Fixed literal sequence numbers (see BitMarkdownCoreRenderer for the rationale).
+    //
+    // Each template's output sits in a display: contents wrapper the stylesheet stops at, so the rules
+    // written for the renderers' own markup - and the reset under them - never reach a component the
+    // host put into the document. The wrapper is a span where the node is inline content, since a div
+    // may not sit in a paragraph.
     public override void Write(BitMarkdownRenderer renderer, RenderTreeBuilder builder, BitMarkdownNode node)
     {
         switch (node)
         {
             case BitMarkdownCodeBlockNode code:
-                builder.AddContent(0, _viewer.CodeBlockTemplate, code);
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", TemplateClass);
+                builder.AddContent(2, _viewer.CodeBlockTemplate, code);
+                builder.CloseElement();
                 break;
 
             case BitMarkdownImageNode image:
-                builder.AddContent(1, _viewer.ImageTemplate, image);
+                builder.OpenElement(3, "span");
+                builder.AddAttribute(4, "class", TemplateClass);
+                builder.AddContent(5, _viewer.ImageTemplate, image);
+                builder.CloseElement();
                 break;
 
             case BitMarkdownLinkNode link:
-                builder.AddContent(2, _viewer.LinkTemplate, link);
+                builder.OpenElement(6, "span");
+                builder.AddAttribute(7, "class", TemplateClass);
+                builder.AddContent(8, _viewer.LinkTemplate, ResolveInPageLink(renderer, link));
+                builder.CloseElement();
                 break;
         }
     }
+
+    // The template is handed an in-page destination already written against the page, as every link the
+    // renderers draw is, so an anchor of its own does not lead to the base address instead. The destination
+    // is init-only, so a link that needs it gets a copy; any other reaches the template as it is.
+    private static BitMarkdownLinkNode ResolveInPageLink(BitMarkdownRenderer renderer, BitMarkdownLinkNode link)
+    {
+        var url = renderer.ResolveInPageUrl(link.Url);
+        if (ReferenceEquals(url, link.Url)) return link;
+
+        var resolved = new BitMarkdownLinkNode { Url = url, Title = link.Title, IsAutoLink = link.IsAutoLink };
+        resolved.Children.AddRange(link.Children);
+        return resolved;
+    }
+
+    internal const string TemplateClass = "bit-mdv-tpl";
 }

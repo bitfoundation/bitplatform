@@ -1,22 +1,42 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// A menu button combines a button with a callout menu of related actions or links.
-/// It supports split and sticky modes, toggle behavior, separator and link items, a loading state,
-/// and full keyboard navigation with proper ARIA menu semantics.
+/// It supports split and sticky modes, toggle behavior, nested submenus, check and single-choice items,
+/// group headers, separators, links, keyboard shortcuts, a loading state, and full keyboard navigation with
+/// proper ARIA menu semantics.
 /// </summary>
 public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 {
+    // The typeahead of a menu resets after this long without a keystroke, which is what separates one
+    // search from the next (the APG menu pattern leaves the exact value to the implementation).
+    private const int TypeaheadTimeout = 1000;
+
     private List<TItem> _items = [];
+    private bool _showLoading;
     internal BitButtonType _buttonType;
+    // The list the callout carries, which is what the trigger's aria-controls names: the APG menu button
+    // pattern points the button at the menu itself rather than at the element the menu is drawn inside,
+    // which is what lets a reader move from the button to the popup it has just announced.
+    private string _menuId = default!;
     private string _calloutId = default!;
     private string _overlayId = default!;
     private bool _focusFirstItemOnOpen;
+    private int _hoverToken;
+    private bool _hasSubmenus;
+    private string _typeahead = string.Empty;
+    private string _typeaheadCalloutId = string.Empty;
     private ElementReference _operatorButtonRef;
     private ElementReference _chevronButtonRef;
+    private DateTimeOffset _typeaheadAt = DateTimeOffset.MinValue;
+    private CancellationTokenSource? _loadingDelayCts;
     private IEnumerable<TItem> _oldItems = default!;
+    // The submenus that are open, outermost first. It is a path rather than a set: opening one closes
+    // whatever was open beside it, so at most one submenu is open per level of the menu.
+    private readonly List<IBitMenuButtonSubmenu> _openSubmenus = [];
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
 
 
@@ -30,17 +50,54 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [CascadingParameter] protected EditContext? EditContext { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the menu button component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple menu button components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitMenuButtonParams.ParamName)]
+    public BitMenuButtonParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
-    /// Detailed description of the menu button for the benefit of screen readers.
+    /// Detailed description of the menu button for the benefit of screen readers (rendered into
+    /// <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the menu button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, the header button automatically receives focus when the page renders
+    /// (rendered as the <c>autofocus</c> attribute).
+    /// </summary>
+    /// <remarks>
+    /// It is dropped on a menu button that is hidden from assistive technologies, and on a disabled one that
+    /// is not kept focusable, since neither should be able to pull the focus on the first render.
+    /// </remarks>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// If true, the menu button enters the loading state automatically while awaiting <see cref="OnClick"/>
+    /// and ignores further clicks of the header button until it returns.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for the main half of a split menu button, which is a command of its own; the chevron
+    /// keeps opening the menu while the command runs.
+    /// </remarks>
+    [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
     /// The background color kind of the callout.
@@ -54,7 +111,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// The icon of the check mark shown on a checked item, using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CheckIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? CheckIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the check mark shown on a checked item.
+    /// </summary>
+    [Parameter] public string? CheckIconName { get; set; }
+
+    /// <summary>
     /// The aria-label of the chevron down button of the split menu button for the benefit of screen readers.
+    /// Defaults to <c>More options</c>: the chevron carries no text of its own, so without a name it reaches
+    /// a screen reader as an unlabelled button.
     /// </summary>
     [Parameter] public string? ChevronDownAriaLabel { get; set; }
 
@@ -69,6 +139,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? ChevronDownIconName { get; set; }
 
     /// <summary>
+    /// The tooltip to show when the mouse is placed on the chevron down button of the split menu button.
+    /// </summary>
+    [Parameter] public string? ChevronDownTitle { get; set; }
+
+    /// <summary>
     /// The content of the menu button, that are BitMenuButtonOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -77,6 +152,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Custom CSS classes for different parts of the menu button.
     /// </summary>
     [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Closes the callout when an item is clicked, which is what a menu of one-off commands wants.
+    /// </summary>
+    /// <remarks>
+    /// Turn it off for a menu the user works inside of - a set of checkable items such as a column picker -
+    /// so that several items can be toggled without reopening the menu between them.
+    /// </remarks>
+    [Parameter] public bool CloseOnItemClick { get; set; } = true;
 
     /// <summary>
     /// The general color of the menu button.
@@ -95,9 +179,23 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
+    /// Keeps a disabled menu button, and the disabled items of any menu button, focusable: the disabled state is
+    /// conveyed with the <c>aria-disabled</c> attribute instead of the native <c>disabled</c> one, so the button
+    /// stays in the tab order, the arrow keys still reach the items, and a screen reader announces both that they
+    /// exist and that they are unavailable. Their actions stay suppressed either way.
+    /// </summary>
+    [Parameter] public bool DisabledInteractive { get; set; }
+
+    /// <summary>
     /// Determines the allowed drop directions of the callout.
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
+
+    /// <summary>
+    /// The id of the form element the menu button is associated with (rendered as the <c>form</c> attribute of
+    /// the header button and of the items). It lets a submit or reset command sit outside of its form element.
+    /// </summary>
+    [Parameter] public string? FormId { get; set; }
 
     /// <summary>
     /// Expands the menu button width to 100% of the available width.
@@ -106,7 +204,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public bool FullWidth { get; set; }
 
     /// <summary>
-    /// The content inside the header of menu button can be customized.
+    /// The content inside the header of menu button can be customized. The loading state takes the header
+    /// over while it lasts, so a menu button that is loading shows its spinner (or its
+    /// <see cref="LoadingTemplate"/>) rather than this template.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
@@ -126,15 +226,31 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// Renders the header button as its icon alone: the text and the chevron beside it are dropped and the
+    /// button becomes a square of the control's own height. It is the overflow menu of a toolbar or a row -
+    /// a glyph that opens a menu and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// The button then has no text to be named by, so give it an <c>AriaLabel</c> (or a
+    /// <see cref="Title"/>). In split mode only the main half is squared up: the chevron half is the only
+    /// way into the menu, so it stays. A <see cref="HeaderTemplate"/> is the page's own markup and is
+    /// rendered as written.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
+
+    /// <summary>
     /// If true, removes the icon from the header button.
     /// </summary>
     [Parameter] public bool NoIcon { get; set; }
 
     /// <summary>
     /// Determines whether the menu button is in the loading state.
-    /// It replaces the default icon of the header button with a spinner and disables its click.
+    /// It replaces the default icon of the header button with a spinner and ignores its click.
+    /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter, ResetClassBuilder, TwoWayBound]
+    public bool IsLoading { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout.
@@ -161,13 +277,46 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the spinner appears after the menu button enters the loading state,
+    /// which is what keeps a fast operation from flashing one. The click guard of the loading state applies
+    /// immediately regardless of the delay.
+    /// </summary>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
+    /// The text to show beside the spinner while the menu button is in the loading state, replacing the text of
+    /// the header button. It is also announced by screen readers through a status live region when the loading
+    /// state starts, which is what tells a user who cannot see the spinner that the operation is running.
+    /// </summary>
+    [Parameter] public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// The custom template that replaces the spinner and the label of the header button while the menu button
+    /// is in the loading state. The chevron of a split button is kept beside it.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The tallest the callout grows before its items start to scroll, as a CSS length (e.g. <c>12rem</c>).
+    /// Without one the callout is capped to the room the viewport leaves below or above the button.
+    /// </summary>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback is called when the menu button header is clicked.
+    /// The callback that is called when the header button is clicked, and when an item of the menu is activated
+    /// outside of <see cref="Sticky"/> mode.
     /// </summary>
+    /// <remarks>
+    /// It carries the item the click belongs to: the selected one for the header of a sticky menu button,
+    /// the activated one for an item, and <c>null</c> for the header of a menu button that is not sticky.
+    /// In sticky mode an item's activation is a selection rather than a command, so it raises
+    /// <see cref="OnChange"/> instead.
+    /// </remarks>
     [Parameter] public EventCallback<TItem?> OnClick { get; set; }
 
     /// <summary>
@@ -184,6 +333,25 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// The icon of the bullet shown on a checked single-choice item, using custom CSS classes for external
+    /// icon libraries. Takes precedence over <see cref="RadioIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? RadioIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the bullet shown on a checked single-choice item
+    /// (one whose <see cref="BitMenuButtonItem.RadioGroup"/> is set).
+    /// </summary>
+    [Parameter] public string? RadioIconName { get; set; }
+
+    /// <summary>
+    /// Enables re-clicking the header button while the menu button is in the loading state.
+    /// By default its click is ignored while the loading lasts, which is what protects against a double submission.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Determines the current selected item that acts as the header item.
@@ -209,6 +377,24 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Sticky { get; set; }
+
+    /// <summary>
+    /// The icon of the chevron a submenu item carries, using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SubmenuIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? SubmenuIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the chevron an item that opens a submenu carries. It is mirrored in a
+    /// right-to-left menu, so one icon serves both directions.
+    /// </summary>
+    [Parameter] public string? SubmenuIconName { get; set; }
+
+    /// <summary>
+    /// If true, stops the propagation of the click event of the menu button to the parent elements.
+    /// Useful when the menu button is placed inside clickable containers like rows or cards.
+    /// </summary>
+    [Parameter] public bool StopPropagation { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the menu button.
@@ -239,9 +425,21 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
 
 
+    /// <summary>
+    /// Gives focus to the header button of the menu button, which is the element that carries the menu button
+    /// in the tab order (the chevron of a split button is the one beside it).
+    /// </summary>
+    public ValueTask FocusAsync() => _operatorButtonRef.FocusAsync();
+
+
+
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        // The menu is being dismissed from outside (a click on the page, another callout taking over), which
+        // ends the search that was being typed into it just as closing it from the keyboard does.
+        ResetTypeahead();
+
         if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
@@ -255,6 +453,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         _items.Add(item);
 
+        _hasSubmenus = _hasSubmenus || GetHasChildren(item);
+
         if (Sticky)
         {
             if (SelectedItemHasBeenSet is false && option.IsSelected)
@@ -264,7 +464,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
             if (SelectedItem is null)
             {
-                _ = AssignSelectedItem(_items.FirstOrDefault(i => GetIsEnabled(i) && GetIsSeparator(i) is false));
+                _ = AssignSelectedItem(_items.FirstOrDefault(IsSelectable));
             }
         }
 
@@ -274,6 +474,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     internal void UnregisterOption(BitMenuButtonOption option)
     {
         _items.Remove((option as TItem)!);
+
+        _hasSubmenus = _items.Exists(GetHasChildren);
+
         StateHasChanged();
     }
 
@@ -320,6 +523,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => FullWidth ? "bit-mnb-flw" : string.Empty);
 
+        ClassBuilder.Register(() => IconOnly ? "bit-mnb-ion" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading ? "bit-mnb-lod" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading && Reclickable ? "bit-mnb-rcl" : string.Empty);
+
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
         ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
@@ -344,6 +553,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
+        _menuId = $"BitMenuButton-{UniqueId}-menu";
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
 
@@ -360,20 +570,40 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMenuButtonParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
+
+        UpdateLoadingVisuals();
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // menu button's own parameters (Styles, Sticky, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
-        if (ChildContent is not null || Options is not null || Items.Any() is false || Items == _oldItems) return;
+        // Only the two APIs that register their own items are left alone here - except for whether any of
+        // them carries a submenu, which an option is free to start doing at any render (its children are a
+        // fragment rather than a registration) and which is cheap to read back off the options themselves.
+        if (ChildContent is not null || Options is not null)
+        {
+            _hasSubmenus = _items.Exists(GetHasChildren);
+            return;
+        }
+
+        // An empty Items is a real state rather than nothing to do: a menu whose items are taken away has to
+        // lose them, not carry on rendering the ones it was given last. The count is compared beside the
+        // reference for the same reason in reverse - a list added to in place is the same instance as the one
+        // already rendered, and would otherwise never be read again.
+        if (Items == _oldItems && _items.Count == Items.Count()) return;
 
         _oldItems = Items;
         _items = [.. Items];
+
+        _hasSubmenus = _items.Exists(GetHasChildren);
 
         if (Sticky is false) return;
 
@@ -387,7 +617,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
         else
         {
-            item = _items.FirstOrDefault(i => GetIsEnabled(i) && GetIsSeparator(i) is false);
+            item = _items.FirstOrDefault(IsSelectable);
             await AssignSelectedItem(item);
         }
     }
@@ -419,6 +649,265 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     }
 
 
+
+    // Whether any item of the menu is checkable, which is what decides that every item reserves the check
+    // column: the labels of the checked and the unchecked rows have to line up with each other, and a column
+    // that appears only on the checked ones would shift the label of a row as its state changes. It is read
+    // once per item render rather than cached, since an option is free to turn Checkable on at any time.
+    internal bool ShowCheckColumn => _items.Exists(GetHasCheckMark);
+
+    // Whether the item carries a state mark at all, which is what reserves the check column: an on/off item
+    // shows a check mark, one of a set of mutually exclusive choices a bullet, and both need the same room.
+    internal bool GetHasCheckMark(TItem? item) => GetCheckable(item) || GetRadioGroup(item).HasValue();
+
+    // The items a sticky menu button can promote to its header: the ones that are commands in their own right,
+    // which leaves out the separators and the group labels that only structure the list around them.
+    private bool IsSelectable(TItem item)
+    {
+        return GetIsEnabled(item)
+            && GetIsSeparator(item) is false
+            && GetIsHeader(item) is false
+            // An item that opens a submenu is a way further in rather than a command, so there is nothing
+            // for the header of a sticky menu button to carry out once it has been promoted to it.
+            && GetHasChildren(item) is false;
+    }
+
+    // The glyph of the state mark, which says which kind of state it is: a check mark for an on/off item
+    // and a bullet for one of a set of mutually exclusive choices.
+    internal string? GetCheckIconCss(TItem? item)
+    {
+        return GetRadioGroup(item).HasValue()
+                ? BitIconInfo.From(RadioIcon, RadioIconName ?? "StatusCircleInner")?.GetCssClasses()
+                : BitIconInfo.From(CheckIcon, CheckIconName ?? "Accept")?.GetCssClasses();
+    }
+
+    internal string? GetSubmenuChevronCss()
+    {
+        return BitIconInfo.From(SubmenuIcon, SubmenuIconName ?? "ChevronRight")?.GetCssClasses();
+    }
+
+    // Whether anything in the menu opens a submenu, which is what decides that the rows listen to the
+    // pointer at all: a menu without one would be paying for a round trip per row hovered and have
+    // nothing to do with it. It is answered off a field rather than worked out per row: with a custom
+    // item type the answer is read by reflection, and a menu would otherwise read every item once per
+    // item it renders.
+    internal bool HasSubmenus => _hasSubmenus;
+
+    // The open submenus are a path down the menu, so opening one closes whatever was open at its level
+    // and everything that had been opened from inside that.
+    internal async Task RegisterOpenSubmenu(IBitMenuButtonSubmenu owner)
+    {
+        await CloseSubmenusFrom(owner.Level);
+
+        _openSubmenus.Add(owner);
+    }
+
+    internal void SubmenuClosed(IBitMenuButtonSubmenu owner)
+    {
+        _openSubmenus.Remove(owner);
+    }
+
+    internal async Task CloseSubmenusFrom(int level)
+    {
+        // Innermost first, and re-checking the length as it goes: closing a submenu takes it off the list.
+        for (var i = _openSubmenus.Count - 1; i >= 0; i--)
+        {
+            if (i >= _openSubmenus.Count) continue;
+
+            var owner = _openSubmenus[i];
+
+            if (owner.Level < level) continue;
+
+            await owner.CloseSubmenuAsync();
+        }
+    }
+
+    // A ticket the pointer takes on every row it arrives at, so that the one thing that was going to
+    // happen after the hover delay - a submenu opening, or the one already open being taken away - is
+    // dropped as soon as the pointer moves on. Arriving in an open submenu takes one too, which is what
+    // lets the pointer travel diagonally across the rows between a parent item and the submenu it opened.
+    internal int NextHoverToken() => ++_hoverToken;
+
+    internal bool IsHoverTokenCurrent(int token) => _hoverToken == token;
+
+    internal string? GetAriaLabel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.AriaLabel;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.AriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    internal bool GetCheckable(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Checkable;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Checkable;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.Checkable.Selector is not null)
+        {
+            return NameSelectors.Checkable.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.Checkable.Name, false);
+    }
+
+    internal bool GetIsChecked(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsChecked;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsChecked;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsChecked.Selector is not null)
+        {
+            return NameSelectors.IsChecked.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsChecked.Name, false);
+    }
+
+    internal bool GetIsHeader(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsHeader;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsHeader;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsHeader.Selector is not null)
+        {
+            return NameSelectors.IsHeader.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsHeader.Name, false);
+    }
+
+    internal string? GetRadioGroup(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.RadioGroup;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.RadioGroup;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.RadioGroup.Selector is not null)
+        {
+            return NameSelectors.RadioGroup.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.RadioGroup.Name);
+    }
+
+    internal string? GetSecondaryText(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.SecondaryText;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.SecondaryText;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SecondaryText.Selector is not null)
+        {
+            return NameSelectors.SecondaryText.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.SecondaryText.Name);
+    }
+
+    internal List<TItem> GetChildItems(TItem? item)
+    {
+        if (item is null) return [];
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.ChildItems as List<TItem> ?? [];
+        }
+
+        // The nested options render themselves inside the submenu their parent draws for them, so there is
+        // no list of them to walk here: the fragment is what says the submenu exists.
+        if (item is BitMenuButtonOption) return [];
+
+        if (NameSelectors is null) return [];
+
+        if (NameSelectors.ChildItems.Selector is not null)
+        {
+            return NameSelectors.ChildItems.Selector!(item) ?? [];
+        }
+
+        return item.GetValueFromProperty<List<TItem>>(NameSelectors.ChildItems.Name, [])!;
+    }
+
+    internal bool GetHasChildren(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.ChildContent is not null;
+        }
+
+        return GetChildItems(item).Count > 0;
+    }
 
     internal string? GetClass(TItem? item)
     {
@@ -723,10 +1212,22 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnHeaderClick(TItem? item)
     {
-        if (IsEnabled is false || IsLoading) return;
+        if (IsEnabled is false) return;
+        if (IsLoading && Reclickable is false) return;
 
         if (Split is false)
         {
+            // The trigger of a plain menu button toggles its menu. With the pointer the overlay takes the
+            // click that would close it, but from the keyboard the trigger keeps the focus after it was
+            // opened, so Enter and Space arrive here with the menu already open - and have to close it.
+            if (IsOpen)
+            {
+                _focusFirstItemOnOpen = false;
+                await CloseCallout();
+                StateHasChanged();
+                return;
+            }
+
             await OpenCallout();
         }
 
@@ -737,25 +1238,101 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             await OnToggleChange.InvokeAsync(IsToggled);
         }
 
-        if (item is not null)
-        {
-            if (GetIsEnabled(item) is false) return;
+        if (item is not null && GetIsEnabled(item) is false) return;
 
+        if (AutoLoading)
+        {
+            if (await AssignIsLoading(true) is false) return;
+
+            UpdateLoadingVisuals();
+        }
+
+        try
+        {
             await OnClick.InvokeAsync(item);
 
-            await InvokeItemClick(item);
+            // Only the main half of a split button is a command of its own. The header of a plain menu button
+            // opens the menu - running the selected item's own action as well would carry out a command the
+            // user only asked to choose between, so the sticky header stays a label there.
+            if (item is not null && Split)
+            {
+                await InvokeItemClick(item);
+            }
         }
-        else
+        finally
         {
-            await OnClick.InvokeAsync();
+            if (AutoLoading)
+            {
+                await AssignIsLoading(false);
+
+                UpdateLoadingVisuals();
+            }
         }
+    }
+
+    // The chevron of a split button is the trigger of its menu, so it toggles it the way the header of a plain
+    // one does. With the pointer the overlay takes the click that would close an open menu, but from the
+    // keyboard the chevron can still be the focused element with the menu open, and Enter has to close it.
+    private async Task HandleOnChevronClick()
+    {
+        if (IsEnabled is false) return;
+
+        if (IsOpen)
+        {
+            _focusFirstItemOnOpen = false;
+            await CloseCallout();
+            StateHasChanged();
+            return;
+        }
+
+        await OpenCallout();
+    }
+
+    // The overlay takes the click that dismisses the menu, so the click never reaches a control of its own:
+    // whatever had the focus when the menu closed is either the trigger itself, or an item that is now
+    // hidden - and a hidden element losing the focus drops it on the document, taking the keyboard back to
+    // the top of the page (WCAG 2.4.3). So the trigger is given it back, the way Escape does.
+    private async Task HandleOnOverlayClick()
+    {
+        await CloseCallout();
+
+        StateHasChanged();
+
+        await FocusTrigger();
     }
 
     internal async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        await CloseCallout();
+        // A check or radio item's state changes on activation, so it is written before anything is told
+        // about the click: a handler that reads the item back sees the state its own click produced.
+        var radioGroup = GetRadioGroup(item);
+
+        if (radioGroup.HasValue())
+        {
+            // Picking one of a set of mutually exclusive choices is picking it, not toggling it: activating
+            // the one already chosen leaves it chosen rather than leaving the group with nothing chosen.
+            foreach (var other in EnumerateItems())
+            {
+                if (ReferenceEquals(other, item)) continue;
+                if (GetRadioGroup(other) != radioGroup) continue;
+                if (GetIsChecked(other) is false) continue;
+
+                await SetIsChecked(other, false);
+            }
+
+            await SetIsChecked(item, true);
+        }
+        else if (GetCheckable(item))
+        {
+            await SetIsChecked(item, GetIsChecked(item) is false);
+        }
+
+        if (CloseOnItemClick)
+        {
+            await CloseCallout();
+        }
 
         // CloseCallout changes IsOpen but does not re-render the root itself, so refresh now to update
         // the open-state classes even when the Sticky branch below returns early.
@@ -763,9 +1340,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (Sticky)
         {
-            if (await AssignSelectedItem(item) is false) return;
-
-            await OnChange.InvokeAsync(item);
+            // A one-way SelectedItem refuses the assignment, which only means the selection did not change -
+            // the callout has still been closed here, so the rest of the handler (the focus return below
+            // above all) runs either way.
+            if (await AssignSelectedItem(item))
+            {
+                await OnChange.InvokeAsync(item);
+            }
         }
         else
         {
@@ -778,8 +1359,50 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         // classes) needs an explicit re-render here.
         StateHasChanged();
 
-        // The focused item is hidden along with the callout, so return the focus to the trigger button.
-        await FocusTrigger();
+        // The focused item is hidden along with the callout, so return the focus to the trigger button. A menu
+        // that stays open keeps the focus where the user left it, which is what lets the next arrow key
+        // continue from the item just toggled instead of starting over.
+        if (CloseOnItemClick)
+        {
+            await FocusTrigger();
+        }
+    }
+
+    // Every item the menu button renders, however deep: a radio group is identified by its name alone, so
+    // the items it clears are looked for across the whole menu rather than only beside the one activated.
+    private IEnumerable<TItem> EnumerateItems(List<TItem>? items = null)
+    {
+        foreach (var item in items ?? _items)
+        {
+            yield return item;
+
+            var children = item is BitMenuButtonOption option
+                            ? option.ChildItems as List<TItem> ?? []
+                            : GetChildItems(item);
+
+            foreach (var child in EnumerateItems(children))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private async Task SetIsChecked(TItem item, bool value)
+    {
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            menuButtonItem.IsChecked = value;
+        }
+        else if (item is BitMenuButtonOption menuButtonOption)
+        {
+            // An option writes its own parameter back so that @bind-IsChecked reports the change, which a
+            // reflection write over the top of it would undo.
+            await menuButtonOption.SetIsChecked(value);
+        }
+        else if (NameSelectors is not null)
+        {
+            item.SetValueToProperty(NameSelectors.IsChecked.Name, value);
+        }
     }
 
     private async Task InvokeItemClick(TItem item)
@@ -822,6 +1445,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (opener is false) return;
 
+        // The header of a plain menu button is the only way into the menu, and the loading state is what takes
+        // its click away - so it takes the keys that stand in for that click with it, rather than leaving the
+        // keyboard a way past a guard the pointer answers to.
+        if (Split is false && IsLoading) return;
+
         if (e.Key is "ArrowDown" or "ArrowUp")
         {
             if (await OpenCallout() is false) return;
@@ -836,42 +1464,108 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    // The one keyboard handler of every menu the button renders: the menu itself, and each submenu, which
+    // is a callout of its own rather than a part of the menu it was opened from - moved to the body while
+    // it is open, so its keys never reach the handler of the menu around it.
+    internal async Task HandleOnMenuKeyDown(KeyboardEventArgs e, string calloutId, IBitMenuButtonSubmenu? owner)
     {
         if (IsEnabled is false || IsOpen is false) return;
+
+        // The level of the items of THIS menu: the submenu of an item at level N holds items at N + 1.
+        var level = owner is null ? 0 : owner.Level + 1;
+
+        // The key that walks back out of a submenu is the one pointing at the menu it was opened from,
+        // which is the opposite of the one that walked into it.
+        var backKey = Dir is BitDir.Rtl ? "ArrowRight" : "ArrowLeft";
 
         switch (e.Key)
         {
             case "ArrowDown":
-                await FocusItem("next");
+                await CloseSubmenusFrom(level);
+                await FocusItemOf(calloutId, "next");
                 break;
             case "ArrowUp":
-                await FocusItem("prev");
+                await CloseSubmenusFrom(level);
+                await FocusItemOf(calloutId, "prev");
                 break;
             case "Home":
-                await FocusItem("first");
+                await CloseSubmenusFrom(level);
+                await FocusItemOf(calloutId, "first");
                 break;
             case "End":
-                await FocusItem("last");
+                await CloseSubmenusFrom(level);
+                await FocusItemOf(calloutId, "last");
                 break;
             case "Escape":
+                // Escape inside a submenu closes that submenu alone and hands the focus back to the item it
+                // was opened from, so the menu is walked back out of one level at a time (the APG pattern).
+                if (owner is null)
+                {
+                    await CloseCallout();
+                    StateHasChanged();
+                    await FocusTrigger();
+                }
+                else
+                {
+                    await CloseSubmenusFrom(owner.Level);
+                    await owner.FocusAsync();
+                }
+                break;
             case "Tab":
+                // Tab leaves the menu altogether, however deep in it the focus was.
                 await CloseCallout();
                 StateHasChanged();
                 await FocusTrigger();
                 break;
             default:
-                if (e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false)
+                if (owner is not null && e.Key == backKey)
                 {
-                    await FocusItem("char", e.Key);
+                    await CloseSubmenusFrom(owner.Level);
+                    await owner.FocusAsync();
+                }
+                else if (e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false)
+                {
+                    await CloseSubmenusFrom(level);
+                    await Typeahead(calloutId, e.Key);
                 }
                 break;
         }
     }
 
-    private ValueTask FocusItem(string mode, string? character = null)
+    // The APG typeahead: the keystrokes that arrive in quick succession are one search string, so a menu with
+    // several items under the same letter is reachable by typing further into the label instead of only by
+    // cycling through them. A single character repeated stays the cycle it has always been.
+    private async Task Typeahead(string calloutId, string character)
     {
-        return _js.BitMenuButtonsFocusItem(_calloutId, mode, character);
+        var now = DateTimeOffset.UtcNow;
+
+        // A search typed into one menu has nothing to do with the one beside it, so walking into or out of
+        // a submenu starts the string over rather than carrying it across.
+        var sameMenu = calloutId == _typeaheadCalloutId;
+        _typeaheadCalloutId = calloutId;
+
+        _typeahead = (sameMenu is false || (now - _typeaheadAt).TotalMilliseconds > TypeaheadTimeout)
+                        ? character
+                        : _typeahead + character;
+        _typeaheadAt = now;
+
+        var repeated = _typeahead.All(c => c == _typeahead[0]);
+
+        // A repeated character searches from the item AFTER the focused one, so each press lands on the next
+        // match; a real search string searches from the focused one, so the item it already matches is kept.
+        await FocusItemOf(calloutId, "char", repeated ? _typeahead[..1] : _typeahead, fromCurrent: repeated is false);
+    }
+
+    private ValueTask FocusItem(string mode, string? character = null, bool fromCurrent = false)
+    {
+        return FocusItemOf(_calloutId, mode, character, fromCurrent);
+    }
+
+    internal ValueTask FocusItemOf(string calloutId, string mode, string? character = null, bool fromCurrent = false)
+    {
+        // A disabled item is normally stepped over, but DisabledInteractive is the page asking for it to be
+        // reachable - which is the whole point of keeping it focusable rather than natively disabled.
+        return _js.BitMenuButtonsFocusItem(calloutId, mode, character, DisabledInteractive, fromCurrent);
     }
 
     private async Task FocusTrigger()
@@ -892,7 +1586,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// </summary>
     private async Task<bool> OpenCallout()
     {
-        if (IsLoading) return false;
+        // The loading state belongs to the header button alone: in split mode the chevron still opens the menu,
+        // so the operation running under the main half never takes the rest of the commands away with it.
+        if (IsEnabled is false) return false;
 
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
@@ -911,9 +1607,75 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task CloseCallout()
     {
+        // The submenus go first and from the inside out, so that each one is put back where it was
+        // rendered while the menu around it is still in the body - which is where it was moved from.
+        await CloseSubmenusFrom(0);
+
+        ResetTypeahead();
+
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
+    }
+
+    // A menu that closes ends the search that was being typed into it, so the next one starts over rather
+    // than continuing a string the user can no longer see the matches of.
+    private void ResetTypeahead()
+    {
+        _typeahead = string.Empty;
+        _typeaheadCalloutId = string.Empty;
+        _typeaheadAt = DateTimeOffset.MinValue;
+    }
+
+    // The loading state guards the click from the moment it starts, but the spinner is held back for
+    // LoadingDelay - long enough that an operation which returns immediately never flashes one.
+    private void UpdateLoadingVisuals()
+    {
+        if (IsLoading)
+        {
+            if (_showLoading || _loadingDelayCts is not null) return;
+
+            if (LoadingDelay < 1)
+            {
+                _showLoading = true;
+                return;
+            }
+
+            _loadingDelayCts = new();
+            _ = ShowLoadingAfterDelay(_loadingDelayCts.Token);
+        }
+        else
+        {
+            _showLoading = false;
+            CancelLoadingDelay();
+        }
+    }
+
+    private async Task ShowLoadingAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(LoadingDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+
+        _showLoading = true;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelLoadingDelay()
+    {
+        if (_loadingDelayCts is null) return;
+
+        _loadingDelayCts.Cancel();
+        _loadingDelayCts.Dispose();
+        _loadingDelayCts = null;
     }
 
     private async Task ToggleCallout()
@@ -931,7 +1693,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             responsiveMode: BitResponsiveMode.None,
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
-            scrollContainerId: "",
+            // With nothing else named as the scrollable part, the callout itself takes that role, so that a menu
+            // taller than the screen scrolls inside the callout instead of running off the bottom of it - where a
+            // fixed-positioned element leaves it out of reach of the page's own scrolling. An author-set MaxHeight
+            // is a cap of its own (a CSS custom property the stylesheet reads), so the fitting pass steps aside.
+            scrollContainerId: MaxHeight.HasValue() ? "" : _calloutId,
             scrollOffset: 0,
             headerId: "",
             footerId: "",
@@ -942,7 +1708,19 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private void OnSetIsOpen()
     {
-        _ = ToggleCallout();
+        _ = ToggleCalloutOnSetIsOpen();
+    }
+
+    // The page closing the menu by writing IsOpen back is the menu closing, so the submenus go with it -
+    // from the inside out, and before the menu itself, which is what each of them was moved out of.
+    private async Task ToggleCalloutOnSetIsOpen()
+    {
+        if (IsOpen is false)
+        {
+            await CloseSubmenusFrom(0);
+        }
+
+        await ToggleCallout();
     }
 
     private void OnSetSelectedItem()
@@ -964,19 +1742,45 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    private string GetItemKey(TItem item, string defaultKey)
+    internal string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
     private string? GetCalloutCss()
     {
-        var openClass = IsOpen ? "bit-mnb-ocl" : null;
+        var css = GetMenuCalloutCss(IsOpen);
+
+        // Only the menu the button opens is capped by MaxHeight; a submenu fits itself to the viewport.
+        return MaxHeight.HasValue() ? $"bit-mnb-mxh {css}" : css;
+    }
+
+    // What every menu the button renders carries: the open state, and the classes the callout cannot
+    // inherit because it is a sibling of the root element rather than a descendant of it.
+    internal string? GetMenuCalloutCss(bool isOpen)
+    {
+        List<string> classes = [];
+
+        if (isOpen)
+        {
+            classes.Add("bit-mnb-ocl");
+        }
 
         // While open the callout is reparented to the body, which takes it out of the subtree that
         // carries the root's bit-fam class, so ForceAnimation has to be rendered on the callout
         // itself for its opening animation to opt out of reduced motion.
-        var famClass = ForceAnimation ? "bit-fam" : null;
+        if (ForceAnimation)
+        {
+            classes.Add("bit-fam");
+        }
+
+        // The callout is rendered outside the root element - and moved to the body while it is open - so it is
+        // a sibling of the root rather than a descendant of it, and nothing the root declares reaches it. The
+        // two classes that carry what the items need are repeated here: the size class sizes their text, their
+        // height and their padding, and the color class paints the focus ring of the focused one and the glyph
+        // of a checked one in the color the menu button was given.
+        classes.Add(BitCssClasses.Color(Color, "bit-mnb"));
+        classes.Add(BitCssClasses.Size(Size ?? BitSize.Medium, "bit-mnb"));
 
         var bgClass = Background switch
         {
@@ -986,13 +1790,31 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             BitColorKind.Transparent => "bit-mnb-brg",
             _ => null
         };
-        var result = $"{openClass} {famClass} {bgClass}".Trim();
+
+        if (bgClass is not null)
+        {
+            classes.Add(bgClass);
+        }
+
+        var result = string.Join(' ', classes).Trim();
+        return result.HasValue() ? result : null;
+    }
+
+    private string? GetCalloutStyle()
+    {
+        // The positioning code clears the callout's inline sizing on every layout pass, so the cap travels as a
+        // custom property the stylesheet reads instead of as a max-height of its own.
+        var maxHeight = MaxHeight.HasValue() ? $"--bit-MenuButton-callout-max-height:{MaxHeight};" : null;
+
+        var result = $"{maxHeight}{Styles?.Callout}";
         return result.HasValue() ? result : null;
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        CancelLoadingDelay();
 
         await base.DisposeAsync(disposing);
 

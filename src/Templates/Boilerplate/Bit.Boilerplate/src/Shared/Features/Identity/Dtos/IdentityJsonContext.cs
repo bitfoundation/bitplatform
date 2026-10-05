@@ -30,6 +30,7 @@ namespace Boilerplate.Shared.Features.Identity;
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthResponseDto))]
+[JsonSerializable(typeof(ElevatedAccessTokenSentDto))]
 [JsonSerializable(typeof(List<UserSessionDto>))]
 [JsonSerializable(typeof(RoleDto))]
 [JsonSerializable(typeof(List<RoleDto>))]

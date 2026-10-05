@@ -18,7 +18,7 @@ public partial class PushNotificationsToggleUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(server.WebAppServerAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.GotoAsync(server.WebAppAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         var permission = await Page.EvaluateAsync<string>("() => Notification.permission");
         if (permission is not "denied")
@@ -57,6 +57,8 @@ public partial class PushNotificationsToggleUITests : AppPageTest
     /// </summary>
     private async Task OpenAppMenu(ILocator callout)
     {
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
         await Expect(callout).ToBeVisibleAsync();
         await Expect(NotificationsSwitch(callout)).ToBeVisibleAsync();

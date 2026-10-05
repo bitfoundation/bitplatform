@@ -60,10 +60,23 @@ internal sealed class BitMarkdownEditorConfig
     public bool Submit { get; set; }
 
     /// <summary>
+    /// Whether the panes grow with their content instead of scrolling it.
+    /// </summary>
+    public bool AutoHeight { get; set; }
+
+    /// <summary>
+    /// The shortcuts bound by the toolbar items, keyed by the keys as the script spells a keydown
+    /// (<c>ctrl+alt+shift+k</c>): <c>cmd:&lt;command&gt;</c> runs a command in the script, <c>item:&lt;name&gt;</c>
+    /// calls back for a custom item. Null when no item binds one.
+    /// </summary>
+    public Dictionary<string, string>? Shortcuts { get; set; }
+
+    /// <summary>
     /// A signature of every value above, used to detect a config change across renders
     /// without comparing the properties one by one.
     /// </summary>
     public override string ToString() =>
         $"{ImageUpload}|{SyncScroll}|{AutoPair}|{AutoSaveKey}|{ChangeDebounceMs}|{MaxLength}|{AutoFocus}|" +
-        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}";
+        $"{ReportSelection}|{TabIndents}|{MaxImageSize}|{ImageAccept}|{UploadingText}|{AutoClose}|{Submit}|{AutoHeight}|" +
+        (Shortcuts is null ? string.Empty : string.Join(",", Shortcuts.Select(s => $"{s.Key}={s.Value}")));
 }

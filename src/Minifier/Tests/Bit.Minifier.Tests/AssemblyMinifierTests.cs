@@ -591,7 +591,7 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(args);
 
         Assert.AreEqual(0, exitCode, output);
-        StringAssert.Contains(output, "Bit.Minifier: 2 assemblies");
+        StringAssert.Contains(output, "2 assemblies in");
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
@@ -619,10 +619,9 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(args);
 
         Assert.AreEqual(0, exitCode, output);
-        // the file is the one replaced, so it is the one the tool writes and reports - and reading it a second
-        // time as an assembly of its own would have left every reference into it pointing at that other copy
-        StringAssert.Contains(output, $"Bit.Minifier: {file} ");
-        StringAssert.Contains(output, "Bit.Minifier: 2 assemblies");
+        // the file is the one replaced - and reading it a second time as an assembly of its own would have left
+        // every reference into it pointing at that other copy
+        StringAssert.Contains(output, "2 assemblies in");
         Assert.DoesNotContain("BITMIN001", output);
         Assert.IsLessThan(before, new FileInfo(Path.Combine(minified, file + ".dll")).Length);
 
@@ -740,7 +739,8 @@ public class AssemblyMinifierTests
 
         Assert.AreEqual(0, exitCode, output);
         StringAssert.Contains(output, "warning BITMIN001: left unminified: " + Library);
-        StringAssert.Contains(output, $"Bit.Minifier: {Friend} ");
+        // the other one was minified, and the report counts it alone
+        StringAssert.Contains(output, "1 assembly in");
         Assert.AreEqual(libraryBefore, new FileInfo(Path.Combine(minified, Library + ".dll")).Length);
     }
 

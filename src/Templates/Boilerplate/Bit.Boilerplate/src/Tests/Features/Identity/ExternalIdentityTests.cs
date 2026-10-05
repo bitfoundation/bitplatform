@@ -36,10 +36,10 @@ public partial class ExternalIdentityTests : AppPageTest
         // KEYCLOAK_HTTP is the same variable Aspire's WithReference(keycloak) injects in production; providing it makes
         // the server register the "Keycloak" external authentication scheme (See Server.Api's Program.Services.cs) and
         // render its sign-in button. Scoping it to this server keeps the other tests unaffected.
-        await server.Build(configureTestConfigurations: config => config["KEYCLOAK_HTTP"] = keycloakUrl)
+        await server.Build(configureTestConfiguration: config => config["KEYCLOAK_HTTP"] = keycloakUrl)
             .Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
@@ -49,6 +49,8 @@ public partial class ExternalIdentityTests : AppPageTest
         // Keycloak's hosted login page in a popup window (See DefaultExternalNavigationService.NavigateTo for the web flow).
         var keycloakLogin = await Page.RunAndWaitForPopupAsync(async () =>
         {
+            // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+            await Page.WaitForBlazorInteractive();
             await Page.GetByTitle(AppStrings.KeycloakSignInButtonText).ClickAsync();
         });
         // Keycloak's standard username/password login form uses these stable element ids.

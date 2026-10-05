@@ -11,14 +11,14 @@ public partial class BitBreadcrumbDemo
             Name = "AutoCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings them back as the room for them returns, so the trail always stays on a single line. MaxDisplayedItems, when it is set, still caps how many items the automatic collapsing may leave in the trail. It is turned off entirely by Wrap, since a trail that may flow onto another line has no items that do not fit."
+            Description = "Collapses the items that do not fit into the overflow menu and brings them back as room returns, keeping the trail on one line; once only the last item is left, its text truncates. MaxDisplayedItems still caps the trail and Wrap turns it off."
         },
         new()
         {
             Name = "AutoReorderOptions",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the rendered order of the items in sync with the markup order of the options even when existing options are only reordered (not added or removed). It reads the DOM order of the options after each render, so it adds a JS interop call per render and is opt-in. It only affects the options API (ChildContent/Options)."
+            Description = "Keeps the rendered order in sync with the markup order of the options even when they are only reordered. Costs one JS interop call per render; options API only."
         },
         new()
         {
@@ -80,7 +80,16 @@ public partial class BitBreadcrumbDemo
             Name = "ExpandOverflow",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Makes the overflow button put the collapsed items back into the trail instead of opening them in a menu. The whole trail is revealed at once and the button is gone with the collapsing it undid. The next change of the items or of the collapsing settings starts the breadcrumb over as collapsed."
+            Description = "Makes the overflow button reveal the collapsed items in place instead of opening a menu. The next change of the items or of the collapsing settings collapses the trail again."
+        },
+        new()
+        {
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "Where the icon of each item is rendered relative to its text: before it (Start, the default) or after it (End). An item's own IconPlacement wins.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum",
         },
         new()
         {
@@ -103,14 +112,14 @@ public partial class BitBreadcrumbDemo
             Name = "MaxDisplayedItems",
             Type = "uint",
             DefaultValue = "0",
-            Description = "The maximum number of items to display before coalescing. If not specified, all of the items will be rendered."
+            Description = "The maximum number of items to display; the rest collapse into the overflow menu. 0 displays them all."
         },
         new()
         {
             Name = "MaxItemWidth",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The maximum width of the text of each item as a CSS length (for example \"8rem\"). The text of a longer item is truncated with an ellipsis, and the text of an item that carries no Title of its own becomes its tooltip so that the full text stays reachable."
+            Description = "The maximum width of the text of each item as a CSS length (for example \"8rem\"). Longer text is truncated with an ellipsis and, when the item has no Title, becomes its tooltip."
         },
         new()
         {
@@ -125,7 +134,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "Callback for when a breadcrumb item is clicked, no matter whether it is rendered as a link or as a button."
+            Description = "Callback for when an item is clicked, whether it is rendered as a link or as a button."
         },
         new()
         {
@@ -139,14 +148,14 @@ public partial class BitBreadcrumbDemo
             Name = "OverflowAriaLabel",
             Type = "string?",
             DefaultValue = "More items",
-            Description = "Aria label of the overflow button and of the overflow menu."
+            Description = "Accessible label of the overflow button, which also names the menu it opens."
         },
         new()
         {
             Name = "OverflowIndex",
             Type = "uint",
             DefaultValue = "0",
-            Description = "Optional index where overflow items will be collapsed. It is the position the overflow button takes among the displayed items, and the items that collapse are the ones that start there, so the default of 0 collapses the trail from its root while 1 keeps the root visible and collapses the middle instead."
+            Description = "Where the overflow button sits among the displayed items; the collapsed items start there. 0 collapses from the root, 1 keeps the root and collapses the middle."
         },
         new()
         {
@@ -160,7 +169,7 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "OverflowIconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue= "More",
             Description = "The overflow icon name."
         },
@@ -169,7 +178,7 @@ public partial class BitBreadcrumbDemo
             Name = "OverflowIconTemplate",
             Type = "RenderFragment?",
             DefaultValue= "null",
-            Description = "The custom template content to render each overflow icon."
+            Description = "The custom template content to render the overflow icon."
         },
         new()
         {
@@ -180,24 +189,17 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "ReversedIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the positions of the icon and the item text of the item content."
-        },
-        new()
-        {
             Name = "Scrollable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it, which is what a trail whose every step is worth keeping in place asks for. It has nothing to do while Wrap is on, since a trail that may flow onto another line never runs out of room on one."
+            Description = "Lets a long trail scroll sideways instead of overflowing its container, scrolled to its end so the current page is in view. Ignored while Wrap is on."
         },
         new()
         {
             Name = "SelectedItemAsText",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the selected item as plain text instead of as a link or a button, which is what the breadcrumb pattern asks of the page the user is already on. It keeps its aria-current either way, and the items around it stay actionable."
+            Description = "Renders the selected item as plain text instead of as a link or a button. It keeps its aria-current."
         },
         new()
         {
@@ -213,7 +215,7 @@ public partial class BitBreadcrumbDemo
             Name = "StructuredData",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the trail as a schema.org BreadcrumbList in a JSON-LD script next to it, which is what search engines read to show the hierarchy of the page in their results. The whole hierarchy is written, including the items the overflow menu holds, and the Href of each item is resolved against the base address of the app."
+            Description = "Renders the whole trail, collapsed items included, as a schema.org BreadcrumbList JSON-LD script for search engines, with each Href resolved to an absolute URL."
         },
         new()
         {
@@ -229,8 +231,150 @@ public partial class BitBreadcrumbDemo
             Name = "Wrap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line. It turns AutoCollapse and Scrollable off while it is on, though a fixed MaxDisplayedItems still collapses what it is told to."
+            Description = "Lets a long trail wrap onto more lines instead of overflowing its container. It turns AutoCollapse and Scrollable off; a fixed MaxDisplayedItems still applies."
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Breadcrumb-color",
+            DefaultValue = "The Color role's main color (--bit-clr-fg-pri without a Color)",
+            Description = "Text of the items, in the trail and in the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-selected-color",
+            DefaultValue = "--bit-Breadcrumb-color",
+            Description = "Text of the current (selected) item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-selected-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the current (selected) item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of a disabled item or of a disabled breadcrumb.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-hover-color",
+            DefaultValue = "The color at rest",
+            Description = "Text of a hovered item or menu item, and the glyph of a hovered overflow button.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered item, overflow button or menu item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of a pressed item, overflow button or menu item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-focus-color",
+            DefaultValue = "The Color role's focus color (--bit-clr-pri-focus without a Color)",
+            Description = "Focus indicator color.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of the items.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-height",
+            DefaultValue = "Per Size (--bit-siz-ctrl-*)",
+            Description = "Line height of the items, which sets the height of the trail.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-padding",
+            DefaultValue = "0 8px",
+            Description = "Padding of the items.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-gap",
+            DefaultValue = "8px",
+            Description = "Space between the icon and the text of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the items and the overflow button.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-item-max-width",
+            DefaultValue = "none",
+            Description = "Width the text of an item truncates at. The MaxItemWidth parameter takes precedence and also adds the tooltips.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-divider-color",
+            DefaultValue = "The Color role's main color (--bit-clr-fg-sec without a Color)",
+            Description = "Color of the dividers and of the overflow button glyph.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-divider-size",
+            DefaultValue = "Per Size",
+            Description = "Size of the divider icons.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-divider-spacing",
+            DefaultValue = "0",
+            Description = "Space on each side of a divider.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-callout-max-width",
+            DefaultValue = "The width of the viewport",
+            Description = "Widest the overflow menu gets before the text of its rows is truncated.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-overflow-item-height",
+            DefaultValue = "Per Size (--bit-siz-item-*)",
+            Description = "Height of a row of the overflow menu.",
+        },
+        new()
+        {
+            Name = "--bit-Breadcrumb-overflow-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of a row of the overflow menu.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -287,9 +431,11 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "ReversedIcon",
-                   Type = "bool?",
-                   Description = "Reverses the positions of the icon and the item text of the item content.",
+                   Name = "IconPlacement",
+                   Type = "BitPlacement?",
+                   Description = "Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.",
+                   LinkType = LinkType.Link,
+                   Href = "#placement-enum",
                },
                new()
                {
@@ -394,9 +540,11 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "ReversedIcon",
-                   Type = "bool?",
-                   Description = "Reverses the positions of the icon and the item text of the item content.",
+                   Name = "IconPlacement",
+                   Type = "BitPlacement?",
+                   Description = "Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.",
+                   LinkType = LinkType.Link,
+                   Href = "#placement-enum",
                },
                new()
                {
@@ -670,10 +818,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "ReversedIcon",
-                   Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitBreadcrumbItem.ReversedIcon))",
-                   Description = "The ReversedIcon field name and selector of the custom input class.",
+                   Name = "IconPlacement",
+                   Type = "BitNameSelectorPair<TItem, BitPlacement?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IconPlacement))",
+                   Description = "The IconPlacement field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -819,6 +967,7 @@ public partial class BitBreadcrumbDemo
                 new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
             ]
         },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

@@ -138,21 +138,36 @@ public static partial class Program
                 : GetConnectionStringValue(azureBlobStorageConnectionString, "AccountKey");
             return AzureBlobStorage.FromSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
-            // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
-            // Open MinIO console at http://127.0.0.1:9001/browser
             var s3ConnectionString = configuration.GetRequiredConnectionString("s3")!;
+            var s3Endpoint = GetConnectionStringValue(s3ConnectionString, "Endpoint");
+            var s3AccessKey = GetConnectionStringValue(s3ConnectionString, "AccessKey");
+            var s3SecretKey = GetConnectionStringValue(s3ConnectionString, "SecretKey");
+            var s3BucketName = GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files");
+
+            // Cloudflare R2 implements neither AWS chunked ("streaming") payload signing nor the FULL_OBJECT
+            // checksum the SDK starts a multipart upload with. An unsigned payload requires https, which R2 is.
+            var isCloudflareR2 = s3Endpoint.Contains(".r2.cloudflarestorage.com", StringComparison.OrdinalIgnoreCase);
+
             var clientConfig = new Amazon.S3.AmazonS3Config
             {
                 AuthenticationRegion = GetConnectionStringValue(s3ConnectionString, "Region", defaultValue: "us-east-1"),
-                ServiceURL = GetConnectionStringValue(s3ConnectionString, "Endpoint"),
+                ServiceURL = s3Endpoint,
                 ForcePathStyle = true,
                 HttpClientFactory = sp.GetRequiredService<S3HttpClientFactory>()
             };
-            return AwsS3Storage.FromThirdPartyCredentials(accessKeyId: GetConnectionStringValue(s3ConnectionString, "AccessKey"),
-                secretAccessKey: GetConnectionStringValue(s3ConnectionString, "SecretKey"),
+
+            if (isCloudflareR2)
+            {
+                clientConfig.RequestChecksumCalculation = Amazon.Runtime.RequestChecksumCalculation.WHEN_REQUIRED;
+                clientConfig.ResponseChecksumValidation = Amazon.Runtime.ResponseChecksumValidation.WHEN_REQUIRED;
+            }
+
+            return AwsS3Storage.FromThirdPartyCredentials(accessKeyId: s3AccessKey,
+                secretAccessKey: s3SecretKey,
                 sessionToken: null!,
-                bucketName: GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files"),
-                clientConfig);
+                bucketName: s3BucketName,
+                clientConfig,
+                payloadSigning: isCloudflareR2 is false);
             //#else
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
             //#endif
@@ -160,7 +175,9 @@ public static partial class Program
 
         //#if (filesStorage == "S3")
         services.AddSingleton<S3HttpClientFactory>();
-        services.AddHttpClient("S3");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+        services.AddHttpClient("S3").RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
         //#endif
 
         //#if (notification == true)
@@ -511,7 +528,7 @@ public static partial class Program
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
-            c.Timeout = TimeSpan.FromSeconds(20);
+            c.Timeout = TimeSpan.FromSeconds(5);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
             c.DefaultRequestVersion = HttpVersion.Version11;
         });
@@ -537,7 +554,7 @@ public static partial class Program
 
         });
 
-        // ServerDomain (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
+        // RPID (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
         // caller-supplied origin. See ".docs/24 - Security note" for what that means for Blazor Hybrid passkeys.
         services.AddScoped(sp =>
         {
@@ -546,9 +563,9 @@ public static partial class Program
 
             var options = new Fido2Configuration
             {
-                ServerDomain = webAppUrl.Host,
+                RPID = webAppUrl.Host,
                 TimestampDriftTolerance = 1000,
-                ServerName = "Boilerplate WebAuthn",
+                RPName = "Boilerplate WebAuthn",
                 Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
                 ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
             };
@@ -557,7 +574,9 @@ public static partial class Program
         });
 
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-        services.AddHttpClient("AI");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+        services.AddHttpClient("AI").RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
 
         if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {

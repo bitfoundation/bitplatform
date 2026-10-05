@@ -5,7 +5,7 @@ public sealed class BitChartTitleOptions
 {
     public bool Display { get; set; }
     public string Text { get; set; } = "";
-    public string Color { get; set; } = "var(--bit-clr-fg-pri, #1A1A1A)";
+    public string Color { get; set; } = "var(--bit-Chart-title-color, var(--bit-clr-fg-pri))";
     /// <summary>
     /// Which edge of the chart the title is drawn against (default is the top).
     /// </summary>

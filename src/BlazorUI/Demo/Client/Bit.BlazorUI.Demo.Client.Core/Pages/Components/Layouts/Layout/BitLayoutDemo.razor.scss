@@ -8,6 +8,11 @@
     padding: 1rem;
     overflow: auto;
     border: 1px solid $bit-color-border-disabled;
+
+    // A box that only has to show the layout, not scroll it.
+    &.short {
+        height: auto;
+    }
 }
 
 .header,

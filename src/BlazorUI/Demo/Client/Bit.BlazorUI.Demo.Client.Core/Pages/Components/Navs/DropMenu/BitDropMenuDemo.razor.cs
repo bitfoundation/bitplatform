@@ -6,10 +6,19 @@ public partial class BitDropMenuDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "How the callout is lined up with the button across the side it opens on: Start (the default), Center or End, which follow the reading direction; Left and Right are honoured above or below the button, Top and Bottom beside it. Anything else falls back to Start.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The description of the drop menu for the benefit of screen readers, rendered as the aria-describedby of the button."
+            Description = "The description of the drop menu for screen readers, rendered as visually hidden text the button points at through aria-describedby."
         },
         new()
         {
@@ -23,7 +32,7 @@ public partial class BitDropMenuDemo
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Closes the callout as soon as a click lands anywhere inside it, which is what an action list is expected to do: picking an item completes the interaction. It is off by default, since a callout hosting a form or a filter panel is meant to stay open while it is being used."
+            Description = "Closes the callout as soon as a click lands anywhere inside it, as an action list should. Off by default, so a form or a filter panel stays open while it is used."
         },
         new()
         {
@@ -125,6 +134,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Gap",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The distance in pixels between the button and the callout, on whichever side the callout ends up on."
+        },
+        new()
+        {
             Name = "HoverCloseDelay",
             Type = "int",
             DefaultValue = "150",
@@ -160,7 +176,7 @@ public partial class BitDropMenuDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and disables the button, so the callout can no longer be opened by the user or by the Open and Toggle methods, and a callout that is already open is closed."
+            Description = "Determines whether the drop menu is in the loading state: the icon becomes a spinner, an open callout closes and it cannot be opened again until the loading ends. The button keeps the focus and is marked aria-disabled and aria-busy."
         },
         new()
         {
@@ -168,6 +184,13 @@ public partial class BitDropMenuDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines the opening state of the callout of the drop menu."
+        },
+        new()
+        {
+            Name = "LazyRender",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the content of the callout out of the page until the first opening, then keeps it, so its state survives a close."
         },
         new()
         {
@@ -264,6 +287,15 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Placement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Only Top, Bottom, Start and End are honoured; any other value, or none, leaves the choice to DropDirection.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -352,6 +384,220 @@ public partial class BitDropMenuDemo
             Name = "Toggle",
             Type = "() => Task",
             Description = "Toggles the callout of the drop menu programmatically."
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-DropMenu-color",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Text and icon color of the button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-background",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Background of the button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-border-color",
+            DefaultValue = "Per Variant",
+            Description = "Border color of the button, in every state.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-border-color",
+            DefaultValue = "--bit-DropMenu-border-color, or per Variant",
+            Description = "Border color of the button on hover.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-border-color",
+            DefaultValue = "--bit-DropMenu-border-color, or per Variant",
+            Description = "Border color of the button while pressed or open.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border thickness of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the button, followed by its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-color",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Text and icon color on hover.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Background on hover.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-color",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Text and icon color while pressed or while the callout is open.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-active-background",
+            DefaultValue = "The Color role's active color",
+            Description = "Background while pressed or while the callout is open.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-disabled-color",
+            DefaultValue = "The Color role's disabled text color",
+            Description = "Text and icon color when disabled or loading.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-disabled-background",
+            DefaultValue = "Per Variant, the Color role's disabled color",
+            Description = "Background when disabled or loading.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-disabled-border-color",
+            DefaultValue = "Per Variant",
+            Description = "Border color when disabled or loading.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Focus ring color of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-min-height",
+            DefaultValue = "Per Size, --bit-siz-ctrl-*",
+            Description = "Smallest height of the button, and the width of one that holds only an icon.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-padding",
+            DefaultValue = "Per Size",
+            Description = "Padding of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon, the text and the chevron.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Text weight of the button.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-icon-size",
+            DefaultValue = "Per Size, --bit-siz-icon-*",
+            Description = "Size of the icon, the chevron and the spinner.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-spinner-color",
+            DefaultValue = "The button's own text color",
+            Description = "The moving arc of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-spinner-track-color",
+            DefaultValue = "The text color at 25%",
+            Description = "The ring the spinner's arc travels on.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-background",
+            DefaultValue = "--bit-clr-bg-pri, or the Background kind",
+            Description = "Background of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-border-color",
+            DefaultValue = "None, or the Border kind",
+            Description = "Border color of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-border-width",
+            DefaultValue = "0, or --bit-shp-brd-width with Border",
+            Description = "Border thickness of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-padding",
+            DefaultValue = "0",
+            Description = "Padding around the content of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-width",
+            DefaultValue = "auto (the Width parameter)",
+            Description = "Width of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-min-width",
+            DefaultValue = "auto (the MinWidth parameter)",
+            Description = "Narrowest the callout gets.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-max-width",
+            DefaultValue = "none (the MaxWidth parameter)",
+            Description = "Widest the callout gets.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-callout-max-height",
+            DefaultValue = "The MaxHeight parameter",
+            Description = "Tallest the callout grows before it scrolls; only read when MaxHeight is set.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-overlay-background",
+            DefaultValue = "transparent",
+            Description = "The layer behind an open callout.",
         },
     ];
 
@@ -581,4 +827,18 @@ public partial class BitDropMenuDemo
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
+    private BitPlacement alignment = BitPlacement.Start;
+    private BitPlacement side = BitPlacement.End;
+    private BitPlacement panelPosition = BitPlacement.End;
+
+    private readonly BitDropMenuParams[] toolbarDropMenuParams =
+    [
+        new()
+        {
+            Gap = 4,
+            Color = BitColor.Primary,
+            Variant = BitVariant.Outline,
+            AutoClose = true
+        }
+    ];
 }

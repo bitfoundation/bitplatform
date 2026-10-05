@@ -47,10 +47,19 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "DotAlignment",
+            Type = "BitTimelineDotAlignment?",
+            DefaultValue = "null",
+            Description = "Where the dot of each item sits along its item, with the contents aligned to it. Start pins the dot to the first line of multi-line contents.",
+            LinkType = LinkType.Link,
+            Href = "#dot-alignment-enum",
+        },
+        new()
+        {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Defines whether to render the timeline items horizontally."
+            Description = "Renders the timeline horizontally."
         },
         new()
         {
@@ -79,6 +88,15 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "LinePosition",
+            Type = "BitTimelineLinePosition?",
+            DefaultValue = "null",
+            Description = "Where the connecting line runs: through the middle (Center), or along the Start or End edge with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line.",
+            LinkType = LinkType.Link,
+            Href = "#line-position-enum",
+        },
+        new()
+        {
             Name = "NameSelectors",
             Type = "BitTimelineNameSelectors<TItem>?",
             DefaultValue = "null",
@@ -90,7 +108,7 @@ public partial class BitTimelineDemo
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "The callback that is called when an item of the timeline is clicked."
+            Description = "The callback that is called when an item is clicked. A clickable item is a button whose contents are read as its name, so it should hold no links or controls of its own."
         },
         new()
         {
@@ -104,7 +122,7 @@ public partial class BitTimelineDemo
             Name = "ReverseOrder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the items in the reverse order, so the last item of the list is rendered first.",
+            Description = "Renders the items in the reverse order, so the last item of the list is painted first. The reading and the focus order keep the order of the list.",
         },
         new()
         {
@@ -118,7 +136,7 @@ public partial class BitTimelineDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of timeline, Possible values: Small | Medium | Large",
+            Description = "The size of the timeline, which sets the size of the dots and of the text.",
             LinkType = LinkType.Link,
             Href = "#timeline-size-enum",
         },
@@ -148,6 +166,106 @@ public partial class BitTimelineDemo
             Description = "The visual variant of the timeline.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Timeline-font-size",
+            DefaultValue = "Per Size",
+            Description = "Text size of the contents.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-size",
+            DefaultValue = "Per Size",
+            Description = "Diameter of the dot, and of the hidden dot's placeholder.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-background",
+            DefaultValue = "Per Color and Variant",
+            Description = "Fill of the dot. A disabled item keeps its disabled fill.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-border-color",
+            DefaultValue = "Per Color and Variant",
+            Description = "Border color of the dot. A disabled item keeps its disabled border.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-border-width",
+            DefaultValue = "--bit-shp-border-width",
+            Description = "Border width of the dot.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of the dot; a smaller one turns it into a rounded square.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-dot-shadow",
+            DefaultValue = "none",
+            Description = "Shadow of the dot, e.g. a halo that sets it off the line.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-icon-color",
+            DefaultValue = "Per Color and Variant",
+            Description = "Color of the icon inside the dot. A disabled item keeps its disabled color.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-icon-size",
+            DefaultValue = "1em",
+            Description = "Size of the icon inside the dot.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-line-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the connecting line, whatever its LineStyle.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-line-width",
+            DefaultValue = "--bit-shp-border-width-thick",
+            Description = "Thickness of the connecting line.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-content-gap",
+            DefaultValue = "Half the dot size",
+            Description = "Room between the line and the contents on either side of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-spacing",
+            DefaultValue = "Half the dot size",
+            Description = "Room each item keeps around its contents along the line; two neighbours sit twice this apart.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of a clickable item's hover plate and focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Hover plate of a clickable item.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-item-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Pressed plate of a clickable item.",
         },
     ];
 
@@ -885,6 +1003,60 @@ public partial class BitTimelineDemo
                     Name= "Error",
                     Description="Error general color.",
                     Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
                 }
             ]
         },
@@ -916,6 +1088,60 @@ public partial class BitTimelineDemo
             ]
         },
         SharedSubEnums.BitLineStyle,
+        new()
+        {
+            Id = "line-position-enum",
+            Name = "BitTimelineLinePosition",
+            Description = "Determines where the connecting line of the timeline runs across its items.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Center",
+                    Description="The line runs through the middle, with the primary contents on one side of it and the secondary ones on the other.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The line runs along the start edge (the top in a horizontal timeline), with the contents of each item stacked after it.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The line runs along the end edge (the bottom in a horizontal timeline), with the contents of each item stacked before it.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "dot-alignment-enum",
+            Name = "BitTimelineDotAlignment",
+            Description = "Determines where the dot of each item sits along its item, with the contents aligned to it.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Center",
+                    Description="The dot sits at the middle of its item.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The dot sits at the start of its item (the top in a vertical timeline), next to the first line of the contents.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The dot sits at the end of its item (the bottom in a vertical timeline).",
+                    Value="2",
+                }
+            ]
+        },
         new()
         {
             Id = "truncate-line-enum",

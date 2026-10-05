@@ -9,7 +9,7 @@ public partial class BitShimmerDemo
             Name = "Animation",
             Type = "BitShimmerAnimation?",
             DefaultValue = "null",
-            Description = "The animation the shimmer plays while it stands in for content that has not arrived yet. Duration and Delay retune whichever animation is chosen, and None leaves a static block that neither of them applies to.",
+            Description = "The animation the shimmer plays while it waits: Wave, Pulse, Fade or None.",
             LinkType = LinkType.Link,
             Href = "#animation-enum"
         },
@@ -18,7 +18,7 @@ public partial class BitShimmerDemo
             Name = "Background",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The background color of the container of the shimmer, which is the resting color of the placeholder the animation plays over - and the whole of what a placeholder with no animation is painted in.",
+            Description = "The resting color of the placeholder, which the animation plays over. It is all a None placeholder shows.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -27,14 +27,14 @@ public partial class BitShimmerDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content that will be shown when the Loaded parameter changes to true."
+            Description = "The content that replaces the shimmer once Loaded is true."
         },
         new()
         {
             Name = "Circle",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the shimmer as circle instead of a rectangle. This is the short spelling of Shape=\"BitShape.Circle\", which wins over it when both are set."
+            Description = "Renders the shimmer as a circle. Short form of Shape=\"BitShape.Circle\", which wins over it."
         },
         new()
         {
@@ -50,7 +50,7 @@ public partial class BitShimmerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color of the animated part of the shimmer, over the resting Background of the placeholder. A placeholder with no animation has no animated part, so it no longer applies there.",
+            Description = "The color of the animated part of the shimmer. A None placeholder has no animated part.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -66,98 +66,98 @@ public partial class BitShimmerDemo
             Name = "Delay",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The animation delay value in ms, which is the pause before each loop of the animation and not the wait before the placeholder itself appears (that one is ShowDelay).",
+            Description = "The pause in ms before the first loop of the animation. Not the wait before the placeholder appears (see ShowDelay).",
         },
         new()
         {
             Name = "Duration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The animation duration value in ms: one full sweep of the wave, or one full breath of the pulse and the fade.",
+            Description = "The length in ms of one loop of the animation.",
         },
         new()
         {
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The gap between the lines of a multi-line shimmer, as a CSS length. Only applies while Lines is greater than 1, and defaults to the rhythm unit of the theme.",
+            Description = "The gap between the lines of a multi-line shimmer, as a CSS length.",
         },
         new()
         {
             Name = "Height",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The shimmer height value. It sizes the placeholder rather than the component, so once Loaded turns true the content decides its own height. With more than one line it is the height of each single line. Left unset, the height comes from Size."
+            Description = "The height of the placeholder, or of each line of a multi-line one. Dropped once loaded, so the content sizes itself. Defaults to the Size."
         },
         new()
         {
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the shimmer out in the flow of a line of text instead of as a block of its own, taking the width given by Width and falling back to the minimum control width of the theme. A Height of 1em keeps it exactly as tall as the type it sits in."
+            Description = "Lays the shimmer out in a line of text, rendered as a span. Without a Width it takes the theme's minimum control width."
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text announced by assistive technologies while the shimmer is standing in for content. It is carried by a live region that swaps to LoadedLabel once the content arrives, and it is that swap which gets announced."
+            Description = "Screen-reader text announced while the shimmer waits, in a live region that switches to LoadedLabel when the content arrives. The region is rendered right after the root, so a sibling selector sees it too, and it follows the root's Visibility, hidden, inert, aria-hidden, Dir and lang but not a stylesheet that hides it."
         },
         new()
         {
             Name = "LastLineWidth",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The width of the last line of a multi-line shimmer, as a CSS length. Only applies while Lines is greater than 1, and defaults to 60% so a stack of bars reads as a paragraph."
+            Description = "The width of the last line of a multi-line shimmer, as a CSS length. Defaults to 60%."
         },
         new()
         {
             Name = "Lines",
             Type = "int",
             DefaultValue = "1",
-            Description = "The number of placeholder lines rendered as a stack, which is what a paragraph of text reads as. A circle is a single shape rather than a stack, so it ignores this."
+            Description = "The number of lines stacked as a paragraph. A circle and an overlay ignore it."
         },
         new()
         {
             Name = "LineWidths",
             Type = "IList<string>?",
             DefaultValue = "null",
-            Description = "The width of each line of a multi-line shimmer, as a list of CSS lengths. Only applies while Lines is greater than 1, and it is a prefix rather than a replacement: a line the list does not reach keeps the width it would have had anyway, which is the full measure or the shortened LastLineWidth."
+            Description = "The width of each line of a multi-line shimmer, from the first line on. Lines past the end of the list keep their default width."
         },
         new()
         {
             Name = "Loaded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Controls when the shimmer is swapped with actual data through an animated transition. The placeholder and the content are never on the page at the same time, and the sizing of the placeholder is dropped with it."
+            Description = "Swaps the placeholder for the content, which fades in if a placeholder was seen."
         },
         new()
         {
             Name = "LoadedLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text announced by assistive technologies once the content has replaced the shimmer."
+            Description = "Screen-reader text announced once the content has replaced the shimmer."
         },
         new()
         {
             Name = "MinShowTime",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The shortest time in ms a placeholder that has been seen stays on the page. ShowDelay keeps a fast response from ever showing a placeholder; this keeps a response landing just after one has appeared from taking it away in the same breath, which reads as a flicker rather than as loading. It is measured from the moment the placeholder appears, and nothing is held back for a placeholder that was never shown."
+            Description = "The shortest time in ms a placeholder that has appeared stays on the page, so a response landing just after it never flickers."
         },
         new()
         {
             Name = "Overlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the placeholder over the content instead of in place of it, so the box keeps the size of the thing it is waiting on and the page never reflows as the placeholder is swapped out. The cover is one box over the whole content, so Lines and Template no longer apply and the size comes from the content rather than from Height."
+            Description = "Draws the placeholder over the content instead of in place of it, so the layout never moves and the content keeps its state. Lines and Template do not apply. Covered content leaves the tab order, so keep the control that starts a refresh outside it."
         },
         new()
         {
             Name = "Politeness",
             Type = "BitPoliteness",
             DefaultValue = "BitPoliteness.Polite",
-            Description = "How urgently the live region of the shimmer interrupts a screen reader. Only applies while Label or LoadedLabel is set.",
+            Description = "How urgently the live region interrupts a screen reader. Only applies with Label or LoadedLabel.",
             LinkType = LinkType.Link,
             Href = "#politeness-enum"
         },
@@ -166,21 +166,21 @@ public partial class BitShimmerDemo
             Name = "Pulse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Changes the animation type of the shimmer to pulse. This is the short spelling of Animation=\"BitShimmerAnimation.Pulse\", which wins over it when both are set.",
+            Description = "Changes the animation to pulse. Short form of Animation=\"BitShimmerAnimation.Pulse\", which wins over it.",
         },
         new()
         {
             Name = "Radius",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The corner radius of the placeholder, as a CSS length. Shape already carries the three radii a placeholder usually wants; this is for the corner that has to match a surface of its own, and it wins over the shape wherever both are set. A circle is round by construction, so it ignores this."
+            Description = "The corner radius of the placeholder, as a CSS length. Wins over the Shape; a circle ignores it."
         },
         new()
         {
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The shape of the placeholder the shimmer draws: a circle for an avatar, a pill for a button or a tag, a square for an image that meets its container edge to edge.",
+            Description = "The shape of the placeholder: Rounded, Square, Pill or Circle.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -189,14 +189,14 @@ public partial class BitShimmerDemo
             Name = "ShowDelay",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The wait in ms before the placeholder appears, so a fast response never flashes a placeholder. The wait is held in CSS rather than in a timer, so it costs no render and works under static server-side rendering."
+            Description = "The wait in ms before the placeholder appears, so a fast response never flashes one. Pure CSS, so it also works under static SSR."
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the shimmer, which is the height of a line and the diameter of a circle. An explicit Height or Width always wins over it.",
+            Description = "The default line height and circle diameter. An explicit Height or Width wins over it.",
             LinkType = LinkType.Link,
             Href = "#size-enum"
         },
@@ -205,7 +205,7 @@ public partial class BitShimmerDemo
             Name = "Stagger",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The offset in ms between the animation of one line of a multi-line shimmer and the next, added to Delay rather than replacing it: line n starts at Delay + n * Stagger. Only applies while Lines is greater than 1."
+            Description = "The offset in ms between the animations of consecutive lines: line n starts at Delay + n * Stagger."
         },
         new()
         {
@@ -221,15 +221,73 @@ public partial class BitShimmerDemo
             Name = "Template",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to replace the default shimmer container and animation. It replaces the placeholder itself, so Shape, Lines, Animation and the sizing parameters no longer apply, while ShowDelay still holds the whole skeleton back as one."
+            Description = "A custom skeleton built from shimmers of its own, replacing the default placeholder. ShowDelay still holds it back as one."
         },
         new()
         {
             Name = "Width",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The shimmer width value. Unlike Height it stays with the component after the swap, so a placeholder and the content that replaces it occupy the same column."
+            Description = "The width of the shimmer. Unlike Height it stays after the swap, so the placeholder and the content share a column."
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Shimmer-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Resting color of the placeholder, which the animation plays over. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-color",
+            DefaultValue = "--bit-clr-bg-ter",
+            Description = "Color of the animated part: the wave band, or the block the pulse and the fade play on. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-height",
+            DefaultValue = "spacing(4)",
+            Description = "Height of a line. The Height and Size parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-circle-size",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Diameter of a circle. The Height and Size parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner of a Rounded placeholder. The Radius parameter and the Square and Pill shapes win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the lines of a stack. The Gap parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-last-line-width",
+            DefaultValue = "60%",
+            Description = "Width of the last line of a stack. The LastLineWidth and LineWidths parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-animation-duration",
+            DefaultValue = "1.6s x --bit-mot-loop-factor",
+            Description = "One loop of the wave, the pulse or the fade. The Duration parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Shimmer-animation-delay",
+            DefaultValue = "0.5s x --bit-mot-loop-factor",
+            Description = "Pause before the first loop. The Delay and Stagger parameters win over it.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -259,7 +317,7 @@ public partial class BitShimmerDemo
                    Name = "Label",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel."
+                   Description = "Custom CSS classes/styles for the live region of the BitShimmer that carries its Label and LoadedLabel. It is rendered right after the root, not inside it, so a shimmer hidden by a stylesheet hides the region through these as well."
                },
                new()
                {
@@ -483,6 +541,17 @@ public partial class BitShimmerDemo
     ];
 
 
+
+    private readonly BitShimmerParams[] shimmerParams =
+    [
+        new()
+        {
+            Animation = BitShimmerAnimation.Pulse,
+            Height = "0.75rem",
+            LastLineWidth = "40%",
+            Stagger = 150,
+        }
+    ];
 
     private bool isDataLoaded;
 

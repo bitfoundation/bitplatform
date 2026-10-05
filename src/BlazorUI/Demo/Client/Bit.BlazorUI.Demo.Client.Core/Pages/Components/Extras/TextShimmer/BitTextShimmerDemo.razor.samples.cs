@@ -10,16 +10,22 @@ public partial class BitTextShimmerDemo
     private readonly string example2RazorCode = @"
 <BitTextShimmer Element=""h1"" Text=""A shimmering heading"" />
 
-<div>An <BitTextShimmer Element=""span"" Text=""inline text shimmer"" /> in the middle of a sentence.</div>";
+<div>An <BitTextShimmer Element=""span"" Text=""inline text shimmer"" /> in the middle of a sentence.</div>
+
+<BitText Typography=""BitTypography.H4"">
+    <BitTextShimmer Element=""span"" Text=""A heading in the typography of the theme"" />
+</BitText>";
 
     private readonly string example3RazorCode = @"
 <BitTextShimmer Spread=""5"" Text=""A wide shimmer band"" />
 
 <BitTextShimmer Spread=""0.5"" Text=""A narrow shimmer band"" />
 
-<BitTextShimmer SpreadLength=""2em"" Text=""A band two ems wide"" />
+<BitTextShimmer SpreadLength=""2em"" Element=""h3"" Text=""A band two ems wide"" />
 
-<BitTextShimmer SpreadLength=""2em"" Element=""h3"" Text=""A band two ems wide"" />";
+<BitTextShimmer Angle=""25"" Element=""h2"" Text=""A band tilted by 25 degrees"" />
+
+<BitTextShimmer Angle=""-25"" Element=""h2"" Text=""A band tilted by -25 degrees"" />";
 
     private readonly string example4RazorCode = @"
 <BitTextShimmer ContentLength=""30"">
@@ -46,27 +52,19 @@ public partial class BitTextShimmerDemo
 <BitTextShimmer Delay=""500"" Text=""Drafting an answer..."" />";
 
     private readonly string example6RazorCode = @"
-<BitTextShimmer Text=""Following the reading direction (default)"" />
-
 <BitTextShimmer Reversed Text=""Against the reading direction"" />
 
-<BitTextShimmer Alternate Text=""Back and forth"" />";
+<BitTextShimmer Alternate Text=""Back and forth"" />
 
-    private readonly string example7RazorCode = @"
-<BitTextShimmer Angle=""25"" Element=""h2"" Text=""A band tilted by 25 degrees"" />
-
-<BitTextShimmer Angle=""-25"" Element=""h2"" Text=""A band tilted by -25 degrees"" />";
-
-    private readonly string example8RazorCode = @"
 <BitButton OnClick=""() => replayCount++"">Replay</BitButton>
 
 <BitTextShimmer @key=""@($""once-{replayCount}"")"" Iterations=""1"" Element=""h2"" Text=""Revealed with a single sweep"" />
 
 <BitTextShimmer @key=""@($""thrice-{replayCount}"")"" Iterations=""3"" Text=""Three sweeps, then at rest"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private int replayCount;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitToggle @bind-Value=""isPaused"" Text=""Paused"" />
 <BitTextShimmer Paused=""isPaused"" Text=""Pause me and resume me"" />
 
@@ -76,18 +74,18 @@ private int replayCount;";
 <BitTextShimmer Static=""isStatic"" Text=""Stop me and start me again"" />
 
 <BitTextShimmer IsEnabled=""false"" Text=""A disabled shimmer"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isPaused;
 private bool isStatic;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitButton OnClick=""AskAsync"" IsEnabled=""isThinking is false"">Ask a question</BitButton>
 
 <BitTextShimmer role=""status""
                 Static=""isThinking is false""
                 RepeatDelay=""1000""
                 Text=""@(isThinking ? ""Thinking about your question..."" : thinkingResult)"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isThinking;
 private string thinkingResult = ""Ask a question to see the assistant think."";
 
@@ -102,7 +100,19 @@ private async Task AskAsync()
     isThinking = false;
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example9RazorCode = @"
+<BitToggle @bind-Value=""pauseAll"" Text=""Pause animations"" />
+
+<BitParams Parameters=""shimmerParams"">
+    <BitTextShimmer Text=""Reading the question..."" />
+    <BitTextShimmer Text=""Searching the knowledge base..."" />
+    <BitTextShimmer Duration=""1000"" Text=""Drafting an answer (its own Duration)..."" />
+</BitParams>";
+    private readonly string example9CsharpCode = @"
+private bool pauseAll;
+private BitTextShimmerParams[] shimmerParams => [new() { Duration = 3000, RepeatDelay = 1000, SpreadLength = ""3em"", Paused = pauseAll }];";
+
+    private readonly string example10RazorCode = @"
 <BitTextShimmer Color=""BitColor.Primary"" Text=""Primary"" />
 <BitTextShimmer Color=""BitColor.Secondary"" Text=""Secondary"" />
 <BitTextShimmer Color=""BitColor.Tertiary"" Text=""Tertiary"" />
@@ -116,11 +126,12 @@ private async Task AskAsync()
 
 <BitTextShimmer BaseColor=""#a16207"" GradientColor=""#fbbf24"" Text=""A golden colored shimmer"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         font-size: 1.5rem;
         font-style: italic;
+        padding-inline-end: 0.1em;
     }
 </style>
 
@@ -128,9 +139,13 @@ private async Task AskAsync()
 
 <BitTextShimmer Class=""custom-class"" Text=""A classy text shimmer"" />
 
-<BitTextShimmer Style=""--bit-tsh-gradient-clr:hotpink"" Text=""A band colored through a custom property"" />";
+<div style=""--bit-TextShimmer-gradient-color:hotpink;--bit-TextShimmer-spread:2em;--bit-TextShimmer-duration:3s"">
+    <BitTextShimmer Text=""Restyled by the variables of its container"" />
 
-    private readonly string example13RazorCode = @"
+    <BitTextShimmer GradientColor=""deepskyblue"" Text=""Its own GradientColor wins"" />
+</div>";
+
+    private readonly string example12RazorCode = @"
 <BitTextShimmer Dir=""BitDir.Rtl"" Text=""در حال فکر کردن به سوال شما..."" />
 
 <div dir=""rtl"">

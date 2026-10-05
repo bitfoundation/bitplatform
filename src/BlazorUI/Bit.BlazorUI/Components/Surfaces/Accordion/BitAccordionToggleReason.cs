@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// What made a BitAccordion expand or collapse.
@@ -13,5 +13,11 @@ public enum BitAccordionToggleReason
     /// <summary>
     /// The Expand, Collapse or Toggle method of the accordion was called.
     /// </summary>
-    Method
+    Method,
+
+    /// <summary>
+    /// The browser revealed the collapsed panel of a <c>HiddenUntilFound</c> accordion, because find-in-page or a
+    /// navigation to a fragment landed inside it.
+    /// </summary>
+    Reveal
 }

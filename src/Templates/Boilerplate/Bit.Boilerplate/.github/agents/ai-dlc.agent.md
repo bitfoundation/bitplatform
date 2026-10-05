@@ -9,12 +9,13 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 
 Verify these before phase 1 and offer to fix whatever is missing - they are one-time setup steps, not per-feature work. **Once a prerequisite holds, delete its bullet from this file** (and the whole section once the last one is gone), so later runs don't re-check it.
 
+- **Formatted solution**: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016` has been run once. BL0016's code fix wraps every JS interop call it flags in an empty `catch (Exception) { }`, silently swallowing its failures.
 - **Source control**: the project is a git repository with a remote, and the working tree is clean before a feature starts. Without it there is no safe point to roll an implementation back to.
 - **Branches**: both `develop` and `main` exist and match the pipelines this project ships - CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD triggers on `main` (`.github/workflows/cd-production.yml`) and test CD on `test` (`cd-test.yml`). Feature work goes on a branch off `develop` and reaches `main` through a PR, never a direct push. Protect `main` and `test` with a required status check on `ci.yml`, otherwise nothing tests a deploy: the CD workflows never run the suite. See `.docs/16- CI-CD Pipeline and Environments.md`.
 - **A green baseline**: the test suite passes on an untouched checkout (`dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests). Phase 5 can only tell you what *your* feature broke if you know what was passing before it. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`.
 - **EF Core migrations**: the project starts out on `Database.EnsureCreatedAsync()`, which creates a schema once and can never evolve it - the first entity change after that silently stops reaching the database. Switch to migrations *before* the first feature, while dropping the dev database is still free: follow `.docs/01- Entity Framework Core.md` (replace every `EnsureCreatedAsync()` call site with `MigrateAsync()`, delete the existing database, then `dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data/Migrations`).
 <!--#if (aspire == true)-->
-- **Persistent containers**: in `src/Server/Boilerplate.Server.AppHost/Program.cs`, remove the `inDevContainer` `if` and leave a bare `builder.UsePersistentContainers();`. Otherwise every `aspire start` and every test run rebuilds the database container from scratch, which makes the implement/validate loop of phases 4-5 needlessly slow. See `.docs/20- .NET Aspire.md`.
+- **Persistent containers**: in `src/Server/Boilerplate.Server.AppHost/Program.cs`, remove the `IsDedicatedEnvironment` `if` and leave a bare `builder.UsePersistentContainers();`. Otherwise every `aspire start` and every test run rebuilds the database container from scratch, which makes the implement/validate loop of phases 4-5 needlessly slow. See `.docs/20- .NET Aspire.md`.
 <!--#endif-->
 
 ## Workflow Phases
@@ -22,7 +23,7 @@ Verify these before phase 1 and offer to fix whatever is missing - they are one-
 ### 1. Requirements Elaboration
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
-<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true)-->
+<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 - Check the requested feature against **Optional Features This Project Has Not Enabled Yet** (below) before treating any of it as new work
 <!--#endif-->
 - Do NOT proceed until requirements are unambiguous
@@ -64,7 +65,7 @@ Verify these before phase 1 and offer to fix whatever is missing - they are one-
 <!--#endif-->
 - Confirm the fix against the same evidence that showed the problem, then re-run phase 5
 
-<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true)-->
+<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 
 ## Optional Features This Project Has Not Enabled Yet
 
@@ -74,7 +75,7 @@ The features below were switched **off** when this project was generated from th
 *   **Multi-tenancy** (`multitenant`): tenant entity and management UI, tenant resolution, and tenant-aware EF Core global query filters.
 <!--#endif-->
 <!--#if (aspire != true)-->
-*   **.NET Aspire** (`aspire`): the `AppHost` orchestration project, service discovery, dev tunnels and the Aspire dashboard wiring.
+*   **.NET Aspire** (`aspire`): the `AppHost` orchestration project, service discovery and the Aspire dashboard wiring.
 <!--#endif-->
 <!--#if (redis != true)-->
 *   **Redis** (`redis`): distributed cache, Hangfire job storage, SignalR backplane and distributed lock.
@@ -94,11 +95,14 @@ The features below were switched **off** when this project was generated from th
 <!--#if (offlineDb != true)-->
 *   **Offline database** (`offlineDb`): a client-side EF Core `DbContext` so the app can store and query its data on the device.
 <!--#endif-->
+<!--#if (module != "Admin")-->
+*   **Admin panel module** (`module=Admin`): the dashboard - its widgets and charts - and `BitDataGrid` CRUD pages with their controllers, one editing its rows in a modal popup and one on a page of its own.
+<!--#endif-->
 
 When the user asks for one of these, or you conclude the task needs it:
 
 1.  Tell the user it is a first-class option that simply was not selected at project creation, and that the supported implementation can be brought in - then let phase 2 plan bringing it in as its own task, ahead of the tasks that build on it.
-2.  Read the real code with the bit platform source code MCP tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource` - which read the `bitfoundation/bitplatform` repository, never this workspace. Scope every search with `path_filter: src/Templates`. Search the feature's own conditional (`#if (<symbol> == true)`) to enumerate **every** file it touches: each feature spans several projects, plus `.csproj` package references, `appsettings.json` settings and DI registrations.
+2.  Read the real code with the bit platform source code MCP tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource` - which read the `bitfoundation/bitplatform` repository, never this workspace. Scope every search with `path_filter: src/Templates`. Search the feature's own conditional directive on that symbol to enumerate **every** file it touches: each feature spans several projects, plus `.csproj` package references, `appsettings.json` settings and DI registrations.
 3.  Port it.
 <!--#endif-->
 
@@ -107,4 +111,5 @@ When the user asks for one of these, or you conclude the task needs it:
 - Always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work
+- This project was generated from a project template that ships TOO MANY features, so before building anything "new", search the project for it - a page, service or pattern to copy is usually already here
 - Limit each task to a single concern; avoid batching unrelated changes

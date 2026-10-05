@@ -15,22 +15,20 @@
        a null one takes it off the element altogether. So every attribute the link writes for itself reads
        what came in with the attributes first and writes it back when the parameter behind it was left
        unset - otherwise a plain rel, target or title written on a BitLink would silently do nothing. *@
-    var splattedRel = HtmlAttributes.TryGetValue("rel", out var srl) ? srl?.ToString() : null;
-    var splattedDir = HtmlAttributes.TryGetValue("dir", out var sdr) ? sdr?.ToString() : null;
-    var splattedRole = HtmlAttributes.TryGetValue("role", out var sro) ? sro?.ToString() : null;
-    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedTarget = HtmlAttributes.TryGetValue("target", out var stg) ? stg?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
-    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
-    var splattedCurrent = HtmlAttributes.TryGetValue("aria-current", out var scr) ? scr?.ToString() : null;
-    var splattedLabelledBy = HtmlAttributes.TryGetValue("aria-labelledby", out var slb) ? slb?.ToString() : null;
-    var splattedDescribedBy = HtmlAttributes.TryGetValue("aria-describedby", out var sdb) ? sdb?.ToString() : null;
+    var splattedRel = GetSplattedAttribute("rel");
+    var splattedDir = GetSplattedAttribute("dir");
+    var splattedRole = GetSplattedAttribute("role");
+    var splattedTitle = GetSplattedAttribute("title");
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedTarget = GetSplattedAttribute("target");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
+    var splattedDisabled = GetSplattedAttribute("aria-disabled");
+    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby");
+    var splattedDescribedBy = GetSplattedAttribute("aria-describedby");
 
-    @* The download attribute is the one of these that is also written without a value, so what came in with
-       the attributes is handed back as the object it arrived as: a bool renders the bare attribute, a string
-       renders the file name it names. *@
-    var splattedDownload = HtmlAttributes.TryGetValue("download", out var sdl) ? sdl : null;
+    @* The download attribute is the one of these that is also written without a value: a splatted true comes
+       back as an empty value, which is the same bare attribute, and a string as the file name it names. *@
+    var splattedDownload = GetSplattedAttribute("download");
 
     var dir = Dir?.ToString().ToLower() ?? splattedDir;
     var title = Title ?? splattedTitle;
@@ -38,14 +36,17 @@
     var target = Target.HasValue() ? Target : splattedTarget;
     var role = splattedRole ?? (IsEnabled ? null : "link");
     var ariaDisabled = IsEnabled ? splattedDisabled : "true";
-    var ariaCurrent = GetAriaCurrent(splattedCurrent);
+    var ariaCurrent = GetAriaCurrent();
+
+    @* A link that cannot take the focus must not pull it on the first render - a hand-written autofocus included. *@
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && IsFocusable();
 
     @* Neither the target nor the download belongs on a link that cannot be followed, and neither means
        anything on one that scrolls the page instead of navigating it. Everything downstream reads the
        target that is actually on the element rather than the parameter, so a link that will not open a new
        tab is not described as one either. *@
     var canNavigate = isAnchor && IsEnabled && isHash is false;
-    var download = canNavigate ? (Download is not null ? Download : splattedDownload) : null;
+    var download = canNavigate ? (Download ?? splattedDownload) : null;
     var renderedTarget = canNavigate ? target : null;
 
     @* A rel is document metadata rather than a navigation behaviour - it is what a crawler reads to learn
@@ -106,7 +107,7 @@
        role="@role"
        title="@title"
        tabindex="@tabIndex"
-       autofocus="@AutoFocus"
+       autofocus="@autoFocus"
        aria-label="@ariaLabel"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
@@ -128,7 +129,7 @@ else
             type="button"
             title="@title"
             tabindex="@tabIndex"
-            autofocus="@AutoFocus"
+            autofocus="@autoFocus"
             aria-label="@ariaLabel"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"

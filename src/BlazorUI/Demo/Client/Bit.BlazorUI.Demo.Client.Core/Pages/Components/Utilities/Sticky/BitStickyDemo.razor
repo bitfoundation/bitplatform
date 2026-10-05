@@ -2,760 +2,353 @@
 
 <PageOutlet Url="components/sticky"
             Title="Sticky"
-            Description="A wrapper over the browser's own position:sticky that pins its content to any edge of its scrolling container, with offsets, RTL-aware horizontal sticking, a semantic root tag, and a derived stuck-state event that names the edge." />
+            Description="Pins content to any edge of its scrolling container with the browser's own position:sticky: offsets, direction-aware horizontal sticking, a semantic root tag, a derived stuck state, theme elevation while pinned, and scroll padding that keeps focus out from under it." />
 
-<div>
-    <DemoPage Name="Sticky"
-              Description="BitSticky is a thin wrapper over the browser's own position:sticky: the content stays in the normal flow - keeping the room it occupies, so nothing jumps when it pins - until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest of the content passes. Which edge is either a Placement (Top, Bottom, or the direction-aware Start and End for horizontal scrolling) or an exact offset from any of the four sides, and Element renders the whole thing as the header, footer, nav, aside or th it really is. CSS has no event for the moment an element actually pins, so the component derives one: OnStuckChanged reports the flips, OnStuckEdgesChanged and StuckEdges name the edge holding it, and StuckClass / StuckStyle restyle the element only while it is stuck - an element that has not moved is never reported as pinned, however exactly it rests on an edge."
-              Parameters="componentParameters"
-              PublicMembers="componentPublicMembers"
-              SubEnums="componentSubEnums"
-              GitHubUrl="Utilities/Sticky/BitSticky.cs"
-              GitHubDemoUrl="Utilities/Sticky/BitStickyDemo.razor">
-        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div class="example-desc">
-                With nothing set, a <b>BitSticky</b> sticks to the top of its nearest scrolling container: it
-                scrolls with the content until it reaches the top edge, and stays pinned there while the rest
-                passes underneath. The container is whatever ancestor scrolls - a pane with its own overflow
-                here, or the page itself - and the element only travels within its own parent, so a parent no
-                taller than the element gives it no room to stick in.
-            </div>
-            <br />
-            <div class="vertical-container">
-                <BitSticky Class="sticky">Basic Sticky</BitSticky>
-                <div>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                    begins here, in this quiet moment where everything is possible.
-                </div>
-            </div>
-        </DemoExample>
+<DemoPage Name="Sticky"
+          SecondaryNames="@(["Affix"])"
+          Description="BitSticky keeps its content in the normal flow until the scroll carries it to an edge of its nearest scrolling container, where it stays while the rest passes. The edge is a Placement or exact offsets, the root can be any tag, and since CSS has no event for the moment an element pins, the component derives one - for callbacks, stuck-only styling and a theme shadow. ScrollPadding keeps what the browser scrolls into view out from under it."
+          Notes="A sticky pins within its nearest scrolling ancestor and only travels inside its own parent: any ancestor with an overflow other than visible becomes the boundary, even one that does not scroll, and a parent no taller than the element - or a flex parent stretching it - leaves it no room to stick. For a page app bar that hides while scrolling down and reveals itself on the way back up, use BitHeader (Reveal)."
+          Parameters="componentParameters"
+          CssVariables="componentCssVariables"
+          PublicMembers="componentPublicMembers"
+          SubEnums="componentSubEnums"
+          GitHubUrl="Utilities/Sticky/BitSticky.cs"
+          GitHubDemoUrl="Utilities/Sticky/BitStickyDemo.razor">
 
-        <DemoExample Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
-            <div class="example-desc">
-                <b>Placement</b> names the edge the element pins to while its container scrolls vertically.
-                <b>Top</b> pins it at the top once the scroll reaches it, <b>Bottom</b> keeps it pinned at the
-                bottom while its place in the content is still below the fold, and <b>TopAndBottom</b> does
-                whichever the scroll calls for - pinned at the bottom on the way down to it, at the top once
-                scrolled past it.
-            </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>Top</b>:</div>
-            <div class="vertical-container">
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                </p>
-                <BitSticky Class="sticky" Placement="@BitPlacement.Top">Stick to Top</BitSticky>
-                <div>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                    begins here, in this quiet moment where everything is possible.
-                </div>
-            </div>
-            <br /><br /><br />
-            <div><b>Bottom</b>:</div>
-            <div class="vertical-container">
-                <div>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                    begins here, in this quiet moment where everything is possible.
-                </div>
-                <BitSticky Class="sticky" Placement="@BitPlacement.Bottom">Stick to Bottom</BitSticky>
-                <div>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                </div>
-            </div>
-            <br /><br /><br />
-            <div><b>Top and Bottom</b>:</div>
-            <div class="vertical-container">
-                <div>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </div>
-                <BitSticky Class="sticky" Placement="@BitPlacement.TopAndBottom">Stick to Top and Bottom</BitSticky>
-                <div>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                    begins here, in this quiet moment where everything is possible.
-                </div>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>
+            With nothing set, <b>BitSticky</b> pins to the top of its nearest scrolling container - a pane with its own
+            overflow here, or the page itself.
+        </div>
+        <br />
+        <div class="vertical-container">
+            <BitSticky Class="sticky">Basic Sticky</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Horizontal" RazorCode="@example3RazorCode" Id="example3">
-            <div class="example-desc">
-                The other three members of <b>Placement</b> pin the element while its container scrolls
-                horizontally, and they follow the reading direction rather than naming a physical side:
-                <b>Start</b> is the left edge in LTR and the right one in RTL, <b>End</b> the opposite, and
-                <b>StartAndEnd</b> pins to whichever of the two the scroll calls for.
-            </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>Start</b>:</div>
-            <div class="horizontal-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-                <BitSticky Class="sticky" Placement="@BitPlacement.Start">Stick to Start</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>End</b>:</div>
-            <div class="horizontal-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-                <BitSticky Class="sticky" Placement="@BitPlacement.End">Stick to End</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>Start and End</b>:</div>
-            <div class="horizontal-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-                <BitSticky Class="sticky" Placement="@BitPlacement.StartAndEnd">Stick to Start and End</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Placement" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            <b>Placement</b> picks the edge. <b>Top</b>, <b>Bottom</b> and <b>TopAndBottom</b> pin while the container scrolls
+            vertically - Bottom while the element's place is still below the fold, TopAndBottom on whichever edge the scroll
+            calls for. <b>Start</b>, <b>End</b> and <b>StartAndEnd</b> do the same horizontally and follow the reading direction.
+        </div>
+        <br />
+        <BitChoiceGroup Horizontal Label="Vertical" TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement" @bind-Value="verticalPosition">
+            <BitChoiceGroupOption Text="Top" Value="BitPlacement.Top" />
+            <BitChoiceGroupOption Text="Bottom" Value="BitPlacement.Bottom" />
+            <BitChoiceGroupOption Text="TopAndBottom" Value="BitPlacement.TopAndBottom" />
+        </BitChoiceGroup>
+        <div class="vertical-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <BitSticky Class="sticky" Placement="verticalPosition">Placement="@verticalPosition"</BitSticky>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+        </div>
+        <br />
+        <BitChoiceGroup Horizontal Label="Horizontal" TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement" @bind-Value="horizontalPosition">
+            <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+            <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
+            <BitChoiceGroupOption Text="StartAndEnd" Value="BitPlacement.StartAndEnd" />
+        </BitChoiceGroup>
+        <div class="horizontal-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</p>
+            <BitSticky Class="sticky" Placement="horizontalPosition">Placement="@horizontalPosition"</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</p>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Vertical spacings" RazorCode="@example4RazorCode" Id="example4">
-            <div class="example-desc">
-                <b>Top</b> and <b>Bottom</b> pin the element at an exact distance from an edge instead of
-                right on it. A bare number is read as a pixel count, and any CSS length is accepted as
-                written. Setting any offset replaces the default stick-to-top behavior with exactly the
-                edges the offsets name, and both can be set at once for a TopAndBottom that keeps a margin
-                on each side.
-            </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>Top=20px</b>:</div>
-            <div class="vertical-container">
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                </p>
-                <BitSticky Class="sticky" Top="20px">Top customized</BitSticky>
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>Bottom=2rem</b>:</div>
-            <div class="vertical-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                    <br />
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                    begins here, in this quiet moment where everything is possible.
-                </p>
-                <BitSticky Class="sticky" Bottom="2rem">Bottom customized</BitSticky>
-                <p>
-                    Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
-                    These words stand as temporary guides, placeholders that whisper of what is to come.
-                    They hold the promise of stories waiting to unfold, ideas eager to take shape, and
-                    connections that will soon emerge to inspire and resonate. This is not an empty page;
-                    it is a canvas, rich with potential and ready to transform into something meaningful.
-                    <br />
-                    For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
-                    the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
-                    and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
-                    purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
-                    what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
-                    starting point. The possibilities are endless, and the journey begins now.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>Top=2rem and Bottom=20px</b>:</div>
-            <div class="vertical-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-                <BitSticky Class="sticky" Top="2rem" Bottom="20px">Top and Bottom customized</BitSticky>
-                <p>
-                    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                    each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                    begins here, in this quiet moment where everything is possible.
-                    <br />
-                    Imagine this space as a window into the future empty yet alive with the energy of endless possibilities.
-                    These words stand as temporary guides, placeholders that whisper of what is to come.
-                    They hold the promise of stories waiting to unfold, ideas eager to take shape, and
-                    connections that will soon emerge to inspire and resonate. This is not an empty page;
-                    it is a canvas, rich with potential and ready to transform into something meaningful.
-                    <br />
-                    For now, these lines are here to remind you of the beauty of beginnings. They are the quiet before the symphony,
-                    the foundation upon which your creativity will build. Soon, this space will hold your thoughts, your visions,
-                    and your voice a reflection of who you are and what you wish to share with the world. Every sentence will carry
-                    purpose, every word will invite others to connect, to think, to feel. So take a moment to dream, to imagine
-                    what this blank slate can become. Whether it’s a story, an idea, or a message that matters, this is your
-                    starting point. The possibilities are endless, and the journey begins now.
-                </p>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Offsets" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            <b>Top</b>, <b>Bottom</b>, <b>Left</b> and <b>Right</b> pin at a distance from an edge. A bare number is pixels;
+            any CSS length works. Any offset replaces the default stick-to-top with exactly the edges it names, and wins over
+            the matching side of a <b>Placement</b>. Left and Right are physical sides - use Start and End to follow the
+            reading direction.
+        </div>
+        <br />
+        <div class="vertical-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <BitSticky Class="sticky" Top="16" Bottom="2rem">Top="16" Bottom="2rem"</BitSticky>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+        </div>
+        <br />
+        <div class="horizontal-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</p>
+            <BitSticky Class="sticky" Left="16" Right="2rem">Left="16" Right="2rem"</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</p>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Horizontal spacings" RazorCode="@example5RazorCode" Id="example5">
-            <div class="example-desc">
-                <b>Left</b> and <b>Right</b> are the horizontal counterparts of the two offsets above, for a
-                container that scrolls horizontally. Unlike the Start and End positions they name physical
-                sides, so they read the same in LTR and RTL - reach for the positions where the side should
-                follow the reading direction.
-            </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>Left=20px</b>:</div>
-            <div class="horizontal-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-                <BitSticky Class="sticky" Left="20px">Left customized</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>Right=2rem</b>:</div>
-            <div class="horizontal-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-                <BitSticky Class="sticky" Right="2rem">Right customized</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>Left=2rem and Right=20px</b>:</div>
-            <div class="horizontal-container">
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-                <BitSticky Class="sticky" Left="2rem" Right="20px">Left and Right customized</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                </p>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Stuck state" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            CSS has no event for the moment an element pins, so BitSticky derives one: <b>OnStuckChanged</b> reports each flip,
+            <b>IsStuck</b> holds the state, and <b>StuckClass</b> / <b>StuckStyle</b> apply only while stuck (with the
+            <code>bit-stk-stc</code> class). An unscrolled bar is not stuck. The detection attaches only when one of these is
+            used; <b>RefreshAsync</b> re-reads it after a layout change nothing reports.
+        </div>
+        <br />
+        <div>Stuck: <b>@isStuck</b></div>
+        <div class="vertical-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <BitSticky Class="sticky" StuckClass="stuck-shadow" StuckStyle="font-weight: 600" OnStuckChanged="v => isStuck = v">
+                @(isStuck ? "Stuck" : "Not stuck yet")
+            </BitSticky>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Stuck state" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-            <div class="example-desc">
-                CSS has no event for the moment a sticky element actually pins, so BitSticky derives one:
-                <b>OnStuckChanged</b> reports every flip of the state, the <b>IsStuck</b> property holds the
-                current value, and <b>StuckClass</b> / <b>StuckStyle</b> are applied to the root element only
-                while it is stuck (alongside the <code>bit-stk-stc</code> class) - which is what a bar that
-                casts a shadow only once content passes underneath it needs. Pinned means carried away from
-                where the flow would have put it, so a bar that has never moved is not reported as stuck
-                however exactly it happens to rest on the edge: the shadow below appears on the first pixel of
-                scrolling, not before it. The detection is attached only when one of these is used, so a
-                sticky that does not ask for it stays pure CSS. It settles itself on every scroll and on every resize
-                of the element, its parent, the container or the page, and <b>RefreshAsync</b> is there for the layout
-                change none of those can see - content moved around inside the container leaving every one of those
-                boxes the size it was.
-            </div>
-            <br />
-            <div>Currently stuck: <b>@isStuck</b></div>
-            <br />
-            <div><b>StuckClass</b> (a shadow only while stuck):</div>
-            <div class="vertical-container">
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them.
-                </p>
-                <BitSticky Class="sticky" StuckClass="stuck-shadow" OnStuckChanged="v => isStuck = v">
-                    @(isStuck ? "Stuck!" : "Not stuck yet")
-                </BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-            </div>
-            <br />
-            <div><b>StuckStyle</b> (a tint only while stuck):</div>
-            <div class="vertical-container">
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them.
-                </p>
-                <BitSticky Class="sticky" StuckStyle="background-color: tomato; color: white">
-                    Tinted only while stuck
-                </BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Stuck edges" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <b>OnStuckEdgesChanged</b> and <b>StuckEdges</b> name the <b>BitStickyEdges</b> holding the element - what a
+            TopAndBottom bar, stuck nearly all the time, needs to know. One class per edge (<code>bit-stk-stc-top</code>,
+            <code>-btm</code>, <code>-lft</code>, <code>-rgt</code>) lets CSS alone cast the shadow away from that edge.
+            The edges are physical: a Start sticky reports Left in LTR and Right in RTL.
+        </div>
+        <br />
+        <div>Pinned to: <b>@stuckEdges</b></div>
+        <div class="vertical-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <BitSticky Class="sticky edge-shadow" Placement="BitPlacement.TopAndBottom" OnStuckEdgesChanged="v => stuckEdges = v">
+                @(stuckEdges is BitStickyEdges.None ? "Travelling with the content" : $"Pinned to {stuckEdges}")
+            </BitSticky>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Stuck edges" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-            <div class="example-desc">
-                <b>OnStuckChanged</b> only says that the element is pinned, and a <b>TopAndBottom</b> sticky is pinned
-                nearly all the time - what it needs to know is to <i>which</i> edge. <b>OnStuckEdgesChanged</b> and the
-                <b>StuckEdges</b> property answer that with the <b>BitStickyEdges</b> flags, and the component carries
-                one class per edge holding it (<code>bit-stk-stc-top</code>, <code>bit-stk-stc-btm</code>,
-                <code>bit-stk-stc-lft</code>, <code>bit-stk-stc-rgt</code>), which is how the shadow below falls away
-                from the edge the bar is pinned against without a single line of C#. The edges are physical, the way the
-                browser resolves them, so a <b>Start</b> sticky reports Left in an LTR container and Right in an RTL one.
-            </div>
-            <br />
-            <div>Currently pinned to: <b>@stuckEdges</b></div>
-            <br />
-            <div class="vertical-container">
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built.
-                </p>
-                <BitSticky Class="sticky edge-shadow"
-                           Placement="@BitPlacement.TopAndBottom"
-                           OnStuckEdgesChanged="v => stuckEdges = v">
-                    @(stuckEdges is BitStickyEdges.None ? "Travelling with the content" : $"Pinned to {stuckEdges}")
-                </BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Element" RazorCode="@example8RazorCode" Id="example8">
-            <div class="example-desc">
-                A sticky element is usually one HTML already has a name for, and <b>Element</b> is what renders it under
-                that name instead of the default <code>div</code>: the <code>header</code> of a pane, the
-                <code>footer</code> that keeps a toolbar in reach, the <code>nav</code> of a table of contents, the
-                <code>aside</code> of a sidebar, or the <code>th</code> of a frozen table header. The tag is what tells
-                assistive technologies which of them it is, and it decides nothing about the stickiness - every other
-                parameter works exactly the same whichever one is rendered. The one thing a tag can ask of the markup
-                around it is the table below: a collapsed table lends its cells no borders of their own, which some
-                engines still refuse to pin, so a frozen header is laid out with
-                <code>border-collapse: separate</code> and a zero <code>border-spacing</code>.
-            </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>A header and a footer</b>:</div>
-            <div class="vertical-container">
-                <BitSticky Element="header" Class="sticky">A sticky header element</BitSticky>
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow.
-                </p>
-                <BitSticky Element="footer" Class="sticky" Placement="@BitPlacement.Bottom">A sticky footer element</BitSticky>
-            </div>
-            <br /><br /><br />
-            <div><b>A frozen table header</b>:</div>
-            <div class="vertical-container">
-                <table class="demo-table">
-                    <thead>
+    <DemoExample Title="Element" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>Element</b> renders the sticky as the element it is - a <code>header</code>, a <code>footer</code>, a
+            <code>nav</code>, an <code>aside</code>, a table's <code>th</code> - which is what tells assistive technologies
+            what it is. Everything else works the same on any tag. A frozen table header needs
+            <code>border-collapse: separate</code>, since some engines refuse to pin cells of a collapsed table.
+        </div>
+        <br />
+        <div class="vertical-container">
+            <BitSticky Element="header" Class="sticky">A sticky header</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <BitSticky Element="footer" Class="sticky" Placement="BitPlacement.Bottom">A sticky footer</BitSticky>
+        </div>
+        <br />
+        <div class="vertical-container">
+            <table class="demo-table">
+                <thead>
+                    <tr>
+                        <BitSticky Element="th" Class="table-head">Name</BitSticky>
+                        <BitSticky Element="th" Class="table-head">Role</BitSticky>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var person in people)
+                    {
                         <tr>
-                            <BitSticky Element="th" Class="table-head">Name</BitSticky>
-                            <BitSticky Element="th" Class="table-head">Role</BitSticky>
+                            <td>@person.Name</td>
+                            <td>@person.Role</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var row in tableRows)
-                        {
-                            <tr>
-                                <td>@row.Item1</td>
-                                <td>@row.Item2</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </DemoExample>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="ZIndex" RazorCode="@example9RazorCode" Id="example9">
-            <div class="example-desc">
-                A sticky element keeps a z-index of 1, enough to pass over the plain flowing content it
-                sticks above without covering the popups and overlays of the rest of the page. Where
-                positioned content in the same container carries a higher stacking order, <b>ZIndex</b>
-                raises the sticky element above it - in the first container below the sticky passes under
-                the positioned box, in the second one its <b>ZIndex</b> lifts it over.
-            </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>Default z-index</b> (passes under the positioned box):</div>
-            <div class="vertical-container">
-                <BitSticky Class="sticky">Default z-index</BitSticky>
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built.
-                </p>
-                <div class="positioned-box">A positioned box with z-index: 2</div>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>ZIndex="3"</b> (passes over the positioned box):</div>
-            <div class="vertical-container">
-                <BitSticky Class="sticky" ZIndex="3">ZIndex of 3</BitSticky>
-                <p>
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built.
-                </p>
-                <div class="positioned-box">A positioned box with z-index: 2</div>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead.
-                </p>
-            </div>
-        </DemoExample>
+    <DemoExample Title="ZIndex" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            A sticky keeps a z-index of 1: above plain flowing content, below the page's popups and overlays.
+            <b>ZIndex</b> lifts it over positioned content of the same container - the first bar passes under the
+            box below, the second over it.
+        </div>
+        <br />
+        <div class="vertical-container">
+            <BitSticky Class="sticky">Default z-index</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <div class="positioned-box">A positioned box with z-index: 2</div>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+        </div>
+        <br />
+        <div class="vertical-container">
+            <BitSticky Class="sticky" ZIndex="3">ZIndex="3"</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <div class="positioned-box">A positioned box with z-index: 2</div>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Disabled" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-            <div class="example-desc">
-                <b>IsEnabled</b> is the switch that turns the stickiness itself off: a disabled sticky steps
-                back into the normal flow and scrolls away with its content like any other element, and its
-                stuck detection (when it has any) is detached. It is what disabling stickiness conditionally
-                - below a breakpoint, behind a user preference - looks like without changing the markup.
-            </div>
-            <br />
-            <BitToggle @bind-Value="isStickyEnabled" Text="Sticky enabled" />
-            <br />
-            <div class="vertical-container">
-                <BitSticky Class="sticky" IsEnabled="isStickyEnabled">
-                    @(isStickyEnabled ? "Sticking to the top" : "Scrolling away with the content")
-                </BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Elevate on stuck" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>ElevateOnStuck</b> gives the sticky a surface and the theme's shadow only while it is stuck, cast away from
+            the edge holding it: the app-bar shadow on the top and bottom, the card shadow on the sides, and both in a corner.
+            A background brought by Class or Style still wins, and forced colors mode draws an outline instead.
+        </div>
+        <br />
+        <div class="vertical-container">
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <BitSticky ElevateOnStuck Class="bar" Placement="BitPlacement.TopAndBottom">Elevated only while stuck</BitSticky>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+            <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+        </div>
+        <br />
+        <div class="table-container">
+            <table class="demo-table wide-table">
+                <thead>
+                    <tr>
+                        <BitSticky Element="th" ElevateOnStuck Top="0" Left="0" ZIndex="2" Class="table-head">Name</BitSticky>
+                        <BitSticky Element="th" ElevateOnStuck Class="table-head">Role</BitSticky>
+                        <BitSticky Element="th" ElevateOnStuck Class="table-head">Known for</BitSticky>
+                        <BitSticky Element="th" ElevateOnStuck Class="table-head">Born</BitSticky>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var person in people)
+                    {
+                        <tr>
+                            <BitSticky Element="th" ElevateOnStuck Placement="BitPlacement.Start" Class="row-head" scope="row">@person.Name</BitSticky>
+                            <td>@person.Role</td>
+                            <td>@person.KnownFor</td>
+                            <td>@person.Born</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
-            <div class="example-desc">
-                <b>Style</b> and <b>Class</b> reach the root element, which is both the box that sticks and
-                the box the content sits in - so a background, a border or a shadow given here travels and
-                pins with it. For a look that only appears while the element is pinned, use <b>StuckClass</b>
-                and <b>StuckStyle</b> instead.
+    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            A pinned bar covers what scrolls under it, focused controls included (WCAG 2.4.11). <b>ScrollPadding</b> reserves
+            its size and offset as the container's scroll padding, so tabbing up and down the links below never leaves the
+            focus behind the bar - turn it off to compare. Stickies sharing a container keep the largest claim per edge.
+            A named <code>div</code> or <code>span</code> (<b>AriaLabel</b>, <code>aria-labelledby</code>) is announced as a
+            <code>group</code>, since a generic element cannot carry a name.
+        </div>
+        <br />
+        <BitToggle @bind-Value="reservesScrollPadding" Text="ScrollPadding" />
+        <div class="vertical-container">
+            <BitSticky Class="sticky" AriaLabel="Reading list" ScrollPadding="reservesScrollPadding">Reading list</BitSticky>
+            <div class="link-list">
+                @foreach (var person in people)
+                {
+                    <BitLink Href="@($"https://en.wikipedia.org/wiki/{person.Name.Replace(' ', '_')}")">@person.Name</BitLink>
+                }
             </div>
-            <br />
-            <div>Try scrolling the containers to see the sticky components in action:</div>
-            <br /><br />
-            <div><b>Style</b>:</div>
-            <div class="vertical-container">
-                <BitSticky Style="color: darkred; padding: 0.5rem; background-color: goldenrod; border-radius: 0.5rem;">
-                    Styled Sticky
-                </BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-            </div>
-            <br /><br /><br />
-            <div><b>Class</b>:</div>
-            <div class="vertical-container">
-                <BitSticky Class="custom-class">Classed Sticky</BitSticky>
-                <p>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    <br />
-                    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-                    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                    shaped into meaning, and the emotions ready to resonate with every reader.
-                </p>
-            </div>
-        </DemoExample>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
-            <div class="example-desc">
-                The Start and End positions follow the reading direction: in a right-to-left container,
-                Start is the right edge and End is the left one, with nothing about the markup changing.
-                <b>Dir</b> sets the direction of the component's own content and is also cascaded, so a
-                BitSticky inside an RTL container inherits it.
+    <DemoExample Title="Disabled" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>IsEnabled</b> turns the stickiness itself off: a disabled sticky steps back into the flow and scrolls away
+            with the content, and its stuck detection and scroll padding are released - stickiness behind a breakpoint or a
+            preference without changing the markup.
+        </div>
+        <br />
+        <BitToggle @bind-Value="isStickyEnabled" Text="Sticky enabled" />
+        <div class="vertical-container">
+            <BitSticky Class="sticky" IsEnabled="isStickyEnabled">
+                @(isStickyEnabled ? "Sticking to the top" : "Scrolling away with the content")
+            </BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>BitParams</b> with a <b>BitStickyParams</b> sets defaults for every sticky under it - say, elevated section
+            headers with the same offset. A sticky's own value wins (the last one opts out of <b>ElevateOnStuck</b>).
+        </div>
+        <br />
+        <BitParams Parameters="stickyParams">
+            <div class="vertical-container">
+                <BitSticky Class="bar">Cascaded: elevated, 0.5rem from the top</BitSticky>
+                <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+                <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+                <BitSticky Class="bar">Cascaded as well</BitSticky>
+                <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+                <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+                <BitSticky Class="sticky" ElevateOnStuck="false">Its own ElevateOnStuck, the cascaded rest</BitSticky>
+                <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
+                <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+                <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            </div>
+        </BitParams>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root, which both sticks and holds the content, so a background, border or
+            shadow set here travels and pins with it. For a look that appears only while pinned, use <b>StuckClass</b>,
+            <b>StuckStyle</b> or <b>ElevateOnStuck</b>.
+        </div>
+        <br />
+        <div class="vertical-container">
+            <BitSticky Style="padding: 0.5rem; border-radius: 0.5rem; color: var(--bit-clr-sec-text); background-color: var(--bit-clr-sec);">
+                Styled Sticky
+            </BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+        </div>
+        <br />
+        <div class="vertical-container">
+            <BitSticky Class="custom-class">Classed Sticky</BitSticky>
+            <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
+            <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
+            <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
+            <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            In a right-to-left container <b>Start</b> is the right edge and <b>End</b> the left one, with nothing about the
+            markup changing.
+        </div>
+        <br />
+        <div dir="rtl">
+            <div class="horizontal-container">
+                <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
+                <BitSticky Dir="BitDir.Rtl" Class="sticky" Placement="BitPlacement.Start">چسبیده به آغاز</BitSticky>
+                <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
             </div>
             <br />
-            <div>Try scrolling the container to see the sticky component in action:</div>
-            <br /><br />
-            <div dir="rtl">
-                <div><b>Start</b> (the right edge in RTL):</div>
-                <div class="horizontal-container">
-                    <p>
-                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                    </p>
-                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Placement="@BitPlacement.Start">چسبیده به آغاز</BitSticky>
-                    <p>
-                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                    </p>
-                </div>
-                <br /><br />
-                <div><b>End</b> (the left edge in RTL):</div>
-                <div class="horizontal-container">
-                    <p>
-                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                    </p>
-                    <BitSticky Dir="BitDir.Rtl" Class="sticky" Placement="@BitPlacement.End">چسبیده به پایان</BitSticky>
-                    <p>
-                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
-                    </p>
-                </div>
+            <div class="horizontal-container">
+                <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
+                <BitSticky Dir="BitDir.Rtl" Class="sticky" Placement="BitPlacement.End">چسبیده به پایان</BitSticky>
+                <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
             </div>
-        </DemoExample>
-    </DemoPage>
-</div>
+        </div>
+    </DemoExample>
+
+</DemoPage>

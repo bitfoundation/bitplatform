@@ -26,7 +26,7 @@ public partial class TwoFactorAuthTests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         var email = MagicLinkSignInUtils.NewTestEmail();
 
@@ -100,9 +100,7 @@ public partial class TwoFactorAuthTests : AppPageTest
     /// <summary>Signs the current user out through the header menu and its confirmation dialog.</summary>
     private async Task SignOut(IPage page)
     {
-        // Open the user menu in the header (clicking its persona) then click its "Sign out" action.
-        await page.Locator(".bit-prs.persona").First.ClickAsync();
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await AppMenuUtils.ClickItem(page, AppStrings.SignOut);
 
         // Confirm in the dialog (its OK button is also labelled "Sign out"; the menu one is gone once the dialog is up).
         await Expect(page.GetByText(AppStrings.SignOutPrompt)).ToBeVisibleAsync();
@@ -119,7 +117,7 @@ public partial class TwoFactorAuthTests : AppPageTest
     private async Task SignInPassingTwoFactor(IPage page, AppTestServer server, string email, string authenticatorSecret)
     {
         // Ask for a magic link / OTP for the existing account and type the 6 digits from the captured OTP e-mail.
-        await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, server.WebAppServerAddress, email);
+        await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, server.WebAppAddress, email);
 
         var otpEmail = await server.WaitForCapturedEmail(email,
             capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
@@ -130,7 +128,7 @@ public partial class TwoFactorAuthTests : AppPageTest
         await BitOtpInputUtils.FillOtpInputs(page, ComputeTotpCode(authenticatorSecret));
 
         // Passing 2FA finishes the sign-in and redirects her to the home page as herself.
-        await page.WaitForURLAsync(server.WebAppServerAddress.ToString());
+        await page.WaitForURLAsync(server.WebAppAddress.ToString());
         await Expect(page.Locator(".bit-prs.persona").First).ToContainTextAsync(email);
     }
 
@@ -144,6 +142,8 @@ public partial class TwoFactorAuthTests : AppPageTest
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Switch to the account section's "Delete" tab, then start (and confirm) the account deletion.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.GetByText(AppStrings.Delete, new() { Exact = true }).ClickAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.DeleteAccount }).ClickAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Yes }).ClickAsync();
@@ -154,7 +154,7 @@ public partial class TwoFactorAuthTests : AppPageTest
 
         // No elevated-access token e-mail was sent: the 2FA sign-in already elevated the session. Read every e-mail the
         // server captured straight from its in-memory store (See TestIdentityEmailService / EmailCaptureStore).
-        var capturedEmails = server.WebApp.Services.GetRequiredService<EmailCaptureStore>().Captured;
+        var capturedEmails = server.ApiApp.Services.GetRequiredService<EmailCaptureStore>().Captured;
         Assert.DoesNotContain(
             capturedEmail => capturedEmail.IsTo(email) && capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, capturedEmails,
             "The 2FA sign-in already elevated the session, so deleting the account must not send an elevated-access token e-mail.");

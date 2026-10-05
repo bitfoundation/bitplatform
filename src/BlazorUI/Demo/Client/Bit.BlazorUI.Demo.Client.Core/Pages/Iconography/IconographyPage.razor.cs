@@ -478,6 +478,7 @@ public partial class IconographyPage
             await JSRuntime.UnobserveElementWidth(GRID_ELEMENT_ID);
         }
         catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unobserve
+        catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
 
         _dotnetObj?.Dispose();
         _dotnetObj = null;

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -64,10 +65,14 @@ public class BitChartTests : BunitTestContext
     [TestMethod]
     public void BitChartShouldSplatHtmlAttributes()
     {
-        var component = RenderComponent<BitChart>(p =>
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so they are supplied
+        // as raw component attributes, as real markup would write them.
+        var component = Context.Render(builder =>
         {
-            p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.HtmlAttributes, new Dictionary<string, object> { ["data-test"] = "chart" });
+            builder.OpenComponent<BitChart>(0);
+            builder.AddAttribute(1, nameof(BitChart.Data), TwoSeries());
+            builder.AddAttribute(2, "data-test", "chart");
+            builder.CloseComponent();
         });
 
         Assert.AreEqual("chart", component.Find(".bit-cht").GetAttribute("data-test"));
@@ -132,19 +137,20 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitChartShouldRenderAScreenReaderTableAndPointAtIt()
+    public void BitChartShouldRenderAScreenReaderTableBesideTheChart()
     {
         var component = RenderChart();
 
         var table = component.Find("table");
         var svg = component.Find("svg");
-        // The description points at the how-to-navigate sentence and then the data itself.
-        var described = svg.GetAttribute("aria-describedby")!.Split(' ');
-        CollectionAssert.Contains(described, table.Id);
-        Assert.AreEqual(2, described.Length);
-        Assert.IsNotNull(component.Find($"#{described[0]}"));
+        // The description is the how-to-navigate sentence alone: a table pointed at by aria-describedby would be read
+        // as one flat string on every focus, so it is a real table a screen reader browses instead.
+        var described = svg.GetAttribute("aria-describedby")!;
+        Assert.IsFalse(described.Contains(table.Id!), "the table is read as one flat string when it is a description");
+        Assert.IsNotNull(component.Find($"#{described}"));
         Assert.AreEqual(3, table.QuerySelectorAll("thead th").Length - 1);
         Assert.AreEqual(2, table.QuerySelectorAll("tbody tr").Length);
+        StringAssert.Contains(table.QuerySelector("caption")!.TextContent, "Bar chart with 2 data series.");
     }
 
     [TestMethod]
@@ -152,9 +158,38 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart();
 
-        var hintId = component.Find("svg").GetAttribute("aria-describedby")!.Split(' ')[0];
+        var hintId = component.Find("svg").GetAttribute("aria-describedby")!;
         StringAssert.Contains(component.Find($"#{hintId}").TextContent, "arrow keys");
         Assert.AreEqual("chart", component.Find("svg").GetAttribute("aria-roledescription"));
+    }
+
+    [TestMethod]
+    public void TheNavigablePlotShouldBeAnApplicationAndAPictureOtherwise()
+    {
+        // An application is what makes a screen reader in browse mode hand the arrow keys to the chart.
+        Assert.AreEqual("application", RenderChart().Find("svg").GetAttribute("role"));
+
+        var empty = RenderComponent<BitChart>(p => p.Add(c => c.Data, new BitChartData()));
+        Assert.AreEqual("img", empty.Find("svg").GetAttribute("role"));
+
+        var disabled = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.IsEnabled, false);
+        });
+        Assert.AreEqual("img", disabled.Find("svg").GetAttribute("role"));
+        Assert.AreEqual("-1", disabled.Find("svg").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void TheDrawingShouldBeHiddenFromAssistiveTechnologies()
+    {
+        var component = RenderChart();
+
+        // An application exposes its children, and the tick labels and shapes are not something to read one by one:
+        // the live region and the table say what they show.
+        foreach (var group in component.FindAll("svg.bit-cht-svg > g"))
+            Assert.AreEqual("true", group.GetAttribute("aria-hidden"), $"{group.ClassName} is exposed");
     }
 
     [TestMethod]
@@ -172,8 +207,8 @@ public class BitChartTests : BunitTestContext
             p.Add(c => c.Data, TwoSeries());
             p.Add(c => c.NavigationHint, null);
         });
-        var table = silent.Find("table");
-        Assert.AreEqual(table.Id, silent.Find("svg").GetAttribute("aria-describedby"));
+        Assert.IsNull(silent.Find("svg").GetAttribute("aria-describedby"));
+        Assert.AreEqual(1, silent.FindAll("table").Count);
     }
 
     [TestMethod]
@@ -181,8 +216,9 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderComponent<BitChart>(p => p.Add(c => c.Data, new BitChartData()));
 
-        // Nothing to walk: the hint would be a lie, so only the (empty) table is described.
-        Assert.AreEqual(component.Find("table").Id, component.Find("svg").GetAttribute("aria-describedby"));
+        // Nothing to walk: the hint would be a lie.
+        Assert.IsNull(component.Find("svg").GetAttribute("aria-describedby"));
+        Assert.AreEqual(0, component.FindAll(".bit-cht-sr[id$='-hint']").Count);
     }
 
     [TestMethod]
@@ -293,9 +329,33 @@ public class BitChartTests : BunitTestContext
         var options = new BitChartOptions { Plugins = { Legend = { OnClickToggle = false } } };
         var component = RenderChart(options: options);
 
-        component.FindAll(".bit-cht-lgd-itm")[0].Click();
+        // With nothing to do on a click the entries are labels, not controls that do nothing.
+        var item = component.FindAll(".bit-cht-lgd-itm")[0];
+        Assert.AreEqual("span", item.TagName.ToLowerInvariant());
+        Assert.IsNull(item.GetAttribute("aria-pressed"));
+        Assert.AreEqual(0, component.FindAll(".bit-cht-lgd button").Count);
+    }
 
-        Assert.AreEqual("true", component.FindAll(".bit-cht-lgd-itm")[0].GetAttribute("aria-pressed"));
+    [TestMethod]
+    public void ALegendWithOnlyAClickHandlerShouldBeButtonsWithoutAPressedState()
+    {
+        BitChartLegendItemModel? clicked = null;
+        var options = new BitChartOptions { Plugins = { Legend = { OnClickToggle = false } } };
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Options, options);
+            p.Add(c => c.OnLegendItemClick, (BitChartLegendItemModel i) => clicked = i);
+        });
+
+        var item = component.FindAll(".bit-cht-lgd-itm")[0];
+        Assert.AreEqual("button", item.TagName.ToLowerInvariant());
+        Assert.IsNull(item.GetAttribute("aria-pressed"), "a button that toggles nothing has no pressed state to report");
+
+        item.Click();
+
+        Assert.AreEqual("Alpha", clicked?.Text);
+        Assert.IsFalse(component.FindAll(".bit-cht-lgd-itm")[0].ClassList.Contains("bit-cht-hdn"));
     }
 
     [TestMethod]
@@ -571,6 +631,45 @@ public class BitChartTests : BunitTestContext
 
         StringAssert.StartsWith(csv, "Series,X,Y,R");
         StringAssert.Contains(csv, "P,3,4,5");
+    }
+
+    [TestMethod]
+    public void ScatterCsvShouldCarryARadiusColumnOnlyForBubbleData()
+    {
+        var data = new BitChartData
+        {
+            Datasets = { new BitChartDataset { Label = "P", Points = [new(1, 2), new(3, 4)] } }
+        };
+        var lines = RenderChart(BitChartType.Scatter, data).Replace_ToCsv().TrimEnd('\n').Split('\n');
+
+        CollectionAssert.AreEqual(new[] { "Series,X,Y", "P,1,2", "P,3,4" }, lines, "the table shows no radius column here, and neither does the file");
+    }
+
+    [TestMethod]
+    public void PointsOnDifferentAxesShouldNotBeHeadedByOneOfThemAlone()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset { Label = "Revenue", Points = [new(1, 2)] },
+                new BitChartDataset { Label = "Margin", Points = [new(3, 40)], YAxisID = "y2" }
+            }
+        };
+        var options = new BitChartOptions
+        {
+            Scales =
+            {
+                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "Month" } },
+                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "Revenue" } },
+                ["y2"] = new BitChartScaleOptions { Id = "y2", Type = BitChartScaleType.Linear, Placement = BitPlacement.Right, Title = new() { Display = true, Text = "Margin %" } }
+            }
+        };
+        var component = RenderChart(BitChartType.Scatter, data, options);
+
+        // Both series share the x axis, so its title still names that column; the y values are on two axes.
+        StringAssert.StartsWith(component.Instance.ToCsv(), "Series,Month,Y");
+        CollectionAssert.AreEqual(new[] { "Series", "Month", "Y" }, component.FindAll("table thead th").Select(h => h.TextContent).ToList());
     }
 
     [TestMethod]
@@ -1335,6 +1434,286 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual(before, chart.GetAxisRange("y")!.Value);
     }
 
+    [TestMethod]
+    public void PlusAndMinusShouldZoomFromTheKeyboardAndZeroShouldReset()
+    {
+        var options = new BitChartOptions { Zoom = { Enabled = true } };
+        var component = RenderChart(BitChartType.Line, options: options);
+        var chart = component.Instance;
+        var full = chart.GetAxisRange("x")!.Value;
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+" });
+        var zoomed = chart.GetAxisRange("x")!.Value;
+        Assert.IsLessThan(full.Max - full.Min, zoomed.Max - zoomed.Min, "plus zooms in");
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "-" });
+        var out1 = chart.GetAxisRange("x")!.Value;
+        Assert.IsGreaterThan(zoomed.Max - zoomed.Min, out1.Max - out1.Min, "minus zooms back out");
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+" });
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "0" });
+        Assert.AreEqual(full, chart.GetAxisRange("x")!.Value, "0 resets");
+    }
+
+    [TestMethod]
+    public void TheZoomKeysShouldLeaveTheBrowsersOwnZoomShortcutsAlone()
+    {
+        var options = new BitChartOptions { Zoom = { Enabled = true } };
+        var component = RenderChart(BitChartType.Line, options: options);
+        var chart = component.Instance;
+        var full = chart.GetAxisRange("x")!.Value;
+
+        // Ctrl/Meta with plus, minus or zero is the page zoom, which the chart must not join in.
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+", CtrlKey = true });
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "=", MetaKey = true });
+        Assert.AreEqual(full, chart.GetAxisRange("x")!.Value);
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+" });
+        var zoomed = chart.GetAxisRange("x")!.Value;
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "0", CtrlKey = true });
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "-", AltKey = true });
+        Assert.AreEqual(zoomed, chart.GetAxisRange("x")!.Value, "a page-zoom reset must not discard the chart's own zoom");
+    }
+
+    [TestMethod]
+    public void TheZoomKeysShouldDoNothingWithoutZoom()
+    {
+        var component = RenderChart(BitChartType.Line);
+        var full = component.Instance.GetAxisRange("x")!.Value;
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "+" });
+
+        Assert.AreEqual(full, component.Instance.GetAxisRange("x")!.Value);
+    }
+
+    [TestMethod]
+    public void TheHintShouldNameTheZoomKeysOnlyWhileZoomIsEnabled()
+    {
+        var hintOf = (IRenderedComponent<BitChart> c) => c.Find($"#{c.Find("svg").GetAttribute("aria-describedby")!.Split(' ')[0]}").TextContent;
+
+        Assert.DoesNotContain("zoom", hintOf(RenderChart(BitChartType.Line)));
+
+        var zoomable = RenderChart(BitChartType.Line, options: new BitChartOptions { Zoom = { Enabled = true } });
+        StringAssert.Contains(hintOf(zoomable), "Press plus or minus to zoom");
+
+        var silenced = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.Line);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Options, new BitChartOptions { Zoom = { Enabled = true } });
+            p.Add(c => c.ZoomHint, null);
+        });
+        Assert.DoesNotContain("zoom", hintOf(silenced));
+    }
+
+    // ---- theming ----
+
+    [TestMethod]
+    public void TheDefaultPaletteShouldBeThePublicSeriesVariables()
+    {
+        var component = RenderChart();
+
+        var bars = component.FindAll(".bit-cht-data rect");
+        Assert.AreEqual("var(--bit-Chart-series-color-1, #36a2eb)", bars[0].GetAttribute("fill"));
+        Assert.AreEqual("var(--bit-Chart-series-color-2, #ff6384)", bars[3].GetAttribute("fill"));
+        StringAssert.Contains(component.FindAll(".bit-cht-lgd-box")[0].GetAttribute("style"), "--bit-Chart-series-color-1");
+    }
+
+    [TestMethod]
+    public void AnAreaOfAThemedSeriesShouldStayTranslucent()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B" },
+            Datasets = { new BitChartDataset { Data = { 1, 2 }, Fill = BitChartFillMode.Origin } }
+        };
+        var component = RenderChart(BitChartType.Line, data);
+
+        var area = component.FindAll(".bit-cht-series path").First(p => p.GetAttribute("fill") is { } f && f != "none");
+        Assert.AreEqual("color-mix(in srgb, var(--bit-Chart-series-color-1, #36a2eb) 20%, transparent)", area.GetAttribute("fill"));
+    }
+
+    [TestMethod]
+    public void TheTooltipShouldFollowTheThemeUnlessTheOptionsSayOtherwise()
+    {
+        var component = RenderChart();
+        component.FindAll(".bit-cht-el")[0].MouseEnter();
+
+        var style = component.Find(".bit-cht-tt").GetAttribute("style")!;
+        StringAssert.Contains(style, "background:var(--bit-Chart-tooltip-background, var(--bit-clr-tooltip-bg))");
+        Assert.DoesNotContain("border-radius", style, "the radius comes from the stylesheet's theme token");
+
+        var options = new BitChartOptions { Plugins = { Tooltip = { CornerRadius = 2 } } };
+        var custom = RenderChart(options: options);
+        custom.FindAll(".bit-cht-el")[0].MouseEnter();
+
+        StringAssert.Contains(custom.Find(".bit-cht-tt").GetAttribute("style"), "border-radius:2px");
+    }
+
+    [TestMethod]
+    public void TheEasingShouldOnlyBeWrittenWhenTheOptionsNameOne()
+    {
+        Assert.DoesNotContain("--bit-cht-ease", RenderChart().Find("svg").GetAttribute("style")!);
+
+        var options = new BitChartOptions { Animation = { Easing = "linear" } };
+        StringAssert.Contains(RenderChart(options: options).Find("svg").GetAttribute("style"), "--bit-cht-ease:linear");
+    }
+
+    [TestMethod]
+    public void ClassesAndStylesShouldReachEveryPart()
+    {
+        var options = new BitChartOptions
+        {
+            Plugins =
+            {
+                Title = { Display = true, Text = "T" },
+                Subtitle = { Display = true, Text = "S" }
+            }
+        };
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.Bar);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Options, options);
+            p.Add(c => c.Classes, new BitChartClassStyles
+            {
+                Root = "c-root", Title = "c-title", Subtitle = "c-sub", Legend = "c-legend",
+                LegendItem = "c-item", Plot = "c-plot", Tooltip = "c-tip"
+            });
+            p.Add(c => c.Styles, new BitChartClassStyles
+            {
+                Root = "margin:1px", Title = "margin:2px", Subtitle = "margin:3px", Legend = "margin:4px",
+                LegendItem = "margin:5px", Plot = "margin:6px", Tooltip = "margin:7px"
+            });
+        });
+        component.FindAll(".bit-cht-el")[0].MouseEnter();
+
+        Assert.IsTrue(component.Find(".bit-cht").ClassList.Contains("c-root"));
+        StringAssert.Contains(component.Find(".bit-cht").GetAttribute("style"), "margin:1px");
+        StringAssert.Contains(component.Find(".bit-cht-ttl.c-title").GetAttribute("style"), "margin:2px");
+        StringAssert.Contains(component.Find(".bit-cht-sub.c-sub").GetAttribute("style"), "margin:3px");
+        StringAssert.Contains(component.Find(".bit-cht-lgd.c-legend").GetAttribute("style"), "margin:4px");
+        StringAssert.Contains(component.FindAll(".bit-cht-lgd-itm.c-item")[1].GetAttribute("style"), "margin:5px");
+        StringAssert.Contains(component.Find(".bit-cht-plot.c-plot").GetAttribute("style"), "margin:6px");
+        StringAssert.Contains(component.Find(".bit-cht-tt.c-tip").GetAttribute("style"), "margin:7px");
+    }
+
+    [TestMethod]
+    public void TheTitleStylesShouldWinOverTheGeneratedOnes()
+    {
+        var options = new BitChartOptions
+        {
+            Plugins =
+            {
+                Title = { Display = true, Text = "T" },
+                Subtitle = { Display = true, Text = "S" }
+            }
+        };
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.Bar);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Options, options);
+            p.Add(c => c.Styles, new BitChartClassStyles { Title = "color:red", Subtitle = "font-size:24px" });
+        });
+
+        // An inline declaration later in the attribute wins, so the caller's has to come after the generated ones.
+        StringAssert.EndsWith(component.Find(".bit-cht-ttl").GetAttribute("style")!.TrimEnd(';'), "color:red");
+        StringAssert.EndsWith(component.Find(".bit-cht-sub").GetAttribute("style")!.TrimEnd(';'), "font-size:24px");
+    }
+
+    [TestMethod]
+    public void TheEmptyStateShouldTakeItsClassAndStyle()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Classes, new BitChartClassStyles { NoData = "c-empty" });
+            p.Add(c => c.Styles, new BitChartClassStyles { NoData = "margin:8px" });
+        });
+
+        StringAssert.Contains(component.Find(".bit-cht-nodata.c-empty").GetAttribute("style"), "margin:8px");
+    }
+
+    // ---- enabled state ----
+
+    [TestMethod]
+    public void ADisabledChartShouldTakeNoInput()
+    {
+        int clicks = 0;
+        BitChartLegendItemModel? legendClicked = null;
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.Bar);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.OnElementClick, (_) => clicks++);
+            p.Add(c => c.OnLegendItemClick, (BitChartLegendItemModel i) => legendClicked = i);
+        });
+
+        Assert.IsTrue(component.Find(".bit-cht").ClassList.Contains("bit-dis"));
+        Assert.AreEqual("-1", component.Find("svg").GetAttribute("tabindex"), "a disabled chart is not a tab stop");
+        Assert.IsTrue(component.FindAll(".bit-cht-lgd-itm").All(b => b.HasAttribute("disabled")));
+
+        component.FindAll(".bit-cht-el")[0].MouseEnter();
+        component.FindAll(".bit-cht-el")[0].Click();
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.AreEqual(0, clicks);
+        Assert.IsTrue(string.IsNullOrEmpty(component.Find("[role=status]").TextContent));
+        StringAssert.Contains(component.FindAll(".bit-cht-el")[0].GetAttribute("style"), "cursor:default");
+        Assert.IsNull(legendClicked);
+    }
+
+    [TestMethod]
+    public void DisablingAChartShouldLetGoOfItsKeyboardPosition()
+    {
+        var component = RenderChart();
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+
+        component.Render(p => p.Add(c => c.IsEnabled, false));
+
+        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-cht-focus-ring").Count);
+    }
+
+    [TestMethod]
+    public void TabIndexShouldMoveThePlotsTabStop()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", component.Find("svg").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void TheCascadingDirectionShouldReachTheChart()
+    {
+        var component = RenderComponent<CascadingValue<BitDir?>>(p =>
+        {
+            p.Add(c => c.Value, BitDir.Rtl);
+            p.AddChildContent<BitChart>(c => c.Add(x => x.Data, TwoSeries()));
+        });
+
+        var root = component.Find(".bit-cht");
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod]
+    public void TheFocusRingShouldReadThePublicFocusVariable()
+    {
+        var component = RenderChart();
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual("var(--bit-Chart-focus-color, var(--bit-clr-pri-focus))",
+            component.Find(".bit-cht-focus-ring").GetAttribute("stroke"));
+    }
+
     // ---- sparkline ----
 
     [TestMethod]
@@ -1345,6 +1724,359 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-cht-lgd").Count, "a sparkline has no legend");
         Assert.IsNotNull(component.Find("table"), "dropping the chrome must not drop the accessible data");
         Assert.AreEqual("0", component.Find("svg").GetAttribute("tabindex"), "it stays keyboard reachable");
+    }
+
+    // ---- texts ----
+
+    private static readonly BitChartTexts PersianTexts = new()
+    {
+        DefaultAriaLabelFormat = "نمودار {0} با {1} سری",
+        LegendAriaLabel = "راهنمای نمودار",
+        PositionFormat = "{0} از {1}",
+        SeriesPositionFormat = "سری {0} از {1}",
+        DatasetLabelFormat = "مجموعه {0}",
+        Series = "سری",
+        RowsTruncatedFormat = "{0} از {1} ردیف"
+    };
+
+    [TestMethod]
+    public void TextsShouldLocalizeWhatTheChartWritesForAssistiveTechnologies()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "Jan", "Feb" },
+            Datasets = { new BitChartDataset { Data = { 1, 2 } }, new BitChartDataset { Label = "Beta", Data = { 3, 4 } } }
+        };
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, data);
+            p.Add(c => c.Texts, PersianTexts);
+            p.Add(c => c.MaxTableRows, 1);
+        });
+
+        Assert.AreEqual("نمودار Line با 2 سری", component.Find("svg").GetAttribute("aria-label"));
+        Assert.AreEqual("راهنمای نمودار", component.Find(".bit-cht-lgd").GetAttribute("aria-label"));
+        // An unlabeled dataset gets the same name in the legend, the table and the CSV.
+        StringAssert.Contains(component.Find(".bit-cht-lgd").TextContent, "مجموعه 1");
+        Assert.AreEqual("مجموعه 1", component.Find("table tbody th").TextContent);
+        Assert.AreEqual("سری", component.Find("table thead th").TextContent);
+        StringAssert.Contains(component.Find("table caption").TextContent, "1 از 2 ردیف");
+        StringAssert.StartsWith(component.Instance.ToCsv(), "سری,Jan,Feb");
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        var live = component.Find(".bit-cht-sr[role=status]").TextContent;
+        StringAssert.Contains(live, "1 از 2");
+        StringAssert.Contains(live, "سری 1 از 2");
+    }
+
+    [TestMethod]
+    public void TheEnglishTextsShouldBeTheDefault()
+    {
+        var data = new BitChartData { Labels = { "Jan" }, Datasets = { new BitChartDataset { Data = { 1 } } } };
+        var component = RenderChart(BitChartType.Bar, data);
+
+        Assert.AreEqual("Chart legend", component.Find(".bit-cht-lgd").GetAttribute("aria-label"));
+        StringAssert.Contains(component.Find(".bit-cht-lgd").TextContent, "Dataset 1");
+        Assert.AreEqual("Dataset 1", component.Find("table tbody th").TextContent);
+    }
+
+    [TestMethod]
+    public void AMalformedTextFormatShouldNotBreakTheChart()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Texts, new BitChartTexts { PositionFormat = "{0} of {1" });
+        });
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        // A stray brace in a translation is a typo: the text is said as written rather than throwing out of the render.
+        StringAssert.Contains(component.Find(".bit-cht-sr[role=status]").TextContent, "{0} of {1");
+    }
+
+    [TestMethod]
+    public void TheBubbleTableShouldCarryTheRadiusAndTheAxisTitles()
+    {
+        var data = new BitChartData
+        {
+            Datasets = { new BitChartDataset { Label = "Cities", Points = [new(1, 2, 5), new(3, 4, 8)] } }
+        };
+        var options = new BitChartOptions
+        {
+            Scales =
+            {
+                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "GDP" } },
+                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Title = new() { Display = false, Text = "Hidden" } }
+            }
+        };
+        var component = RenderChart(BitChartType.Bubble, data, options);
+
+        // The axis title says what the values are; a title the axis does not show is not used.
+        var headers = component.FindAll("table thead th").Select(h => h.TextContent).ToList();
+        CollectionAssert.AreEqual(new[] { "Series", "GDP", "Y", "R" }, headers);
+        CollectionAssert.AreEqual(new[] { "1", "2", "5" }, component.FindAll("table tbody tr")[0].QuerySelectorAll("td").Select(c => c.TextContent).ToList());
+        StringAssert.StartsWith(component.Instance.ToCsv(), "Series,GDP,Y,R");
+    }
+
+    // ---- loading ----
+
+    [TestMethod]
+    public void TheLoadingStateShouldVeilThePlotAndHoldBackTheEmptyState()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, new BitChartData());
+            p.Add(c => c.IsLoading, true);
+            p.Add(c => c.LoadingLabel, "Fetching");
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-cht").GetAttribute("aria-busy"));
+        var loading = component.Find(".bit-cht-ldg");
+        // Announced by the live region that is always there, since one appearing with its text is often not read.
+        Assert.AreEqual("Fetching", component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
+        Assert.IsNull(loading.GetAttribute("role"));
+        StringAssert.Contains(loading.TextContent, "Fetching");
+        Assert.AreEqual(0, component.FindAll(".bit-cht-nodata").Count, "a chart still loading claimed it has no data");
+
+        component.Render(p => p.Add(c => c.IsLoading, false));
+
+        Assert.IsNull(component.Find(".bit-cht").GetAttribute("aria-busy"));
+        Assert.AreEqual(0, component.FindAll(".bit-cht-ldg").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-cht-nodata").Count);
+    }
+
+    [TestMethod]
+    public void ALoadingChartShouldTakeNoInput()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.LoadingTemplate, b => b.AddMarkupContent(0, "<i class=\"skeleton\"></i>"));
+        });
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.AreNotEqual(string.Empty, component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
+
+        component.Render(p => p.Add(c => c.IsLoading, true));
+
+        // The keyboard position is let go of - the live region says the loading label instead - the plot leaves the
+        // tab order, and the template replaces the spinner.
+        Assert.AreEqual("Loading", component.Find(".bit-cht-sr[role=status]").TextContent.Trim());
+        Assert.AreEqual("-1", component.Find("svg").GetAttribute("tabindex"));
+        Assert.AreEqual(1, component.FindAll(".bit-cht-ldg .skeleton").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-cht-spn").Count);
+
+        component.FindAll(".bit-cht-data > g")[0].MouseEnter();
+        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+    }
+
+    // ---- dismissing a hover tooltip (WCAG 1.4.13) ----
+
+    [TestMethod]
+    public void EscapeShouldDismissATooltipThePointerOpened()
+    {
+        BitChartTooltipContext? reported = new();
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.OnElementHover, (BitChartTooltipContext? ctx) => reported = ctx);
+        });
+        component.FindAll(".bit-cht-data > g")[0].MouseEnter();
+        Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
+
+        component.InvokeAsync(component.Instance.OnDismissTooltip);
+
+        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsNull(reported, "whoever tracks the active element was not told it is gone");
+    }
+
+    [TestMethod]
+    public void EscapeOnThePageShouldLeaveTheKeyboardPositionToThePlot()
+    {
+        var component = RenderChart();
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        component.InvokeAsync(component.Instance.OnDismissTooltip);
+
+        Assert.AreEqual(1, component.FindAll(".bit-cht-focus-ring").Count);
+    }
+
+    // ---- legend highlight ----
+
+    [TestMethod]
+    public void HoveringALegendItemShouldFadeTheOtherSeries()
+    {
+        var component = RenderChart(BitChartType.Line);
+        var items = component.FindAll(".bit-cht-lgd-itm");
+
+        items[1].MouseEnter();
+
+        // Beta is brought forward: Alpha's line and points fade, Beta's do not.
+        var dimmedLines = component.FindAll(".bit-cht-series > g.bit-cht-dim");
+        Assert.AreEqual(1, dimmedLines.Count);
+        Assert.AreEqual(3, component.FindAll(".bit-cht-el.bit-cht-dim").Count);
+        Assert.AreEqual(6, component.FindAll(".bit-cht-el").Count);
+
+        component.FindAll(".bit-cht-lgd-itm")[1].MouseLeave();
+
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TheLegendHighlightShouldBeLetGoOfWhenTheChartStopsTakingInput(bool loading)
+    {
+        var component = RenderChart(BitChartType.Line);
+        component.FindAll(".bit-cht-lgd-itm")[1].MouseEnter();
+        Assert.AreNotEqual(0, component.FindAll(".bit-cht-dim").Count);
+
+        // A disabled legend button need not fire mouseleave, so the fade cannot wait for one.
+        component.Render(p =>
+        {
+            if (loading) p.Add(c => c.IsLoading, true);
+            else p.Add(c => c.IsEnabled, false);
+        });
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+
+        component.FindAll(".bit-cht-lgd-itm")[1].MouseEnter();
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+    }
+
+    [TestMethod]
+    public void ADataLabelShouldFadeWithItsSeries()
+    {
+        var component = RenderChart(options: new BitChartOptions
+        {
+            Plugins = new BitChartPluginOptions { DataLabels = new BitChartDataLabelOptions { Display = true } }
+        });
+
+        component.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
+
+        // Beta's three labels fade with its bars; Alpha's stay.
+        Assert.AreEqual(3, component.FindAll(".bit-cht-fg > g.bit-cht-dim text").Count);
+        Assert.AreEqual(6, component.FindAll(".bit-cht-fg text").Count);
+    }
+
+    [TestMethod]
+    public void FocusingALegendItemShouldHighlightLikeHovering()
+    {
+        var component = RenderChart();
+
+        component.FindAll(".bit-cht-lgd-itm")[0].Focus();
+        Assert.AreEqual(3, component.FindAll(".bit-cht-el.bit-cht-dim").Count);
+
+        component.FindAll(".bit-cht-lgd-itm")[0].Blur();
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+    }
+
+    [TestMethod]
+    public void ASliceLegendShouldHighlightItsSlice()
+    {
+        var data = new BitChartData
+        {
+            Labels = { "A", "B", "C" },
+            Datasets = { new BitChartDataset { Data = { 1, 2, 3 } } }
+        };
+        var component = RenderChart(BitChartType.Pie, data);
+
+        component.FindAll(".bit-cht-lgd-itm")[2].MouseEnter();
+
+        Assert.AreEqual(2, component.FindAll(".bit-cht-el.bit-cht-dim").Count);
+    }
+
+    [TestMethod]
+    public void TheLegendHighlightCanBeTurnedOffAndSkipsAHiddenSeries()
+    {
+        var off = RenderChart(options: new BitChartOptions
+        {
+            Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { HighlightOnHover = false } }
+        });
+        off.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
+        Assert.AreEqual(0, off.FindAll(".bit-cht-dim").Count);
+
+        // A hidden series is not drawn, so bringing it forward would only fade everything else.
+        var component = RenderChart();
+        component.FindAll(".bit-cht-lgd-itm")[0].Click();
+        component.FindAll(".bit-cht-lgd-itm")[0].MouseEnter();
+        Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
+    }
+
+    // ---- descriptions ----
+
+    [TestMethod]
+    public void TheDescriptionShouldBeWhatThePlotIsDescribedByFirst()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Description, "Alpha falls while Beta rises.");
+        });
+
+        var ids = component.Find("svg").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.AreEqual(2, ids.Length, "the summary, then how to walk the data");
+        Assert.AreEqual("Alpha falls while Beta rises.", component.Find($"#{ids[0]}").TextContent);
+        StringAssert.Contains(component.Find($"#{ids[1]}").TextContent, "arrow keys");
+        Assert.IsTrue(component.Find($"#{ids[0]}").ClassList.Contains("bit-cht-sr"), "it is visually hidden");
+    }
+
+    [TestMethod]
+    public void AChartThatCannotBeWalkedShouldStillBeDescribed()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Description, "Flat.");
+            p.Add(c => c.IsEnabled, false);
+        });
+
+        var svg = component.Find("svg");
+        Assert.AreEqual("img", svg.GetAttribute("role"));
+        Assert.AreEqual("Flat.", component.Find($"#{svg.GetAttribute("aria-describedby")}").TextContent);
+    }
+
+    [TestMethod]
+    public void WhatThePluginsDrawShouldBeToldToAScreenReader()
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2, Label = "Target" },
+            new BitChartAnnotation { Value = 1 }));
+        var component = RenderChart(BitChartType.Line, options: options);
+
+        var ids = component.Find("svg").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.AreEqual("Marked on the chart: Target: 2.", component.Find($"#{ids[0]}").TextContent);
+
+        var silent = RenderChart(BitChartType.Line);
+        Assert.AreEqual(1, silent.Find("svg").GetAttribute("aria-describedby")!.Split(' ').Length, "no plugin, no note");
+    }
+
+    [TestMethod]
+    public void TheDefaultNameShouldCallTheTypeByAReadableName()
+    {
+        var component = RenderChart(BitChartType.PolarArea);
+        Assert.AreEqual("Polar area chart with 2 data series.", component.Find("svg").GetAttribute("aria-label"));
+
+        var texts = new BitChartTexts { TypeNames = { [BitChartType.PolarArea] = "قطبی" }, DefaultAriaLabelFormat = "نمودار {0}", RoleDescription = "نمودار" };
+        var localized = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Type, BitChartType.PolarArea);
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Texts, texts);
+        });
+        Assert.AreEqual("نمودار قطبی", localized.Find("svg").GetAttribute("aria-label"));
+        Assert.AreEqual("نمودار", localized.Find("svg").GetAttribute("aria-roledescription"));
+    }
+
+    [TestMethod]
+    public void AStartAlignedTitleShouldFollowTheReadingDirection()
+    {
+        var component = RenderChart(options: new BitChartOptions
+        {
+            Plugins = new BitChartPluginOptions { Title = new BitChartTitleOptions { Display = true, Text = "T", Align = BitPlacement.Start } }
+        });
+
+        StringAssert.Contains(component.Find(".bit-cht-ttl > div").GetAttribute("style"), "text-align:start");
     }
 }
 

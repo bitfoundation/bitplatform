@@ -35,6 +35,10 @@ on:
         description: iOS app
         type: boolean
         default: true
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       server:
@@ -52,9 +56,13 @@ on:
       ios:
         type: boolean
         default: true
+      prerelease_packages:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
 
@@ -75,12 +83,18 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --api Standalone --brouter true
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --brouter true
        
     - name: Use Bit.ResxTranslator
       run: |
@@ -224,12 +238,18 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --brouter false --theme Material
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --theme Material
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -287,12 +307,18 @@ jobs:
       with:
         node-version: 24
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads --brouter true
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter true
   
     - name: Use Bit.ResxTranslator
       run: |
@@ -318,19 +344,19 @@ jobs:
       continue-on-error: true
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dnx vpk@1.2.0 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          dnx vpk@1.2.161 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          dnx vpk@1.2.0 -- pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dnx vpk@1.2.161 -- pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
 
     # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dnx vpk@1.2.0 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          dnx vpk@1.2.161 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -349,12 +375,18 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --brouter true
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true
 
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
@@ -445,12 +477,18 @@ jobs:
       with:
         node-version: 24
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --brouter true
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true
   
     - name: Use Bit.ResxTranslator
       run: |
@@ -498,7 +536,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@1fc69ca369a60b813eaaa2d936eda22794b52e17 # v5.4.0
+      uses: apple-actions/upload-testflight-build@14df18fee5a4ff3b76971dd382f033494a0194e9 # v5.5.0
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios

@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 /// The "current time" rule of a timeline row. The day/week timelines lay an hour on
 /// <see cref="PixelsPerMinute"/> * 60 pixels and the month timeline lays a whole day on one column,
 /// so the same component serves all three: the caller says where its column starts
-/// (<see cref="ColumnOffsetPx"/>), which instant that column starts at (<see cref="DayStart"/>), and
+/// (<see cref="ColumnOffsetPx"/>), which day that column shows (<see cref="Day"/>), and
 /// how wide a minute is. The marker keeps itself current on a per-minute timer, the way the day and
 /// week grids' own indicator does.
 /// </summary>
@@ -37,7 +37,7 @@ public partial class BitFcTimelineNowIndicator : IDisposable
 
         // Align the first tick to the next clock-minute boundary so the marker doesn't lag by up to
         // ~60s; subsequent ticks fire every minute.
-        var now = DateTime.Now;
+        var now = State.Now;
         var dueTime = TimeSpan.FromMilliseconds(60_000 - ((now.Second * 1000) + now.Millisecond));
 
         _timer = new Timer(_ =>
@@ -62,7 +62,7 @@ public partial class BitFcTimelineNowIndicator : IDisposable
 
     private void UpdateOffset()
     {
-        var now = DateTime.Now;
+        var now = State.Now;
         if (Day.Date != now.Date || PixelsPerMinute <= 0)
         {
             _offsetPx = null;

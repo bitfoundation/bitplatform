@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Channels;
 using Bit.Websites.Platform.Client.Services.Contracts;
 using Bit.Websites.Platform.Server.Services;
+using Bit.Websites.Platform.Server.Services.Mcp;
 using Bit.Websites.Platform.Shared.Dtos.AiChat;
 using Bit.Websites.Platform.Shared.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ public partial class AppHub : Hub
 
     [AutoInject] private ILoggerFactory loggerFactory = default!;
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
+    [AutoInject] private McpVersions mcpVersions = default!;
 
 
     public async IAsyncEnumerable<string> Chatbot(
@@ -42,9 +44,12 @@ public partial class AppHub : Hub
         // already connected to), so uncommitted changes to the proxy take part in its answers; the deployed
         // proxy only serves what is already released.
         var httpRequest = Context.GetHttpContext()!.Request;
+        // Named rather than left to the endpoint's default, so the release this chatbot answers from is in
+        // the log next to its answers. Empty on a host that prepares no version, which leaves that default.
+        var version = mcpVersions.Latest is { } latest ? $"?v={latest.Name}" : "";
         Uri mcpEndpoint = webHostEnvironment.IsDevelopment()
-            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp")
-            : new("https://bitplatform.dev/mcp");
+            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp{version}")
+            : new($"https://bitplatform.dev/mcp{version}");
 
         await using var bitplatformMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
         {

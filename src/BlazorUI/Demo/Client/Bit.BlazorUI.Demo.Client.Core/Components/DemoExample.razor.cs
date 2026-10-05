@@ -481,6 +481,7 @@ public partial class DemoExample
                 await JSRuntime.UnobserveVisibility(_visibilityKey);
             }
             catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+            catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
             catch (Exception exp) { ExceptionHandler.Handle(exp); } // the preview is up either way
         }
 
@@ -513,6 +514,7 @@ public partial class DemoExample
                     await JSRuntime.UnobserveVisibility(_visibilityKey);
                 }
                 catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+                catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
 
                 _dotnetObj.Dispose();
                 _dotnetObj = null;

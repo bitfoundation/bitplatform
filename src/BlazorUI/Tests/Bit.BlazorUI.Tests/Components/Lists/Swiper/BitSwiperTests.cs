@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -559,6 +560,57 @@ public class BitSwiperTests : BunitTestContext
         Assert.IsTrue((items[1].GetAttribute("style") ?? string.Empty).Contains("outline:1px solid red"));
     }
 
+    [TestMethod]
+    public async Task BitSwiperShouldAnnounceTheItemItMovesTo()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        var live = component.Find(".bit-swp-sro");
+
+        Assert.AreEqual("polite", live.GetAttribute("aria-live"));
+        Assert.AreEqual("true", live.GetAttribute("aria-atomic"));
+
+        // the first report only says where the swiper was laid out, which is not worth announcing
+        await PushState(component, index: 0);
+        Assert.AreEqual(string.Empty, component.Find(".bit-swp-sro").TextContent);
+
+        await PushState(component, index: 1, atStart: false);
+        Assert.AreEqual("2 of 3", component.Find(".bit-swp-sro").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldAnnounceTheAccessibleNameOfTheItem()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemAriaLabelFormat, "Photo {0} of {1}");
+        });
+
+        await PushState(component, index: 0);
+        await PushState(component, index: 2, atStart: false, atEnd: true);
+
+        Assert.AreEqual("Photo 3 of 3", component.Find(".bit-swp-sro").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldSilenceTheAnnouncementsWhileItPlays()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        Assert.IsTrue(component.Instance.Swiper.IsPlaying);
+        Assert.AreEqual("off", component.Find(".bit-swp-sro").GetAttribute("aria-live"));
+
+        await component.InvokeAsync(component.Instance.Swiper.Pause);
+
+        Assert.AreEqual("polite", component.Find(".bit-swp-sro").GetAttribute("aria-live"));
+    }
+
     #endregion
 
 
@@ -1050,6 +1102,92 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldLeaveTheArrowKeysToAControlInsideAnItem()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        // The browser reports that the focus moved onto a text field (or a slider, a listbox...) in an item.
+        await component.InvokeAsync(() => component.Instance.Swiper._OnKeysOwnerChange(true));
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.StartsWith("BitBlazorUI.Swiper.go")));
+
+        // Once the focus leaves it the keys belong to the swiper again.
+        await component.InvokeAsync(() => component.Instance.Swiper._OnKeysOwnerChange(false));
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldRewindFromTheEndWhenRequested()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Rewind, true);
+        });
+
+        await PushState(component, atStart: false, atEnd: true);
+
+        component.Find(".bit-swp-rbt").Click();
+
+        // Moving on from the end goes back to the start instead of standing still.
+        Assert.AreEqual(false, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.go"));
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldRewindFromTheStartWhenRequested()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Rewind, true);
+        });
+
+        await PushState(component, atStart: true, atEnd: false);
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldKeepBothButtonsAtTheEndsWhenRewinding()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Rewind, true);
+        });
+
+        await PushState(component, atStart: true, atEnd: false);
+
+        Assert.IsFalse((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.IsFalse((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+
+        // A swiper with nothing to scroll still has nowhere to go, rewinding or not.
+        await PushState(component, scrollable: false, atStart: true, atEnd: true);
+
+        Assert.IsTrue((component.Find(".bit-swp-lbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+        Assert.IsTrue((component.Find(".bit-swp-rbt").GetAttribute("style") ?? string.Empty).Contains("display:none"));
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldNotRewindByDefault()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        await PushState(component, atStart: false, atEnd: true);
+
+        await component.InvokeAsync(component.Instance.Swiper.GoNext);
+
+        Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.goToEdge"));
+    }
+
+    [TestMethod]
     public async Task BitSwiperShouldHideEachButtonAtTheEndItCannotPass()
     {
         var component = RenderComponent<BitSwiperTest>();
@@ -1133,6 +1271,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.DragThreshold, 12);
             parameters.Add(p => p.ScrollItemsCount, 2);
             parameters.Add(p => p.AnimationDuration, 0.25);
+            parameters.Add(p => p.Rewind, true);
         });
 
         var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
@@ -1146,6 +1285,9 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(0.25, ReadOption(options, "Duration"));
         Assert.AreEqual(12, ReadOption(options, "Threshold"));
         Assert.AreEqual(2, ReadOption(options, "ScrollCount"));
+
+        // the browser keeps the focus off a button that is about to hide, which a rewinding swiper never does
+        Assert.AreEqual(true, ReadOption(options, "Rewind"));
 
         // DefaultItem is 1 based, and reaches the browser as the zero based index it lays the swiper out on
         Assert.AreEqual(2, ReadOption(options, "Start"));
@@ -1314,6 +1456,124 @@ public class BitSwiperTests : BunitTestContext
         await PushState(component, index: 2);
 
         CollectionAssert.AreEqual(new[] { 1, 2 }, changes);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldFireOnReachEndAndStartOnlyOnArrival()
+    {
+        var reachedEnd = 0;
+        var reachedStart = 0;
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.OnReachEnd, () => reachedEnd++);
+            parameters.Add(p => p.OnReachStart, () => reachedStart++);
+        });
+
+        // the place the swiper is first laid out on is not an arrival, even at an end
+        await PushState(component, atStart: false, atEnd: true);
+        Assert.AreEqual(0, reachedEnd);
+
+        await PushState(component, atStart: false, atEnd: false);
+        await PushState(component, atStart: false, atEnd: true);
+        Assert.AreEqual(1, reachedEnd);
+
+        // staying at the end does not fire it again
+        await PushState(component, index: 1, atStart: false, atEnd: true);
+        Assert.AreEqual(1, reachedEnd);
+
+        await PushState(component, atStart: true, atEnd: false);
+        Assert.AreEqual(1, reachedStart);
+
+        // a resize clamping the swiper to a shorter reach puts it at an end without it having gone anywhere
+        await PushState(component, atStart: false, atEnd: false);
+        await PushState(component, atStart: false, atEnd: true, viewport: 800);
+        Assert.AreEqual(1, reachedEnd);
+
+        await PushState(component, atStart: true, atEnd: false, viewport: 400);
+        Assert.AreEqual(1, reachedStart);
+
+        // the next move to the end is an arrival again
+        await PushState(component, atStart: false, atEnd: true, viewport: 400);
+        Assert.AreEqual(2, reachedEnd);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldFireOnReachEndOncePerSetOfItemsThatFit()
+    {
+        var reachedEnd = 0;
+        var reachedStart = 0;
+
+        static RenderFragment Items(int count) => builder =>
+        {
+            for (int i = 0; i < count; i++)
+            {
+                builder.OpenComponent<BitSwiperItem>(0);
+                builder.CloseComponent();
+            }
+        };
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.OnReachEnd, () => reachedEnd++);
+            parameters.Add(p => p.OnReachStart, () => reachedStart++);
+            parameters.Add(p => p.ChildContent, Items(2));
+        });
+
+        // a swiper everything fits in has its end in view from the outset, which is where more items load
+        await PushState(component, atStart: true, atEnd: true, scrollable: false);
+        Assert.AreEqual(1, reachedEnd);
+        Assert.AreEqual(0, reachedStart);
+
+        // staying there, resized or not, does not fire it again
+        await PushState(component, atStart: true, atEnd: true, scrollable: false, viewport: 800);
+        Assert.AreEqual(1, reachedEnd);
+
+        // more items that still fit are another end in view
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Items(4)));
+        await PushState(component, atStart: true, atEnd: true, scrollable: false, viewport: 800);
+        Assert.AreEqual(2, reachedEnd);
+
+        // items that no longer fit leave the swiper somewhere to go, and items taken out while it stands at
+        // the end are not an arrival
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Items(8)));
+        await PushState(component, atStart: false, atEnd: true, viewport: 800);
+        Assert.AreEqual(2, reachedEnd);
+
+        await PushState(component, atStart: false, atEnd: false, viewport: 800);
+        component.Render(parameters => parameters.Add(p => p.ChildContent, Items(6)));
+        await PushState(component, atStart: false, atEnd: true, viewport: 800);
+        Assert.AreEqual(2, reachedEnd);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldNotFireOnReachEndOnceOnChangeDisposedIt()
+    {
+        var reachedEnd = 0;
+        IRenderedComponent<BitSwiper>? component = null;
+
+        component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, async (int _) => await component!.Instance.DisposeAsync());
+            parameters.Add(p => p.OnReachEnd, () => reachedEnd++);
+        });
+
+        await PushState(component, atStart: false, atEnd: false);
+        await PushState(component, index: 1, atStart: false, atEnd: true);
+
+        Assert.AreEqual(0, reachedEnd);
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldRespectPeek()
+    {
+        var component = RenderComponent<BitSwiper>();
+
+        Assert.IsFalse((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-peek"));
+
+        component.Render(parameters => parameters.Add(p => p.Peek, "2rem"));
+
+        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-peek:2rem"));
     }
 
     [TestMethod]

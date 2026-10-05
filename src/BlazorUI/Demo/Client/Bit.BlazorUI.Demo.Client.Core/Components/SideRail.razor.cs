@@ -162,6 +162,10 @@ public partial class SideRail
                 await JSRuntime.UnregisterWindowResizeListener(_resizeListenerId);
             }
             catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+            // A circuit that is going down cancels the interop calls still in flight rather than refusing
+            // them, so this teardown is answered with a cancellation - the renderer logs it as an unhandled
+            // disposal error - whenever the page is left while the connection is closing.
+            catch (OperationCanceledException) { }
 
             _dotnetObj?.Dispose();
             _dotnetObj = null;

@@ -818,6 +818,103 @@ public class BitChartRendererTests
     }
 
     [TestMethod]
+    public void AnAnnotationLabelShouldTakeTheAnnotationsColorUnlessGivenOneOfItsOwn()
+    {
+        var options = new BitChartOptions();
+        options.Plugins.Custom.Add(new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2, Color = "#2ecc71", Label = "Target" },
+            new BitChartAnnotation { Value = 1, Color = "#2ecc71", Label = "Floor", LabelBackground = "#000000" }));
+        var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
+
+        var pills = scene.Foreground.OfType<BitChartSvgRect>().Select(r => r.Fill).ToList();
+        CollectionAssert.AreEqual(new[] { "#2ecc71", "#000000" }, pills);
+    }
+
+    [TestMethod]
+    public void AnAnnotationShouldDefaultToTheThemedColors()
+    {
+        var annotation = new BitChartAnnotation();
+
+        StringAssert.StartsWith(annotation.Color, "var(--bit-Chart-annotation-color,");
+        StringAssert.StartsWith(annotation.LabelColor, "var(--bit-Chart-annotation-label-color,");
+        Assert.IsNull(annotation.LabelBackground);
+    }
+
+    [TestMethod]
+    public void ThePluginsShouldDescribeWhatTheyDrawForScreenReaders()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].Label = "Sales";
+        var options = new BitChartOptions { Culture = new CultureInfo("de-DE") };
+        var line = Render(new BitChartConfig(BitChartType.Line, data, options)).PluginContext!;
+        var doughnut = Render(new BitChartConfig(BitChartType.Doughnut, data, options)).PluginContext!;
+
+        var annotations = new BitChartAnnotationPlugin(
+            new BitChartAnnotation { Value = 2.5, Label = "Target" },
+            new BitChartAnnotation { Orientation = BitChartLineOrientation.Vertical, XIsIndex = true, Value = 1, Label = "Launch" },
+            new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, Label = "Low", Description = "Low band: under 1" },
+            new BitChartAnnotation { Value = 1 });
+        CollectionAssert.AreEqual(new[] { "Target: 2,5", "Launch: B", "Low band: under 1" },
+            ((IBitChartPlugin)annotations).Describe(line).ToArray(), "a mark with neither a label nor a description is decoration");
+
+        var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline());
+        CollectionAssert.AreEqual(new[] { "Trend (Sales)" }, ((IBitChartPlugin)trend).Describe(line).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "120 total" }, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(doughnut).ToArray());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin()).Describe(doughnut).Count());
+    }
+
+    [TestMethod]
+    public void APluginShouldDescribeOnlyWhatItActuallyDrew()
+    {
+        var data = Bars(1, 2, 3);
+        data.Datasets[0].Label = "Sales";
+        var bar = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions())).PluginContext!;
+        var doughnut = Render(new BitChartConfig(BitChartType.Doughnut, data, new BitChartOptions())).PluginContext!;
+
+        // The cutout text is drawn on a circular chart only, the annotations and trend lines on a cartesian one only.
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(bar).Count());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartAnnotationPlugin(new BitChartAnnotation { Value = 2, Label = "Target" })).Describe(doughnut).Count());
+        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" })).Describe(doughnut).Count());
+
+        // A trend line fitted to a hidden dataset, or to one that does not exist, is not drawn and so not said.
+        var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline { Label = "Ghost", DatasetIndex = 5 });
+        Assert.AreEqual(1, ((IBitChartPlugin)trend).Describe(bar).Count());
+        data.Datasets[0].Hidden = true;
+        var hidden = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions())).PluginContext!;
+        Assert.AreEqual(0, ((IBitChartPlugin)trend).Describe(hidden).Count());
+    }
+
+    [TestMethod]
+    public void ALineOnATimeAxisShouldBeDescribedByItsDate()
+    {
+        var data = new BitChartData
+        {
+            Datasets =
+            {
+                new BitChartDataset
+                {
+                    Points =
+                    [
+                        new BitChartDataPoint(new DateTime(2026, 1, 15).ToOADate(), 1),
+                        new BitChartDataPoint(new DateTime(2026, 6, 15).ToOADate(), 2)
+                    ]
+                }
+            }
+        };
+        var options = new BitChartOptions { Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Time } } };
+        var ctx = Render(new BitChartConfig(BitChartType.Line, data, options)).PluginContext!;
+
+        var plugin = new BitChartAnnotationPlugin(new BitChartAnnotation
+        {
+            Orientation = BitChartLineOrientation.Vertical, Value = new DateTime(2026, 3, 1).ToOADate(), Label = "Launch"
+        });
+
+        // The axis ticks in months over half a year, so the line is named in the same unit the axis labels it with.
+        CollectionAssert.AreEqual(new[] { "Launch: Mar 2026" }, ((IBitChartPlugin)plugin).Describe(ctx).ToArray());
+    }
+
+    [TestMethod]
     public void CenterTextPluginShouldDrawInsideTheDoughnut()
     {
         var options = new BitChartOptions { CutoutPercentage = 70 };

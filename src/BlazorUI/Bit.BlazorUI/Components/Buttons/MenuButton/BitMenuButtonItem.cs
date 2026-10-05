@@ -1,7 +1,34 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitMenuButtonItem
 {
+    /// <summary>
+    /// The accessible name of the item, for the benefit of screen readers.
+    /// Set it on an item whose visible label is an icon alone, or is too terse to stand on its own.
+    /// </summary>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Turns the item into a check item: it is announced as a checkbox inside the menu, carries its
+    /// <see cref="IsChecked"/> state as a check mark, and flips that state when it is clicked.
+    /// </summary>
+    /// <remarks>
+    /// A menu of check items is usually one the user works inside of, so pair it with
+    /// <c>CloseOnItemClick="false"</c> to keep the callout open between the toggles.
+    /// </remarks>
+    public bool Checkable { get; set; }
+
+    /// <summary>
+    /// The items of the submenu that opens from this item. An item that has children opens its submenu
+    /// instead of raising a click: it is announced with <c>aria-haspopup</c>, it carries a trailing chevron,
+    /// and the arrow keys walk into and out of it.
+    /// </summary>
+    /// <remarks>
+    /// A parent item is never a command of its own, so <see cref="Checkable"/>, <see cref="Href"/> and
+    /// <see cref="OnClick"/> are ignored on it, and a sticky menu button never promotes it to its header.
+    /// </remarks>
+    public List<BitMenuButtonItem> ChildItems { get; set; } = [];
+
     /// <summary>
     /// The custom CSS classes of the item.
     /// </summary>
@@ -33,9 +60,21 @@ public class BitMenuButtonItem
     public string? IconName { get; set; }
 
     /// <summary>
+    /// The checked state of a <see cref="Checkable"/> item. It is written back by the menu button as the item
+    /// is clicked, so a plain field on the item is enough to keep the state.
+    /// </summary>
+    public bool IsChecked { get; set; }
+
+    /// <summary>
     /// Whether or not the item is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// If true, the item renders as the label of the group of items that follow it, instead of as a clickable
+    /// item. It is presentational: the keyboard navigation steps over it.
+    /// </summary>
+    public bool IsHeader { get; set; }
 
     /// <summary>
     /// Determines the selection state of the item.
@@ -56,6 +95,25 @@ public class BitMenuButtonItem
     /// Click event handler of the item.
     /// </summary>
     public Action<BitMenuButtonItem>? OnClick { get; set; }
+
+    /// <summary>
+    /// Turns the item into a single-choice item: it is announced as a radio button inside the menu, carries
+    /// its <see cref="IsChecked"/> state as a bullet, and checking it clears every other item of the menu
+    /// button that names the same group.
+    /// </summary>
+    /// <remarks>
+    /// It is the menu's answer to a set of mutually exclusive choices - a sort order, a zoom level - where
+    /// <see cref="Checkable"/> is the answer to independent on/off ones. A group is identified by its name
+    /// alone, so a group named in a submenu and in the menu around it is one group, and it outranks
+    /// <see cref="Checkable"/> where both are set.
+    /// </remarks>
+    public string? RadioGroup { get; set; }
+
+    /// <summary>
+    /// The trailing text of the item, shown at its far end and read after its label - a keyboard shortcut,
+    /// a count, a short hint.
+    /// </summary>
+    public string? SecondaryText { get; set; }
 
     /// <summary>
     /// The custom value for the style attribute of the item.

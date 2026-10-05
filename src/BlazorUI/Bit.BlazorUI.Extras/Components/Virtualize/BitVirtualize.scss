@@ -1,5 +1,33 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
+// ancestor) re-tunes every list under it and one set on the Style of an instance that one alone:
+//   --bit-Virtualize-focus-color          focus indicator of the list and of its items  (default: $clr-pri-focus)
+//   --bit-Virtualize-sticky-background    background of the pinned sticky item         (default: $clr-bg-pri)
+//   --bit-Virtualize-sticky-shadow        shadow under the pinned sticky item           (default: none)
+//   --bit-Virtualize-state-color          text of the loading and empty content         (default: $clr-fg-sec)
+//   --bit-Virtualize-state-font-size      size of the text of the loading and empty content (default: $tg-fs-sm)
+//   --bit-Virtualize-state-padding        padding of the loading and empty content      (default: spacing(2))
+
+// The ring of the list and of its items is drawn inside their box: the list clips what overflows it, and an item
+// is flush with its neighbours. An outline, unlike an inset box-shadow, is painted above the content, so an item
+// whose root fills it with a background cannot hide it.
+@mixin vir-ring {
+    outline: #{$shp-focus-ring-width} solid var(--bit-Virtualize-focus-color, #{$clr-pri-focus});
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+    // The forced palette turns the ring into the system's own focus color.
+    @media (forced-colors: active) {
+        outline: #{$shp-focus-ring-width} solid Highlight;
+    }
+}
+
+@mixin vir-focus-ring {
+    &:focus-visible {
+        @include vir-ring;
+    }
+}
+
 // The root is the scroll container: a flex line of the header, the items spacer (or the loading / empty
 // content) and the footer, none of which may shrink, so the spacer always keeps its full virtual size.
 .bit-vir {
@@ -13,6 +41,8 @@
 
     // Disable the browser's own scroll anchoring; the component manages anchoring itself.
     overflow-anchor: none;
+
+    @include vir-focus-ring;
 
     > * {
         flex-shrink: 0;
@@ -54,6 +84,12 @@
             width: max-content;
         }
     }
+
+    // ScrollerSelector: an ancestor scrolls the list, which then grows to the full size of its items rather than
+    // clipping and scrolling them itself. Declared last so it wins over the overflow of the horizontal mode.
+    &.bit-vir-ext {
+        overflow: visible;
+    }
 }
 
 .bit-vir-spc {
@@ -79,6 +115,8 @@
     inset-block-start: 0;
     inset-inline-start: 0;
     overflow-anchor: none;
+
+    @include vir-focus-ring;
 }
 
 // In fixed-size mode each slot is a fixed height/width; clip rather than overlap the next item
@@ -100,6 +138,13 @@
     inset-inline-start: 0;
     overflow-anchor: none;
     pointer-events: auto;
+    background: var(--bit-Virtualize-sticky-background, #{$clr-bg-pri});
+    box-shadow: var(--bit-Virtualize-sticky-shadow, none);
+}
+
+// The pinned copy covers the item it mirrors, so while that item is the focused one the copy shows its ring instead.
+.bit-vir-spc:has(> .bit-vir-blk > .bit-vir-itm[tabindex="0"]:focus-visible) > .bit-vir-sac {
+    @include vir-ring;
 }
 
 .bit-vir-ldg,
@@ -108,5 +153,9 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
+    box-sizing: border-box;
     justify-content: center;
+    color: var(--bit-Virtualize-state-color, #{$clr-fg-sec});
+    padding: var(--bit-Virtualize-state-padding, #{spacing(2)});
+    font-size: var(--bit-Virtualize-state-font-size, #{$tg-fs-sm});
 }

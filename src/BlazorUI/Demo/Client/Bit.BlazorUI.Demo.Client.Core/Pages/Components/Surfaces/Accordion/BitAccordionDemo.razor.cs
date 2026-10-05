@@ -16,7 +16,7 @@ public partial class BitAccordionDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the accordion.",
+            Description = "The color kind of the background of the accordion. Wins over an inherited --bit-Accordion-background.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -25,7 +25,7 @@ public partial class BitAccordionDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the border of the accordion.",
+            Description = "The color kind of the border of the accordion. Wins over an inherited --bit-Accordion-border-color.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -41,7 +41,7 @@ public partial class BitAccordionDemo
             Name = "Busy",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reports the header as busy - aria-busy for a screen reader, a busy cursor for a pointer - while something the page is doing on the accordion's behalf is still running. An accordion whose own OnToggling is being awaited reports itself as busy without being told to."
+            Description = "Reports the header as busy - a spinner in the expander's slot, aria-busy and a busy cursor, and no click toggles it - while something the page is doing on the accordion's behalf is still running. An accordion whose own OnToggling is being awaited reports itself as busy without being told to."
         },
         new()
         {
@@ -115,14 +115,14 @@ public partial class BitAccordionDemo
             Name = "ExpanderTemplate",
             Type = "RenderFragment<bool>?",
             DefaultValue = "null",
-            Description = "The custom content to render in place of the expander icon, leaving the rest of the header as it is and receiving the current expanded state. It sits inside the wrapper the rotation is applied to, so it still turns over unless NoExpanderRotation keeps it still, and HideExpanderIcon still removes it. HeaderTemplate replaces it along with the rest of the header."
+            Description = "Custom content in place of the expander icon, receiving the expanded state. It still turns over unless NoExpanderRotation is set, and HideExpanderIcon still removes it; HeaderTemplate replaces it with the rest of the header."
         },
         new()
         {
             Name = "ExpandOnPrint",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Opens the panel of the accordion while the page is being printed, so that a collapsed section is not left out of the paper as a bare header. The scroll cap of MaxHeight is lifted along with it. Content that is not in the DOM at all - a LazyContent panel that has never been opened, a collapsed UnmountOnCollapse panel - is still printed as a bare header."
+            Description = "Opens the panel on paper, so a collapsed section is not printed as a bare header, and lifts the MaxHeight scroll cap. Content not in the DOM (a never-opened LazyContent panel, a collapsed UnmountOnCollapse one) still cannot print."
         },
         new()
         {
@@ -144,6 +144,13 @@ public partial class BitAccordionDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Gets or sets the heading level (aria-level) reported for the header of the accordion, so that it takes its right place in the heading outline of the page. The default value is 3 - or one level below the accordion this one is nested in - and the value is clamped to the 1..6 range."
+        },
+        new()
+        {
+            Name = "HiddenUntilFound",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hands the collapsed panel to the browser as hidden=\"until-found\", so find-in-page and a navigation to a fragment inside it reach the text and expand the accordion around the match (reported to OnToggling with the Reveal reason). The panel stays in the DOM, so LazyContent and UnmountOnCollapse are ignored; a disabled, read-only or one-way bound accordion is not offered to find-in-page."
         },
         new()
         {
@@ -178,7 +185,7 @@ public partial class BitAccordionDemo
             Name = "LazyContent",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Delays the first render of the content of the accordion until it is expanded for the first time. The content stays in the DOM afterwards, so the state it holds survives a collapse."
+            Description = "Delays the first render of the content of the accordion until it is expanded for the first time. The content stays in the DOM afterwards, so the state it holds survives a collapse. Ignored while HiddenUntilFound is on."
         },
         new()
         {
@@ -199,7 +206,7 @@ public partial class BitAccordionDemo
             Name = "NoContentRegion",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the region role from the panel of the accordion, leaving it a plain container. The role names the panel as a landmark, which helps a screen reader user find their way back to the content of a panel that holds headings or another accordion; the WAI-ARIA authoring practices ask for it to be dropped where it would flood the page with landmarks instead - more than about six panels that can all be open at the same time."
+            Description = "Removes the region role (a landmark) from the panel, leaving a plain container. The WAI-ARIA authoring practices ask for it where more than about six panels can be open at once, so the landmarks do not flood the page."
         },
         new()
         {
@@ -236,7 +243,7 @@ public partial class BitAccordionDemo
         {
             Name = "OnToggling",
             Type = "EventCallback<BitAccordionToggleArgs>",
-            Description = "Callback invoked before the accordion expands or collapses, letting the change be cancelled. Since the callback is awaited, it can also run asynchronous work like loading the content of the panel or asking for a confirmation first, and nothing else toggles the accordion while it is running. A change that comes from the IsExpanded parameter itself is not offered here.",
+            Description = "Called before the accordion expands or collapses; set Cancel to refuse the change. It is awaited, so it can load the panel's content or ask for a confirmation first, and the header reports busy meanwhile. A change made through the IsExpanded parameter itself is not offered here.",
             LinkType = LinkType.Link,
             Href = "#accordion-toggle-args",
         },
@@ -270,7 +277,7 @@ public partial class BitAccordionDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Title in the header of Accordion."
+            Description = "Title in the header of the accordion, which also names the header button and the panel for assistive technologies (the Description describes them)."
         },
         new()
         {
@@ -291,7 +298,7 @@ public partial class BitAccordionDemo
             Name = "UnmountOnCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the content of the accordion from the DOM while it is collapsed, so that nothing it holds keeps running behind a closed header. The collapse of an accordion that unmounts its content is not animated, since there is nothing left to animate."
+            Description = "Removes the content of the accordion from the DOM while it is collapsed, so that nothing it holds keeps running behind a closed header. The collapse of an accordion that unmounts its content is not animated, since there is nothing left to animate. Ignored while HiddenUntilFound is on."
         }
     ];
 
@@ -377,6 +384,12 @@ public partial class BitAccordionDemo
                     Name = "Method",
                     Description = "The Expand, Collapse or Toggle method of the accordion was called.",
                     Value = "1",
+                },
+                new()
+                {
+                    Name = "Reveal",
+                    Description = "The browser revealed the collapsed panel of a HiddenUntilFound accordion, because find-in-page or a navigation to a fragment landed inside it.",
+                    Value = "2",
                 }
             ]
         },
@@ -429,7 +442,7 @@ public partial class BitAccordionDemo
                     Name = "Reason",
                     Type = "BitAccordionToggleReason",
                     DefaultValue = "",
-                    Description = "What made the accordion expand or collapse: a click on its header, or a call to one of its Expand, Collapse and Toggle methods.",
+                    Description = "What made the accordion expand or collapse: a click on its header, a call to one of its Expand, Collapse and Toggle methods, or a find-in-page match the browser revealed.",
                     LinkType = LinkType.Link,
                     Href = "#accordion-toggle-reason-enum",
                 },
@@ -534,6 +547,13 @@ public partial class BitAccordionDemo
                 },
                 new()
                 {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner that stands in the expander's slot while the BitAccordion is busy."
+                },
+                new()
+                {
                     Name = "Actions",
                     Type = "string?",
                     DefaultValue = "null",
@@ -564,22 +584,174 @@ public partial class BitAccordionDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Accordion-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the accordion.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-background",
+            DefaultValue = "Per Background, --bit-clr-bg-pri (--bit-clr-bg-sec with NoBorder)",
+            Description = "Fill of the accordion. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-border-color",
+            DefaultValue = "Per Border, --bit-clr-brd-pri",
+            Description = "Color of the outline. The Border parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of the outline.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of the accordion, which the header and the panel follow.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of the accordion (e.g. var(--bit-shd-card)).",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-font-size",
+            DefaultValue = "Per Size, --bit-tpg-fs-xs/sm/md",
+            Description = "Text size of the panel and the description.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-header-padding",
+            DefaultValue = "Per Size",
+            Description = "Padding of the header (any padding shorthand).",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-header-hover-background",
+            DefaultValue = "Per Background, its hover shade",
+            Description = "Fill of the header under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-header-active-background",
+            DefaultValue = "The hover fill, then the Background's active shade",
+            Description = "Fill of the header while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-header-expanded-background",
+            DefaultValue = "transparent",
+            Description = "Fill of the header while the accordion is expanded; once set, the hover and pressed shades no longer replace it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-header-expanded-color",
+            DefaultValue = "inherit",
+            Description = "Text of the header while the accordion is expanded. The title, icon and expander colors win over it; nested accordions do not inherit it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-title-color",
+            DefaultValue = "inherit",
+            Description = "Color of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-title-font-size",
+            DefaultValue = "Per Size, --bit-tpg-fs-sm/md/lg",
+            Description = "Size of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-title-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the title.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the description.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-icon-size",
+            DefaultValue = "Per Size, --bit-siz-icon-sm/md/lg",
+            Description = "Size of the icon, of the expander icon and of the busy spinner.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-icon-color",
+            DefaultValue = "inherit",
+            Description = "Color of the icon at the start of the header.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-expander-color",
+            DefaultValue = "inherit",
+            Description = "Color of the expander icon (or of the ExpanderTemplate content) and of the busy spinner.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-content-padding",
+            DefaultValue = "Per Size",
+            Description = "Padding of the open panel (any padding shorthand); its block padding animates from 0.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-content-background",
+            DefaultValue = "transparent",
+            Description = "Fill of the panel, drawn over the accordion's own fill.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-divider-color",
+            DefaultValue = "transparent",
+            Description = "Rule between the header and the open panel, as thick as the outline.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Keyboard focus ring of the header and of a scrolling panel.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of a disabled accordion.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Fill of a disabled accordion.",
+        },
+    ];
+
 
 
     private int renameCount;
 
-    private int controlledAccordionExpandedItem = 1;
-
-    private bool accordionToggleIsEnabled = true;
-    private bool accordionToggleIsExpanded;
+    private bool bindingIsEnabled = true;
+    private bool bindingIsExpanded;
+    private int controlledExpandedItem = 1;
 
     private int clickCount;
     private bool lastChange;
     private int expandCount;
     private int collapseCount;
-
-    private bool lockAccordion;
     private int refusedCount;
+    private bool lockAccordion;
     private void HandleOnToggling(BitAccordionToggleArgs args)
     {
         if (args.IsExpanding || lockAccordion is false) return;
@@ -590,509 +762,28 @@ public partial class BitAccordionDemo
 
     private BitAccordion accordionRef = default!;
 
+    private string[] orders = [];
+    private async Task LoadOrders(BitAccordionToggleArgs args)
+    {
+        if (args.IsExpanding is false || orders.Length > 0) return;
+
+        await Task.Delay(1500); // e.g. await Http.GetFromJsonAsync<string[]>("api/orders")
+        orders = ["#1001 - 2 items", "#1002 - 5 items", "#1003 - 1 item"];
+    }
+
     private int readOnlyClickCount;
+
+    private readonly BitAccordionParams[] accordionParams =
+    [
+        new()
+        {
+            HiddenUntilFound = true,
+            ExpanderIconName = BitIconName.Add,
+            ExpandedExpanderIconName = BitIconName.Remove,
+            ExpanderIconPlacement = BitPlacement.Start,
+        }
+    ];
 
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
-
-
-
-    private readonly string example1RazorCode = @"
-<BitAccordion Title=""Accordion"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-</BitAccordion>
-
-<BitAccordion Title=""Expanded by default"" DefaultIsExpanded>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example2RazorCode = @"
-<BitAccordion Title=""Accordion 1"">
-    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-    when possibilities are limitless, waiting for content to emerge.
-</BitAccordion>
-<BitAccordion Title=""Accordion 2"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>
-<BitAccordion Title=""Accordion 3"">
-    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-    to awaken. These words are temporary, standing in place of ideas yet to come.
-</BitAccordion>";
-
-    private readonly string example3RazorCode = @"
-<BitAccordion Title=""General settings"" Description=""The general settings of the application"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>";
-
-    private readonly string example4RazorCode = @"
-<BitAccordion Title=""General settings"" IconName=""@BitIconName.Settings"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""Users"" IconName=""@BitIconName.People"" Description=""You are currently not an owner"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example5RazorCode = @"
-<BitAccordion Title=""ExpanderIconName"" ExpanderIconName=""ChevronDown"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""ExpanderIcon"" ExpanderIcon=""@BitIconInfo.Bit(""ChevronDownEnd"")"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""Start"" ExpanderIconPlacement=""BitPlacement.Start"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""Start with an icon"" IconName=""@BitIconName.Settings"" ExpanderIconPlacement=""BitPlacement.Start"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""HideExpanderIcon"" HideExpanderIcon>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""NoExpanderRotation"" ExpanderIconName=""ChevronDown"" NoExpanderRotation>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""ExpandedExpanderIconName"" ExpanderIconName=""Add"" ExpandedExpanderIconName=""Remove"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example6RazorCode = @"
-<BitAccordion Title=""Project settings"" Description=""@($""Renamed {renameCount} times"")"">
-    <Actions>
-        <BitButton Variant=""BitVariant.Text""
-                   IconName=""@BitIconName.Rename""
-                   Title=""Rename""
-                   OnClick=""() => renameCount++"" />
-        <BitButton Variant=""BitVariant.Text""
-                   Color=""BitColor.Error""
-                   IconName=""@BitIconName.Delete""
-                   Title=""Delete"" />
-    </Actions>
-    <Body>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </Body>
-</BitAccordion>";
-    private readonly string example6CsharpCode = @"
-private int renameCount;";
-
-    private readonly string example7RazorCode = @"
-<BitAccordion Title=""General settings""
-              Description=""I am an accordion""
-              OnClick=""() => controlledAccordionExpandedItem = controlledAccordionExpandedItem == 1 ? 0 : 1""
-              IsExpanded=""controlledAccordionExpandedItem == 1"">
-    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-    Each word carried meaning, each pause brought understanding.
-</BitAccordion>
-<BitAccordion Title=""Users""
-              Description=""You are currently not an owner""
-              OnClick=""() => controlledAccordionExpandedItem = controlledAccordionExpandedItem == 2 ? 0 : 2""
-              IsExpanded=""controlledAccordionExpandedItem == 2"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>
-<BitAccordion Title=""Advanced settings""
-              Description=""Filtering has been entirely disabled for whole web server""
-              OnClick=""() => controlledAccordionExpandedItem = controlledAccordionExpandedItem == 3 ? 0 : 3""
-              IsExpanded=""controlledAccordionExpandedItem == 3"">
-    In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
-    to awaken. These words are temporary, standing in place of ideas yet to come.
-</BitAccordion>";
-    private readonly string example7CsharpCode = @"
-private int controlledAccordionExpandedItem = 1;";
-
-    private readonly string example8RazorCode = @"
-<BitToggle @bind-Value=""accordionToggleIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" />
-
-<BitToggle @bind-Value=""accordionToggleIsExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
-
-<BitAccordion Title=""Accordion""
-              Description=""I am an accordion""
-              IsEnabled=""accordionToggleIsEnabled""
-              @bind-IsExpanded=""accordionToggleIsExpanded"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>";
-    private readonly string example8CsharpCode = @"
-private bool accordionToggleIsEnabled = true;
-private bool accordionToggleIsExpanded;";
-
-    private readonly string example9RazorCode = @"
-<BitAccordion Title=""Accordion""
-              Description=""I am an accordion""
-              OnClick=""() => clickCount++""
-              OnChange=""(bool v) => lastChange = v""
-              OnExpand=""() => expandCount++""
-              OnCollapse=""() => collapseCount++"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<div>Clicks: <b>@clickCount</b></div>
-<div>Last OnChange: <b>@lastChange</b></div>
-<div>Expanded: <b>@expandCount</b> times, collapsed: <b>@collapseCount</b> times</div>";
-    private readonly string example9CsharpCode = @"
-private int clickCount;
-private bool lastChange;
-private int expandCount;
-private int collapseCount;";
-
-    private readonly string example10RazorCode = @"
-<BitToggle @bind-Value=""lockAccordion"" OnText=""Locked open"" OffText=""Unlocked"" />
-
-<BitAccordion Title=""Unsaved changes""
-              Description=""@(lockAccordion ? ""Unlock to close this panel"" : ""Free to close"")""
-              DefaultIsExpanded
-              OnToggling=""HandleOnToggling"">
-    The collapse of this panel is refused while it is locked, the way a panel holding a form that has not
-    been filled in yet would refuse to close on the reader.
-</BitAccordion>
-
-<div>Refused: <b>@refusedCount</b> times</div>";
-    private readonly string example10CsharpCode = @"
-private bool lockAccordion;
-private int refusedCount;
-private void HandleOnToggling(BitAccordionToggleArgs args)
-{
-    if (args.IsExpanding || lockAccordion is false) return;
-
-    args.Cancel = true;
-    refusedCount++;
-}";
-
-    private readonly string example11RazorCode = @"
-<BitButton OnClick=""() => accordionRef.Expand()"">Expand</BitButton>
-<BitButton OnClick=""() => accordionRef.Collapse()"">Collapse</BitButton>
-<BitButton OnClick=""() => accordionRef.Toggle()"">Toggle</BitButton>
-<BitButton OnClick=""async () => { await accordionRef.Expand(); await accordionRef.FocusAsync(); }"">Expand &amp; focus</BitButton>
-
-<BitAccordion @ref=""accordionRef"" Title=""Accordion"" Description=""I am an accordion"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-    private readonly string example11CsharpCode = @"
-private BitAccordion accordionRef = default!;";
-
-    private readonly string example12RazorCode = @"
-<BitAccordion Title=""LazyContent"" LazyContent>
-    <BitTextField Placeholder=""Kept after a collapse..."" />
-</BitAccordion>
-
-<BitAccordion Title=""UnmountOnCollapse"" UnmountOnCollapse>
-    <BitTextField Placeholder=""Thrown away on a collapse..."" />
-</BitAccordion>";
-
-    private readonly string example13RazorCode = @"
-<BitAccordion Title=""Accordion"" MaxHeight=""10rem"" DefaultIsExpanded>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-</BitAccordion>";
-
-    private readonly string example14RazorCode = @"
-<BitAccordion Title=""Slow (1000ms)"" TransitionDuration=""1000"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""Instant (0)"" TransitionDuration=""0"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example15RazorCode = @"
-<BitAccordion IconName=""@BitIconName.Settings"" Description=""I am an accordion"">
-    <TitleTemplate>
-        <BitStack Horizontal FitWidth AutoHeight Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
-            <span>Advanced settings</span>
-            <BitIcon IconName=""@BitIconName.Info"" Color=""BitColor.Info"" />
-        </BitStack>
-    </TitleTemplate>
-    <Body>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </Body>
-</BitAccordion>
-
-<BitAccordion Title=""Show more"" IconName=""@BitIconName.Info"" NoExpanderRotation>
-    <ExpanderTemplate Context=""isExpanded"">
-        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.Primary"">
-            @(isExpanded ? ""Less"" : ""More"")
-        </BitText>
-    </ExpanderTemplate>
-    <Body>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </Body>
-</BitAccordion>
-<BitAccordion Title=""Turning with the panel"">
-    <ExpanderTemplate>
-        <BitIcon IconName=""@BitIconName.CirclePlus"" />
-    </ExpanderTemplate>
-    <Body>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </Body>
-</BitAccordion>
-
-<style>
-    .custom-header {
-        gap: 1rem;
-        flex-grow: 1;
-        display: flex;
-        line-height: 1.5;
-        align-items: center;
-    }
-
-    .custom-title {
-        color: #0054C6;
-    }
-
-    .custom-desc {
-        color: brown;
-    }
-</style>
-
-<BitAccordion>
-    <HeaderTemplate Context=""isExpanded"">
-        <BitIcon IconName=""@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)"" />
-        <div class=""custom-header"">
-            <span class=""custom-title"">Accordion 1</span>
-            <span class=""custom-desc"">I am an accordion</span>
-        </div>
-    </HeaderTemplate>
-    <Body>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-    </Body>
-</BitAccordion>
-
-<BitAccordion Title=""Nature"" Description=""I am an accordion"">
-    <BitCarousel AnimationDuration=""1"">
-        <BitCarouselItem>
-            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"">
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
-        </BitCarouselItem>
-    </BitCarousel>
-</BitAccordion>";
-
-    private readonly string example16RazorCode = @"
-<BitAccordion Title=""Under an h2"" HeadingLevel=""3"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-
-    <BitLink Href=""/components/accordion"">A link the Tab key only reaches while this panel is open.</BitLink>
-</BitAccordion>
-
-<BitAccordion Title=""Under an h3"" HeadingLevel=""4"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion HeaderAriaLabel=""Notifications"">
-    <HeaderTemplate>
-        <BitIcon IconName=""@BitIconName.Ringer"" />
-    </HeaderTemplate>
-    <Body>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </Body>
-</BitAccordion>
-
-<BitAccordion Title=""Nested (aria-level 3)"" NoContentRegion DefaultIsExpanded>
-    The accordion below is announced one level under this one, and neither of the two panels is a landmark.
-
-    <BitAccordion Title=""Nested (aria-level 4)"" NoContentRegion>
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </BitAccordion>
-</BitAccordion>";
-
-    private readonly string example17RazorCode = @"
-<BitAccordion Title=""Accordion"" NoBorder>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>";
-
-    private readonly string example18RazorCode = @"
-<BitAccordion Title=""Printed with its content"" ExpandOnPrint>
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>
-
-<BitAccordion Title=""Printed as a bare header"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-</BitAccordion>";
-
-    private readonly string example19RazorCode = @"
-<BitAccordion Title=""Read-only""
-              Description=""@($""Clicked {readOnlyClickCount} times, still open"")""
-              OnClick=""() => readOnlyClickCount++""
-              ReadOnly
-              DefaultIsExpanded>
-    This panel answers no click and no key, but it is not greyed out: it is open on purpose and nothing
-    about it is unavailable.
-</BitAccordion>
-
-<BitAccordion Title=""Disabled"" Description=""Turned off altogether"" IsEnabled=""false"" DefaultIsExpanded>
-    This one is greyed out and its header is out of the tab order.
-</BitAccordion>";
-
-    private readonly string example19CsharpCode = @"
-private int readOnlyClickCount;";
-
-    private readonly string example20RazorCode = @"
-<BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal
-                TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
-    <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
-    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColorKind.Secondary"" />
-    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColorKind.Tertiary"" />
-    <BitChoiceGroupOption Text=""Transparent"" Value=""BitColorKind.Transparent"" />
-</BitChoiceGroup>
-
-<div style=""padding:2rem;background:gray"">
-    <BitAccordion Title=""Accordion"" Background=""backgroundColorKind"">
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-    </BitAccordion>
-</div>
-
-<BitChoiceGroup @bind-Value=""borderColorKind"" Horizontal
-                TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
-    <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
-    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColorKind.Secondary"" />
-    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColorKind.Tertiary"" />
-    <BitChoiceGroupOption Text=""Transparent"" Value=""BitColorKind.Transparent"" />
-</BitChoiceGroup>
-
-<BitAccordion Title=""Accordion"" Border=""borderColorKind"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-    private readonly string example20CsharpCode = @"
-private BitColorKind backgroundColorKind = BitColorKind.Primary;
-private BitColorKind borderColorKind = BitColorKind.Primary;";
-
-    private readonly string example21RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitAccordion Title=""Chevron Down"" ExpanderIcon=""@(""fa-solid fa-chevron-down"")"">
-    ExpanderIcon=@(""fa-solid fa-chevron-down"")
-</BitAccordion>
-
-<BitAccordion Title=""Chevron Right"" ExpanderIcon=""@BitIconInfo.Css(""fa-solid fa-chevron-right"")"">
-    ExpanderIcon=""@BitIconInfo.Css(""fa-solid fa-chevron-right"")""
-</BitAccordion>
-
-<BitAccordion Title=""Angle Down"" ExpanderIcon=""@BitIconInfo.Fa(""solid angle-down"")"">
-    ExpanderIcon=""@BitIconInfo.Fa(""solid angle-down"")""
-</BitAccordion>
-
-<BitAccordion Title=""Gear"" Icon=""@BitIconInfo.Fa(""solid gear"")"" ExpanderIcon=""@BitIconInfo.Fa(""solid caret-down"")"">
-    Icon=""@BitIconInfo.Fa(""solid gear"")""
-</BitAccordion>
-
-
-<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
-
-<BitAccordion Title=""Chevron Down"" ExpanderIcon=""@(""bi bi-chevron-down"")"">
-    ExpanderIcon=@(""bi bi-chevron-down"")
-</BitAccordion>
-
-<BitAccordion Title=""Chevron Right"" ExpanderIcon=""@BitIconInfo.Css(""bi bi-chevron-right"")"">
-    ExpanderIcon=""@BitIconInfo.Css(""bi bi-chevron-right"")""
-</BitAccordion>
-
-<BitAccordion Title=""Arrow Down"" ExpanderIcon=""@BitIconInfo.Bi(""arrow-down"")"">
-    ExpanderIcon=""@BitIconInfo.Bi(""arrow-down"")""
-</BitAccordion>
-
-<BitAccordion Title=""Gear"" Icon=""@BitIconInfo.Bi(""gear"")"" ExpanderIcon=""@BitIconInfo.Bi(""caret-down-fill"")"">
-    Icon=""@BitIconInfo.Bi(""gear"")""
-</BitAccordion>";
-
-    private readonly string example22RazorCode = @"
-<BitAccordion Title=""Small"" Size=""BitSize.Small"" IconName=""@BitIconName.Settings"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""Medium"" Size=""BitSize.Medium"" IconName=""@BitIconName.Settings"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""Large"" Size=""BitSize.Large"" IconName=""@BitIconName.Settings"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example23RazorCode = @"
-<style>
-    .custom-class {
-        border-color: blueviolet;
-        background-color: blanchedalmond;
-    }
-
-    .custom-acd-title {
-        color: tomato;
-        font-style: italic;
-    }
-
-    .custom-acd-content {
-        color: darkslateblue;
-    }
-</style>
-
-<BitAccordion Title=""Style"" Style=""border-color: var(--bit-clr-pri); border-width: 2px;"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""Class"" Class=""custom-class"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-
-<BitAccordion Title=""Styles""
-              Description=""I am an accordion""
-              Styles=""@(new() { Header = ""background: var(--bit-clr-bg-sec);"",
-                                Title = ""color: tomato;"",
-                                ExpanderIcon = ""color: tomato;"",
-                                ExpandedIcon = ""color: seagreen;"",
-                                Expanded = ""border-color: seagreen;"",
-                                Content = ""font-style: italic;"" })"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>
-<BitAccordion Title=""Classes""
-              Description=""I am an accordion""
-              Classes=""@(new() { Title = ""custom-acd-title"", Content = ""custom-acd-content"" })"">
-    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-</BitAccordion>";
-
-    private readonly string example24RazorCode = @"
-<BitAccordion Dir=""BitDir.Rtl""
-              Title=""تنظیمات""
-              IconName=""@BitIconName.Settings""
-              Description=""من یک آکاردئون هستم!"">
-    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-</BitAccordion>";
 }

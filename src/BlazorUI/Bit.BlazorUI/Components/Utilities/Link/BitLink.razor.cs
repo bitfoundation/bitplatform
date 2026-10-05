@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -31,6 +32,18 @@ public partial class BitLink : BitComponentBase
     private string? _tabIndex;
 
     /// <summary>
+    /// Whether the <see cref="Href"/> points at the page the app currently sits on, in the <see cref="Match"/> mode.
+    /// </summary>
+    private bool _isUrlMatch;
+
+    /// <summary>
+    /// Whether the link reports itself as the current item, which is what the current-link class follows.
+    /// </summary>
+    private bool _isCurrent;
+
+    private bool _locationSubscribed;
+
+    /// <summary>
     /// The text a <c>_blank</c> link is announced with when nothing else is said - see <see cref="NewTabHint"/>.
     /// </summary>
     private const string DefaultNewTabHint = "(opens in a new tab)";
@@ -48,6 +61,8 @@ public partial class BitLink : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
 
 
@@ -103,9 +118,13 @@ public partial class BitLink : BitComponentBase
     /// so - which is nothing at all to a reader who is not looking at it. This is the same statement made in a
     /// way a screen reader announces: <see cref="BitNavAriaCurrent.Page"/> in a navigation menu,
     /// <see cref="BitNavAriaCurrent.Step"/> in a wizard, <see cref="BitNavAriaCurrent.Location"/> in a
-    /// breadcrumb. Only one link of a set is ever the current one.
+    /// breadcrumb. Only one link of a set is ever the current one, and it is drawn underlined at rest.
+    /// <br />
+    /// With a <see cref="Match"/> set, the URL decides whether the link is the current one and this only says
+    /// which kind of current it is (<see cref="BitNavAriaCurrent.Page"/> when not set).
     /// </remarks>
     [Parameter] public BitNavAriaCurrent? AriaCurrent { get; set; }
+
     /// <summary>
     /// The content of the link, can be any custom tag or a text.
     /// </summary>
@@ -114,6 +133,12 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// The general color of the link.
     /// </summary>
+    /// <remarks>
+    /// <see cref="BitColor.Primary"/> when not set. A link is text read on the page, so an accent color other than
+    /// the primary one is painted in the foreground shade of its role, the one picked to be read as text rather
+    /// than to fill a surface - a warning main falls under 2:1 as text on white. The <c>--bit-Link-*</c> color
+    /// variables win over it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -174,6 +199,22 @@ public partial class BitLink : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? IconPlacement { get; set; }
+
+    /// <summary>
+    /// Follows the URL the app sits on and reports the link as the current one while its <see cref="Href"/>
+    /// matches it, the way Blazor's <c>NavLink</c> does.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="BitNavMatch.Exact"/> matches the page the link points at, <see cref="BitNavMatch.Prefix"/> also
+    /// every page under it (a "Docs" link lit on every page of the docs). The case, a trailing slash and a query
+    /// the <see cref="Href"/> does not carry do not tell two pages apart. <see cref="BitNavMatch.Regex"/> and
+    /// <see cref="BitNavMatch.Wildcard"/> read the <see cref="Href"/> as the pattern.
+    /// <br />
+    /// A matching link renders <c>aria-current</c> (of the kind <see cref="AriaCurrent"/> names, <c>page</c> when
+    /// it names none) and is drawn underlined at rest; a link that does not match renders none. An in-page
+    /// (<c>#</c>) link never matches. Left unset, the link does not follow the URL at all.
+    /// </remarks>
+    [Parameter] public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Replaces the text a new-tab link is announced with, for translating it or for saying it another way.
@@ -305,6 +346,8 @@ public partial class BitLink : BitComponentBase
 
         ClassBuilder.Register(() => NoColor ? "bit-lnk-ncl" : string.Empty);
 
+        ClassBuilder.Register(() => _isCurrent ? "bit-lnk-cur" : string.Empty);
+
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-lnk-sm",
@@ -379,7 +422,36 @@ public partial class BitLink : BitComponentBase
                 ? (TabIndex ?? (Href.HasValue() ? "0" : null))
                 : Href.HasValue() ? null : "-1";
 
+        // Only a link that follows the URL listens to it, so the links of a page that never asks for it cost
+        // nothing; one that is given a Match later on starts listening then.
+        if (Match.HasValue && _locationSubscribed is false)
+        {
+            _navigationManager.LocationChanged += OnLocationChanged;
+            _locationSubscribed = true;
+        }
+
+        _isUrlMatch = IsUrlMatch();
+        UpdateIsCurrent();
+
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The autofocus attribute is only honoured while the browser is parsing the document, which is never
+        // when the markup arrives from an interactive render - so the attribute alone covers the statically
+        // rendered page and nothing else. The focus is moved here for the rest.
+        if (firstRender is false || AutoFocus is false || IsFocusable() is false) return;
+
+        try
+        {
+            await RootElement.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        catch (InvalidOperationException) { } // the element reference is detached from its renderer, same as above
     }
 
 
@@ -448,8 +520,76 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// The value of the <c>aria-current</c> attribute, or null where the link is not the current item.
     /// </summary>
-    private string? GetAriaCurrent(string? splattedAriaCurrent)
+    /// <remarks>
+    /// With a <see cref="Match"/> the URL decides whether the link is the current one - a hand-written
+    /// <c>aria-current</c> included - and the <see cref="AriaCurrent"/> only which kind of current it is.
+    /// </remarks>
+    private string? GetAriaCurrent()
     {
-        return AriaCurrent.HasValue ? _ariaCurrentMap[AriaCurrent.Value] : splattedAriaCurrent;
+        if (Match.HasValue)
+        {
+            return _isUrlMatch ? _ariaCurrentMap[AriaCurrent ?? BitNavAriaCurrent.Page] : null;
+        }
+
+        return AriaCurrent.HasValue ? _ariaCurrentMap[AriaCurrent.Value] : GetSplattedAttribute("aria-current");
+    }
+
+    private bool IsFocusable() => IsEnabled || AllowDisabledFocus;
+
+    private bool IsUrlMatch()
+    {
+        if (Match.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#')) return false;
+
+        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
+
+        return BitNavUrlMatcher.IsMatch(Href, Match.Value, currentUrl, currentPath, _navigationManager.BaseUri);
+    }
+
+    // The class is built once and kept until something resets it, and whether the link is the current one also
+    // changes with a navigation and with a hand-written aria-current, neither of which resets it on its own.
+    private void UpdateIsCurrent()
+    {
+        var ariaCurrent = GetAriaCurrent();
+        var isCurrent = ariaCurrent is not null && ariaCurrent != "false";
+
+        if (isCurrent == _isCurrent) return;
+
+        _isCurrent = isCurrent;
+        ClassBuilder.Reset();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (IsDisposed) return;
+
+        // The event is raised outside the renderer's synchronization context, so the match is dispatched onto
+        // it rather than run right here.
+        _ = InvokeAsync(() =>
+        {
+            // The navigation that raised the event may well be what takes the link off the page.
+            if (IsDisposed) return;
+
+            var isUrlMatch = IsUrlMatch();
+
+            if (isUrlMatch == _isUrlMatch) return;
+
+            _isUrlMatch = isUrlMatch;
+            UpdateIsCurrent();
+            StateHasChanged();
+        });
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        if (_locationSubscribed)
+        {
+            _navigationManager.LocationChanged -= OnLocationChanged;
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

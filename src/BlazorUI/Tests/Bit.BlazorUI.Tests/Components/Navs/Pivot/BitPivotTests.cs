@@ -22,7 +22,8 @@ public class BitPivotTests : BunitTestContext
          DataRow(BitPivotHeaderType.Link, BitSize.Large, BitPivotOverflowBehavior.None),
          DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
          DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu),
-         DataRow(BitPivotHeaderType.Link, BitSize.Small, BitPivotOverflowBehavior.Slide)
+         DataRow(BitPivotHeaderType.Link, BitSize.Small, BitPivotOverflowBehavior.Slide),
+         DataRow(BitPivotHeaderType.Outline, BitSize.Large, BitPivotOverflowBehavior.Wrap)
      ]
     public void BitPivotShouldRespectParameterRelatedCssClasses(BitPivotHeaderType headerType, BitSize size, BitPivotOverflowBehavior overflowBehavior)
     {
@@ -34,8 +35,8 @@ public class BitPivotTests : BunitTestContext
         });
 
         var sizeClass = $"bit-pvt-{size switch { BitSize.Small => "sm", BitSize.Medium => "md", BitSize.Large => "lg", _ => "md" }}";
-        var headerTypeClass = $"bit-pvt-{headerType switch { BitPivotHeaderType.Link => "lnk", BitPivotHeaderType.Tab => "tab", _ => "lnk" }}";
-        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.Slide => "sld", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
+        var headerTypeClass = $"bit-pvt-{headerType switch { BitPivotHeaderType.Link => "lnk", BitPivotHeaderType.Tab => "tab", BitPivotHeaderType.Outline => "oln", _ => "lnk" }}";
+        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.Slide => "sld", BitPivotOverflowBehavior.Wrap => "wrp", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
 
         var bitPivot = component.Find(".bit-pvt");
 
@@ -234,6 +235,22 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
         Assert.IsTrue(component.FindAll("[role=tab]")[0].ClassList.Contains("bit-pvti-sel"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldNotRenderAnUnnamedTabStopWhenNothingCanBeSelected()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "B"));
+        });
+
+        var panel = component.Find(".bit-pvt-cct");
+
+        Assert.IsNull(panel.GetAttribute("role"));
+        Assert.IsNull(panel.GetAttribute("tabindex"));
+        Assert.IsNull(component.Instance.SelectedItem);
     }
 
     [TestMethod]
@@ -1111,6 +1128,27 @@ public class BitPivotTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPivotOverflowMenuShouldMoveToTheItemATypedCharacterStarts()
+    {
+        var component = RenderOverflowPivot();
+
+        component.Find(".bit-pvt-mor").Click();
+
+        var menuId = component.Find(".bit-pvt-mnc").GetAttribute("id");
+
+        // The type-ahead of the menu pattern, case-insensitive like every other one.
+        component.Find(".bit-pvt-mnc").KeyDown("d");
+        Assert.AreEqual($"{menuId}-1", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        component.Find(".bit-pvt-mnc").KeyDown("C");
+        Assert.AreEqual($"{menuId}-0", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+
+        // A character no item starts with leaves the menu where it is.
+        component.Find(".bit-pvt-mnc").KeyDown("x");
+        Assert.AreEqual($"{menuId}-0", component.Find(".bit-pvt-mnc").GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
     public void BitPivotShouldMarkTheOverflowButtonWhenTheSelectedTabIsFoldedAway()
     {
         var component = RenderOverflowPivot();
@@ -1654,6 +1692,284 @@ public class BitPivotTests : BunitTestContext
     }
 
 
+    [TestMethod]
+    public void BitPivotOverflowButtonShouldSitBesideTheTablistRatherThanInIt()
+    {
+        var component = RenderOverflowPivot();
+
+        // A tablist owns tabs and nothing else, so the menu button that holds the folded ones is its sibling.
+        var tablist = component.Find("[role=tablist]");
+
+        Assert.IsTrue(tablist.Children.All(c => c.GetAttribute("role") == "tab"));
+        Assert.IsNull(tablist.QuerySelector(".bit-pvt-mor"));
+        Assert.IsTrue(component.Find(".bit-pvt-mor").ParentElement!.ClassList.Contains("bit-pvt-hwr"));
+    }
+
+    [TestMethod]
+    public void BitPivotDisabledShouldMarkEveryTabAsDisabled()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+        });
+
+        Assert.IsTrue(component.FindAll("[role=tab]").All(t => t.GetAttribute("aria-disabled") == "true"));
+
+        // Turning the pivot back on reaches tabs whose own parameters have not changed at all.
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+
+        Assert.IsTrue(component.FindAll("[role=tab]").All(t => t.HasAttribute("aria-disabled") is false));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldCarryTheIconContainerClass()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p =>
+            {
+                p.Add(i => i.HeaderText, "A");
+                p.Add(i => i.IconName, "Home");
+            });
+        });
+
+        Assert.IsNotNull(component.Find(".bit-pvti-icn > i.bit-icon--Home"));
+    }
+
+    [TestMethod]
+    public void BitPivotParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPivot)}", BitPivotParams.ParamName);
+
+        var @params = new BitPivotParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitPivotParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitPivotShouldApplyCascadingParameters()
+    {
+        var @params = new BitPivotParams
+        {
+            Color = BitColor.Success,
+            HeaderType = BitPivotHeaderType.Tab,
+            Size = BitSize.Large,
+            Placement = BitPlacement.Start,
+            OverflowBehavior = BitPivotOverflowBehavior.Wrap,
+            FullWidth = true,
+            Stacked = true,
+            Dismissible = true,
+            Gap = "3px",
+            Alignment = BitAlignment.Center,
+            Class = "cascaded",
+        };
+
+        var component = RenderComponent<BitParams>(p =>
+        {
+            p.Add(x => x.Parameters, [@params]);
+            p.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitPivot>(0);
+                builder.AddComponentParameter(1, nameof(BitPivot.ChildContent), (RenderFragment)(b => AddItem(b, 0, "A")));
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-pvt");
+
+        foreach (var expected in new[] { "bit-pvt-suc", "bit-pvt-tab", "bit-pvt-lg", "bit-pvt-sta", "bit-pvt-wrp", "bit-pvt-fwd", "bit-pvt-stk", "bit-pvt-dsm", "cascaded" })
+        {
+            Assert.IsTrue(root.ClassList.Contains(expected), $"{expected} is missing.");
+        }
+
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-pvt-gap:3px");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-pvt-hal:center");
+        Assert.AreEqual("vertical", component.Find("[role=tablist]").GetAttribute("aria-orientation"));
+        Assert.IsNotNull(component.Find(".bit-pvti-dbt"));
+    }
+
+    [TestMethod]
+    public void BitPivotDirectParametersShouldOverrideCascadingParameters()
+    {
+        var @params = new BitPivotParams
+        {
+            Color = BitColor.Error,
+            HeaderType = BitPivotHeaderType.Tab,
+            Navigable = false,
+        };
+
+        var component = RenderComponent<BitParams>(p =>
+        {
+            p.Add(x => x.Parameters, [@params]);
+            p.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitPivot>(0);
+                builder.AddComponentParameter(1, nameof(BitPivot.Color), (BitColor?)BitColor.Info);
+                builder.AddComponentParameter(2, nameof(BitPivot.Navigable), true);
+                builder.AddComponentParameter(3, nameof(BitPivot.ChildContent), (RenderFragment)(b =>
+                {
+                    AddItem(b, 0, "A");
+                    AddItem(b, 10, "B");
+                }));
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-pvt");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-pvt-inf"));
+        Assert.IsFalse(root.ClassList.Contains("bit-pvt-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-pvt-tab"));
+
+        // Navigable kept its own true, so the header is still a single tab stop.
+        var tabs = component.FindAll("[role=tab]");
+        Assert.AreEqual("0", tabs[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", tabs[1].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPivotParamsUpdateParametersShouldSetAllProperties()
+    {
+        var classes = new BitPivotClassStyles { Root = "custom-root" };
+        var styles = new BitPivotClassStyles { Root = "color: red;" };
+        var icon = BitIconInfo.Css("fa fa-x");
+
+        var @params = new BitPivotParams
+        {
+            Addable = true,
+            AddAriaLabel = "New",
+            AddIcon = icon,
+            AddIconName = "Add",
+            AddTitle = "New tab",
+            Alignment = BitAlignment.End,
+            AutoHideSlideButtons = true,
+            Classes = classes,
+            Color = BitColor.Warning,
+            Dismissible = true,
+            DismissAriaLabelFormat = "Close {0}",
+            DismissIcon = icon,
+            DismissIconName = "Cancel",
+            DismissTitle = "Close",
+            FullWidth = true,
+            Gap = "4px",
+            HeaderOnly = true,
+            HeaderType = BitPivotHeaderType.Tab,
+            KeepMounted = true,
+            Loop = false,
+            MountAll = true,
+            Navigable = false,
+            NextAriaLabel = "Forward",
+            NextIcon = icon,
+            NextIconName = "Forward",
+            OverflowAriaLabel = "Others",
+            OverflowBehavior = BitPivotOverflowBehavior.Slide,
+            OverflowIcon = icon,
+            OverflowIconName = "More",
+            Placement = BitPlacement.Bottom,
+            PreviousAriaLabel = "Back",
+            PreviousIcon = icon,
+            PreviousIconName = "Back",
+            Reorderable = true,
+            SelectOnFocus = true,
+            Size = BitSize.Small,
+            Stacked = true,
+            Styles = styles,
+            AriaLabel = "Sections",
+            IsEnabled = false,
+        };
+
+        var pivot = new BitPivot();
+
+        @params.UpdateParameters(pivot);
+
+        Assert.IsTrue(pivot.Addable);
+        Assert.AreEqual("New", pivot.AddAriaLabel);
+        Assert.AreSame(icon, pivot.AddIcon);
+        Assert.AreEqual("Add", pivot.AddIconName);
+        Assert.AreEqual("New tab", pivot.AddTitle);
+        Assert.AreEqual(BitAlignment.End, pivot.Alignment);
+        Assert.IsTrue(pivot.AutoHideSlideButtons);
+        Assert.AreSame(classes, pivot.Classes);
+        Assert.AreEqual(BitColor.Warning, pivot.Color);
+        Assert.IsTrue(pivot.Dismissible);
+        Assert.AreEqual("Close {0}", pivot.DismissAriaLabelFormat);
+        Assert.AreSame(icon, pivot.DismissIcon);
+        Assert.AreEqual("Cancel", pivot.DismissIconName);
+        Assert.AreEqual("Close", pivot.DismissTitle);
+        Assert.IsTrue(pivot.FullWidth);
+        Assert.AreEqual("4px", pivot.Gap);
+        Assert.IsTrue(pivot.HeaderOnly);
+        Assert.AreEqual(BitPivotHeaderType.Tab, pivot.HeaderType);
+        Assert.IsTrue(pivot.KeepMounted);
+        Assert.IsFalse(pivot.Loop);
+        Assert.IsTrue(pivot.MountAll);
+        Assert.IsFalse(pivot.Navigable);
+        Assert.AreEqual("Forward", pivot.NextAriaLabel);
+        Assert.AreSame(icon, pivot.NextIcon);
+        Assert.AreEqual("Forward", pivot.NextIconName);
+        Assert.AreEqual("Others", pivot.OverflowAriaLabel);
+        Assert.AreEqual(BitPivotOverflowBehavior.Slide, pivot.OverflowBehavior);
+        Assert.AreSame(icon, pivot.OverflowIcon);
+        Assert.AreEqual("More", pivot.OverflowIconName);
+        Assert.AreEqual(BitPlacement.Bottom, pivot.Placement);
+        Assert.AreEqual("Back", pivot.PreviousAriaLabel);
+        Assert.AreSame(icon, pivot.PreviousIcon);
+        Assert.AreEqual("Back", pivot.PreviousIconName);
+        Assert.IsTrue(pivot.Reorderable);
+        Assert.IsTrue(pivot.SelectOnFocus);
+        Assert.AreEqual(BitSize.Small, pivot.Size);
+        Assert.IsTrue(pivot.Stacked);
+        Assert.AreSame(styles, pivot.Styles);
+        Assert.AreEqual("Sections", pivot.AriaLabel);
+        Assert.IsFalse(pivot.IsEnabled);
+    }
+
+    [TestMethod]
+    public void BitPivotParamsShouldCoverEveryGroupParameterOfThePivot()
+    {
+        // Everything that belongs to a single pivot rather than to a group of them is left out on purpose.
+        var excluded = new HashSet<string>
+        {
+            nameof(BitPivot.AriaLabelledBy),
+            nameof(BitPivot.CascadingParameters),
+            nameof(BitPivot.ChildContent),
+            nameof(BitPivot.DefaultSelectedKey),
+            nameof(BitPivot.HeaderEnd),
+            nameof(BitPivot.HeaderStart),
+            nameof(BitPivot.OnAdd),
+            nameof(BitPivot.OnChange),
+            nameof(BitPivot.OnChanging),
+            nameof(BitPivot.OnItemClick),
+            nameof(BitPivot.OnItemDismiss),
+            nameof(BitPivot.OnItemReorder),
+            nameof(BitPivot.SelectedKey),
+            nameof(BitPivot.SelectedKeyChanged),
+        };
+
+        const System.Reflection.BindingFlags declaredPublic = System.Reflection.BindingFlags.Public
+                                                            | System.Reflection.BindingFlags.Instance
+                                                            | System.Reflection.BindingFlags.DeclaredOnly;
+
+        var pivotParameters = typeof(BitPivot)
+            .GetProperties(declaredPublic)
+            .Where(p => p.IsDefined(typeof(ParameterAttribute), true) || p.IsDefined(typeof(CascadingParameterAttribute), true))
+            .Select(p => p.Name)
+            .Where(n => excluded.Contains(n) is false)
+            .ToList();
+
+        var paramsProperties = typeof(BitPivotParams)
+            .GetProperties(declaredPublic)
+            .Select(p => p.Name)
+            .Where(n => n != nameof(BitPivotParams.Name))
+            .ToList();
+
+        CollectionAssert.AreEquivalent(pivotParameters, paramsProperties);
+    }
+
+
     private string[] LastPreventedKeys()
     {
         return (string[])Context.JSInterop.Invocations["BitBlazorUI.Pivot.setupKeys"].Last().Arguments[1]!;
@@ -1667,6 +1983,201 @@ public class BitPivotTests : BunitTestContext
         builder.AddComponentParameter(sequence + 2, nameof(BitPivotItem.Key), key);
         builder.AddComponentParameter(sequence + 3, nameof(BitPivotItem.HeaderText), key);
         builder.CloseComponent();
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheirPositionInTheSetOfShownTabs()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Visibility, BitVisibility.Collapsed));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("1", tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[0].GetAttribute("aria-setsize"));
+
+        // A tab the pivot hides is not part of the set, and the ones after it close the gap.
+        Assert.IsNull(tabs[1].GetAttribute("aria-posinset"));
+        Assert.IsNull(tabs[1].GetAttribute("aria-setsize"));
+
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-setsize"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldKeepCountingTheTabsFoldedIntoTheOverflowMenu()
+    {
+        var component = RenderOverflowPivot();
+
+        var tabs = component.FindAll("[role=tab]");
+
+        // The folded tabs are out of the accessibility tree, so the count a screen reader works out from the
+        // header alone would be two; the pivot states the four it actually has.
+        Assert.AreEqual("4", tabs[0].GetAttribute("aria-setsize"));
+        Assert.AreEqual("1", tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("4", tabs[3].GetAttribute("aria-posinset"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldRecountWhenATabIsHidden()
+    {
+        var component = RenderPivot(3);
+
+        var second = component.FindComponents<BitPivotItem>()[1];
+        second.Render(p => p.Add(i => i.Visibility, BitVisibility.Collapsed));
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("2", tabs[0].GetAttribute("aria-setsize"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-posinset"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheKeysThatDismissAndMoveThem()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.OnItemDismiss, (BitPivotItem _) => { });
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Dismissible, false).Add(i => i.Reorderable, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.IsEnabled, false));
+        });
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("Delete Control+ArrowLeft Control+ArrowRight", tabs[0].GetAttribute("aria-keyshortcuts"));
+
+        // Neither dismissible nor movable, and a disabled tab can do neither.
+        Assert.IsNull(tabs[1].GetAttribute("aria-keyshortcuts"));
+        Assert.IsNull(tabs[2].GetAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheVerticalArrowsOfAVerticalHeader()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Placement, BitPlacement.Start);
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+        });
+
+        Assert.AreEqual("Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldFollowThePivotParametersTheyRenderFrom()
+    {
+        // Items with nothing but simple parameters are not rendered again by the render of the pivot, so the
+        // pivot has to ask them to when a parameter of its own that they render from changes.
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+        });
+
+        Assert.AreEqual("Control+ArrowLeft Control+ArrowRight", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+
+        component.Render(p => p.Add(x => x.Placement, BitPlacement.Start));
+
+        Assert.AreEqual("Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+
+        component.Render(p => p
+            .Add(x => x.Dismissible, true)
+            .Add(x => x.OnItemDismiss, (BitPivotItem _) => { }));
+
+        Assert.AreEqual("Delete Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
+
+        component.Render(p => p.Add(x => x.Reorderable, false));
+
+        var tab = component.Find("[role=tab]");
+        Assert.AreEqual("Delete", tab.GetAttribute("aria-keyshortcuts"));
+        Assert.IsNull(tab.GetAttribute("draggable"));
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldAnnounceTheirPlaceAfterTheListChanges()
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        var first = component.FindComponents<BitPivotItem>()[0];
+        first.Render(p => p.Add(i => i.Visibility, BitVisibility.Collapsed));
+
+        var tabs = component.FindAll("[role=tab]");
+
+        Assert.IsNull(tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("1", tabs[1].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("2", tabs[2].GetAttribute("aria-setsize"));
+
+        first.Render(p => p.Add(i => i.Visibility, BitVisibility.Visible));
+
+        tabs = component.FindAll("[role=tab]");
+
+        Assert.AreEqual("1", tabs[0].GetAttribute("aria-posinset"));
+        Assert.AreEqual("3", tabs[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("3", tabs[2].GetAttribute("aria-setsize"));
+    }
+
+    [TestMethod,
+         DataRow(BitPlacement.Top, true),
+         DataRow(BitPlacement.Start, false)
+    ]
+    public void BitPivotSlideButtonsShouldMirrorTheirArrowsInARightToLeftLayout(BitPlacement position, bool mirrored)
+    {
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Placement, position);
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Slide);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        // The arrows are mirrored with exactly what BitIcon's FlipRtl adds to an icon, which is what its
+        // stylesheet mirrors a glyph by.
+        var plain = RenderComponent<BitIcon>(p => p.Add(i => i.IconName, "ChevronRight")).Find("i").ClassList;
+        var flipped = RenderComponent<BitIcon>(p => p.Add(i => i.IconName, "ChevronRight").Add(i => i.FlipRtl, true)).Find("i").ClassList;
+        var mirrorClasses = flipped.Except(plain).ToList();
+
+        Assert.IsTrue(mirrorClasses.Count > 0);
+
+        // A horizontal header runs the other way in RTL, a vertical one does not.
+        foreach (var icon in component.FindAll(".bit-pvt-sbt i"))
+        {
+            foreach (var mirrorClass in mirrorClasses)
+            {
+                Assert.AreEqual(mirrored, icon.ClassList.Contains(mirrorClass));
+            }
+        }
+    }
+
+    [TestMethod]
+    public void BitPivotItemsShouldNotAnnounceAMoveNothingHandles()
+    {
+        // Without an OnItemReorder / OnItemDismiss the keys do nothing, so they are not something to announce.
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Reorderable, true);
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        Assert.IsNull(component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
     }
 
     // A Menu pivot whose last two items the (unavailable) JS half of the overflow behavior reports as

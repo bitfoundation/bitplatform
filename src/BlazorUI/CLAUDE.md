@@ -20,6 +20,26 @@ branch that cannot be merged on its own.
 So: grep the whole repo to *find out* what a change reaches, and say so. Only write inside
 `src/BlazorUI`.
 
+## Razor comments
+
+**Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor
+compiler mis-reads the attributes around it and the page throws at runtime. A comment about an
+attribute goes in the comment block right above the element's opening tag:
+
+```razor
+@* Why the chip is named through aria-label. *@
+<div role="listitem"
+     aria-label="@TagName(tag)">
+```
+
+never
+
+```razor
+<div role="listitem"
+     @* Why the chip is named through aria-label. *@
+     aria-label="@TagName(tag)">
+```
+
 ## Demo pages
 
 A component's demo page is
@@ -177,8 +197,11 @@ all it takes for it to appear in the catalog, the search index and the completio
   is kept out of the listing and answered as a pointer to the type its members are read off.
 - **What a table cannot say is derived rather than left out**: which parameters are two-way bindable
   (an `X` with an `XChanged` beside it, printed as `@bind-X`), what constrains a generic component's
-  type arguments, and whether a type named beside a component is a class it takes or a component that
-  goes inside its markup.
+  type arguments, whether a type named beside a component is a class it takes or a component that
+  goes inside its markup, and the `<Component>Params` a `BitParams` ancestor sets its defaults with -
+  read off the component's own `[CascadingParameter]`, so it is in neither table, and named with the
+  call that lists its members rather than tabulated, since its members are the parameter table again
+  as nullables.
 - **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names less
   their shared `Bit` prefix) rather than a refusal, and never as a failed tool call.
 
@@ -203,7 +226,8 @@ the whole library from one `:root[bit-theme="..."]` block.
   pagination, ...) with its sub-families `$shp-radius-button` (buttons, dialog actions),
   `$shp-radius-chip` (tags, in-field chips) and `$shp-radius-selection` (the checkbox box);
   `$shp-radius-surface` (cards, accordions, messages); `$shp-radius-popup` (callouts, menus, tooltips,
-  snackbars); `$shp-radius-dialog` (dialogs, modals). Sub-elements use the scale
+  snackbars); `$shp-radius-dialog` (dialogs, modals); `$shp-radius-sheet` (the inner corners of panels,
+  square unless a preset rounds them). Sub-elements use the scale
   `$shp-radius-none/xs/sm/md/lg/xl/2xl/full`. Heavier strokes (underline focus, selection indicators,
   thumb rings) use `$shp-border-width-thick`; inline spinners `$siz-spinner-stroke`.
 - **Size**: control heights per size class `$siz-ctrl-sm/md/lg` (also 32px icon-button squares),
@@ -212,13 +236,15 @@ the whole library from one `:root[bit-theme="..."]` block.
   `$siz-sel-sm/md/lg`, popup list row heights `$siz-item-sm/md/lg`, pivot headers `$siz-tab` with
   selection-indicator stroke `$siz-tab-indicator`, separator thickness `$siz-divider`, linear progress
   tracks `$siz-track-sm/md/lg`, switch track and knob `$siz-switch-w/h/thumb-sm/md/lg`, slider handle
-  `$siz-slider-thumb-sm/md/lg`, scrolling popup lists `$siz-popup-max-height`.
-- **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`; their action
-  footers lay out via `$layout-dialog-actions-direction` / `$layout-dialog-actions-justify` /
-  `$layout-dialog-actions-align` (never a literal `row` / `flex-end` / `center` in a dialog footer -
-  Cupertino stacks its actions full width).
+  `$siz-slider-thumb-sm/md/lg`, badge height and dot `$siz-badge-sm/md/lg` / `$siz-badge-dot-sm/md/lg`,
+  tag (chip) height inside its rule `$siz-chip-sm/md/lg`, scrolling popup lists `$siz-popup-max-height`.
+- **Spacing & layout**: dialogs and message boxes inset their content with `$spa-dialog`, cards with
+  `$spa-card-sm/md/lg`; dialog action footers lay out via `$layout-dialog-actions-direction` /
+  `$layout-dialog-actions-justify` / `$layout-dialog-actions-align` (never a literal `row` /
+  `flex-end` / `center` in a dialog footer - Cupertino stacks its actions full width).
 - **Elevation**: `$box-shadow-card/popup/dialog/sheet/tooltip/snackbar/appbar-top/appbar-bottom` per
-  surface family, never `$box-shadow-callout` directly.
+  surface family (plus `$box-shadow-card-hover`, the lift of a card under the pointer), never
+  `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
   entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
@@ -263,6 +289,17 @@ A preset declares **nothing but `--bit-*` tokens** and never selects a component
 restyle `.bit-<cmp>-*` from a preset is the signal that a design-system decision is missing from the
 global token tier: add the token, let the component read it, and keep the preset a pure
 `:root[bit-theme="..."]` block.
+
+A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
+`componentCssVariables`) are read off its root **with a fallback and never declared**, so they
+inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel, which the
+callout JS then reparents to the body - therefore hands it nothing: inside its own markup the popup is
+a SIBLING of the root, and once it has moved only `:root` and `body` are still its ancestors. Such a
+component resolves its variables in one mixin that both the root and the popup include, and carries
+the public declarations across by hand (BitDropdown's `GetCalloutStyles` copies the
+`--bit-Dropdown-*` entries of `Style` and `Styles.Root` onto the callout, appending `Styles.Callout`
+last so a value written for the popup still wins). One `Style` on the component then restyles the
+field and the list it opens together, which is what an author setting a variable expects.
 
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,

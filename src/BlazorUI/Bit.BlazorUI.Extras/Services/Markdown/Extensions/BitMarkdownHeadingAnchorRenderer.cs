@@ -19,7 +19,7 @@ public sealed class BitMarkdownHeadingAnchorRenderer : BitMarkdownNodeRenderer
 
         b.OpenElement(0, "a");
         b.AddAttribute(1, "class", "bit-mdv-anchor");
-        b.AddAttribute(2, "href", "#" + anchor.Id);
+        b.AddAttribute(2, "href", r.ResolveInPageUrl("#" + anchor.Id));
         b.AddAttribute(3, "aria-label", string.IsNullOrEmpty(anchor.HeadingText)
             ? r.Texts.PermalinkToSection
             : string.Format(CultureInfo.CurrentCulture, r.Texts.PermalinkTo, anchor.HeadingText));

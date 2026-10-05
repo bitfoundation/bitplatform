@@ -8,27 +8,24 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        /* var fakeAuthTokenProvider = A.Fake<IAuthTokenProvider>();
-        A.CallTo(() => fakeAuthTokenProvider.GetAccessToken()).ReturnsLazily(() => (string?)null); */
+        /* var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow); // Microsoft.Extensions.TimeProvider.Testing */
 
-        await server.Build(services =>
+        await server.Build(configureTestServices: services =>
         {
-            services.AddIntegrationApiOnlyTestsServices();
             // You can override services here for this specific test if needed:
-            // services.Replace(ServiceDescriptor.Scoped(sp => fakeAuthTokenProvider));
+            // services.Replace(ServiceDescriptor.Singleton<TimeProvider>(timeProvider));
         }).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        // Once the client's AuthManager signs a user in, the controllers created from it call the api as that user.
+        await using var client = server.CreateAppClient();
 
-        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
-
-        await authenticationManager.SignIn(new()
+        await client.AuthManager.SignIn(new()
         {
             Email = TestData.DefaultTestEmail,
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        var userController = client.GetController<IUserController>();
 
         var user = await userController.GetCurrentUser(TestContext.CancellationToken);
 
@@ -40,11 +37,10 @@ public partial class IntegrationTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+        await using var client = server.CreateAppClient();
+        var userController = client.GetController<IUserController>();
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(() => userController.GetCurrentUser(TestContext.CancellationToken));
     }

@@ -2,6 +2,14 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ButtonGroup;
 
 public partial class _BitButtonGroupOptionDemo
 {
+    private BitButtonGroup<BitButtonGroupOption>? focusGroup;
+
+    // FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+    private async Task FocusTheGroup()
+    {
+        if (focusGroup is not null) await focusGroup.FocusAsync();
+    }
+
     private int clickCounter;
     private string? clickedOption;
 
@@ -12,6 +20,16 @@ public partial class _BitButtonGroupOptionDemo
     private readonly string[] defaultKeys = ["bold"];
     private readonly string[] indicatorDefaultKeys = ["name", "size"];
     private IEnumerable<string>? formatKeys = ["bold"];
+
+    private readonly BitButtonGroupParams[] buttonGroupParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Rounded = true,
+            Justified = true,
+        }
+    ];
 
     // The option's IsLoading is a component parameter, so it is driven from here through the key of
     // the option that is currently loading instead of being assigned on the option itself.

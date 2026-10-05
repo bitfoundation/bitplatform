@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Xml.Linq;
 using System.Reflection;
 using System.Collections.Frozen;
@@ -84,8 +84,15 @@ public static partial class BlazorUIXmlDocs
     private static string WithoutParameters(string documentationId)
     {
         var parameters = documentationId.IndexOf('(', StringComparison.Ordinal);
+        var name = parameters < 0 ? documentationId : documentationId[..parameters];
 
-        return parameters < 0 ? documentationId : documentationId[..parameters];
+        // A generic method carries its arity in its id - UpdateParameters``1 - while a caller
+        // building an id from a MethodInfo has the name alone to build it from. Shedding the
+        // marker on both sides is what lets the one reach the other; a generic type's own arity
+        // is a single backtick and is left where it is, since it is part of the owner's name.
+        var arity = name.IndexOf("``", StringComparison.Ordinal);
+
+        return arity < 0 ? name : name[..arity];
     }
 
     /// <summary>

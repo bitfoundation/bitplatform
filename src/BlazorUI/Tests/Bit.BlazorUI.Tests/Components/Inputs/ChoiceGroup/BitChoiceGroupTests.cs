@@ -316,7 +316,7 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var bitChoiceGroup = component.Find(".bit-chg");
 
-        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("--bit-chg-item-gap:2rem"));
+        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("--bit-chg-gap:2rem"));
     }
 
     [TestMethod,

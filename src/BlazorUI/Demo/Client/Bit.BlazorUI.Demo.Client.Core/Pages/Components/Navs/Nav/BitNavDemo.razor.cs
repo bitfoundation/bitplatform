@@ -11,7 +11,7 @@ public partial class BitNavDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The accent color of the nav.",
+            Description = "The accent color of the nav: the background of the hovered and the selected item. A background, foreground or border role tints the item, a semantic role fills it and recolors its content.",
             Href = "#color-enum",
             LinkType = LinkType.Link,
         },
@@ -59,7 +59,7 @@ public partial class BitNavDemo
             Name = "CollapseAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The default aria-label of the expand/collapse button of an expanded item. The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
+            Description = "The default aria-label of the expand/collapse button of an expanded item: the chevron of a parent that has a URL, or a group header. The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
         },
         new()
         {
@@ -82,7 +82,7 @@ public partial class BitNavDemo
             Name = "ExpandAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The default aria-label of the expand/collapse button of a collapsed item. The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
+            Description = "The default aria-label of the expand/collapse button of a collapsed item: the chevron of a parent that has a URL, or a group header. The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
         },
         new()
         {
@@ -126,7 +126,7 @@ public partial class BitNavDemo
             Name = "IndentPadding",
             Type = "int",
             DefaultValue = "27",
-            Description = "The indentation padding in px for items without children (compensation space for chevron icon)."
+            Description = "The width in px of the chevron, which the items without children keep as padding in its place so every text lines up."
         },
         new()
         {
@@ -172,7 +172,7 @@ public partial class BitNavDemo
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",
-            Description = "Gets or sets a value representing the global URL matching behavior of the nav. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
+            Description = "The URL matching behavior of the nav in the Automatic mode. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
             Href = "#nav-match-enum",
             LinkType = LinkType.Link,
         },
@@ -199,7 +199,7 @@ public partial class BitNavDemo
             Name = "NoCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides all collapse/expand buttons and remove their spaces at the start of each node."
+            Description = "Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item."
         },
         new()
         {
@@ -286,6 +286,154 @@ public partial class BitNavDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Nav-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and chevron color of an item at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-icon-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Icon color of an item at rest; kept on hover and selection unless the Accent is a semantic role.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-description-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Color of the description of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text, icon, description and chevron color of a disabled item (or of every item of a disabled nav).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-hover-background",
+            DefaultValue = "The Accent role's hover color",
+            Description = "Background of a hovered item (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-hover-color",
+            DefaultValue = "The Accent role's on color",
+            Description = "Text and chevron color of a hovered item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-pressed-background",
+            DefaultValue = "The Accent role's active color",
+            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-background",
+            DefaultValue = "The Accent role's active color",
+            Description = "Background of the selected item, and of a collapsed branch that holds it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-color",
+            DefaultValue = "The Accent role's on color",
+            Description = "Text and chevron color of the selected item, and of a collapsed branch that holds it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-indicator-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Color of the leading bar of the selected item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-indicator-width",
+            DefaultValue = "--bit-shp-brd-width-thick",
+            Description = "Thickness of the leading bar of the selected item; 0 removes it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-min-height",
+            DefaultValue = "Per size (36px / 48px / 56px)",
+            Description = "Smallest height of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-padding",
+            DefaultValue = "4px (spacing(0.5))",
+            Description = "Padding of an item; the indentation of the levels is added to its start.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-item-gap",
+            DefaultValue = "0",
+            Description = "Room between two items, at every level.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-font-size",
+            DefaultValue = "Per size (--bit-tpg-fs-xs / -sm / -md)",
+            Description = "Text size of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-icon-size",
+            DefaultValue = "Per size (--bit-siz-icon-sm / -md / -lg)",
+            Description = "Icon size of an item and of a group header.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-description-font-size",
+            DefaultValue = "Per size (--bit-tpg-fs-2xs / -xs / -sm)",
+            Description = "Text size of the description of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of a group header (Grouped render type).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-font-size",
+            DefaultValue = "Per size (--bit-tpg-fs-sm / -lg / -xl)",
+            Description = "Text size of a group header.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-min-height",
+            DefaultValue = "Per size (36px / 44px / 52px)",
+            Description = "Smallest height of a group header; one with a description grows past it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the rule under a group header.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-header-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered group header (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Nav-separator-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of a separator item.",
+        },
+    ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
@@ -322,7 +470,7 @@ public partial class BitNavDemo
         {
             Name = "IsItemExpanded",
             Type = "Func<TItem, bool>",
-            Description = "Whether an item is currently expanded.",
+            Description = "Whether the children of an item are currently shown, which is always the case while NoCollapse is set.",
         },
         new()
         {
@@ -360,7 +508,7 @@ public partial class BitNavDemo
                    Name = "AriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label for nav item. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.",
+                   Description = "The accessible name of the nav item, in place of its text. It also names a group header, whose CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.",
                },
                new()
                {
@@ -544,7 +692,7 @@ public partial class BitNavDemo
                    Name = "AriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label for nav option. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.",
+                   Description = "The accessible name of the nav option, in place of its text. It also names a group header, whose CollapseAriaLabel/ExpandAriaLabel only apply when it is not set.",
                },
                new()
                {

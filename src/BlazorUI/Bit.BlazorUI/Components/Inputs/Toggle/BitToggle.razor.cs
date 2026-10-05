@@ -4,14 +4,20 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.
-/// For example, “On/Off”, “Show/Hide”. It supports state texts, an icon or custom content inside the track,
-/// a description, a loading state, cancellable changes, read-only and required modes, label placement on any
-/// side, and it is fully operable from the keyboard.
+/// For example, “On/Off”, “Show/Hide”. It supports state texts, custom content inside the track, an icon or a
+/// template inside the knob, a description, an error message, a loading state, cancellable changes, read-only
+/// and required modes, label placement on any side, and it is fully operable from the keyboard.
 /// </summary>
 public partial class BitToggle : BitInputBase<bool>
 {
     private bool _isChanging;
     private bool _autoLoading;
+    private bool _hasAttempted;
+    private bool _hasLiveRegion;
+    private int _liveTextId;
+    private string? _liveText;
+    private string? _announcedLiveText;
+    private string? _errorId;
     private string? _labelId;
     private string? _buttonId;
     private string? _stateText;
@@ -24,6 +30,29 @@ public partial class BitToggle : BitInputBase<bool>
     private string? _ariaChecked => CurrentValue ? "true" : "false";
 
 
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the toggle component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple toggle components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitToggleParams.ParamName)]
+    public BitToggleParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Keeps a disabled toggle focusable and discoverable by assistive technologies.
+    /// </summary>
+    /// <remarks>
+    /// The disabled state is then conveyed by <c>aria-disabled</c> rather than by the native <c>disabled</c>
+    /// attribute, so the switch stays in the tab order and reachable by assistive technologies, while still
+    /// refusing every change.
+    /// </remarks>
+    [Parameter] public bool AllowDisabledFocus { get; set; }
 
     /// <summary>
     /// The id of the element the toggle controls, rendered as <c>aria-controls</c> on the switch.
@@ -109,6 +138,29 @@ public partial class BitToggle : BitInputBase<bool>
     public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
+    /// A line under the toggle saying why its state was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about - a server that refused to save the new state,
+    /// a rule spanning two controls. A toggle inside an <c>EditForm</c> already gets its messages from the
+    /// cascading EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking
+    /// the toggle invalid in the same way.
+    /// </summary>
+    /// <remarks>
+    /// Only the plain <see cref="ErrorMessage"/> is announced by the live region, since a template is free
+    /// to render anything at all - set both to have a message that is both formatted and announced.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -119,6 +171,18 @@ public partial class BitToggle : BitInputBase<bool>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Inline { get; set; }
+
+    /// <summary>
+    /// Marks the state of the toggle as invalid, giving a state rejected by something other than the cascading
+    /// EditContext - a server, a rule of the app, a validator of its own - the same look and the same
+    /// <c>aria-invalid</c> attribute that a failing data annotation gives it.
+    /// </summary>
+    /// <remarks>
+    /// A toggle failing its own validation stays invalid regardless of this parameter. Pair it with
+    /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Label of the toggle.
@@ -144,13 +208,13 @@ public partial class BitToggle : BitInputBase<bool>
     public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Renders a spinner in place of the knob's icon and suspends the toggle until the pending
+    /// Renders a spinner in place of whatever the knob carries and suspends the toggle until the pending
     /// work behind the change is done.
     /// </summary>
     /// <remarks>
     /// A loading toggle keeps its current state and ignores clicks, but stays focusable and is
     /// announced as busy and unavailable, so the change that is still in flight is not toggled a second
-    /// time. The spinner is drawn to the size of the knob it replaces the glyph of, so turning the toggle
+    /// time. The spinner is drawn to the size of the knob it takes over, so turning the toggle
     /// busy never resizes it. Use <see cref="AutoLoading"/> to have the toggle raise this state itself
     /// around the callbacks of a change.
     /// </remarks>
@@ -295,13 +359,32 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public BitToggleClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Arbitrary content rendered inside the knob, receiving the current state of the toggle, in place of
+    /// the glyph <see cref="OnIconName"/> and <see cref="OffIconName"/> would have drawn there.
+    /// </summary>
+    /// <remarks>
+    /// The knob steps up to the roomier geometry a glyph asks for - in both states, so flipping the toggle
+    /// never resizes it - and the content is hidden from assistive technologies along with the rest of the
+    /// knob, which already reports its state through <c>aria-checked</c>. While the toggle is busy the
+    /// spinner takes the knob back, the same way it takes it back from a glyph.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment<bool>? ThumbTemplate { get; set; }
+
+    /// <summary>
     /// The default text used when the On or Off texts are null.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The native tooltip of the knob of the toggle, shown on hover.
+    /// The native tooltip of the toggle, shown when the pointer rests on its label, its track or its state text.
     /// </summary>
+    /// <remarks>
+    /// The label answers a hover as well as the track does - which is what keeps the tooltip reachable on a
+    /// disabled toggle, whose track itself stops answering the pointer - while the error line and the
+    /// description under the toggle keep to their own content. On the switch itself it is also the accessible
+    /// name of last resort, and its description when the toggle is named otherwise.
+    /// </remarks>
     [Parameter] public string? Title { get; set; }
 
 
@@ -367,11 +450,15 @@ public partial class BitToggle : BitInputBase<bool>
         // for once the root is allowed to wrap - so the wrapping is turned on only when there is one.
         ClassBuilder.Register(() => HasDescription ? "bit-tgl-hds" : string.Empty);
 
+        // An error message asks for the same extra line, and for the same reason, so it turns the same
+        // wrapping on through a class of its own rather than by widening what the description class means.
+        ClassBuilder.Register(() => HasErrorMessage ? "bit-tgl-her" : string.Empty);
+
         ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
         // state that has one, so that toggling never resizes the toggle underneath the pointer.
-        ClassBuilder.Register(() => HasIcon ? "bit-tgl-tic" : string.Empty);
+        ClassBuilder.Register(() => HasThumbContent ? "bit-tgl-tic" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -383,6 +470,7 @@ public partial class BitToggle : BitInputBase<bool>
 
     protected override void OnInitialized()
     {
+        _errorId = $"BitToggle-{UniqueId}-error";
         _labelId = $"BitToggle-{UniqueId}-label";
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
@@ -396,11 +484,22 @@ public partial class BitToggle : BitInputBase<bool>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitToggleParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Recomputed on every parameter change rather than only when the value moves, so a state text or
         // a label swapped from the outside is reflected by the accessible name along with the visible one.
         SetStateText();
+
+        // The live region is only rendered for a toggle that is wired to say something through it - one whose
+        // ErrorMessage is written at all, even as a null for now - so a page of plain switches does not carry
+        // an empty live region per switch. Once there it stays, since it has to be on the page before the
+        // text that is meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false || ErrorMessage.HasValue();
+
+        SyncLiveRegion();
 
         base.OnParametersSet();
     }
@@ -434,24 +533,7 @@ public partial class BitToggle : BitInputBase<bool>
     {
         if (_isChanging) return;
 
-        _isChanging = true;
-
-        // read once, so the flag that is cleared in the end is the one that was raised in the
-        // beginning even if the parameter is swapped while the change is still running
-        var autoLoading = AutoLoading;
-
-        if (autoLoading) SetAutoLoading(true);
-
-        try
-        {
-            await ChangeValueAsync(value);
-        }
-        finally
-        {
-            _isChanging = false;
-
-            if (autoLoading) SetAutoLoading(false);
-        }
+        await RunChangeAsync(() => ChangeValueAsync(value));
     }
 
 
@@ -480,20 +562,45 @@ public partial class BitToggle : BitInputBase<bool>
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
     /// <summary>
+    /// Whether the toggle carries a visible error message, which is what the error line is rendered for.
+    /// </summary>
+    private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// Whether the app itself has rejected the state of the toggle, by the flag or by a message saying why.
+    /// </summary>
+    /// <remarks>
+    /// A message saying what is wrong with the state is a rejection of it, so it marks the toggle the same
+    /// way the flag does instead of leaving a red line under a switch that still looks accepted.
+    /// </remarks>
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// What the live region carries, which is the plain error message and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// Only the plain text, never the template: a template is free to render anything at all, and a live
+    /// region reading out a block of markup is worse than one saying nothing.
+    /// </remarks>
+    private string? LiveText => ErrorMessage.HasValue() ? ErrorMessage : null;
+
+    /// <summary>
     /// Whether the toggle is busy, from the <see cref="Loading"/> parameter or from
     /// <see cref="AutoLoading"/> having raised it around a change of its own.
     /// </summary>
     private bool IsLoading => Loading || _autoLoading;
 
     /// <summary>
-    /// Whether the knob has a glyph to hold, which is what decides its enlarged geometry.
+    /// Whether the knob has something to hold - a glyph in either state, or a template - which is what
+    /// decides its enlarged geometry.
     /// </summary>
     /// <remarks>
     /// The loading state is deliberately not part of it: a spinner is drawn to the size of whatever knob it
     /// lands in, so that turning a toggle busy never resizes it in front of the person waiting on it.
     /// </remarks>
-    private bool HasIcon => OnIcon is not null || OnIconName.HasValue()
-                         || OffIcon is not null || OffIconName.HasValue();
+    private bool HasThumbContent => ThumbTemplate is not null
+                                 || OnIcon is not null || OnIconName.HasValue()
+                                 || OffIcon is not null || OffIconName.HasValue();
 
     /// <summary>
     /// Whether the toggle currently accepts a change from the user.
@@ -533,23 +640,47 @@ public partial class BitToggle : BitInputBase<bool>
 
         // Held for the whole handler rather than only around the change itself, so a click landing while an
         // awaited OnClick or OnChanging is still running is dropped instead of racing the change it precedes.
+        await RunChangeAsync(async () =>
+        {
+            await OnClick.InvokeAsync(e);
+
+            await ChangeValueAsync(CurrentValue is false);
+        });
+    }
+
+    private async Task RunChangeAsync(Func<Task> change)
+    {
         _isChanging = true;
 
+        // read once, so the flag that is cleared in the end is the one that was raised in the
+        // beginning even if the parameter is swapped while the change is still running
         var autoLoading = AutoLoading;
 
         if (autoLoading) SetAutoLoading(true);
 
         try
         {
-            await OnClick.InvokeAsync(e);
-
-            await ChangeValueAsync(CurrentValue is false);
+            await change();
         }
         finally
         {
             _isChanging = false;
 
-            if (autoLoading) SetAutoLoading(false);
+            // What the app made of the attempt is only known once its callbacks are done, so that is when it
+            // is announced - and an error it still shows is said again even when it is the very message the
+            // last attempt was refused with, which is a rejection all the same.
+            var announced = SyncLiveRegion(_hasAttempted);
+
+            _hasAttempted = false;
+
+            if (autoLoading)
+            {
+                SetAutoLoading(false);
+            }
+            else if (announced && IsDisposed is false)
+            {
+                StateHasChanged();
+            }
         }
     }
 
@@ -578,6 +709,8 @@ public partial class BitToggle : BitInputBase<bool>
         // reaches OnChanging either - a veto callback should not be asked about a change that cannot happen.
         if (InvalidValueBinding()) return;
 
+        _hasAttempted = true;
+
         if (OnChanging.HasDelegate)
         {
             var args = new BitToggleChangeArgs(newValue);
@@ -597,6 +730,33 @@ public partial class BitToggle : BitInputBase<bool>
         if (IsDisposed) return;
 
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Brings the live region in step with the message, announcing it only when it is not what was said last.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is announced while a change is in flight: the parameters may come and go several times as the
+    /// callbacks of the change re-render the page, and only where they land once the change is over is its
+    /// outcome. The text sits in a keyed element so every announcement replaces the element rather than only
+    /// rewriting its text - the same message said twice would otherwise change nothing in the DOM, and a live
+    /// region that did not change is one nothing is read out of.
+    /// </remarks>
+    /// <param name="reannounce">Says a message again even when it is the one that was said last.</param>
+    /// <returns>Whether the live region has something new to render.</returns>
+    private bool SyncLiveRegion(bool reannounce = false)
+    {
+        if (_isChanging) return false;
+
+        var text = LiveText;
+
+        if (text == _announcedLiveText && (reannounce is false || text is null)) return false;
+
+        _announcedLiveText = text;
+        _liveText = text;
+        _liveTextId++;
+
+        return true;
     }
 
     private void SetStateText()
@@ -625,6 +785,7 @@ public partial class BitToggle : BitInputBase<bool>
         _describedById = string.Join(' ', new[]
         {
             _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
+            HasErrorMessage ? _errorId : null,
             HasDescription ? _descriptionId : null,
             AriaDescription.HasValue() ? _ariaDescriptionId : null,
             AriaDescribedby.HasValue() ? AriaDescribedby : null

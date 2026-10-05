@@ -18,7 +18,7 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
 
-        var serverAddress = server.WebAppServerAddress;
+        var serverAddress = server.WebAppAddress;
 
         // The home page is public, so opening it needs no sign-in.
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.Home).ToString(),
@@ -75,6 +75,8 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
     private async Task ToggleThemeFromUserMenu(string themeBefore, string themeAfter, string darkTheme)
     {
         // The user menu (AppMenu) is a BitDropMenu; clicking its chevron opens the callout.
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
 
         var callout = Page.Locator(".app-menu-callout");

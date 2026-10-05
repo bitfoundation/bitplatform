@@ -2,6 +2,17 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarOptionDemo
 {
+    private static readonly BitNavBarParams[] navBarParams =
+    [
+        new()
+        {
+            Mode = BitNavMode.Manual,
+            Filled = true,
+            Color = BitColor.Info,
+            Indicator = BitNavBarIndicator.Pill,
+        }
+    ];
+
     private bool dynamicAutoReorder = true;
     private int dynamicOptionsCount = 3;
     private BitNavBarOption? dynamicSelectedOption;
@@ -31,77 +42,12 @@ public partial class _BitNavBarOptionDemo
 
     private record DynamicOption(string Text, string IconName);
 
-    private int countClick;
-    private bool reselectable = true;
+    private int clickCount;
+    private int selectCount;
+    private bool reselectable;
     private BitNavBarOption? eventsClickedOption;
     private BitNavBarOption? eventsSelectedOption;
-    private BitNavBarOption? twoWaySelectedOption;
 
-    private BitNavBarOption optionHome = default!;
-    private BitNavBarOption optionProducts = default!;
-    private BitNavBarOption optionAcademy = default!;
-    private BitNavBarOption optionProfile = default!;
-
-    // The options API has no DefaultSelectedItem: an option only exists once it has rendered, which is
-    // after the navbar has read its parameters. The sections that need to open on a selection therefore
-    // bind the selection and hand it the option they captured a reference to, once that reference exists.
-    private BitNavBarOption? bindingSelectedOption;
-    private BitNavBarOption bindingOptionProducts = default!;
-
-    private BitNavBarOption? hideTextSelectedOption;
-    private BitNavBarOption hideTextOptionHome = default!;
-
-    private BitNavBarOption? filledSelectedOption;
-    private BitNavBarOption filledOptionHome = default!;
-
-    private BitNavBarOption? tabStopSelectedOption;
-    private BitNavBarOption tabStopOptionProducts = default!;
-
-    private BitNavBarOption? wrapSelectedOption;
-    private BitNavBarOption wrapOptionProducts = default!;
-
-    private BitNavBarOption? selectedIconSelectedOption;
-    private BitNavBarOption selectedIconOptionHome = default!;
-
-    private BitNavBarOption? selectFocusSelectedOption;
-    private BitNavBarOption selectFocusOptionProducts = default!;
-
-    private BitNavBarOption? indicatorLineSelectedOption;
-    private BitNavBarOption indicatorLineOptionHome = default!;
-
-    private BitNavBarOption? indicatorPillSelectedOption;
-    private BitNavBarOption indicatorPillOptionHome = default!;
-
-    private BitNavBarOption? indicatorFilledSelectedOption;
-    private BitNavBarOption indicatorFilledOptionHome = default!;
-
-    private BitNavBarOption? indicatorVerticalSelectedOption;
-    private BitNavBarOption indicatorVerticalOptionHome = default!;
-
-    private BitNavBarOption? scrollableSelectedOption;
-    private BitNavBarOption scrollableOptionProfile = default!;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            bindingSelectedOption ??= bindingOptionProducts;
-            twoWaySelectedOption ??= optionHome;
-            hideTextSelectedOption ??= hideTextOptionHome;
-            filledSelectedOption ??= filledOptionHome;
-            tabStopSelectedOption ??= tabStopOptionProducts;
-            wrapSelectedOption ??= wrapOptionProducts;
-            selectedIconSelectedOption ??= selectedIconOptionHome;
-            selectFocusSelectedOption ??= selectFocusOptionProducts;
-            indicatorLineSelectedOption ??= indicatorLineOptionHome;
-            indicatorPillSelectedOption ??= indicatorPillOptionHome;
-            indicatorFilledSelectedOption ??= indicatorFilledOptionHome;
-            indicatorVerticalSelectedOption ??= indicatorVerticalOptionHome;
-
-
-            StateHasChanged();
-        }
-
-        base.OnAfterRender(firstRender);
-    }
+    private string? twoWaySelectedKey;
+    private string? scrollableSelectedKey;
 }

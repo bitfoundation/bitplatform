@@ -5,91 +5,49 @@
             Description="A modal pop-up that puts a short decision - a confirmation, a warning, a choice - in front of the page and waits for an answer." />
 
 <DemoPage Name="Dialog"
-          Description="A modal pop-up that puts a short decision in front of the page and waits for an answer. It comes with a title, a message and an Ok/Cancel pair out of the box, takes the focus and holds it while it is open, closes on Escape or on a click outside, and hands back both which button ended it and which gesture did - either through a two-way bound IsOpen or through an awaitable Show() call."
+          Description="A modal pop-up that puts a short decision in front of the page and waits for an answer: a title, a message and an Ok/Cancel pair out of the box, focus that moves in, stays in and comes back, Escape and click-outside dismissal that can be refused, and an answer read from a two-way bound IsOpen or awaited from Show()."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Surfaces/Dialog/BitDialog.razor"
           GitHubDemoUrl="Surfaces/Dialog/BitDialogDemo.razor">
     <NotesTemplate>
         <BitText>
-            A Dialog is for a <b>decision</b>, not for a document: a sentence of context and two buttons. Where the
-            overlay has to hold a form, a wizard or a long read, reach for
-            <BitLink Href="/components/modal">Modal</BitLink> instead.
+            A Dialog is for a <b>decision</b>: a sentence of context and a couple of buttons. For a form, a wizard or a long
+            read, use <BitLink Href="/components/modal">Modal</BitLink> instead.
             <br /><br />
-            The Dialog names itself to a screen reader from its <b>Title</b> and describes itself from its
-            <b>Subtitle</b> or <b>Message</b>, so a Dialog built entirely from custom content has neither - give it an
-            <b>AriaLabel</b>, or point <b>TitleAriaId</b> and <b>SubtitleAriaId</b> at headings of your own.
+            It is named by its <b>Title</b> and described by its <b>Subtitle</b> or <b>Message</b>. A Dialog built from custom
+            content has neither, so give it an <b>AriaLabel</b> or point <b>TitleAriaId</b> at your own heading.
             <br /><br />
-            <b>IsBlocking</b> is the "you must answer this" switch: it turns off both the click-outside and the Escape
-            key, and it promotes the ARIA role to
-            <BitTag Color="BitColor.SecondaryBackground">alertdialog</BitTag> so the Dialog interrupts a screen reader.
-            A dismissal it refuses is answered with a shake rather than swallowed, so the gesture never reads as a page
-            that has stopped responding - but keep it for the cases that really cannot be walked away from.
-            <b>IsModeless</b> is the opposite end: no overlay, the page behind stays clickable, Tab is free to walk out
-            of the Dialog and on into it, and the Dialog announces itself with
-            <BitTag Color="BitColor.SecondaryBackground">aria-modal="false"</BitTag>. It still takes the focus when it
-            opens, the way any dialog does; turn <b>AutoFocus</b> off where it should not.
-            <br /><br />
-            The focus is the part that is easiest to get wrong. By default the Dialog moves the focus onto the first
-            thing inside it, keeps Tab cycling within it, and hands the focus back to whatever opened it once it
-            closes. For a destructive confirmation, point <b>AutoFocusButton</b> at the safe answer so a stray Enter
-            cannot carry the destructive one out, and use <b>AutoFocusSelector</b> where the field the user came for
-            is not the first one in the Dialog.
-            <br /><br />
-            <b>AutoToggleScroll</b> is off by default, so the page behind the overlay still scrolls. Turn it on for a
-            full-screen modal Dialog, and point <b>ScrollerSelector</b> or <b>ScrollerElement</b> at the right element
-            when the Dialog is inside a scrollable of its own rather than over the page. A Dialog inside a
-            <BitLink Href="/components/appshell">BitAppShell</BitLink> holds the shell's scroller without being told
-            to, since the shell cascades it - the body of such an app never scrolls, so holding it would hold nothing.
-            <br /><br />
-            <b>OnOk</b> is awaited: the Dialog shows a spinner in place of the Ok text while the callback runs and only
-            closes once it returns, so a save can hold the Dialog open until it succeeds - and a callback that throws
-            leaves it open, unanswered, for another try. <b>IsOkButtonEnabled</b> is the other half of that:
-            it holds the Ok button shut until the content of the Dialog has produced the answer it is asking for.
-            <br /><br />
-            <b>OnDismissing</b> runs before every closing the Dialog carries out itself, <b>Close()</b> and
-            <b>Toggle()</b> among them, and setting <b>Cancel</b> on its arguments refuses that closing - which is how
-            a Dialog holds on to a half-written form without becoming a Dialog that can never be left. Leave one way
-            out always let through.
-            <br /><br />
-            A Dialog is unmounted when it closes, which is what keeps a closed one costing nothing. <b>KeepMounted</b>
-            leaves it in the DOM, hidden, for the case where the content is expensive to build or holds state the user
-            is meant to come back to - and nothing of it is rendered until the first time it opens, so a Dialog that
-            is never opened still costs nothing either.
-            <br /><br />
-            A Dialog is as wide and as tall as its content, never outgrows the area it is positioned in, and stops
-            widening at the width the theme names, so a short confirmation never spans a desktop screen.
-            <b>MaxWidth</b> replaces that ceiling where a Dialog wants a wider one, and <b>Color</b> paints its two
-            action buttons, which is what <b>Error</b> alongside an <b>AutoFocusButton</b> of <b>Cancel</b> is for.
+            It moves the focus in when it opens, keeps Tab inside, closes on Escape, and gives the focus back to what opened
+            it. <b>AutoToggleScroll</b> is off by default, so the page behind still scrolls unless you turn it on.
         </BitText>
     </NotesTemplate>
 
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                A Dialog needs nothing but a way to open it. Bind <b>IsOpen</b> and give it a <b>Title</b> and a
-                <b>Message</b>: it renders the header with its close button, the message, and the Ok/Cancel pair,
-                and closes itself on any of the three.
+                Bind <b>IsOpen</b> and set a <b>Title</b> and a <b>Message</b>: the header, the close button and the Ok/Cancel pair come
+                built in, and any of them closes the Dialog.
             </div>
             <br />
-            <BitButton OnClick="@(() => IsOpen = true)">Open Dialog</BitButton>
-            <BitDialog @bind-IsOpen="IsOpen" Title="Missing Subject" Message="Do you want to send this message without a subject?" />
+            <BitButton OnClick="@(() => isOpenBasic = true)">Open Dialog</BitButton>
+            <BitDialog @bind-IsOpen="isOpenBasic" Title="Missing subject" Message="Do you want to send this message without a subject?" />
         </DemoExample>
 
         <DemoExample Title="Buttons" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                <b>OkText</b> and <b>CancelText</b> relabel the two actions - say what will happen rather than "Ok",
-                so the answer is readable without the message above it. <b>ShowOkButton</b>, <b>ShowCancelButton</b>
-                and <b>ShowCloseButton</b> each remove one of the three buttons; a Dialog with none of them left is
-                still closed by Escape and by a click outside, unless <b>IsBlocking</b> takes those away too.
+                <b>OkText</b> and <b>CancelText</b> relabel the actions - name what happens rather than "Ok". <b>ShowOkButton</b>,
+                <b>ShowCancelButton</b> and <b>ShowCloseButton</b> remove one each. <b>IsOkButtonEnabled</b> (and
+                <b>IsCancelButtonEnabled</b>) holds a button shut until the answer exists, while every other way out keeps working.
             </div>
             <br />
             <div class="btn-container">
                 <BitButton OnClick="@(() => isOpenLabels = true)">Custom labels</BitButton>
                 <BitButton OnClick="@(() => isOpenAcknowledge = true)">Single action</BitButton>
-                <BitButton OnClick="@(() => isOpenNoClose = true)">No close button</BitButton>
+                <BitButton OnClick="@(() => { agreed = false; isOpenGated = true; })">Gated Ok</BitButton>
             </div>
 
             <BitDialog @bind-IsOpen="isOpenLabels"
@@ -100,31 +58,14 @@
 
             <BitDialog @bind-IsOpen="isOpenAcknowledge"
                        ShowCancelButton="false"
+                       ShowCloseButton="false"
                        Title="Your session expired"
                        Message="Sign in again to pick up where you left off."
                        OkText="Got it" />
 
-            <BitDialog @bind-IsOpen="isOpenNoClose"
-                       ShowCloseButton="false"
-                       Title="Missing Subject"
-                       Message="Do you want to send this message without a subject?" />
-
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                The answer a Dialog asks for is not always available the moment it opens. <b>IsOkButtonEnabled</b>
-                holds the Ok button shut until it is - a consent that has to be ticked, a name that has to be typed -
-                and <b>IsCancelButtonEnabled</b> does the same for Cancel. Unlike <b>IsEnabled</b>, which turns the
-                whole Dialog off, they leave every other way out working, so a Dialog whose Ok is gated is still a
-                Dialog that can be walked away from. The focus skips a button it cannot land on: point
-                <b>AutoFocusButton</b> at a disabled Ok and it falls back to the first focusable element instead.
-            </div>
-            <br />
-            <BitButton OnClick="@(() => { agreed = false; isOpenGated = true; })">Open Dialog</BitButton>
             <BitDialog @bind-IsOpen="isOpenGated"
                        IsOkButtonEnabled="agreed"
                        Title="Before you continue"
-                       ShowCloseButton="false"
                        OkText="Accept">
                 <div class="dialog-body">
                     <BitCheckbox @bind-Value="agreed" Label="I have read and agree to the terms" />
@@ -134,16 +75,14 @@
 
         <DemoExample Title="Header & footer" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                <b>Subtitle</b> adds a quieter second line under the title, and is what describes the Dialog to a
-                screen reader when it is set. <b>HeaderTemplate</b> replaces the title block entirely while keeping the
-                close button beside it, and <b>FooterTemplate</b> adds a band under the body that stays put while the
-                body scrolls.
+                <b>Subtitle</b> adds a quieter line under the title. <b>HeaderTemplate</b> replaces the title block and keeps the
+                close button beside it; <b>FooterTemplate</b> adds a band under the body that stays put while the body scrolls.
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="@(() => isOpenSubtitle = true)">Title & subtitle</BitButton>
-                <BitButton OnClick="@(() => isOpenHeaderTemplate = true)">Header template</BitButton>
-                <BitButton OnClick="@(() => isOpenFooterTemplate = true)">Footer template</BitButton>
+                <BitButton OnClick="@(() => isOpenSubtitle = true)">Subtitle</BitButton>
+                <BitButton OnClick="@(() => isOpenHeaderTemplate = true)">HeaderTemplate</BitButton>
+                <BitButton OnClick="@(() => isOpenFooterTemplate = true)">FooterTemplate</BitButton>
             </div>
 
             <BitDialog @bind-IsOpen="isOpenSubtitle"
@@ -166,10 +105,11 @@
                        ShowOkButton="false"
                        ShowCancelButton="false"
                        Title="Delete all"
-                       Message="+99 emails will be deleted.">
+                       Message="99+ emails will be deleted, and deleted emails cannot be recovered.">
                 <FooterTemplate>
                     <div class="dialog-footer">
-                        Are you sure?! there's no going back.
+                        <BitButton Variant="BitVariant.Text" OnClick="@(() => isOpenFooterTemplate = false)">Not now</BitButton>
+                        <BitButton Color="BitColor.Error" OnClick="@(() => isOpenFooterTemplate = false)">Delete all</BitButton>
                     </div>
                 </FooterTemplate>
             </BitDialog>
@@ -177,35 +117,25 @@
 
         <DemoExample Title="Custom content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                Anything put between the tags - or into the <b>Body</b> fragment, which is the same slot under another
-                name - is rendered inside the scrollable body, above the buttons. A Dialog built this way carries no
-                title of its own, so give it an <b>AriaLabel</b> or point <b>TitleAriaId</b> at the heading you wrote.
+                Anything between the tags - or in <b>Body</b>, the same slot - renders in the scrollable body, above the buttons.
+                Without a <b>Title</b> the Dialog has no accessible name: point <b>TitleAriaId</b> at a heading of your own (an
+                <b>h2</b>, like the built-in title), or set <b>AriaLabel</b>.
             </div>
             <br />
-            <BitButton OnClick="@(() => IsOpen2 = true)">Open Dialog</BitButton>
-            <br /><br />
-            <div>Result is: @customDialogRef?.Result</div>
-            @if (customDialogRef?.Result == BitDialogResult.Ok)
-            {
-                <div>Value is: @optionValue</div>
-            }
+            <BitButton OnClick="@(() => isOpenCustom = true)">Open Dialog</BitButton>
+            <div>Selected option: @(optionValue ?? "-")</div>
 
-            <BitDialog @ref="customDialogRef"
-                       @bind-IsOpen="@IsOpen2"
+            <BitDialog @bind-IsOpen="isOpenCustom"
                        TitleAriaId="dialog-custom-title"
                        ShowCloseButton="false">
-                <div class="dialog-title" id="dialog-custom-title">
-                    <span>All emails together</span>
-                </div>
+                <h2 class="dialog-title" id="dialog-custom-title">All emails together</h2>
                 <div class="dialog-body">
-                    <p>
-                        Your Inbox has changed. No longer does it include favorites, it is a singular destination for your emails.
-                    </p>
+                    <p>Your inbox has changed: it no longer includes favorites, it is a single destination for all your emails.</p>
                     <br />
-                    <BitChoiceGroup @bind-Value="optionValue" Label="Basic Options" TItem="BitChoiceGroupOption<string>" TValue="string">
-                        <BitChoiceGroupOption Text="Option A" Value="@("A")" />
-                        <BitChoiceGroupOption Text="Option B" Value="@("B")" />
-                        <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                    <BitChoiceGroup @bind-Value="optionValue" Label="Show first" TItem="BitChoiceGroupOption<string>" TValue="string">
+                        <BitChoiceGroupOption Text="Newest" Value="@("Newest")" />
+                        <BitChoiceGroupOption Text="Unread" Value="@("Unread")" />
+                        <BitChoiceGroupOption Text="Starred" Value="@("Starred")" />
                     </BitChoiceGroup>
                 </div>
             </BitDialog>
@@ -213,34 +143,23 @@
 
         <DemoExample Title="Result" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                <b>Result</b> reports the answer the last showing was given: <b>Ok</b> or <b>Cancel</b> when one of
-                those buttons ended it, and <b>null</b> when it was dismissed with the close button, a click outside
-                or the Escape key. <b>DismissReason</b> reports the gesture instead - the four above, plus
-                <b>Programmatic</b> for the page closing the Dialog itself - which is what tells the answerless
-                endings apart from one another. Both are reset each time the Dialog opens, and both are in place
-                before <b>OnDismiss</b> and <b>IsOpenChanged</b> run.
+                <b>Result</b> is <b>Ok</b>, <b>Cancel</b>, or null when the Dialog was dismissed without an answer, and
+                <b>DismissReason</b> names the gesture that closed it. <b>Show()</b> opens the Dialog and awaits the same answer, which
+                turns a confirmation into one line of code.
             </div>
             <br />
-            <BitButton OnClick="@(() => IsOpen1 = true)">Open Dialog</BitButton>
-            <br /><br />
-            <div>Result is: @(dialogRef?.Result?.ToString() ?? "(none yet)")</div>
-            <div>Dismiss reason is: @(dialogRef?.DismissReason?.ToString() ?? "-")</div>
-            <BitDialog @ref="@dialogRef"
-                       @bind-IsOpen="@IsOpen1"
-                       Title="Missing Subject"
+            <div class="btn-container">
+                <BitButton OnClick="@(() => isOpenResult = true)">Open Dialog</BitButton>
+                <BitButton OnClick="ShowAndAwait">Show and await</BitButton>
+            </div>
+            <div>Result: @(resultDialogRef?.Result?.ToString() ?? "-"), reason: @(resultDialogRef?.DismissReason?.ToString() ?? "-")</div>
+            <div>Awaited result: @awaitedResult</div>
+
+            <BitDialog @ref="resultDialogRef"
+                       @bind-IsOpen="isOpenResult"
+                       Title="Missing subject"
                        Message="Do you want to send this message without a subject?" />
 
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                <b>Show()</b> opens the Dialog and gives back a task that completes with that same result, which turns
-                a confirmation into a single awaited line. Whatever ends the showing - a button, a dismissal, or the
-                page closing the Dialog itself - completes the task, so it never hangs.
-            </div>
-            <br />
-            <BitButton OnClick="ShowAndAwait">Show and await</BitButton>
-            <br /><br />
-            <span>Awaited result is: @awaitedResultText</span>
             <BitDialog @ref="awaitDialogRef"
                        Title="Discard draft?"
                        OkText="Discard"
@@ -250,22 +169,17 @@
 
         <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>OnOpen</b> fires once the Dialog is on screen, <b>OnOk</b>, <b>OnCancel</b> and <b>OnClose</b> each
-                fire for their own button, <b>OnOverlayClick</b> fires for every click on the overlay whether or not
-                it goes on to close the Dialog, and <b>OnDismiss</b> fires for every closing the Dialog carries out
-                itself - a <b>Close()</b> or <b>Toggle()</b> call included, but not the page simply setting
-                <b>IsOpen</b> to false behind its back.
-                <b>OnOk</b> is awaited and the Ok button shows a spinner while it runs - press Ok below and
-                watch it wait a second before the Dialog closes. A callback that throws leaves the Dialog open and
-                unanswered, so the user can try again.
+                <b>OnOk</b> is awaited: a spinner replaces its label and the Dialog closes once it returns - or stays open for another
+                try when it throws. <b>OnOverlayClick</b> fires for every click on the overlay, and <b>OnDismiss</b> for every closing
+                the Dialog performs itself (not for the page setting IsOpen).
             </div>
             <br />
-            <BitButton OnClick="@(() => IsOpenEvent = true)">Open Dialog</BitButton>
-            <br /><br />
+            <BitButton OnClick="@(() => isOpenEvents = true)">Open Dialog</BitButton>
             <div>Last event: @lastEvent</div>
-            <BitDialog @bind-IsOpen="IsOpenEvent"
-                       Title="Missing Subject"
-                       Message="Do you want to send this message without a subject?"
+
+            <BitDialog @bind-IsOpen="isOpenEvents"
+                       Title="Missing subject"
+                       Message="Press Ok and it waits a second before closing."
                        OnOpen="@(() => lastEvent = "OnOpen")"
                        OnOk="HandleSlowOk"
                        OnCancel="@(() => lastEvent = "OnCancel")"
@@ -276,88 +190,61 @@
 
         <DemoExample Title="Dismiss behavior" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
-                By default a click on the overlay and the Escape key both dismiss the Dialog. <b>IsBlocking</b> turns
-                off both and promotes the role to <b>alertdialog</b>, leaving the buttons as the only way out;
-                <b>IsAlert</b> sets that role by hand where a Dialog should interrupt a screen reader without being
-                blocking, or should stay a plain <b>dialog</b> while it is.
-                <b>CloseOnEscape</b> turns off only the key, and <b>IsModeless</b> removes the overlay altogether so
-                the page behind stays clickable. Try pressing Escape or clicking outside the first two - a dismissal
-                the Dialog will not act on is answered with a shake rather than silently ignored, and with a ring
-                around the surface where the reader has asked for less motion. Press again while the shake is still
-                running and it starts over, so the second gesture is answered as plainly as the first.
+                The overlay and the Escape key both dismiss by default. <b>CloseOnOverlayClick</b> and <b>CloseOnEscape</b> each turn
+                one off; <b>Blocking</b> turns off both and makes the role <b>alertdialog</b> (<b>IsAlert</b> sets the role by hand).
+                <b>Modeless</b> drops the overlay so the page stays usable. A refused gesture shakes the surface - a ring under
+                reduced motion - and raises <b>OnDismissPrevented</b>, so the Dialog can say why.
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="@(() => IsOpen4 = true)">IsBlocking</BitButton>
-                <BitButton OnClick="@(() => isOpenNoEscape = true)">CloseOnEscape = false</BitButton>
-                <BitButton OnClick="@(() => isOpenModeless = true)">IsModeless</BitButton>
+                <BitButton OnClick="@(() => isOpenBlocking = true)">Blocking</BitButton>
+                <BitButton OnClick="@(() => isOpenNoOverlayClick = true)">CloseOnOverlayClick="false"</BitButton>
+                <BitButton OnClick="@(() => isOpenNoEscape = true)">CloseOnEscape="false"</BitButton>
+                <BitButton OnClick="@(() => isOpenModeless = true)">Modeless</BitButton>
             </div>
 
-            <BitDialog IsBlocking
-                       @bind-IsOpen="IsOpen4"
-                       Title="Missing Subject"
-                       Message="Neither the Escape key nor a click outside will close this one." />
-
-            <BitDialog CloseOnEscape="false"
-                       @bind-IsOpen="isOpenNoEscape"
-                       Title="Missing Subject"
-                       Message="Escape does nothing here, but a click on the overlay still closes it." />
-
-            <BitDialog IsModeless
-                       @bind-IsOpen="isOpenModeless"
-                       Position="BitPosition.TopEnd"
-                       Title="Modeless"
-                       Message="There is no overlay, so the page behind this one is still usable." />
-
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                <b>OnDismissPrevented</b> fires with the gesture that was refused, so the Dialog can say why instead of
-                only shaking - and fires for a closing <b>OnDismissing</b> turned down as well, which the next section
-                is about. Press Escape or click outside the one below.
-            </div>
-            <br />
-            <BitButton OnClick="@(() => isOpenPrevented = true)">Blocking with a hint</BitButton>
-            <BitDialog IsBlocking
-                       @bind-IsOpen="isOpenPrevented"
+            <BitDialog Blocking
+                       @bind-IsOpen="isOpenBlocking"
                        Title="Two-factor code"
                        Subtitle="@preventedHint"
                        Message="Enter the six-digit code from your authenticator app to finish signing in."
                        OkText="Verify"
                        CancelText="Use another method"
                        OnOpen="@(() => preventedHint = null)"
-                       OnDismissPrevented="@(r => preventedHint = $"{r} will not close this one - answer it with one of the buttons.")" />
+                       OnDismissPrevented="@(r => preventedHint = $"{r} will not close this one - answer it with a button.")" />
+
+            <BitDialog CloseOnOverlayClick="false"
+                       @bind-IsOpen="isOpenNoOverlayClick"
+                       Title="Edit profile"
+                       Message="A click outside is refused, but the Escape key still closes it." />
+
+            <BitDialog CloseOnEscape="false"
+                       @bind-IsOpen="isOpenNoEscape"
+                       Title="Missing subject"
+                       Message="The Escape key is refused, but a click outside still closes it." />
+
+            <BitDialog Modeless
+                       @bind-IsOpen="isOpenModeless"
+                       Title="Modeless"
+                       Message="There is no overlay, so the page behind this one is still usable." />
         </DemoExample>
 
         <DemoExample Title="Guarded close" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
-                <b>OnDismissing</b> runs before every closing the Dialog carries out itself - each of its three
-                buttons, a click on the overlay, the Escape key, and a <b>Close()</b> or <b>Toggle()</b> call - and
-                setting <b>Cancel</b> on the arguments leaves the Dialog where it is. Read <b>Reason</b> to tell the
-                gestures apart: holding on to a half-written form when Escape is pressed is not the same as refusing
-                the Cancel button the user has just aimed at. The callback is awaited, so it can run work of its own
-                first - a confirmation of its own among it.
-                <br /><br />
-                A refused closing is played back exactly like a refused dismissal - the surface shakes and
-                <b>OnDismissPrevented</b> is raised with the same reason - and leaves the showing unanswered, so
-                <b>Result</b> is put back to what it was before the button was pressed.
-                <b>NoDismissPreventedAnimation</b> turns off the shake for a Dialog that explains the refusal some
-                other way. Leave one way out that is always let through, the way <b>Save</b> is below, or the Dialog
-                becomes a trap.
+                <b>OnDismissing</b> runs before every closing - the three buttons, the overlay, Escape and <b>Close()</b> - and setting
+                <b>Cancel</b> refuses it; read <b>Reason</b> to tell them apart. It is awaited, so it can ask first. A refusal plays back
+                like a refused dismissal and takes the answer back. Leave one way out, like <b>Save</b> here.
             </div>
             <br />
             <BitToggle Label="The note has unsaved changes" @bind-Value="hasUnsavedChanges" />
             <br />
             <BitButton OnClick="@(() => isOpenGuarded = true)">Open Dialog</BitButton>
-            <br /><br />
-            <div>Last refused gesture: @refusedGesture</div>
-            <div>Result is: @(guardedDialogRef?.Result?.ToString() ?? "(none yet)")</div>
+            <div>Last refused: @refusedGesture</div>
 
-            <BitDialog @ref="guardedDialogRef"
-                       @bind-IsOpen="isOpenGuarded"
+            <BitDialog @bind-IsOpen="isOpenGuarded"
                        Title="Edit the note"
                        Subtitle="@guardedHint"
-                       Message="While the toggle above is on, everything but Save is refused - try Escape, the overlay, the close button and Cancel."
+                       Message="While the toggle is on, everything but Save is refused."
                        OkText="Save"
                        CancelText="Discard"
                        OnDismissing="HandleDismissing"
@@ -367,15 +254,17 @@
 
         <DemoExample Title="Focus management" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
-                A Dialog moves the focus onto the first focusable element it holds when it opens (<b>AutoFocus</b>),
-                keeps Tab and Shift+Tab cycling inside it while it is open (<b>TrapFocus</b>), and hands the focus back
-                to whatever opened it when it closes (<b>RestoreFocus</b>). Open either Dialog below with the keyboard
-                and tab around to feel the difference.
+                By default the focus moves to the first focusable element, Tab cycles inside, and the focus returns to the opener on
+                close (<b>AutoFocus</b>, <b>TrapFocus</b>, <b>RestoreFocus</b>). <b>AutoFocusButton</b> lands on one of the Dialog's
+                buttons - the safe answer of a destructive confirmation; <b>AutoFocusSelector</b> (or a <code>data-autofocus</code>
+                attribute) picks an element of your own.
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="@(() => isOpenFocus = true)">Default focus behavior</BitButton>
+                <BitButton OnClick="@(() => isOpenFocus = true)">Default</BitButton>
                 <BitButton OnClick="@(() => isOpenNoFocus = true)">AutoFocus & TrapFocus off</BitButton>
+                <BitButton OnClick="@(() => isOpenFocusCancel = true)">AutoFocusButton</BitButton>
+                <BitButton OnClick="@(() => isOpenFocusSelector = true)">AutoFocusSelector</BitButton>
             </div>
 
             <BitDialog @bind-IsOpen="isOpenFocus"
@@ -396,253 +285,141 @@
                 </div>
             </BitDialog>
 
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                <b>AutoFocusButton</b> puts the focus on one of the Dialog's own buttons instead. For a
-                confirmation that cannot be undone, point it at the safe answer so a stray Enter cannot carry
-                the destructive one out.
-            </div>
-            <br />
-            <BitButton OnClick="@(() => isOpenFocusCancel = true)">Focus the safe answer</BitButton>
-            <BitDialog @bind-IsOpen="isOpenFocusCancel"
-                       IsAlert
-                       ShowCloseButton="false"
+            <BitDialog IsAlert
                        AutoFocusButton="BitDialogButton.Cancel"
+                       @bind-IsOpen="isOpenFocusCancel"
+                       ShowCloseButton="false"
                        Title="Delete this workspace?"
                        Message="Every project, file and comment in it goes with it. This cannot be undone."
-                       OkText="Delete workspace"
-                       CancelText="Cancel" />
+                       OkText="Delete workspace" />
 
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                <b>AutoFocusSelector</b> names an element of your own instead. The Dialog below opens with a link
-                above the field, which is where the focus would otherwise land; the selector puts it in the field the
-                user actually came for. A selector that matches nothing visible falls back to the first focusable
-                element, so a Dialog whose content varies never opens with the focus left behind on the page.
-            </div>
-            <br />
-            <BitButton OnClick="@(() => isOpenFocusSelector = true)">Focus a field of your own</BitButton>
-            <BitDialog @bind-IsOpen="isOpenFocusSelector"
+            <BitDialog AutoFocusSelector=".invite-email input"
+                       @bind-IsOpen="isOpenFocusSelector"
                        Title="Invite a teammate"
                        ShowCloseButton="false"
-                       AutoFocusSelector=".invite-email input"
                        OkText="Send invite">
                 <div class="dialog-body">
                     <BitLink Href="/components/dialog">What can a guest see?</BitLink>
-                    <br /><br />
                     <BitTextField Class="invite-email" Label="Email" Placeholder="name@example.com" />
                 </div>
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="Absolute position" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Position" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                <b>AbsolutePosition</b> swaps the fixed positioning for absolute, so the Dialog covers its nearest
-                positioned ancestor instead of the screen. That is what puts a Dialog inside a card or a panel rather
-                than over the whole page.
+                <b>Position</b> places the Dialog at one of nine spots on the screen. The Left/Right values are physical; the six
+                Start/End ones follow the reading direction (see RTL below).
             </div>
             <br />
-            <BitButton OnClick="@(() => IsOpen6 = true)">Open Dialog</BitButton>
-
-            <div class="relative-container">
-                <BitDialog AbsolutePosition
-                           @bind-IsOpen="IsOpen6"
-                           Title="Missing Subject"
-                           Message="This Dialog covers the bordered box, not the page." />
-
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+            <div class="position-grid">
+                @foreach (var pos in dialogPositions)
+                {
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => OpenDialogInPosition(pos)">@pos</BitButton>
+                }
             </div>
+
+            <BitDialog @bind-IsOpen="isOpenPosition"
+                       Position="position"
+                       Title="@position.ToString()"
+                       Message="Do you want to send this message without a subject?" />
         </DemoExample>
 
-        <DemoExample Title="Scroll locking" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Absolute position & scroll lock" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
-                <b>AutoToggleScroll</b> stops the page behind the overlay from scrolling for as long as the Dialog is
-                open, and gives it back afterwards - including when the Dialog is disposed while still open. The holds
-                are counted, so a scroller held by two overlays at once is only released by the second of them
-                to close. <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) names what to lock when the Dialog sits
-                over a scrollable of its own rather than over the page; inside a <b>BitAppShell</b> the shell's own
-                scroller is held without either of them being set, since the body of such an app never scrolls.
+                <b>AutoToggleScroll</b> stops the page behind from scrolling while the Dialog is open. <b>AbsolutePosition</b> covers the
+                nearest positioned ancestor instead of the screen; pair it with <b>ScrollerSelector</b> (or <b>ScrollerElement</b>) to
+                lock that box instead of the page. Inside a <b>BitAppShell</b> the shell's scroller is locked without either.
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="@(() => IsOpen5 = true)">AutoToggleScroll</BitButton>
-                <BitButton OnClick="@(() => IsOpen7 = true)">ScrollerSelector</BitButton>
+                <BitButton OnClick="@(() => isOpenScrollLock = true)">AutoToggleScroll</BitButton>
+                <BitButton OnClick="@(() => isOpenAbsolute = true)">AbsolutePosition</BitButton>
             </div>
 
             <BitDialog AutoToggleScroll
-                       @bind-IsOpen="IsOpen5"
-                       Title="Missing Subject"
-                       Message="The page behind this one cannot be scrolled while it is open." />
+                       @bind-IsOpen="isOpenScrollLock"
+                       Title="The page is locked"
+                       Message="The page behind this Dialog cannot be scrolled while it is open." />
 
             <div class="relative-container">
-                <BitDialog AbsolutePosition AutoToggleScroll
-                           @bind-IsOpen="IsOpen7"
+                <BitDialog AbsolutePosition
+                           AutoToggleScroll
                            ScrollerSelector=".relative-container"
-                           Title="Missing Subject"
-                           Message="This one locks the box it sits in, not the page." />
+                           @bind-IsOpen="isOpenAbsolute"
+                           Title="Inside the box"
+                           Message="This Dialog covers and locks the bordered box, not the page." />
 
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
+                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                spark emotion, and resonate with those who encounter them.
+                <br />
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
                 Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
                 when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                for ideas that change minds and spark emotions. This is where the journey begins.
                 <br />
-                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                <br />
-                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+                In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity waits
                 to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
                 possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-                vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-                shaped into meaning, and the emotions ready to resonate with every reader.
-                <br />
-                In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-                each word has the power to transform into something extraordinary. Here lies the start of something new-an
-                opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
-                idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
-                begins here, in this quiet moment where everything is possible.
+                vibrant narratives of tomorrow.
             </div>
         </DemoExample>
 
-        <DemoExample Title="Position" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Draggable" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                <b>Position</b> moves the Dialog off the centre of the screen. The <b>Left</b> and <b>Right</b> values
-                are physical and stay on the same side in both reading directions; the <b>Start</b> and <b>End</b>
-                values follow the reading direction, so <b>TopStart</b> is the top left in an LTR Dialog and the top
-                right in an RTL one.
+                <b>IsDraggable</b> lets the Dialog be moved by its header - or by its whole surface when it has none - within its area,
+                and puts it back on the next showing. <b>DragElementSelector</b> names a handle of your own; buttons and fields inside
+                it keep working.
             </div>
             <br />
-            <div class="position-btn">
-                <div>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.TopLeft)">Top Left</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.TopCenter)">Top Center</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.TopRight)">Top Right</BitButton>
-                </div>
-                <div>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.CenterLeft)">Center Left</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.Center)">Center</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.CenterRight)">Center Right</BitButton>
-                </div>
-                <div>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.BottomLeft)">Bottom Left</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.BottomCenter)">Bottom Center</BitButton>
-                    <BitButton OnClick="() => OpenDialogInPosition(BitPosition.BottomRight)">Bottom Right</BitButton>
-                </div>
-            </div>
-            <BitDialog @bind-IsOpen="IsOpenInPosition"
-                       Position="position"
-                       Title="Missing Subject"
-                       Message="Do you want to send this message without a subject?" />
-
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                The same two Dialogs in an RTL layout, one pinned to the physical <b>TopLeft</b> and one to the
-                logical <b>TopStart</b> - which lands on the right, where an RTL reader starts.
-            </div>
+            <BitToggle Label="IsDraggable" @bind-Value="isDraggable" />
             <br />
-            <div class="btn-container" dir="rtl">
-                <BitButton Dir="BitDir.Rtl" OnClick="@(() => isOpenPhysical = true)">TopLeft</BitButton>
-                <BitButton Dir="BitDir.Rtl" OnClick="@(() => isOpenLogical = true)">TopStart</BitButton>
+            <div class="btn-container">
+                <BitButton OnClick="@(() => isOpenDraggable = true)">Header handle</BitButton>
+                <BitButton OnClick="@(() => isOpenDragHandle = true)">DragElementSelector</BitButton>
             </div>
 
-            <BitDialog @bind-IsOpen="isOpenPhysical"
-                       Dir="BitDir.Rtl"
-                       Position="BitPosition.TopLeft"
-                       Title="TopLeft"
-                       OkText="تایید"
-                       CancelText="انصراف"
-                       Message="موقعیت فیزیکی: همیشه سمت چپ" />
-
-            <BitDialog @bind-IsOpen="isOpenLogical"
-                       Dir="BitDir.Rtl"
-                       Position="BitPosition.TopStart"
-                       Title="TopStart"
-                       OkText="تایید"
-                       CancelText="انصراف"
-                       Message="موقعیت منطقی: ابتدای جهت خواندن" />
-        </DemoExample>
-
-
-        <DemoExample Title="Draggable" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-            <div>
-                <b>IsDraggable</b> lets the Dialog be moved around, which is what a modeless Dialog the user needs to
-                look behind wants. It is dragged by its header, the way a window is dragged by its title bar, so the
-                content underneath stays selectable and a scrolling body still scrolls on a touch screen; a Dialog
-                with no header at all is dragged by its whole surface instead - and its body still scrolls under a
-                finger, since a body that cannot be scrolled is a worse trade than one that has to be dragged by its
-                edges. <b>DragElementSelector</b> points the grab area at an element of your own. Either way the
-                Dialog stays inside the area it was positioned in, so it cannot be dragged off an edge and out of
-                reach, and it comes back where it was laid out the next time it is shown rather than where it was
-                last left. Both are read again on every render, so the toggle below takes effect on a Dialog that is
-                already open.
-            </div>
-            <br />
-            <BitToggle Label="Is Draggable" @bind-Value="IsDraggable" />
-            <br />
-            <BitButton OnClick="@(() => IsOpen8 = true)">Open Dialog</BitButton>
-            <BitDialog @bind-IsOpen="IsOpen8"
-                       IsDraggable="IsDraggable"
+            <BitDialog IsDraggable="isDraggable"
+                       @bind-IsOpen="isOpenDraggable"
                        Title="Draggable dialog"
-                       Message="Do you want to send this message without a subject?" />
+                       Message="Drag it by its header while the toggle is on." />
 
-            <BitSeparator Style="margin: 1rem 0" />
-
-            <div>
-                <b>DragElementSelector</b> points the grab area at an element of your own - the title bar of a Dialog
-                built entirely from custom content, as here. Controls inside the handle keep working: a pointer that
-                lands on a button, a field or a link is reaching for it rather than asking to move the window.
-            </div>
-            <br />
-            <BitButton OnClick="@(() => IsOpen9 = true)">Open Dialog</BitButton>
             <BitDialog IsDraggable
-                       @bind-IsOpen="IsOpen9"
-                       ShowCloseButton="false"
-                       AriaLabel="Draggable Dialog with custom drag element"
-                       DragElementSelector=".dialog-title-drag">
-                <div class="dialog-title dialog-title-drag">
-                    <span>Draggable Dialog with custom drag element</span>
-                    <BitButton Variant="BitVariant.Text" OnClick="@(() => IsOpen9 = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
+                       DragElementSelector=".dialog-title"
+                       @bind-IsOpen="isOpenDragHandle"
+                       TitleAriaId="dialog-drag-title"
+                       ShowCloseButton="false">
+                <div class="dialog-title">
+                    <span id="dialog-drag-title">Drag me by this bar</span>
+                    <BitButton Variant="BitVariant.Text" OnClick="@(() => isOpenDragHandle = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
                 </div>
                 <div class="dialog-body">
-                    <p>
-                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
-                        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                    </p>
+                    The bar above is the handle; the button inside it still closes the Dialog.
                 </div>
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="Nested dialogs" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="Nested dialogs" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                A Dialog opened from inside another one stacks on top of it, and the keyboard follows: Escape closes
-                only the Dialog that has the focus, so answering the inner one leaves the outer one standing rather
-                than tearing both of them down with a single key.
+                A Dialog opened inside another stacks on top of it. Escape closes only the innermost layer: the nested Dialog, or the
+                open list of a field inside the Dialog (a combo box, a search box, a date picker) - never both at once.
             </div>
             <br />
             <BitButton OnClick="@(() => isOpenOuter = true)">Open Dialog</BitButton>
+
             <BitDialog @bind-IsOpen="isOpenOuter"
                        Title="Publish this version?"
                        Message="Everyone in the workspace will see this version as soon as it goes out."
                        OkText="Publish">
                 <div class="dialog-body">
+                    <BitDropdown Combo
+                                 Label="Notify"
+                                 Items="audienceItems"
+                                 DefaultValue="@string.Empty"
+                                 Placeholder="Type to filter" />
+                    <br />
                     <BitButton Variant="BitVariant.Text" OnClick="@(() => isOpenInner = true)">What changed?</BitButton>
 
                     <BitDialog @bind-IsOpen="isOpenInner"
@@ -655,14 +432,10 @@
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="Keep mounted" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <DemoExample Title="Keep mounted" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
-                A Dialog is unmounted when it closes, so its content is built afresh - and starts empty - the next
-                time it opens. <b>KeepMounted</b> leaves it in the DOM, hidden, which keeps whatever the user had
-                typed, at the cost of that content living and re-rendering for as long as the page does - so it is
-                for the Dialog whose state is worth coming back to rather than for every Dialog. Nothing is rendered
-                until the first opening, so the cost starts when the Dialog is first used rather than when the page
-                is first drawn. Type into both of the Dialogs below, close them, and open them again.
+                A closed Dialog is removed from the DOM, so its content starts fresh on the next showing. <b>KeepMounted</b> hides it
+                instead and keeps its state - nothing is rendered before the first opening. Type into both, close them, and reopen.
             </div>
             <br />
             <div class="btn-container">
@@ -676,8 +449,7 @@
                        ShowCloseButton="false"
                        OkText="Send">
                 <div class="dialog-body">
-                    <BitTextField Label="What happened?" Multiline Rows="4" @bind-Value="dialogValue" />
-                    <div><b>Value</b> is: @dialogValue</div>
+                    <BitTextField Label="What happened?" Multiline Rows="4" />
                 </div>
             </BitDialog>
 
@@ -691,19 +463,11 @@
             </BitDialog>
         </DemoExample>
 
-        <DemoExample Title="Programmatic control" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="Programmatic control" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
-                A Dialog captured with <b>@@ref</b> can be driven through its <b>Open</b>, <b>Close</b> and
-                <b>Toggle</b> methods, which is the way to reach one from code that has no field to bind IsOpen to.
-                The methods and the binding are the same state, so a Dialog opened through <b>Open()</b> still
-                closes on Escape or on a click outside - and <b>Close()</b> goes the way the Dialog's own gestures
-                do, so <b>OnDismissing</b> can refuse it.
-            </div>
-            <br />
-            <div>
-                <b>DefaultIsOpen</b> is the state a Dialog starts in while it is left to manage its own openness -
-                that is, while IsOpen is not set at all. It is read once, so closing such a Dialog is not undone by
-                the next render of the page around it.
+                <b>Open()</b>, <b>Close()</b> and <b>Toggle()</b> drive a Dialog through <b>@@ref</b> without binding IsOpen, and
+                <b>Close()</b> goes through OnDismissing like any gesture. <b>DefaultIsOpen</b> sets the starting state of such an
+                uncontrolled Dialog.
             </div>
             <br />
             <div class="btn-container">
@@ -712,20 +476,41 @@
             </div>
 
             <BitDialog @ref="programmaticDialogRef"
+                       Modeless
                        Title="Driven by methods"
-                       Message="This Dialog has no IsOpen of its own: it is opened and closed through the reference to it."
+                       Message="This Dialog has no IsOpen binding: it is opened and closed through its reference."
                        ShowOkButton="false"
                        CancelText="Close" />
         </DemoExample>
 
+        <DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                <b>BitParams</b> hands a <b>BitDialogParams</b> to every Dialog under it - labels, buttons, dismiss and focus behavior,
+                position, size, classes and styles. It only fills in what a Dialog leaves unset, so the second one keeps its own
+                <b>OkText</b>.
+            </div>
+            <br />
+            <BitParams Parameters="dialogParams">
+                <div class="btn-container">
+                    <BitButton OnClick="@(() => isOpenCascadedFile = true)">Delete file</BitButton>
+                    <BitButton OnClick="@(() => isOpenCascadedFolder = true)">Delete folder</BitButton>
+                </div>
+
+                <BitDialog @bind-IsOpen="isOpenCascadedFile"
+                           Title="Delete this file?"
+                           Message="It moves to the trash, where it stays for 30 days." />
+
+                <BitDialog @bind-IsOpen="isOpenCascadedFolder"
+                           OkText="Delete folder"
+                           Title="Delete this folder?"
+                           Message="Everything inside it moves to the trash too." />
+            </BitParams>
+        </DemoExample>
+
         <DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>
-                <b>Color</b> paints the Ok and Cancel buttons, the Ok spinner and the focus ring around either of
-                them. It leaves the surface, the title and the message alone, since the color of a Dialog belongs to
-                the answer it is asking for rather than to the sheet it is asking on. <b>Error</b>, with
-                <b>AutoFocusButton</b> pointed at the safe answer, is what a destructive confirmation looks like.
-                The eight semantic colors are the ones to reach for; the background, foreground and border colors
-                are there for a Dialog that has to match a surface rather than report a severity.
+                <b>Color</b> paints the Ok and Cancel buttons, the Ok spinner and their focus ring - not the surface. Pair
+                <b>Error</b> with an <b>AutoFocusButton</b> on Cancel for a destructive confirmation.
             </div>
             <br />
             <div class="btn-container">
@@ -739,85 +524,69 @@
                        Color="dialogColor"
                        AutoFocusButton="BitDialogButton.Cancel"
                        Title="@($"{dialogColor} dialog")"
-                       Message="The two buttons, the ring around the focused one and the spinner the Ok button shows all follow the color."
+                       Message="The buttons, the ring around the focused one and the Ok spinner follow the color."
                        OkText="Confirm"
                        OnOk="HandleColorOk" />
         </DemoExample>
 
         <DemoExample Title="External Icons" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
             <div>
-                The close button takes the <b>Cancel</b> glyph from the built-in Fluent set by default.
-                <b>CloseIconName</b> swaps it for another built-in one, and <b>CloseIcon</b> takes a
-                <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> so the glyph can come from FontAwesome, Bootstrap
-                Icons or any other CSS icon font. <b>CloseButtonTitle</b> relabels it for screen readers and tooltips.
+                <b>CloseIconName</b> swaps the close glyph for another built-in one; <b>CloseIcon</b> takes a
+                <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> from FontAwesome, Bootstrap Icons or any CSS icon font.
+                <b>CloseButtonTitle</b> relabels the button for screen readers and its tooltip.
             </div>
-
             <br />
-
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-            <div>FontAwesome:</div>
-            <br />
-            <BitButton OnClick="@(() => IsOpenExtIcon1 = true)">Open Dialog (CloseIcon = fa)</BitButton>
-            <BitDialog @bind-IsOpen="IsOpenExtIcon1"
-                       Title="FontAwesome Close Icon"
-                       Message="This dialog uses a FontAwesome icon for the close button."
-                       CloseIcon="@BitIconInfo.Fa("solid xmark")" />
-
-            <br /><br />
-
-            <BitButton OnClick="@(() => IsOpenExtIcon2 = true)">Open Dialog (CloseIcon = Css)</BitButton>
-            <BitDialog @bind-IsOpen="IsOpenExtIcon2"
-                       Title="Custom CSS Close Icon"
-                       Message="This dialog uses custom CSS classes for the close button icon."
-                       CloseIcon="@BitIconInfo.Css("fa-solid fa-circle-xmark")" />
-
-            <br /><br /><br /><br />
-
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-            <div>Bootstrap:</div>
-            <br />
-            <BitButton OnClick="@(() => IsOpenExtIcon3 = true)">Open Dialog (CloseIcon = Bi)</BitButton>
-            <BitDialog @bind-IsOpen="IsOpenExtIcon3"
-                       Title="Bootstrap Close Icon"
-                       Message="This dialog uses a Bootstrap icon for the close button."
-                       CloseIcon="@BitIconInfo.Bi("x-lg")" />
+            <div class="btn-container">
+                <BitButton OnClick="@(() => isOpenIconName = true)">CloseIconName</BitButton>
+                <BitButton OnClick="@(() => isOpenIconFa = true)">FontAwesome</BitButton>
+                <BitButton OnClick="@(() => isOpenIconBi = true)">Bootstrap</BitButton>
+                <BitButton OnClick="@(() => isOpenIconCss = true)">Css</BitButton>
+            </div>
 
-            <br /><br />
-
-            <BitButton OnClick="@(() => IsOpenExtIcon4 = true)">Open Dialog (CloseIconName)</BitButton>
-            <BitDialog @bind-IsOpen="IsOpenExtIcon4"
+            <BitDialog @bind-IsOpen="isOpenIconName"
                        Title="CloseIconName"
-                       Message="This dialog uses CloseIconName to set a built-in Fluent UI icon for the close button."
+                       Message="A built-in Fluent UI icon, relabeled with CloseButtonTitle."
                        CloseButtonTitle="Dismiss"
                        CloseIconName="@BitIconName.ChromeClose" />
+
+            <BitDialog @bind-IsOpen="isOpenIconFa"
+                       Title="FontAwesome"
+                       Message="A FontAwesome glyph, through BitIconInfo.Fa."
+                       CloseIcon="@BitIconInfo.Fa("solid xmark")" />
+
+            <BitDialog @bind-IsOpen="isOpenIconBi"
+                       Title="Bootstrap Icons"
+                       Message="A Bootstrap Icons glyph, through BitIconInfo.Bi."
+                       CloseIcon="@BitIconInfo.Bi("x-lg")" />
+
+            <BitDialog @bind-IsOpen="isOpenIconCss"
+                       Title="CSS classes"
+                       Message="Any CSS icon classes, through BitIconInfo.Css."
+                       CloseIcon="@BitIconInfo.Css("fa-solid fa-circle-xmark")" />
         </DemoExample>
 
         <DemoExample Title="Size" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
-                A Dialog is as wide and as tall as its content, and never grows past the area it is positioned in.
-                It stops widening at the width the theme names (<b>--bit-siz-dialog-max-width</b>, a calculated value
-                that lands on 520px in Fluent by default, 600px in Fluent 2, 560px in Material, 270px in
-                Cupertino), so a two-sentence confirmation cannot span a desktop screen with its message on
-                one long line.
-                <b>Width</b>, <b>MinWidth</b>, <b>MaxWidth</b>, <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b>
-                each take any CSS length and put a size of your own on the surface, replacing that default:
-                <b>min(100%, 40rem)</b> is the whole of a wider Dialog that still fits a phone.
-                <b>FullWidth</b>, <b>FullHeight</b> and <b>FullSize</b> stretch the Dialog across the whole area
-                instead, which is what a Dialog on a phone screen usually wants, and take precedence over the six.
+                A Dialog fits its content, never outgrows its area, and stops widening at the theme's
+                <b>--bit-siz-dialog-max-width</b> (or <b>--bit-Dialog-max-width</b>). <b>Width</b>, <b>MinWidth</b>, <b>MaxWidth</b>,
+                <b>Height</b>, <b>MinHeight</b> and <b>MaxHeight</b> take any CSS length - <b>min(100%, 28rem)</b> is a wider Dialog
+                that still fits a phone. <b>FullWidth</b>, <b>FullHeight</b> and <b>FullSize</b> stretch it across its area;
+                <b>--bit-Dialog-margin</b> keeps a gutter between it and the edges.
             </div>
             <br />
             <div class="btn-container">
-                <BitButton OnClick="@(() => isOpenSized = true)">Width</BitButton>
-                <BitButton OnClick="@(() => isOpenResponsive = true)">MaxWidth & MinWidth</BitButton>
-                <BitButton OnClick="@(() => isOpenTall = true)">Height & MaxHeight</BitButton>
+                <BitButton OnClick="@(() => isOpenWidth = true)">Width</BitButton>
+                <BitButton OnClick="@(() => isOpenResponsive = true)">MinWidth & MaxWidth</BitButton>
+                <BitButton OnClick="@(() => isOpenHeight = true)">Height</BitButton>
                 <BitButton OnClick="@(() => isOpenFullWidth = true)">FullWidth</BitButton>
                 <BitButton OnClick="@(() => isOpenFullSize = true)">FullSize</BitButton>
             </div>
 
             <BitDialog Width="32rem"
-                       @bind-IsOpen="isOpenSized"
+                       @bind-IsOpen="isOpenWidth"
                        Title="Fixed width"
                        Message="This Dialog is 32rem wide however little it has to say." />
 
@@ -825,59 +594,61 @@
                        MaxWidth="min(100%, 28rem)"
                        @bind-IsOpen="isOpenResponsive"
                        Title="Responsive width"
-                       Message="No narrower than 20rem, no wider than 28rem, and never wider than the screen. Narrow the window and watch it shrink with it." />
+                       Message="No narrower than 20rem, no wider than 28rem, and never wider than the screen." />
 
             <BitDialog Height="24rem"
                        MaxHeight="min(100%, 24rem)"
-                       @bind-IsOpen="isOpenTall"
+                       @bind-IsOpen="isOpenHeight"
                        Title="Fixed height"
                        OkText="Agree">
                 <div class="dialog-body">
-                    <p>
-                        The surface keeps its height whatever it holds, and the body scrolls inside it while the header
-                        above and the buttons below stay where they are.
-                    </p>
-                    <p>
-                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions,
-                        and dreams. These placeholder words symbolize the beginning-a moment of possibility where
-                        creativity has yet to take shape. Imagine this text as the scaffolding of something remarkable,
-                        a foundation upon which connections and inspirations will be built. Soon, these lines will
-                        transform into narratives that provoke thought, spark emotion, and resonate with those who
-                        encounter them. Until then, they remind us of the beauty in potential the quiet magic of
-                        beginnings, where everything is still to come, and the possibilities are boundless.
-                    </p>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                These placeholder words symbolize the beginning - a moment of possibility where creativity has yet to take shape.
+                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                spark emotion, and resonate with those who encounter them.
+                <br />
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
+                for ideas that change minds and spark emotions. This is where the journey begins.
+                <br />
+                In the beginning, there is silence, a blank canvas yearning to be filled, a quiet space where creativity waits
+                to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+                vibrant narratives of tomorrow.
                 </div>
             </BitDialog>
 
             <BitDialog FullWidth
-                       @bind-IsOpen="isOpenFullWidth"
                        Position="BitPosition.BottomCenter"
-                       Title="Missing Subject"
-                       Message="Do you want to send this message without a subject?" />
+                       @bind-IsOpen="isOpenFullWidth"
+                       Title="Full width"
+                       Message="Stretched across the screen, at the bottom." />
 
             <BitDialog FullSize
                        @bind-IsOpen="isOpenFullSize"
-                       Title="Missing Subject"
-                       Message="Do you want to send this message without a subject?" />
+                       Title="Full size"
+                       Message="Stretched across the whole screen." />
         </DemoExample>
 
         <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
-                Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters take a
-                <BitLink Href="#class-styles">BitDialogClassStyles</BitLink> that targets each part on its own - the
-                overlay, the container, the header and its title, subtitle, close button and icon, the body and its
-                message, the buttons container with the Ok and Cancel buttons and the Ok spinner, and the footer.
+                <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part by name. The public
+                <b>--bit-Dialog-*</b> CSS variables re-skin the surface, overlay, text and spacing - set them on <code>:root</code>, on an
+                ancestor (as here) or on one Dialog's <b>Style</b>.
             </div>
             <br />
             <div class="btn-container">
                 <BitButton OnClick="@(() => isOpenStyles = true)">Styles</BitButton>
                 <BitButton OnClick="@(() => isOpenClasses = true)">Classes</BitButton>
+                <BitButton OnClick="@(() => isOpenCssVariables = true)">CSS variables</BitButton>
             </div>
 
             <BitDialog @bind-IsOpen="isOpenStyles"
                        Title="Styled Dialog"
                        Subtitle="Every part reachable on its own"
-                       Message="The overlay, the container, the title and the two buttons are all restyled here."
+                       Message="The overlay, the container, the title and the two buttons are restyled here."
                        Styles="@(new()
                        {
                            Overlay = "backdrop-filter: blur(2px);",
@@ -888,34 +659,61 @@
                            CancelButton = "color: blueviolet; border-color: blueviolet;"
                        })" />
 
-            <BitDialog @bind-IsOpen="isOpenClasses"
-                       Title="Classed Dialog"
-                       Message="The same parts, reached with CSS classes of your own."
-                       Classes="@(new()
-                       {
-                           Container = "custom-container",
-                           Header = "custom-header",
-                           OkButton = "custom-ok"
-                       })" />
+            <div>
+                <BitDialog @bind-IsOpen="isOpenClasses"
+                           Title="Classed Dialog"
+                           Message="The same parts, reached with CSS classes of your own."
+                           Classes="@(new()
+                           {
+                               Container = "custom-container",
+                               Header = "custom-header",
+                               OkButton = "custom-ok"
+                           })" />
+            </div>
+
+            <div class="custom-dialog-variables">
+                <BitDialog @bind-IsOpen="isOpenCssVariables"
+                           Title="Re-skinned with variables"
+                           Subtitle="Set once, on an ancestor"
+                           Message="Every Dialog under the element that sets them takes them - no part of this one was restyled on its own." />
+            </div>
         </DemoExample>
 
         <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
-                Set <b>Dir</b> to <b>Rtl</b> to lay the Dialog out for right-to-left languages: the close button moves
-                to the left of the header, the action buttons mirror, and a <b>Start</b>/<b>End</b> position follows
-                along with them.
+                Set <b>Dir</b> to <b>Rtl</b> to mirror the Dialog: the close button moves to the left, the actions flip, and the
+                Start/End positions follow - <b>TopStart</b> lands top-right, while the physical <b>TopLeft</b> stays left.
             </div>
             <br />
-            <div dir="rtl">
-                <BitButton Dir="BitDir.Rtl" OnClick="@(() => IsOpen10 = true)">باز کردن پنجره پیام</BitButton>
-                <BitDialog @bind-IsOpen="IsOpen10"
-                           Dir="BitDir.Rtl"
-                           Title="بدون موضوع"
-                           OkText="تایید"
-                           CancelText="انصراف"
-                           CloseButtonTitle="بستن"
-                           Message="آیا می خواهید این پیام را بدون موضوع ارسال کنید؟" />
+            <div class="btn-container" dir="rtl">
+                <BitButton Dir="BitDir.Rtl" OnClick="@(() => isOpenRtl = true)">باز کردن پنجره پیام</BitButton>
+                <BitButton Dir="BitDir.Rtl" OnClick="@(() => isOpenRtlStart = true)">TopStart</BitButton>
+                <BitButton Dir="BitDir.Rtl" OnClick="@(() => isOpenRtlLeft = true)">TopLeft</BitButton>
             </div>
+
+            <BitDialog @bind-IsOpen="isOpenRtl"
+                       Dir="BitDir.Rtl"
+                       Title="بدون موضوع"
+                       OkText="تایید"
+                       CancelText="انصراف"
+                       CloseButtonTitle="بستن"
+                       Message="آیا می خواهید این پیام را بدون موضوع ارسال کنید؟" />
+
+            <BitDialog @bind-IsOpen="isOpenRtlStart"
+                       Dir="BitDir.Rtl"
+                       Position="BitPosition.TopStart"
+                       Title="TopStart"
+                       OkText="تایید"
+                       CancelText="انصراف"
+                       Message="موقعیت منطقی: ابتدای جهت خواندن" />
+
+            <BitDialog @bind-IsOpen="isOpenRtlLeft"
+                       Dir="BitDir.Rtl"
+                       Position="BitPosition.TopLeft"
+                       Title="TopLeft"
+                       OkText="تایید"
+                       CancelText="انصراف"
+                       Message="موقعیت فیزیکی: همیشه سمت چپ" />
         </DemoExample>
     </Examples>
 </DemoPage>

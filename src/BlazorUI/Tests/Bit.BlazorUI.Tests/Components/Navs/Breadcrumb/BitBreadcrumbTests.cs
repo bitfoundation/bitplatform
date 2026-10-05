@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -489,6 +491,131 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-brc-scr"));
     }
 
+    [TestMethod]
+    public void BitBreadcrumbShouldScrollAScrollableTrailToItsEnd()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Scrollable, true);
+        });
+
+        // The current page is the last step, so a scrolling trail opens on its end rather than on its root.
+        Assert.AreEqual(1, ScrollToEndCalls());
+
+        // A render that changes nothing of the trail leaves the scroll position to the user.
+        component.Render(parameters => parameters.Add(p => p.Class, "custom"));
+
+        Assert.AreEqual(1, ScrollToEndCalls());
+
+        // New items are a new trail, which opens on its end again.
+        component.Render(parameters => parameters.Add(p => p.Items, GetBreadcrumbItems().Take(3).ToList()));
+
+        Assert.AreEqual(2, ScrollToEndCalls());
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldScrollToTheEndOnlyWhileTheTrailScrolls()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Scrollable, true);
+            parameters.Add(p => p.Wrap, true);
+        });
+
+        Assert.AreEqual(0, ScrollToEndCalls());
+
+        // The trail that stops wrapping starts to scroll, and starts at its end.
+        component.Render(parameters => parameters.Add(p => p.Wrap, false));
+
+        Assert.AreEqual(1, ScrollToEndCalls());
+
+        component.Render(parameters => parameters.Add(p => p.Scrollable, false));
+        component.Render(parameters => parameters.Add(p => p.Items, GetBreadcrumbItems().Take(2).ToList()));
+
+        Assert.AreEqual(1, ScrollToEndCalls());
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderADisabledLinkAsALinkThatIsUnavailable()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", IsEnabled = false },
+            new() { Text = "Folder 2", Href = "/folder-2" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.OnItemClick, (BitBreadcrumbItem _) => { });
+        });
+
+        var disabled = component.Find(".bit-brc-icn a.bit-brc-nii");
+
+        // Still a link, not a button (despite the click handler) and not plain text, but one that goes nowhere.
+        Assert.AreEqual("link", disabled.GetAttribute("role"));
+        Assert.AreEqual("true", disabled.GetAttribute("aria-disabled"));
+        Assert.IsFalse(disabled.HasAttribute("href"));
+        Assert.AreEqual(0, component.FindAll(".bit-brc-icn button").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldLeaveTheDisabledStateOfADisabledButtonToTheNativeAttribute()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", OnClick = _ => { }, IsEnabled = false },
+            new() { Text = "Folder 2", OnClick = _ => { } }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var button = component.Find(".bit-brc-icn button.bit-brc-dis");
+
+        Assert.IsTrue(button.HasAttribute("disabled"));
+        Assert.IsFalse(button.HasAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldWriteTheLabelOfATextOnlyStepAsHiddenText()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1" },
+            new() { IconName = "Home", AriaLabel = "Home", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var current = component.Find(".bit-brc-nii");
+
+        // ARIA prohibits naming a generic element, so the label is text the screen readers read instead,
+        // and what is drawn on the screen is hidden from them.
+        Assert.IsFalse(current.HasAttribute("aria-label"));
+        Assert.AreEqual("page", current.GetAttribute("aria-current"));
+        Assert.AreEqual("Home", current.QuerySelector(".bit-brc-vhd")!.TextContent);
+        Assert.AreEqual("true", current.QuerySelector(".bit-brc-nic")!.GetAttribute("aria-hidden"));
+        Assert.IsNotNull(current.QuerySelector(".bit-brc-nic i.bit-icon--Home"));
+
+        // A step without a label of its own is read by its text, which stays visible to everyone.
+        items[1].AriaLabel = null;
+        items[1].Text = "Home";
+        component.Render(parameters => parameters.Add(p => p.Items, items.ToList()));
+
+        current = component.Find(".bit-brc-nii");
+
+        Assert.IsNull(current.QuerySelector(".bit-brc-vhd"));
+        Assert.IsFalse(current.QuerySelector(".bit-brc-nic")!.HasAttribute("aria-hidden"));
+    }
+
     [TestMethod,
       DataRow("10rem")
     ]
@@ -528,12 +655,12 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBreadcrumbShouldRenderIconsAndRespectReversedIcon()
+    public void BitBreadcrumbShouldRenderIconsAndRespectTheIconPositionOfAnItem()
     {
         var items = new List<BitBreadcrumbItem>
         {
             new() { Text = "Folder 1", IconName = "Home" },
-            new() { Text = "Folder 2", IconName = "Folder", ReversedIcon = true }
+            new() { Text = "Folder 2", IconName = "Folder", IconPlacement = BitPlacement.End }
         };
 
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
@@ -544,8 +671,8 @@ public class BitBreadcrumbTests : BunitTestContext
         var renderedItems = component.FindAll(".bit-brc-nii");
 
         Assert.IsTrue(renderedItems[0].QuerySelector("i")!.ClassList.Contains("bit-icon--Home"));
-        Assert.IsFalse(renderedItems[0].ClassList.Contains("bit-brc-rvi"));
-        Assert.IsTrue(renderedItems[1].ClassList.Contains("bit-brc-rvi"));
+        Assert.IsFalse(renderedItems[0].ClassList.Contains("bit-brc-eni"));
+        Assert.IsTrue(renderedItems[1].ClassList.Contains("bit-brc-eni"));
     }
 
     [TestMethod]
@@ -725,15 +852,15 @@ public class BitBreadcrumbTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void BitBreadcrumbShouldRespectReversedIconForCustomItemsWithoutNameSelectors(bool reversedIcon)
+    public void BitBreadcrumbShouldRespectIconPositionForCustomItemsWithoutNameSelectors(bool atEnd)
     {
         var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
         {
             parameters.Add(p => p.Items, GetCustomItems());
-            parameters.Add(p => p.ReversedIcon, reversedIcon);
+            parameters.Add(p => p.IconPlacement, atEnd ? BitPlacement.End : BitPlacement.Start);
         });
 
-        Assert.AreEqual(reversedIcon, component.FindAll(".bit-brc-nii")[0].ClassList.Contains("bit-brc-rvi"));
+        Assert.AreEqual(atEnd, component.FindAll(".bit-brc-nii")[0].ClassList.Contains("bit-brc-eni"));
     }
 
     [TestMethod]
@@ -822,7 +949,7 @@ public class BitBreadcrumbTests : BunitTestContext
                 Icon = { Selector = i => i.GlyphInfo },
                 IconName = { Selector = i => i.Glyph },
                 AriaLabel = { Selector = i => i.Label },
-                ReversedIcon = { Selector = i => i.IconLast },
+                IconPlacement = { Selector = i => i.IconLast == true ? BitPlacement.End : null },
                 Template = { Selector = i => i.Fragment },
                 OverflowTemplate = { Selector = i => i.OverflowFragment },
             });
@@ -831,9 +958,11 @@ public class BitBreadcrumbTests : BunitTestContext
         var first = component.Find(".bit-brc-icn .bit-brc-nii");
 
         Assert.IsTrue(first.ClassList.Contains("custom-look"));
-        Assert.IsTrue(first.ClassList.Contains("bit-brc-rvi"));
+        Assert.IsTrue(first.ClassList.Contains("bit-brc-eni"));
         Assert.IsTrue(first.GetAttribute("style")!.Contains("color:red"));
-        Assert.AreEqual("Custom 1", first.GetAttribute("aria-label"));
+        // A text-only step cannot carry an aria-label, so the label is written out as hidden text instead.
+        Assert.IsFalse(first.HasAttribute("aria-label"));
+        Assert.AreEqual("Custom 1", first.QuerySelector(".bit-brc-vhd")!.TextContent);
         Assert.IsTrue(first.QuerySelector("i")!.ClassList.Contains("bit-icon--Home"));
 
         // The templates of the collapsed step replace its content in the overflow menu, not in the trail.
@@ -1587,6 +1716,261 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("Folder 3", rendered[2].GetAttribute("title"));
     }
 
+    [TestMethod]
+    public void BitBreadcrumbShouldCarryItsPublicCssVariablesOverToTheCallout()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.Style, "color:red; --bit-Breadcrumb-color: green; --bit-brc-internal: 1px");
+            parameters.Add(p => p.Styles, new BitBreadcrumbClassStyles
+            {
+                Root = "--bit-Breadcrumb-callout-background: navy; margin: 0",
+                Callout = "--bit-Breadcrumb-color: orange"
+            });
+        });
+
+        var style = component.Find(".bit-brc-cal").GetAttribute("style")!;
+
+        // Only the public variables travel: the rest of Style and Styles.Root belongs to the root alone.
+        Assert.IsTrue(style.Contains("--bit-Breadcrumb-color: green"));
+        Assert.IsTrue(style.Contains("--bit-Breadcrumb-callout-background: navy"));
+        Assert.IsFalse(style.Contains("color:red"));
+        Assert.IsFalse(style.Contains("margin"));
+        Assert.IsFalse(style.Contains("--bit-brc-internal"));
+
+        // Styles.Callout is written last, so a value meant for the menu alone still wins over the copy.
+        Assert.IsTrue(style.IndexOf("--bit-Breadcrumb-color: orange") > style.IndexOf("--bit-Breadcrumb-color: green"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldMarkTheDividers()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Classes, new BitBreadcrumbClassStyles { Divider = "custom-divider" });
+        });
+
+        var dividers = component.FindAll(".bit-brc-icn > li[aria-hidden='true']");
+
+        Assert.AreEqual(3, dividers.Count);
+        Assert.IsTrue(dividers.All(d => d.ClassList.Contains("bit-brc-dvw") && d.ClassList.Contains("custom-divider")));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.BitBreadcrumb", BitBreadcrumbParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitBreadcrumbParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitBreadcrumbParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldApplyCascadingParametersFromBitParams()
+    {
+        var @params = new BitBreadcrumbParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Wrap = true,
+            DividerText = "/",
+            MaxDisplayedItems = 2,
+            OverflowIndex = 1,
+            OverflowAriaLabel = "Show the rest",
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(RenderBreadcrumb());
+        });
+
+        var root = component.Find(".bit-brc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-brc-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-brc-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-brc-wrp"));
+        Assert.AreEqual("/", component.Find(".bit-brc-dtx").TextContent);
+
+        // The collapsing settings reach the split of the trail, which is computed after the cascade is applied.
+        Assert.AreEqual(2, component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii").Count);
+        Assert.AreEqual(2, component.FindAll(".bit-brc-cal .bit-brc-ofi").Count);
+        Assert.AreEqual("Show the rest", component.Find(".bit-brc-obt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbDirectParametersShouldOverrideCascadingParameters()
+    {
+        var @params = new BitBreadcrumbParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            MaxDisplayedItems = 2,
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(RenderBreadcrumb(builder =>
+            {
+                builder.AddAttribute(10, nameof(BitBreadcrumb<BitBreadcrumbItem>.Color), (BitColor?)BitColor.Error);
+                builder.AddAttribute(11, nameof(BitBreadcrumb<BitBreadcrumbItem>.MaxDisplayedItems), (uint)0);
+            }));
+        });
+
+        var root = component.Find(".bit-brc");
+
+        // Direct parameters win over the cascaded ones, a zero MaxDisplayedItems included.
+        Assert.IsTrue(root.ClassList.Contains("bit-brc-err"));
+        Assert.IsFalse(root.ClassList.Contains("bit-brc-suc"));
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+
+        // What the breadcrumb left unset is still filled in from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-brc-lg"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsUpdateParametersShouldSetAllProperties()
+    {
+        var classes = new BitBreadcrumbClassStyles { Root = "custom-root" };
+        var styles = new BitBreadcrumbClassStyles { Root = "color: red;" };
+        var dividerIcon = BitIconInfo.Css("fa-solid fa-slash");
+        var overflowIcon = BitIconInfo.Css("fa-solid fa-ellipsis");
+        RenderFragment dividerTemplate = builder => builder.AddContent(0, "|");
+        RenderFragment overflowTemplate = builder => builder.AddContent(0, "...");
+
+        var @params = new BitBreadcrumbParams
+        {
+            AutoCollapse = true,
+            AutoReorderOptions = true,
+            Classes = classes,
+            Color = BitColor.Warning,
+            DividerIcon = dividerIcon,
+            DividerIconName = "Separator",
+            DividerIconTemplate = dividerTemplate,
+            DividerText = "/",
+            ExpandOverflow = true,
+            MaxDisplayedItems = 3,
+            MaxItemWidth = "8rem",
+            OverflowAriaLabel = "More",
+            OverflowIcon = overflowIcon,
+            OverflowIconName = "ChevronDown",
+            OverflowIconTemplate = overflowTemplate,
+            OverflowIndex = 1,
+            IconPlacement = BitPlacement.End,
+            Scrollable = true,
+            SelectedItemAsText = true,
+            Size = BitSize.Small,
+            StructuredData = true,
+            Styles = styles,
+            Wrap = true,
+            AriaLabel = "Trail",
+            IsEnabled = false,
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(RenderBreadcrumb());
+        });
+
+        var instance = component.FindComponent<BitBreadcrumb<BitBreadcrumbItem>>().Instance;
+
+        Assert.IsTrue(instance.AutoCollapse);
+        Assert.IsTrue(instance.AutoReorderOptions);
+        Assert.AreEqual(classes, instance.Classes);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(dividerIcon, instance.DividerIcon);
+        Assert.AreEqual("Separator", instance.DividerIconName);
+        Assert.AreEqual(dividerTemplate, instance.DividerIconTemplate);
+        Assert.AreEqual("/", instance.DividerText);
+        Assert.IsTrue(instance.ExpandOverflow);
+        Assert.AreEqual(3u, instance.MaxDisplayedItems);
+        Assert.AreEqual("8rem", instance.MaxItemWidth);
+        Assert.AreEqual("More", instance.OverflowAriaLabel);
+        Assert.AreEqual(overflowIcon, instance.OverflowIcon);
+        Assert.AreEqual("ChevronDown", instance.OverflowIconName);
+        Assert.AreEqual(overflowTemplate, instance.OverflowIconTemplate);
+        Assert.AreEqual(1u, instance.OverflowIndex);
+        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
+        Assert.IsTrue(instance.Scrollable);
+        Assert.IsTrue(instance.SelectedItemAsText);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.IsTrue(instance.StructuredData);
+        Assert.AreEqual(styles, instance.Styles);
+        Assert.IsTrue(instance.Wrap);
+        Assert.AreEqual("Trail", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitBreadcrumbParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            DividerText = "/",
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.DividerText, ">");
+        });
+
+        var instance = component.Instance;
+
+        @params.UpdateParameters(instance);
+
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual(">", instance.DividerText);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsShouldReachBreadcrumbsOfAnyItemType()
+    {
+        var @params = new BitBreadcrumbParams { Size = BitSize.Small };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitBreadcrumb<CustomItem>>(0);
+                builder.AddAttribute(1, nameof(BitBreadcrumb<CustomItem>.Items), GetCustomItems());
+                builder.AddAttribute(2, nameof(BitBreadcrumb<CustomItem>.NameSelectors), new BitBreadcrumbNameSelectors<CustomItem>
+                {
+                    Text = { Name = nameof(CustomItem.Name) },
+                    Href = { Name = nameof(CustomItem.Address) },
+                });
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-brc-sm"));
+    }
+
+    private static RenderFragment RenderBreadcrumb(Action<RenderTreeBuilder>? extraAttributes = null) => builder =>
+    {
+        builder.OpenComponent<BitBreadcrumb<BitBreadcrumbItem>>(0);
+        builder.AddAttribute(1, nameof(BitBreadcrumb<BitBreadcrumbItem>.Items), GetBreadcrumbItems());
+        extraAttributes?.Invoke(builder);
+        builder.CloseComponent();
+    };
+
     private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)
     {
         return component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii")
@@ -1631,5 +2015,10 @@ public class BitBreadcrumbTests : BunitTestContext
         public bool? IconLast { get; set; }
         public RenderFragment<CustomItem>? Fragment { get; set; }
         public RenderFragment<CustomItem>? OverflowFragment { get; set; }
+    }
+
+    private int ScrollToEndCalls()
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.scrollToEnd");
     }
 }

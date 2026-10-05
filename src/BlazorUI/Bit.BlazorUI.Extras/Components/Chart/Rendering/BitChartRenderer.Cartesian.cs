@@ -198,6 +198,7 @@ public sealed partial class BitChartRenderer
             IndexIsCategory = indexIsCategory,
             IndexCentered = HasBars()
         };
+        scene.PluginContext = ctx;
         foreach (var plugin in _options.Plugins.Custom) plugin.BeforeDatasetsDraw(ctx);
 
         // A zoomed axis is pinned to its zoom range, so its full range is read off a scratch scale

@@ -28,14 +28,14 @@ public partial class BitRichTextEditor
     private string CountLabel()
     {
         var words = _facts.WordCount == 1
-            ? string.Format(Label("word-count", "{0} word"), _facts.WordCount)
-            : string.Format(Label("words-count", "{0} words"), _facts.WordCount);
+            ? string.Format(Loc("word-count", "{0} word"), _facts.WordCount)
+            : string.Format(Loc("words-count", "{0} words"), _facts.WordCount);
 
         var characters = MaxLength is int max
-            ? string.Format(Label("chars-count-max", "{0}/{1} chars"), _facts.CharacterCount, max)
+            ? string.Format(Loc("chars-count-max", "{0}/{1} chars"), _facts.CharacterCount, max)
             : _facts.CharacterCount == 1
-                ? string.Format(Label("char-count", "{0} char"), _facts.CharacterCount)
-                : string.Format(Label("chars-count", "{0} chars"), _facts.CharacterCount);
+                ? string.Format(Loc("char-count", "{0} char"), _facts.CharacterCount)
+                : string.Format(Loc("chars-count", "{0} chars"), _facts.CharacterCount);
 
         return $"{words} · {characters}";
     }

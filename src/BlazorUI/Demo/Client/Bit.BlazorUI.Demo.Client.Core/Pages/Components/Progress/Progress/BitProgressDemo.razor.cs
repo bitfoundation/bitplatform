@@ -9,42 +9,42 @@ public partial class BitProgressDemo
             Name = "AnnounceProgress",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Announces the progress to screen readers as it advances, through a live region of its own. The announcement is made once per AnnounceStep crossed rather than on every change, since a bar that speaks on every percent is a bar nobody can listen to.",
+            Description = "Announces the progress to screen readers through a polite live region, once per AnnounceStep crossed and always at completion.",
         },
         new()
         {
             Name = "AnnounceStep",
             Type = "double",
             DefaultValue = "25",
-            Description = "How far the progress has to advance, in percentage points, before it is announced again. Completion is always announced, whatever the step divides into. The first observed value, including 100%, is recorded without announcement. A zero or negative value is treated as 25.",
+            Description = "How far the progress has to advance, in percentage points, before it is announced again. The first value is recorded without announcement; zero or negative is treated as 25.",
         },
         new()
         {
             Name = "AriaValueText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Text alternative of the progress status, used by screen readers for reading the value of the progress.",
+            Description = "The value in words for screen readers (\"3 of 10 files\"), also what AnnounceProgress speaks.",
         },
         new()
         {
             Name = "BarColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The color of the bar itself, as any CSS color. It replaces the palette the Color role would have given, and everything derived from it follows: the stroke of the ring, the faint tint of the Buffer and the fill of a Striped bar.",
+            Description = "The color of the bar as any CSS color, replacing the Color role. The ring, the buffer and the stripes follow it.",
         },
         new()
         {
             Name = "Buffer",
             Type = "double?",
             DefaultValue = "null",
-            Description = "The secondary, buffered progress rendered behind the main bar, for an operation that loads ahead of what it has already played or processed. It is read on the same scale as Value (between Min and Max) when a Value is set, and as a percentage between 0 and 100 otherwise. Ignored while Indeterminate is true.",
+            Description = "A fainter second value behind the bar, read on the same scale as Value (or as a percentage without one). Ignored while Indeterminate.",
         },
         new()
         {
             Name = "Circular",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws the progress as a ring instead of as a bar, which is the shape for a compact spot - inside a button, in a card corner, beside a row - where a full-width bar has nowhere to go. A circular indeterminate progress is what is usually called a spinner.",
+            Description = "Draws the progress as a ring instead of a bar. An indeterminate ring is a spinner.",
         },
         new()
         {
@@ -66,6 +66,13 @@ public partial class BitProgressDemo
         },
         new()
         {
+            Name = "Delay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "Milliseconds the progress stays hidden after it first renders, so a quick operation never flashes one. Its space is kept and it is hidden from assistive technology too. The window opens once, with the first render: giving a Delay to a progress already on screen does not hide it.",
+        },
+        new()
+        {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
@@ -83,14 +90,14 @@ public partial class BitProgressDemo
             Name = "Diameter",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The diameter of the circular progress in pixels. When not set, the diameter falls back to the theme value of the current Size, growing beyond it only when Thickness multiplied by Radius asks for more room.",
+            Description = "The exact diameter of the ring in pixels. Unset, it follows the Size, growing only when Thickness times Radius asks for more.",
         },
         new()
         {
             Name = "GapDegree",
             Type = "double",
             DefaultValue = "0",
-            Description = "Cuts a gap of this many degrees out of the bottom of the circular progress, which turns the ring into a gauge. Between 0 (a closed ring, the default) and 295; a value of 180 leaves a half circle. Has no effect on the linear progress.",
+            Description = "Cuts a gap of this many degrees (0 to 295) out of the ring, turning it into a gauge. No effect on a bar.",
         },
         new()
         {
@@ -99,14 +106,14 @@ public partial class BitProgressDemo
             LinkType = LinkType.Link,
             Href = "#placement-enum",
             DefaultValue = "BitPlacement.Bottom",
-            Description = "Where the GapDegree gap sits, which is also where the stroke of the gauge begins and ends. Reversed mirrors the gauge, so it swaps a Start gap with an End one and leaves a Top or a Bottom one where it is. Only Top, Bottom, Start and End are honoured; any other side leaves the gap at the bottom.",
+            Description = "Where the gauge gap sits. Reversed swaps Start and End.",
         },
         new()
         {
             Name = "Indeterminate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reports that something is running without saying how far along it is: the bar sweeps and the ring spins instead of filling. No value is published to assistive technology in this mode - which is what tells a screen reader the progress is indeterminate - and the percentage readout is hidden. Switch to a determinate value as soon as one exists.",
+            Description = "Reports that something is running without saying how far: the bar sweeps and the ring spins. No value is published to assistive technology and the readout is hidden.",
         },
         new()
         {
@@ -127,42 +134,42 @@ public partial class BitProgressDemo
             Name = "Length",
             Type = "string?",
             DefaultValue = "null",
-            Description = "How long a Vertical bar is, as a CSS length. A horizontal bar takes the width of whatever it is put in, so this has no effect there.",
+            Description = "The height of a Vertical bar, as a CSS length (10rem by default).",
         },
         new()
         {
             Name = "Max",
             Type = "double",
             DefaultValue = "100",
-            Description = "The highest value of the range the Value is read against. It has no effect while Value is null, in which case Percent is already a percentage.",
+            Description = "The top of the range Value is read against. Ignored without a Value.",
         },
         new()
         {
             Name = "Meter",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reports the indicator as a meter rather than as a progress bar. A progress bar says how far along a task is and only ever moves forward; a meter is a reading taken within a known range - a disk that is 60% full, a temperature, a score - which can move either way and is never \"finished\". This is what the ARIA practices ask for when the number is a measurement rather than progress. An Indeterminate indicator stays a progress bar, since a meter always has a value.",
+            Description = "Exposes the indicator with the meter role - a reading within a range, such as disk usage - instead of progressbar. An Indeterminate one stays a progressbar.",
         },
         new()
         {
             Name = "Min",
             Type = "double",
             DefaultValue = "0",
-            Description = "The lowest value of the range the Value is read against. It has no effect while Value is null, in which case Percent is already a percentage.",
+            Description = "The bottom of the range Value is read against. Ignored without a Value.",
         },
         new()
         {
             Name = "Percent",
             Type = "double",
             DefaultValue = "0",
-            Description = "Percentage of the operation's completeness, numerically between 0 and 100. Ignored when Value is set.",
+            Description = "The completeness as a percentage between 0 and 100. Ignored when Value is set.",
         },
         new()
         {
             Name = "PercentNumberFormat",
             Type = "string",
             DefaultValue = "{0:F0} %",
-            Description = "The composite format string the percentage readout is written with, applied to the percentage itself - \"{0:F0} %\" by default. It is formatted on the current culture, since it is text the reader sees.",
+            Description = "The composite format string of the readout, applied to the percentage on the current culture.",
         },
         new()
         {
@@ -171,35 +178,35 @@ public partial class BitProgressDemo
             LinkType = LinkType.Link,
             Href = "#percent-position-enum",
             DefaultValue = "BitProgressPercentPosition.End",
-            Description = "Where the percentage readout of a linear progress is placed: under the bar aligned to its end (the default), to its start, in the middle, or on the bar itself. The readout of a circular progress is always in the middle of the ring, so this has no effect there.",
+            Description = "Where the readout of a bar sits: under it (End, Start, Center), on the label's row (Top) or on the bar (Inside). A ring always shows it in its middle.",
         },
         new()
         {
             Name = "PercentNumberTemplate",
             Type = "RenderFragment<double>?",
             DefaultValue = "null",
-            Description = "Custom template for the percentage display, receiving the current percentage as its context. It replaces the text that PercentNumberFormat would have produced.",
+            Description = "Custom markup for the readout, receiving the percentage as its context. Shows the readout even without ShowPercentNumber.",
         },
         new()
         {
             Name = "Radius",
             Type = "int",
             DefaultValue = "6",
-            Description = "The multiplier applied to the Thickness to size the circular progress. The resulting diameter never falls below the theme value of the current Size, and setting Diameter replaces this calculation altogether.",
+            Description = "The multiplier applied to Thickness to size the ring when no Diameter is set.",
         },
         new()
         {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Fills the progress from the end of the container towards its start, mirroring the direction of the linear bar and turning the circular one counter-clockwise.",
+            Description = "Fills from the end towards the start and turns the ring counter-clockwise.",
         },
         new()
         {
             Name = "Rounded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Rounds the ends of the bar: a pill-shaped track and bar in linear mode, and a round stroke cap in circular mode.",
+            Description = "Pill-shaped ends on the bar and round caps on the ring.",
         },
         new()
         {
@@ -213,14 +220,14 @@ public partial class BitProgressDemo
             Name = "Segments",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Cuts the linear bar into this many equal segments, for an operation made of a known number of discrete steps. The bar still fills continuously - the segments are how far apart the steps are drawn, not how the value is rounded. Has no effect on the circular progress.",
+            Description = "Cuts the bar into this many equal segments. The value still fills continuously. No effect on a ring.",
         },
         new()
         {
             Name = "ShowPercentNumber",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Writes the percentage beside the bar, or in the middle of the ring. PercentNumberPosition says where it goes and PercentNumberFormat how it reads. It is hidden while Indeterminate is true, since there is no number to show.",
+            Description = "Writes the percentage beside the bar or in the middle of the ring. Hidden while Indeterminate.",
         },
         new()
         {
@@ -236,14 +243,14 @@ public partial class BitProgressDemo
             Name = "Striped",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Paints diagonal stripes over the linear bar, which is the conventional way of saying that the operation behind a determinate bar is still running. Has no effect on the circular or the indeterminate progress.",
+            Description = "Paints diagonal stripes over a determinate bar.",
         },
         new()
         {
             Name = "StripedAnimation",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Animates the stripes of a Striped bar so they travel along it.",
+            Description = "Makes the stripes of a Striped bar travel.",
         },
         new()
         {
@@ -259,29 +266,141 @@ public partial class BitProgressDemo
             Name = "Thickness",
             Type = "int?",
             DefaultValue = "null",
-            Description = "How thick the indicator is drawn, in pixels: the height of a horizontal bar, the width of a Vertical one and the stroke of the ring. When not set it follows the Size, which is what keeps a page of indicators in step with each other and with the theme.",
+            Description = "The height of the bar, the width of a Vertical one and the stroke of the ring, in pixels. Unset, it follows the Size.",
         },
         new()
         {
             Name = "TrackColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The color of the unfilled part of the indicator, as any CSS color: the track behind the bar, the ring behind the stroke, and the two ends the indeterminate sweep fades into.",
+            Description = "The color of the unfilled part as any CSS color: the track, the ring behind the stroke and the ends of the sweep.",
         },
         new()
         {
             Name = "Value",
             Type = "double?",
             DefaultValue = "null",
-            Description = "The completeness of the operation expressed in its own unit, read against Min and Max. When set, it takes the place of Percent and is what the screen reader is given, so an operation counted in files or in bytes is announced in files or in bytes.",
+            Description = "The completeness in the operation's own unit, read against Min and Max. Takes the place of Percent and is what assistive technology is given.",
         },
         new()
         {
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stands the linear bar on its end, filling it from the bottom up - or from the top down when it is also Reversed. A vertical bar has no width to take from its container, so its height comes from Length. Has no effect on the circular progress.",
+            Description = "Stands the bar on its end, filling from the bottom up (top down when Reversed). Its height comes from Length.",
         }
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Progress-bar-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Fill of the bar and stroke of the ring; the buffer and the stripes derive from it. BarColor wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-bar-text-color",
+            DefaultValue = "The Color role's text color",
+            Description = "Color of a readout placed Inside the bar.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-track-color",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "The unfilled part: the track, the ring behind the stroke and the ends of the sweep. TrackColor wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-buffer-color",
+            DefaultValue = "The bar color at 38%",
+            Description = "The buffered second value, on the bar and on the ring.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-stripe-color",
+            DefaultValue = "--bit-clr-bg-pri at 25%",
+            Description = "The stripes of a Striped bar.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-stripe-size",
+            DefaultValue = "spacing(2)",
+            Description = "Pitch of the stripes, which is also how far they travel in one cycle.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-thickness",
+            DefaultValue = "Per Size: --bit-siz-track-sm / -md / -lg (bar), 1x / 2x / 4x --bit-siz-spinner-stroke (ring)",
+            Description = "Height of the bar, width of a vertical one and stroke of the ring. Thickness wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-radius",
+            DefaultValue = "--bit-shp-radius-none",
+            Description = "Corner radius of the track and the bar. Rounded wins over it with a full radius.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-diameter",
+            DefaultValue = "Per Size: spacing(4) / spacing(6.25) / spacing(9)",
+            Description = "Smallest diameter of the ring. Diameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-length",
+            DefaultValue = "spacing(20)",
+            Description = "Height of a Vertical bar. Length wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-transition-duration",
+            DefaultValue = "--bit-mot-duration",
+            Description = "How long the fill takes to follow a new value. Set it to 0s for a bar fed many times a second.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Text size of the label and of the readout beside the bar.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-regular",
+            Description = "Weight of the label.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-percent-color",
+            DefaultValue = "--bit-clr-fg-pri (bar), --bit-clr-fg-sec (ring)",
+            Description = "Color of the readout beside the bar or in the middle of the ring.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-percent-font-size",
+            DefaultValue = "A step of the type ramp per the size the ring is drawn at, --bit-tpg-fs-xs to --bit-tpg-fs-4xl",
+            Description = "Text size of the readout in the middle of the ring.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the description.",
+        },
+        new()
+        {
+            Name = "--bit-Progress-description-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-2xs (small, medium), --bit-tpg-fs-xs (large)",
+            Description = "Text size of the description.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -411,10 +530,22 @@ public partial class BitProgressDemo
 
 
 
+    private bool isLoading;
     private double barThickness = 10;
     private double bufferPercent = 40;
     private double segmentedPercent = 45;
-    private double announcedPercent = 0;
+    private double announcedPercent = 20;
     private double gaugeValue = 65;
     private double meterValue = 62;
+
+    private readonly BitProgressParams[] progressParams =
+    [
+        new()
+        {
+            Thickness = 8,
+            Rounded = true,
+            ShowPercentNumber = true,
+            PercentNumberPosition = BitProgressPercentPosition.Top,
+        }
+    ];
 }

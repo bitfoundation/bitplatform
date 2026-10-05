@@ -1,16 +1,54 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor or on the Style of a panel inherits down to whatever reads it:
+//   --bit-Panel-background           fill of the panel                                  (default: $clr-bg-pri)
+//   --bit-Panel-color                text color of the panel                            (default: $clr-fg-pri)
+//   --bit-Panel-shadow               elevation of the panel                             (default: $box-shadow-sheet)
+//   --bit-Panel-radius               the two corners the panel turns towards the page   (default: $shp-radius-sheet)
+//   --bit-Panel-border-width         rule along the edge the panel turns to the page    (default: 0)
+//   --bit-Panel-border-color         color of that rule                                 (default: $clr-brd-sec)
+//   --bit-Panel-size                 size along the axis it slides on                   (default: fit-content; the Size parameter wins)
+//   --bit-Panel-max-size             cap of that size, so a strip of the page shows     (default: 85%; FullSize lifts it)
+//   --bit-Panel-z-index              layer of the overlay, the panel one above it       (default: $zindex-overlay; the ZIndex parameter wins)
+//   --bit-Panel-overlay-background   fill of the overlay of a ModeFull panel            (default: $clr-bg-overlay)
+//   --bit-Panel-overlay-backdrop-filter  filter over the page behind the overlay, e.g. blur(4px) (default: none)
+//   --bit-Panel-padding              inset of the header, the body and the footer       (default: $spa-dialog)
+//   --bit-Panel-header-font-size     text size of the header                            (default: $tg-fs-xl)
+//   --bit-Panel-header-font-weight   weight of the header                               (default: $tg-fw-semibold)
+
 .bit-pnl {
     font-weight: $tg-fw-regular;
     font-size: $tg-fs-md;
     z-index: $zindex-modal;
     font-family: $tg-font-family;
+    // Set on the root rather than on the container, so a color given through Style still reaches the content.
+    color: var(--bit-Panel-color, #{$clr-fg-pri});
     --bit-pnl-transform-factor: 1;
-    // How much of the screen a panel that is not FullSize is allowed to take along the axis it slides on.
-    // It is read from the root so that a consumer can move the cap through the Root member of Styles.
-    --bit-pnl-max: 85%;
+    // The cap the four edges below read. --bit-pnl-max is the name this knob had before it was public; a
+    // value written to it through the Root member of Styles is inline, so it still wins over this one.
+    --bit-pnl-max: var(--bit-Panel-max-size, 85%);
+    // The layer of the panel itself once --bit-Panel-z-index lifts its overlay: one above it. While that
+    // variable is set nowhere this is invalid, and the container falls back to the layer of the library.
+    --bit-pnl-zin-pub: calc(var(--bit-Panel-z-index) + 1);
+    // The safe area of the device edges the four edges below make room for. Named here, rather than read
+    // there, so a panel laid out inside a box of the page can take it away without a rule on the container
+    // that would outrank a padding the consumer gives it.
+    --bit-pnl-sa-top: env(safe-area-inset-top, 0px);
+    --bit-pnl-sa-bottom: env(safe-area-inset-bottom, 0px);
+    --bit-pnl-sa-left: env(safe-area-inset-left, 0px);
+    --bit-pnl-sa-right: env(safe-area-inset-right, 0px);
 
+    // The class Dir renders, for the engines without :dir() (older WebViews among them), where an explicit
+    // right-to-left still has to slide out towards the edge it came from.
     &.bit-rtl {
+        --bit-pnl-transform-factor: -1;
+    }
+
+    // :dir() as well, so a panel given no direction of its own (or Auto) still slides out towards the edge it
+    // came from on a page (or in a box, or with a content) that reads right to left. Kept in its own rule, so
+    // a browser without :dir() drops only this one.
+    &:dir(rtl) {
         --bit-pnl-transform-factor: -1;
     }
 
@@ -25,10 +63,22 @@
 // over the chrome of the page the way a screen-level one is meant to. The root itself must stay out of the
 // way of the clicks that container keeps while the panel is closed, so the pointer is handed back to the two
 // parts that are meant to take it.
+// The root clips the panel parked beyond its edge, and clips rather than hides: a hidden root is still a
+// scroller, and one that clips nothing leaves the parked panel overflowing the container. Either is scrolled
+// by the browser when the focus moves into the panel as it starts to slide in, so the content of the
+// container (or the panel with its overlay) slides away and back instead of the panel sliding in. A clip is
+// no scroller, and what it clips adds nothing to the overflow of the container around it.
 .bit-pnl-abs {
     inset: 0;
+    overflow: clip;
     position: absolute;
     pointer-events: none;
+    // Laid out inside a box of the page, so there is no device edge beside it and no safe area to make
+    // room for (see the four edges below).
+    --bit-pnl-sa-top: 0px;
+    --bit-pnl-sa-bottom: 0px;
+    --bit-pnl-sa-left: 0px;
+    --bit-pnl-sa-right: 0px;
 
     > .bit-pnl-ovl,
     > .bit-pnl-cnt {
@@ -50,10 +100,10 @@
     // A press on the overlay is left its default action (see the markup), and the default of a press that
     // is dragged is a text selection - one that would start at the overlay and run through the panel.
     user-select: none;
-    // The two layers are read from the root, where the ZIndex parameter writes them, so that a panel opened
-    // from inside another one can be lifted over it as a pair. Unset, they fall back to the layer the whole
-    // library shares.
-    z-index: var(--bit-pnl-zin-ovl, #{$zindex-overlay});
+    backdrop-filter: var(--bit-Panel-overlay-backdrop-filter, none);
+    // The ZIndex parameter writes the two layers on the root, so that a panel opened from inside another
+    // one can be lifted over it as a pair; the public variable does the same for every panel under it.
+    z-index: var(--bit-pnl-zin-ovl, var(--bit-Panel-z-index, #{$zindex-overlay}));
     transition: opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration-short;
 }
 
@@ -61,7 +111,7 @@
 // transparent catcher of clicks otherwise, so that a panel shown beside the work rather than instead of it
 // does not darken the page it is meant to be read against.
 .bit-pnl-ovl-mfl {
-    background-color: $clr-bg-overlay;
+    background-color: var(--bit-Panel-overlay-background, #{$clr-bg-overlay});
 }
 
 .bit-pnl-ovl-opn {
@@ -82,26 +132,43 @@
     // somewhere to put the keyboard.
     @include focus-anchor;
     box-sizing: border-box;
-    background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-sheet;
-    z-index: var(--bit-pnl-zin-cnt, #{$zindex-callout});
+    background-color: var(--bit-Panel-background, #{$clr-bg-pri});
+    box-shadow: var(--bit-Panel-shadow, #{$box-shadow-sheet});
+    z-index: var(--bit-pnl-zin-cnt, var(--bit-pnl-zin-pub, #{$zindex-callout}));
+    // The rule and the corners on the side the panel turns towards the page. Each edge below picks the one
+    // border and the two corners that face the page; the side against the screen edge stays square.
+    --bit-pnl-edge: var(--bit-Panel-border-width, 0px) #{$shp-border-style} var(--bit-Panel-border-color, #{$clr-brd-sec});
+    --bit-pnl-rad: var(--bit-Panel-radius, #{$shp-radius-sheet});
     // The panel is capped to the screen it slides over, so a content taller than the cap has to be reachable
     // from inside the panel: left to overflow it runs off the screen with nothing to scroll it back. The
     // scrolling stops at the panel rather than carrying on into the page underneath, which would otherwise
     // take the page out from under an open panel at the very moment the reader hits the end of it.
     overscroll-behavior: contain;
-    transition: transform $mot-duration $mot-easing-decelerate,
+    // This is the closing transition (the open state below carries the opening one), so the movement
+    // accelerates away rather than easing out of a start it never had.
+    transition: transform $mot-duration $mot-easing-accelerate,
                 opacity $mot-duration-short $mot-easing-accelerate,
                 visibility 0s linear $mot-duration;
 }
 
+// Each edge makes room for the safe area of the device edges it touches - the status bar, the notch and the
+// home indicator of a phone - the way a fixed header and footer do, so the surface still runs to the edge of
+// the screen while its content stays clear of what covers it. env() resolves to the 0px fallback on any
+// device with no inset. The side insets are physical, so the one the inline edge of a side panel touches is
+// the larger of the two: a phone held in landscape reports them alike, and a direction reads neither.
 .bit-pnl-start {
     height: 100%;
     inset-block: 0;
     max-height: 100%;
-    width: fit-content;
     inset-inline-start: 0;
+    padding-top: var(--bit-pnl-sa-top);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    padding-inline-start: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
+    width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
+    border-inline-end: var(--bit-pnl-edge);
+    border-start-end-radius: var(--bit-pnl-rad);
+    border-end-end-radius: var(--bit-pnl-rad);
     transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
@@ -109,9 +176,15 @@
     height: 100%;
     inset-block: 0;
     max-height: 100%;
-    width: fit-content;
     inset-inline-end: 0;
+    padding-top: var(--bit-pnl-sa-top);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    padding-inline-end: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
+    width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
+    border-inline-start: var(--bit-pnl-edge);
+    border-start-start-radius: var(--bit-pnl-rad);
+    border-end-start-radius: var(--bit-pnl-rad);
     transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
@@ -120,8 +193,14 @@
     width: 100%;
     max-width: 100%;
     inset-inline: 0;
-    height: fit-content;
+    padding-top: var(--bit-pnl-sa-top);
+    padding-left: var(--bit-pnl-sa-left);
+    padding-right: var(--bit-pnl-sa-right);
+    height: var(--bit-Panel-size, fit-content);
     max-height: var(--bit-pnl-max, 85%);
+    border-block-end: var(--bit-pnl-edge);
+    border-end-start-radius: var(--bit-pnl-rad);
+    border-end-end-radius: var(--bit-pnl-rad);
     transform: translateY(-100%);
 }
 
@@ -131,19 +210,28 @@
     width: 100%;
     max-width: 100%;
     inset-inline: 0;
-    height: fit-content;
+    padding-left: var(--bit-pnl-sa-left);
+    padding-right: var(--bit-pnl-sa-right);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    height: var(--bit-Panel-size, fit-content);
     max-height: var(--bit-pnl-max, 85%);
+    border-block-start: var(--bit-pnl-edge);
+    border-start-start-radius: var(--bit-pnl-rad);
+    border-start-end-radius: var(--bit-pnl-rad);
     transform: translateY(100%);
 }
 
 // The full-size panel takes the whole of the screen along both axes, which also lifts the cap that otherwise
 // leaves a strip of the page showing beside it. It follows the four edges so that it still slides in from the
-// one it belongs to.
+// one it belongs to, and with no page left beside it there is no edge to draw or to round.
 .bit-pnl-fsz {
     width: 100%;
     height: 100%;
+    border: none;
     max-width: 100%;
     max-height: 100%;
+    border-radius: 0;
+    padding: var(--bit-pnl-sa-top) var(--bit-pnl-sa-right) var(--bit-pnl-sa-bottom) var(--bit-pnl-sa-left);
 }
 
 // A panel that was given a header, a footer or a close button lays them out around a body of its own. The
@@ -158,47 +246,62 @@
 // The header row: the title of the panel beside the close button, at the edge the panel slid in from.
 .bit-pnl-hcn {
     display: flex;
-    color: $clr-fg-pri;
+    flex-shrink: 0;
+    gap: spacing(1);
+    align-items: flex-start;
     overflow-wrap: anywhere;
-    font-weight: $tg-fw-semibold;
-    background-color: $clr-bg-pri;
-    padding: spacing(2) spacing(2) 0;
+    padding: var(--bit-Panel-padding, #{$spa-dialog}) var(--bit-Panel-padding, #{$spa-dialog}) 0;
 }
 
+// A title of one line sits level with the close button beside it; a longer one grows the row downwards.
 .bit-pnl-hdr {
     flex-grow: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
-    font-size: $tg-fs-xl;
+    min-height: $siz-ctrl-md;
+    font-size: var(--bit-Panel-header-font-size, #{$tg-fs-xl});
+    font-weight: var(--bit-Panel-header-font-weight, #{$tg-fw-semibold});
 }
 
+// The library resets the outline of every button, so the ring below is the only focus indicator it has, and
+// a button does not inherit the text color, so the panel's is handed to it - it would else keep the dark
+// text of the browser on a dark panel.
 .bit-pnl-cls {
+    padding: 0;
     display: flex;
+    flex-shrink: 0;
     cursor: pointer;
-    width: spacing(5);
-    height: spacing(5);
+    color: inherit;
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
     align-items: center;
     justify-content: center;
-    font-size: $tg-fs-sm;
+    font-size: $siz-icon-md;
+    margin-inline-start: auto;
     border-radius: $shp-radius-button;
     background-color: transparent;
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
-        &:hover {
+        &:hover:not(:disabled) {
             color: $clr-fg-pri-hover;
             background-color: $clr-bg-pri-hover;
         }
     }
 
-    &:active {
+    &:active:not(:disabled) {
         color: $clr-fg-pri-active;
         background-color: $clr-bg-pri-active;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
     }
 
     &:disabled {
         cursor: default;
         opacity: $opa-dis;
-        background-color: transparent;
     }
 }
 
@@ -207,24 +310,35 @@
 .bit-pnl-bdy {
     flex-grow: 1;
     overflow: hidden auto;
-    padding: spacing(2);
+    padding: var(--bit-Panel-padding, #{$spa-dialog});
     // The scrolling stops at the body rather than carrying on into the page underneath, which the panel
     // itself no longer does for it now that it is the body that scrolls.
     overscroll-behavior: contain;
 }
 
 .bit-pnl-ftr {
-    background-color: $clr-bg-pri;
-    padding: 0 spacing(2) spacing(2);
+    flex-shrink: 0;
+    padding: 0 var(--bit-Panel-padding, #{$spa-dialog}) var(--bit-Panel-padding, #{$spa-dialog});
 }
 
 // The open state, declared after the four edges so that it takes the panel back off the transform each of
-// them parks it at.
+// them parks it at. It is taken off entirely rather than set to an identity one: any transform makes the
+// panel the containing block of every fixed descendant, which would lay a panel, a dialog or a modal opened
+// from inside it out against the panel instead of against the screen.
 .bit-pnl-opn {
     opacity: 1;
     visibility: visible;
-    transform: translate3d(0, 0, 0);
+    transform: none;
     transition: transform $mot-duration $mot-easing-decelerate,
-                opacity $mot-duration-short $mot-easing-accelerate,
+                opacity $mot-duration-short $mot-easing-decelerate,
                 visibility 0s linear 0s;
+}
+
+// A forced-colors mode throws away the shadow the panel casts and the tint of its overlay, which between them
+// are the whole of what tells the panel apart from the page beside it. The rule on the side it turns towards
+// the page is drawn instead, in the system text color, so the panel still reads as a surface with an edge.
+@media (forced-colors: active) {
+    .bit-pnl-cnt {
+        --bit-pnl-edge: #{$shp-border-width} #{$shp-border-style} CanvasText;
+    }
 }

@@ -17,6 +17,10 @@
     border-bottom: 1px solid $bit-color-border-secondary;
 }
 
+.basic-item.odd {
+    background-color: $bit-color-background-tertiary;
+}
+
 .basic-item.target {
     color: $bit-color-primary-text;
     background-color: $bit-color-primary;
@@ -71,6 +75,16 @@
     border: 1px solid $bit-color-border-secondary;
 }
 
+.grid-tile {
+    display: flex;
+    height: 100%;
+    border-radius: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 1px solid $bit-color-border-secondary;
+}
+
 .group-header {
     display: flex;
     height: 100%;
@@ -117,6 +131,17 @@
     }
 }
 
+.page-scroller {
+    height: 25rem;
+    overflow: auto;
+    border: 1px solid $bit-color-border-secondary;
+}
+
+.page-content {
+    padding: 2rem 1rem;
+    background-color: $bit-color-background-tertiary;
+}
+
 .composer {
     gap: 0.5rem;
     display: flex;
@@ -124,20 +149,23 @@
 }
 
 ::deep {
-    .list,
-    .chat-list {
+    .list {
         height: 25rem;
         border: 1px solid $bit-color-border-secondary;
+    }
+
+    .short-list,
+    .cascaded-list {
+        height: 15rem;
+    }
+
+    .grid-list {
+        padding: 0.5rem;
     }
 
     .horizontal-list {
         height: 9rem;
         border: 1px solid $bit-color-border-secondary;
-    }
-
-    .news-list .bit-vir-itm:focus-visible {
-        outline-offset: -2px;
-        outline: 2px solid $bit-color-primary;
     }
 
     .custom-class {
@@ -149,8 +177,12 @@
         border: 1px solid seagreen;
     }
 
-    .custom-item:nth-child(odd) {
-        background-color: #2e8b5722;
+    .custom-item {
+        border-inline-start: 4px solid seagreen;
+    }
+
+    .cascaded-list {
+        border: 1px solid $bit-color-border-secondary;
     }
 
     .custom-footer {

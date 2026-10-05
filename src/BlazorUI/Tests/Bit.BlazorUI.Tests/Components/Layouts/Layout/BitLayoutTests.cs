@@ -1,5 +1,8 @@
+using System.Linq;
 using Bunit;
+using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Layout;
@@ -15,7 +18,7 @@ public class BitLayoutTests : BunitTestContext
         // The header, the nav panel, the aside and the footer are only rendered once they are given
         // content, so the bare layout is the middle row around a main landmark and nothing else.
         component.MarkupMatches(@"
-<div class=""bit-lyt"" id:ignore>
+<div class=""bit-lyt bit-lyt-nhd bit-lyt-nft"" id:ignore>
     <div class=""bit-lyt-man"">
         <main class=""bit-lyt-mcn"" id:ignore></main>
     </div>
@@ -462,7 +465,7 @@ public class BitLayoutTests : BunitTestContext
         Assert.AreEqual("-1", mainContent.GetAttribute("tabindex"));
         Assert.IsTrue(mainContent.ClassList.Contains("custom-mcn"));
         StringAssert.Contains(mainContent.GetAttribute("style")!, "padding: 4px");
-        Assert.AreEqual("#inner-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
+        Assert.AreEqual("http://localhost/#inner-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
     }
 
     [TestMethod]
@@ -552,7 +555,9 @@ public class BitLayoutTests : BunitTestContext
 
         Assert.AreEqual("A", link.TagName);
         Assert.AreEqual("Skip to main content", link.TextContent.Trim());
-        Assert.AreEqual($"#{main.Id}", link.GetAttribute("href"));
+        // The href names the current page rather than a bare fragment, which the router would resolve
+        // against the base href of the app and read as a navigation to another page.
+        Assert.AreEqual($"http://localhost/#{main.Id}", link.GetAttribute("href"));
 
         // The main section only takes the focus the link sends it once it is focusable.
         Assert.AreEqual("-1", main.GetAttribute("tabindex"));
@@ -587,8 +592,40 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add(p => p.Id, "my-layout");
         });
 
-        Assert.AreEqual("#my-layout-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
+        Assert.AreEqual("http://localhost/#my-layout-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
         Assert.AreEqual("my-layout-main", component.Find(".bit-lyt-mcn").Id);
+    }
+
+    [TestMethod]
+    public void BitLayoutShouldPointTheSkipLinkAtTheCurrentPageWithoutItsOwnFragment()
+    {
+        Services.GetRequiredService<BunitNavigationManager>().NavigateTo("/docs/page?tab=2#intro");
+
+        var component = RenderComponent<BitLayout>(parameters =>
+        {
+            parameters.Add(p => p.SkipLink, true);
+            parameters.Add(p => p.Id, "app");
+        });
+
+        Assert.AreEqual("http://localhost/docs/page?tab=2#app-main", component.Find(".bit-lyt-skp").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitLayoutSkipLinkShouldScrollToAndFocusTheMainSection()
+    {
+        var component = RenderComponent<BitLayout>(parameters =>
+        {
+            parameters.Add(p => p.SkipLink, true);
+            parameters.Add(p => p.Id, "app");
+        });
+
+        component.Find(".bit-lyt-skp").Click();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.scrollElementIntoView"].Single();
+
+        // The focus goes along with the scroll, so the next Tab carries on from the content.
+        Assert.AreEqual("app-main", invocation.Arguments[0]);
+        Assert.AreEqual(true, invocation.Arguments[1]);
     }
 
     [TestMethod]
@@ -604,6 +641,95 @@ public class BitLayoutTests : BunitTestContext
 
         Assert.AreEqual("Main", component.Find(".bit-lyt-nmn").GetAttribute("aria-label"));
         Assert.AreEqual("On this page", component.Find(".bit-lyt-asd").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    [DataRow("Workspace", true, null, null, "region")]
+    [DataRow(null, true, null, null, null)]
+    [DataRow("   ", true, null, null, null)]
+    [DataRow(null, true, null, "ws-title", "region")]
+    // A top-level layout owns the main landmark of the page, and a region around it would bury that landmark in
+    // another one and take the banner and contentinfo roles from its header and footer.
+    [DataRow("App", false, null, null, null)]
+    // A role the page gives the layout by hand is the one it keeps, named or not.
+    [DataRow(null, false, "application", null, "application")]
+    [DataRow("Workspace", true, "application", null, "application")]
+    public void BitLayoutShouldBecomeANamedRegionWhenANestedLayoutHasAName(string? ariaLabel, bool nested, string? role, string? labelledBy, string? expectedRole)
+    {
+        // The role and aria-labelledby are written as plain attributes, the way markup splats them onto the layout.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitLayout>(0);
+            builder.AddAttribute(1, nameof(BitLayout.AriaLabel), ariaLabel);
+            builder.AddAttribute(2, nameof(BitLayout.Nested), nested);
+            if (role is not null) builder.AddAttribute(3, "role", role);
+            if (labelledBy is not null) builder.AddAttribute(4, "aria-labelledby", labelledBy);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-lyt");
+
+        // A generic div cannot be named, so the label only reaches a screen reader through a landmark role.
+        Assert.AreEqual(expectedRole, root.GetAttribute("role"));
+        Assert.AreEqual(ariaLabel, root.GetAttribute("aria-label"));
+        Assert.AreEqual(labelledBy, root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitLayoutShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitLayout>(0);
+            builder.AddAttribute(1, nameof(BitLayout.Nested), true);
+            builder.AddAttribute(2, "aria-label", "Workspace");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-lyt");
+
+        Assert.AreEqual("Workspace", root.GetAttribute("aria-label"));
+        Assert.AreEqual("region", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitLayoutShouldMarkTheRootWhenTheHeaderOrTheFooterIsMissing()
+    {
+        var component = RenderComponent<BitLayout>(parameters =>
+        {
+            parameters.Add<RenderFragment>(p => p.Header, builder => builder.AddMarkupContent(0, "<div>Header</div>"));
+        });
+
+        var root = component.Find(".bit-lyt");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-lyt-nhd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-lyt-nft"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HideHeader, true);
+            parameters.Add<RenderFragment>(p => p.Footer, builder => builder.AddMarkupContent(1, "<div>Footer</div>"));
+        });
+
+        root = component.Find(".bit-lyt");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-lyt-nhd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-lyt-nft"));
+    }
+
+    [TestMethod]
+    public void BitLayoutShouldMarkTheRootWhenTheCascadingParametersHideTheHeader()
+    {
+        var component = RenderComponent<BitLayout>(parameters =>
+        {
+            parameters.AddCascadingValue(BitLayoutParams.ParamName, new BitLayoutParams { HideHeader = true });
+            parameters.Add<RenderFragment>(p => p.Header, builder => builder.AddMarkupContent(0, "<div>Header</div>"));
+        });
+
+        var root = component.Find(".bit-lyt");
+
+        Assert.AreEqual(0, component.FindAll(".bit-lyt-hdr").Count);
+        Assert.IsTrue(root.ClassList.Contains("bit-lyt-nhd"));
     }
 
     [TestMethod]
@@ -754,7 +880,7 @@ public class BitLayoutTests : BunitTestContext
         var component = RenderComponent<BitLayoutHtmlAttributesTest>();
 
         component.MarkupMatches(@"
-<div data-val-test=""bit"" class=""bit-lyt"" id:ignore>
+<div data-val-test=""bit"" class=""bit-lyt bit-lyt-nhd bit-lyt-nft"" id:ignore>
     <div class=""bit-lyt-man"">
         <main class=""bit-lyt-mcn"" id:ignore>
             I'm a layout

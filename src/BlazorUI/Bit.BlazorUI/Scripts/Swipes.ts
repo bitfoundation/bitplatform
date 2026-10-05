@@ -6,7 +6,7 @@
             id: string,
             trigger: number,
             position: BitSwipePosition,
-            isRtl: boolean,
+            isRtl: boolean | null,
             orientationLock: BitSwipeOrientation,
             dotnetObj: DotNetObject,
             isResponsive: boolean,
@@ -29,6 +29,10 @@
             let startY = -1;
             let originalTransform: string;
             let orientation = BitSwipeOrientation.None;
+            // Which way Start and End face. A direction the component was given is taken as it is; one it was
+            // not given (or left to its content to decide) is the one the element is laid out in - inherited from the page or from whatever box
+            // it sits in - read when the gesture starts, so a page whose direction changes is followed.
+            let rtl = isRtl ?? false;
             // How far the surface has to be dragged is a fraction of how big it is, so the box is measured
             // when the gesture starts rather than when it is registered: a surface that is resized while it
             // is registered - a panel given a new size, a callout whose content grew - would otherwise be
@@ -40,6 +44,10 @@
             const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                if (belongsElsewhere(e.target)) return;
+
+                rtl = isRtl ?? getComputedStyle(element).direction === 'rtl';
+
                 startX = getX(e);
                 startY = getY(e);
 
@@ -53,6 +61,11 @@
 
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (startX === -1 || startY === -1) return;
+
+                // A mouse dragged across text is selecting it, which is what a mouse drag inside a surface
+                // nearly always means: the drag is given back to the selection before it can throw the
+                // surface away with the text the user was about to copy.
+                if (!isTouchDevice && isSelectingText()) return abort();
 
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
@@ -89,7 +102,7 @@
                     cancel();
                 }
 
-                if ((!isRtl && position === 'start') || (isRtl && position === 'end')) {
+                if ((!rtl && position === 'start') || (rtl && position === 'end')) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -97,7 +110,7 @@
                     }
                 }
 
-                if ((!isRtl && position === 'end') || (isRtl && position === 'start')) {
+                if ((!rtl && position === 'end') || (rtl && position === 'start')) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -142,8 +155,8 @@
                     if (touchOnScrollContainer) {
                         const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if (diffX < 0 && (isRtl ? isScrollAtRight : isScrollAtLeft)) return;
-                        if (diffX > 0 && (isRtl ? isScrollAtLeft : isScrollAtRight)) return;
+                        if (diffX < 0 && (rtl ? isScrollAtRight : isScrollAtLeft)) return;
+                        if (diffX > 0 && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
                     }
 
                     e.preventDefault();
@@ -159,13 +172,13 @@
                 startX = startY = -1;
                 element.style.transitionDuration = '';
                 try {
-                    if (((!isRtl && position === 'start') || (isRtl && position === 'end')) && diffX < 0) {
+                    if (((!rtl && position === 'start') || (rtl && position === 'end')) && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (((!isRtl && position === 'end') || (isRtl && position === 'start')) && diffX > 0) {
+                    if (((!rtl && position === 'end') || (rtl && position === 'start')) && diffX > 0) {
                         if ((diffX / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
@@ -203,15 +216,36 @@
                 }
             };
 
-            const onLeave = (e: PointerEvent) => {
-                dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
-
+            // Gives up a drag that has started without ending it: the surface goes back to where it was and
+            // the consumer hears the gesture end where it began.
+            const abort = () => {
                 startX = startY = -1;
                 diffX = diffY = 0;
                 orientation = BitSwipeOrientation.None;
                 element.style.transitionDuration = '';
                 element.style.transform = originalTransform;
-            }
+
+                dotnetObj.invokeMethodAsync('OnEnd', 0, 0);
+            };
+
+            // A drag that starts on something that takes the pointer for itself is that thing's to handle:
+            // a field the caret is moved or the text selected in, a slider, an editable region, a region
+            // marked data-no-swipe (a canvas, a table that scrolls sideways) - and a surface nested inside
+            // this one, which handles its own swipe and must not drag the one it was opened from along.
+            const belongsElsewhere = (target: EventTarget | null) => {
+                if (!(target instanceof Element)) return false;
+
+                if (target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [data-no-swipe]')) return true;
+
+                return Swipes._swipes.some(s => s.element !== element && element.contains(s.element) && s.element.contains(target));
+            };
+
+            const isSelectingText = () => {
+                const selection = window.getSelection();
+                if (!selection || selection.isCollapsed || !selection.anchorNode) return false;
+
+                return element.contains(selection.anchorNode) && selection.toString().length > 0;
+            };
 
             if (isTouchDevice) {
                 if (scrollContainer) {

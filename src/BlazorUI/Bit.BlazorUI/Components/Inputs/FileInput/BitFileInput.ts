@@ -4,6 +4,12 @@ namespace BitBlazorUI {
 
         private static _fileInputs: BitFileInputItem[] = [];
 
+        // a File handed over by the file dialog carries its path inside the picked folder in
+        // webkitRelativePath, but one read out of a dropped directory entry does not - the path is only
+        // known while walking the entries. It is remembered here against the File itself, so the walk can
+        // hand it to the selection that the synthesized change event delivers a moment later.
+        private static _relativePaths = new WeakMap<File, string>();
+
         public static async setup(
             id: string,
             inputElement: HTMLInputElement,
@@ -24,6 +30,7 @@ namespace BitBlazorUI {
                 size: file.size,
                 type: file.type,
                 lastModified: file.lastModified,
+                relativePath: file.webkitRelativePath || FileInput._relativePaths.get(file) || '',
                 previewUrl: (showPreview && file.type.startsWith('image/')) ? URL.createObjectURL(file) : null,
                 fileId: Utils.uuidv4(),
                 file: file,
@@ -279,6 +286,20 @@ namespace BitBlazorUI {
             return new Uint8Array(buffer);
         }
 
+        public static openReadStream(id: string, fileId: string) {
+            const item = FileInput._fileInputs.find(f => f.id === id && f.fileId === fileId);
+            if (!item) {
+                throw new Error(`File not found: ${fileId}`);
+            }
+
+            // the File is handed back as it is: the runtime wraps whatever a call typed as an
+            // IJSStreamReference returns, and wrapping it here as well would hand that wrapper - which is
+            // neither a blob nor a typed array - to the runtime's own wrapping and throw.
+            // As a Blob it is then read in chunks straight off the disk, nothing of it ever held in the
+            // page, which is what makes a file larger than the tab's memory readable at all.
+            return item.file;
+        }
+
         public static reset(id: string, inputElement: HTMLInputElement) {
             FileInput.clear(id);
             inputElement.value = '';
@@ -360,7 +381,18 @@ namespace BitBlazorUI {
 
             if (entry.isFile) {
                 return new Promise<void>(resolve => entry.file(
-                    (file: File) => { files.push(file); resolve(); },
+                    (file: File) => {
+                        // fullPath is rooted at the drop ("/folder/sub/a.txt"); the leading slash is dropped
+                        // so it reads the same as the webkitRelativePath of a folder picked through the dialog.
+                        // A file dropped on its own is rooted at the drop too ("/a.txt"), which is just its name
+                        // and not a relative path, so it is left empty the way the dialog reports it.
+                        const path: string = (entry.fullPath || '').replace(/^\//, '');
+                        if (path.includes('/')) {
+                            FileInput._relativePaths.set(file, path);
+                        }
+                        files.push(file);
+                        resolve();
+                    },
                     () => resolve()));
             }
 

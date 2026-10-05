@@ -28,6 +28,11 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitBreadcrumbItem.IconName));
 
     /// <summary>
+    /// The IconPlacement field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitPlacement?> IconPlacement { get; set; } = new(nameof(BitBreadcrumbItem.IconPlacement));
+
+    /// <summary>
     /// The IsEnabled field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitBreadcrumbItem.IsEnabled));
@@ -51,11 +56,6 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     /// The OverflowTemplate field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> OverflowTemplate { get; set; } = new(nameof(BitBreadcrumbItem.OverflowTemplate));
-
-    /// <summary>
-    /// The ReversedIcon field name and selector of the custom input class.
-    /// </summary>
-    public BitNameSelectorPair<TItem, bool?> ReversedIcon { get; set; } = new(nameof(BitBreadcrumbItem.ReversedIcon));
 
     /// <summary>
     /// The CSS Style field name and selector of the custom input class.

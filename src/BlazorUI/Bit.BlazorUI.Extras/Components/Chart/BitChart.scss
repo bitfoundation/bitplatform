@@ -1,14 +1,52 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// chart and one set on the Style of an instance re-skins that one alone. The colors the chart draws INSIDE
+// the SVG are the defaults of its options (BitChartTickOptions.Color, BitChartGridOptions.Color, ...), which
+// read these same variables, so an option set in C# still wins over them for that one chart:
+//   --bit-Chart-font-family            typeface of every text the chart draws         (default: $tg-font-family)
+//   --bit-Chart-series-color-1..10     the default palette, one per series or slice   (default: the Chart.js palette)
+//   --bit-Chart-title-color            title text                                     (default: $clr-fg-pri)
+//   --bit-Chart-subtitle-color         subtitle text                                  (default: $clr-fg-sec)
+//   --bit-Chart-legend-color           legend labels                                  (default: $clr-fg-sec)
+//   --bit-Chart-tick-color             axis tick labels and radar point labels        (default: $clr-fg-sec)
+//   --bit-Chart-axis-title-color       axis titles                                    (default: $clr-fg-sec)
+//   --bit-Chart-axis-color             axis border lines                              (default: $clr-brd-pri)
+//   --bit-Chart-grid-color             grid lines, tick marks and radar angle lines   (default: $clr-brd-sec)
+//   --bit-Chart-data-label-color       data labels                                    (default: $clr-fg-pri)
+//   --bit-Chart-crosshair-color        the crosshair through the hovered index        (default: $clr-fg-sec)
+//   --bit-Chart-annotation-color       annotation lines, outlines and label pills     (default: $clr-fg-sec)
+//   --bit-Chart-annotation-label-color annotation label text                          (default: $clr-bg-pri)
+//   --bit-Chart-center-text-color      the text in a doughnut's cutout                (default: $clr-fg-pri)
+//   --bit-Chart-surface-color          the surface the chart sits on: the gap between
+//                                      pie slices and the backdrop of radial ticks    (default: $clr-bg-pri)
+//   --bit-Chart-tooltip-background     tooltip fill and caret, and the crosshair chip (default: $clr-tooltip-bg)
+//   --bit-Chart-tooltip-color          tooltip text                                   (default: $clr-tooltip-fg)
+//   --bit-Chart-tooltip-radius         tooltip corner radius                          (default: $shp-radius-popup)
+//   --bit-Chart-tooltip-shadow         tooltip elevation                              (default: $box-shadow-tooltip)
+//   --bit-Chart-focus-color            focus ring of the plot, the keyboard position
+//                                      and the legend items                           (default: $clr-pri-focus)
+//   --bit-Chart-zoom-box-background    fill of the drag-to-zoom selection             (default: $clr-pri at 20%)
+//   --bit-Chart-zoom-box-border-color  border of the drag-to-zoom selection           (default: $clr-pri)
+//   --bit-Chart-inactive-opacity       the series faded behind a highlighted legend
+//                                      item                                           (default: 0.2)
+//   --bit-Chart-no-data-color          the empty-state message                        (default: $clr-fg-sec)
+//   --bit-Chart-loading-background     the veil over the plot while loading           (default: $clr-bg-pri at 70%)
+//   --bit-Chart-loading-color          the loading label                              (default: $clr-fg-sec)
+//   --bit-Chart-loading-spinner-color  the turning arc of the loading spinner         (default: $clr-pri)
+
 .bit-cht {
-    --bit-cht-dur: 600ms;
-    --bit-cht-ease: ease-out;
-    --bit-cht-focus: #{$clr-pri};
+    --bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});
 
     display: flex;
     box-sizing: border-box;
     flex-direction: column;
-    font-family: #{$tg-font-family};
+    font-family: var(--bit-Chart-font-family, #{$tg-font-family});
+
+    // A disabled chart keeps its colors, so it is dimmed rather than recolored.
+    &.bit-dis {
+        opacity: $opa-dis;
+    }
 }
 
 .bit-cht-ttl,
@@ -54,9 +92,8 @@
     }
 
     &:focus-visible {
-        border-radius: 4px;
-        outline-offset: 2px;
-        outline: 2px solid var(--bit-cht-focus);
+        border-radius: $shp-radius-sm;
+        @include focus-ring(var(--bit-cht-clr-focus));
     }
 }
 
@@ -69,6 +106,24 @@
     pointer-events: none;
 }
 
+// A legend item under the pointer or the keyboard brings its series forward by fading the others.
+.bit-cht-el,
+.bit-cht-series > g,
+.bit-cht-fg > g {
+    transition: opacity $mot-duration-short $mot-easing;
+}
+
+.bit-cht-dim {
+    opacity: var(--bit-Chart-inactive-opacity, 0.2);
+}
+
+// An element that enters with an opacity keyframe holds its final opacity:1 (fill-mode both), and an
+// animation outranks a normal declaration, so the fade has to be important to reach it. A transition
+// still outranks an important declaration, so the fade keeps its easing.
+.bit-cht-dim:is(.bit-cht-anim, .bit-cht-el-anim, .bit-cht-fade) {
+    opacity: var(--bit-Chart-inactive-opacity, 0.2) !important;
+}
+
 // The cursor is set inline, from whether the chart has a click handler at all.
 .bit-cht-band {
     outline: none;
@@ -78,9 +133,9 @@
 
 .bit-cht-lgd {
     display: flex;
-    padding: 6px 8px;
+    padding: spacing(0.75) spacing(1);
     flex-wrap: wrap;
-    gap: 4px 14px;
+    gap: spacing(0.5) spacing(1.75);
 }
 
 .bit-cht-lgd-h {
@@ -94,35 +149,50 @@
 }
 
 .bit-cht-lgd-itm {
-    gap: 6px;
-    border: none;
-    padding: 2px 4px;
     margin: 0;
+    border: none;
     color: inherit;
     font: inherit;
-    display: inline-flex;
-    background: none;
+    cursor: pointer;
     line-height: 1.4;
+    gap: spacing(0.75);
+    padding: spacing(0.25) spacing(0.5);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    // The WCAG 2.2 SC 2.5.8 floor for a pointer target.
+    min-height: 24px;
+    background: none;
     user-select: none;
     align-items: center;
-    border-radius: #{$shp-radius-sm};
+    display: inline-flex;
+    border-radius: $shp-radius-sm;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:not(:disabled):not(.bit-cht-lgd-sta):hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
 
     &:focus-visible {
-        outline-offset: 1px;
-        outline: 2px solid var(--bit-cht-focus);
+        @include focus-ring(var(--bit-cht-clr-focus));
+    }
+
+    &:disabled,
+    &.bit-cht-lgd-sta {
+        cursor: default;
     }
 
     &.bit-cht-hdn {
-        opacity: 0.45;
+        opacity: $opa-dis;
         text-decoration: line-through;
     }
 }
 
 .bit-cht-lgd-box {
     flex: 0 0 auto;
-    display: inline-block;
     border: 2px solid;
-    border-radius: 2px;
+    display: inline-block;
+    border-radius: $shp-radius-xs;
 }
 
 .bit-cht-lgd-mrk {
@@ -133,7 +203,7 @@
 .bit-cht-lgd-ttl {
     width: 100%;
     text-align: center;
-    font-weight: #{$tg-fw-bold};
+    font-weight: $tg-fw-bold;
 }
 
 // ---- tooltip ----
@@ -145,8 +215,9 @@
     position: absolute;
     white-space: nowrap;
     pointer-events: none;
-    box-shadow: #{$box-shadow-popup};
-    transition: left #{$mot-duration-short} linear, top #{$mot-duration-short} linear;
+    border-radius: var(--bit-Chart-tooltip-radius, #{$shp-radius-popup});
+    box-shadow: var(--bit-Chart-tooltip-shadow, #{$box-shadow-tooltip});
+    transition: left $mot-duration-short $mot-easing, top $mot-duration-short $mot-easing;
 }
 
 .bit-cht-tt-ttl {
@@ -156,16 +227,16 @@
 .bit-cht-tt-ftr {
     margin-top: 4px;
     padding-top: 4px;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    // A rule in the footer's own text color, faded, so it reads on a light and a dark tooltip alike.
+    border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent);
 }
 
+// A custom template brings its own content but still sits on the chart's tooltip surface.
 .bit-cht-tt-custom {
-    padding: 8px 10px;
-    color: #{$clr-fg-pri};
-    background: #{$clr-bg-pri};
-    border: 1px solid #{$clr-brd-sec};
-    border-radius: #{$shp-radius-popup};
-    font-size: #{$tg-fs-xs};
+    padding: spacing(1) spacing(1.25);
+    font-size: $tg-fs-xs;
+    color: var(--bit-Chart-tooltip-color, #{$clr-tooltip-fg});
+    background: var(--bit-Chart-tooltip-background, #{$clr-tooltip-bg});
 }
 
 .bit-cht-tt-itm {
@@ -180,7 +251,7 @@
     height: 10px;
     flex: 0 0 auto;
     display: inline-block;
-    border-radius: 2px;
+    border-radius: $shp-radius-xs;
 }
 
 .bit-cht-tt-swt-svg {
@@ -196,7 +267,41 @@
     border: 6px solid transparent;
 }
 
-// ---- no data / overlay ----
+// ---- loading / no data ----
+
+// The loading veil lets the chart behind it show through, so a refresh does not flash the whole plot away, and it
+// takes the pointer so nothing under it can be hovered while it is up.
+.bit-cht-ldg {
+    inset: 0;
+    z-index: 11;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    gap: spacing(1);
+    flex-direction: column;
+    justify-content: center;
+    font-size: $tg-fs-sm;
+    color: var(--bit-Chart-loading-color, #{$clr-fg-sec});
+    background: var(--bit-Chart-loading-background, #{translucent($clr-bg-pri, 70%)});
+}
+
+.bit-cht-spn {
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: $siz-icon-lg;
+    height: $siz-icon-lg;
+    border-width: $siz-spinner-stroke;
+    border-style: $shp-border-style;
+    border-color: translucent(currentcolor, 25%);
+    border-top-color: var(--bit-Chart-loading-spinner-color, #{$clr-pri});
+    animation: bit-cht-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-cht-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 .bit-cht-nodata {
     inset: 0;
@@ -204,8 +309,8 @@
     position: absolute;
     align-items: center;
     justify-content: center;
-    color: #{$clr-fg-sec};
-    font-size: #{$tg-fs-sm};
+    font-size: $tg-fs-sm;
+    color: var(--bit-Chart-no-data-color, #{$clr-fg-sec});
 }
 
 .bit-cht-sr {
@@ -291,7 +396,7 @@
 .bit-cht-anim {
     animation-fill-mode: both;
     animation-duration: var(--bit-cht-dur, 600ms);
-    animation-timing-function: var(--bit-cht-ease, ease-out);
+    animation-timing-function: var(--bit-cht-ease, #{$mot-easing-decelerate});
 }
 
 .bit-cht-anim-rise {
@@ -322,7 +427,7 @@
     transform-box: fill-box;
     animation-fill-mode: both;
     animation-duration: var(--bit-cht-dur, 600ms);
-    animation-timing-function: var(--bit-cht-ease, ease-out);
+    animation-timing-function: var(--bit-cht-ease, #{$mot-easing-decelerate});
 }
 
 .bit-cht-el-rise {
@@ -332,11 +437,11 @@
 
 .bit-cht-draw {
     stroke-dasharray: 1;
-    animation: bit-cht-draw var(--bit-cht-dur, 600ms) var(--bit-cht-ease, ease-out) both;
+    animation: bit-cht-draw var(--bit-cht-dur, 600ms) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
 }
 
 .bit-cht-fade {
-    animation: bit-cht-fade var(--bit-cht-dur, 600ms) var(--bit-cht-ease, ease-out) both;
+    animation: bit-cht-fade var(--bit-cht-dur, 600ms) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
 }
 
 .bit-cht-focus-ring {
@@ -353,5 +458,31 @@
         :is(.bit-cht-anim, .bit-cht-el-anim, .bit-cht-draw, .bit-cht-fade) {
             animation: none;
         }
+    }
+}
+
+// forced-colors: Windows High Contrast repaints every box out of the one system pair. The tooltip loses the
+// fill and the shadow that set it apart from the plot, so a border in the system text color keeps it a surface
+// of its own, and its caret - drawn with border colors - is dropped. The legend and tooltip swatches are the
+// only key from a color to its series, so they keep the series color instead of being repainted away.
+@media (forced-colors: active) {
+    .bit-cht-tt {
+        border: 1px solid CanvasText;
+    }
+
+    .bit-cht-tt-caret {
+        display: none;
+    }
+
+    .bit-cht-lgd-box,
+    .bit-cht-tt-swt {
+        forced-color-adjust: none;
+    }
+
+    // Both halves of the ring would be repainted one color, which leaves a turning circle that does not look
+    // like it turns.
+    .bit-cht-spn {
+        border-color: GrayText;
+        border-top-color: Highlight;
     }
 }

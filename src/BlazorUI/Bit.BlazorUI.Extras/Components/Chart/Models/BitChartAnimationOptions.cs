@@ -5,7 +5,11 @@ public sealed class BitChartAnimationOptions
 {
     public bool Animate { get; set; } = true;
     public int Duration { get; set; } = 600;
-    public string Easing { get; set; } = "ease-out";
+    /// <summary>
+    /// CSS easing of the entry animations. Null (the default) follows the theme's decelerate easing
+    /// (<c>--bit-mot-easing-decelerate</c>), the curve every other entering element in the library uses.
+    /// </summary>
+    public string? Easing { get; set; }
     /// <summary>Per-element entry delay (ms). When &gt; 0, elements animate in sequence (staggered).</summary>
     public double DelayBetween { get; set; }
 

@@ -236,6 +236,25 @@ When a user signs in with passwordless authentication:
 
 ---
 
+### Elevated Access Flow (Re-proving It Is You)
+
+A passkey is also the fast way through the `ELEVATED_ACCESS` prompt (`ElevatedAccessModal`), which every dangerous
+action opens - see [Stage 07](/.docs/07-%20ASP.NET%20Core%20Identity%20-%20Authentication%20&%20Authorization.md).
+It reuses the assertion ceremony above and ends in the *same* endpoint that the 6-digit code ends in:
+
+```
+Client → Server: POST /api/Identity/Refresh
+Body: { "RefreshToken": "...", "WebAuthnClientResponse": <assertion> }
+```
+
+`IdentityController.ElevateByWebAuthn` verifies the assertion, checks the credential belongs to the user the refresh
+token names (`GetWebAuthnAssertionOptions` is anonymous and takes its user ids from the caller, so an unchecked
+assertion would let anyone with a refresh token elevate using somebody else's passkey), advances the signature
+counter, drops the cached options so one assertion buys one elevation, and returns a new access token carrying the
+`ELEVATED_SESSION` claim. No credential is created and no session is started - the current session is simply raised.
+
+---
+
 ## 🧩 Key Components Explained
 
 ### 1. WebAuthn Data Model
@@ -421,9 +440,9 @@ services.AddScoped(sp =>
 
     return new Fido2Configuration
     {
-        ServerDomain = webAppUrl.Host,
+        RPID = webAppUrl.Host,
         TimestampDriftTolerance = 1000,
-        ServerName = "Boilerplate WebAuthn",
+        RPName = "Boilerplate WebAuthn",
         Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
         ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
     };

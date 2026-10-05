@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 using Bunit.Extensions;
@@ -415,11 +416,11 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         await com.Instance.Update(item);
 
@@ -755,7 +756,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
@@ -763,7 +764,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
@@ -781,7 +782,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
@@ -850,7 +851,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         // A countdown is held back for as long as any one reason to hold it back stands.
         await com.Instance.Resume(item);
@@ -861,7 +862,7 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
@@ -878,7 +879,7 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
 
         await com.Instance.Update(item);
 
@@ -912,9 +913,9 @@ public class BitSnackBarTests : BunitTestContext
          DataRow(BitColor.Info, "status", "polite"),
          DataRow(BitColor.Success, "status", "polite"),
          DataRow(BitColor.Primary, "status", "polite"),
-         DataRow(BitColor.Warning, "alert", "assertive"),
-         DataRow(BitColor.SevereWarning, "alert", "assertive"),
-         DataRow(BitColor.Error, "alert", "assertive")
+         DataRow(BitColor.Warning, "status", "assertive"),
+         DataRow(BitColor.SevereWarning, "status", "assertive"),
+         DataRow(BitColor.Error, "status", "assertive")
     ]
     public async Task BitSnackBarItemLiveRegionTest(BitColor color, string role, string live)
     {
@@ -924,6 +925,8 @@ public class BitSnackBarTests : BunitTestContext
 
         var item = com.Find(".bit-snb-itm");
 
+        // An alert is announced assertively by the host's region, but the item itself never carries the alert role:
+        // a browser raises an alert event of its own for every element that arrives with it, which would say it twice.
         Assert.AreEqual(role, item.GetAttribute("role"));
 
         // The item is never the live region itself: an element that arrives with its text already inside it is
@@ -957,7 +960,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show(new BitSnackBarItem { Title = "title", Color = BitColor.Info, Role = "alert" });
 
-        Assert.AreEqual("alert", com.Find(".bit-snb-itm").GetAttribute("role"));
+        Assert.AreEqual("status", com.Find(".bit-snb-itm").GetAttribute("role"));
         Assert.AreEqual("title", com.Find(".bit-snb-lvr[aria-live=\"assertive\"]").TextContent);
         Assert.AreEqual("", com.Find(".bit-snb-lvr[aria-live=\"polite\"]").TextContent);
     }
@@ -2102,7 +2105,7 @@ public class BitSnackBarTests : BunitTestContext
 
         await com.Instance.Show("title");
 
-        com.Find(".bit-snb-itm").MouseEnter();
+        com.Find(".bit-snb-itm").PointerEnter();
         com.Find(".bit-snb-itm").FocusIn();
 
         // Focus moving between the controls inside an item reports leaving it before it reports entering it
@@ -2114,7 +2117,7 @@ public class BitSnackBarTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
 
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
     }
@@ -2132,8 +2135,8 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title");
 
         com.Find(".bit-snb-itm").FocusIn();
-        com.Find(".bit-snb-itm").MouseEnter();
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerEnter();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         await Task.Delay(700);
 
@@ -2594,8 +2597,8 @@ public class BitSnackBarTests : BunitTestContext
 
         // A hold taken from code is a hold of its own, so the pointer wandering over the item and away again
         // does not let it go.
-        com.Find(".bit-snb-itm").MouseEnter();
-        com.Find(".bit-snb-itm").MouseLeave();
+        com.Find(".bit-snb-itm").PointerEnter();
+        com.Find(".bit-snb-itm").PointerLeave();
 
         await Task.Delay(700);
 
@@ -3043,8 +3046,19 @@ public class BitSnackBarTests : BunitTestContext
 
         await ((IAsyncDisposable)com.Instance).DisposeAsync();
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterHotkey"));
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.unregisterSwipe"));
+        // One call lets go of the shortcut, the swipe listener and the remembered focus together.
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.dispose");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarDisposeWithoutScriptStateReachesTheScriptNotOnceTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await ((IAsyncDisposable)com.Instance).DisposeAsync();
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.dispose"));
     }
 
     [TestMethod]
@@ -3196,5 +3210,588 @@ public class BitSnackBarTests : BunitTestContext
         });
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarLoadingItemTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await com.Instance.Show(new BitSnackBarItem { Title = "Uploading...", IsLoading = true });
+
+        // The spinner stands in for the icon even on a host that shows none, and the item is marked busy.
+        Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.AreEqual("true", com.Find(".bit-snb-itm").GetAttribute("aria-busy"));
+
+        // Work that is still running is not over, so the item sits out the countdown and draws no bar for it.
+        Assert.AreEqual(0, com.FindAll(".bit-snb-prb").Count);
+
+        await Task.Delay(500);
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
+
+        // A loading item is still dismissible, unlike a persistent one.
+        Assert.AreEqual(1, com.FindAll(".bit-snb-cbt").Count);
+
+        item.IsLoading = false;
+        item.Title = "Uploaded";
+        item.Color = BitColor.Success;
+
+        await com.Instance.Update(item);
+
+        Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
+        Assert.IsFalse(com.Find(".bit-snb-itm").HasAttribute("aria-busy"));
+        Assert.AreEqual(1, com.FindAll(".bit-snb-prb").Count);
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarLoadingItemReplacesTheIconTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.ShowIcon, true));
+
+        var item = await com.Instance.Show(new BitSnackBarItem { Title = "Syncing", IsLoading = true });
+
+        Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-snb-ico").Count);
+        Assert.AreEqual("true", com.Find(".bit-snb-ict").GetAttribute("aria-hidden"));
+
+        item.IsLoading = false;
+
+        await com.Instance.Update(item);
+
+        Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-snb-ico").Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackTurnsTheLoadingItemIntoTheSuccessTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        var source = new TaskCompletionSource<int>();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", n => $"Saved {n} rows", ex => "Save failed", "orders.csv"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-snb-spn").Count));
+
+        var item = com.Instance.Items[0];
+        Assert.IsTrue(item.IsLoading);
+        Assert.AreEqual("Saving...", item.Title);
+        Assert.AreEqual("orders.csv", item.Body);
+
+        source.SetResult(3);
+
+        Assert.AreEqual(3, await tracking);
+
+        // The same item carries the outcome, so the notification changes in place rather than being replaced.
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.AreSame(item, com.Instance.Items[0]);
+        Assert.IsFalse(item.IsLoading);
+        Assert.AreEqual("Saved 3 rows", item.Title);
+        Assert.AreEqual(BitColor.Success, item.Color);
+        Assert.AreEqual("orders.csv", item.Body);
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-spn").Count));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackReportsAndRethrowsTheFailureTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => $"Failed: {ex.Message}"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        source.SetException(new InvalidOperationException("disk full"));
+
+        // The caller still sees the failure: reporting it on screen is not handling it.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => tracking);
+
+        var item = com.Instance.Items[0];
+        Assert.AreEqual("Failed: disk full", item.Title);
+        Assert.AreEqual(BitColor.Error, item.Color);
+        Assert.IsFalse(item.IsLoading);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackClosesTheItemOfACanceledTaskTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => "Save failed"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        source.SetCanceled();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => tracking);
+
+        Assert.AreEqual(0, com.Instance.Items.Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackShowsTheOutcomeOfADismissedLoadingItemAfreshTest()
+    {
+        var dismissed = new List<BitSnackBarItem>();
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.TransitionDuration, 0);
+            parameters.Add(p => p.OnDismiss, (BitSnackBarItem i) => dismissed.Add(i));
+        });
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => "Save failed"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        com.Find(".bit-snb-cbt").Click();
+
+        Assert.AreEqual(0, com.Instance.Items.Count);
+
+        source.SetResult();
+
+        await tracking;
+
+        // The loading item keeps the reason it left with, and the outcome arrives as news of its own.
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.AreNotSame(dismissed[0], com.Instance.Items[0]);
+        Assert.AreEqual(BitSnackBarDismissReason.DismissButton, dismissed[0].DismissReason);
+        Assert.AreEqual("Saved", com.Instance.Items[0].Title);
+        Assert.AreEqual(BitColor.Success, com.Instance.Items[0].Color);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackKeepsItsOwnItemUnderPreventDuplicatesTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.PreventDuplicates, true));
+
+        var first = new TaskCompletionSource();
+        var second = new TaskCompletionSource();
+
+        var firstTracking = com.InvokeAsync(() => com.Instance.Track(first.Task, "Exporting...", "Exported", ex => "Export failed"));
+        var secondTracking = com.InvokeAsync(() => com.Instance.Track(second.Task, "Exporting...", "Exported", ex => "Export failed"));
+
+        // Two runs of the same work are two notifications, each settled by its own outcome.
+        com.WaitForAssertion(() => Assert.AreEqual(2, com.Instance.Items.Count));
+
+        first.SetResult();
+        await firstTracking;
+
+        Assert.AreEqual("Exported", com.Instance.Items[0].Title);
+        Assert.IsTrue(com.Instance.Items[1].IsLoading);
+
+        second.SetException(new InvalidOperationException());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => secondTracking);
+
+        Assert.AreEqual("Exported", com.Instance.Items[0].Title);
+        Assert.AreEqual(BitColor.Success, com.Instance.Items[0].Color);
+        Assert.AreEqual("Export failed", com.Instance.Items[1].Title);
+        Assert.AreEqual(BitColor.Error, com.Instance.Items[1].Color);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackLoadingItemTakesNoDuplicateTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.PreventDuplicates, true));
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Exporting...", "Exported", ex => "Export failed"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        // An unrelated notification with the same text is not handed the loading item, which Track still owns.
+        var other = await com.Instance.Show(new BitSnackBarItem { Title = "Exporting...", Color = BitColor.Info });
+
+        Assert.AreEqual(2, com.Instance.Items.Count);
+        Assert.AreNotSame(com.Instance.Items[0], other);
+        Assert.AreEqual(0, com.Instance.Items[0].DuplicateCount);
+
+        source.SetResult();
+        await tracking;
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackSettlesWhenTheErrorTitleThrowsTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        var source = new TaskCompletionSource();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", "Saved", ex => $"Failed: {ex.InnerException!.Message}"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        source.SetException(new InvalidOperationException("disk full"));
+
+        // The caller gets the failure of the task, not the one of its own title callback.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => tracking);
+
+        var item = com.Instance.Items[0];
+        Assert.IsFalse(item.IsLoading);
+        Assert.AreEqual("disk full", item.Title);
+        Assert.AreEqual(BitColor.Error, item.Color);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTrackSettlesWhenTheSuccessTitleThrowsTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        var source = new TaskCompletionSource<string?>();
+
+        var tracking = com.InvokeAsync(() => com.Instance.Track(source.Task, "Saving...", s => $"Saved {s!.Length} rows", ex => "Save failed"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.Instance.Items.Count));
+
+        source.SetResult(null);
+
+        Assert.IsNull(await tracking);
+
+        var item = com.Instance.Items[0];
+        Assert.IsFalse(item.IsLoading);
+        Assert.AreEqual("Saving...", item.Title);
+        Assert.AreEqual(BitColor.Success, item.Color);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarPointerHoverPausesAndTouchReleasesTheCountdownTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        // A touch pointer enters on the press and leaves as soon as the finger is lifted, so a tap holds the
+        // countdown only for as long as the finger is down.
+        com.Find(".bit-snb-itm").PointerEnter(new Microsoft.AspNetCore.Components.Web.PointerEventArgs { PointerType = "touch" });
+
+        Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
+
+        com.Find(".bit-snb-itm").PointerLeave(new Microsoft.AspNetCore.Components.Web.PointerEventArgs { PointerType = "touch" });
+
+        Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-snb-itm").Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod,
+         DataRow(new[] { "F8" }, "Notifications (F8)"),
+         DataRow(new[] { "KeyT", "altKey" }, "Notifications (Alt+T)"),
+         DataRow(new[] { "shiftKey", "Digit1", "ctrlKey" }, "Notifications (Ctrl+Shift+1)")
+    ]
+    public void BitSnackBarDefaultAriaLabelNamesTheHotkeyTest(string[] hotkey, string label)
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.Hotkey, hotkey));
+
+        Assert.AreEqual(label, com.Find(".bit-snb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSnackBarAriaLabelWinsOverTheHotkeyLabelTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.Hotkey, ["F8"]);
+            parameters.Add(p => p.AriaLabel, "Alerts");
+        });
+
+        Assert.AreEqual("Alerts", com.Find(".bit-snb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSnackBarDefaultAriaLabelWithoutAHotkeyTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        Assert.AreEqual("Notifications", com.Find(".bit-snb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarItemIsNamedByItsTitleAndDescribedByItsBodyTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.Show("title", "body");
+
+        var item = com.Find(".bit-snb-itm");
+
+        Assert.AreEqual(com.Find(".bit-snb-ttl").Id, item.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(com.Find(".bit-snb-bdy").Id, item.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarItemWithoutABodyIsNotDescribedTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.Show("title", "");
+
+        Assert.IsFalse(com.Find(".bit-snb-itm").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarTemplatedItemPointsAtNothingTest()
+    {
+        RenderFragment<BitSnackBarItem> template = item => builder => builder.AddContent(0, item.Title);
+
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.Template, template));
+
+        await com.Instance.Show("title", "body");
+
+        var element = com.Find(".bit-snb-itm");
+
+        Assert.IsFalse(element.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(element.HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusAsyncGoesThroughTheScriptTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.FocusAsync();
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.focus");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingTheLastFocusedItemHandsTheFocusBackTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var item = await com.Instance.Show("title");
+
+        // An action inside the item that closes it is the usual way this happens.
+        com.Find(".bit-snb-itm").FocusIn();
+
+        await com.Instance.Close(item);
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingAFocusedItemFocusesTheNextOneTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var first = await com.Instance.Show("first");
+        await com.Instance.Show("second");
+
+        com.FindAll(".bit-snb-itm")[0].FocusIn();
+
+        await com.Instance.Close(first);
+
+        // The item that is left takes the focus, so nothing goes back yet. It is handed over through the script,
+        // which only moves a focus that is still the host's to move.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.SnackBars.passFocus");
+        Assert.AreEqual(com.Find(".bit-snb").Id, invocation.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingAnItemFocusedByThePointerLeavesTheFocusAloneTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var first = await com.Instance.Show("first");
+        await com.Instance.Show("second");
+
+        // A click on an action inside the item: the pointer goes down, then the focus arrives.
+        com.FindAll(".bit-snb-itm")[0].PointerDown();
+        com.FindAll(".bit-snb-itm")[0].FocusIn();
+
+        await com.Instance.Close(first);
+
+        // A focus moved onto the other item would hold its countdown back for someone who is not using the keyboard.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClickedDismissButtonLeavesTheFocusAloneTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        await com.Instance.Show("first");
+        await com.Instance.Show("second");
+
+        com.FindAll(".bit-snb-itm")[0].PointerDown();
+        com.FindAll(".bit-snb-cbt")[0].Click();
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarKeyboardAfterThePointerHandsTheFocusOnTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        await com.Instance.Show("first");
+        await com.Instance.Show("second");
+
+        com.FindAll(".bit-snb-itm")[0].PointerDown();
+        com.FindAll(".bit-snb-itm")[0].FocusIn();
+
+        // The key that comes after the click is what the user is working with now.
+        com.FindAll(".bit-snb-itm")[0].KeyDown("Escape");
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.passFocus"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarAFailedFocusHandOffStillReportsTheDismissalTest()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SnackBars.restoreFocus", _ => true).SetException(new JSException("not loaded"));
+
+        var dismissed = new List<BitSnackBarItem>();
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.TransitionDuration, 0);
+            parameters.Add(p => p.MaxItems, 1);
+            parameters.Add(p => p.OverflowBehavior, BitSnackBarOverflowBehavior.Queue);
+            parameters.Add(p => p.OnDismiss, (BitSnackBarItem i) => dismissed.Add(i));
+        });
+
+        var item = await com.Instance.Show("first");
+        await com.Instance.Show("second");
+
+        com.Find(".bit-snb-itm").FocusIn();
+
+        await com.Instance.Close(item);
+
+        // The script failing to move the focus keeps neither the callback nor the queue from running.
+        Assert.AreSame(item, dismissed.Single());
+        Assert.AreEqual("second", com.Instance.Items.Single().Title);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusAsyncFallsBackToTheElementWithoutTheScriptTest()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.SnackBars.focus", _ => true).SetException(new JSException("not loaded"));
+
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.FocusAsync();
+
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("domWrapper.focus", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusAsyncBeforeTheFirstRenderIsANoOpTest()
+    {
+        // A page that asks for the focus from OnInitializedAsync, before anything is rendered (or during a
+        // prerender), gets nothing rather than an exception.
+        await new BitSnackBar().FocusAsync();
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClosingAnUnfocusedItemLeavesTheFocusAloneTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        var item = await com.Instance.Show("title");
+
+        await com.Instance.Close(item);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusLeavingTheItemIsTrackedWithoutPauseOnHoverTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnHover, false);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").FocusIn();
+        com.Find(".bit-snb-itm").FocusOut();
+
+        await com.Instance.Close(item);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarFocusedItemHandsTheFocusBackWithoutPauseOnHoverTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnHover, false);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        var item = await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").FocusIn();
+
+        await com.Instance.Close(item);
+
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClearHandsTheFocusBackOnceTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        await com.Instance.Show("first");
+        await com.Instance.Show("second");
+        await com.Instance.Show("third");
+
+        com.FindAll(".bit-snb-itm")[0].FocusIn();
+
+        await com.Instance.Clear();
+
+        // Every item is leaving, so none of them is handed the focus on the way.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarClearOnNavigationLeavesTheFocusToTheNewPageTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnNavigation, true);
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        com.Find(".bit-snb-itm").FocusIn();
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
     }
 }
