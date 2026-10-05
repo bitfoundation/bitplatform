@@ -241,7 +241,7 @@
                                                         @Localizer[nameof(AppStrings.Culture)]: @session.CultureName
                                                     </BitText>
                                                     <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
-                                                        @Localizer[nameof(AppStrings.AppVersion)]: @session.AppVersion
+                                                        @Localizer[nameof(AppStrings.AppVersion)]: <span class="app-latin-digits">@session.AppVersion</span>
                                                     </BitText>
                                                     <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
                                                         @Localizer[nameof(AppStrings.RenewedOn)]: @TimeZoneService.ToLocalTime(session.RenewedOnDateTimeOffset)

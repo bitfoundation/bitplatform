@@ -518,6 +518,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="BirthDate" xml:space="preserve">
     <value>Födelsedatum</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>Födelsedatumet kan inte ligga i framtiden.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Användarnamn</value>
   </data>

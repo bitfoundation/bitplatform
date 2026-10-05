@@ -54,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E
         .github\agents\ai-dlc.agent.md = .github\agents\ai-dlc.agent.md
         .github\agents\bitify-ui.agent.md = .github\agents\bitify-ui.agent.md
         .github\agents\localize-strings.agent.md = .github\agents\localize-strings.agent.md
+        .github\agents\rebrand.agent.md = .github\agents\rebrand.agent.md
         .github\agents\review.agent.md = .github\agents\review.agent.md
         .github\agents\scaffold-entity.agent.md = .github\agents\scaffold-entity.agent.md
     EndProjectSection
