@@ -118,6 +118,8 @@ Two things are easy to get wrong:
 - **Fonts.** A proprietary family gets a licensed substitute: the one the brand's own guidelines name, otherwise the
   closest open-license face. Self-host it whenever the app must render offline (MAUI, Windows, the PWA), and give a
   Latin-only family per-script fallbacks for the app's non-Latin cultures, or those cultures drop to a system font.
+  Decide the digits each culture expects as well: native digits where its readers expect them, Latin digits for codes,
+  versions and identifiers.
 - **Logos.** An SVG shown through `<img>` needs its `xmlns` attribute and cannot inherit `currentColor`; markup copied
   out of a web page usually has neither. Keep a version for each surface the logo sits on.
 
