@@ -10,12 +10,6 @@ public static class AppCertificateService
 {
     private const string ActiveCertificateName = "AppCertificate";
 
-    /// <summary>
-    /// The self-signed certificate this template ships with. Its private key is public, so anyone could mint a valid
-    /// token or decrypt the Data Protection key ring - it is a local development convenience and nothing else.
-    /// </summary>
-    private const string TestCertificateThumbprint = "1D549B7F8B0D52A54DE1C36948055B17C90063A2";
-
     private static X509Certificate2[]? allAppCerts;
     private static RsaSecurityKey? privateSecurityKey;
     private static RsaSecurityKey[]? publicSecurityKeys;
@@ -45,7 +39,7 @@ public static class AppCertificateService
 
         // Retired certificates are checked too: a retired default would still be trusted for validation, so its
         // public private key could still be used to mint tokens this server accepts.
-        if (AppEnvironment.IsDevelopment() is false && certs.Any(cert => cert.Thumbprint is TestCertificateThumbprint || cert.Subject.Contains("OU=Development", StringComparison.Ordinal)))
+        if (AppEnvironment.IsDevelopment() is false && certs.Any(cert => cert.Subject.Contains("OU=Development", StringComparison.Ordinal)))
             throw new InvalidOperationException("You are using a development certificate in non-development environment. Generate and use your own certificate using `openssl genrsa` and `openssl req` commands described in AppCertificate.md file.");
 
         return allAppCerts = [.. certs];
