@@ -4,6 +4,7 @@ using Bit.Brouter.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using ModelContextProtocol.Protocol;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,15 @@ builder.Services.AddDemoServices();
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
 
+// The commit this server was built from, which the SDK's Source Link appends to the informational
+// version ("10.6.1+<sha>"): a release bitplatform.dev/mcp?v= serves is built out of its tag, so a
+// link at develop would show code other than what the answers describe. A build outside a git
+// checkout has no commit to name and falls back to develop.
+var sourceRevision = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+') is [_, .., var commit] &&
+    commit.Length >= 7 && commit.All(char.IsAsciiHexDigit)
+        ? commit
+        : "develop";
+
 builder.Services.AddMcpServer(options =>
 {
     // The name a person sees in their client's server list, and the version they would quote in a
@@ -32,7 +42,7 @@ builder.Services.AddMcpServer(options =>
         Title = "Bit.Brouter",
         Version = BrouterServerInstructions.BrouterVersion,
         Description = "Documentation, public API and route-template analysis for the Bit.Brouter router for Blazor.",
-        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Brouter"
+        WebsiteUrl = $"https://github.com/bitfoundation/bitplatform/tree/{sourceRevision}/src/Brouter"
     };
 
     // Returned from `initialize` and put in front of the model before it has called anything, which

@@ -132,11 +132,24 @@ public sealed record BlazorUIComponent
 public static class BlazorUIComponentCatalog
 {
     /// <summary>
+    /// The commit this server was built from, which the SDK's Source Link appends to the informational
+    /// version ("10.6.1+&lt;sha&gt;"). Every answer is reflected off the code of that commit - a release
+    /// bitplatform.dev/mcp?v= serves is built out of its tag - so a source link at it shows the code the
+    /// answer describes, where one at develop shows whatever has changed or moved since. A build outside a
+    /// git checkout has no commit to name and falls back to develop.
+    /// </summary>
+    private static readonly string SourceRevision =
+        typeof(BlazorUIComponentCatalog).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+') is [_, .., var commit] &&
+        commit.Length >= 7 && commit.All(char.IsAsciiHexDigit)
+            ? commit
+            : "develop";
+
+    /// <summary>
     /// Where a component's source lives. The demo page states the path relative to its package's
     /// Components folder; which package that is comes from the assembly the type was loaded from,
     /// rather than from which of the page's three GitHub attributes happened to be used.
     /// </summary>
-    private const string SourceRoot = "https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI";
+    private static readonly string SourceRoot = $"https://github.com/bitfoundation/bitplatform/blob/{SourceRevision}/src/BlazorUI";
 
     /// <summary>
     /// The base types themselves, named apart from <see cref="Bases"/> because they are read while

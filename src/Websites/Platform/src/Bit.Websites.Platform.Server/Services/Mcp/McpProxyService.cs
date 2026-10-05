@@ -269,6 +269,8 @@ public partial class McpProxyService : IAsyncDisposable
     /// The index prefixes every qualified name with its project name and answers with absolute paths: details of
     /// this machine that callers do not need, as a qualified name resolves without that prefix too. Tool names are
     /// renamed in errors only, since an answer can quote source code that mentions them.
+    /// A documentation server links the repository at the commit it was built from, but one released before it
+    /// did links develop, a branch that has moved on since: its tag never moves, so such a link is pointed at it.
     /// </summary>
     private static string AdaptResultText(Upstream upstream, McpVersion? version, string text, bool isError)
     {
@@ -280,8 +282,16 @@ public partial class McpProxyService : IAsyncDisposable
             text = text.Replace($"{worktreeRoot}/", null, StringComparison.OrdinalIgnoreCase);
         }
 
+        if (version is not null && version.DocumentationEndpoints.ContainsKey(upstream.Name))
+        {
+            text = DevelopBranchLinkRegex().Replace(text, $"https://github.com/bitfoundation/bitplatform/$1/{version.Tag}/");
+        }
+
         return isError ? RenameTools(upstream, text) : text;
     }
+
+    [GeneratedRegex(@"https://github\.com/bitfoundation/bitplatform/(blob|tree)/develop/")]
+    private static partial Regex DevelopBranchLinkRegex();
 
     private async ValueTask<ToolSet> ToolsOf(McpVersion? version, CancellationToken cancellationToken)
     {
