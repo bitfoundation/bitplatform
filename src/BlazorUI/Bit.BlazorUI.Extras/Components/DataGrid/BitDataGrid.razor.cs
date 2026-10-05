@@ -1166,9 +1166,13 @@ public partial class BitDataGrid<TItem> : BitComponentBase
             // read here instead, the way the paged server mode reads its first page.
             if (_serverVirtualize is not null)
             {
-                // Rows read ahead belong to the query being replaced.
+                // Rows read ahead belong to the query being replaced, and so does a read of them still in flight:
+                // superseding it (a new load version) keeps it from committing the old query's rows, total and
+                // aggregates over the ones Virtualize is about to read.
+                if (_serverHeadLoading) ResetLoadCancellation();
                 _serverHead = null;
                 _serverHeadLoad = null;
+                _serverHeadLoading = false;
                 await _serverVirtualize.RefreshDataAsync();
             }
             else
@@ -1337,11 +1341,10 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     }
 
     /// <summary>
-    /// The number of rows a virtualized grid renders before anything has been measured: a 600px viewport's worth
-    /// of <see cref="RowHeight"/>, plus the three rows Virtualize overscans on each side and one more - about what
-    /// Virtualize itself renders once it has measured a viewport that size, so its first window is already there.
+    /// The number of rows a virtualized grid renders before anything has been measured (see
+    /// <see cref="BitVirtualizeWindow"/>), with the overscan of the Virtualize it renders its rows in.
     /// </summary>
-    internal int EstimatedRowWindow => (int)Math.Ceiling(600 / Math.Max(1f, RowHeight)) + 3 * 2 + 1;
+    internal int EstimatedRowWindow => BitVirtualizeWindow.Estimate(RowHeight);
 
     // The CSS height, in px, of a spacer standing in for that many rows.
     private string SpacerHeight(int rows) => (Math.Max(0, rows) * RowHeight).ToString(CultureInfo.InvariantCulture);

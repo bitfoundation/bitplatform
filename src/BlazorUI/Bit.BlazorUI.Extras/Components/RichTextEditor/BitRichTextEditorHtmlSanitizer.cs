@@ -38,6 +38,13 @@ internal static partial class BitRichTextEditorHtmlSanitizer
     // The tags this writer knows the parsing rules of: the default policy's allowlist.
     private static readonly HashSet<string> KnownTags = new(BitRichTextEditorSanitizationPolicy.Default.AllowedTags, StringComparer.Ordinal);
 
+    // The embed hosts a policy naming none of its own gets, read once (Default builds a new policy on every read).
+    private static readonly string[] DefaultIframeHosts = [.. BitRichTextEditorSanitizationPolicy.Default.AllowedIframeHosts ?? []];
+
+    // The rules of the secure default policy, which an editor with no SanitizationPolicy of its own is sanitized with.
+    // Rules are only ever read once built, so one instance serves every call.
+    private static readonly Lazy<Rules> DefaultRules = new(() => new Rules(BitRichTextEditorSanitizationPolicy.Default));
+
     private static readonly HashSet<string> VoidTags =
     [
         "area", "base", "br", "col", "embed", "frame", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"
@@ -121,16 +128,31 @@ internal static partial class BitRichTextEditorHtmlSanitizer
     /// Sanitizes <paramref name="html"/> against <paramref name="policy"/> into markup safe to render into the editing
     /// surface as it is.
     /// </summary>
-    public static string Sanitize(string? html, BitRichTextEditorSanitizationPolicy policy)
+    /// <remarks>
+    /// No <paramref name="policy"/> is the secure default, whose rules are read once rather than on every call.
+    /// </remarks>
+    public static string Sanitize(string? html, BitRichTextEditorSanitizationPolicy? policy)
     {
         if (string.IsNullOrEmpty(html)) return string.Empty;
 
         // This runs on the server for every prerender and every static SSR request, so its cost is bounded
-        // before it starts: a value past MaxInputLength renders nothing here and is left to the bridge, which
-        // fills the surface the moment the page is interactive. Below it the work is linear in the input.
-        if (html.Length > MaxInputLength) return string.Empty;
+        // before it starts: of a value past MaxInputLength only its beginning is rendered here, up to the last tag
+        // that starts within the limit, and the bridge fills in the whole of it the moment the page is
+        // interactive. Rendering nothing instead would leave an empty surface, which the placeholder then claims
+        // is a blank document - for good, on a static page. Below the limit the work is linear in the input.
+        if (html.Length > MaxInputLength)
+        {
+            var cut = html.LastIndexOf('<', MaxInputLength - 1);
+            if (cut <= 0)
+            {
+                cut = MaxInputLength;
+                if (char.IsHighSurrogate(html[cut - 1])) cut--;
+            }
 
-        var writer = new Writer(new Rules(policy));
+            html = html[..cut];
+        }
+
+        var writer = new Writer(policy is null ? DefaultRules.Value : new Rules(policy));
         var s = html;
         var n = s.Length;
         var i = 0;
@@ -362,7 +384,7 @@ internal static partial class BitRichTextEditorHtmlSanitizer
                                               StringComparer.Ordinal);
             _schemes = new(Lowered(policy.AllowedUriSchemes), StringComparer.Ordinal);
             // No hosts named is the built-in approved embed hosts, as on the bridge.
-            _iframeHosts = new(Lowered(policy.AllowedIframeHosts ?? BitRichTextEditorSanitizationPolicy.Default.AllowedIframeHosts), StringComparer.Ordinal);
+            _iframeHosts = new(Lowered(policy.AllowedIframeHosts ?? DefaultIframeHosts), StringComparer.Ordinal);
             _allowDataImageUris = policy.AllowDataImageUris;
         }
 

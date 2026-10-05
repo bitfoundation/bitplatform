@@ -35,6 +35,7 @@ public partial class BitCarousel : BitComponentBase
     private bool _needsRegister;
     private bool _isPointerDown;
     private bool _afterFirstRender;
+    private bool _layoutPending;
     private bool _defaultPageApplied;
     private bool _prefersReducedMotion;
     private bool _autoPlayApplied;
@@ -725,7 +726,7 @@ public partial class BitCarousel : BitComponentBase
 
         _needsReset = true;
 
-        LayOutBeforeFirstRender();
+        _layoutPending = true;
 
         StateHasChanged();
     }
@@ -745,7 +746,7 @@ public partial class BitCarousel : BitComponentBase
 
         _needsReset = true;
 
-        LayOutBeforeFirstRender();
+        _layoutPending = true;
 
         StateHasChanged();
     }
@@ -884,7 +885,7 @@ public partial class BitCarousel : BitComponentBase
 
         UpdateAutoPlayTimer();
 
-        LayOutBeforeFirstRender();
+        _layoutPending = true;
 
         base.OnParametersSet();
     }
@@ -1145,8 +1146,16 @@ public partial class BitCarousel : BitComponentBase
     // from the same parameters, so the hand-over moves nothing, and the first measurement takes over from there.
     // Only what does hang on the width - the breakpoint variants of VisibleItemsCount and the
     // ResponsiveOptions - waits for it.
+    // The slides register one by one as they are first rendered, and each of them changes the count every slide's
+    // layout (and accessible name) is written in terms of, so a registration or a parameter change only asks for
+    // a layout, and the render it queues lays them all out once (see the top of BitCarousel.razor) - rather than
+    // laying every slide out again for each slide that arrives.
     private void LayOutBeforeFirstRender()
     {
+        if (_layoutPending is false) return;
+
+        _layoutPending = false;
+
         if (_afterFirstRender || IsDisposed) return;
 
         LayOutSlides();

@@ -257,11 +257,29 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitRichTextEditorShouldLeaveAnOversizedValueToTheBridge()
+    public async Task BitRichTextEditorShouldPrerenderOnlyTheBeginningOfAnOversizedValue()
     {
         var document = await PrerenderAsync("<p>" + new string('x', 1_100_000) + "</p>");
 
-        Assert.AreEqual(string.Empty, Surface(document).InnerHtml);
+        // Bounded to about a megabyte, the rest left to the bridge - but never an empty surface, which the
+        // placeholder would claim is a blank document.
+        var html = Surface(document).InnerHtml;
+        StringAssert.StartsWith(html, "<p>xxx");
+        StringAssert.EndsWith(html, "x</p>");
+        Assert.IsLessThanOrEqualTo(1024 * 1024 + "<p></p>".Length, html.Length);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldCutAnOversizedValueBeforeATag()
+    {
+        var blocks = string.Concat(Enumerable.Repeat("<p>" + new string('x', 1000) + "</p>", 1100));
+
+        var document = await PrerenderAsync(blocks);
+
+        // The cut lands before the last tag that starts within the limit, so no element is split in the middle.
+        var html = Surface(document).InnerHtml;
+        StringAssert.EndsWith(html, new string('x', 1000) + "</p>");
+        Assert.IsLessThan(blocks.Length, html.Length);
     }
 
     [TestMethod]

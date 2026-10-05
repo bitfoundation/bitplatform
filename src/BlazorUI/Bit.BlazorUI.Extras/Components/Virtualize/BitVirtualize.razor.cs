@@ -1445,8 +1445,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private int EstimateInitialCount()
     {
         var size = (Dynamic ? EstimatedSize : FixedSize) + _gap;
-        var viewport = _viewportSize > 0 ? _viewportSize : 600;
-        return ((int)Math.Ceiling(viewport / size) + (Overscan * 2) + 1) * _lanes;
+        var viewport = _viewportSize > 0 ? _viewportSize : BitVirtualizeWindow.AssumedViewportSize;
+        return BitVirtualizeWindow.Estimate(size, Overscan, viewport) * _lanes;
     }
 
     private bool TryGetItem(int index, out TItem item)

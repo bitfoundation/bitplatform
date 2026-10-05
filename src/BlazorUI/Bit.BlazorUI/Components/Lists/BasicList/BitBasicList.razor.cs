@@ -102,8 +102,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     // Whether the virtualized items come straight off the provider rather than out of the items the list holds.
     private bool _VirtualizeProvider => ItemsProvider is not null && LoadMore is false;
 
-    // How many rows the list renders itself until Virtualize takes over, estimated the way BitVirtualize
-    // estimates its own first window: a 600px viewport of items plus the overscan on either side of it. That
+    // How many rows the list renders itself until Virtualize takes over (see BitVirtualizeWindow). That
     // is what is on screen before the page is interactive, so a list holding its items shows them right away
     // rather than an empty region, and one reading a provider reserves their room with its placeholders.
     private int _VirtualizeWindowCount
@@ -112,7 +111,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
         {
             if (Virtualize is false || _virtualizeTookOver || ItemSize <= 0) return 0;
 
-            var count = (int)Math.Ceiling(600 / ItemSize) + (Math.Max(0, OverscanCount) * 2) + 1;
+            var count = BitVirtualizeWindow.Estimate(ItemSize, OverscanCount);
 
             return _VirtualizeProvider ? count : Math.Min(count, _viewItems.Count);
         }

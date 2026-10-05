@@ -1,6 +1,10 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    LayOutBeforeFirstRender();
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="region"

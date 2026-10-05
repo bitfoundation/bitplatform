@@ -17,8 +17,10 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
 
     // Virtualize renders no rows until its JS has measured the viewport, which a server prerender or a static
     // SSR page never gets to, so until the first OnAfterRender the grid renders the virtualized body itself:
-    // the first window of rows when they can be read in place, placeholder rows otherwise.
+    // the first window of rows when they can be read in place, placeholder rows otherwise. Those rows stay,
+    // after Virtualize, until it has rows of its own, so the body never blanks while its JS measures.
     private bool _hasRendered;
+    private bool _preInteractiveRowsShown = true;
     private ICollection<TGridItem>? _preInteractiveVirtualizedItems;
     private int _preInteractiveItemsAfter;
 
@@ -109,9 +111,9 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
 
     private bool IsLoading => _pendingDataLoadCancellationTokenSource is not null;
 
-    // The rows rendered before Virtualize has measured anything: enough to fill an assumed 600px viewport,
-    // plus the 3 rows of overscan Virtualize keeps on each side and the row partially scrolled into view.
-    private int PreInteractiveWindowSize => (int)Math.Ceiling(600 / Math.Max(ItemSize, 1)) + (3 * 2) + 1;
+    // The rows rendered before Virtualize has measured anything (see BitVirtualizeWindow), with the overscan of
+    // the Virtualize the grid renders its rows in.
+    private int PreInteractiveWindowSize => BitVirtualizeWindow.Estimate(ItemSize);
 
 
 
@@ -358,12 +360,16 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
         if (firstRender)
         {
             // The page is interactive from here on, so a virtualized body is handed over to Virtualize, which
-            // can now measure the viewport and request the rows it actually needs.
+            // can now measure the viewport and request the rows it actually needs. The rows already rendered
+            // stay beside it until it has (see ProvideVirtualizedItems).
             _hasRendered = true;
             if (Virtualize)
             {
-                _preInteractiveVirtualizedItems = null;
                 StateHasChanged();
+            }
+            else
+            {
+                DropPreInteractiveRows();
             }
 
             _jsEventDisposable = await _js.BitDataGridInit(_tableReference);
@@ -530,6 +536,8 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
             {
                 if (_virtualizeComponent is not null)
                 {
+                    // Rows read ahead of Virtualize belong to the query being replaced.
+                    DropPreInteractiveRows();
                     await _virtualizeComponent.RefreshDataAsync();
                 }
                 else if (_hasRendered is false)
@@ -622,10 +630,51 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
     private string PreInteractiveSpacerStyle()
         => FormattableString.Invariant($"height: {_preInteractiveItemsAfter * ItemSize}px; flex-shrink: 0;");
 
+    // Answers Virtualize's request from the window read before it was mounted, when that window covers it.
+    private ItemsProviderResult<(int, TGridItem)>? TakePreInteractiveWindow(ItemsProviderRequest request)
+    {
+        if (_preInteractiveVirtualizedItems is not { } items || request.StartIndex != 0) return null;
+        if (request.Count > items.Count && items.Count < _ariaBodyRowCount) return null;
+
+        DropPreInteractiveRowsAfterVirtualizeRenders();
+
+        return new ItemsProviderResult<(int, TGridItem)>(
+            items: items.Take(request.Count).Select((x, i) => ValueTuple.Create(i + 2, x)),
+            totalItemCount: _ariaBodyRowCount);
+    }
+
+    // Virtualize now has rows of its own: the ones rendered in its place go, once it has rendered them (this
+    // is called before they are handed to it) - dropping them sooner would blank the body in between.
+    private void DropPreInteractiveRowsAfterVirtualizeRenders()
+    {
+        if (_preInteractiveRowsShown is false) return;
+
+        DropPreInteractiveRows();
+        _ = InvokeAsync(async () =>
+        {
+            await Task.Yield();
+            StateHasChanged();
+        });
+    }
+
+    private void DropPreInteractiveRows()
+    {
+        _preInteractiveRowsShown = false;
+        _preInteractiveVirtualizedItems = null;
+        _preInteractiveItemsAfter = 0;
+    }
+
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<(int, TGridItem)>> ProvideVirtualizedItems(ItemsProviderRequest request)
     {
         _lastRefreshedPaginationStateHash = ComputePaginationStateHash();
+
+        // Virtualize's first request usually asks for no more than the window already read to render before it was
+        // mounted, so that window answers it rather than a second query for the same rows. It answers once.
+        if (TakePreInteractiveWindow(request) is { } window)
+        {
+            return window;
+        }
 
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
         // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
@@ -681,6 +730,8 @@ public partial class BitDataGridLegacy<TGridItem> : IAsyncDisposable
                 : Math.Clamp(providerResult.TotalItemCount - Pagination.CurrentPageIndex * Pagination.ItemsPerPage, 0, Pagination.ItemsPerPage);
 
             await (Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount) ?? Task.CompletedTask);
+
+            DropPreInteractiveRowsAfterVirtualizeRenders();
 
             // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
             // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have

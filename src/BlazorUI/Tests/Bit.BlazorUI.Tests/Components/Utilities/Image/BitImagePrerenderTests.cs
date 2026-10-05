@@ -164,6 +164,33 @@ public class BitImagePrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitImageShouldLeaveAnImageTheBrowserIsPaintingOnScreenWhenItTakesItOver()
+    {
+        SetupImage(complete: false, naturalWidth: 640);
+
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(b => b.AddContent(0, "loading...")));
+        });
+
+        // Part of it is on screen already, so it is not taken away for the loading template only to come back.
+        Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
+        Assert.IsFalse(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
+        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // It was on screen as it arrived, so there is nothing to fade in.
+        var image = component.Find(".bit-img-img");
+        Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
+        Assert.IsTrue(image.ClassList.Contains("bit-img-vis"));
+        Assert.IsFalse(image.ClassList.Contains("bit-img-fde"));
+        Assert.IsFalse(image.ClassList.Contains("bit-img-nat"));
+    }
+
+    [TestMethod]
     public void BitImageShouldNotTakeABrokenImageForALoadedOne()
     {
         // A failed image is complete as well; only the size it decoded tells the two apart.
@@ -180,12 +207,10 @@ public class BitImagePrerenderTests : BunitTestContext
 
 
 
+    // Answers the way Utils.getImageProgress reads an img: 2 finished, 1 painting, 0 nothing on screen (or broken).
     private void SetupImage(bool complete, int naturalWidth)
     {
-        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", i => (string?)i.Arguments[1] == "complete")
-                         .SetResult(complete ? "true" : "false");
-
-        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", i => (string?)i.Arguments[1] == "naturalWidth")
-                         .SetResult(naturalWidth.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Context.JSInterop.Setup<int>("BitBlazorUI.Utils.getImageProgress", _ => true)
+                         .SetResult(naturalWidth > 0 ? (complete ? 2 : 1) : 0);
     }
 }

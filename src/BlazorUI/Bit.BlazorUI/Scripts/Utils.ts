@@ -1560,6 +1560,17 @@
             }
         }
 
+        // How far the browser has got with an img: 2 when it has finished it, 1 while it is still painting one it
+        // already knows the size of, 0 when there is nothing of it on screen yet (or it is broken - complete too,
+        // but with nothing decoded).
+        public static getImageProgress(element: HTMLImageElement): number {
+            if (!element) return 0;
+
+            if (element.naturalWidth > 0) return element.complete ? 2 : 1;
+
+            return 0;
+        }
+
         public static getChildrenAttributes(containerId: string, attribute: string): string[] {
             const container = document.getElementById(containerId);
             if (!container) return [];

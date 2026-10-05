@@ -14,6 +14,8 @@ public partial class BitRichTextEditor : BitComponentBase
     // What the editing surface is rendered with: the value as it stood until the first render, sanitized, and frozen
     // after it (see the surface in the markup).
     private MarkupString _surfaceSeed;
+    // The value and the policy _surfaceSeed was sanitized from.
+    private (string? Value, BitRichTextEditorSanitizationPolicy? Policy)? _surfaceSeedSource;
     private string? _lastSetupSnapshot;
     private string? _lastPolicySnapshot;
     private bool _toolbarRovingEnabled;
@@ -692,10 +694,16 @@ public partial class BitRichTextEditor : BitComponentBase
 
         // Before the first render there is no bridge to fill the surface - a prerender or a static SSR page never
         // gets one - so the value is put into it here, through the same allowlist the bridge would apply. After it,
-        // the surface is the bridge's alone.
-        if (IsRendered is false)
+        // the surface is the bridge's alone. The interactive render that replaces a prerendered one is seeded the same
+        // way, so the surface does not drop to its placeholder until the bridge has filled it. The value is only
+        // sanitized again when it, or the policy it is sanitized against, is another one: a parent re-rendering
+        // before the first render hands the same ones in again.
+        if (IsRendered is false && (_surfaceSeedSource is null ||
+                                    ReferenceEquals(_surfaceSeedSource.Value.Value, Value) is false ||
+                                    ReferenceEquals(_surfaceSeedSource.Value.Policy, SanitizationPolicy) is false))
         {
-            _surfaceSeed = new(BitRichTextEditorHtmlSanitizer.Sanitize(Value, SanitizationPolicy ?? BitRichTextEditorSanitizationPolicy.Default));
+            _surfaceSeedSource = (Value, SanitizationPolicy);
+            _surfaceSeed = new(BitRichTextEditorHtmlSanitizer.Sanitize(Value, SanitizationPolicy));
         }
 
         EnsureField();

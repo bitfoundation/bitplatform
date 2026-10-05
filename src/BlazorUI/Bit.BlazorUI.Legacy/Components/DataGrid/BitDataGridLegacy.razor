@@ -42,6 +42,13 @@
                                     ItemsProvider="@ProvideVirtualizedItems"
                                     ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
                                     Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                        @* Virtualize renders no row until its JS has measured the viewport, so the rows rendered before
+                           the grid was interactive stay in its place - after it, so its spacers stay at the top where its
+                           JS looks for them - until it has rows of its own (see ProvideVirtualizedItems). *@
+                        if (_preInteractiveRowsShown)
+                        {
+                            @_renderPreInteractiveVirtualizedRows
+                        }
                     }
                 }
                 else

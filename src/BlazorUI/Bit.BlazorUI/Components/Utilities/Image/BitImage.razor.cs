@@ -75,6 +75,13 @@ public partial class BitImage : BitComponentBase
     private bool _hasRendered;
 
     /// <summary>
+    /// Whether the browser was already painting the image when the component took it over (see
+    /// <see cref="TakeOverFromBrowserAsync"/>), which leaves it to the browser until its load event rather than taking
+    /// pixels already on screen away again.
+    /// </summary>
+    private bool _isKeptByBrowser;
+
+    /// <summary>
     /// Whether the image arrived while the browser was already showing it as its own (see
     /// <see cref="_isLeftToBrowser"/>), which leaves it nothing to fade in from and its placeholder nothing to
     /// cross-fade with.
@@ -116,9 +123,10 @@ public partial class BitImage : BitComponentBase
     // a statically rendered one ever shows, and neither has a load event coming to take a hidden image out of
     // hiding: nothing attaches a handler to their img at all. The interactive render that replaces a prerendered
     // one renders it the same way, so the hand-over changes nothing on screen, and the first render in the
-    // browser is where the component takes the image over (see TakeOverFromBrowserAsync). An img with nothing to
+    // browser is where the component takes the image over (see TakeOverFromBrowserAsync) - unless the browser is
+    // already painting it by then, which keeps it the browser's until it has finished. An img with nothing to
     // load has nothing for the browser to show either, so it is hidden from the start as it always is.
-    private bool _isLeftToBrowser => _hasRendered is false &&
+    private bool _isLeftToBrowser => (_hasRendered is false || _isKeptByBrowser) &&
                                      _loadingState is BitImageState.Loading &&
                                      (_src.HasValue() || Srcset.HasValue() || _hasSources);
 
@@ -772,6 +780,9 @@ public partial class BitImage : BitComponentBase
         _fallbackApplied = false;
         _src = Src.HasValue() ? Src : FallbackSrc;
 
+        // What the browser was painting was the previous source; the new one is the component's to show.
+        _isKeptByBrowser = false;
+
         if (_loadingState == BitImageState.Loading) return;
 
         _loadingState = BitImageState.Loading;
@@ -788,9 +799,12 @@ public partial class BitImage : BitComponentBase
     /// show it again on its load event would be the very flash the hand-over is there to avoid. It is the img the
     /// browser is asked about rather than its load event that is waited for, since a cached image is complete the
     /// moment its element is inserted. The load event still follows, and reports the load through
-    /// <see cref="OnLoad"/> as it always does; the state it would move to is already reached. An image still on
-    /// its way goes back to the loading state as the component shows it - hidden, behind its
-    /// <see cref="LoadingTemplate"/> or its <see cref="PlaceholderSrc"/> - to be revealed by that event.
+    /// <see cref="OnLoad"/> as it always does; the state it would move to is already reached. An image the browser
+    /// is still painting stays the browser's until that event, for the same reason. Only an image with nothing of it
+    /// on screen yet goes back to the loading state as the component shows it - hidden, behind its
+    /// <see cref="LoadingTemplate"/> or its <see cref="PlaceholderSrc"/> - to be revealed by that event; that is also
+    /// where the first render of a component that was never prerendered lands, the img having only just been
+    /// inserted, so it takes nothing away that was on screen there either.
     /// </remarks>
     private async Task TakeOverFromBrowserAsync()
     {
@@ -802,29 +816,30 @@ public partial class BitImage : BitComponentBase
 
         var src = _src;
         var reloadKey = _reloadKey;
-        var loaded = false;
+        var progress = 0;
 
         try
         {
-            var complete = _js.BitUtilsGetProperty(_imageElement, "complete");
-            var naturalWidth = _js.BitUtilsGetProperty(_imageElement, "naturalWidth");
-
-            // A broken image is complete as well, and only the size the browser decoded tells the two apart.
-            loaded = await complete == "true" && (await naturalWidth) is { Length: > 0 } width && width != "0";
+            progress = await _js.BitUtilsGetImageProgress(_imageElement);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is nothing left to show
         catch (JSException) { } // an image that cannot be asked about is shown the way the component shows any other
 
+        _hasRendered = true;
+
         // A load or an error event, a new source or a reload that landed while the browser was being asked is
         // newer than its answer, which is then about an image that is no longer the one on screen.
-        if (loaded && _loadingState is BitImageState.Loading && _reloadKey == reloadKey && string.Equals(_src, src, StringComparison.Ordinal))
+        if (progress > 0 && _loadingState is BitImageState.Loading && _reloadKey == reloadKey && string.Equals(_src, src, StringComparison.Ordinal))
         {
+            _isKeptByBrowser = true;
+
             // Reached while the image is still the browser's own, which is what keeps the fade and the
             // placeholder out of the arrival of an image that was on screen all along.
-            await SetLoadingStateAsync(BitImageState.Loaded);
+            if (progress == 2)
+            {
+                await SetLoadingStateAsync(BitImageState.Loaded);
+            }
         }
-
-        _hasRendered = true;
 
         StateHasChanged();
     }
@@ -1167,6 +1182,10 @@ public partial class BitImage : BitComponentBase
 
         // Read before the state moves on, since the loading state is part of what leaves the image to the browser.
         var arrivedOnScreen = _isLeftToBrowser;
+
+        // The image the browser kept has now arrived or failed, or another load has begun (a fallback, a reload),
+        // which is the component's to show.
+        _isKeptByBrowser = false;
 
         _loadingState = state;
 

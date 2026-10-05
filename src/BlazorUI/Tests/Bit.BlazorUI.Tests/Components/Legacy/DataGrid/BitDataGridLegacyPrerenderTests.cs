@@ -73,7 +73,7 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDataGridLegacyVirtualizedShouldHandTheBodyOverToVirtualizeOnceRendered()
+    public void BitDataGridLegacyVirtualizedShouldKeepTheFirstRowsBesideVirtualizeUntilItHasRows()
     {
         var component = RenderComponent<BitDataGridLegacy<int>>(parameters =>
         {
@@ -82,10 +82,11 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
             parameters.Add(p => p.ChildContent, Columns());
         });
 
-        // Once interactive, the rows rendered in place are gone, so none is left over beside the ones Virtualize
-        // requests after measuring the viewport (which bUnit's JS never does).
-        Assert.IsFalse(component.Markup.Contains("row-"));
-        Assert.HasCount(2, component.FindAll("tbody tr"));
+        // Once interactive, Virtualize is mounted (its two spacers), but it renders no row until its JS has measured
+        // the viewport (which bUnit's JS never does), so the rows rendered in place stay rather than blanking the body.
+        StringAssert.Contains(component.Markup, "row-1;");
+        StringAssert.Contains(component.Markup, $"row-{ExpectedWindow};");
+        Assert.HasCount(2 + ExpectedWindow + 1, component.FindAll("tbody tr"));
     }
 
     private static RenderFragment Columns() => builder =>

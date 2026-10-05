@@ -39,6 +39,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // rather than walked again below each of them; reset whenever the tree may have changed shape.
     private TItem? _selectedAncestorsOf;
     private List<TItem>? _selectedAncestors;
+    private BitNavCurrentUrlMatcher<TItem>? _currentUrlMatcher;
 
 
 
@@ -506,9 +507,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var isCurrentUrlItem = GetCurrentUrlMatcher();
-
-        var currentItem = Flatten(_items).FirstOrDefault(isCurrentUrlItem);
+        var currentItem = Flatten(_items).FirstOrDefault(IsCurrentUrlItem);
 
         if (isNavigation is false && IsSelected(currentItem)) return;
 
@@ -523,28 +522,12 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // so a URL match stops at the first hit instead of materializing the whole tree on every pass.
     private IEnumerable<TItem> Flatten(IList<TItem> items) => items.SelectMany(i => Flatten(GetChildItems(i))).Concat(items);
 
-    private bool IsCurrentUrlItem(TItem item) => GetCurrentUrlMatcher()(item);
-
-    // Whether an item points at the page the app currently sits on, through its own URL or one of its
-    // additional ones. The current URL is read once per matcher rather than once per item it is asked about.
-    private Func<TItem, bool> GetCurrentUrlMatcher()
+    // Whether an item points at the page the app currently sits on (see BitNavCurrentUrlMatcher).
+    private bool IsCurrentUrlItem(TItem item)
     {
-        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
-        var baseUri = _navigationManager.BaseUri;
+        _currentUrlMatcher ??= new(_navigationManager, GetUrl, GetAdditionalUrls, i => GetMatch(i) ?? Match ?? BitNavMatch.Exact);
 
-        return item =>
-        {
-            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
-
-            if (IsMatch(GetUrl(item))) return true;
-
-            return GetAdditionalUrls(item)?.Any(IsMatch) is true;
-
-            bool IsMatch(string? itemUrl)
-            {
-                return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
-            }
-        };
+        return _currentUrlMatcher.IsCurrent(item);
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
