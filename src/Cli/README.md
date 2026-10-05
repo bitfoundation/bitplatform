@@ -22,9 +22,9 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
 2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, and for native apps Windows long paths, the Windows Hypervisor Platform the Android emulator uses, and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while Docker Desktop or the Android emulator needs it, less than 24 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
-4. Creates the project, with a development certificate of its own.
+4. Creates the project, with a development certificate of its own, and keeps only its `.slnx`: the `.sln` the template also ships for older Visual Studio versions is removed.
 5. Initializes git with `develop` and `main`, and commits.
-6. Installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. Then it installs the Chromium that Playwright runs the UI tests with.
+6. Installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs the MAUI build tools and the Android SDK. Then it installs the Chromium that Playwright runs the UI tests with.
 7. Runs `dotnet format`, and commits that on its own.
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
 9. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
@@ -75,7 +75,7 @@ And these of its own:
 | Option | What it does |
 |---|---|
 | `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
-| `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up, and each native app adds several GB of build tools and minutes of build, so it can wait for `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
+| `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up. Any native app means building the whole solution, which adds several GB of build tools and minutes of build, so it can wait for `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |

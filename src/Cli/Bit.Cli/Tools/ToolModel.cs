@@ -36,7 +36,7 @@ public sealed record ToolNeeds
 
     public Version? MinimumSdk { get; init; }
 
-    public bool NeedsMaui => Platforms.Any(p => p is Platform.Android or Platform.Ios or Platform.MacOS);
+    public bool NeedsMaui => Platforms.Any(p => p is not Platform.Web);
 }
 
 public enum Elevation

@@ -20,6 +20,10 @@ public sealed partial class ProjectContext
 
     public string WebSolutionFilter => Path.Combine(Directory, $"{Name}.Web.slnf");
 
+    public bool BuildsSolution => Templates.Platforms.BuildsSolution(Platforms);
+
+    public string BuildPath => Templates.Platforms.BuildPath(Name, Platforms);
+
     public string ServerApiDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Api");
 
     public bool Exists => System.IO.Directory.Exists(Directory) && (File.Exists(Solution) || File.Exists(WebSolutionFilter));

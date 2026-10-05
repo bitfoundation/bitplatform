@@ -166,7 +166,7 @@ public sealed class NewWorkflow(CliServices cli)
         {
             await RunProjectStepAsync(steps, context, "workloads", "Installing build tools", projectSteps.WorkloadsAsync, cancellationToken);
 
-            if (context.Platforms.Contains(Platform.Android))
+            if (context.BuildsSolution)
             {
                 await RunProjectStepAsync(steps, context, "android", "Installing the Android SDK and Java", projectSteps.AndroidDependenciesAsync, cancellationToken);
             }
@@ -179,10 +179,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         if (noBuild is false)
         {
-            foreach (var target in Platforms.BuildTargets(context.Name, context.Platforms, context.TargetFrameworkVersion))
-            {
-                await RunProjectStepAsync(steps, context, $"build-{Platforms.Name(target.Platform)}", $"Building the {Platforms.Title(target.Platform)} app", (progress, ct) => projectSteps.BuildAsync(target, progress, ct), cancellationToken);
-            }
+            await RunProjectStepAsync(steps, context, "build", context.BuildsSolution ? "Building the solution" : "Building the web app", projectSteps.BuildAsync, cancellationToken);
 
             await RunProjectStepAsync(steps, context, "playwright", cli.Environment.IsCI ? "Installing Playwright's browsers" : "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
         }
@@ -347,7 +344,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (native.Count == 0)
             return current;
 
-        cli.Console.Out.MarkupLine($"[grey]Every project has the web, Android, iOS, Windows and macOS apps. Pick only the native apps to set up on this machine now: each needs several GB of extra build tools and minutes of build, so fewer is faster. Add one any time later from the project folder, e.g.[/] bit setup --platforms {Platforms.Name(native[0])}");
+        cli.Console.Out.MarkupLine($"[grey]Every project has the web, Android, iOS, Windows and macOS apps. Picking any native app builds the whole solution on this machine, which needs several GB of extra build tools and minutes of build. Add them any time later from the project folder, e.g.[/] bit setup --platforms {Platforms.Name(native[0])}");
 
         var chosen = cli.Prompter.MultiSelect("Set up native apps on this machine now too?", native, native.Where(current.Contains), Platforms.Title);
         return [Platform.Web, .. chosen];
@@ -411,6 +408,13 @@ public sealed class NewWorkflow(CliServices cli)
 
             if (result.Succeeded && context.Exists is false)
                 return StepResult.Failed($"Couldn't create {context.Name}", "dotnet new finished without creating the solution", hint: DiagnosticCodes.FirstErrorLine(result.Output));
+
+            var legacySolution = Path.ChangeExtension(context.Solution, ".sln");
+
+            if (result.Succeeded && File.Exists(context.Solution) && File.Exists(legacySolution))
+            {
+                File.Delete(legacySolution);
+            }
 
             var files = context.Exists ? Directory.EnumerateFiles(context.Directory, "*", SearchOption.AllDirectories).Count() : 0;
             return StepResult.FromProcess(result, $"Created {context.Name}", $"Couldn't create {context.Name}", null, $"bit Boilerplate{(package.Version is TemplateSource.FolderVersion ? "" : $" {package.Version}")}, {files} files");

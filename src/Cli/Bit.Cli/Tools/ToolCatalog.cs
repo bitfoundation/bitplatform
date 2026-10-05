@@ -538,7 +538,7 @@ public static partial class ToolCatalog
 
         public override string Name => "Xcode";
 
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsMacOS && context.Needs.Platforms.Any(p => p is Platform.Ios or Platform.MacOS);
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsMacOS && context.Needs.NeedsMaui;
 
         public override string Why(ToolContext context) => "builds the iOS and macOS apps";
 

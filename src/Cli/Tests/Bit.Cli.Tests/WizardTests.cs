@@ -124,7 +124,7 @@ public class WizardTests
         CollectionAssert.AreEqual(expected, platforms.Choices.ToArray());
         Assert.IsEmpty(platforms.Preselected);
         StringAssert.Contains(host.Output, "Every project has the web, Android, iOS, Windows and macOS apps.");
-        StringAssert.Contains(host.Output, "so fewer is faster");
+        StringAssert.Contains(host.Output, "builds the whole solution");
     }
 
     private static TestHost MissingDocker(ScriptedPrompter prompter)

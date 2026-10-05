@@ -154,6 +154,26 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task ANativeApp_Should_BuildTheWholeSolutionWithWhatItNeeds()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        var web = CreateFakeProject(host, "Contoso");
+        var project = new ProjectContext { Name = web.Name, Directory = web.Directory, Platforms = new HashSet<Platform> { Platform.Web, Platform.Windows } };
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, CancellationToken.None);
+
+        var commands = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.Contains(commands, "workload install maui");
+        Assert.IsTrue(commands.Any(c => c.StartsWith("build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj -t:InstallAndroidDependencies -f net10.0-android", StringComparison.Ordinal)), string.Join(Environment.NewLine, commands));
+        CollectionAssert.Contains(commands, "restore Contoso.slnx");
+        Assert.AreEqual(1, commands.Count(c => c.StartsWith("build ", StringComparison.Ordinal) && c.Contains("InstallAndroidDependencies", StringComparison.Ordinal) is false), string.Join(Environment.NewLine, commands));
+        CollectionAssert.Contains(commands, "build Contoso.slnx");
+        Assert.AreEqual("Built the solution", steps.Reports.Single(r => r.Id == "build").Result.Title);
+    }
+
+    [TestMethod]
     public async Task AFailedStep_Should_NotStopTheNextOnes()
     {
         using var host = new TestHost();
@@ -168,7 +188,7 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Failed, byId["restore"].Status);
         CollectionAssert.AreEqual(new[] { "NU1301" }, byId["restore"].Codes.ToArray());
         StringAssert.StartsWith(byId["restore"].Hint, "error NU1301");
-        Assert.AreEqual(StepStatus.Succeeded, byId["build-web"].Status);
+        Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
         StringAssert.Contains(byId["restore"].FollowUp, "dotnet restore Contoso.Web.slnf");
     }
 

@@ -126,19 +126,17 @@ public class TemplateTests
         CollectionAssert.AreEqual(new[] { "wasm-tools" }, Platforms.Workloads([Platform.Web], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui-android" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Windows).ToArray());
-        CollectionAssert.AreEqual(new[] { "wasm-tools" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
+        CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Ios], HostOs.MacOS).ToArray());
     }
 
     [TestMethod]
-    public void BuildTargets_Should_PickTheProjectAndFrameworkOfEachPlatform()
+    public void TheBuild_Should_CoverTheWholeSolutionOnceANativeAppIsPicked()
     {
-        var targets = Platforms.BuildTargets("Contoso", [Platform.Windows, Platform.Android, Platform.Web], "net10.0");
-
-        Assert.HasCount(3, targets);
-        Assert.AreEqual(new BuildTarget(Platform.Web, "Contoso.Web.slnf", null), targets[0]);
-        Assert.AreEqual(new BuildTarget(Platform.Android, "src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj", "net10.0-android"), targets[1]);
-        Assert.AreEqual(new BuildTarget(Platform.Windows, "src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj", null), targets[2]);
+        Assert.AreEqual("Contoso.Web.slnf", Platforms.BuildPath("Contoso", [Platform.Web]));
+        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Android]));
+        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Windows]));
+        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Ios]));
     }
 
     [TestMethod]

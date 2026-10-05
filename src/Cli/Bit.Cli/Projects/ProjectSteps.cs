@@ -139,8 +139,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> RestoreAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var result = await Dotnet(["restore", Path.GetFileName(project.WebSolutionFilter)], cancellationToken, progress, TimeSpan.FromMinutes(30));
-        return StepResult.FromProcess(result, "Restored NuGet packages", "Couldn't restore NuGet packages", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet restore {Path.GetFileName(project.WebSolutionFilter)}");
+        var result = await Dotnet(["restore", project.BuildPath], cancellationToken, progress, TimeSpan.FromMinutes(30));
+        return StepResult.FromProcess(result, "Restored NuGet packages", "Couldn't restore NuGet packages", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet restore {project.BuildPath}");
     }
 
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -148,21 +148,20 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (cli.Environment.IsCI && (cli.Environment.GetVariable("ANDROID_HOME") ?? cli.Environment.GetVariable("ANDROID_SDK_ROOT")) is not null && cli.Environment.GetVariable("JAVA_HOME") is not null)
             return StepResult.Skipped("Skipped the Android SDK and Java", "the CI machine has them");
 
-        var target = Templates.Platforms.BuildTargets(project.Name, [Platform.Android], project.TargetFrameworkVersion)[0];
-        string[] arguments = ["build", target.ProjectPath, "-t:InstallAndroidDependencies", "-f", target.TargetFramework!, "-p:AcceptAndroidSDKLicenses=True"];
+        string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
 
         return StepResult.FromProcess(result, "Installed the Android SDK and Java", "Couldn't install the Android SDK and Java",
             $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
     }
 
-    public async Task<StepResult> BuildAsync(BuildTarget target, Action<string> progress, CancellationToken cancellationToken)
+    public async Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = target.TargetFramework is null ? ["build", target.ProjectPath] : ["build", target.ProjectPath, "-f", target.TargetFramework];
+        string[] arguments = ["build", project.BuildPath];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
-        var platform = Templates.Platforms.Title(target.Platform);
+        var what = project.BuildsSolution ? "the solution" : "the web app";
 
-        return StepResult.FromProcess(result, $"Built the {platform} app", $"Couldn't build the {platform} app",
+        return StepResult.FromProcess(result, $"Built {what}", $"Couldn't build {what}",
             $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
     }
 

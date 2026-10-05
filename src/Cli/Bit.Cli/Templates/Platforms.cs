@@ -11,8 +11,6 @@ public enum Platform
     Windows
 }
 
-public sealed record BuildTarget(Platform Platform, string ProjectPath, string? TargetFramework);
-
 public static class Platforms
 {
     public static string Name(Platform platform) => platform switch
@@ -55,7 +53,7 @@ public static class Platforms
         var selected = platforms.ToHashSet();
         var workloads = new List<string> { "wasm-tools" };
 
-        if (selected.Contains(Platform.Android) || selected.Contains(Platform.Ios) || selected.Contains(Platform.MacOS))
+        if (BuildsSolution(selected))
         {
             workloads.Add(os is HostOs.Linux ? "maui-android" : "maui");
         }
@@ -63,23 +61,9 @@ public static class Platforms
         return workloads;
     }
 
-    public static IReadOnlyList<BuildTarget> BuildTargets(string projectName, IEnumerable<Platform> platforms, string targetFrameworkVersion)
-    {
-        var targets = new List<BuildTarget>();
-        var maui = $"src/Client/{projectName}.Client.Maui/{projectName}.Client.Maui.csproj";
+    public static bool BuildsSolution(IEnumerable<Platform> platforms) => platforms.Any(p => p is not Platform.Web);
 
-        foreach (var platform in platforms.Distinct().Order())
-        {
-            targets.Add(platform switch
-            {
-                Platform.Web => new BuildTarget(platform, $"{projectName}.Web.slnf", null),
-                Platform.Android => new BuildTarget(platform, maui, $"{targetFrameworkVersion}-android"),
-                Platform.Ios => new BuildTarget(platform, maui, $"{targetFrameworkVersion}-ios"),
-                Platform.MacOS => new BuildTarget(platform, maui, $"{targetFrameworkVersion}-maccatalyst"),
-                _ => new BuildTarget(platform, $"src/Client/{projectName}.Client.Windows/{projectName}.Client.Windows.csproj", null)
-            });
-        }
+    public static string BuildPath(string projectName, IEnumerable<Platform> platforms) => BuildsSolution(platforms) ? $"{projectName}.slnx" : $"{projectName}.Web.slnf";
 
-        return targets;
-    }
+    public static string MauiProject(string projectName) => $"src/Client/{projectName}.Client.Maui/{projectName}.Client.Maui.csproj";
 }

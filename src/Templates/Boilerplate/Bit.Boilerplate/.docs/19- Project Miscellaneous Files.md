@@ -105,6 +105,8 @@ csharp_new_line_before_open_brace = all
 
 **When to use**: Open this when you need to work across all platforms and projects simultaneously.
 
+**Created with `bit new`?** Then your project has no `.sln`: `bit new` removes it, since `Boilerplate.slnx` below is the same solution in the newer format.
+
 ---
 
 ### 2.2 `Boilerplate.Web.slnf`

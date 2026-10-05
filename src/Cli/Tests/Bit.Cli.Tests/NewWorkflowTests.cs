@@ -22,6 +22,8 @@ public class NewWorkflowTests
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build"), Calls(host));
         Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "git" or "node" or "docker" or "aspire"), Calls(host));
         StringAssert.Contains(host.Output, "bit setup");
+        Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "Contoso.slnx")));
+        Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "Contoso.sln")));
     }
 
     [TestMethod]
@@ -142,6 +144,7 @@ public class NewWorkflowTests
             var directory = Directory.CreateDirectory(arguments[arguments.IndexOf("--output") + 1]).FullName;
 
             File.WriteAllText(Path.Combine(directory, $"{name}.slnx"), "<Solution />");
+            File.WriteAllText(Path.Combine(directory, $"{name}.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
             File.WriteAllText(Path.Combine(directory, $"{name}.Web.slnf"), "{}");
             Directory.CreateDirectory(Path.Combine(directory, "src", "Server", $"{name}.Server.Api"));
             File.WriteAllText(Path.Combine(directory, "src", "Directory.Packages.props"), """
