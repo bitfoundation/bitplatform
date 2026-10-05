@@ -7,7 +7,7 @@
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);
         // A disabled nav disables everything it renders: greying the items out is not enough, since a link
         // that keeps its href and its tab stop can still be followed with the keyboard.
-        var isEnabled = Nav.Disabled is false && Nav.GetIsDisabled(Item) is false;
+        var isDisabled = Nav.Disabled || Nav.GetIsDisabled(Item);
         var isExpanded = Nav.IsItemOpen(Item);
         var isSeparator = Nav.GetIsSeparator(Item);
         var text = Nav.GetText(Item);
@@ -23,7 +23,7 @@
         var target = Nav.GetTarget(Item);
         var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
         var isSelected = Nav.IsSelected(Item);
-        var href = isEnabled ? url : null;
+        var href = isDisabled ? null : url;
         var isToggleable = childItems.Any() && Nav.NoCollapse is false;
         var hasChevron = isToggleable && Nav.IconOnly is false;
         // The chevron is a control of its own wherever the item renders as an anchor: an item with a URL
@@ -154,7 +154,7 @@
                         @onkeydown="HandleOnKeyDown"
                         type="button"
                         title="@(title is not null ? title : text)"
-                        disabled="@(isEnabled is false)"
+                        disabled="@isDisabled"
                         style="@Nav.Styles?.Header"
                         class="bit-nav-gcb @(isSelectedAncestor ? "bit-nav-sca" : null) @Nav.Classes?.Header"
                         aria-expanded="@ariaExpanded"
@@ -172,7 +172,7 @@
                    technologies in a visually hidden copy (a plain div cannot be named with aria-label). *@
                 <div title="@(title ?? text)"
                      style="@Nav.Styles?.Header"
-                     class="bit-nav-gcb bit-nav-gst @(isEnabled ? null : "bit-nav-dis") @Nav.Classes?.Header">
+                     class="bit-nav-gcb bit-nav-gst @(isDisabled ? "bit-nav-dis" : null) @Nav.Classes?.Header">
                     @{ RenderHeaderContent(); }
                     @if (Nav.IconOnly)
                     {
@@ -226,7 +226,7 @@
                                       RenderLink="renderLink"
                                       OnFocusIn="HandleOnFocusIn"
                                       OnKeyDown="HandleOnKeyDown"
-                                      Disabled="@(isEnabled is false)"
+                                      Disabled="isDisabled"
                                       AriaExpanded="@ariaExpanded"
                                       AriaLabel="@ariaLabel"
                                       AriaDescribedBy="@descriptionId"
@@ -234,7 +234,7 @@
                                       Class="@($"bit-nav-ict {GetItemContainerClasses(isSelectedAncestor)}")"
                                       Style="@($"padding-inline-start:{padding}px;{GetItemContainerStyles()}")"
                                       AriaCurrent="@(isSelected ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
-                                      TabIndex="@(isEnabled is false ? "-1" : (renderLink && href.HasNoValue() ? "0" : null))"
+                                      TabIndex="@(isDisabled ? "-1" : (renderLink && href.HasNoValue() ? "0" : null))"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                         @if (isChevronInteractive)
@@ -248,8 +248,8 @@
                                  role="button"
                                  style="@chevronStyle"
                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
-                                 tabindex="@(isEnabled ? "0" : "-1")"
-                                 aria-disabled="@(isEnabled ? null : "true")"
+                                 tabindex="@(isDisabled ? "-1" : "0")"
+                                 aria-disabled="@(isDisabled ? "true" : null)"
                                  aria-expanded="@(isExpanded ? "true" : "false")"
                                  aria-label="@toggleAriaLabel">
                                 <i style="@Nav.Styles?.ToggleIcon"

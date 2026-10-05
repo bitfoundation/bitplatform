@@ -642,7 +642,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         {
             component.Render(parameters =>
             {
-                parameters.Add(p => p.Disabled, (i % 2 == 0) is false);
+                parameters.Add(p => p.Disabled, i % 2 != 0);
             });
         }
 

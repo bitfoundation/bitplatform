@@ -35,7 +35,7 @@
     else
     {
         var template = MenuButton.GetTemplate(Item);
-        var isEnabled = MenuButton.Disabled is false && MenuButton.GetIsDisabled(Item) is false;
+        var isDisabled = MenuButton.Disabled || MenuButton.GetIsDisabled(Item);
         // An item that opens a submenu is not a command of its own, so the three things that would make it
         // one - a link, a check state, a click of its own - give way to the submenu it carries.
         var hasSubmenu = _hasSubmenu;
@@ -116,7 +116,7 @@
             </text>;
 
         <li role="presentation" style="@MenuButton.Styles?.ItemWrapper" class="@MenuButton.Classes?.ItemWrapper">
-            @if (isEnabled && href.HasValue())
+            @if (isDisabled is false && href.HasValue())
             {
                 <a @attributes="pointerAttributes"
                    @onclick="HandleOnClick" @onclick:stopPropagation
@@ -151,8 +151,8 @@
                         type="@(hasSubmenu ? "button" : MenuButton._buttonType.GetValue())"
                         title="@MenuButton.GetTitle(Item)"
                         tabindex="-1"
-                        disabled="@(isEnabled is false && MenuButton.DisabledInteractive is false)"
-                        aria-disabled="@(isEnabled is false ? "true" : null)"
+                        disabled="@(isDisabled && MenuButton.DisabledInteractive is false)"
+                        aria-disabled="@(isDisabled ? "true" : null)"
                         aria-label="@MenuButton.GetAriaLabel(Item)"
                         aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                         aria-haspopup="@(hasSubmenu ? "menu" : null)"

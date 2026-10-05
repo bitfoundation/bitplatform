@@ -478,9 +478,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // where the whole bar is a single stop and the arrow keys move inside it.
     // A disabled item carries none at all: it is a native disabled button or an anchor without an href, neither
     // of which is focusable, and a tabindex of -1 would make the anchor focusable by a click again.
-    internal string? GetItemTabIndex(TItem item, bool isEnabled)
+    internal string? GetItemTabIndex(TItem item, bool isDisabled)
     {
-        if (isEnabled is false) return null;
+        if (isDisabled) return null;
 
         if (SingleTabStop is false) return null;
 
@@ -514,7 +514,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
                                     .Where(s => s.HasValue()));
     }
 
-    internal string GetItemCssClass(TItem item, bool isEnabled)
+    internal string GetItemCssClass(TItem item, bool isDisabled)
     {
         return string.Join(' ', new[]
         {
@@ -523,7 +523,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             GetClass(item),
             IsSelected(item) ? "bit-nbr-sel" : null,
             IsSelected(item) ? Classes?.SelectedItem : null,
-            isEnabled ? null : "bit-nbr-dis"
+            isDisabled ? "bit-nbr-dis" : null
         }.Where(c => c.HasValue()));
     }
 

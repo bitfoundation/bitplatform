@@ -76,7 +76,10 @@ NameSelectors = new() { IsDisabled = { Name = nameof(MyItem.Disabled) } };   // 
 A custom class with an `IsEnabled` property and no name selector was read through the default name
 before; rename that property to `IsDisabled` and invert its values, or point a selector at it as above.
 
-**A lowercase `disabled` attribute is now the parameter.** Blazor matches component parameters regardless
-of case, so `disabled` written on a bit component used to be passed through to the element as an HTML
-attribute and now sets `Disabled`, disabling the component (class, `aria-disabled`, tab order and
-events). To disable a component, use `Disabled` itself.
+**A lowercase `disabled` attribute written in markup is now the parameter.** The Razor compiler matches
+the attributes written on a component to its parameters regardless of case, so `disabled` written on a
+bit component used to be passed through to the element as an HTML attribute and now sets `Disabled`,
+disabling the component (class, `aria-disabled`, tab order and events). A `disabled` key that only
+arrives at runtime - in an `@attributes` dictionary or a `DynamicComponent`'s `Parameters` - is matched
+by its exact name, so it is still passed through to the element as a plain HTML attribute, without any of
+that. To disable a component, use `Disabled` itself.

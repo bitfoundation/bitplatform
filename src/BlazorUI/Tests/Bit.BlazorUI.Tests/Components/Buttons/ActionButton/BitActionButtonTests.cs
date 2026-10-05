@@ -1064,7 +1064,7 @@ public class BitActionButtonTests : BunitTestContext
             {
                 parameters.Add(p => p.Title, $"title-{i}");
                 parameters.Add(p => p.IconName, "Add");
-                parameters.Add(p => p.Disabled, (i % 3 != 0) is false);
+                parameters.Add(p => p.Disabled, i % 3 == 0);
                 parameters.Add(p => p.FullWidth, i % 2 == 0);
                 parameters.Add(p => p.Href, i % 5 == 0 ? "https://bitplatform.dev" : null);
             });

@@ -526,7 +526,7 @@ public partial class BitPivot : BitComponentBase
         // be activated, dragged or dismissed, the keys it announces for that, its tabindex, the panel it points
         // at, its dismiss button - and a tab whose own parameters did not change is not rendered again by the
         // render of the pivot, so the tabs are asked to whenever any of that changes.
-        var itemsState = (Disabled is false, _isVertical, Dismissible, Reorderable, OnItemDismiss.HasDelegate, OnItemReorder.HasDelegate,
+        var itemsState = (Disabled, _isVertical, Dismissible, Reorderable, OnItemDismiss.HasDelegate, OnItemReorder.HasDelegate,
                           Navigable, HeaderOnly, MountAll, KeepMounted,
                           DismissIcon?.GetCssClasses(), DismissIconName, DismissTitle, DismissAriaLabelFormat);
 

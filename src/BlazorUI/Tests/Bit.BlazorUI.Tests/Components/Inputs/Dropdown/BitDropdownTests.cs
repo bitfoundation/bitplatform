@@ -1863,6 +1863,35 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual("Suchtext", component.Find(".bit-drp-sin").GetAttribute("aria-label"));
     }
 
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDropdownChipsShouldNameTheComboboxWithoutTheRemoveButtons(bool disabled)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Chips, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.DefaultValues, new[] { items[0].Value });
+        });
+
+        // While the chips carry remove buttons the name comes from a hidden element holding the selection
+        // text alone, so the visible display (whose subtree holds those buttons) must not keep the id the
+        // combobox is labelled by. A disabled dropdown renders no remove button, so the display keeps it.
+        var display = component.Find(".bit-drp-tdp");
+        var hiddenName = component.FindAll("span[hidden]");
+
+        Assert.AreEqual(disabled is false, component.FindAll(".bit-drp-crb").Count > 0);
+        Assert.AreEqual(disabled, display.HasAttribute("id"));
+        Assert.AreEqual(disabled ? 0 : 1, hiddenName.Count);
+    }
+
     [TestMethod]
     public void BitDropdownOverflowChipShouldNameTheItemsItHides()
     {

@@ -60,7 +60,8 @@ public static class BlazorUIMcpInstructions
            every component; per-part overrides go in its Classes / Styles bag; an app-wide change is a
            --bit-* token. A literal hex color is correct in exactly one theme and wrong in the other three.
         4. An enum parameter takes the enum, not a string: Color="BitColor.Primary", not Color="Primary".
-        5. Disabled is the Disabled parameter (never the native disabled attribute), hidden is
+        5. Disabled is the Disabled parameter (never a disabled key splatted through @attributes, which
+           lands on the element as plain HTML), hidden is
            Visibility="BitVisibility.Hidden" or Collapsed (never display:none) - both are BitComponentBase
            parameters that every component has, and both keep the accessibility behaviour the component
            implements.

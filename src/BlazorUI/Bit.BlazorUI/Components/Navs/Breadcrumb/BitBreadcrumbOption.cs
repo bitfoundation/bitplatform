@@ -115,7 +115,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         // since OnParametersSet runs on every parent render. Reference-type params are folded into a
         // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
         // Template/OverflowTemplate are compared by reference identity since the parent renders them too.
-        var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsDisabled is false, IsSelected,
+        var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsDisabled, IsSelected,
                                                   Class, Style, IconPosition, Key, Title, Target, AriaLabel);
 
         var changed = _lastParametersSignature != signature ||

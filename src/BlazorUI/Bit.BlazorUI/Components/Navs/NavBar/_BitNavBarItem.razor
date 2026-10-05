@@ -9,7 +9,7 @@
     var template = NavBar.GetTemplate(Item);
     // A disabled navbar disables everything it renders: greying the items out is not enough, since a link
     // that keeps its href and its tab stop can still be followed with the keyboard.
-    var isEnabled = NavBar.Disabled is false && NavBar.GetIsDisabled(Item) is false;
+    var isDisabled = NavBar.Disabled || NavBar.GetIsDisabled(Item);
     var isSelected = NavBar.IsSelected(Item);
     // The item stays the very same element whether it is selected or not: an anchor that turns into a
     // button on selection loses the focus that was on it, and takes the context menu, the middle click and
@@ -60,11 +60,11 @@
                          OnClick="HandleOnClick"
                          OnFocusIn="HandleOnFocusIn"
                          OnKeyDown="HandleOnKeyDown"
-                         Disabled="@(isEnabled is false)"
+                         Disabled="isDisabled"
                          Style="@NavBar.GetItemCssStyle(Item)"
                          Title="@(title ?? (isTextHidden ? text : null))"
-                         Class="@NavBar.GetItemCssClass(Item, isEnabled)"
-                         TabIndex="@NavBar.GetItemTabIndex(Item, isEnabled)"
+                         Class="@NavBar.GetItemCssClass(Item, isDisabled)"
+                         TabIndex="@NavBar.GetItemTabIndex(Item, isDisabled)"
                          Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url) is false ? "noopener noreferrer" : null)">
             @if (template is not null)
             {
