@@ -446,7 +446,7 @@
 
 @* Like the callout, the overlay is a sibling of the root element and is relocated to the body while it
    is open; Callouts.ts carries what the root and its ancestors declare into it, so the public variables
-   it reads (set on an ancestor, through a class, in Style or in Styles.Root) reach it like any inherited
+   it reads (set on an ancestor or through its class, in Style or in Styles.Root) reach it like any inherited
    value. *@
 <div @onclick="CloseCalloutAndRestoreFocus"
      style="@GetOverlayStyles()"

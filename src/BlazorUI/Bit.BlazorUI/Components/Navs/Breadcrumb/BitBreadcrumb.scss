@@ -3,7 +3,7 @@
 // Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root,
 // on any ancestor, or on the Style of a single breadcrumb. The overflow menu is rendered outside the root
 // element and relocated to the body while it is open, and Callouts.ts carries what the root and its
-// ancestors declare (a variable set on an ancestor, through a class, in Style or Styles.Root) into it, so
+// ancestors declare (a variable set on an ancestor or through its class, in Style or Styles.Root) into it, so
 // they reach it like any inherited value.
 //
 //   TRAIL

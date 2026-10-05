@@ -4788,6 +4788,43 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual("padding:2px", component.Find(".bit-dtp-cal").GetAttribute("style"));
     }
 
+    [TestMethod]
+    public void BitDatePickerStandaloneShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-DatePicker-today-background:url(data:image/png;base64,AAA);color:blue;--bit-DatePicker-accent-color:'a;b'");
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        // A semicolon inside brackets or quotes is part of the value: cut there, the copy would leave an unclosed url(
+        // or quote that swallows everything written after it on the calendar, its own style included.
+        Assert.AreEqual("--bit-DatePicker-today-background:url(data:image/png;base64,AAA);--bit-DatePicker-accent-color:'a;b';padding:2px",
+                        component.Find(".bit-dtp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStandaloneShouldFollowAChangeOfItsStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-DatePicker-accent-color:red");
+        });
+
+        Assert.AreEqual("--bit-DatePicker-accent-color:red;", component.Find(".bit-dtp-cal").GetAttribute("style"));
+
+        // What was picked out of the Style is remembered between renders, so a new Style has to replace it.
+        component.Render(parameters => parameters.Add(p => p.Style, "--bit-DatePicker-accent-color:blue"));
+
+        Assert.AreEqual("--bit-DatePicker-accent-color:blue;", component.Find(".bit-dtp-cal").GetAttribute("style"));
+    }
+
     // The component counts months with CultureInfo.Calendar, which has no public setter and is not
     // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
     private static CultureInfo CreateHebrewCulture()

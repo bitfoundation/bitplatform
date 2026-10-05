@@ -4170,7 +4170,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     // The callout and the overlay are rendered outside the root element and relocated to the body while the
     // callout is open; Callouts.ts carries what the root and its ancestors declare into them (a public
-    // --bit-DatePicker-* variable set on an ancestor, through a class, in Style or in Styles.Root), so it reaches
+    // --bit-DatePicker-* variable set on an ancestor or through its class, in Style or in Styles.Root), so it reaches
     // them like any inherited value. The display is written here since it is what the component toggles the
     // overlay with.
     private string GetOverlayStyles() => $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";

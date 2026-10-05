@@ -59,7 +59,7 @@ internal static class CalloutsJsRuntimeExtensions
         // takes away: a click outside of it still closes it. It is re-anchored to its anchor instead.
         bool noScrollDismiss = false,
         // The id of the root of the component, which its popup is rendered beside rather than inside. What the
-        // consumer declared on the root - Style and Styles.Root, the classes of Class and Classes.Root,
+        // consumer declared on the root for the popup too - the custom properties of Style and Styles.Root,
         // ForceAnimation's bit-fam - is carried into the popup while it is relocated to the body; an empty string
         // carries nothing, which is what a callout opened from inside another one passes.
         string rootId = "") where T : class

@@ -1777,7 +1777,7 @@ public partial class BitCallout : BitComponentBase
     {
         // The callout, its arrow and its overlay are rendered outside the root and relocated to the body while
         // the callout is open, but the public --bit-Callout-* variables need nothing here: whether they are set
-        // on an ancestor, through a class, in Style, Styles.Root or Styles.Opened, Callouts.ts carries what the
+        // on an ancestor or through its class, in Style, Styles.Root or Styles.Opened, Callouts.ts carries what the
         // root and its ancestors declare into the relocated parts, so they reach all three like any inherited
         // value and one Style on the component restyles the callout it opens.
         //

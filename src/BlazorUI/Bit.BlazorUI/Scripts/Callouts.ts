@@ -41,9 +41,11 @@
             holder: HTMLElement | null,
             observer: MutationObserver | null
         }> = new Map();
-        // The custom properties a closing responsive callout was handed on its way back beside its root (see
-        // freezeInheritedVariables), by callout id, with the value each was written with.
-        private static _frozenVariables: Map<string, Map<string, string>> = new Map();
+        // The closing responsive panels that are left in the chain they were relocated into until their exit
+        // transition has run (see restoreAfterTransition), by callout id, with the timer that puts them back.
+        private static _pendingRestores: Map<string, number> = new Map();
+        // The one detached element every style string of the chain is parsed through (see parseStyle).
+        private static _scratch: HTMLElement | null = null;
 
         // The innermost open callout, which is the one the page-level handlers speak for. It reads as the
         // single open callout it used to be for everything that never nests.
@@ -114,10 +116,11 @@
             // noDismiss does as well: a click outside of it still closes it. It follows its component instead.
             noScrollDismiss: boolean = false,
             // The id of the root of the component, when it is not an ancestor of the callout - which it is not
-            // for any component whose popup is rendered beside its root. What the consumer declared on it (Style
-            // and Styles.Root, the classes of Class and Classes.Root, ForceAnimation's bit-fam) is carried into
-            // the callout while it is relocated; '' carries nothing, which is what a callout opened from inside
-            // another one passes, as it already inherits all of that through the one it was opened from.
+            // for any component whose popup is rendered beside its root. What the consumer declared on it for the
+            // popup too (the custom properties of Style and Styles.Root, ForceAnimation's bit-fam; see mirrorRoot)
+            // is carried into the callout while it is relocated; '' carries nothing, which is what a callout
+            // opened from inside another one passes, as it already inherits all of that through the one it was
+            // opened from.
             rootId: string = '',
         ) {
             component ??= document.getElementById(componentId);
@@ -130,19 +133,23 @@
 
             if (!isCalloutOpen) {
                 const windowWidth = window.innerWidth;
-                if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
+                const slidesOut = windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode;
+                if (slidesOut) {
                     callout.style.opacity = '0';
                     callout.style.transform = '';
-                    // The panel slides and fades out from here, but it is put back beside its root right
-                    // away, out of the chain that handed it what its root and ancestors declare.
-                    Callouts.freezeInheritedVariables(calloutId, callout);
                 } else {
                     callout.style.display = 'none';
                 }
                 if (arrow) {
                     arrow.style.display = 'none';
                 }
-                Callouts.restoreCalloutToOriginalParent(calloutId, callout);
+                if (slidesOut) {
+                    // The panel slides and fades out from here, so it stays in the chain that hands it what its
+                    // root and ancestors declare until that transition is over.
+                    Callouts.restoreAfterTransition(calloutId, callout);
+                } else {
+                    Callouts.restoreCalloutToOriginalParent(calloutId, callout);
+                }
                 // The component is closing this callout itself, so it is not told about it again; anything
                 // that was opened from inside it goes with it, since its anchor is about to be hidden.
                 Callouts.remove(calloutId, false);
@@ -957,19 +964,22 @@
         // copied rather than their computed values, so a value that refers to a theme token keeps following it.
         // What identifies an element or makes it act - its id, role and aria-*, the state a pseudo-class such as
         // :hover or :focus-within matches - is not copied, so a selector that relies on it does not reach the
-        // callout. The component's root is not an ancestor of its popup but a sibling of it, so what its consumer
-        // declared on it is carried by one more link at the bottom of the chain (see mirrorRoot). The chain is
-        // kept in step with the elements it copies for as long as the callout is open.
+        // callout. Nor are the library's own component classes (see mirroredClasses), which no stylesheet of the
+        // library reaches a popup through and which its scripts look elements up by with closest(). The
+        // component's root is not an ancestor of its popup but a sibling of it, so what its consumer declared
+        // on it is carried by one more link at the bottom of the chain (see mirrorRoot). The chain is kept in
+        // step with the elements it copies for as long as the callout is open.
         //
-        // The flip side of copying the classes is that a descendant selector of the page (`.sidebar div`) matches
-        // the relocated parts again, as it would where they were rendered; the one thing such a rule must never
-        // take away from them, the fixed positioning everything here places them with, is pinned by the
-        // stylesheet (general.scss).
+        // The flip side of copying the classes of the ancestors is that a descendant selector of the page
+        // (`.sidebar div`) matches the relocated parts again, as it would where they were rendered; the one thing
+        // such a rule must never take away from them, the fixed positioning everything here places them with, is
+        // pinned by the stylesheet (general.scss).
         private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '', rootId: string = '') {
+            // A panel reopened while it is still sliding out has never left its chain, which it keeps.
+            Callouts.cancelPendingRestore(calloutId);
+
             if (Callouts._calloutOriginalParents.has(calloutId)) return;
             if (callout.parentElement === document.body) return;
-
-            Callouts.thawInheritedVariables(calloutId, callout);
 
             const overlay = overlayId ? document.getElementById(overlayId) : null;
             const arrow = arrowId ? document.getElementById(arrowId) : null;
@@ -984,11 +994,13 @@
                 ancestors.push(current);
             }
 
+            // Of the inline style of the root and of a part another callout relocated - the popup an inner
+            // callout is opened from - only the custom properties are copied (see linkStyle).
             const links: BitCalloutChainLink[] = [];
             let bottom = wrapper;
             for (let i = ancestors.length - 1; i >= 0; i--) {
                 const link = Callouts.createChainLink(ancestors[i]);
-                links.push({ source: ancestors[i], link, root: false });
+                links.push({ source: ancestors[i], link, root: false, variablesOnly: Callouts.isRelocatedPart(ancestors[i]) });
                 bottom.appendChild(link);
                 bottom = link;
             }
@@ -996,7 +1008,7 @@
             const root = rootId ? document.getElementById(rootId) : null;
             if (root && root.contains(callout) === false) {
                 const link = Callouts.createChainLink(root);
-                links.push({ source: root, link, root: true });
+                links.push({ source: root, link, root: true, variablesOnly: true });
                 bottom.appendChild(link);
                 bottom = link;
             }
@@ -1018,7 +1030,9 @@
             // A record only counts when an attribute a link copies has really changed, since an ancestor can be
             // rewritten often for reasons of its own - the popup an inner callout is opened from is restyled on
             // every reposition - and a link is only written to where it differs from what it copies (see
-            // syncChainLink), so nothing under it is restyled for a change that leaves the chain as it was.
+            // syncChainLink), so nothing under it is restyled for a change that leaves the chain as it was. Each
+            // element is only watched for the attributes a link can copy (see observedAttributes), so the ones a
+            // page rewrites for reasons of its own - an aria-expanded, a data-state - never reach the callback.
             let observer: MutationObserver | null = null;
             if (links.length > 0) {
                 observer = new MutationObserver(records => {
@@ -1037,7 +1051,11 @@
                     }
                 });
                 for (const link of links) {
-                    observer.observe(link.source, { attributes: true, attributeOldValue: true });
+                    observer.observe(link.source, {
+                        attributes: true,
+                        attributeOldValue: true,
+                        attributeFilter: Callouts.observedAttributes(link.source)
+                    });
                 }
             }
 
@@ -1082,7 +1100,8 @@
         // the stylesheet also keeps it from generating the ::before and ::after of a copied class (general.scss).
         // A copy of a tag other than div drops out of the accessibility tree with role="none", or every open
         // callout would repeat the landmarks and lists of the page around it. Only what differs is written, as
-        // every write restyles the whole of the callout under the link.
+        // every write restyles the whole of the callout under the link, and the style is only parsed again when
+        // the one it is copied from has changed.
         private static syncChainLink(link: BitCalloutChainLink) {
             const wanted = link.root
                 ? Callouts.mirrorRoot(link.source)
@@ -1093,10 +1112,12 @@
                 wanted.set('role', 'none');
             }
 
-            const scratch = document.createElement('div');
-            scratch.setAttribute('style', wanted.get('style') ?? '');
-            scratch.style.setProperty('display', 'contents', 'important');
-            wanted.set('style', scratch.getAttribute('style') ?? '');
+            const sourceStyle = wanted.get('style') ?? '';
+            if (link.style == null || link.sourceStyle !== sourceStyle) {
+                link.sourceStyle = sourceStyle;
+                link.style = Callouts.linkStyle(sourceStyle, link.variablesOnly);
+            }
+            wanted.set('style', link.style);
 
             const names = link.link.getAttributeNames();
             for (let i = 0; i < names.length; i++) {
@@ -1112,17 +1133,40 @@
             });
         }
 
+        // The style a link is written with: the one it copies, forced to `display: contents`. A link that copies
+        // the variables alone (see moveCalloutToBody) drops every other declaration, so the inherited text styles
+        // and the positioning a root or a relocated part is given never reach the popup under it.
+        private static linkStyle(style: string, variablesOnly: boolean) {
+            const parsed = Callouts.parseStyle(style);
+
+            if (variablesOnly) {
+                for (let i = parsed.length - 1; i >= 0; i--) {
+                    if (parsed[i].indexOf('--') !== 0) {
+                        parsed.removeProperty(parsed[i]);
+                    }
+                }
+            }
+
+            parsed.setProperty('display', 'contents', 'important');
+
+            return Callouts._scratch!.getAttribute('style') ?? '';
+        }
+
+        // Parses a style string through one detached element kept for the purpose rather than a new one per call,
+        // and hands back its declarations to read or rewrite before taking the string back off it.
+        private static parseStyle(style: string) {
+            const scratch = Callouts._scratch ??= document.createElement('div');
+            scratch.setAttribute('style', style);
+            return scratch.style;
+        }
+
         // An ancestor is copied with what a stylesheet styles it by and what an inherited value can depend on:
-        // its classes, its inline style, its direction and language, the scope attributes of CSS isolation, its
-        // bit-* attributes (bit-theme scopes a preset) and the data-* attributes that scope a theme. What would
-        // make the copy act, or be found in place of the original - an id, a role or aria-*, tabindex, hidden,
-        // inert, event handlers, any other data-* attribute (a data-testid would be found twice) - is left behind,
-        // as are the markers of the chain itself, which an ancestor carries when the callout is opened from inside
-        // another one.
-        //
-        // The inline style of a part another callout relocated - the popup an inner callout is opened from - is
-        // left behind too: it is what that component and the positioning code size and place the popup with,
-        // private sizing variables included, which the inner popup reads as well and must never be handed.
+        // its classes (see mirroredClasses), its inline style, its direction and language, the scope attributes
+        // of CSS isolation, its bit-* attributes (bit-theme scopes a preset) and the data-* attributes that scope
+        // a theme. What would make the copy act, or be found in place of the original - an id, a role or aria-*,
+        // tabindex, hidden, inert, event handlers, any other data-* attribute (a data-testid would be found
+        // twice) - is left behind, as are the markers of the chain itself, which an ancestor carries when the
+        // callout is opened from inside another one.
         private static mirrorAncestor(source: Element) {
             const wanted = new Map<string, string>();
 
@@ -1130,11 +1174,51 @@
             for (let i = 0; i < attributes.length; i++) {
                 const name = attributes[i].name;
                 if (Callouts.isMirroredAttribute(name) === false) continue;
-                if (name === 'style' && Callouts.isRelocatedPart(source)) continue;
+                if (name === 'class') {
+                    const classes = Callouts.mirroredClasses(source, true);
+                    if (classes) {
+                        wanted.set(name, classes);
+                    }
+                    continue;
+                }
                 wanted.set(name, attributes[i].value);
             }
 
             return wanted;
+        }
+
+        // The classes a link carries. The library's own component classes are left behind: none of its
+        // stylesheets reaches a popup through them, and its scripts tell their elements apart by them - a
+        // closest('.bit-nav-ict') from inside the popup of a menu in a nav item would otherwise find the copy of
+        // that item and take the menu's keys for the nav. What is kept are the classes the consumer wrote, when
+        // they are taken at all, and the two kinds of library class that are meant to inherit: bit-fam, which
+        // ForceAnimation opts a subtree out of the reduced-motion collapse with, and the bit-css-* utilities.
+        private static mirroredClasses(source: Element, consumerClasses: boolean) {
+            const classes: string[] = [];
+            for (let i = 0; i < source.classList.length; i++) {
+                const name = source.classList[i];
+                const kept = name.indexOf('bit-') !== 0
+                    ? consumerClasses
+                    : name === 'bit-fam' || name.indexOf('bit-css-') === 0;
+                if (kept) {
+                    classes.push(name);
+                }
+            }
+            return classes.join(' ');
+        }
+
+        // The attributes an element of the chain is watched for: every one it carries that a link copies, and
+        // the ones a page adds later to switch a theme, a direction or a language under an open callout.
+        private static observedAttributes(source: Element) {
+            const names = ['class', 'style', 'dir', 'lang', 'bit-theme',
+                'data-theme', 'data-bs-theme', 'data-color-scheme', 'data-scheme', 'data-mode'];
+            const own = source.getAttributeNames();
+            for (let i = 0; i < own.length; i++) {
+                if (Callouts.isMirroredAttribute(own[i]) && names.indexOf(own[i]) === -1) {
+                    names.push(own[i]);
+                }
+            }
+            return names;
         }
 
         private static isMirroredAttribute(name: string) {
@@ -1153,28 +1237,19 @@
             return false;
         }
 
-        // The root is copied for what its consumer put on it - its inline style (Style and Styles.Root, and
-        // whatever a state such as Styles.Opened adds while the callout is open), the classes of Class and
-        // Classes.Root, a bit-theme preset, its direction and language - and never for the classes the component
-        // itself puts there. Its own bit-* classes are left behind: they would make the component's stylesheet
-        // match its popup as if it were inside its root, which it never is, and the popup is styled through
-        // classes of its own. The one exception is bit-fam, which ForceAnimation puts on the root to opt its
-        // subtree out of the reduced-motion collapse, and which is meant for the popup as much as for the field.
-        // The whole of the style is taken, as for an ancestor, so an inherited value the root overrides for its
-        // ancestors - pointer-events, visibility, color - is overridden for the popup as well; what sizes and
-        // places the root is inherited by nothing and does nothing on an element that draws no box.
+        // The root is not an ancestor of its popup, which is rendered beside it, so it is copied for the one thing
+        // its consumer means for the popup as much as for the field: the custom properties of its inline style
+        // (Style and Styles.Root, and whatever a state such as Styles.Opened adds while the callout is open; see
+        // linkStyle), a bit-theme preset, its direction and language, and bit-fam. Its classes are left behind -
+        // the component's own, and the ones of Class and Classes.Root alike: a link carrying them would be a new
+        // ancestor of the popup, so a rule the consumer wrote for the field's subtree (`.compact div`) would
+        // start matching the popup's internals. Classes.Callout is the class that reaches the popup.
         private static mirrorRoot(source: Element) {
             const wanted = new Map<string, string>();
 
-            const classes: string[] = [];
-            for (let i = 0; i < source.classList.length; i++) {
-                const name = source.classList[i];
-                if (name.indexOf('bit-') !== 0 || name === 'bit-fam') {
-                    classes.push(name);
-                }
-            }
-            if (classes.length > 0) {
-                wanted.set('class', classes.join(' '));
+            const classes = Callouts.mirroredClasses(source, false);
+            if (classes) {
+                wanted.set('class', classes);
             }
 
             const attributes = source.attributes;
@@ -1188,56 +1263,69 @@
             return wanted;
         }
 
-        // A responsive panel fades and slides out once it is closed, but it is put back beside its root right
-        // away, out of the chain that handed it what the root and its ancestors declare, and would finish that
-        // transition without it. So the custom properties the chain gives it, and it would not inherit where it
-        // goes back to, are written onto it while it is closed - as values, since nothing changes under a panel on
-        // its way out - and taken off again the next time it is relocated (thawInheritedVariables). A variable the
-        // callout declares itself, inline or through a class of its own, is left alone.
-        private static freezeInheritedVariables(calloutId: string, callout: HTMLElement) {
-            const original = Callouts._calloutOriginalParents.get(calloutId);
-            if (!original || !original.holder || !original.parent) return;
+        // A responsive panel fades and slides out once it is closed, so it is left in the chain that hands it
+        // what its root and its ancestors declare until that transition has run, and only then put back beside
+        // its root. Reopening it before then keeps it where it is (see moveCalloutToBody), and the component
+        // going away takes it back at once (see clear).
+        private static restoreAfterTransition(calloutId: string, callout: HTMLElement) {
+            Callouts.cancelPendingRestore(calloutId);
 
-            const inside = getComputedStyle(original.holder);
-            const outside = getComputedStyle(original.parent);
-            const own = getComputedStyle(callout);
-            const frozen = new Map<string, string>();
+            if (Callouts._calloutOriginalParents.has(calloutId) === false) return;
 
-            for (let i = 0; i < inside.length; i++) {
-                const name = inside[i];
-                if (name.indexOf('--') !== 0 || callout.style.getPropertyValue(name)) continue;
-
-                const value = inside.getPropertyValue(name);
-                if (value === outside.getPropertyValue(name) || value !== own.getPropertyValue(name)) continue;
-
-                callout.style.setProperty(name, value);
-                frozen.set(name, callout.style.getPropertyValue(name));
+            const duration = Callouts.transitionTime(callout);
+            if (duration <= 0) {
+                Callouts.restoreCalloutToOriginalParent(calloutId, callout);
+                return;
             }
 
-            if (frozen.size > 0) {
-                Callouts._frozenVariables.set(calloutId, frozen);
-            }
+            Callouts._pendingRestores.set(calloutId, window.setTimeout(() => Callouts.flushPendingRestore(calloutId), duration));
         }
 
-        // Takes off what freezeInheritedVariables wrote, except a value a re-render has replaced since.
-        private static thawInheritedVariables(calloutId: string, callout: HTMLElement) {
-            const frozen = Callouts._frozenVariables.get(calloutId);
-            if (!frozen) return;
+        private static cancelPendingRestore(calloutId: string) {
+            const timer = Callouts._pendingRestores.get(calloutId);
+            if (timer == null) return false;
 
-            Callouts._frozenVariables.delete(calloutId);
+            Callouts._pendingRestores.delete(calloutId);
+            clearTimeout(timer);
+            return true;
+        }
 
-            frozen.forEach((value, name) => {
-                if (callout.style.getPropertyValue(name) === value) {
-                    callout.style.removeProperty(name);
-                }
-            });
+        // Puts back a panel whose exit transition was being waited for. It is looked up again rather than held
+        // on to, since Blazor may have removed it from the page in the meantime, and only the wrapper is then
+        // left to clear away.
+        private static flushPendingRestore(calloutId: string) {
+            if (Callouts.cancelPendingRestore(calloutId) === false) return;
+
+            Callouts.restoreCalloutToOriginalParent(calloutId, document.getElementById(calloutId));
+        }
+
+        // How long the transitions of an element run, delays included: the longest of the durations it lists,
+        // each paired with its delay the way the cascade pairs them (a shorter list repeats).
+        private static transitionTime(element: HTMLElement) {
+            const style = getComputedStyle(element);
+            const durations = style.transitionDuration.split(',');
+            const delays = style.transitionDelay.split(',');
+            const toMs = (value: string) => {
+                const time = parseFloat(value);
+                if (Number.isNaN(time)) return 0;
+                return value.trim().endsWith('ms') ? time : time * 1000;
+            };
+
+            let longest = 0;
+            for (let i = 0; i < durations.length; i++) {
+                longest = Math.max(longest, toMs(durations[i]) + toMs(delays[i % delays.length]));
+            }
+            return longest;
         }
 
         // Puts the relocated parts of a callout back where they came from and takes the wrapper they were
         // moved into out of the body. A null callout is one Blazor has already removed from the page - the
         // component was disposed while it was open - and there is then nothing left to put back, only the
-        // wrapper to clear away so it does not outlive the callout it was made for.
+        // wrapper to clear away so it does not outlive the callout it was made for. A panel still sliding out
+        // is left to the timer that waits for it (see restoreAfterTransition).
         private static restoreCalloutToOriginalParent(calloutId: string, callout: HTMLElement | null) {
+            if (Callouts._pendingRestores.has(calloutId)) return;
+
             const original = Callouts._calloutOriginalParents.get(calloutId);
             if (!original) return;
 
@@ -1319,6 +1407,9 @@
         }
 
         public static clear(calloutId: string) {
+            // A panel of the component that is still sliding out is not waited for: it goes with its component.
+            Callouts.flushPendingRestore(calloutId);
+
             // The callout is going away with its component, so it is not told about it; anything opened
             // from inside it still is, since its anchor is going away too.
             Callouts.remove(calloutId, false);
@@ -1453,6 +1544,13 @@
         link: HTMLElement;
         // The root of the component, which is copied for what its consumer declared on it alone.
         root: boolean;
+        // Whether only the custom properties of the source's inline style are copied: the root's, and those of
+        // a part another callout relocated (see moveCalloutToBody).
+        variablesOnly: boolean;
+        // The inline style of the source the link was last written from, and the style that came out of it,
+        // so that it is only parsed again when it has changed (see syncChainLink).
+        sourceStyle?: string;
+        style?: string;
     }
 
     interface BitCalloutParams {

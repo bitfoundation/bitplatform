@@ -5,7 +5,7 @@
 // phone input and one set on the Style of an instance (or through Styles.Root) re-skins that one alone.
 // The callout and the overlay are rendered beside the root element and relocated to the body while the callout
 // is open; Callouts.ts carries what the root and its ancestors declare into them, so a variable set on an
-// ancestor, through a class, in Style or in Styles.Root reaches them like any inherited value.
+// ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
 //
 //   FIELD
 //   --bit-PhoneInput-background              fill of the field                        (default: the Background kind, $clr-bg-pri)

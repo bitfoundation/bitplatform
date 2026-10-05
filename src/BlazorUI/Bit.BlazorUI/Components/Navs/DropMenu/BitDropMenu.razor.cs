@@ -1239,7 +1239,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         // The callout and the overlay are rendered outside the root element, and relocated to the body while the
         // callout is open, but the public --bit-DropMenu-* variables need nothing here: whether they are set on an
-        // ancestor, through a class, in Style, Styles.Root or Styles.Opened, Callouts.ts carries what the root and
+        // ancestor or through its class, in Style, Styles.Root or Styles.Opened, Callouts.ts carries what the root and
         // its ancestors declare into the relocated parts, so they reach them like any inherited value and ONE
         // Style on the component restyles the button and the callout it opens together.
         //

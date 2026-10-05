@@ -4297,7 +4297,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     // The callout and the overlay are rendered outside the root element and relocated to the body while the
     // callout is open; Callouts.ts carries what the root and its ancestors declare into them (a public
-    // --bit-DateRangePicker-* variable set on an ancestor, through a class, in Style or in Styles.Root), so it
+    // --bit-DateRangePicker-* variable set on an ancestor or through its class, in Style or in Styles.Root), so it
     // reaches them like any inherited value. The display is written here rather than in the stylesheet because
     // it is what the component toggles the layer with.
     private string GetOverlayStyles()

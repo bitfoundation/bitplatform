@@ -1704,8 +1704,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             setCalloutWidth: true,
             fixedCalloutWidth: false,
             maxWindowWidth: 0,
-            // The root is named so that what it declares - the public variables of Style and Styles.Root, the
-            // classes of Class and Classes.Root - goes on reaching the callout once it is relocated to the body.
+            // The root is named so that what it declares - the custom properties of Style and Styles.Root,
+            // and ForceAnimation's bit-fam - goes on reaching the callout once it is relocated to the body.
             rootId: _Id);
     }
 

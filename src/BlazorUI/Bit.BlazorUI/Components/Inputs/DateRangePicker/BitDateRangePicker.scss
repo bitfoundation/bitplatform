@@ -5,8 +5,8 @@
 // Public custom properties of the DateRangePicker. Every one of them inherits, so it can be set on
 // :root for the whole application, on any ancestor for a region, or through the Style parameter for a
 // single picker. The calendar is rendered in a callout that is relocated to the body while it is open;
-// Callouts.ts carries what the root and its ancestors declare into it (a variable set on an ancestor,
-// through a class, in Style or in Styles.Root), so it reaches the calendar like any inherited value, and
+// Callouts.ts carries what the root and its ancestors declare into it (a variable set on an ancestor or
+// through its class, in Style or in Styles.Root), so it reaches the calendar like any inherited value, and
 // Styles.Callout, declared on the callout itself, still has the last word there.
 //
 //   --bit-DateRangePicker-color                    accent: the range ends, today, the selected preset,

@@ -5,7 +5,7 @@
 // every dropdown and one set on the Style of an instance re-skins that one alone.
 // The callout and the overlay are rendered outside the root element and relocated to the body while the
 // callout is open; Callouts.ts carries what the root and its ancestors declare into them, so a variable set
-// on an ancestor, through a class, in Style or in Styles.Root reaches them like any inherited value.
+// on an ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
 //
 //   FIELD
 //   --bit-Dropdown-background              background of the field                  (default: $clr-bg-pri, transparent with Transparent)

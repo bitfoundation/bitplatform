@@ -2243,7 +2243,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     // The callout and the overlay are rendered inside the root and relocated to the body while the callout is
     // open; Callouts.ts moves them into a copy of the chain of ancestors they leave, the root among them, so a
-    // public --bit-TimePicker-* variable set on an ancestor, through a class, in Style or in Styles.Root reaches
+    // public --bit-TimePicker-* variable set on an ancestor or through its class, in Style or in Styles.Root reaches
     // them like any inherited value. The display is written here rather than in the stylesheet because it is
     // what the component toggles the layer with.
     private string GetOverlayStyles()

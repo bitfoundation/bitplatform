@@ -260,7 +260,7 @@
 
     @* The callout is a sibling of the root element rather than a child of it, and is relocated to the
        body while it is open. Callouts.ts carries what the root and its ancestors declare into it, so the
-       public custom properties (set on an ancestor, through a class, in Style or in Styles.Root) reach
+       public custom properties (set on an ancestor or through its class, in Style or in Styles.Root) reach
        it like any inherited value - but not the component's own bit-srb-* classes, so the direction and
        the animation opt-out are still written on it here. *@
     <div id="@_calloutId"

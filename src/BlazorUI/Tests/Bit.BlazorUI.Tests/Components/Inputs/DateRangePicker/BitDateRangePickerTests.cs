@@ -3280,6 +3280,24 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDateRangePickerStandaloneShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-DateRangePicker-accent-color:url('data:image/svg+xml;utf8,<svg></svg>');color:blue");
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles { Root = "--bit-DateRangePicker-x:[a;b]", Callout = "padding:2px" });
+        });
+
+        // A semicolon inside quotes or brackets is part of the value: cut there, the copy would leave a quote or a
+        // bracket open that swallows everything written after it on the calendar, its own style included.
+        Assert.AreEqual("--bit-DateRangePicker-accent-color:url('data:image/svg+xml;utf8,<svg></svg>');--bit-DateRangePicker-x:[a;b];padding:2px",
+                        component.Find(".bit-dtrp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
     public void BitDateRangePickerMonthNavigationButtonsShouldBeLabelled()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

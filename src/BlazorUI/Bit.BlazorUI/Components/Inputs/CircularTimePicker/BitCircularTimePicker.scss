@@ -17,7 +17,7 @@
  * circular time picker and one set on the Style of an instance (or through Styles.Root) re-skins that one
  * alone. A non-standalone callout is rendered beside the root and relocated to the body while it is open -
  * that is what keeps it clear of the clipping and stacking contexts of the page - and Callouts.ts carries
- * what the root and its ancestors declare into it, so a variable set on an ancestor, through a class, in
+ * what the root and its ancestors declare into it, so a variable set on an ancestor or through its class, in
  * Style or in Styles.Root reaches the dial like any inherited value; Styles.Callout sets one for the dial
  * alone. A standalone picker has no callout, so there everything is read under the root:
  *   --bit-CircularTimePicker-color                        accent of the picker: the toolbar, the hand,

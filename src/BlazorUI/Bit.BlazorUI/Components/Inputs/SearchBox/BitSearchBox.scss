@@ -4,7 +4,7 @@
 // search box and one set on the Style of an instance re-skins that one alone. The suggest callout is rendered
 // outside the root element and relocated to the body while it is open, so every callout-* and item-* name is
 // read there instead: Callouts.ts carries what the root and its ancestors declare into it, so a value set on
-// an ancestor, through a class, in Style or in Styles.Root reaches it like any inherited value.
+// an ancestor or through its class, in Style or in Styles.Root reaches it like any inherited value.
 //   --bit-SearchBox-color                       text color of the input, the prefix and the suffix (default: $clr-fg-pri)
 //   --bit-SearchBox-placeholder-color           text color of the placeholder                      (default: $clr-fg-sec)
 //   --bit-SearchBox-background                  background of the field                            (default: per Background kind)
