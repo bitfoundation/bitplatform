@@ -26,7 +26,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitDropdown = component.Find(".bit-drp");
@@ -134,7 +134,7 @@ public class BitDropdownTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -446,7 +446,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Reselectable, notifyOnReselect);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.OnSelectItem, () => itemSelected = true);
@@ -474,15 +474,15 @@ public class BitDropdownTests : BunitTestContext
 
         var items = new List<BitDropdownItem<string>>()
         {
-            new() { Value = "Apple", Text = "f-app", IsEnabled = itemIsEnabled },
-            new() { Value = "Banana", Text = "f-ban", IsEnabled = itemIsEnabled }
+            new() { Value = "Apple", Text = "f-app", IsDisabled = itemIsEnabled is false },
+            new() { Value = "Banana", Text = "f-ban", IsDisabled = itemIsEnabled is false }
         };
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.OnSelectItem, () => itemsSelected++);
             parameters.Add(p => p.OnValuesChange, () => valuesChanged++);
@@ -524,7 +524,7 @@ public class BitDropdownTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Value, _bitDropdownValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
@@ -554,7 +554,7 @@ public class BitDropdownTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.MultiSelect, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Values, _bitDropdownValues);
@@ -588,7 +588,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdownValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IsMultiSelect, false);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropdownTestModel { Value = value });
@@ -633,7 +633,7 @@ public class BitDropdownTests : BunitTestContext
         var items = GetShortDropdownItems();
         var component = RenderComponent<BitDropdownMultiSelectValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropdownMultiSelectTestModel { Values = _bitDropdownValues });
@@ -680,7 +680,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdownValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IsMultiSelect, false);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropdownTestModel { Value = value });
@@ -727,7 +727,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdownMultiSelectValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IsMultiSelect, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropdownMultiSelectTestModel { Values = _bitDropdownValues });
@@ -778,7 +778,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdownValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.TestModel, new BitDropdownTestModel { Value = value });
         });
@@ -821,7 +821,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.ShowSearchBox, showSearchBox);
             parameters.Add(p => p.SearchBoxPlaceholder, searchBoxPlaceholder);
             parameters.Add(p => p.Items, items);
@@ -859,7 +859,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.ShowSearchBox, true);
             parameters.Add(p => p.Immediate, true);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
@@ -902,7 +902,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.ShowSearchBox, true);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Items, items);
@@ -944,7 +944,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Combo, true);
             parameters.Add(p => p.Immediate, true);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
@@ -987,7 +987,7 @@ public class BitDropdownTests : BunitTestContext
         var items = BitDropdownTests.GetShortDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Combo, true);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Items, items);
@@ -1046,7 +1046,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Virtualize, virtualize);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Items, items);
@@ -1728,7 +1728,7 @@ public class BitDropdownTests : BunitTestContext
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Required, required);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
         });
 
@@ -1788,7 +1788,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
         });
 
@@ -1813,7 +1813,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedTabIndex, component.Find(".bit-drp-wrp").GetAttribute("tabindex"));
 
         // A disabled dropdown is out of the tab order whatever the requested index is.
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.AreEqual("-1", component.Find(".bit-drp-wrp").GetAttribute("tabindex"));
     }
@@ -4818,7 +4818,7 @@ public class BitDropdownTests : BunitTestContext
             Underlined = true,
             Virtualize = true,
             AriaLabel = "Test aria label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -4866,7 +4866,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.IsTrue(instance.Underlined);
         Assert.IsTrue(instance.Virtualize);
         Assert.AreEqual("Test aria label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 
@@ -4944,7 +4944,7 @@ public class BitDropdownTests : BunitTestContext
     private static List<BitDropdownItem<string>> GetDropdownItemsWithDisabled() => new()
     {
         new() { Text = "Apple", Value = "f-app" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
         new() { Text = "Banana", Value = "f-ban" }
     };
 

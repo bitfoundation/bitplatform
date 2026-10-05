@@ -175,7 +175,7 @@ public class BitChartTests : BunitTestContext
         var disabled = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
         });
         Assert.AreEqual("img", disabled.Find("svg").GetAttribute("role"));
         Assert.AreEqual("-1", disabled.Find("svg").GetAttribute("tabindex"));
@@ -1612,7 +1612,7 @@ public class BitChartTests : BunitTestContext
         {
             p.Add(c => c.Type, BitChartType.Bar);
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
             p.Add(c => c.OnElementClick, (_) => clicks++);
             p.Add(c => c.OnLegendItemClick, (BitChartLegendItemModel i) => legendClicked = i);
         });
@@ -1639,7 +1639,7 @@ public class BitChartTests : BunitTestContext
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
 
-        component.Render(p => p.Add(c => c.IsEnabled, false));
+        component.Render(p => p.Add(c => c.Disabled, true));
 
         Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
         Assert.AreEqual(0, component.FindAll(".bit-cht-focus-ring").Count);
@@ -1902,7 +1902,7 @@ public class BitChartTests : BunitTestContext
         component.Render(p =>
         {
             if (loading) p.Add(c => c.IsLoading, true);
-            else p.Add(c => c.IsEnabled, false);
+            else p.Add(c => c.Disabled, true);
         });
         Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
 
@@ -1994,7 +1994,7 @@ public class BitChartTests : BunitTestContext
         {
             p.Add(c => c.Data, TwoSeries());
             p.Add(c => c.Description, "Flat.");
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
         });
 
         var svg = component.Find("svg");

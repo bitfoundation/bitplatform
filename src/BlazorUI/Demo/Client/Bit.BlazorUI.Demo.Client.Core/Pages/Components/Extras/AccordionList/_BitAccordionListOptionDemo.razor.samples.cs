@@ -199,7 +199,7 @@ private string? actionedTitle;
     <BitAccordionListOption Key=""normal"" Title=""General settings"" Description=""A live option"">
         Once upon a time, ...
     </BitAccordionListOption>
-    <BitAccordionListOption Key=""disabled"" Title=""Users"" Description=""Turned off altogether"" IsEnabled=""false"">
+    <BitAccordionListOption Key=""disabled"" Title=""Users"" Description=""Turned off altogether"" IsDisabled>
         Every story starts with a blank canvas, ...
     </BitAccordionListOption>
     <BitAccordionListOption Key=""locked"" Title=""Advanced settings"" Description=""Open on purpose and staying that way"" ReadOnly=""true"">

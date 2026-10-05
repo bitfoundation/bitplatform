@@ -226,7 +226,7 @@ public partial class BitColorPicker : BitComponentBase
     /// Every control stays in the tab order and keeps its colors, since a read-only picker exists to be read:
     /// the widgets that hold a value declare <c>aria-readonly</c> or the native <c>readonly</c>, and the
     /// buttons that would change the color declare <c>aria-disabled</c>. Only a disabled picker - one with
-    /// <see cref="BitComponentBase.IsEnabled"/> false - leaves the interaction altogether.
+    /// <see cref="BitComponentBase.Disabled"/> set - leaves the interaction altogether.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool ReadOnly { get; set; }
 
@@ -374,7 +374,7 @@ public partial class BitColorPicker : BitComponentBase
     /// instead, so a palette picker is focused the same way. A disabled picker is not in the tab order and is
     /// left alone; a read-only one is, and takes the focus like any other.
     /// </remarks>
-    public ValueTask FocusAsync() => IsEnabled ? FocusFirstAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusAsync() => Disabled ? ValueTask.CompletedTask : FocusFirstAsync();
 
     /// <summary>
     /// Moves the focus to the first control the picker actually renders, in the order they are rendered in.
@@ -600,7 +600,7 @@ public partial class BitColorPicker : BitComponentBase
             {
                 // The autofocus attribute is only honored for elements that are in the initial document, so
                 // a picker rendered into a page that is already up has to ask for the focus itself.
-                if (AutoFocus && IsEnabled)
+                if (AutoFocus && Disabled is false)
                 {
                     await FocusFirstAsync();
                 }
@@ -646,7 +646,7 @@ public partial class BitColorPicker : BitComponentBase
     /// Whether a gesture is allowed to move the color. A one-way bound Color has nowhere to report a change
     /// to, so the picker becomes a display of that value instead of pretending to accept edits.
     /// </summary>
-    private bool _IsInteractive => IsEnabled && ReadOnly is false && _HasNowhereToReport is false;
+    private bool _IsInteractive => Disabled is false && ReadOnly is false && _HasNowhereToReport is false;
 
     /// <summary>
     /// Whether the picker is showing a color it will not let anyone change, while still being a picker.
@@ -657,7 +657,7 @@ public partial class BitColorPicker : BitComponentBase
     /// would change the color. All of them keep their place in the tab order, because the color is the thing
     /// a read-only picker is there to show and the controls are what announce it.
     /// </remarks>
-    private bool _IsReadOnly => IsEnabled && ReadOnly;
+    private bool _IsReadOnly => Disabled is false && ReadOnly;
 
     /// <summary>
     /// Only the disabled picker leaves the tab order. A read-only one is still showing a color, and its
@@ -665,7 +665,7 @@ public partial class BitColorPicker : BitComponentBase
     /// of a keyboard or a screen reader. They declare the read-only state instead, and refuse the gesture in
     /// the handlers.
     /// </summary>
-    private string _TabIndex => IsEnabled ? (TabIndex ?? "0") : "-1";
+    private string _TabIndex => Disabled ? "-1" : (TabIndex ?? "0");
 
     /// <summary>
     /// The accessible name of the picker as a whole. An explicit AriaLabel wins; otherwise the color itself
@@ -775,7 +775,7 @@ public partial class BitColorPicker : BitComponentBase
     /// on. A read-only picker is neither: it is still showing a color to be read, so it keeps its controls
     /// focusable and puts back whatever a key moved (see <see cref="RestoreInputAsync"/>).
     /// </remarks>
-    private bool _IsInputDisabled => IsEnabled is false || _HasNowhereToReport;
+    private bool _IsInputDisabled => Disabled || _HasNowhereToReport;
 
     private string _HexValue => ShowAlphaSlider ? _color.HexAlpha : _color.Hex;
 
@@ -1253,7 +1253,7 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     private async Task HandleOnInputsModeSwitchClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await AssignInputsMode(InputsMode switch
         {

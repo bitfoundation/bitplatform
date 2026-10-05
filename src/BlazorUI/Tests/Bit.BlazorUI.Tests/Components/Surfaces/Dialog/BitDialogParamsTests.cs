@@ -235,9 +235,9 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDialogCascadedIsEnabledShouldDisableTheButtons()
+    public void BitDialogCascadedDisabledShouldDisableTheButtons()
     {
-        var @params = new BitDialogParams { IsEnabled = false };
+        var @params = new BitDialogParams { Disabled = true };
 
         var component = RenderWithParams(@params, RenderDialog());
 

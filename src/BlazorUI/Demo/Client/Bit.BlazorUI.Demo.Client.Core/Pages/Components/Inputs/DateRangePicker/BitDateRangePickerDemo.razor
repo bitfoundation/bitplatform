@@ -17,7 +17,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div class="example-desc">
             The first click starts the range, the second ends it, a third starts over. The common field and calendar
-            options: <b>Label</b>, <b>Placeholder</b>, <b>Required</b>, <b>IsEnabled</b>, <b>ShowWeekNumbers</b>,
+            options: <b>Label</b>, <b>Placeholder</b>, <b>Required</b>, <b>Disabled</b>, <b>ShowWeekNumbers</b>,
             <b>HighlightCurrentMonth</b>/<b>HighlightSelectedMonth</b>, <b>ShowTimePicker</b>, <b>IconName</b>,
             <b>IconLocation</b>, <b>Underlined</b>, <b>HasBorder</b>, <b>DropDirection</b>, <b>AutoClose</b>,
             <b>ShowClearButton</b>, <b>IsMonthPickerVisible</b>, and <b>StartingValue</b> (the month and times shown while
@@ -26,7 +26,7 @@
         <div class="example-content">
             <BitDateRangePicker Label="Basic DateRangePicker" />
             <br /><br />
-            <BitDateRangePicker Label="Disabled" IsEnabled="false" />
+            <BitDateRangePicker Label="Disabled" Disabled />
             <br /><br />
             <BitDateRangePicker Label="Required" Required />
             <br /><br />
@@ -416,7 +416,7 @@
         <div class="example-content-standalone">
             <BitDateRangePicker Label="Basic DatePicker" Standalone />
             <br /><br />
-            <BitDateRangePicker Label="Disabled" IsEnabled="false" Standalone />
+            <BitDateRangePicker Label="Disabled" Disabled Standalone />
             <br /><br />
             <BitDateRangePicker Label="Week numbers" ShowWeekNumbers Standalone />
             <br /><br />
@@ -430,7 +430,7 @@
         <div class="example-desc">
             <b>ReadOnly</b> keeps the calendar opening and browsable but blocks every change: the days, presets and time
             spinners stop reacting to the pointer, typed text is ignored and the clear button is hidden. Unlike
-            <b>IsEnabled="false"</b>, the value is still submitted with the form.
+            <b>Disabled</b>, the value is still submitted with the form.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Basic" ReadOnly @bind-Value="readOnlyDateRange" />

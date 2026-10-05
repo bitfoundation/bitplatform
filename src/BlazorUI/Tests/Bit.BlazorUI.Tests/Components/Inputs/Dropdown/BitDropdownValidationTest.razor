@@ -2,7 +2,7 @@
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-IsOpen="IsOpen" @bind-Value="@TestModel.Value"
-                 IsEnabled="IsEnabled"
+                 Disabled="Disabled"
                  OnClick="HandleClick"
                  MultiSelect="IsMultiSelect"
                  Items="Items"
@@ -26,7 +26,7 @@
 
 @code {
     [Parameter] public bool IsMultiSelect { get; set; }
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public List<BitDropdownItem<string>> Items { get; set; } = new();

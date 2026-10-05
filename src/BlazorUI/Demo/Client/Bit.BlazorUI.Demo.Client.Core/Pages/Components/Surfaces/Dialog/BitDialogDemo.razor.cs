@@ -194,7 +194,7 @@ public partial class BitDialogDemo
             Name = "IsCancelButtonEnabled",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike IsEnabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
+            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike Disabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
         },
         new()
         {
@@ -215,7 +215,7 @@ public partial class BitDialogDemo
             Name = "IsOkButtonEnabled",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way IsEnabled would."
+            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way Disabled would."
         },
         new()
         {

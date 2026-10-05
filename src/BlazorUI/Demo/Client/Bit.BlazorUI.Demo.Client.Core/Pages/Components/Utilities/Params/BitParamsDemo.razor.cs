@@ -98,10 +98,10 @@ public partial class BitParamsDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "Disabled",
                     Type = "bool?",
                     DefaultValue = "null",
-                    Description = "Gets or sets a value indicating whether the component is enabled and can respond to user interaction.",
+                    Description = "Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.",
                 },
                 new()
                 {

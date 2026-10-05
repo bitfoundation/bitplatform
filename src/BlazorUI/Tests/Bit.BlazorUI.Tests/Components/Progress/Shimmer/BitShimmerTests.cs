@@ -83,9 +83,9 @@ public class BitShimmerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitShimmerShouldRespectIsEnabled()
+    public void BitShimmerShouldRespectDisabled()
     {
-        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.IsEnabled, false));
+        var component = RenderComponent<BitShimmer>(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-smr").ClassList.Contains("bit-dis"));
     }

@@ -18,7 +18,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div>
             The basic states. <code>ReadOnly</code> keeps the value focusable and posted but refuses changes;
-            <code>IsEnabled="false"</code> also takes it out of the form and the tab order.
+            <code>Disabled</code> also takes it out of the form and the tab order.
         </div>
         <br />
         <div class="example-content">
@@ -30,7 +30,7 @@
             <br /><br />
             <BitTimePicker Label="ReadOnly" ReadOnly @bind-Value="@readOnlyTime" />
             <br /><br />
-            <BitTimePicker Label="Disabled" IsEnabled="false" @bind-Value="@readOnlyTime" />
+            <BitTimePicker Label="Disabled" Disabled @bind-Value="@readOnlyTime" />
         </div>
     </DemoExample>
 

@@ -53,11 +53,11 @@ public abstract class BitComponentBaseParams
     public string? Id { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the component is enabled and can respond to user interaction.
+    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
     /// <br />
-    /// <see cref="BitComponentBase.IsEnabled"/>.
+    /// <see cref="BitComponentBase.Disabled"/>.
     /// </summary>
-    public bool? IsEnabled { get; set; }
+    public bool? Disabled { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.
@@ -138,9 +138,9 @@ public abstract class BitComponentBaseParams
             bitComponentBase.Id = Id;
         }
 
-        if (IsEnabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(IsEnabled)) && bitComponentBase.IsEnabled != IsEnabled)
+        if (Disabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(Disabled)) && bitComponentBase.Disabled != Disabled)
         {
-            bitComponentBase.IsEnabled = IsEnabled.Value;
+            bitComponentBase.Disabled = Disabled.Value;
 
             bitComponentBase.ClassBuilder.Reset();
         }

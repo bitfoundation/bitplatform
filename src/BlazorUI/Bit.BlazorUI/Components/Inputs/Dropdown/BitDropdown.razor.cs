@@ -1034,7 +1034,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The JS side has already hidden this callout to make room for the other one, so the change
         // is marked internal to keep the OnSetIsOpen hook from toggling it again.
@@ -1214,7 +1214,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (ReadOnly) return;
         if (GetItemType(item) != BitDropdownItemType.Normal) return;
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         var wasOpen = IsOpen;
 
@@ -1271,7 +1271,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // disabled like any other disabled item instead of only being styled as such.
     internal bool GetIsItemDisabled(TItem item)
     {
-        if (GetIsEnabled(item) is false) return true;
+        if (GetIsDisabled(item)) return true;
 
         return IsMaxSelectedItemsReached && GetIsSelected(item) is false;
     }
@@ -1552,26 +1552,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return item.GetValueFromProperty<object?>(NameSelectors.Data.Name);
     }
 
-    internal bool GetIsEnabled(TItem item)
+    internal bool GetIsDisabled(TItem item)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
-            return dropdownItem.IsEnabled;
+            return dropdownItem.IsDisabled;
         }
 
         if (item is BitDropdownOption<TValue> dropdownOption)
         {
-            return dropdownOption.IsEnabled;
+            return dropdownOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     internal bool GetIsHidden(TItem item)
@@ -1942,7 +1942,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             // The autofocus attribute is only honored by the browser for an element that is part of the
             // initial document, which the trigger of an interactively rendered dropdown is not.
-            if (AutoFocus && IsEnabled)
+            if (AutoFocus && Disabled is false)
             {
                 await FocusTrigger();
             }
@@ -1977,7 +1977,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task<bool> AddOrRemoveSelectedItem(TItem? item, bool addDynamic = false)
     {
         if (ReadOnly) return false;
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (item is null) return false;
 
@@ -2256,7 +2256,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task CloseCallout()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsOpen is false) return;
 
         _rateLimiter.Reset();
@@ -2316,7 +2316,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The callback reports the click itself, so it fires before (and independently of) the opening:
         // a one-way bound IsOpen refuses the change, and the click still happened.
@@ -2351,7 +2351,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // there have to be kept in sync.
     private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -2488,7 +2488,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // is not the focus an opening hands to the box, it is the box being typed into.
     private async Task FocusSearchBoxCaret(int caret)
     {
-        if (IsEnabled is false || HasSearchBox is false) return;
+        if (Disabled || HasSearchBox is false) return;
         if (IsOpen is false || IsRendered is false || IsDisposed) return;
 
         try
@@ -2501,7 +2501,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // See the note on HandleOnTriggerKeyDown about keeping these keys in sync with Dropdowns.ts.
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         switch (e.Key)
         {
@@ -2626,7 +2626,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // single element: focusin/focusout bubble, so the inner combo input is covered by them as well.
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The focus this component moves back to the trigger itself (after a dismissal, or a pick that
         // closed the callout) must not reopen what was just closed, so only a focus that was not
@@ -2658,14 +2658,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return Task.CompletedTask;
+        if (Disabled) return Task.CompletedTask;
 
         return OnFocusOut.InvokeAsync(e);
     }
 
     private Task HandleOnLabelClick()
     {
-        if (IsEnabled is false) return Task.CompletedTask;
+        if (Disabled) return Task.CompletedTask;
 
         return FocusTrigger().AsTask();
     }
@@ -2694,7 +2694,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async ValueTask SelectComboInputText()
     {
         if (SelectTextOnFocus is false) return;
-        if (Combo is false || IsEnabled is false || ReadOnly) return;
+        if (Combo is false || Disabled || ReadOnly) return;
         if (_comboInputText.HasNoValue()) return;
         if (IsRendered is false || IsDisposed) return;
 
@@ -2725,7 +2725,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (HasSearchBox is false) return;
 
         // What the input actually holds, which is what the dropdown renders back into it and what the
@@ -2742,7 +2742,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnSearchBoxChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (HasSearchBox is false) return;
 
         _searchInputText = e.Value?.ToString();
@@ -2764,7 +2764,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task ClearSearchBox()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         // Not ShowSearchBox: in the ComboBox mode the search text belongs to the combo input, and
         // clearing it from here would leave ClearComboBoxInput with nothing to do and the input
         // holding the term it was supposed to empty.
@@ -2856,7 +2856,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async ValueTask FocusOnSearchBox()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (HasSearchBox is false) return;
         if (AutoFocusSearchBox is false) return;
         if (IsOpen is false) return;
@@ -2877,7 +2877,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (ReadOnly) return;
         if (Combo is false) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         // Both are checked: a term the rate limiter has not applied yet is still in the input, and the
         // input is exactly what this has to leave empty.
         if (_searchText.HasNoValue() && _comboInputText.HasNoValue()) return;
@@ -2924,7 +2924,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async ValueTask FocusOnComboBoxInput()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsOpen is false) return;
         if (Combo is false) return;
         if (_isResponsiveMode) return;
@@ -3254,7 +3254,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnClearClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (MultiSelect)
         {
@@ -3393,7 +3393,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private bool IsSelectAllCandidate(TItem item)
     {
-        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsEnabled(item);
+        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsDisabled(item) is false;
     }
 
     private List<TItem> GetSelectAllCandidateItems()
@@ -3404,7 +3404,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnSelectAllClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (MultiSelect is false) return;
         if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
@@ -3460,7 +3460,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnAddItemComboClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         await AddDynamicItem();
 
@@ -3495,7 +3495,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // positioned callout instead of waiting for the next open.
     private async Task RefreshCalloutScrollOffset()
     {
-        if (IsOpen is false || IsDisposed || IsEnabled is false) return;
+        if (IsOpen is false || IsDisposed || Disabled) return;
 
         var chrome = GetCalloutChrome();
         if (chrome == _calloutChrome) return;
@@ -3511,7 +3511,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         // Every open and close of the callout goes through here, which is where the note the focus
         // handler left for the click it may be paired with stops being about the current state.
@@ -3591,7 +3591,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         if (eventArgs.Key == "Escape")
         {
@@ -3672,7 +3672,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnComboInput(ChangeEventArgs e)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         // What the input actually holds, which is what the dropdown has to render back into it and what
         // the Enter and Backspace keys act on. It is kept apart from the search term because a debounced
@@ -3730,7 +3730,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnComboChange(ChangeEventArgs e)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         _comboInputText = e.Value?.ToString();
 
@@ -3767,7 +3767,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task OpenCallout()
     {
         if (IsOpen) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (await AssignIsOpenInternal(true) is false) return;
 
@@ -3777,7 +3777,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task RemoveLastSelectedItem()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (_selectedItems.Any() is false) return;
 
@@ -3795,7 +3795,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task AddDynamicItem()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The text of the input, not the (possibly debounced) search term: this acts on what the user
         // typed and is looking at.
@@ -3821,7 +3821,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 Text = text,
                 Title = text,
                 Value = default,
-                IsEnabled = true
+                IsDisabled = false
             };
 
             if (DynamicValueGenerator is not null)
@@ -3843,7 +3843,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 Text = text,
                 Title = text,
                 Value = default,
-                IsEnabled = true
+                IsDisabled = false
             };
 
             if (DynamicValueGenerator is not null)
@@ -3938,7 +3938,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // the list shows (and reports through aria-activedescendant) cannot point at such an item either.
     private bool IsCommitCandidate(TItem item)
     {
-        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsEnabled(item);
+        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsDisabled(item) is false;
     }
 
     // The id the commit target is referenced by from the ComboBox input, for the items that carry no id
@@ -3981,7 +3981,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private string? GetDynamicItemText()
     {
         if (Combo is false || Dynamic is false) return null;
-        if (ReadOnly || IsEnabled is false) return null;
+        if (ReadOnly || Disabled) return null;
         if (_comboInputText.HasNoValue()) return null;
         if (IsMaxSelectedItemsReached) return null;
         if (IsTextAlreadySelected(_comboInputText!)) return null;
@@ -4000,7 +4000,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnDynamicItemClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
 
         var wasOpen = IsOpen;
 
@@ -4025,7 +4025,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private TItem? GetCommitTarget()
     {
-        if (Combo is false || ReadOnly || IsEnabled is false) return null;
+        if (Combo is false || ReadOnly || Disabled) return null;
         if (_comboInputText.HasNoValue()) return null;
 
         if (_commitTargetCacheKey != _comboInputText ||

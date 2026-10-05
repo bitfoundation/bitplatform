@@ -163,7 +163,7 @@ public partial class BitSwipeTrap : BitComponentBase
     [JSInvokable("OnKeyTrigger")]
     public async Task _OnKeyTrigger(BitSwipeDirection direction)
     {
-        if (IsEnabled is false || KeyboardTrigger is false) return;
+        if (Disabled || KeyboardTrigger is false) return;
 
         await OnTrigger.InvokeAsync(new(direction, 0, 0, 0, 0, "keyboard", 0));
     }
@@ -309,7 +309,7 @@ public partial class BitSwipeTrap : BitComponentBase
         };
     }
 
-    private bool _IsKeyboardReachable => KeyboardTrigger && IsEnabled;
+    private bool _IsKeyboardReachable => KeyboardTrigger && Disabled is false;
 
 
 

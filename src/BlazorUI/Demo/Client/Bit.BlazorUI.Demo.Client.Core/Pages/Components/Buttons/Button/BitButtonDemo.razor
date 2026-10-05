@@ -50,13 +50,13 @@
         </div>
         <br /><br />
         <div>
-            <b>IsEnabled="false"</b> suppresses the action and mutes all three variants:
+            <b>Disabled</b> suppresses the action and mutes all three variants:
         </div>
         <br />
         <div class="example-content">
-            <BitButton Variant="BitVariant.Fill" IsEnabled="false">Fill</BitButton>
-            <BitButton Variant="BitVariant.Outline" IsEnabled="false">Outline</BitButton>
-            <BitButton Variant="BitVariant.Text" IsEnabled="false">Text</BitButton>
+            <BitButton Variant="BitVariant.Fill" Disabled>Fill</BitButton>
+            <BitButton Variant="BitVariant.Outline" Disabled>Outline</BitButton>
+            <BitButton Variant="BitVariant.Text" Disabled>Text</BitButton>
         </div>
         <br /><br />
         <div>
@@ -521,11 +521,11 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsEnabled="false" IconName="@BitIconName.Blocked" Title="Pick a plan first">
+            <BitButton Disabled IconName="@BitIconName.Blocked" Title="Pick a plan first">
                 Disabled (still focusable)
             </BitButton>
 
-            <BitButton IsEnabled="false" AllowDisabledFocus="false" IconName="@BitIconName.Blocked">
+            <BitButton Disabled AllowDisabledFocus="false" IconName="@BitIconName.Blocked">
                 Disabled (skipped by Tab)
             </BitButton>
         </div>

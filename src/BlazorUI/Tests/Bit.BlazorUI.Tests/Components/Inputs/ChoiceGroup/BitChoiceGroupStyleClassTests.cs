@@ -82,7 +82,7 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
     public void BitChoiceGroupShouldMarkADisabledItemAsDisabledWhenAnItemTemplateIsUsed()
     {
         var items = GetItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -287,7 +287,7 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
     public void BitChoiceGroupShouldApplyTheDisabledClassAndStyleToADisabledItemAlone()
     {
         var items = GetItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -312,7 +312,7 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetItems());
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Classes, new BitChoiceGroupClassStyles { ItemDisabled = "custom-disabled" });
             parameters.Add(p => p.Styles, new BitChoiceGroupClassStyles { ItemDisabled = "opacity:0.4" });
         });
@@ -329,7 +329,7 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
     public void BitChoiceGroupShouldWriteTheDisabledStyleAfterTheCheckedStyle()
     {
         var items = GetItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {

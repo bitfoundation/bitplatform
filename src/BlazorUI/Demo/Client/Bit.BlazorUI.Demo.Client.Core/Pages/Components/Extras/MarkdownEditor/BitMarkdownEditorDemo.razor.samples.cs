@@ -113,8 +113,8 @@ protected override void OnInitialized()
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.Table)"">Table</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => RunCommand(BitMarkdownEditorCommand.DuplicateLine)"">Duplicate line</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""InsertSignature"">Insert</BitButton>
-    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""commandsRef?.CanUndo ?? false"" OnClick=""Undo"">Undo</BitButton>
-    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""commandsRef?.CanRedo ?? false"" OnClick=""Redo"">Redo</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" Disabled=""commandsRef?.CanUndo is not true"" OnClick=""Undo"">Undo</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" Disabled=""commandsRef?.CanRedo is not true"" OnClick=""Redo"">Redo</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""GetValue"">GetValue</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""ShowSelection"">GetSelection</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""SelectFirstLine"">SetSelection</BitButton>
@@ -200,7 +200,7 @@ private string previewDefaultValue =
 
 <BitMarkdownEditor ReadOnly DefaultValue=""@readOnlyDefaultValue"" Height=""8rem"" />
 
-<BitMarkdownEditor IsEnabled=""false"" DefaultValue=""# Disabled"" Height=""6rem"" />";
+<BitMarkdownEditor Disabled DefaultValue=""# Disabled"" Height=""6rem"" />";
     private readonly string example8CsharpCode = @"
 private string markdownStyleDefaultValue =
 @""Select some text and hit Ctrl+B or Ctrl+I, or use the list buttons."";

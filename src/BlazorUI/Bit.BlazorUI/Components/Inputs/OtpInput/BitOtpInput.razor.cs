@@ -400,7 +400,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// </summary>
     public async Task Clear()
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
 
         // A Backspace or a Delete that is still waiting for the input event the browser raises after it
         // would otherwise write its result over the cleared inputs.
@@ -457,7 +457,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     [JSInvokable("SetValue")]
     public async Task _SetValue(string value, int index)
     {
-        if (IsEnabled is false || IsReadOnly || InvalidValueBinding()) return;
+        if (Disabled || IsReadOnly || InvalidValueBinding()) return;
         if (value.HasNoValue()) return;
 
         var sanitized = SanitizeValue(TransformPastedValue(value));
@@ -491,7 +491,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         // Unlike the Clear of the consumer, a cut is the user editing the code, so it is refused by the
         // states that refuse a keystroke as well.
-        if (IsEnabled is false || IsReadOnly) return;
+        if (Disabled || IsReadOnly) return;
 
         // A cut is a copy that takes the code with it, and the javascript side has already put the whole
         // code on the clipboard by the time this is called, so all that is left of it is the clearing.
@@ -550,7 +550,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => IsLoading ? "bit-otp-ldg" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-otp-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-otp-req" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -659,7 +659,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         // A disabled input cannot take the focus, so a component that starts out disabled is focused on
         // the first render that finds it enabled rather than losing the auto focus altogether.
-        if (IsEnabled && AutoFocus && _autoFocused is false)
+        if (Disabled is false && AutoFocus && _autoFocused is false)
         {
             _autoFocused = true;
 
@@ -675,7 +675,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // not ask the browser for the code that arrives by SMS, and one that is turned off while the
         // request is pending has to drop it rather than leaving the permission prompt of the browser up
         // over a component that would refuse the code anyway.
-        var smsAutoFill = NoSmsAutoFill is false && IsReadOnly is false && IsEnabled;
+        var smsAutoFill = NoSmsAutoFill is false && IsReadOnly is false && Disabled is false;
 
         // The javascript side listens on the root element and resolves the input from the event target, so
         // it does not care how many inputs there are and only has to be set up again when the SMS request
@@ -937,7 +937,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private async Task HandleOnFocusIn(FocusEventArgs e, int index)
     {
-        if (IsEnabled is false || IsStaleIndex(index)) return;
+        if (Disabled || IsStaleIndex(index)) return;
 
         _inputFocusStates[index] = true;
         // Re-render so the Focused class/style is applied. This must not rely on the implicit
@@ -964,7 +964,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private async Task HandleOnFocusOut(FocusEventArgs e, int index)
     {
-        if (IsEnabled is false || IsStaleIndex(index)) return;
+        if (Disabled || IsStaleIndex(index)) return;
 
         _inputFocusStates[index] = false;
         // Re-render so the Focused class/style is removed regardless of whether an OnFocusOut
@@ -1007,7 +1007,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // replaced.
         if (IsDisposed || IsStaleIndex(index)) return;
 
-        if (IsEnabled is false || IsReadOnly || InvalidValueBinding())
+        if (Disabled || IsReadOnly || InvalidValueBinding())
         {
             _inputValues[index] = oldValue;
 
@@ -1126,7 +1126,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         _handledClearIndex = -1;
         _pendingShiftIndex = -1;
 
-        if (IsEnabled is false || IsStaleIndex(index)) return;
+        if (Disabled || IsStaleIndex(index)) return;
 
         // A keystroke that identifies itself with neither of the two is nothing the navigation can act
         // on, but it is still a keystroke the consumer asked to be told about.
@@ -1140,7 +1140,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private async Task HandleOnPaste(ClipboardEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnPaste.InvokeAsync((e, index));
     }

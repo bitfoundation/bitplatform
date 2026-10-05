@@ -218,7 +218,7 @@ namespace BitBlazorUI {
             editor._hasUpload = options.hasUpload === true;
             editor._plainTextPaste = options.plainTextPaste === true;
             editor._maxLength = (typeof options.maxLength === 'number') ? options.maxLength : null;
-            // Mirrors ReadOnly/IsEnabled from C#. The DOM listeners stay bound (so the surface can
+            // Mirrors ReadOnly/Disabled from C#. The DOM listeners stay bound (so the surface can
             // become editable again without a re-init), but every mutating handler bails on it, so
             // a read-only editor cannot be changed by paste, drop, typing, or a shortcut.
             editor._readOnly = options.readOnly === true;

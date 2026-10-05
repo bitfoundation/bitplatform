@@ -592,7 +592,7 @@ private async Task ReadScrollOffset()
 
 <BitNumberField Label=""AutoScrollThreshold (px)"" Min=""0"" Step=""10"" @bind-Value=""autoScrollThreshold"" Style=""max-width: 20rem"" />
 
-<BitButton OnClick=""AddAutoScrollContent"" IsEnabled=""@(autoScrollRunning is false)"">Add lines periodically</BitButton>
+<BitButton OnClick=""AddAutoScrollContent"" Disabled=""@(autoScrollRunning)"">Add lines periodically</BitButton>
 
 <BitScrollablePane Height=""14rem"" Class=""pane"" AutoScroll AutoScrollThreshold=""(int)autoScrollThreshold"">
     <div class=""item"">The log starts here.</div>
@@ -731,7 +731,7 @@ private async Task LoadOlderMessages()
 
 <BitStack Horizontal Gap=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
     <BitButton IconName=""@BitIconName.ChevronLeft"" Variant=""BitVariant.Outline"" AriaLabel=""Previous card""
-               IsEnabled=""@(carouselOffset?.AtLeft is false)""
+               Disabled=""@(carouselOffset?.AtLeft is not false)""
                OnClick=""() => carouselPane!.ScrollBy(-136, 0)"" />
     <BitScrollablePane @ref=""carouselPane"" Horizontal Width=""22rem"" Class=""pane"" Modern
                        Snap=""snap"" SnapAlign=""snapAlign"" SnapStop=""snapStop""
@@ -742,7 +742,7 @@ private async Task LoadOlderMessages()
         }
     </BitScrollablePane>
     <BitButton IconName=""@BitIconName.ChevronRight"" Variant=""BitVariant.Outline"" AriaLabel=""Next card""
-               IsEnabled=""@(carouselOffset?.AtRight is not true)""
+               Disabled=""@(carouselOffset?.AtRight is true)""
                OnClick=""() => carouselPane!.ScrollBy(136, 0)"" />
 </BitStack>";
     private readonly string example14CsharpCode = @"

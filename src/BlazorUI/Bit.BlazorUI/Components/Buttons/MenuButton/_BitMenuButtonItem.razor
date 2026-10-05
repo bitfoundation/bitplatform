@@ -35,7 +35,7 @@
     else
     {
         var template = MenuButton.GetTemplate(Item);
-        var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
+        var isEnabled = MenuButton.Disabled is false && MenuButton.GetIsDisabled(Item) is false;
         // An item that opens a submenu is not a command of its own, so the three things that would make it
         // one - a link, a check state, a click of its own - give way to the submenu it carries.
         var hasSubmenu = _hasSubmenu;

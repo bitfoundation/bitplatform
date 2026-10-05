@@ -22,7 +22,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
 
     private readonly string example2RazorCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
-                IsEnabled=""false""
+                Disabled
                 Items=""basicItems""
                 DefaultValue=""@(""A"")"" />
 
@@ -49,7 +49,7 @@ private readonly List<BitChoiceGroupItem<string>> disabledItems =
 [
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
-    new() { Text = ""Item C"", Value = ""C"", IsEnabled = false },
+    new() { Text = ""Item C"", Value = ""C"", IsDisabled = true },
     new() { Text = ""Item D"", Value = ""D"" }
 ];";
 
@@ -108,12 +108,12 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 [
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
-    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
+    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
     private readonly string example4RazorCode = @"
 <BitChoiceGroup Label=""Basic"" Items=""basicItems"" DefaultValue=""@(""A"")"" Horizontal />
-<BitChoiceGroup Label=""Disabled"" Items=""basicItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Horizontal />
+<BitChoiceGroup Label=""Disabled"" Items=""basicItems"" Disabled DefaultValue=""@(""A"")"" Horizontal />
 <BitChoiceGroup Label=""Image"" Items=""imageItems"" DefaultValue=""@(""Bar"")"" Horizontal />
 <BitChoiceGroup Label=""Icon"" Items=""iconItems"" DefaultValue=""@(""Day"")"" Horizontal />";
     private readonly string example4CsharpCode = @"
@@ -151,7 +151,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 [
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
-    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
+    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
     private readonly string example5RazorCode = @"
@@ -197,7 +197,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 [
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
-    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
+    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
     private readonly string example6RazorCode = @"
@@ -627,7 +627,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 [
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
-    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
+    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
     private readonly string example20RazorCode = @"
@@ -805,56 +805,56 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Primary""
                 Label=""Primary""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Secondary""
                 Label=""Secondary""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Tertiary""
                 Label=""Tertiary""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Info""
                 Label=""Info""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Success""
                 Label=""Success""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Warning""
                 Label=""Warning""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.SevereWarning""
                 Label=""SevereWarning""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Error""
                 Label=""Error""
                 Horizontal
@@ -862,21 +862,21 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicItems[0].Value"" />
 
 <div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
-    <BitChoiceGroup IsEnabled=""false""
+    <BitChoiceGroup Disabled
                     Color=""BitColor.PrimaryBackground""
                     Label=""PrimaryBackground""
                     Horizontal
                     Items=""basicItems""
                     DefaultValue=""basicItems[0].Value"" />
 
-    <BitChoiceGroup IsEnabled=""false""
+    <BitChoiceGroup Disabled
                     Color=""BitColor.SecondaryBackground""
                     Label=""SecondaryBackground""
                     Horizontal
                     Items=""basicItems""
                     DefaultValue=""basicItems[0].Value"" />
 
-    <BitChoiceGroup IsEnabled=""false""
+    <BitChoiceGroup Disabled
                     Color=""BitColor.TertiaryBackground""
                     Label=""TertiaryBackground""
                     Horizontal
@@ -884,42 +884,42 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                     DefaultValue=""basicItems[0].Value"" />
 </div>
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.PrimaryForeground""
                 Label=""PrimaryForeground""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.SecondaryForeground""
                 Label=""SecondaryForeground""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.TertiaryForeground""
                 Label=""TertiaryForeground""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.PrimaryBorder""
                 Label=""PrimaryBorder""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.SecondaryBorder""
                 Label=""SecondaryBorder""
                 Horizontal
                 Items=""basicItems""
                 DefaultValue=""basicItems[0].Value"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.TertiaryBorder""
                 Label=""TertiaryBorder""
                 Horizontal
@@ -1015,7 +1015,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 [
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
-    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
+    new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
     private readonly string example25RazorCode = @"
@@ -1126,7 +1126,7 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
 
     private readonly string example26RazorCode = @"
 <BitChoiceGroup Label=""ساده"" Items=""rtlItems"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />
-<BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />";
+<BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" Disabled DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />";
     private readonly string example26CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> rtlItems =
 [

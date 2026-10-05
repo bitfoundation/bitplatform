@@ -22,7 +22,7 @@ public class BitFileUploadTests : BunitTestContext
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitFileUpload = com.Find(".bit-upl-fi");
@@ -286,11 +286,11 @@ public class BitFileUploadTests : BunitTestContext
        DataRow(true),
        DataRow(false)
     ]
-    public void BitFileUploadIsEnabledTest(bool isEnabled)
+    public void BitFileUploadDisabledTest(bool isEnabled)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitFileUpload = com.Find(".bit-upl");
@@ -469,7 +469,7 @@ public class BitFileUploadTests : BunitTestContext
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(com.Find(".bit-upl-lbl").HasAttribute("disabled"));
@@ -2830,7 +2830,7 @@ public class BitFileUploadTests : BunitTestContext
             Variant = BitVariant.Text,
             WithCredentials = true,
             AriaLabel = "Test aria label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -2882,7 +2882,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(BitVariant.Text, instance.Variant);
         Assert.IsTrue(instance.WithCredentials);
         Assert.AreEqual("Test aria label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 
@@ -3762,7 +3762,7 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        com.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        com.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsTrue(com.FindAll(".bit-upl-bab").All(b => b.HasAttribute("disabled")));
     }

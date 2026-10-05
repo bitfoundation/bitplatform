@@ -523,7 +523,7 @@ public partial class BitTextDemo
         {
             Name = "--bit-Text-disabled-opacity",
             DefaultValue = "--bit-opa-dis",
-            Description = "Opacity of a text whose IsEnabled is false.",
+            Description = "Opacity of a text whose Disabled is true.",
         },
     ];
 

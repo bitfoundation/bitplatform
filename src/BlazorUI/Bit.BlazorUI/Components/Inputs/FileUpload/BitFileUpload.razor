@@ -17,7 +17,7 @@
                 @onclick="Browse"
                 type="button"
                 id="@_buttonId"
-                disabled="@(IsEnabled is false)"
+                disabled="@(Disabled)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
@@ -55,7 +55,7 @@
            capture="@Capture"
            multiple="@Multiple"
            webkitdirectory="@Directory"
-           disabled="@(IsEnabled is false)"
+           disabled="@(Disabled)"
            aria-label="@AriaLabel"
            aria-labelledby="@(AriaLabel is null && _ShowLabelButton ? _buttonId : null)"
            aria-describedby="@(_HasDescription ? _descriptionId : null)"
@@ -104,7 +104,7 @@
             {
                 <button @onclick="HandleUploadAll"
                         type="button"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         aria-disabled="@(canUploadAll ? null : "true")"
                         style="@Styles?.BatchActionButton"
                         class="bit-upl-bab @Classes?.BatchActionButton">
@@ -113,7 +113,7 @@
             }
             <button @onclick="HandleCancelAll"
                     type="button"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     aria-disabled="@(canCancelAll ? null : "true")"
                     style="@Styles?.BatchActionButton"
                     class="bit-upl-bab @Classes?.BatchActionButton">
@@ -121,7 +121,7 @@
             </button>
             <button @onclick="HandleClear"
                     type="button"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     aria-disabled="@(canClear ? null : "true")"
                     style="@Styles?.BatchActionButton"
                     class="bit-upl-bab @Classes?.BatchActionButton">

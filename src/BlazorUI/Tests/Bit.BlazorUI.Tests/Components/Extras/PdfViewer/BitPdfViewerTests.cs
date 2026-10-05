@@ -48,7 +48,7 @@ public class BitPdfViewerTests : BunitTestContext
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-pdv");
@@ -689,7 +689,7 @@ public class BitPdfViewerTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));

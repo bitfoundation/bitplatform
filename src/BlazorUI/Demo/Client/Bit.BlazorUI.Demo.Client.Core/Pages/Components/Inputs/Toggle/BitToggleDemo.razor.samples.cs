@@ -5,8 +5,8 @@ public partial class BitToggleDemo
     private readonly string example1RazorCode = @"
 <BitToggle Label=""Basic"" />
 <BitToggle Label=""On by default"" DefaultValue=""true"" />
-<BitToggle Label=""Disabled"" IsEnabled=""false"" />
-<BitToggle Label=""Disabled and on"" IsEnabled=""false"" Value=""true"" />";
+<BitToggle Label=""Disabled"" Disabled />
+<BitToggle Label=""Disabled and on"" Disabled Value=""true"" />";
 
     private readonly string example2RazorCode = @"
 <BitToggle Label=""Text"" Text=""This is a toggle!"" />
@@ -40,7 +40,7 @@ public partial class BitToggleDemo
     <OffContent>Night</OffContent>
 </BitToggle>
 
-<BitToggle Label=""Disabled"" OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" IsEnabled=""false"" />
+<BitToggle Label=""Disabled"" OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" Disabled />
 
 
 <BitToggle Label=""Day / night"">
@@ -347,8 +347,8 @@ private void HandleInvalidSubmit() { }";
 <BitToggle Label=""Notifications"" OnText=""Allowed"" OffText=""Blocked"" />
 
 
-<BitToggle Label=""Disabled"" IsEnabled=""false"" Title=""Out of the tab order"" />
-<BitToggle Label=""Disabled, still focusable"" IsEnabled=""false"" AllowDisabledFocus
+<BitToggle Label=""Disabled"" Disabled Title=""Out of the tab order"" />
+<BitToggle Label=""Disabled, still focusable"" Disabled AllowDisabledFocus
            Title=""Available on the Pro plan"" />";
     private readonly string example12CsharpCode = @"
 private BitToggle toggleRef = default!;

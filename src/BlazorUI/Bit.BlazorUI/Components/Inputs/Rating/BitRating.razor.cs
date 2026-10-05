@@ -447,7 +447,7 @@ public partial class BitRating : BitInputBase<double>
         // normally end the preview, so a stale one would go on rendering in place of the committed value.
         // NoHoverPreview is not one of these: it hides the preview rather than ending it, so the hovered
         // value stays tracked for OnHoverChange and simply stops being what the items are drawn from.
-        if (IsEnabled is false || ReadOnly)
+        if (Disabled || ReadOnly)
         {
             _hoverValue = null;
         }
@@ -463,7 +463,7 @@ public partial class BitRating : BitInputBase<double>
         if (clamped != CurrentValue)
         {
             // A one-way bound value has nobody to notify, so it is corrected locally instead. Assigning
-            // CurrentValue is avoided here as well, since its setter drops the write while IsEnabled is false.
+            // CurrentValue is avoided here as well, since its setter drops the write while Disabled is true.
             if (InvalidValueBinding())
             {
                 Value = clamped;
@@ -565,7 +565,7 @@ public partial class BitRating : BitInputBase<double>
     /// Whether the rating still asks for an answer it requires. The asterisk and aria-required both follow it:
     /// a read-only or disabled rating is no longer asking anything, so it marks nothing as required.
     /// </summary>
-    private bool _IsRequired => IsEnabled && ReadOnly is false && Required;
+    private bool _IsRequired => Disabled is false && ReadOnly is false && Required;
 
     /// <summary>
     /// The accessible name of the whole rating as an inline string: the explicit AriaLabel, then the
@@ -787,7 +787,7 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task HandleOnClick(double value)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // Clicking the value that is already committed clears the rating, the way a second click on a
         // selected radio never could - which is the only way back to "not rated" once something is picked.
@@ -801,7 +801,7 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task HandleOnHover(double value)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // The preview is the value a click would commit, and under AllowClear a click on the value that is
         // already committed commits 0 instead - so that is the value the preview shows, rather than the one
@@ -829,7 +829,7 @@ public partial class BitRating : BitInputBase<double>
     [JSInvokable(nameof(_HandleFocusIn))]
     public async Task _HandleFocusIn()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocusIn.InvokeAsync(new FocusEventArgs { Type = "focusin" });
     }
@@ -840,7 +840,7 @@ public partial class BitRating : BitInputBase<double>
     [JSInvokable(nameof(_HandleFocusOut))]
     public async Task _HandleFocusOut()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocusOut.InvokeAsync(new FocusEventArgs { Type = "focusout" });
     }
@@ -868,7 +868,7 @@ public partial class BitRating : BitInputBase<double>
     // one press too late - and is kept key-scoped there so Tab, Space and Enter still behave normally.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // Every key this handler answers to is also half of a browser or system shortcut - Alt+ArrowLeft goes
         // back, Ctrl+Home reaches the top of a page, Ctrl+digit switches tabs - so a held modifier hands the

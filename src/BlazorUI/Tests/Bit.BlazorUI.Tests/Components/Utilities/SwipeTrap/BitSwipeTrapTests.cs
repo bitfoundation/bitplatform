@@ -24,11 +24,11 @@ public class BitSwipeTrapTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitSwipeTrapShouldRespectIsEnabled(bool isEnabled)
+    public void BitSwipeTrapShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-stp");
@@ -737,7 +737,7 @@ public class BitSwipeTrapTests : BunitTestContext
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
             parameters.Add(p => p.KeyboardTrigger, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-stp");
@@ -780,7 +780,7 @@ public class BitSwipeTrapTests : BunitTestContext
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
             parameters.Add(p => p.KeyboardTrigger, keyboardTrigger);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
         });
 

@@ -20,8 +20,8 @@
     // nothing to remove the visible display keeps the id and names the trigger the way it did.
     @* A disabled item is one the callout refuses to unselect, so its chip carries no remove button and
        cannot be the reason the hidden name element is rendered either. *@
-    var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false &&
-                               _selectedItems.Take(GetDisplayedItemsCount()).Any(GetIsEnabled);
+    var hasChipRemoveButtons = Chips && Disabled && ReadOnly is false &&
+                               _selectedItems.Take(GetDisplayedItemsCount()).Any(i => GetIsDisabled(i) is false);
 
     // The combobox role, and the state that goes with it, belong on the element the keyboard actually
     // lands on - which is the field itself only while it has nothing focusable inside it. The ComboBox
@@ -126,12 +126,12 @@
          class="bit-drp-wrp @Classes?.Container"
          role="@(comboboxOnField ? "combobox" : null)"
          autofocus="@(comboboxOnField && AutoFocus)"
-         tabindex="@(IsEnabled && comboboxOnField ? (TabIndex ?? "0") : "-1")"
+         tabindex="@(Disabled is false && comboboxOnField ? (TabIndex ?? "0") : "-1")"
          aria-haspopup="@(comboboxOnField ? "listbox" : null)"
          aria-required="@(comboboxOnField && Required ? "true" : null)"
          aria-readonly="@(comboboxOnField && ReadOnly ? "true" : null)"
          aria-invalid="@(comboboxOnField && IsInvalid ? "true" : null)"
-         aria-disabled="@(comboboxOnField && IsEnabled is false ? "true" : null)"
+         aria-disabled="@(comboboxOnField && Disabled ? "true" : null)"
          aria-expanded="@(comboboxOnField ? (IsOpen ? "true" : "false") : null)"
          aria-label="@(comboboxOnField ? AriaLabel : null)"
          aria-labelledby="@(comboboxOnField && AriaLabel.HasNoValue() ? GetDropdownAriaLabelledby() : null)"
@@ -177,7 +177,7 @@
                             }
                             @* A disabled item cannot be unselected by picking it in the callout, so it must not
                                offer a remove button that would silently do nothing when it is activated. *@
-                            @if (IsEnabled && ReadOnly is false && GetIsEnabled(item))
+                            @if (Disabled is false && ReadOnly is false && GetIsDisabled(item) is false)
                             {
                                 @* A button so the chip can be removed with the keyboard and is announced as an action.
                                    The keydown listener of Dropdowns.ts stops Enter and Space from reaching the
@@ -291,11 +291,11 @@
                        aria-controls="@(comboboxOnFieldInput && IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
-                       disabled="@(IsEnabled is false)" />
+                       disabled="@(Disabled)" />
             }
         </span>
 
-        @if (IsEnabled && ReadOnly is false && ShowClearButton && _selectedItems.Count > 0)
+        @if (Disabled is false && ReadOnly is false && ShowClearButton && _selectedItems.Count > 0)
         {
             @* The keydown listener of Dropdowns.ts stops Enter and Space from reaching the trigger's
                keydown handler, so activating this button cannot toggle the callout while the other
@@ -349,7 +349,7 @@
             aria-hidden="true"
             class="bit-input-hidden"
             multiple="@MultiSelect"
-            disabled="@(IsEnabled is false)">
+            disabled="@(Disabled)">
         @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
@@ -571,7 +571,7 @@
                    aria-controls="@(IsOpen ? _scrollContainerId : null)"
                    placeholder="@Placeholder"
                    autocomplete="@BitAutoCompleteValue.NewPassword"
-                   disabled="@(IsEnabled is false)" />
+                   disabled="@(Disabled)" />
 
             <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                     type="button"
@@ -596,7 +596,7 @@
             var selectAllClasses = "bit-drp-sac bit-drp-iwr" +
                                    (allSelected ? " bit-drp-chd" : string.Empty) +
                                    (anySelected && allSelected is false ? " bit-drp-sai" : string.Empty) +
-                                   (IsEnabled && ReadOnly is false ? string.Empty : " bit-drp-ids");
+                                   (Disabled is false && ReadOnly is false ? string.Empty : " bit-drp-ids");
             var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
             <div style="@Styles?.SelectAllContainer"
                  class="@selectAllClasses @Classes?.SelectAllContainer">
@@ -609,7 +609,7 @@
                         tabindex="-1"
                         style="@Styles?.SelectAllButton"
                         class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
-                        disabled="@(IsEnabled is false || ReadOnly)"
+                        disabled="@(Disabled || ReadOnly)"
                         aria-checked="@selectAllAriaChecked"
                         aria-controls="@_scrollContainerId">
                     <div style="@Styles?.SelectAllCheckBox"

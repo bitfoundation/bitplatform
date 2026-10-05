@@ -1893,11 +1893,11 @@ public class BitProgressTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitProgressIsEnabledTest(bool isEnabled)
+    public void BitProgressDisabledTest(bool isEnabled)
     {
         var component = RenderComponent<BitProgress>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Percent, 42);
         });
 

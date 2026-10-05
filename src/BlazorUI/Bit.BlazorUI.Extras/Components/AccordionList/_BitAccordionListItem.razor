@@ -2,7 +2,7 @@
 @typeparam TItem where TItem : class
 
 @{
-    var isEnabled = AccordionList.IsEnabled && AccordionList.GetIsEnabled(Item);
+    var isEnabled = AccordionList.Disabled is false && AccordionList.GetIsDisabled(Item) is false;
     var headerTemplate = AccordionList.GetItemHeaderTemplate(Item);
     var titleTemplate = AccordionList.GetItemTitleTemplate(Item);
     var expanderTemplate = AccordionList.GetItemExpanderTemplate(Item);
@@ -37,7 +37,7 @@
                   HideExpanderIcon="AccordionList.GetItemHideExpanderIcon(Item)"
                   Icon="AccordionList.GetItemIcon(Item)"
                   IconName="@AccordionList.GetItemIconName(Item)"
-                  IsEnabled="isEnabled"
+                  Disabled="isEnabled is false"
                   IsExpanded="AccordionList.IsItemExpanded(Item)"
                   LazyContent="AccordionList.LazyContent"
                   MaxHeight="@AccordionList.MaxHeight"

@@ -2486,7 +2486,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task ShowMarker(string markerId)
     {
-        if (_initialized is false || IsEnabled is false) return;
+        if (_initialized is false || Disabled) return;
         if (_markerState.TryGetValue(markerId, out var marker) is false) return;
 
         // Essential motion: the movement is what tells the user where they were taken.

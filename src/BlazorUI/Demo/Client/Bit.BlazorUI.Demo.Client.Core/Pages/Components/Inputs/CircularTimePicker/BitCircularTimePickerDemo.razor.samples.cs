@@ -5,7 +5,7 @@ public partial class BitCircularTimePickerDemo
     private readonly string example1RazorCode = @"
 <BitCircularTimePicker Label=""Basic CircularTimePicker"" />
 
-<BitCircularTimePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitCircularTimePicker Label=""Disabled"" Disabled />
 
 <BitCircularTimePicker Label=""Required"" Required />
 
@@ -16,7 +16,7 @@ public partial class BitCircularTimePickerDemo
     private readonly string example2RazorCode = @"
 <BitCircularTimePicker Label=""Basic CircularTimePicker"" Standalone />
 
-<BitCircularTimePicker Label=""Disabled"" IsEnabled=""false"" Standalone />";
+<BitCircularTimePicker Label=""Disabled"" Disabled Standalone />";
 
     private readonly string example3RazorCode = @"
 <BitCircularTimePicker Label=""24-hour (default)"" Standalone DefaultValue=""@(new TimeSpan(21, 45, 0))"" />

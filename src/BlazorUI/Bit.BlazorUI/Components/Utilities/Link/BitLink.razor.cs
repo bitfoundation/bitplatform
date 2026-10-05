@@ -414,11 +414,11 @@ public partial class BitLink : BitComponentBase
             OnSetHrefAndRel();
         }
 
-        _tabIndex = IsEnabled
-            ? TabIndex
-            : AllowDisabledFocus
+        _tabIndex = Disabled
+            ? AllowDisabledFocus
                 ? (TabIndex ?? (Href.HasValue() ? "0" : null))
-                : Href.HasValue() ? null : "-1";
+                : Href.HasValue() ? null : "-1"
+            : TabIndex;
 
         // Only a link that follows the URL listens to it, so the links of a page that never asks for it cost
         // nothing; one that is given a Match later on starts listening then.
@@ -456,7 +456,7 @@ public partial class BitLink : BitComponentBase
 
     protected virtual async Task HandleClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
 
@@ -532,7 +532,7 @@ public partial class BitLink : BitComponentBase
         return AriaCurrent.HasValue ? _ariaCurrentMap[AriaCurrent.Value] : GetSplattedAttribute("aria-current");
     }
 
-    private bool IsFocusable() => IsEnabled || AllowDisabledFocus;
+    private bool IsFocusable() => Disabled is false || AllowDisabledFocus;
 
     private bool IsUrlMatch()
     {

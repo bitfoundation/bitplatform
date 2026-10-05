@@ -27,7 +27,7 @@ public partial class _BitDropdownCustomDemo
              NameSelectors=""nameSelectors"" />
 
 <BitDropdown Label=""Disabled""
-             IsEnabled=""false""
+             Disabled
              Items=""GetBasicCustoms()""
              DefaultValue=""@(""f-ora"")""
              Placeholder=""Select an item""
@@ -87,7 +87,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -203,7 +203,7 @@ private List<Product> GetGroupedCustoms() =>
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             IsEnabled=""false"" />";
+             Disabled />";
     private readonly string example3CsharpCode = @"
 public class Product
 {
@@ -237,7 +237,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -291,7 +291,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -363,7 +363,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -410,7 +410,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -464,7 +464,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -544,7 +544,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -624,7 +624,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -727,7 +727,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
 };
 
 private List<Product> comboBoxCustoms = new()
@@ -750,7 +750,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -842,7 +842,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -856,7 +856,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -965,7 +965,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1125,7 +1125,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1296,7 +1296,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1385,7 +1385,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -1497,7 +1497,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -1513,7 +1513,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1602,7 +1602,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1630,7 +1630,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -1732,7 +1732,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -1793,7 +1793,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1856,7 +1856,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -1908,7 +1908,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -2022,7 +2022,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -2130,7 +2130,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -2281,7 +2281,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -2496,7 +2496,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -2509,7 +2509,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -2574,7 +2574,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
-    IsEnabled = { Selector = c => c.Disabled is false }
+    IsDisabled = { Selector = c => c.Disabled }
 };";
 
     private readonly string example28RazorCode = @"
@@ -2634,7 +2634,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -2690,7 +2690,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
-    IsEnabled = { Selector = c => c.Disabled is false }
+    IsDisabled = { Selector = c => c.Disabled }
 };";
 
     private readonly string example30RazorCode = @"
@@ -2751,7 +2751,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
 };
 
 private List<Product> GetBasicCustoms() =>
@@ -2773,7 +2773,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
 };
 
 private List<Product> comboBoxCustoms = new()
@@ -2950,7 +2950,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
@@ -3094,7 +3094,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -3162,7 +3162,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
     ItemType = { Selector = c => c.Type },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
 };";
 
     private readonly string example35RazorCode = @"
@@ -3320,7 +3320,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Class = { Selector = c => c.CssClass },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
@@ -3382,7 +3382,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
     Data = { Selector = c => c.Payload },
-    IsEnabled = { Selector = c => c.Disabled is false },
+    IsDisabled = { Selector = c => c.Disabled },
     IsHidden = { Selector = c => c.Visible is false },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },

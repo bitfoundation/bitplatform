@@ -7,7 +7,7 @@
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);
         // A disabled nav disables everything it renders: greying the items out is not enough, since a link
         // that keeps its href and its tab stop can still be followed with the keyboard.
-        var isEnabled = Nav.IsEnabled && Nav.GetIsEnabled(Item);
+        var isEnabled = Nav.Disabled is false && Nav.GetIsDisabled(Item) is false;
         var isExpanded = Nav.IsItemOpen(Item);
         var isSeparator = Nav.GetIsSeparator(Item);
         var text = Nav.GetText(Item);

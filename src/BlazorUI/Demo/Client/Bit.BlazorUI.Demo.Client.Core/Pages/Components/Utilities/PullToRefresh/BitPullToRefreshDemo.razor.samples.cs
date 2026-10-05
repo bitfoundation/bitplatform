@@ -434,7 +434,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
 
 <BitToggle @bind-Value=""isEnabled"" Label=""Enabled"" />
 <BitToggle @bind-Value=""noMouse"" Label=""NoMouse"" />
-<BitPullToRefresh IsEnabled=""isEnabled"" NoMouse=""noMouse"" OnRefresh=""HandleOnRefreshDisabled"">
+<BitPullToRefresh Disabled=""isEnabled is false"" NoMouse=""noMouse"" OnRefresh=""HandleOnRefreshDisabled"">
     <div class=""anchor"">
         @foreach (var (idx, i) in disabledItems)
         {

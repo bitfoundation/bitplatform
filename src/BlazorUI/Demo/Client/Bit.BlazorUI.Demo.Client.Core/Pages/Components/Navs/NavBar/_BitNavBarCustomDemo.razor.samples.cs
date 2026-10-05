@@ -37,14 +37,14 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitNavBar Items=""basicNavBarCustoms"" IsEnabled=""false""
+<BitNavBar Items=""basicNavBarCustoms"" Disabled
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />
 
 <BitNavBar Items=""basicNavBarCustomsDisabled""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName },
-                                    IsEnabled = { Selector = item => item.Disabled is false } })"" />";
+                                    IsDisabled = { Selector = item => item.Disabled } })"" />";
     private readonly string example2CsharpCode = @"
 private static readonly List<MenuItem> basicNavBarCustoms =
 [
@@ -89,7 +89,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 ];
 
 private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
-     basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsEnabled = true, Value = i });
+     basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsDisabled = false, Value = i });
 
 private MenuItem? twoWaySelectedItem;";
 
@@ -109,14 +109,14 @@ private MenuItem? twoWaySelectedItem;";
                                     IconName = { Selector = item => item.ImageName },
                                     Url = { Selector = item => item.Link },
                                     Match = { Selector = item => item.Matching },
-                                    IsEnabled = { Selector = item => item.Disabled is false } })"" />
+                                    IsDisabled = { Selector = item => item.Disabled } })"" />
 
 <BitNavBar Items=""regexMatchCustoms""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName },
                                     Url = { Selector = item => item.Link },
                                     Match = { Selector = item => item.Matching },
-                                    IsEnabled = { Selector = item => item.Disabled is false } })"" />
+                                    IsDisabled = { Selector = item => item.Disabled } })"" />
 
 <BitNavBar Items=""additionalUrlsCustoms""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },

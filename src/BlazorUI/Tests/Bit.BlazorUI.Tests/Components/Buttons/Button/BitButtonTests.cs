@@ -24,7 +24,7 @@ public class BitButtonTests : BunitTestContext
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.OnClick, () => clicked = true);
@@ -70,7 +70,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
@@ -97,7 +97,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Href, href);
             parameters.Add(p => p.Title, title);
@@ -390,7 +390,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, false);
             parameters.Add(p => p.TabIndex, tabIndex);
         });
@@ -401,7 +401,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         if (tabIndex is null)
@@ -491,7 +491,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -530,7 +530,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IconName, "Emoji");
         });
 
@@ -540,7 +540,7 @@ public class BitButtonTests : BunitTestContext
 
         com.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
@@ -572,7 +572,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -885,7 +885,7 @@ public class BitButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoFocus, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
@@ -903,7 +903,7 @@ public class BitButtonTests : BunitTestContext
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.IsLoading, isLoading);
         });
 
@@ -1883,7 +1883,7 @@ public class BitButtonTests : BunitTestContext
             Title = "Test Title",
             Variant = BitVariant.Outline,
             AriaLabel = "Test Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -1937,7 +1937,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("Test Title", instance.Title);
         Assert.AreEqual(BitVariant.Outline, instance.Variant);
         Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

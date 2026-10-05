@@ -7,7 +7,7 @@ public partial class BitTimePickerDemo
 <BitTimePicker Label=""Placeholder"" Placeholder=""Select a time..."" />
 <BitTimePicker Label=""Required"" Required />
 <BitTimePicker Label=""ReadOnly"" ReadOnly @bind-Value=""@readOnlyTime"" />
-<BitTimePicker Label=""Disabled"" IsEnabled=""false"" @bind-Value=""@readOnlyTime"" />";
+<BitTimePicker Label=""Disabled"" Disabled @bind-Value=""@readOnlyTime"" />";
     private readonly string example1CsharpCode = @"
 private TimeSpan? readOnlyTime = new(2, 50, 0);";
 

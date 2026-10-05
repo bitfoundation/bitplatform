@@ -307,7 +307,7 @@ public class BitProgressParamsTests : BunitTestContext
             Class = "cascaded-class",
             Style = "margin: 3px;",
             Dir = BitDir.Rtl,
-            IsEnabled = false,
+            Disabled = true,
             AnnounceProgress = true,
         }, builder =>
         {

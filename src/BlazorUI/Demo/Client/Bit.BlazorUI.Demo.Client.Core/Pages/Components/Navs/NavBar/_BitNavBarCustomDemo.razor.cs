@@ -135,7 +135,7 @@ public partial class _BitNavBarCustomDemo
     ];
 
     private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
-         basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsEnabled = true, Value = i });
+         basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsDisabled = false, Value = i });
 
     private int dynamicCustomsCount = 3;
     private MenuItem? dynamicSelectedCustom;

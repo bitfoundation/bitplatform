@@ -46,7 +46,7 @@ private readonly List<BitAccordionListItem> templateItems =
 private readonly List<BitAccordionListItem> stateItems =
 [
     new() { Key = ""normal"", Title = ""General settings"", Description = ""A live item"", Body = BodyFor(""Once upon a time, ..."") },
-    new() { Key = ""disabled"", Title = ""Users"", Description = ""Turned off altogether"", IsEnabled = false, Body = BodyFor(""Every story starts with a blank canvas, ..."") },
+    new() { Key = ""disabled"", Title = ""Users"", Description = ""Turned off altogether"", IsDisabled = true, Body = BodyFor(""Every story starts with a blank canvas, ..."") },
     new() { Key = ""locked"", Title = ""Advanced settings"", Description = ""Open on purpose and staying that way"", ReadOnly = true, Body = BodyFor(""In the beginning, there is silence, ..."") },
 ];
 ";

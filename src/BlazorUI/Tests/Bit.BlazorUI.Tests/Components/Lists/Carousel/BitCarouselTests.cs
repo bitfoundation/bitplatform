@@ -262,11 +262,11 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldRespectIsEnabledFalse()
+    public void BitCarouselShouldRespectDisabledFalse()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-csl");
@@ -1251,7 +1251,7 @@ public partial class BitCarouselTests : BunitTestContext
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.Wheel, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var container = component.Find(".bit-csl-cnt");
@@ -2231,7 +2231,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var carousel = component.Instance.Carousel;
@@ -2251,7 +2251,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoPlay, true);
             parameters.Add(p => p.AutoPlayInterval, 50d);
         });
@@ -2429,7 +2429,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         // A disabled carousel does not move, but it neither drops the request nor writes its page over it.
         component.Render(parameters => parameters.Add(p => p.Page, 3));
@@ -2437,7 +2437,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
         Assert.AreEqual(3, component.Instance.Page);
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
         Assert.AreEqual(3, component.Instance.Page);

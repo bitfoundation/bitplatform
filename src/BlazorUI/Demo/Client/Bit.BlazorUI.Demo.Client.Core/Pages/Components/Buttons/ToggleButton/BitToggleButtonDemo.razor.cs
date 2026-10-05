@@ -544,19 +544,19 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-disabled-color",
             DefaultValue = "The Color role's disabled text color",
-            Description = "Foreground when IsEnabled is false; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
+            Description = "Foreground when Disabled is true; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-background",
             DefaultValue = "Per Variant: the role's disabled color (Fill), transparent (Outline, Text)",
-            Description = "Background when IsEnabled is false.",
+            Description = "Background when Disabled is true.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-border-color",
             DefaultValue = "--bit-ToggleButton-disabled-background, then per Variant",
-            Description = "Border color when IsEnabled is false.",
+            Description = "Border color when Disabled is true.",
         },
         new()
         {

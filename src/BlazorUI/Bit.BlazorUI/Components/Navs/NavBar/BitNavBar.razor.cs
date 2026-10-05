@@ -186,8 +186,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // Only the manual mode owns its selection: in the automatic mode the current URL is what selects an
         // item, and a selection made here would be undone by the very next match anyway.
         if (Mode is not BitNavMode.Manual) return;
-        if (IsEnabled is false) return;
-        if (GetIsEnabled(item) is false) return;
+        if (Disabled) return;
+        if (GetIsDisabled(item)) return;
 
         await SetSelectedItem(item);
     }
@@ -397,8 +397,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     internal async Task HandleOnClick(TItem item)
     {
-        if (IsEnabled is false) return;
-        if (GetIsEnabled(item) is false) return;
+        if (Disabled) return;
+        if (GetIsDisabled(item)) return;
 
         // The selection is read before the click is handled: the manual mode selects the clicked item right
         // here, and asking afterwards would report every freshly clicked item as the already-selected one
@@ -430,7 +430,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // swallowing the Tab that follows an arrow key.
     internal async Task HandleOnKeyDown(TItem source, KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         // The focus event of the item that received the key has already run, so the focused item is known;
@@ -640,7 +640,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // which takes no focus at all, and an item whose template replaced it renders no element of the
     // navbar's at all, so walking onto either would leave the focus where it was while the navbar believes
     // it has moved.
-    private List<TItem> GetFocusableItems() => [.. _items.Where(i => GetIsEnabled(i) && GetReplacedTemplate(i) is null)];
+    private List<TItem> GetFocusableItems() => [.. _items.Where(i => GetIsDisabled(i) is false && GetReplacedTemplate(i) is null)];
 
     // The single stop of the roving tab index is the item the focus was last on, and the selected one
     // before the bar has ever been focused, so Tab returns to where the reader left it either way. A navbar

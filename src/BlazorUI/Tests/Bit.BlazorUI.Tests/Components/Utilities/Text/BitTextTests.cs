@@ -150,11 +150,11 @@ public class BitTextTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitTextShouldRespectIsEnabled(bool isEnabled)
+    public void BitTextShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitText>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -163,7 +163,7 @@ public class BitTextTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTextShouldRespectIsEnabledChangingAfterRender()
+    public void BitTextShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
 
@@ -171,7 +171,7 @@ public class BitTextTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-dis"" id:ignore></div>");

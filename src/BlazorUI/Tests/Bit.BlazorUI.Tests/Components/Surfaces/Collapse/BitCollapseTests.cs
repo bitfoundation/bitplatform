@@ -538,7 +538,7 @@ public class BitCollapseTests : BunitTestContext
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.Expanded, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual("-1", component.Find(".bit-col-con").GetAttribute("tabindex"));
@@ -689,7 +689,7 @@ public class BitCollapseTests : BunitTestContext
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnChange, (bool _) => changes++);
         });
 
@@ -1506,7 +1506,7 @@ public class BitCollapseTests : BunitTestContext
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ExpandedChanged, _ => { });
             parameters.Add(p => p.Expanded, false);
         });

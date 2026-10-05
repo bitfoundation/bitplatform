@@ -30,7 +30,7 @@
      dir="@Dir?.ToString().ToLower()"
      aria-label="@(_AriaLabelledBy is null ? _AriaLabel : null)"
      aria-labelledby="@_AriaLabelledBy"
-     aria-disabled="@(IsEnabled ? null : "true")">
+     aria-disabled="@(Disabled ? "true" : null)">
 
     @* aria-readonly is not a state a "group" carries - it belongs to the widgets inside it, which is where
        the saturation slider and the native ranges declare it. *@
@@ -71,7 +71,7 @@
              aria-label="@texts.SaturationAreaLabel"
              aria-readonly="@(readOnly ? "true" : null)"
              aria-describedby="@describes"
-             aria-disabled="@(IsEnabled ? null : "true")"
+             aria-disabled="@(Disabled ? "true" : null)"
              class="bit-clp-rec @Classes?.SaturationPicker">
             <div class="bit-clp-light"></div>
             <div class="bit-clp-dark"></div>
@@ -249,8 +249,8 @@
                     <button @ref="_inputsModeSwitchRef"
                             @onclick="HandleOnInputsModeSwitchClick"
                             type="button"
-                            disabled="@(IsEnabled is false)"
-                            tabindex="@(IsEnabled ? TabIndex : "-1")"
+                            disabled="@(Disabled)"
+                            tabindex="@(Disabled ? "-1" : TabIndex)"
                             style="@Styles?.InputsModeSwitch"
                             title="@string.Format(texts.InputsModeFormat, _InputsModeLabel)"
                             aria-label="@string.Format(texts.InputsModeSwitchFormat, _InputsModeLabel)"

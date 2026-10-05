@@ -60,7 +60,7 @@ public partial class _BitFileUploadItem : ComponentBase, IDisposable
     internal async Task<bool> TryFocus(BitFileUploadFocusTarget target)
     {
         // every button of a disabled component is disabled too, and none of them can take the focus.
-        if (FileUpload.IsEnabled is false) return false;
+        if (FileUpload.Disabled) return false;
 
         BitFileUploadFocusTarget[] order =
         [

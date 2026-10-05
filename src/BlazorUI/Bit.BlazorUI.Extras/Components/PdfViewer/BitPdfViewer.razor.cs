@@ -2106,7 +2106,7 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnShortcut(string command)
     {
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || Disabled) return;
 
         switch (command)
         {

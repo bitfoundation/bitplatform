@@ -18,11 +18,11 @@ public class BitSeparatorTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitSeparatorShouldRespectIsEnabled(bool isEnabled)
+    public void BitSeparatorShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -31,7 +31,7 @@ public class BitSeparatorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSeparatorShouldRespectIsEnabledChangingAfterRender()
+    public void BitSeparatorShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
 
@@ -39,7 +39,7 @@ public class BitSeparatorTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr bit-dis"" id:ignore></div>");

@@ -9,7 +9,7 @@ public partial class _BitTimelineCustomDemo
     {
         PrimaryText = { Selector = i => i.FirstText },
         SecondaryText = { Selector = i => i.SecondText },
-        IsEnabled = { Selector = i => i.Disabled is false },
+        IsDisabled = { Selector = i => i.Disabled },
         IconName = { Selector = i => i.Icon },
         DotTemplate = { Selector = i => i.DotContent },
         PrimaryContent = { Selector = i => i.FirstContent },

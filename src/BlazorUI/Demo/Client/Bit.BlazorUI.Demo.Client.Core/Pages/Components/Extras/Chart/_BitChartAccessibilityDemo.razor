@@ -6,18 +6,18 @@
         <b>Home/End</b> jump to the ends, <b>Enter</b> raises <code>OnElementClick</code> and <b>Escape</b> leaves
         (it also closes a tooltip the mouse opened). Each step is announced. <code>AriaLabel</code> names the chart
         (falling back to its title), <code>Description</code> sums it up, <code>NavigationHint</code> says how to walk
-        it, and a hidden data table (<code>GenerateTable</code>) holds every value. <code>IsEnabled="false"</code>
+        it, and a hidden data table (<code>GenerateTable</code>) holds every value. <code>Disabled</code>
         takes the chart out of the tab order.
     </div>
     <div class="controls">
-        <BitCheckbox Label="IsEnabled" @bind-Value="_enabled" />
+        <BitCheckbox Label="Disabled is false" @bind-Value="_enabled" />
     </div>
     <div class="linked-readout">@(_selected ?? "Press Enter on a bar")</div>
     <div class="chart-wrapper">
         <div class="chart-container">
             <BitChart Type="BitChartType.Bar"
                       Data="_data"
-                      IsEnabled="_enabled"
+                      Disabled="_enabled is false"
                       AriaLabel="Quarterly revenue by region"
                       Description="North leads every quarter and both regions peak in Q4."
                       NavigationHint="Use the arrow keys to compare regions and quarters, Enter to select one."

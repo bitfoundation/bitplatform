@@ -1292,11 +1292,11 @@ public class BitHeaderTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitHeaderShouldRespectIsEnabled(bool isEnabled)
+    public void BitHeaderShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitHeader>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-hdr").ClassList.Contains("bit-dis"));

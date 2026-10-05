@@ -328,11 +328,11 @@
             <BitPivotItem Key="4" HeaderText="Last"><div>Pivot #4: Last</div></BitPivotItem>
         </BitPivot>
         <br />
-        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.CaretSolidLeft" IsEnabled="@(selectedKey != "1")"
+        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.CaretSolidLeft" Disabled="@(selectedKey == "1")"
                    OnClick="(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())">
             Prev
         </BitButton>
-        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.CaretSolidRight" IsEnabled="@(selectedKey != "4")"
+        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.CaretSolidRight" Disabled="@(selectedKey == "4")"
                    OnClick="(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())">
             Next
         </BitButton>
@@ -511,13 +511,13 @@
 
     <DemoExample Title="Disabled" RazorCode="@example15RazorCode" Id="example15">
         <div>
-            <b>IsEnabled</b>="false" disables the whole pivot, or one item when set on it. Disabled tabs are announced as
+            <b>Disabled is false</b>="false" disables the whole pivot, or one item when set on it. Disabled tabs are announced as
             such, skipped by the arrow keys and refused as a selected key.
         </div>
         <br />
         <div>Disabled pivot:</div>
         <br />
-        <BitPivot IsEnabled="false">
+        <BitPivot Disabled>
             <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -527,13 +527,13 @@
         <br />
         <BitPivot>
             <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
-            <BitPivotItem HeaderText="Shared" IsEnabled="false"><div>Pivot #2: Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared" Disabled><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
         </BitPivot>
         <br /><br />
         <div>Disabled Tab pivot:</div>
         <br />
-        <BitPivot HeaderType="BitPivotHeaderType.Tab" IsEnabled="false">
+        <BitPivot HeaderType="BitPivotHeaderType.Tab" Disabled>
             <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
             <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
             <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>

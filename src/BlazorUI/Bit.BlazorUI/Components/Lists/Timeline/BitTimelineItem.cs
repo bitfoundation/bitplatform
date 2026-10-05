@@ -48,9 +48,9 @@ public class BitTimelineItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the timeline item is enabled.
+    /// Whether or not the timeline item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the timeline item.

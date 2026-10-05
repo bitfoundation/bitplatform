@@ -370,7 +370,7 @@ public partial class BitActionButton : BitComponentBase
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         if (AutoLoading)
@@ -423,7 +423,7 @@ public partial class BitActionButton : BitComponentBase
         // user lands on something a screen reader has nothing to say about.
         if (ariaHidden) return "-1";
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             if (AllowDisabledFocus is false) return "-1";
 

@@ -16,9 +16,9 @@ public partial class BitTagDemo
 <BitTag Text=""Circular"" Shape=""BitTagShape.Circular"" Variant=""BitVariant.Outline"" />
 <BitTag Text=""Square"" Shape=""BitTagShape.Square"" Variant=""BitVariant.Outline"" />
 
-<BitTag Text=""Fill"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
-<BitTag Text=""Outline"" Variant=""BitVariant.Outline"" Shape=""BitTagShape.Circular"" IsEnabled=""false"" />
-<BitTag Text=""Text"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
+<BitTag Text=""Fill"" Variant=""BitVariant.Fill"" Disabled />
+<BitTag Text=""Outline"" Variant=""BitVariant.Outline"" Shape=""BitTagShape.Circular"" Disabled />
+<BitTag Text=""Text"" Variant=""BitVariant.Text"" Disabled />";
 
     private readonly string example3RazorCode = @"
 <BitTag Text=""Calendar"" IconName=""@BitIconName.Calendar"" />
@@ -47,13 +47,13 @@ public partial class BitTagDemo
             Variant=""BitVariant.Outline""
             OnDismiss=""() => DismissTag(tag)"" />
 }
-<BitButton Variant=""BitVariant.Text"" IsEnabled=""@(dismissibleTags.Count < 3)"" OnClick=""ResetDismissibleTags"">Reset</BitButton>
+<BitButton Variant=""BitVariant.Text"" Disabled=""@(dismissibleTags.Count >= 3)"" OnClick=""ResetDismissibleTags"">Reset</BitButton>
 
 
 <BitTag Text=""Custom glyph"" Color=""BitColor.Error"" DismissIconName=""@BitIconName.ChromeClose""
         DismissLabel=""Clear the custom glyph tag"" OnDismiss=""() => { }"" />
 <BitTag Text=""Formatted label"" Color=""BitColor.Info"" DismissLabelFormat=""Take {0} off the list"" OnDismiss=""() => { }"" />
-<BitTag Text=""Disabled"" IsEnabled=""false"" OnDismiss=""() => { }"" />";
+<BitTag Text=""Disabled"" Disabled OnDismiss=""() => { }"" />";
     private readonly string example5CsharpCode = @"
 private List<string> dismissibleTags = [""Design"", ""Research"", ""Docs""];
 private readonly Dictionary<string, BitTag> dismissibleTagRefs = [];
@@ -85,7 +85,7 @@ private void ResetDismissibleTags()
 <BitTag Text=""Add to filters"" IconName=""@BitIconName.Add"" OnClick=""() => clickCount++"" />
 <BitTag Text=""Click or dismiss"" Variant=""BitVariant.Outline"" Color=""BitColor.Info""
         OnClick=""() => clickCount++"" OnDismiss=""() => dismissCount++"" />
-<BitTag Text=""Disabled"" IsEnabled=""false"" OnClick=""() => clickCount++"" />
+<BitTag Text=""Disabled"" Disabled OnClick=""() => clickCount++"" />
 
 <div class=""example-card"" @onclick=""() => cardClickCount++"">
     <div>A clickable card:</div>
@@ -156,7 +156,7 @@ private void ToggleFilter(string filter, bool selected)
 <BitTag Text=""Logo"" IconName=""@BitIconName.Download"" Color=""BitColor.Success"" Variant=""BitVariant.Outline""
         Href=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" Download=""bit-logo.png"" />
 
-<BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" IsEnabled=""false"" />
+<BitTag Text=""Disabled"" Href=""https://bitplatform.dev"" Disabled />
 
 <BitTag Text=""This page"" Href=""#example8"" Selected AriaCurrent=""BitNavAriaCurrent.Page""
         Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />";
@@ -238,7 +238,7 @@ private void ToggleFilter(string filter, bool selected)
 
 <BitTag @ref=""plainFocusTag"" Text=""A plain tag with a TabIndex"" TabIndex=""0"" Variant=""BitVariant.Outline"" />
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => plainFocusTag?.FocusAsync()"">Focus it</BitButton>
-<BitTag Text=""Shared with me"" DefaultSelected=""false"" Variant=""BitVariant.Outline"" IsEnabled=""false"" AllowDisabledFocus
+<BitTag Text=""Shared with me"" DefaultSelected=""false"" Variant=""BitVariant.Outline"" Disabled AllowDisabledFocus
         AriaDescription=""Unavailable while offline"" />";
     private readonly string example11CsharpCode = @"
 private bool isOnlyMine;
@@ -337,26 +337,26 @@ private readonly BitTagParams[] tagParams =
 
 <div><b>Disabled</b>:</div>
 
-<BitTag IsEnabled=""false"" Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" />
-<BitTag IsEnabled=""false"" Text=""Secondary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Secondary"" />
-<BitTag IsEnabled=""false"" Text=""Tertiary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Tertiary"" />
-<BitTag IsEnabled=""false"" Text=""Info"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Info"" />
-<BitTag IsEnabled=""false"" Text=""Success"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success"" />
-<BitTag IsEnabled=""false"" Text=""Warning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Warning"" />
-<BitTag IsEnabled=""false"" Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SevereWarning"" />
-<BitTag IsEnabled=""false"" Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" />
+<BitTag Disabled Text=""Primary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Primary"" />
+<BitTag Disabled Text=""Secondary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Secondary"" />
+<BitTag Disabled Text=""Tertiary"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Tertiary"" />
+<BitTag Disabled Text=""Info"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Info"" />
+<BitTag Disabled Text=""Success"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success"" />
+<BitTag Disabled Text=""Warning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Warning"" />
+<BitTag Disabled Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SevereWarning"" />
+<BitTag Disabled Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" />
 
-<BitTag IsEnabled=""false"" Text=""PrimaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBackground"" />
-<BitTag IsEnabled=""false"" Text=""SecondaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBackground"" />
-<BitTag IsEnabled=""false"" Text=""TertiaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBackground"" />
+<BitTag Disabled Text=""PrimaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBackground"" />
+<BitTag Disabled Text=""SecondaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBackground"" />
+<BitTag Disabled Text=""TertiaryBackground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBackground"" />
 
-<BitTag IsEnabled=""false"" Text=""PrimaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" />
-<BitTag IsEnabled=""false"" Text=""SecondaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryForeground"" />
-<BitTag IsEnabled=""false"" Text=""TertiaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryForeground"" />
+<BitTag Disabled Text=""PrimaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryForeground"" />
+<BitTag Disabled Text=""SecondaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryForeground"" />
+<BitTag Disabled Text=""TertiaryForeground"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryForeground"" />
 
-<BitTag IsEnabled=""false"" Text=""PrimaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBorder"" />
-<BitTag IsEnabled=""false"" Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" />
-<BitTag IsEnabled=""false"" Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" />";
+<BitTag Disabled Text=""PrimaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.PrimaryBorder"" />
+<BitTag Disabled Text=""SecondaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SecondaryBorder"" />
+<BitTag Disabled Text=""TertiaryBorder"" IconName=""@BitIconName.Calendar"" Color=""BitColor.TertiaryBorder"" />";
 
     private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

@@ -193,7 +193,7 @@ private readonly List<Product> basicProducts = SampleData.Generate(50);" + Produ
         <FilterTemplate>
             <BitDropdown TItem=""BitDropdownItem<string>"" TValue=""string"" Items=""categoryFilterItems""
                          MultiSelect Size=""BitSize.Small"" Placeholder=""All""
-                         AriaLabel=""@context.Label"" IsEnabled=""context.IsEnabled""
+                         AriaLabel=""@context.Label"" Disabled=""context.Disabled""
                          Values=""@(context.Value as IEnumerable<string?>)""
                          ValuesChanged=""values => context.ApplyAsync(BitDataGridFilterOperator.In, values?.ToList())"" />
         </FilterTemplate>
@@ -263,7 +263,7 @@ private void SelectSingleMode()
 <BitStack Horizontal Wrap VerticalAlign=""BitAlignment.Center"">
     <BitButton OnClick=""SelectAllRows"">Select all</BitButton>
     <BitButton OnClick=""ClearRowSelection"" Variant=""BitVariant.Outline"">Clear selection</BitButton>
-    <BitButton OnClick=""CopySelection"" IsEnabled=""clipboardSelection.Count > 0"">Copy selection</BitButton>
+    <BitButton OnClick=""CopySelection"" Disabled=""clipboardSelection.Count is 0"">Copy selection</BitButton>
     <BitText>@clipboardStatus</BitText>
 </BitStack>
 
@@ -1219,7 +1219,7 @@ private void OnApiPageChange(int page) => apiLog = $""Moved to page {page}."";" 
 
     private readonly string example25RazorCode = @"
 <BitStack Horizontal Wrap VerticalAlign=""BitAlignment.Center"">
-    <BitButton OnClick=""() => RecreateGrid(restore: true)"" IsEnabled=""savedGridState is not null"">Recreate &amp; restore</BitButton>
+    <BitButton OnClick=""() => RecreateGrid(restore: true)"" Disabled=""savedGridState is null"">Recreate &amp; restore</BitButton>
     <BitButton OnClick=""() => RecreateGrid(restore: false)"" Variant=""BitVariant.Outline"">Recreate fresh</BitButton>
     <BitText>@gridStateStatus</BitText>
 </BitStack>
@@ -1307,7 +1307,7 @@ private readonly BitDataGridStrings germanStrings = new()
     private readonly string example27RazorCode = @"
 <BitToggle @bind-Value=""gridEnabled"" Label=""Enabled"" Inline />
 
-<BitDataGrid Items=""@disabledProducts"" Height=""380px"" IsEnabled=""gridEnabled""
+<BitDataGrid Items=""@disabledProducts"" Height=""380px"" Disabled=""gridEnabled is false""
              SelectionMode=""BitDataGridSelectionMode.Multiple"" CellNavigation=""true"" ClipboardCopy=""true""
              Filterable=""true"" Resizable=""true"" Pageable=""true"" PageSize=""8"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitDataGridColumnAlign.Right"" Filterable=""false"" />

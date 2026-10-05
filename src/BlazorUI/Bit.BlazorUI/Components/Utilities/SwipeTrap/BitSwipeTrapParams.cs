@@ -121,9 +121,9 @@ public class BitSwipeTrapParams : BitComponentBaseParams, IBitComponentParams
             bitSwipeTrap.TakeFromCascade(nameof(Id), Id, static s => s.Id, static (s, v) => s.Id = v);
         }
 
-        if (IsEnabled.HasValue)
+        if (Disabled.HasValue)
         {
-            bitSwipeTrap.TakeFromCascade(nameof(IsEnabled), IsEnabled.Value, static s => s.IsEnabled, static (s, v) => s.IsEnabled = v);
+            bitSwipeTrap.TakeFromCascade(nameof(Disabled), Disabled.Value, static s => s.Disabled, static (s, v) => s.Disabled = v);
         }
 
         if (Style.HasValue())

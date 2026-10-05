@@ -19,7 +19,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var persona = component.Find(".bit-prs");
@@ -303,7 +303,7 @@ public class BitPersonaTests : BunitTestContext
 
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked = true));
         });
 
@@ -1730,7 +1730,7 @@ public class BitPersonaTests : BunitTestContext
 
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked++));
         });
 
@@ -1751,7 +1751,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -1759,7 +1759,7 @@ public class BitPersonaTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -1772,7 +1772,7 @@ public class BitPersonaTests : BunitTestContext
         // Nothing that is not a control has a disabled state to announce.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.PrimaryText, "Saleh Khafan");
         });
 
@@ -2737,7 +2737,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Href, "/profile/1024");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var coin = component.Find(".bit-prs-cne");
@@ -2771,7 +2771,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Href, "/profile/1024");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
         });
 

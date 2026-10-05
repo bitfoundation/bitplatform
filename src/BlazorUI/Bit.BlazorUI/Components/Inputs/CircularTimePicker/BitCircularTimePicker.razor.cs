@@ -575,7 +575,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
@@ -678,7 +678,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     public async Task OpenCallout()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (Standalone) return;
 
         // Assigning the same state over again counts as a change, so an open that is already open would
@@ -756,9 +756,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => HasFocus ? $"bit-ctp-foc {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-ctp-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-ctp-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && ReadOnly ? "bit-ctp-rdl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && ReadOnly ? "bit-ctp-rdl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -897,7 +897,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             // initial document, which the input of an interactively rendered picker is not. A standalone
             // picker carries the value in a hidden input nobody is meant to land on, so the dial - the part
             // that is actually on the screen - takes the focus in its place.
-            if (AutoFocus && IsEnabled)
+            if (AutoFocus && Disabled is false)
             {
                 await (Standalone ? _clockRef.FocusAsync() : InputElement.FocusAsync());
             }
@@ -909,7 +909,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocusIn()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -919,7 +919,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocusOut()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
         ClassBuilder.Reset();
@@ -929,7 +929,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocus()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -946,7 +946,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task CloseCallout(bool restoreFocus)
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Any close settles the question an AutoClose wait was still holding open, so the one it had queued
         // is dropped - a picker dismissed and opened again during the wait would otherwise be shut by it.
@@ -1011,7 +1011,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
@@ -1022,7 +1022,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // through OpenCallout is not a click on it, so it does not raise one.
     private async Task HandleOnClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OpenCallout();
 
@@ -1034,7 +1034,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task HandleOnLabelClick()
     {
         if (Standalone is false) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await FocusDial();
     }
@@ -1424,7 +1424,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task ChangeView(BitCircularTimePickerView view)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_view == view) return;
         if (IsViewEditable(view) is false) return;
 
@@ -1658,7 +1658,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -1761,7 +1761,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (Standalone) return;
 
         switch (e.Key)
@@ -1799,7 +1799,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnClockKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         switch (e.Key)
         {
@@ -2225,12 +2225,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Add("bit-ctp-res");
         }
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             classes.Add("bit-dis");
         }
 
-        if (IsEnabled && ReadOnly)
+        if (Disabled is false && ReadOnly)
         {
             classes.Add("bit-ctp-rdl");
         }
@@ -2314,7 +2314,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     // Whether the dial currently accepts a change, which is what every pointer, keyboard and button path is
     // gated on so none of them has to repeat the three states that close the picker to the user.
-    private bool IsInteractive => IsEnabled && ReadOnly is false && InvalidValueBinding() is false;
+    private bool IsInteractive => Disabled is false && ReadOnly is false && InvalidValueBinding() is false;
 
     // The meridiem moves the hour, by the twelve hours between one half of the day and the other, so it is
     // only offered where the hour is a part this picker edits - a mode pinned to the minutes or the seconds

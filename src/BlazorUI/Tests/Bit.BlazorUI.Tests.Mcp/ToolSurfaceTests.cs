@@ -101,7 +101,7 @@ public class ToolSurfaceTests : McpTestBase
         Assert.IsNotEmpty(instructions, "The server sends no instructions, which is the one thing it gets to say before it is asked anything.");
         StringAssert.Contains(instructions, "SearchBitBlazorUI", "The instructions do not say which tool to call first.");
         StringAssert.Contains(instructions, "AddBitBlazorUIServices", "The instructions do not carry the registration that fails without a build error.");
-        StringAssert.Contains(instructions, "IsEnabled", "The instructions do not carry the disabled-state rule.");
+        StringAssert.Contains(instructions, "Disabled", "The instructions do not carry the disabled-state rule.");
         StringAssert.Contains(instructions, "--bit-*", "The instructions do not carry the styling rule.");
 
         // The counts are interpolated from the catalogs rather than written down, so a hand-typed

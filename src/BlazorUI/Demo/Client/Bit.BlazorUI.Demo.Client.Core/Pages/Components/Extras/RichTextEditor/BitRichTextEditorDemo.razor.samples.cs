@@ -62,7 +62,7 @@ private readonly BitRichTextEditorToolbarConfig customConfig = new()
                    ReadOnly ShowToolbar=""false"" Height=""auto"" />
 
 <BitRichTextEditor Value=""<p>This instance is <strong>disabled</strong>.</p>""
-                   IsEnabled=""false"" Height=""auto""
+                   Disabled Height=""auto""
                    Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists"" />";
 
     private readonly string example7RazorCode = @"

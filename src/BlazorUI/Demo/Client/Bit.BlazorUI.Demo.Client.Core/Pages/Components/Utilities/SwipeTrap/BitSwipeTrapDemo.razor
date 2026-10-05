@@ -168,7 +168,7 @@
             <div>
                 <b>TouchOnly</b> ignores mouse drags, trapping touch and pen only. <b>SkipSelector</b> ignores the
                 gestures that start on matching descendants, so an input or a slider inside the trap keeps working.
-                A disabled trap (<b>IsEnabled="false"</b>) takes nothing and lets the page scroll over it.
+                A disabled trap (<b>Disabled</b>) takes nothing and lets the page scroll over it.
             </div>
             <br />
             <div class="boxes">
@@ -192,9 +192,9 @@
                         <input class="no-swipe" placeholder="Swipes skip this field" aria-label="Note" />
                     </div>
                 </BitSwipeTrap>
-                <BitSwipeTrap IsEnabled="false" OnMove="HandleOnMoveDisabled">
+                <BitSwipeTrap Disabled OnMove="HandleOnMoveDisabled">
                     <div class="box">
-                        <div><b>IsEnabled="false"</b></div>
+                        <div><b>Disabled</b></div>
                         <div>(nothing is trapped)</div>
                         <div>Moves: @moveCountDisabled</div>
                     </div>

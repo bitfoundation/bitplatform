@@ -175,7 +175,7 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
 
 <BitNumberField @bind-Value=""gridLanes"" Min=""1"" Max=""8"" Mode=""BitSpinButtonMode.Inline""
                 Label=""Lanes"" LabelPosition=""BitLabelPosition.Start""
-                IsEnabled=""@(gridResponsive is false)"" Style=""max-width:12rem"" />
+                Disabled=""@(gridResponsive)"" Style=""max-width:12rem"" />
 <BitToggle @bind-Value=""gridResponsive"" Label=""MinLaneSize = 200"" Inline />
 
 <BitVirtualize Items=""gridItems"" ItemSize=""120"" Lanes=""gridLanes"" MinLaneSize=""@(gridResponsive ? 200 : null)"" Gap=""8""
@@ -557,7 +557,7 @@ public record Contact(bool IsHeader, string Name, string Email);";
 
 <div class=""toolbar"">
     <BitButton OnClick=""AddTasks"">Add 5 at the top</BitButton>
-    <BitButton OnClick=""RemoveTasks"" IsEnabled=""@(tasks.Count > 0)"">Remove the first 5</BitButton>
+    <BitButton OnClick=""RemoveTasks"" Disabled=""@(tasks.Count is 0)"">Remove the first 5</BitButton>
 </div>
 
 <BitVirtualize Items=""tasks"" ItemSize=""48"" ItemKey=""t => t.Id""
@@ -643,7 +643,7 @@ public record TaskItem(int Id, string Title);";
 </BitVirtualize>
 <div class=""composer"">
     <BitTextField @bind-Value=""draftMessage"" Immediate Placeholder=""Write a message..."" AriaLabel=""Message"" Style=""flex-grow:1"" />
-    <BitButton OnClick=""SendChatMessage"" IsEnabled=""@(string.IsNullOrWhiteSpace(draftMessage) is false)"">Send</BitButton>
+    <BitButton OnClick=""SendChatMessage"" Disabled=""@(string.IsNullOrWhiteSpace(draftMessage))"">Send</BitButton>
 </div>
 <div class=""composer"">
     <BitButton Variant=""@(chatAtEnd ? BitVariant.Outline : BitVariant.Fill)"" OnClick=""() => chatRef.ScrollToEndAsync(smooth: true)"">Jump to latest</BitButton>

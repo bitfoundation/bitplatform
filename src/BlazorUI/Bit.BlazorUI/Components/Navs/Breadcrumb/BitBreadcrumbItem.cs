@@ -34,9 +34,9 @@ public class BitBreadcrumbItem
     public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
-    /// Whether an item is enabled or not.
+    /// Whether an item is disabled or not.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Display the breadcrumb item as the selected item.

@@ -38,9 +38,9 @@ public class BitTimelineNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitTimelineItem.IconName));
 
     /// <summary>
-    /// IsEnabled field name and selector of the custom input class.
+    /// IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitTimelineItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitTimelineItem.IsDisabled));
 
     /// <summary>
     /// Key field name and selector of the custom input class.

@@ -36,9 +36,9 @@ public partial class BitCalloutDemo
     </Content>
 </BitCallout>
 
-<BitCallout IsEnabled=""false"">
+<BitCallout Disabled>
     <Anchor>
-        <BitButton IsEnabled=""false"">Disabled</BitButton>
+        <BitButton Disabled>Disabled</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">Never shown.</div>

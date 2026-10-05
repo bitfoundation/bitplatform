@@ -450,7 +450,7 @@ public partial class BitToggle : BitInputBase<bool>
         // wrapping on through a class of its own rather than by widening what the description class means.
         ClassBuilder.Register(() => HasErrorMessage ? "bit-tgl-her" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-tgl-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
         // state that has one, so that toggling never resizes the toggle underneath the pointer.
@@ -605,7 +605,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// A change that is still running its awaited callbacks also closes the toggle to further clicks, so a
     /// second click landing while the first one is in flight cannot start a competing change.
     /// </remarks>
-    private bool IsInteractive => IsEnabled && ReadOnly is false && IsLoading is false && _isChanging is false;
+    private bool IsInteractive => Disabled is false && ReadOnly is false && IsLoading is false && _isChanging is false;
 
     private BitIconInfo? GetStateIcon()
     {
@@ -698,7 +698,7 @@ public partial class BitToggle : BitInputBase<bool>
 
     private async Task ChangeValueAsync(bool newValue)
     {
-        if (IsEnabled is false || newValue == CurrentValue) return;
+        if (Disabled || newValue == CurrentValue) return;
 
         // A Value passed one way with nothing to write back through dictates the state, so the change cannot
         // land at all. It is dropped here rather than deeper down, so a change that is going nowhere never

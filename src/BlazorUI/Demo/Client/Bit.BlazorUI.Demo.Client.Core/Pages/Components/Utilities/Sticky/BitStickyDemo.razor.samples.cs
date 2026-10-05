@@ -509,7 +509,7 @@ private readonly Person[] people =
 
 <BitToggle @bind-Value=""isStickyEnabled"" Text=""Sticky enabled"" />
 <div class=""vertical-container"">
-    <BitSticky Class=""sticky"" IsEnabled=""isStickyEnabled"">
+    <BitSticky Class=""sticky"" Disabled=""isStickyEnabled is false"">
         @(isStickyEnabled ? ""Sticking to the top"" : ""Scrolling away with the content"")
     </BitSticky>
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>

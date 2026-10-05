@@ -15,7 +15,7 @@
           GitHubDemoUrl="Navs/DropMenu/BitDropMenuDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            <b>Text</b> labels the button and the content becomes the body of the callout. <b>IsEnabled</b> turns the
+            <b>Text</b> labels the button and the content becomes the body of the callout. <b>Disabled</b> turns the
             whole drop menu off, and <b>FullWidth</b> stretches the button to the available width.
         </div>
         <br />
@@ -28,7 +28,7 @@
             </BitStack>
         </BitDropMenu>
         <br />
-        <BitDropMenu Text="Disabled" IsEnabled="false">
+        <BitDropMenu Text="Disabled" Disabled>
             <BitStack Gap="0.5rem" Style="padding:0.5rem">
                 <BitToggle Label="Notifications" />
                 <BitCheckbox Label="Weekly digest" />
@@ -137,7 +137,7 @@
                     <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
                 </BitStack>
             </BitDropMenu>
-            <BitDropMenu Text="Disabled" Variant="variant" Color="BitColor.Primary" IsEnabled="false">
+            <BitDropMenu Text="Disabled" Variant="variant" Color="BitColor.Primary" Disabled>
                 <BitStack Gap="0.25rem" Style="padding:0.5rem">
                     <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
                 </BitStack>

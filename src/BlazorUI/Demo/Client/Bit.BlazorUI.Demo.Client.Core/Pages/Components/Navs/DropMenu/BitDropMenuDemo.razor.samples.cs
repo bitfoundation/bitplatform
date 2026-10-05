@@ -12,7 +12,7 @@ public partial class BitDropMenuDemo
     </BitStack>
 </BitDropMenu>
 
-<BitDropMenu Text=""Disabled"" IsEnabled=""false"">
+<BitDropMenu Text=""Disabled"" Disabled>
     <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
         <BitToggle Label=""Notifications"" />
         <BitCheckbox Label=""Weekly digest"" />
@@ -101,7 +101,7 @@ public partial class BitDropMenuDemo
             <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Copy"">Duplicate</BitButton>
         </BitStack>
     </BitDropMenu>
-    <BitDropMenu Text=""Disabled"" Variant=""variant"" Color=""BitColor.Primary"" IsEnabled=""false"">
+    <BitDropMenu Text=""Disabled"" Variant=""variant"" Color=""BitColor.Primary"" Disabled>
         <BitStack Gap=""0.25rem"" Style=""padding:0.5rem"">
             <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Edit"">Rename</BitButton>
         </BitStack>

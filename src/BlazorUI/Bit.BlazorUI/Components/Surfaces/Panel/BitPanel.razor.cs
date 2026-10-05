@@ -539,7 +539,7 @@ public partial class BitPanel : BitComponentBase
     /// </summary>
     public async Task Open()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsOpen) return;
 
@@ -832,7 +832,7 @@ public partial class BitPanel : BitComponentBase
 
         // A disabled panel takes nothing from the user, but the code that owns it can always close it: a
         // panel disabled while it was open would otherwise be left on the screen with no way off it.
-        if (IsEnabled is false && reason is not BitPanelDismissReason.Programmatic) return false;
+        if (Disabled && reason is not BitPanelDismissReason.Programmatic) return false;
 
         if (OnDismissing.HasDelegate)
         {
@@ -861,7 +861,7 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         await OnOverlayClick.InvokeAsync(e);
 
@@ -886,7 +886,7 @@ public partial class BitPanel : BitComponentBase
         var foreign = _foreignEscape;
         _foreignEscape = false;
 
-        if (IsOpen is false || IsEnabled is false) return;
+        if (IsOpen is false || Disabled) return;
 
         // An Escape that closes an open popup of the content - a dropdown's list, a date picker's calendar -
         // is that popup's, not the panel's, and neither is one a handler inside already claimed, one that
@@ -908,7 +908,7 @@ public partial class BitPanel : BitComponentBase
     // than carrying on up to whatever the panel was opened from. A panel that refuses the key lets every key
     // through to the handlers of the page around it; one opened from inside another panel still keeps an
     // Escape it refuses from that one, which the escape guard tells to leave it alone.
-    private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
+    private bool DismissesOnEscape => IsOpen && Disabled is false && NoDismissOnEscape is false;
 
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
     // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own

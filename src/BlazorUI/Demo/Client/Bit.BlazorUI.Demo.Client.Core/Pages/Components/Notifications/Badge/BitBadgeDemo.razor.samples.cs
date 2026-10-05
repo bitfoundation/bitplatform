@@ -19,13 +19,13 @@ public partial class BitBadgeDemo
 </BitBadge>
 
 
-<BitBadge Content=""84"" Variant=""BitVariant.Fill"" IsEnabled=""false"">
+<BitBadge Content=""84"" Variant=""BitVariant.Fill"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""84"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+<BitBadge Content=""84"" Variant=""BitVariant.Outline"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""84"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+<BitBadge Content=""84"" Variant=""BitVariant.Text"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
@@ -84,7 +84,7 @@ public partial class BitBadgeDemo
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => count--"" IsEnabled=""@(count > 0)"">Remove one</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => count--"" Disabled=""@(count <= 0)"">Remove one</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => count++"">Add one</BitButton>
 <BitToggle @bind-Value=""hidden"" Label=""Hidden"" Inline />";
     private readonly string example4CsharpCode = @"
@@ -163,7 +163,7 @@ private readonly List<BitDropdownItem<BitPosition>> badgePositionList = Enum.Get
 <BitBadge Content=""counter"" OnClick=""() => counter++"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""counter"" OnClick=""() => counter++"" IsEnabled=""false"">
+<BitBadge Content=""counter"" OnClick=""() => counter++"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 <BitBadge Content=""@(""Docs"")"" Variant=""BitVariant.Outline"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank"" />

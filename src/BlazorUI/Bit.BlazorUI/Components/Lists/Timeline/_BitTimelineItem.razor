@@ -9,7 +9,7 @@
     var secondaryText = Timeline.GetSecondaryText(Item);
     var primaryContent = Timeline.GetPrimaryContent(Item);
     var secondaryContent = Timeline.GetSecondaryContent(Item);
-    var isEnabled = Timeline.IsEnabled && Timeline.GetIsEnabled(Item);
+    var isEnabled = Timeline.Disabled is false && Timeline.GetIsDisabled(Item) is false;
     var isInteractive = Timeline.IsItemInteractive(Item);
     var template = Timeline.GetTemplate(Item) ?? Timeline.ItemTemplate;
     var dotTemplate = Timeline.GetDotTemplate(Item) ?? Timeline.DotTemplate;

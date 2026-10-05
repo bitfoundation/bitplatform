@@ -138,7 +138,7 @@ public class BitSeparatorParamsTests : BunitTestContext
     [TestMethod]
     public void BitSeparatorShouldApplyCascadedBaseParameters()
     {
-        var component = RenderWithParams(new BitSeparatorParams { Dir = BitDir.Rtl, IsEnabled = false, Class = "cascaded" });
+        var component = RenderWithParams(new BitSeparatorParams { Dir = BitDir.Rtl, Disabled = true, Class = "cascaded" });
 
         var root = component.Find(".bit-spr");
 

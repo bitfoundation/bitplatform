@@ -20,13 +20,13 @@ public partial class _BitChartAccessibilityDemo
 
 
     private readonly string keyboardRazorCode = @"
-<BitCheckbox Label=""IsEnabled"" @bind-Value=""_enabled"" />
+<BitCheckbox Label=""Disabled is false"" @bind-Value=""_enabled"" />
 
 <div>@(_selected ?? ""Press Enter on a bar"")</div>
 
 <BitChart Type=""BitChartType.Bar""
           Data=""_data""
-          IsEnabled=""_enabled""
+          Disabled=""_enabled is false""
           AriaLabel=""Quarterly revenue by region""
           Description=""North leads every quarter and both regions peak in Q4.""
           NavigationHint=""Use the arrow keys to compare regions and quarters, Enter to select one.""

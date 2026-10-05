@@ -22,7 +22,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -105,7 +105,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
         new() { Text = "موز", Value = "f-ban" },
-        new() { Text = "پرتقال", Value = "f-ora", IsEnabled = false },
+        new() { Text = "پرتقال", Value = "f-ora", IsDisabled = true },
         new() { Text = "انگور", Value = "f-gra" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "سیزیجات" },
@@ -121,7 +121,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "text-align: center;" },
         new() { Text = "Apple", Value = "f-app", Class = "custom-fruit" },
         new() { Text = "Banana", Value = "f-ban", Class = "custom-fruit" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false, Class = "custom-fruit" },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true, Class = "custom-fruit" },
         new() { Text = "Grape", Value = "f-gra", Class = "custom-fruit" },
         new() { ItemType = BitDropdownItemType.Divider, Style = "padding: 0 0.25rem;" },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables", Style = "text-align: center;" },
@@ -135,7 +135,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app", IconName = nameof(BitIconName.AllApps) },
         new() { Text = "Banana", Value = "f-ban", IconName = nameof(BitIconName.Calculator) },
-        new() { Text = "Orange", Value = "f-ora", IconName = nameof(BitIconName.FavoriteStar), IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IconName = nameof(BitIconName.FavoriteStar), IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra", IconName = nameof(BitIconName.Edit) },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -149,7 +149,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Css("fa-solid fa-apple-whole") },
         new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Css("fa-solid fa-moon") },
-        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Fa("solid lemon"), IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Fa("solid lemon"), IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Css("fa-solid fa-droplet") },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -163,7 +163,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Bi("apple") },
         new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Bi("flower1") },
-        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Css("bi bi-sun"), IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Css("bi bi-sun"), IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Bi("droplet-fill") },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -177,7 +177,7 @@ public partial class _BitDropdownItemDemo
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
         new() { Text = "Grape", Value = "f-gra" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -262,7 +262,7 @@ public partial class _BitDropdownItemDemo
                 Name = "Product 100"
             },
             AriaLabel = "Product 100",
-            IsEnabled = true,
+            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         }
     ];
@@ -278,7 +278,7 @@ public partial class _BitDropdownItemDemo
                 Name = "Product 100"
             },
             AriaLabel = "Product 100",
-            IsEnabled = true,
+            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         },
         new()
@@ -291,7 +291,7 @@ public partial class _BitDropdownItemDemo
                 Name = "Product 99"
             },
             AriaLabel = "Product 99",
-            IsEnabled = true,
+            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         }
     ];
@@ -386,7 +386,7 @@ public partial class _BitDropdownItemDemo
                 Value = i.Id.ToString(),
                 Data = i,
                 AriaLabel = i.Name,
-                IsEnabled = true,
+                IsDisabled = false,
                 ItemType = BitDropdownItemType.Normal
             }).ToList();
 

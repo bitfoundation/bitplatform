@@ -942,11 +942,11 @@ public class BitFooterTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitFooterShouldRespectIsEnabled(bool isEnabled)
+    public void BitFooterShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitFooter>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-ftr").ClassList.Contains("bit-dis"));

@@ -1847,7 +1847,7 @@ public partial class BitFileUploadDemo
         {
             Name = "--bit-FileUpload-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text color when IsEnabled is false.",
+            Description = "Text color when Disabled is true.",
         },
         new()
         {
@@ -2914,9 +2914,9 @@ private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Variant=""variant"" />
 
-<BitFileUpload Label=""Disabled"" UploadUrl=""@UploadUrl"" Variant=""variant"" IsEnabled=""false"" />
+<BitFileUpload Label=""Disabled"" UploadUrl=""@UploadUrl"" Variant=""variant"" Disabled />
 
-<BitFileUpload Label=""Disabled drop area"" UploadUrl=""@UploadUrl"" ShowDropArea IsEnabled=""false"" />";
+<BitFileUpload Label=""Disabled drop area"" UploadUrl=""@UploadUrl"" ShowDropArea Disabled />";
     private readonly string example20CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private BitVariant variant = BitVariant.Fill;";

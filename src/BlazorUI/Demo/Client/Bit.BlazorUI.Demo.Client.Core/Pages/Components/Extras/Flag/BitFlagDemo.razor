@@ -272,12 +272,12 @@
                 }
             </DemoExample>
 
-            <DemoExample Title="OnClick & IsEnabled" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <DemoExample Title="OnClick & Disabled is false" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
                 <div class="example-desc">
                     <b>OnClick</b> makes the flag a button: focusable, activated by Enter and Space, named by its
                     <b>Alt</b> or else its country, with a pointer target grown to WCAG's 24px without growing the flag.
                     <code>aria-pressed</code> passes through, so screen readers hear the selection too.
-                    <b>IsEnabled</b>=false dims it and refuses clicks and keys, but keeps its tooltip - hover the last one.
+                    <b>Disabled</b> dims it and refuses clicks and keys, but keeps its tooltip - hover the last one.
                 </div>
                 <br />
                 <div class="flag-row">
@@ -293,7 +293,7 @@
                     }
                     <BitFlag AutoAlt Bordered Rounded Grayscale
                              Height="2rem"
-                             IsEnabled="false"
+                             Disabled
                              Title="Not shipped to Portugal yet"
                              Country="BitCountries.Portugal"
                              OnClick="@(() => selectedCountry = BitCountries.Portugal)" />

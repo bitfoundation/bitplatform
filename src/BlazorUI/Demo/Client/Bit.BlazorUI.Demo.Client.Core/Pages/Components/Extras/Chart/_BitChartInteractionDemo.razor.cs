@@ -105,7 +105,7 @@ private BitChartOptions ModeOptions() => new()
 };";
 
     private readonly string emptyRazorCode = @"
-<BitButton Variant=""BitVariant.Outline"" OnClick=""Reload"" IsEnabled=""_loading is false"">Reload</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""Reload"" Disabled=""_loading"">Reload</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ToggleEmpty"">@(_hasData ? ""Clear the data"" : ""Restore the data"")</BitButton>
 
 <BitChart Type=""BitChartType.Bar""

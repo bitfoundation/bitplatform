@@ -745,11 +745,11 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     }
 
     [TestMethod]
-    public void ShouldRespectIsEnabled()
+    public void ShouldRespectDisabled()
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-dis"));
@@ -948,7 +948,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // The stylesheet dims bit-dis and holds its animation the way it holds bit-ldn-pau; the drawing stays.

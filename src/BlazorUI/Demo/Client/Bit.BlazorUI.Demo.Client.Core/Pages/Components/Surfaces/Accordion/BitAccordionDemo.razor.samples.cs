@@ -46,7 +46,7 @@ private int renameCount;";
     private readonly string example4RazorCode = @"
 <BitToggle @bind-Value=""bindingIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" />
 <BitToggle @bind-Value=""bindingIsExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
-<BitAccordion Title=""Bound"" IsEnabled=""bindingIsEnabled"" @bind-IsExpanded=""bindingIsExpanded"">
+<BitAccordion Title=""Bound"" Disabled=""bindingIsEnabled is false"" @bind-IsExpanded=""bindingIsExpanded"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
@@ -224,7 +224,7 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
               DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Disabled"" IsEnabled=""false"" DefaultIsExpanded>
+<BitAccordion Title=""Disabled"" Disabled DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example11CsharpCode = @"

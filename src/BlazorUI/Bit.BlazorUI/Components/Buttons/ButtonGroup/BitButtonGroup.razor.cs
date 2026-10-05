@@ -787,7 +787,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // button it lands on everywhere - a click on macOS does not.
         HandleOnItemFocus(item);
 
-        if (GetIsEnabled(item) is false) return;
+        if (GetIsDisabled(item)) return;
         if (GetIsLoading(item)) return;
         // An item the Multiple mode's cap has taken out of reach reports itself as aria-disabled, so it does
         // nothing at all while it does - a click that runs the item's action but cannot toggle it would be
@@ -863,7 +863,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     internal async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (Navigable is false) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         var focusables = _items.Where(IsItemFocusable).ToList();
@@ -932,7 +932,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             await FocusElement(element);
         }
 
-        if (_SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)
+        if (_SelectOnFocus && GetIsDisabled(item) is false && GetIsLoading(item) is false)
         {
             // Selecting only: Home on the first item, End on the last one and an arrow key wrapping around a
             // group of one all land on the item that is already toggled, and un-toggling it there would leave a
@@ -1078,7 +1078,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     // pattern recommends so that they remain discoverable by assistive technologies.
     private bool IsItemFocusable(TItem item)
     {
-        return DisabledInteractive || GetIsEnabled(item);
+        return DisabledInteractive || GetIsDisabled(item) is false;
     }
 
     internal string? GetItemClass(TItem item)
@@ -1812,28 +1812,28 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty(NameSelectors.IsLoading.Name, false);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitButtonGroupItem buttonGroupItem)
         {
-            return buttonGroupItem.IsEnabled;
+            return buttonGroupItem.IsDisabled;
         }
 
         if (item is BitButtonGroupOption buttonGroupOption)
         {
-            return buttonGroupOption.IsEnabled;
+            return buttonGroupOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private string? GetStyle(TItem? item)

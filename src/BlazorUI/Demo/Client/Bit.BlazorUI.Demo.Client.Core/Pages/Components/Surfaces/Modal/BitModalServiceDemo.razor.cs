@@ -277,7 +277,7 @@ public partial class BitModalServiceDemo : IDisposable
         {
             Id = "modal-parameters",
             Title = "BitModalParameters",
-            Description = "The options a modal is shown with. Every parameter of BitModal - including Class, Style, Dir, AriaLabel and IsEnabled - has a nullable counterpart here (null means \"not set\": the container's value, then a BitParams default, then the modal's own default is used), plus the two options only a service can offer:",
+            Description = "The options a modal is shown with. Every parameter of BitModal - including Class, Style, Dir, AriaLabel and Disabled - has a nullable counterpart here (null means \"not set\": the container's value, then a BitParams default, then the modal's own default is used), plus the two options only a service can offer:",
             Parameters =
             [
                 new()

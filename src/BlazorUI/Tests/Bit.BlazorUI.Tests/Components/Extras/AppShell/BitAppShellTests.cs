@@ -78,11 +78,11 @@ public class BitAppShellTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitAppShellShouldRespectIsEnabled(bool isEnabled)
+    public void BitAppShellShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitAppShell>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-ash");
@@ -91,11 +91,11 @@ public class BitAppShellTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAppShellShouldRespectIsEnabledChangingAfterRender()
+    public void BitAppShellShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitAppShell>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var root = component.Find(".bit-ash");
@@ -104,7 +104,7 @@ public class BitAppShellTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         root = component.Find(".bit-ash");
@@ -1145,7 +1145,7 @@ public class BitAppShellTests : BunitTestContext
             parameters.Add(p => p.Class, "additional-class");
             parameters.Add(p => p.Classes, classes);
             parameters.Add(p => p.Dir, BitDir.Rtl);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-ash");

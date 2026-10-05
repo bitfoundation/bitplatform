@@ -460,10 +460,10 @@ public partial class DemoPage
         },
         new()
         {
-            Name = "IsEnabled",
+            Name = "Disabled",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Gets or sets a value indicating whether the component is enabled and can respond to user interaction.",
+            DefaultValue = "false",
+            Description = "Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.",
         },
         new()
         {

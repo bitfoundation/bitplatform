@@ -74,7 +74,7 @@
                                     aria-atomic="true"
                                     aria-label="@title"
                                     style="@Styles?.DayPickerMonth"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     class="bit-cal-ptb @Classes?.DayPickerMonth">
                                 @monthTitle
                             </button>
@@ -138,7 +138,7 @@
                                 <button @onclick="@ToggleTimePickerOverlay"
                                         type="button"
                                         title="@ShowTimePickerTitle"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(Disabled)"
                                         aria-label="@ShowTimePickerTitle"
                                         style="@Styles?.ShowTimePickerButton"
                                         class="bit-cal-nbt @Classes?.ShowTimePickerButton">
@@ -152,7 +152,7 @@
                     <div role="grid"
                          aria-label="@monthTitle"
                          aria-readonly="@(ReadOnly ? "true" : null)"
-                         aria-disabled="@(IsEnabled is false ? "true" : null)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          aria-required="@(Required ? "true" : null)"
                          aria-invalid="@(isInvalid ? "true" : null)"
                          style="@Styles?.DaysGrid"
@@ -218,7 +218,7 @@
 
                                     var date = nullableDate.Value;
 
-                                    var disabled = IsEnabled is false || IsDayDisabled(date);
+                                    var disabled = Disabled || IsDayDisabled(date);
                                     var isSelected = IsSelectedDate(date);
                                     var isToday = IsInMonth(date, index) && date == today.Date;
                                     var (style, klass) = GetDayButtonCss(date, index);
@@ -302,7 +302,7 @@
                                 aria-live="polite"
                                 title="@toggleTitle"
                                 aria-label="@toggleTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 style="@Styles?.YearPickerToggleButton"
                                 class="bit-cal-ptb @Classes?.YearPickerToggleButton">
                             @_currentYear
@@ -351,7 +351,7 @@
                                 <button @onclick="@ToggleTimePickerOverlay"
                                         type="button"
                                         title="@ShowTimePickerTitle"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(Disabled)"
                                         aria-label="@ShowTimePickerTitle"
                                         style="@Styles?.ShowTimePickerButton"
                                         class="bit-cal-nbt @Classes?.ShowTimePickerButton">
@@ -368,7 +368,7 @@
                     var focusableMonth = GetFocusableMonth();
                     <div role="grid"
                          aria-label="@_currentYear"
-                         aria-disabled="@(IsEnabled is false ? "true" : null)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-cal-grd">
                         @for (var rowIndex = 0; rowIndex < monthRowCount; rowIndex++)
                         {
@@ -380,7 +380,7 @@
                                     if (month > monthsInYear) continue;
 
                                     var monthName = GetMonthName(_currentYear, month);
-                                    var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
+                                    var disabled = Disabled || IsMonthOutOfMinAndMaxDate(month);
                                     var selected = month == _currentMonth;
 
                                     @* The current month and year are reported whether or not they are painted:
@@ -428,7 +428,7 @@
                                 aria-atomic="true"
                                 title="@toggleTitle"
                                 aria-label="@toggleTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 style="@Styles?.MonthPickerToggleButton"
                                 class="bit-cal-ptb @Classes?.MonthPickerToggleButton">
                             @_yearPickerStartYear - @_yearPickerEndYear
@@ -477,7 +477,7 @@
                     var focusableYear = GetFocusableYear();
                     <div role="grid"
                          aria-label="@_yearPickerStartYear - @_yearPickerEndYear"
-                         aria-disabled="@(IsEnabled is false ? "true" : null)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-cal-grd">
                         @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                         {
@@ -485,7 +485,7 @@
                                 @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
                                 {
                                     var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
-                                    var disabled = IsEnabled is false || IsYearOutOfMinAndMaxDate(year);
+                                    var disabled = Disabled || IsYearOutOfMinAndMaxDate(year);
                                     var selected = year == _currentYear;
                                     <button @onclick="() => SelectYear(year)"
                                             @onkeydown="e => HandleYearKeyDown(e, year)"
@@ -539,7 +539,7 @@
                                     title="@NowButtonTitle"
                                     aria-label="@NowButtonTitle"
                                     style="@Styles?.NowButton"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     aria-disabled="@(ReadOnly ? "true" : null)"
                                     class="bit-cal-gtn @Classes?.NowButton">
                                 <i aria-hidden="true"
@@ -553,7 +553,7 @@
                                     type="button"
                                     title="@HideTimePickerTitle"
                                     aria-label="@HideTimePickerTitle"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     style="@Styles?.HideTimePickerButton"
                                     class="bit-cal-nbt @Classes?.HideTimePickerButton">
                                 <i aria-hidden="true"
@@ -571,7 +571,7 @@
                                 type="button"
                                 title="@TimePickerIncreaseHourTitle"
                                 aria-label="@TimePickerIncreaseHourTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerIncreaseHourButton"
                                 class="bit-cal-tbt @Classes?.TimePickerIncreaseHourButton">
@@ -592,7 +592,7 @@
                                readonly="@ReadOnly"
                                title="@TimePickerHourTitle"
                                aria-label="@TimePickerHourTitle"
-                               disabled="@(IsEnabled is false)"
+                               disabled="@(Disabled)"
                                style="@Styles?.TimePickerHourInput"
                                class="bit-cal-tin @Classes?.TimePickerHourInput"
                                autocomplete="@BitAutoCompleteValue.NewPassword" />
@@ -602,7 +602,7 @@
                                 type="button"
                                 title="@TimePickerDecreaseHourTitle"
                                 aria-label="@TimePickerDecreaseHourTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerDecreaseHourButton"
                                 class="bit-cal-tbt @Classes?.TimePickerDecreaseHourButton">
@@ -619,7 +619,7 @@
                                 type="button"
                                 title="@TimePickerIncreaseMinuteTitle"
                                 aria-label="@TimePickerIncreaseMinuteTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerIncreaseMinuteButton"
                                 class="bit-cal-tbt @Classes?.TimePickerIncreaseMinuteButton">
@@ -640,7 +640,7 @@
                                readonly="@ReadOnly"
                                title="@TimePickerMinuteTitle"
                                aria-label="@TimePickerMinuteTitle"
-                               disabled="@(IsEnabled is false)"
+                               disabled="@(Disabled)"
                                style="@Styles?.TimePickerMinuteInput"
                                class="bit-cal-tin @Classes?.TimePickerMinuteInput"
                                autocomplete="@BitAutoCompleteValue.NewPassword" />
@@ -650,7 +650,7 @@
                                 type="button"
                                 title="@TimePickerDecreaseMinuteTitle"
                                 aria-label="@TimePickerDecreaseMinuteTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerDecreaseMinuteButton"
                                 class="bit-cal-tbt @Classes?.TimePickerDecreaseMinuteButton">
@@ -667,7 +667,7 @@
                         <div style="@Styles?.TimePickerAmPmContainer" class="bit-cal-tpr bit-cal-am-pm @Classes?.TimePickerAmPmContainer">
                             <button @onclick="HandleOnAmClick"
                                     type="button"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     aria-disabled="@(ReadOnly ? "true" : null)"
                                     aria-pressed="@(IsAm() is true ? "true" : "false")"
                                     style="@Styles?.TimePickerAmButton"
@@ -677,7 +677,7 @@
 
                             <button @onclick="HandleOnPmClick"
                                     type="button"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     aria-disabled="@(ReadOnly ? "true" : null)"
                                     aria-pressed="@(IsAm() is false ? "true" : "false")"
                                     style="@Styles?.TimePickerPmButton"

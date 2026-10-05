@@ -242,7 +242,7 @@ public partial class BitElement : BitComponentBase
             element = "div";
         }
 
-        var disabled = IsEnabled is false;
+        var disabled = Disabled;
         // HTML only defines the disabled attribute on the form elements, so everywhere else the state has to be carried
         // by the aria attribute and by the tab order rather than by the browser's own handling of the attribute.
         var nativelyDisabled = disabled && _disableableElements.Contains(element!);

@@ -1075,7 +1075,7 @@ public partial class BitFileUpload : BitComponentBase
     /// </summary>
     public async Task Browse()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (AutoReset)
         {
@@ -1507,7 +1507,7 @@ public partial class BitFileUpload : BitComponentBase
 
             if (fallbackId is not null && _itemRefs.TryGetValue(fallbackId, out var neighbor) && await neighbor.TryFocus(target)) return;
 
-            if (_ShowLabelButton && IsEnabled)
+            if (_ShowLabelButton && Disabled is false)
             {
                 await _labelRef.FocusAsync();
             }

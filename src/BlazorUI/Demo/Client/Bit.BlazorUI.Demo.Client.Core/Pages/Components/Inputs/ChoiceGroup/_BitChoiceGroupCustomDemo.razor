@@ -16,11 +16,11 @@
 </DemoExample>
 
 <DemoExample Title="Disabled & ReadOnly" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-    <div>Two ways to stop a choice from being changed. <b>IsEnabled="false"</b>, on the group or on a single item, takes it out of the tab order, dims it and stops it being submitted. <b>ReadOnly</b> keeps the normal, non-disabled look and the full keyboard reach - Tab still lands on the checked item, the arrow keys still move the focus and the value is still submitted with the form - and cancels only the change itself, so the selection cannot move. The group reports aria-readonly for it.</div>
+    <div>Two ways to stop a choice from being changed. <b>Disabled</b> on the group, or <b>IsDisabled</b> on a single item, takes it out of the tab order, dims it and stops it being submitted. <b>ReadOnly</b> keeps the normal, non-disabled look and the full keyboard reach - Tab still lands on the checked item, the arrow keys still move the focus and the value is still submitted with the form - and cancels only the change itself, so the selection cannot move. The group reports aria-readonly for it.</div>
     <br />
     <div class="example-content">
         <BitChoiceGroup Label="Disabled ChoiceGroup"
-                        IsEnabled="false"
+                        Disabled
                         Items="basicCustoms"
                         DefaultValue="@("A")"
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
@@ -30,7 +30,7 @@
                         DefaultValue="@("A")"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" />
 
         <BitChoiceGroup Label="ReadOnly"
                         ReadOnly
@@ -60,7 +60,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
                                                      IconName = { Selector = i => i.IconName },
-                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+                                                     IsDisabled = { Selector = i => i.IsDisabled } })" />
     </div>
     <br /><br /><br /><br />
     <div>Inline:</div><br />
@@ -83,7 +83,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
                                                      IconName = { Selector = i => i.IconName },
-                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+                                                     IsDisabled = { Selector = i => i.IsDisabled } })" />
     </div>
 </DemoExample>
 
@@ -99,7 +99,7 @@
 
         <BitChoiceGroup Label="Disabled"
                         Horizontal
-                        IsEnabled="false"
+                        Disabled
                         DefaultValue="@("A")"
                         Items="basicCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
@@ -122,7 +122,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
                                                      IconName = { Selector = i => i.IconName },
-                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+                                                     IsDisabled = { Selector = i => i.IsDisabled } })" />
     </div>
 </DemoExample>
 
@@ -498,7 +498,7 @@
                         NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
                                                  Value = { Name = nameof(Order.ItemValue) },
                                                  IconName = { Name = nameof(Order.IconName) },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" />
     </div>
 </DemoExample>
 
@@ -750,7 +750,7 @@
     <div><b>Disabled</b>:</div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Primary"
                         Label="Primary"
                         Horizontal
@@ -760,7 +760,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Secondary"
                         Label="Secondary"
                         Horizontal
@@ -770,7 +770,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Tertiary"
                         Label="Tertiary"
                         Horizontal
@@ -780,7 +780,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Info"
                         Label="Info"
                         Horizontal
@@ -790,7 +790,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Success"
                         Label="Success"
                         Horizontal
@@ -800,7 +800,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Warning"
                         Label="Warning"
                         Horizontal
@@ -810,7 +810,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.SevereWarning"
                         Label="SevereWarning"
                         Horizontal
@@ -820,7 +820,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.Error"
                         Label="Error"
                         Horizontal
@@ -831,7 +831,7 @@
     <br />
     <div style="background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem">
         <div class="example-box">
-            <BitChoiceGroup IsEnabled="false"
+            <BitChoiceGroup Disabled
                             Color="BitColor.PrimaryBackground"
                             Label="PrimaryBackground"
                             Horizontal
@@ -841,7 +841,7 @@
         </div>
         <br />
         <div class="example-box">
-            <BitChoiceGroup IsEnabled="false"
+            <BitChoiceGroup Disabled
                             Color="BitColor.SecondaryBackground"
                             Label="SecondaryBackground"
                             Horizontal
@@ -851,7 +851,7 @@
         </div>
         <br />
         <div class="example-box">
-            <BitChoiceGroup IsEnabled="false"
+            <BitChoiceGroup Disabled
                             Color="BitColor.TertiaryBackground"
                             Label="TertiaryBackground"
                             Horizontal
@@ -862,7 +862,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.PrimaryForeground"
                         Label="PrimaryForeground"
                         Horizontal
@@ -872,7 +872,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.SecondaryForeground"
                         Label="SecondaryForeground"
                         Horizontal
@@ -882,7 +882,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.TertiaryForeground"
                         Label="TertiaryForeground"
                         Horizontal
@@ -892,7 +892,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.PrimaryBorder"
                         Label="PrimaryBorder"
                         Horizontal
@@ -902,7 +902,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.SecondaryBorder"
                         Label="SecondaryBorder"
                         Horizontal
@@ -912,7 +912,7 @@
     </div>
     <br />
     <div class="example-box">
-        <BitChoiceGroup IsEnabled="false"
+        <BitChoiceGroup Disabled
                         Color="BitColor.TertiaryBorder"
                         Label="TertiaryBorder"
                         Horizontal
@@ -989,7 +989,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
                                                  IconName = { Selector = i => i.IconName },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" Horizontal Inline />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" Horizontal Inline />
 
         <BitChoiceGroup Size="BitSize.Medium"
                         Label="Medium"
@@ -998,7 +998,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
                                                  IconName = { Selector = i => i.IconName },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" Horizontal Inline />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" Horizontal Inline />
 
         <BitChoiceGroup Size="BitSize.Large"
                         Label="Large"
@@ -1007,7 +1007,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
                                                  IconName = { Selector = i => i.IconName },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" Horizontal Inline />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" Horizontal Inline />
     </div>
     <br /><br />
     <div>ChoiceGroup with icon</div>
@@ -1019,7 +1019,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
                                                  IconName = { Selector = i => i.IconName },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" Horizontal />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" Horizontal />
 
         <BitChoiceGroup Size="BitSize.Medium"
                         Label="Medium"
@@ -1028,7 +1028,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
                                                  IconName = { Selector = i => i.IconName },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" Horizontal />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" Horizontal />
 
         <BitChoiceGroup Size="BitSize.Large"
                         Label="Large"
@@ -1037,7 +1037,7 @@
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  Value = { Selector = i => i.ItemValue },
                                                  IconName = { Selector = i => i.IconName },
-                                                 IsEnabled = { Selector = i => i.IsDisabled is false } })" Horizontal />
+                                                 IsDisabled = { Selector = i => i.IsDisabled } })" Horizontal />
     </div>
 </DemoExample>
 
@@ -1144,7 +1144,7 @@
 
         <BitChoiceGroup Label="غیرفعال"
                         Dir="BitDir.Rtl"
-                        IsEnabled="false"
+                        Disabled
                         DefaultValue="@("A")"
                         Items="rtlCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />

@@ -363,7 +363,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Title", Type = "string", DefaultValue = "", Description = "The column's header text." },
                 new() { Name = "Label", Type = "string", DefaultValue = "", Description = "The accessible name for the editor (\"Filter by {Title}\"); put it on the control's aria-label." },
                 new() { Name = "ValueType", Type = "Type?", DefaultValue = "null", Description = "The type of the column's bound member, Nullable<T> unwrapped." },
-                new() { Name = "IsEnabled", Type = "bool", DefaultValue = "", Description = "Whether the grid is enabled; disable the editor when it is not." },
+                new() { Name = "Disabled", Type = "bool", DefaultValue = "", Description = "Whether the grid is disabled; disable the editor when it is." },
                 new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "", Description = "The descriptors applied to the column: none, one, or the two halves of a range.", LinkType = LinkType.Link, Href = "#BitDataGridFilterDescriptor" },
                 new() { Name = "IsActive", Type = "bool", DefaultValue = "", Description = "Whether any filter is applied to the column." },
                 new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "", Description = "The operator of the column's (first) filter, or Unspecified.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },

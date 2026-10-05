@@ -270,7 +270,7 @@ public partial class BitOverlay : BitComponentBase
     /// </summary>
     public async Task Open()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsOpen) return;
 
@@ -690,7 +690,7 @@ public partial class BitOverlay : BitComponentBase
     {
         // The key is the keyboard's equivalent of a click on the layer, so whatever takes the click's dismissal
         // away (Blocking, being disabled) takes the key's as well.
-        if (IsDisposed || IsOpen is false || IsEnabled is false || Blocking || NoDismissOnEscape) return;
+        if (IsDisposed || IsOpen is false || Disabled || Blocking || NoDismissOnEscape) return;
 
         if (await AssignIsOpen(false) is false) return;
 
@@ -716,7 +716,7 @@ public partial class BitOverlay : BitComponentBase
     {
         _pressedOnContent = false;
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -726,7 +726,7 @@ public partial class BitOverlay : BitComponentBase
         var pressedOnContent = _pressedOnContent;
         _pressedOnContent = false;
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         await OnClick.InvokeAsync(e);
 

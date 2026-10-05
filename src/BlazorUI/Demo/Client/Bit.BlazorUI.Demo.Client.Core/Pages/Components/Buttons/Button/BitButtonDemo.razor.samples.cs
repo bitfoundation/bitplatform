@@ -17,9 +17,9 @@ public partial class BitButtonDemo
 <BitButton Variant=""BitVariant.Text"" SecondaryText=""this is the secondary text"">Text</BitButton>
 
 
-<BitButton Variant=""BitVariant.Fill"" IsEnabled=""false"">Fill</BitButton>
-<BitButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Outline</BitButton>
-<BitButton Variant=""BitVariant.Text"" IsEnabled=""false"">Text</BitButton>
+<BitButton Variant=""BitVariant.Fill"" Disabled>Fill</BitButton>
+<BitButton Variant=""BitVariant.Outline"" Disabled>Outline</BitButton>
+<BitButton Variant=""BitVariant.Text"" Disabled>Text</BitButton>
 
 
 <BitButton Rounded Variant=""BitVariant.Fill"">Fill</BitButton>
@@ -446,11 +446,11 @@ private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.Get
 </BitButton>
 
 
-<BitButton IsEnabled=""false"" IconName=""@BitIconName.Blocked"" Title=""Pick a plan first"">
+<BitButton Disabled IconName=""@BitIconName.Blocked"" Title=""Pick a plan first"">
     Disabled (still focusable)
 </BitButton>
 
-<BitButton IsEnabled=""false"" AllowDisabledFocus=""false"" IconName=""@BitIconName.Blocked"">
+<BitButton Disabled AllowDisabledFocus=""false"" IconName=""@BitIconName.Blocked"">
     Disabled (skipped by Tab)
 </BitButton>
 

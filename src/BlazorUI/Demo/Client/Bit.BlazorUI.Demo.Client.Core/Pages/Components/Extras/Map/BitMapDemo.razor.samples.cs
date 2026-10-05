@@ -492,7 +492,7 @@ private async Task ReadView()
 <BitToggle @bind-Value=""interEnabled"" Text=""Enabled"" />
 
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider"" Provider=""@interProvider"" IsEnabled=""interEnabled"" />
+    <BitMap TMapProvider=""BitLeafletMapProvider"" Provider=""@interProvider"" Disabled=""interEnabled is false"" />
 </div>";
     private readonly string example10CsharpCode = @"
 private bool interScrollWheel = true;

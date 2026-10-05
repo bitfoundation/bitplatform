@@ -503,7 +503,7 @@ public partial class BitCallout : BitComponentBase
     /// </remarks>
     public async Task OpenAt(double x, double y)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _pointX = x;
         _pointY = y;
@@ -630,7 +630,7 @@ public partial class BitCallout : BitComponentBase
         // Escape pressed anywhere in the page while this is the innermost open callout (see Utils.setupEscape),
         // which is how a callout with an external anchor or opened at a point is dismissed from the keyboard:
         // the focus is usually on the trigger that opened it, outside of anything the component renders.
-        if (IsEnabled is false || IsOpen is false || NoDismissOnEscape) return;
+        if (Disabled || IsOpen is false || NoDismissOnEscape) return;
 
         await CloseCallout();
 
@@ -814,7 +814,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnAnchorClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // A click on the anchor while the callout is open usually lands on the overlay above it, but it
         // still arrives here when an ancestor stacking context lifts the anchor over the overlay, and it
@@ -834,7 +834,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnOverlayClick()
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (NoDismissOnOutsideClick) return;
 
@@ -843,7 +843,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutClick()
     {
-        if (AutoClose is false || IsEnabled is false || IsOpen is false) return;
+        if (AutoClose is false || Disabled || IsOpen is false) return;
 
         await CloseCallout();
 
@@ -856,7 +856,7 @@ public partial class BitCallout : BitComponentBase
     // listener leaves the anchor out, so this is the one place the key is answered for it.
     private async Task HandleOnRootKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
 
@@ -870,7 +870,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
 
@@ -895,7 +895,7 @@ public partial class BitCallout : BitComponentBase
         // anchor scheduled, and coming back to the anchor cancels the close leaving the callout scheduled.
         CancelHover();
 
-        if (IsEnabled is false || IsOpen) return;
+        if (Disabled || IsOpen) return;
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
@@ -912,7 +912,7 @@ public partial class BitCallout : BitComponentBase
 
         CancelHover();
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (await DelayHover(HoverCloseDelay) is false) return;
 
@@ -930,7 +930,7 @@ public partial class BitCallout : BitComponentBase
         // A callout the user cannot reach must not be opened by the Open and Toggle methods either, since
         // it would then hang over the page with a disabled anchor under it. An IsOpen the parent sets
         // itself is left alone: the state is the parent's to own there.
-        if (IsOpen || IsEnabled is false) return;
+        if (IsOpen || Disabled) return;
 
         // Assigning IsOpen runs OnSetIsOpen, which is the entry point for the open state changing from the
         // outside and toggles the callout on its own. Here the toggling is done below instead, once the
@@ -1019,7 +1019,7 @@ public partial class BitCallout : BitComponentBase
     // events, so the pointer leaving it never closes it again.
     private async Task CloseWhenUnavailable()
     {
-        if (IsOpen is false || IsEnabled) return;
+        if (IsOpen is false || Disabled is false) return;
 
         if (IsRendered)
         {

@@ -26,7 +26,7 @@
     // the class builder takes the pointer affordance away by the same rule. A loading toggle button is disabled for
     // exactly as long as that lasts and says so, since aria-busy announces that something is happening and not that
     // activating it now does nothing. Reclickable is the loading state that still takes clicks, and it is left alone.
-    var clickRefused = IsEnabled is false || (IsLoading && Reclickable is false);
+    var clickRefused = Disabled || (IsLoading && Reclickable is false);
     var ariaDisabled = clickRefused ? "true" : GetSplattedAttribute("aria-disabled");
     var ariaControls = AriaControls ?? GetSplattedAttribute("aria-controls");
     var ariaLabelledBy = AriaLabelledBy ?? GetSplattedAttribute("aria-labelledby");
@@ -50,7 +50,7 @@
     // Autofocus follows the same rule as the tab order below: a control hidden from assistive technologies, or a
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.
-    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (IsEnabled || AllowDisabledFocus);
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (Disabled is false || AllowDisabledFocus);
 
     RenderFragment content = @<text>
         @if (template is not null)
@@ -93,7 +93,7 @@
         type="button"
         role="@role"
         title="@title"
-        disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+        disabled="@(Disabled && AllowDisabledFocus is false)"
         autofocus="@autoFocus"
         tabindex="@GetTabIndex(ariaHidden)"
         aria-label="@ariaLabel"

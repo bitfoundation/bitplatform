@@ -510,7 +510,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // Follows the required asterisk the label shows, which a disabled group drops: a disabled field is
     // neither submitted nor validated, so announcing it as required would say the opposite of what the
     // label shows and of what the form does with it.
-    internal bool IsRequired => IsEnabled && Required;
+    internal bool IsRequired => Disabled is false && Required;
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
     // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in
@@ -785,28 +785,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// An item is only interactive when both the ChoiceGroup and the item itself are enabled.
     /// </summary>
-    internal bool GetIsItemEnabled(TItem item) => IsEnabled && GetIsEnabled(item);
+    internal bool GetIsItemEnabled(TItem item) => Disabled is false && GetIsDisabled(item) is false;
 
-    internal bool GetIsEnabled(TItem item)
+    internal bool GetIsDisabled(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.IsEnabled;
+            return choiceGroupItem.IsDisabled;
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            return choiceGroupOption.IsEnabled;
+            return choiceGroupOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     internal BitIconInfo? GetIcon(TItem item)

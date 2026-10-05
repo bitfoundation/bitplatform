@@ -28,11 +28,11 @@ public class BitIconTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitIconShouldRespectIsEnabled(bool isEnabled)
+    public void BitIconShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitIcon>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -41,7 +41,7 @@ public class BitIconTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitIconShouldRespectIsEnabledChangingAfterRender()
+    public void BitIconShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitIcon>();
 
@@ -49,7 +49,7 @@ public class BitIconTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@$"<i class=""{CLASS} bit-dis"" {HIDDEN} id:ignore />");
@@ -1160,7 +1160,7 @@ public class BitIconTests : BunitTestContext
         {
             parameters.Add(p => p.IconName, "Delete");
             parameters.Add(p => p.OnClick, () => clicked++);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@$"<i role=""button"" tabindex=""-1"" aria-label=""Delete"" aria-disabled=""true"" class=""{CLASS} bit-icon bit-icon--Delete bit-ico-int bit-dis"" id:ignore />");
@@ -1272,8 +1272,8 @@ public class BitIconTests : BunitTestContext
 
         component.Find("i").KeyDown(new KeyboardEventArgs { Key = " ", Code = "Space" });
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
 
@@ -1544,7 +1544,7 @@ public class BitIconTests : BunitTestContext
         var component = RenderComponent<BitIcon>(parameters =>
         {
             parameters.Add(p => p.OnClick, () => clicked++);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find("i").KeyDown(new KeyboardEventArgs { Key = "Enter" });

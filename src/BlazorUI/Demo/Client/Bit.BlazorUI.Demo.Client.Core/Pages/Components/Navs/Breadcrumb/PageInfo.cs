@@ -22,7 +22,7 @@ public class PageInfo
 
     public bool IsCurrent { get; set; }
 
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     public RenderFragment<PageInfo>? Fragment { get; set; }
 

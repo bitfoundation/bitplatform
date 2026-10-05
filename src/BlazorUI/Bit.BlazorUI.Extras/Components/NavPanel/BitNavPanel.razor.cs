@@ -864,14 +864,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOverlayClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await ClosePanel();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.Key is not "Escape") return;
 
         // The first Escape empties an active search - which is what the search box does on its own when the
@@ -1164,7 +1164,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     // The panel is a modal drawer while it covers the page: only on a small screen, only while it is open,
     // and only with the overlay that is what makes it cover anything at all.
-    private bool _IsModalDrawer => _isDrawer && IsOpen && NoOverlay is false && IsEnabled;
+    private bool _IsModalDrawer => _isDrawer && IsOpen && NoOverlay is false && Disabled is false;
 
     // The modal drawer that also holds the focus inside itself: the one that reports itself as aria-modal, takes
     // the focus as it opens, and is made programmatically focusable to take it.

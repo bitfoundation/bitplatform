@@ -242,8 +242,8 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "A"));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "B"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Disabled, true).Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Disabled, true).Add(i => i.HeaderText, "B"));
         });
 
         var panel = component.Find(".bit-pvt-cct");
@@ -258,7 +258,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.IsEnabled, false).Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Disabled, true).Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
         });
 
@@ -374,7 +374,7 @@ public class BitPivotTests : BunitTestContext
         var component = RenderComponent<BitPivot>(parameters =>
         {
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Disabled, true));
         });
 
         var tabs = component.FindAll("[role=tab]");
@@ -392,7 +392,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
         });
@@ -432,7 +432,7 @@ public class BitPivotTests : BunitTestContext
         {
             parameters.Bind(p => p.SelectedKey, key, v => key = v!);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b").Add(i => i.Disabled, true));
         });
 
         component.Render(parameters => parameters.Bind(p => p.SelectedKey, "b", v => key = v!));
@@ -464,7 +464,7 @@ public class BitPivotTests : BunitTestContext
             parameters.Add(p => p.Navigable, false);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.Disabled, true));
         });
 
         var tabs = component.FindAll("[role=tab]");
@@ -551,7 +551,7 @@ public class BitPivotTests : BunitTestContext
         var component = RenderComponent<BitPivot>(parameters =>
         {
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Disabled, true));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.Visibility, BitVisibility.Collapsed));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "D"));
         });
@@ -1344,7 +1344,7 @@ public class BitPivotTests : BunitTestContext
         {
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "a"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b"));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "c").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "c").Add(i => i.Disabled, true));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "d").Add(i => i.Visibility, BitVisibility.Collapsed));
         });
 
@@ -1366,7 +1366,7 @@ public class BitPivotTests : BunitTestContext
     {
         var slide = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Addable, true);
             parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Slide);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
@@ -1378,7 +1378,7 @@ public class BitPivotTests : BunitTestContext
 
         var menu = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Menu);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
@@ -1710,7 +1710,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
         });
@@ -1718,7 +1718,7 @@ public class BitPivotTests : BunitTestContext
         Assert.IsTrue(component.FindAll("[role=tab]").All(t => t.GetAttribute("aria-disabled") == "true"));
 
         // Turning the pivot back on reaches tabs whose own parameters have not changed at all.
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         Assert.IsTrue(component.FindAll("[role=tab]").All(t => t.HasAttribute("aria-disabled") is false));
     }
@@ -1878,7 +1878,7 @@ public class BitPivotTests : BunitTestContext
             Stacked = true,
             Styles = styles,
             AriaLabel = "Sections",
-            IsEnabled = false,
+            Disabled = true,
         };
 
         var pivot = new BitPivot();
@@ -1924,7 +1924,7 @@ public class BitPivotTests : BunitTestContext
         Assert.IsTrue(pivot.Stacked);
         Assert.AreSame(styles, pivot.Styles);
         Assert.AreEqual("Sections", pivot.AriaLabel);
-        Assert.IsFalse(pivot.IsEnabled);
+        Assert.IsTrue(pivot.Disabled);
     }
 
     [TestMethod]
@@ -2047,7 +2047,7 @@ public class BitPivotTests : BunitTestContext
             parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Dismissible, false).Add(i => i.Reorderable, false));
-            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.IsEnabled, false));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C").Add(i => i.Disabled, true));
         });
 
         var tabs = component.FindAll("[role=tab]");

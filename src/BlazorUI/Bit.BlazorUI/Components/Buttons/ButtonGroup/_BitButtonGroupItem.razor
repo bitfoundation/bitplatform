@@ -2,7 +2,7 @@
 @typeparam TItem where TItem : class
 
 @{
-    var isEnabled = ButtonGroup.IsEnabled && ButtonGroup.GetIsEnabled(Item);
+    var isEnabled = ButtonGroup.Disabled is false && ButtonGroup.GetIsDisabled(Item) is false;
     var isLoading = ButtonGroup.GetIsLoading(Item);
     // An item the Multiple mode's MaxToggles cap has taken out of reach is activated to no effect until one of
     // the toggled items is un-toggled, so it says so rather than answering a click with silence. It is not given

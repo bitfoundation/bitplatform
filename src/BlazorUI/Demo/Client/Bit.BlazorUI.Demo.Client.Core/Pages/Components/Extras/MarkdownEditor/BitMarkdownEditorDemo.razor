@@ -125,8 +125,8 @@
                     <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.Table)">Table</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="() => RunCommand(BitMarkdownEditorCommand.DuplicateLine)">Duplicate line</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="InsertSignature">Insert</BitButton>
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanUndo ?? false" OnClick="Undo">Undo</BitButton>
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="commandsRef?.CanRedo ?? false" OnClick="Redo">Redo</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Disabled="commandsRef?.CanUndo is not true" OnClick="Undo">Undo</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Disabled="commandsRef?.CanRedo is not true" OnClick="Redo">Redo</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="GetValue">GetValue</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="ShowSelection">GetSelection</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="SelectFirstLine">SetSelection</BitButton>
@@ -179,7 +179,7 @@
                 <div>
                     <b>BoldStyle</b>, <b>ItalicStyle</b> and <b>BulletStyle</b> pick the markdown spelling the commands write,
                     and <b>TableColumns</b> / <b>TableRows</b> size the inserted table. <b>ReadOnly</b> keeps the text
-                    selectable and searchable; <b>IsEnabled</b> off disables the whole editor.
+                    selectable and searchable; <b>Disabled is false</b> off disables the whole editor.
                 </div>
                 <br />
                 <BitMarkdownEditor BoldStyle="BitMarkdownEditorEmphasisStyle.Underscore"
@@ -193,7 +193,7 @@
                 <br /><br />
                 <BitMarkdownEditor ReadOnly DefaultValue="@readOnlyDefaultValue" Height="8rem" />
                 <br /><br />
-                <BitMarkdownEditor IsEnabled="false" DefaultValue="# Disabled" Height="6rem" />
+                <BitMarkdownEditor Disabled DefaultValue="# Disabled" Height="6rem" />
             </DemoExample>
 
             <DemoExample Title="Find & replace" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">

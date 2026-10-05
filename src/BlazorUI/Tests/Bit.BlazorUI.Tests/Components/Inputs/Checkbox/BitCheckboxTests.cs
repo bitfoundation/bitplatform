@@ -20,13 +20,13 @@ public class BitCheckboxTests : BunitTestContext
         DataRow(true, false),
         DataRow(false, false),
     ]
-    public void BitCheckboxOnClickShouldWorkIfIsEnabled(bool defaultValue, bool isEnabled)
+    public void BitCheckboxOnClickShouldWorkUnlessDisabled(bool defaultValue, bool isEnabled)
     {
         var clicked = false;
         var changed = false;
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.OnClick, () => clicked = true);
             parameters.Add(p => p.OnChange, () => changed = true);
@@ -79,14 +79,14 @@ public class BitCheckboxTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void IndeterminateBitCheckboxShouldHaveCorrectClassNameIfIsEnabled(bool isEnabled)
+    public void IndeterminateBitCheckboxShouldHaveCorrectClassNameUnlessDisabled(bool isEnabled)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.DefaultIndeterminate, true);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var chb = component.Find(".bit-chb");
@@ -399,7 +399,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var form = component.Find("form");
@@ -426,7 +426,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var checkBoxInput = component.Find("input[type='checkbox']");
@@ -456,7 +456,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckboxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitCheckboxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var bitCheckBox = component.Find(".bit-chb");
@@ -608,7 +608,7 @@ public class BitCheckboxTests : BunitTestContext
         {
             parameters.Add(p => p.Label, "Label");
             parameters.Add(p => p.Required, required);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var chbInput = component.Find("input");
@@ -632,7 +632,7 @@ public class BitCheckboxTests : BunitTestContext
             parameters.Add(p => p.Label, "Label");
             parameters.Add(p => p.Name, "terms");
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
         });
 
@@ -643,7 +643,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.IsFalse(input.HasAttribute("required"));
         Assert.AreEqual("true", input.GetAttribute("aria-required"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         Assert.AreEqual("terms", component.Find("input").GetAttribute("name"));
         Assert.IsTrue(component.Find("input").HasAttribute("required"));
@@ -662,7 +662,7 @@ public class BitCheckboxTests : BunitTestContext
         {
             parameters.Add(p => p.Label, "Label");
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var input = component.Find("input");
@@ -959,7 +959,7 @@ public class BitCheckboxTests : BunitTestContext
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
             parameters.Add(p => p.Label, "Label");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoFocus, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
@@ -981,7 +981,7 @@ public class BitCheckboxTests : BunitTestContext
         var changed = false;
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
             parameters.Add(p => p.OnChange, () => changed = true);
         });
@@ -1465,7 +1465,7 @@ public class BitCheckboxTests : BunitTestContext
             UncheckedIcon = BitIconInfo.Fa("regular square"),
             UncheckedIconName = "Cancel",
             AriaLabel = "Test Aria Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -1512,7 +1512,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(@params.UncheckedIcon, instance.UncheckedIcon);
         Assert.AreEqual("Cancel", instance.UncheckedIconName);
         Assert.AreEqual("Test Aria Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

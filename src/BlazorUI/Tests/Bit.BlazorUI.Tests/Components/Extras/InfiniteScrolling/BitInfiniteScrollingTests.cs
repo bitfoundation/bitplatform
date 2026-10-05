@@ -696,7 +696,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
                 return ValueTask.FromResult<IEnumerable<int>>(new List<int> { 1 });
             });
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Preload, true);
         });
 

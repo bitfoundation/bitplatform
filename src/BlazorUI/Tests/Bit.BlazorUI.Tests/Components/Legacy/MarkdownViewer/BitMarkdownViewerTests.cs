@@ -130,7 +130,7 @@ public class BitMarkdownViewerTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMarkdownViewerShouldRespectIsEnabled(bool isEnabled)
+    public void BitMarkdownViewerShouldRespectDisabled(bool isEnabled)
     {
         var markdown = "enable";
         var html = "<p>enable</p>";
@@ -139,7 +139,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-mdv");

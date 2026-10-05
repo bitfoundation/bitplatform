@@ -356,7 +356,7 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -481,7 +481,7 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -1150,7 +1150,7 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -1520,7 +1520,7 @@ public class BitPanelTests : BunitTestContext
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.ShowCloseButton, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var button = com.Find(".bit-pnl-cls");
@@ -1834,7 +1834,7 @@ public class BitPanelTests : BunitTestContext
         var com = RenderComponent<BitPanel>(parameters =>
         {
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -1995,14 +1995,14 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
         com.Instance._OnEscapeVerdict(true);
         com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        com.Render(p => p.Add(x => x.IsEnabled, true));
+        com.Render(p => p.Add(x => x.Disabled, false));
 
         com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 

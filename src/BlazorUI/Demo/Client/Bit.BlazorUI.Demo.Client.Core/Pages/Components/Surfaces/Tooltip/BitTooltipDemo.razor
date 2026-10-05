@@ -26,7 +26,7 @@
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
                 Whatever is inside the tooltip is its anchor; <b>Text</b> is what it says. It is shown on hover and on focus.
-                <b>IsEnabled</b> turns the tooltip off, not the anchor, and a disabled anchor still gets its tooltip.
+                <b>Disabled</b> turns the tooltip off, not the anchor, and a disabled anchor still gets its tooltip.
                 <b>DefaultIsShown</b> starts it shown.
             </div>
             <br />
@@ -35,12 +35,12 @@
                     <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
                 </BitTooltip>
 
-                <BitTooltip Text="This tooltip never shows" IsEnabled="false">
+                <BitTooltip Text="This tooltip never shows" Disabled>
                     <BitButton Variant="BitVariant.Outline">Disabled tooltip</BitButton>
                 </BitTooltip>
 
                 <BitTooltip Text="Sign in first to save anything">
-                    <BitButton Variant="BitVariant.Outline" IsEnabled="false">Disabled anchor</BitButton>
+                    <BitButton Variant="BitVariant.Outline" Disabled>Disabled anchor</BitButton>
                 </BitTooltip>
 
                 <BitTooltip Text="Shown to begin with" DefaultIsShown="true">

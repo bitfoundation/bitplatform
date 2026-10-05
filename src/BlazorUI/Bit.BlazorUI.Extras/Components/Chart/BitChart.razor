@@ -362,7 +362,7 @@
                        button, pressed". With a click handler alone it is a plain button, which has no state. *@
                     <button type="button"
                             class="bit-cht-lgd-itm @(item.Hidden ? "bit-cht-hdn" : "") @Classes?.LegendItem"
-                            disabled="@(IsEnabled is false)"
+                            disabled="@(Disabled)"
                             aria-pressed="@(legend.OnClickToggle ? (!item.Hidden).ToString().ToLowerInvariant() : null)"
                             style="@itemStyle"
                             @onclick="() => ToggleLegend(item)"

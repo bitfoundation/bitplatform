@@ -172,7 +172,7 @@
                 when the loader appears.
             </div>
             <br />
-            <BitButton OnClick="StartWork" IsEnabled="@(isWorking is false)">Run a 1.5s task</BitButton>
+            <BitButton OnClick="StartWork" Disabled="isWorking">Run a 1.5s task</BitButton>
             <br /><br />
             <div class="container">
                 <div class="wrapper">
@@ -246,7 +246,7 @@
                 Syncing <BitDotsRingLoading Inline />
             </BitText>
             <br />
-            <BitButton IsEnabled="false">
+            <BitButton Disabled>
                 <BitRingLoading Inline Label="Saving" />
             </BitButton>
         </DemoExample>
@@ -259,7 +259,7 @@
                 back its announcements and the loader's own has to get through.
             </div>
             <br />
-            <BitButton OnClick="Refresh" IsEnabled="@(isRefreshing is false)">Refresh orders</BitButton>
+            <BitButton OnClick="Refresh" Disabled="isRefreshing">Refresh orders</BitButton>
             <br /><br />
             <div class="orders">
                 <BitOverlay IsOpen="isRefreshing" AbsolutePosition ModeFull Style="align-items:center;justify-content:center;color:white">

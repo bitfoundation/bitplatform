@@ -27,7 +27,7 @@
 
     // Autofocus must not pull the focus onto a control that cannot take it: a disabled checkbox is out of
     // the tab order altogether unless AllowDisabledFocus keeps it in.
-    var autoFocus = AutoFocus && (IsEnabled || AllowDisabledFocus);
+    var autoFocus = AutoFocus && (Disabled is false || AllowDisabledFocus);
 
     // aria-disabled is not one of the boolean HTML attributes: written as a bool it would be rendered with
     // no value at all, which assistive technologies read as the default - that is, as not disabled. A busy
@@ -35,7 +35,7 @@
     // assistive technologies to offer a change that never lands.
     // The three states below say "true" or leave the attribute to whatever the page wrote, rather than
     // writing a null that would take the page's own value down with it.
-    var ariaDisabled = IsEnabled is false || IsLoading ? "true" : GetSplattedInputAttribute("aria-disabled");
+    var ariaDisabled = Disabled || IsLoading ? "true" : GetSplattedInputAttribute("aria-disabled");
     var ariaBusy = IsLoading ? "true" : GetSplattedInputAttribute("aria-busy");
     var ariaReadOnly = ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
 
@@ -43,7 +43,7 @@
     // attribute would otherwise do have to be done by hand: a disabled control is not serialized into its
     // form, and its required is not enforced. Left to the browser, an unchecked one would block the very
     // submit it is disabled from taking part in.
-    var name = IsEnabled ? Name ?? GetSplattedInputAttribute("name") : null;
+    var name = Disabled ? null : Name ?? GetSplattedInputAttribute("name");
 
     // A read-only checkbox is serialized like any other, but the native required is dropped for the same
     // reason it is on a disabled one: an unchecked box nobody is allowed to check would refuse the submit
@@ -53,7 +53,7 @@
     // AllowDisabledFocus keeps in the tab order is still reached and still read out, and the one thing it
     // must not do is read out as optional. A busy checkbox turns clicks away for as long as it is busy, so
     // it drops the attribute for the same reason and gets it back with the state.
-    var required = Required && IsEnabled && ReadOnly is false && IsLoading is false;
+    var required = Required && Disabled is false && ReadOnly is false && IsLoading is false;
     var ariaRequired = Required && required is false ? "true" : GetSplattedInputAttribute("aria-required");
 
     // The mixed state of a native checkbox lives in its `indeterminate` DOM property, which is not an
@@ -89,7 +89,7 @@
            @onfocusout="HandleOnFocusOut"
            @onclick="@HandleOnCheckboxClick"
            @onclick:stopPropagation="StopPropagation"
-           @onclick:preventDefault="@(IsEnabled is false || ReadOnly || IsLoading)"
+           @onclick:preventDefault="@(Disabled || ReadOnly || IsLoading)"
            name="@name"
            id="@_inputId"
            type="checkbox"
@@ -99,7 +99,7 @@
            required="@required"
            tabindex="@TabIndex"
            autofocus="@autoFocus"
-           disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+           disabled="@(Disabled && AllowDisabledFocus is false)"
            aria-label="@ariaLabel"
            aria-checked="@ariaChecked"
            aria-required="@ariaRequired"
