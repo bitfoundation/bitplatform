@@ -381,6 +381,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitPdfViewer", "BitPdfViewerParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitNavPanel", "BitNavPanelParams")]
+    [DataRow("BitVirtualize", "BitVirtualizeParams")]
     [DataRow("BitPhoneInput", "BitPhoneInputParams")]
     [DataRow("BitTextField", "BitTextFieldParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
