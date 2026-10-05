@@ -42,10 +42,11 @@ public static class SetupCommand
             }
 
             var (platforms, error) = SharedOptions.ParsePlatforms(parseResult.GetValue(shared.Platforms), cli.Environment.Os);
+            var (properties, propertyError) = SharedOptions.ParseProperties(parseResult.GetValue(shared.Properties));
 
-            if (error is not null)
+            if ((error ?? propertyError) is { } usageError)
             {
-                cli.Console.Fail(error);
+                cli.Console.Fail(usageError);
                 return CliApp.ExitUsage;
             }
 
@@ -56,7 +57,7 @@ public static class SetupCommand
                 platforms = NewWorkflow.AskPlatforms(cli, platforms);
             }
 
-            var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms };
+            var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, BuildProperties = properties };
             var aspire = Directory.Exists(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost"));
             var requirements = TemplateRequirements.FromProject(directory, name);
             var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, MinimumSdk = ReadMinimumSdk(directory), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
@@ -82,7 +83,7 @@ public static class SetupCommand
             }
 
             var projectSteps = new ProjectSteps(cli, context);
-            await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), cancellationToken);
+            await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
 
             if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
             {

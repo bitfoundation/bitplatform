@@ -120,6 +120,19 @@ public class CommandTests
     }
 
     [TestMethod]
+    public async Task BuildProperties_Should_AcceptTheDotnetFormsAndRefuseOthers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "-p:EnforceCodeStyleInBuild=true", "-p", "Environment=Staging", "--property:InvariantGlobalization=true", "--no-browsers", "--dry-run", "--yes"), host.Output);
+        Assert.IsFalse(host.Output.Contains("Chromium", StringComparison.Ordinal), host.Output);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "-p:EnforceCodeStyleInBuild", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.Output, "isn't an MSBuild property");
+    }
+
+    [TestMethod]
     public async Task AGitHubRepo_Should_NeedTheGitHubPipelineAndGit()
     {
         using var host = new TestHost(HostOs.Linux);

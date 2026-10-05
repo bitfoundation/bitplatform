@@ -31,9 +31,17 @@ public sealed class SharedOptions
 
     public Option<bool> NoBuild { get; } = new("--no-build") { Description = "Don't build." };
 
+    public Option<bool> NoBrowsers { get; } = new("--no-browsers") { Description = "Don't install Playwright's browsers for the UI tests." };
+
+    public Option<string[]> Properties { get; } = new("--property", "-p")
+    {
+        Description = "An MSBuild property for the restore and the build, e.g. -p:EnforceCodeStyleInBuild=true. Repeat it for more.",
+        HelpName = "name=value"
+    };
+
     public void AddTo(Command command)
     {
-        foreach (var option in new Option[] { Platforms, Tools, Yes, NonInteractive, NoTools, NoWorkloads, NoRestore, NoBuild })
+        foreach (var option in new Option[] { Platforms, Tools, Yes, NonInteractive, NoTools, NoWorkloads, NoRestore, NoBuild, NoBrowsers, Properties })
         {
             command.Options.Add(option);
         }
@@ -44,6 +52,15 @@ public sealed class SharedOptions
         return values is null
             ? []
             : [.. values.SelectMany(v => v.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))];
+    }
+
+    public static (IReadOnlyList<string> Properties, string? Error) ParseProperties(IEnumerable<string>? values)
+    {
+        var properties = (values ?? []).Select(v => v.Trim()).Where(v => v.Length > 0).ToList();
+
+        return properties.FirstOrDefault(p => p.IndexOf('=', StringComparison.Ordinal) is <= 0) is { } invalid
+            ? (properties, $"'{invalid}' isn't an MSBuild property. Use -p:name=value.")
+            : (properties, null);
     }
 
     public static (HashSet<Platform> Platforms, string? Error) ParsePlatforms(IEnumerable<string>? values, Infrastructure.HostOs os)

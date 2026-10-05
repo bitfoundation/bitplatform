@@ -60,6 +60,9 @@ public sealed class NewWorkflow(CliServices cli)
         if (platformError is not null)
             return UsageError(platformError);
 
+        if (request.PropertyError is not null)
+            return UsageError(request.PropertyError);
+
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
         var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
@@ -78,7 +81,7 @@ public sealed class NewWorkflow(CliServices cli)
             AskUsageTelemetry();
         }
 
-        var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, Template = selection };
+        var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, Template = selection, BuildProperties = request.Properties };
 
         TagTelemetry(selection, platforms, selectedTools, ide, request);
         WritePlan(context, selection, selectedTools, ide, request);
@@ -120,7 +123,7 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "git", "Initializing git", projectSteps.GitAsync, cancellationToken);
         }
 
-        await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, cancellationToken);
+        await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, cancellationToken);
 
         if (request.NoFormat is false)
         {
@@ -161,7 +164,7 @@ public sealed class NewWorkflow(CliServices cli)
         return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
     }
 
-    public static async Task RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, CancellationToken cancellationToken)
+    public static async Task RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, CancellationToken cancellationToken)
     {
         if (noWorkloads is false)
         {
@@ -186,7 +189,10 @@ public sealed class NewWorkflow(CliServices cli)
         if (noBuild is false)
         {
             await RunProjectStepAsync(steps, context, "build", context.BuildsSolution ? "Building the solution" : "Building the web app", projectSteps.BuildAsync, cancellationToken);
+        }
 
+        if (noBuild is false && noBrowsers is false)
+        {
             await RunProjectStepAsync(steps, context, "playwright", cli.Environment.IsCI ? "Installing Playwright's browsers" : "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
         }
     }
@@ -466,7 +472,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (cli.Environment.IsMacOS && context.BuildsSolution) stepsList.Add("Xcode check");
         if (request.NoRestore is false) stepsList.Add("restore");
         if (request.NoBuild is false) stepsList.Add("build");
-        if (request.NoBuild is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
+        if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");

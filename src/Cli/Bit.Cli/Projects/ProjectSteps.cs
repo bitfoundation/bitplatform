@@ -17,6 +17,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private IProcessRunner Runner => cli.Runner;
 
+    private IEnumerable<string> BuildProperties => project.BuildProperties.Select(p => $"-p:{p}");
+
     public Task<StepResult> AppCertificateAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
@@ -139,15 +141,13 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> RestoreAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var result = await Dotnet(["restore", project.BuildPath], cancellationToken, progress, TimeSpan.FromMinutes(30));
-        return StepResult.FromProcess(result, "Restored NuGet packages", "Couldn't restore NuGet packages", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet restore {project.BuildPath}");
+        string[] arguments = ["restore", project.BuildPath, .. BuildProperties];
+        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
+        return StepResult.FromProcess(result, "Restored NuGet packages", "Couldn't restore NuGet packages", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
     }
 
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        if (cli.Environment.IsCI && (cli.Environment.GetVariable("ANDROID_HOME") ?? cli.Environment.GetVariable("ANDROID_SDK_ROOT")) is not null && cli.Environment.GetVariable("JAVA_HOME") is not null)
-            return StepResult.Skipped("Skipped the Android SDK and Java", "the CI machine has them");
-
         string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
 
@@ -181,7 +181,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["build", project.BuildPath];
+        string[] arguments = ["build", project.BuildPath, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
         var what = project.BuildsSolution ? "the solution" : "the web app";
 

@@ -86,7 +86,8 @@ And these of its own:
 | `--non-interactive` | Never ask; fail when a required value is missing. |
 | `--dry-run` | Show the plan and change nothing. |
 | `--no-setup` | Only create the project: nothing is installed, restored or built. Run `bit setup` in its folder later. |
-| `--no-tools`, `--no-certificate`, `--no-git`, `--no-workloads`, `--no-restore`, `--no-build`, `--no-format`, `--no-migration`, `--no-trust`, `--no-open` | Skip that step. |
+| `--no-tools`, `--no-certificate`, `--no-git`, `--no-workloads`, `--no-restore`, `--no-build`, `--no-browsers`, `--no-format`, `--no-migration`, `--no-trust`, `--no-open` | Skip that step. |
+| `-p, --property <name=value>` | An MSBuild property for the restore and the build, e.g. `-p:EnforceCodeStyleInBuild=true`. Repeat it for more. `bit setup` takes it too. |
 
 ## bit setup
 
@@ -107,11 +108,19 @@ It installs missing tools, build tools and packages, builds, installs Playwright
 dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
 ```
 
+A CI build job lets bit build too, with its own MSBuild properties, and skips the browsers it won't test with:
+
+```bash
+dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+```
+
+A job that publishes in Release keeps `--no-restore --no-build`: bit builds Debug, and the Release publish would take the unminified JavaScript of that build as up to date.
+
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
 - Docker, WSL, the Aspire CLI and Windows features aren't installed.
 - The HTTPS development certificate is trusted on Linux only. There it's trusted for some clients, and the step notes that .NET's own HTTPS calls also need `~/.aspnet/dev-certs/trust` in `SSL_CERT_DIR`; any other failure is a warning.
-- The runner's own Android SDK and Java are used when `ANDROID_HOME` and `JAVA_HOME` point at them.
+- MAUI's `InstallAndroidDependencies` completes the runner's Android SDK, so a pipeline needs no `sdkmanager` step.
 - Playwright gets every browser with its system libraries, since CI may test more than Chromium.
 
 ## bit doctor

@@ -16,6 +16,8 @@ public sealed partial class ProjectContext
 
     public bool GitReady { get; set; }
 
+    public IReadOnlyList<string> BuildProperties { get; init; } = [];
+
     public string Solution => Path.Combine(Directory, $"{Name}.slnx");
 
     public string WebSolutionFilter => Path.Combine(Directory, $"{Name}.Web.slnf");

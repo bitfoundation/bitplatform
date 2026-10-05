@@ -56,6 +56,12 @@ public sealed record NewRequest
 
     public bool NoUpdate { get; init; }
 
+    public bool NoBrowsers { get; init; }
+
+    public IReadOnlyList<string> Properties { get; init; } = [];
+
+    public string? PropertyError { get; init; }
+
     public IReadOnlyList<string> Arguments { get; init; } = [];
 
     public IReadOnlyDictionary<string, string> TemplateValues { get; init; } = new Dictionary<string, string>();
@@ -143,6 +149,7 @@ public static class NewCommand
             }
 
             var skipSetup = parseResult.GetValue(noSetup);
+            var (properties, propertyError) = SharedOptions.ParseProperties(parseResult.GetValue(shared.Properties));
 
             var request = new NewRequest
             {
@@ -171,6 +178,9 @@ public static class NewCommand
                 NoOpen = parseResult.GetValue(noOpen),
                 GitHubRepo = parseResult.GetValue(gitHubRepo),
                 NoUpdate = parseResult.GetValue(noUpdate),
+                NoBrowsers = skipSetup || parseResult.GetValue(shared.NoBrowsers),
+                Properties = properties,
+                PropertyError = propertyError,
                 Arguments = [.. parseResult.Tokens.Select(t => t.Value)],
                 TemplateValues = values,
                 ExtraTemplateArguments = [.. parseResult.UnmatchedTokens]

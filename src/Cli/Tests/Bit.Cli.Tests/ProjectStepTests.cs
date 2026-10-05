@@ -146,7 +146,7 @@ public class ProjectStepTests
         var project = new ProjectContext { Name = "Missing", Directory = Path.Combine(host.WorkingDirectory, "Missing"), Platforms = new HashSet<Platform> { Platform.Web } };
         var steps = new StepRunner(host.Services);
 
-        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, CancellationToken.None);
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
 
         Assert.IsTrue(steps.Reports.All(r => r.Result.Status is StepStatus.Skipped));
         Assert.IsFalse(steps.AnyFailed);
@@ -162,7 +162,7 @@ public class ProjectStepTests
         host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
         var steps = new StepRunner(host.Services);
 
-        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, CancellationToken.None);
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
 
         var commands = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
         CollectionAssert.Contains(commands, "workload install maui");
@@ -207,7 +207,7 @@ public class ProjectStepTests
         host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
         var steps = new StepRunner(host.Services);
 
-        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, CancellationToken.None);
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
 
         var byId = steps.Reports.ToDictionary(r => r.Id, r => r.Result);
         Assert.AreEqual(StepStatus.Failed, byId["restore"].Status);
@@ -327,20 +327,30 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task TheAndroidSdk_Should_ComeFromTheCiMachineWhenItHasOne()
+    public async Task TheAndroidSdk_Should_BeCompletedByMauiInCiToo()
     {
         using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true", ["ANDROID_HOME"] = "/usr/local/lib/android/sdk", ["JAVA_HOME"] = "/usr/lib/jvm/temurin-17" });
 
-        var skipped = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+        var result = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
 
-        Assert.AreEqual(StepStatus.Skipped, skipped.Status);
-        Assert.IsEmpty(ci.Runner.Calls);
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        StringAssert.Contains(ci.Runner.Calls.Single().CommandLine, "-t:InstallAndroidDependencies");
+    }
 
-        using var bare = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+    [TestMethod]
+    public async Task BuildProperties_Should_ReachTheRestoreAndTheBuildButNotTheBrowsers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var web = CreateFakeProject(host, "Contoso");
+        var project = new ProjectContext { Name = web.Name, Directory = web.Directory, Platforms = web.Platforms, BuildProperties = ["EnforceCodeStyleInBuild=true", "Environment=Staging"] };
+        var steps = new StepRunner(host.Services);
 
-        await new ProjectSteps(bare.Services, CreateFakeProject(bare, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), true, false, false, true, CancellationToken.None);
 
-        StringAssert.Contains(bare.Runner.Calls.Single().CommandLine, "-t:InstallAndroidDependencies");
+        var commands = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.Contains(commands, "restore Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging");
+        CollectionAssert.Contains(commands, "build Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging");
+        Assert.IsFalse(steps.Reports.Any(r => r.Id is "playwright"));
     }
 
     [TestMethod]
