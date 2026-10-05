@@ -418,8 +418,9 @@ public partial class BitCallout : BitComponentBase
     /// Panel. It defaults to End.
     /// </summary>
     /// <remarks>
-    /// Left and Right are read against the direction of the panel, so they land on Start or End; Center and
-    /// the two combined values name no edge and fall back to the default.
+    /// Left and Right are the physical edges, so they stay where they are named in both directions, whether the
+    /// direction is set on the component or inherited from the page; Center and the two combined values name no
+    /// edge and fall back to the default.
     /// </remarks>
     [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
@@ -1120,16 +1121,7 @@ public partial class BitCallout : BitComponentBase
                 gap: Gap,
                 noDismiss: NoDismissOnOutsideClick,
                 preferredSide: Placement.ToEdgeName(fallback: ""),
-                alignment: Alignment switch
-                {
-                    BitPlacement.Center => "center",
-                    BitPlacement.End => "end",
-                    BitPlacement.Left => "left",
-                    BitPlacement.Right => "right",
-                    BitPlacement.Top => "top",
-                    BitPlacement.Bottom => "bottom",
-                    _ => ""
-                },
+                alignment: Alignment.ToAlignmentName(),
                 noFlip: NoFlip,
                 collisionPadding: CollisionPadding,
                 alignmentOffset: AlignmentOffset,
@@ -1632,7 +1624,7 @@ public partial class BitCallout : BitComponentBase
     {
         BitResponsiveMode.Top => BitPlacement.Top,
         BitResponsiveMode.Bottom => BitPlacement.Bottom,
-        _ => PanelPlacement.ToPanelSide(Dir is BitDir.Rtl)
+        _ => PanelPlacement.ToPanelSide()
     };
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
@@ -1861,6 +1853,8 @@ public partial class BitCallout : BitComponentBase
             classes.Add(ResponsivePosition switch
             {
                 BitPlacement.Start => "bit-clo-sta",
+                BitPlacement.Left => "bit-clo-lft",
+                BitPlacement.Right => "bit-clo-rgt",
                 BitPlacement.Top => "bit-clo-top",
                 BitPlacement.Bottom => "bit-clo-btm",
                 _ => "bit-clo-end"

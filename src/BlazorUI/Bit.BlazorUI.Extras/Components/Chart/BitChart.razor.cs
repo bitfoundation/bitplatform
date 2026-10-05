@@ -1539,7 +1539,7 @@ public partial class BitChart : BitComponentBase
     }
 
     /// <summary>
-    /// The side a title actually renders on. Left and right titles run down the side of the plot
+    /// The side a title or subtitle actually renders on. Left and right ones run down the side of the plot
     /// (rotated); anything that is not one of the four sides falls back to the top.
     /// </summary>
     private static BitPlacement TitleSide(BitChartTitleModel title) => title.Placement switch

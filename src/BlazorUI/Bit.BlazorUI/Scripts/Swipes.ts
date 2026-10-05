@@ -40,6 +40,11 @@
             let bcr = element.getBoundingClientRect();
             const isTouchDevice = Utils.isTouchDevice();
 
+            // The physical edge the surface is pinned to: the logical pair is read against the direction it is
+            // laid out in, the physical pair stays where it is named in both.
+            const onLeftEdge = () => position === 'left' || (!rtl && position === 'start') || (rtl && position === 'end');
+            const onRightEdge = () => position === 'right' || (!rtl && position === 'end') || (rtl && position === 'start');
+
             const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
             const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
@@ -102,7 +107,7 @@
                     cancel();
                 }
 
-                if ((!rtl && position === 'start') || (rtl && position === 'end')) {
+                if (onLeftEdge()) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -110,7 +115,7 @@
                     }
                 }
 
-                if ((!rtl && position === 'end') || (rtl && position === 'start')) {
+                if (onRightEdge()) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -172,13 +177,13 @@
                 startX = startY = -1;
                 element.style.transitionDuration = '';
                 try {
-                    if (((!rtl && position === 'start') || (rtl && position === 'end')) && diffX < 0) {
+                    if (onLeftEdge() && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (((!rtl && position === 'end') || (rtl && position === 'start')) && diffX > 0) {
+                    if (onRightEdge() && diffX > 0) {
                         if ((diffX / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
@@ -254,8 +259,8 @@
 
                         const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if (position === 'end' && isScrollAtLeft) return;
-                        if (position === 'start' && isScrollAtRight) return;
+                        if ((position === 'end' || position === 'right') && isScrollAtLeft) return;
+                        if ((position === 'start' || position === 'left') && isScrollAtRight) return;
 
                         e.stopPropagation();
                     });
@@ -329,9 +334,9 @@
 
     // The edge a swipeable surface is pinned to, handed over by name (SwipesJsRuntimeExtensions.BitSwipesSetup)
     // rather than as the ordinal of the C# BitPlacement, so the order of that library-wide enum is no contract
-    // with this file. The placements a swipe can never be set up for - the physical pair, Center and the two
-    // combined values - have no name here: the C# side resolves its placement to one of these four first.
-    type BitSwipePosition = 'top' | 'bottom' | 'start' | 'end';
+    // with this file. The placements a swipe can never be set up for - Center and the two combined values - have
+    // no name here: the C# side resolves its placement to one of these six first (ToPanelSide).
+    type BitSwipePosition = 'top' | 'bottom' | 'start' | 'end' | 'left' | 'right';
 
     enum BitSwipeOrientation {
         None,

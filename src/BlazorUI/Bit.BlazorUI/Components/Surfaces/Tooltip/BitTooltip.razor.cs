@@ -1052,8 +1052,15 @@ public partial class BitTooltip : BitComponentBase
     }
 
     // The stylesheet draws the twelve placements physically - a class per side of the screen, each with its
-    // own inset - so the logical half of the two parameters is resolved here, which is the one place that
-    // knows the direction the tooltip is being read in.
+    // own inset - so the logical half of the two parameters is resolved here against the direction the tooltip
+    // was given. A tooltip given none (or Auto) reads the way the page around it does, which is not known until
+    // it is laid out, so its logical half is resolved as left to right and marked (bit-ttp-lgc) for the
+    // stylesheet to mirror under :dir(rtl).
+
+    private bool IsRtl => Dir is BitDir.Rtl;
+
+    // Whether the direction is the page's rather than one the tooltip was told.
+    private bool InheritsDirection => Dir is not (BitDir.Ltr or BitDir.Rtl);
 
     // The side of the screen the tooltip lands on. The physical values are already it; the logical pair is
     // read against the direction; the two combined values name no single side, so they leave the tooltip
@@ -1063,8 +1070,8 @@ public partial class BitTooltip : BitComponentBase
         BitPlacement.Bottom => BitPlacement.Bottom,
         BitPlacement.Left => BitPlacement.Left,
         BitPlacement.Right => BitPlacement.Right,
-        BitPlacement.Start => Dir == BitDir.Rtl ? BitPlacement.Right : BitPlacement.Left,
-        BitPlacement.End => Dir == BitDir.Rtl ? BitPlacement.Left : BitPlacement.Right,
+        BitPlacement.Start => IsRtl ? BitPlacement.Right : BitPlacement.Left,
+        BitPlacement.End => IsRtl ? BitPlacement.Left : BitPlacement.Right,
         _ => BitPlacement.Top
     };
 
@@ -1087,7 +1094,15 @@ public partial class BitTooltip : BitComponentBase
         var visibility = IsShown ? "bit-ttp-vis " : string.Empty;
 
         var placement = PhysicalPlacement;
-        var alignment = PhysicalAlignment(Alignment, placement is BitPlacement.Top or BitPlacement.Bottom, Dir == BitDir.Rtl);
+        var horizontal = placement is BitPlacement.Top or BitPlacement.Bottom;
+        var alignment = PhysicalAlignment(Alignment, horizontal, IsRtl);
+
+        // Only one value decides the horizontal axis - the side beside the anchor, or the alignment above or
+        // below it - so the placement is a mirror image away from right to left exactly when that value is
+        // logical.
+        var logical = InheritsDirection && (horizontal
+            ? Alignment is BitPlacement.Start or BitPlacement.End
+            : Placement is BitPlacement.Start or BitPlacement.End);
 
         var position = (placement, alignment) switch
         {
@@ -1108,6 +1123,6 @@ public partial class BitTooltip : BitComponentBase
             _ => "bit-ttp-rgt"
         };
 
-        return visibility + position;
+        return logical ? $"{visibility}{position} bit-ttp-lgc" : visibility + position;
     }
 }

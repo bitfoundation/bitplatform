@@ -118,7 +118,7 @@ public class BitNavPanelParamsTests : BunitTestContext
             FitWidth = true,
             StickyEnds = true,
             NoPad = true,
-            Position = BitNavPanelPosition.End,
+            Placement = BitPlacement.End,
             Width = 260,
             ToggledWidth = 72,
             Top = 10,

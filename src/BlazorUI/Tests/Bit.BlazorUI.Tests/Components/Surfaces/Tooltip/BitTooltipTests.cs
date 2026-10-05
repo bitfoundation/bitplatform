@@ -1556,6 +1556,33 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains(expectedClass));
     }
 
+    // A tooltip given no direction reads the way the page around it does, which is not known when its class is
+    // chosen: the logical half is resolved as left to right and marked for the stylesheet to mirror under
+    // :dir(rtl). A told direction is already resolved, and a physical value never turns around, so neither is
+    // marked - a mark on those would mirror them a second time.
+    [DataTestMethod]
+    [DataRow(BitPlacement.Start, BitPlacement.Center, null, true)]
+    [DataRow(BitPlacement.End, BitPlacement.Top, null, true)]
+    [DataRow(BitPlacement.Top, BitPlacement.Start, null, true)]
+    [DataRow(BitPlacement.Bottom, BitPlacement.End, BitDir.Auto, true)]
+    [DataRow(BitPlacement.Start, BitPlacement.Center, BitDir.Rtl, false)]
+    [DataRow(BitPlacement.Top, BitPlacement.Start, BitDir.Ltr, false)]
+    [DataRow(BitPlacement.Left, BitPlacement.Start, null, false)]
+    [DataRow(BitPlacement.Top, BitPlacement.Left, null, false)]
+    [DataRow(BitPlacement.Top, BitPlacement.Center, null, false)]
+    public void BitTooltipShouldMarkALogicalPlacementWhoseDirectionIsThePages(BitPlacement side, BitPlacement alignment, BitDir? dir, bool marked)
+    {
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.Placement, side);
+            parameters.Add(p => p.Alignment, alignment);
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        Assert.AreEqual(marked, component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-lgc"));
+    }
+
     [TestMethod]
     public void BitTooltipShouldKeepAPhysicalSideInBothDirections()
     {

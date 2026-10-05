@@ -248,7 +248,7 @@ public partial class BitPanelDemo
             Name = "Placement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The edge the panel slides in from; Start and End follow the text direction. Defaults to End.",
+            Description = "The edge the panel slides in from; Start and End follow the text direction, Left and Right stay where they are named in both. Center and the two combined values fall back to End. Defaults to End.",
             Href = "#placement-enum",
             LinkType = LinkType.Link,
         },
@@ -285,7 +285,7 @@ public partial class BitPanelDemo
             Name = "Size",
             Type = "double?",
             DefaultValue = "null",
-            Description = "The size in pixels along the axis the panel slides on (the width at Start/End, the height at Top/Bottom). Unset, the panel fits its content; other units go through --bit-Panel-size or Styles.Container.",
+            Description = "The size in pixels along the axis the panel slides on (the width at Start/End/Left/Right, the height at Top/Bottom). Unset, the panel fits its content; other units go through --bit-Panel-size or Styles.Container.",
         },
         new()
         {

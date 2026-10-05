@@ -14,7 +14,7 @@ internal static class SwipesJsRuntimeExtensions
              bool isResponsive = true,
              string scrollContainerId = "") where T : class
     {
-        // A caller resolves its placement to one of the four edges a swipe can be set up for first (ToPanelSide),
+        // A caller resolves its placement to one of the six edges a swipe can be set up for first (ToPanelSide),
         // so the fallback is only ever the default edge that resolution would have produced anyway.
         var edge = position.ToEdgeName(fallback: "end");
 

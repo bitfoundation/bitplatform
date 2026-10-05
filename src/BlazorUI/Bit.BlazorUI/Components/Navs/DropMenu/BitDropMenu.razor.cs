@@ -301,8 +301,9 @@ public partial class BitDropMenu : BitComponentBase
     /// The position of the responsive panel to show on the screen.
     /// </summary>
     /// <remarks>
-    /// Left and Right are read against the direction of the panel, so they land on Start or End; Center and
-    /// the two combined values name no edge and fall back to the default.
+    /// Left and Right are the physical edges, so they stay where they are named in both directions, whether the
+    /// direction is set on the component or inherited from the page; Center and the two combined values name no
+    /// edge and fall back to the default.
     /// </remarks>
     [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
@@ -951,16 +952,7 @@ public partial class BitDropMenu : BitComponentBase
                 maxWindowWidth: 0,
                 gap: Gap,
                 preferredSide: Placement.ToEdgeName(fallback: ""),
-                alignment: Alignment switch
-                {
-                    BitPlacement.Center => "center",
-                    BitPlacement.End => "end",
-                    BitPlacement.Left => "left",
-                    BitPlacement.Right => "right",
-                    BitPlacement.Top => "top",
-                    BitPlacement.Bottom => "bottom",
-                    _ => ""
-                });
+                alignment: Alignment.ToAlignmentName());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1199,7 +1191,7 @@ public partial class BitDropMenu : BitComponentBase
     }
 
     // The edge the responsive panel slides in from; every consumer of PanelPlacement goes through it (see ToPanelSide).
-    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide(Dir is BitDir.Rtl);
+    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide();
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
     private string? GetSwipesKey()
@@ -1395,6 +1387,8 @@ public partial class BitDropMenu : BitComponentBase
             classes.Add(EffectivePanelPosition switch
             {
                 BitPlacement.Start => "bit-drm-sta",
+                BitPlacement.Left => "bit-drm-lft",
+                BitPlacement.Right => "bit-drm-rgt",
                 BitPlacement.Top => "bit-drm-top",
                 BitPlacement.Bottom => "bit-drm-btm",
                 _ => "bit-drm-end"

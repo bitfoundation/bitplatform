@@ -118,6 +118,31 @@ public class BitSnackBarStylesheetTests
         StringAssert.Contains(rules, "max-width: calc(100% - var(--bit-snb-off-left) - var(--bit-snb-off-right));");
     }
 
+    [TestMethod,
+        DataRow("tlf", "top: var(--bit-snb-off-top);", "left: var(--bit-snb-off-left);"),
+        DataRow("trg", "top: var(--bit-snb-off-top);", "right: var(--bit-snb-off-right);"),
+        DataRow("blf", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);"),
+        DataRow("brg", "bottom: var(--bit-snb-off-bottom);", "right: var(--bit-snb-off-right);"),
+        DataRow("clf", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);"),
+        DataRow("crg", "bottom: var(--bit-snb-off-bottom);", "right: var(--bit-snb-off-right);"),
+        DataRow("cst", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);"),
+        DataRow("cen", "bottom: var(--bit-snb-off-bottom);", "right: var(--bit-snb-off-right);"),
+        DataRow("ctr", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);")
+    ]
+    public void BitSnackBarCornerAndCenteredPositionsShouldClearTheSafeArea(string position, string blockDeclaration, string inlineDeclaration)
+    {
+        var rule = GetRule(GetRules(ReadStylesheet()), position);
+
+        StringAssert.Contains(rule, blockDeclaration);
+        StringAssert.Contains(rule, inlineDeclaration);
+
+        // Pinned by the raw offsets, a stack ignores the notch; centered by a translate, it is centered on the
+        // whole screen rather than on the part of it that is safe to draw on.
+        Assert.IsFalse(rule.Contains("var(--bit-snb-off-block)"), $"{position} ignores the safe area of the block axis.");
+        Assert.IsFalse(rule.Contains("var(--bit-snb-off-inline)"), $"{position} ignores the safe area of the inline axis.");
+        Assert.IsFalse(rule.Contains("translate"), $"{position} is centered on the whole screen.");
+    }
+
     [TestMethod]
     public void BitSnackBarItemsShouldSpanTheStackOnAPhoneUnlessAMinWidthIsGiven()
     {

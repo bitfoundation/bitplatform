@@ -73,7 +73,8 @@
             noDismiss: boolean = false,
             // The side of the component the callout is preferably placed on ('top', 'bottom', 'start' or
             // 'end'), or '' to leave the placement entirely to the drop direction, which is what every
-            // component that does not offer the choice passes.
+            // component that does not offer the choice passes. Any other name - the physical 'left' and
+            // 'right' a placement can also cross under - leaves it to the drop direction just the same.
             preferredSide: string = '',
             // How the callout is lined up with the component across the side it is placed on ('center', 'end',
             // or a physical 'left', 'right', 'top' or 'bottom'), or '' for the start-edge alignment every

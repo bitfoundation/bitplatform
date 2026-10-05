@@ -44,9 +44,11 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Where the dot of each item sits along its item, with the contents of the item aligned to it.
+    /// Where the dot of each item sits along its item, with the contents of the item aligned to it: at its middle
+    /// (Center, the default), at its Start (the top in a vertical timeline) or at its End (the bottom in a vertical timeline).
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
     /// </summary>
-    public BitTimelineDotAlignment? DotAlignment { get; set; }
+    public BitPlacement? DotAlignment { get; set; }
 
     /// <summary>
     /// Renders the timeline horizontally.
@@ -59,9 +61,11 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
     public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
-    /// Where the connecting line runs: through the middle of the timeline, or along its start or end edge.
+    /// Where the connecting line runs: through the middle of the timeline (Center, the default), or along its Start
+    /// edge (the top in a horizontal timeline) or its End edge (the bottom in a horizontal timeline).
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
     /// </summary>
-    public BitTimelineLinePosition? LinePosition { get; set; }
+    public BitPlacement? LinePlacement { get; set; }
 
     /// <summary>
     /// Renders the items in the reverse order, so the last item of the list is painted first.
@@ -155,9 +159,9 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (LinePosition.HasValue && bitTimeline.HasNotBeenSet(nameof(LinePosition)))
+        if (LinePlacement.HasValue && bitTimeline.HasNotBeenSet(nameof(LinePlacement)))
         {
-            bitTimeline.LinePosition = LinePosition.Value;
+            bitTimeline.LinePlacement = LinePlacement.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }

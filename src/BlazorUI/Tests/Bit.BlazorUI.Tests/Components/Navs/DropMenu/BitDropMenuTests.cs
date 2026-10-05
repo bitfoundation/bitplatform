@@ -599,6 +599,8 @@ public class BitDropMenuTests : BunitTestContext
     [DataRow(BitPlacement.End, "bit-drm-end")]
     [DataRow(BitPlacement.Top, "bit-drm-top")]
     [DataRow(BitPlacement.Bottom, "bit-drm-btm")]
+    [DataRow(BitPlacement.Left, "bit-drm-lft")]
+    [DataRow(BitPlacement.Right, "bit-drm-rgt")]
     public void BitDropMenuShouldAddPanelPositionClass(BitPlacement position, string expectedClass)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
@@ -616,8 +618,8 @@ public class BitDropMenuTests : BunitTestContext
     [DataRow(BitPlacement.End, "end", BitSwipeOrientation.Horizontal)]
     [DataRow(BitPlacement.Top, "top", BitSwipeOrientation.Vertical)]
     [DataRow(BitPlacement.Bottom, "bottom", BitSwipeOrientation.Vertical)]
-    [DataRow(BitPlacement.Left, "start", BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPlacement.Right, "end", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Left, "left", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Right, "right", BitSwipeOrientation.Horizontal)]
     [DataRow(BitPlacement.Center, "end", BitSwipeOrientation.Horizontal)]
     public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPlacement position, string edge, BitSwipeOrientation expected)
     {
@@ -631,9 +633,9 @@ public class BitDropMenuTests : BunitTestContext
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
 
         // The arguments of Swipes.setup, in order: id, trigger, position, isRtl, orientationLock,
-        // dotnetObj, isResponsive, scrollContainerId. The position crosses by name; a physical side is read against
-        // the direction (left is start in this left-to-right menu), and a side that names no edge is resolved to the
-        // default end before it does.
+        // dotnetObj, isResponsive, scrollContainerId. The position crosses by name; a physical side crosses as
+        // itself, since the direction it would be read against is the page's, and a side that names no edge is
+        // resolved to the default end before it does.
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
         Assert.AreEqual(edge, setup.Arguments[2]);
         Assert.AreEqual(expected, setup.Arguments[4]);

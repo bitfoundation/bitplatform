@@ -158,38 +158,38 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+<BitTimeline TItem=""BitTimelineOption"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" DotAlignment=""BitTimelineDotAlignment.End"">
+<BitTimeline TItem=""BitTimelineOption"" DotAlignment=""BitPlacement.End"">
     <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" Horizontal DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+<BitTimeline TItem=""BitTimelineOption"" Horizontal DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
     <BitTimelineOption PrimaryText=""Option 3"" />
 </BitTimeline>";
 
     private readonly string example8RazorCode = @"
-<BitTimeline TItem=""BitTimelineOption"" LinePosition=""BitTimelineLinePosition.Start"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+<BitTimeline TItem=""BitTimelineOption"" LinePlacement=""BitPlacement.Start"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" LinePosition=""BitTimelineLinePosition.End"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+<BitTimeline TItem=""BitTimelineOption"" LinePlacement=""BitPlacement.End"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""09:00"" SecondaryText=""Kickoff: the scope, the milestones and an owner for each of them are agreed on."" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""11:30"" SecondaryText=""Design review: the proposal is walked through and the open questions are collected."" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""15:00"" SecondaryText=""Sign-off: the plan is approved and the work is scheduled."" IconName=""@BitIconName.Accept"" />
 </BitTimeline>
 
-<BitTimeline TItem=""BitTimelineOption"" Horizontal LinePosition=""BitTimelineLinePosition.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
+<BitTimeline TItem=""BitTimelineOption"" Horizontal LinePlacement=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" />
     <BitTimelineOption PrimaryText=""Option 3"" />

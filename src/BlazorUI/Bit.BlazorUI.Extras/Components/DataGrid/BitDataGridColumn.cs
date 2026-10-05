@@ -183,6 +183,10 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// Start and End follow the reading direction, so a numeric column set to End sits against the trailing
     /// edge of an LTR and of an RTL grid alike. Left and Right name a side of the screen and stay there in
     /// both.
+    /// <br />
+    /// Migrating from <c>BitDataGridColumnAlign</c>: its Left and Right were the leading and the trailing edge,
+    /// so they become <see cref="BitTextAlign.Start"/> and <see cref="BitTextAlign.End"/>. Renamed to Left and
+    /// Right instead, a column keeps rendering the same in an LTR grid but moves to the other side in an RTL one.
     /// </remarks>
     [Parameter] public BitTextAlign Align { get; set; } = BitTextAlign.Start;
 

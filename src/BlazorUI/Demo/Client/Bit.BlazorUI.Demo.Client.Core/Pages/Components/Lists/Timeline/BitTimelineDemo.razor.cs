@@ -48,11 +48,11 @@ public partial class BitTimelineDemo
         new()
         {
             Name = "DotAlignment",
-            Type = "BitTimelineDotAlignment?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the dot of each item sits along its item, with the contents aligned to it. Start pins the dot to the first line of multi-line contents.",
+            Description = "Where the dot of each item sits along its item, with the contents aligned to it: at its middle (Center, the default), its Start (the top in a vertical timeline) or its End (the bottom in a vertical timeline). Start pins the dot to the first line of multi-line contents. Only Center, Start and End are honoured; every other value renders the default Center.",
             LinkType = LinkType.Link,
-            Href = "#dot-alignment-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -88,12 +88,12 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "LinePosition",
-            Type = "BitTimelineLinePosition?",
+            Name = "LinePlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the connecting line runs: through the middle (Center), or along the Start or End edge with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line.",
+            Description = "Where the connecting line runs: through the middle (Center, the default), with the primary contents on one side of it and the secondary ones on the other, or along the Start edge (the top in a horizontal timeline) or the End edge (the bottom in a horizontal timeline), with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line. Only Center, Start and End are honoured; every other value renders the default Center.",
             LinkType = LinkType.Link,
-            Href = "#line-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -1088,60 +1088,7 @@ public partial class BitTimelineDemo
             ]
         },
         SharedSubEnums.BitLineStyle,
-        new()
-        {
-            Id = "line-position-enum",
-            Name = "BitTimelineLinePosition",
-            Description = "Determines where the connecting line of the timeline runs across its items.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Center",
-                    Description="The line runs through the middle, with the primary contents on one side of it and the secondary ones on the other.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The line runs along the start edge (the top in a horizontal timeline), with the contents of each item stacked after it.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The line runs along the end edge (the bottom in a horizontal timeline), with the contents of each item stacked before it.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "dot-alignment-enum",
-            Name = "BitTimelineDotAlignment",
-            Description = "Determines where the dot of each item sits along its item, with the contents aligned to it.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Center",
-                    Description="The dot sits at the middle of its item.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The dot sits at the start of its item (the top in a vertical timeline), next to the first line of the contents.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The dot sits at the end of its item (the bottom in a vertical timeline).",
-                    Value="2",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "truncate-line-enum",

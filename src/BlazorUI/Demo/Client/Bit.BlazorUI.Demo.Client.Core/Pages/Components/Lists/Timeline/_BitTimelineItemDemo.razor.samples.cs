@@ -127,11 +127,11 @@ private List<BitTimelineItem> lineVariantItems =
     private readonly string example7RazorCode = @"
 <BitTimeline Items=""alignItems"" />
 
-<BitTimeline DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
+<BitTimeline DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
 
-<BitTimeline DotAlignment=""BitTimelineDotAlignment.End"" Items=""alignItems"" />
+<BitTimeline DotAlignment=""BitPlacement.End"" Items=""alignItems"" />
 
-<BitTimeline Horizontal DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicItems"" />";
+<BitTimeline Horizontal DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicItems"" />";
     private readonly string example7CsharpCode = @"
 private List<BitTimelineItem> alignItems =
 [
@@ -148,11 +148,11 @@ private List<BitTimelineItem> basicItems =
 ];";
 
     private readonly string example8RazorCode = @"
-<BitTimeline LinePosition=""BitTimelineLinePosition.Start"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
+<BitTimeline LinePlacement=""BitPlacement.Start"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
 
-<BitTimeline LinePosition=""BitTimelineLinePosition.End"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
+<BitTimeline LinePlacement=""BitPlacement.End"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignItems"" />
 
-<BitTimeline Horizontal LinePosition=""BitTimelineLinePosition.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicItems"" />";
+<BitTimeline Horizontal LinePlacement=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicItems"" />";
     private readonly string example8CsharpCode = @"
 private List<BitTimelineItem> alignItems =
 [

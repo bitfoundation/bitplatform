@@ -327,7 +327,7 @@ public partial class BitCalloutDemo
             Name = "PanelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The edge of the screen the responsive panel slides in from, for a ResponsiveMode of Panel. It defaults to End. Left and Right are read against the direction of the panel and land on Start or End; Center and the two combined values fall back to End.",
+            Description = "The edge of the screen the responsive panel slides in from, for a ResponsiveMode of Panel. It defaults to End. Start and End follow the text direction, Left and Right stay where they are named in both; Center and the two combined values fall back to End.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

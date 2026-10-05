@@ -63,7 +63,7 @@
     --bit-csl-ease: var(--bit-Carousel-easing, #{$mot-easing});
 
     // The space between the slides and the row of dots. It is a gap of the root rather than a margin of the
-    // row, so it lands on whichever side of the slides the row is placed (DotsPosition).
+    // row, so it lands on whichever side of the slides the row is placed (DotsPlacement).
     gap: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
 
     &:focus-visible {
@@ -346,7 +346,7 @@
 }
 
 
-// DotsPosition: the row of controls is ordered before the slides, or turned into a column beside them. A
+// DotsPlacement: the row of controls is ordered before the slides, or turned into a column beside them. A
 // column stretches the current dot along its own axis, which is the height.
 .bit-csl-dtop > .bit-csl-dcn,
 .bit-csl-dstr > .bit-csl-dcn {

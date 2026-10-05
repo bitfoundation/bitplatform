@@ -52,11 +52,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
 
     /// <summary>
-    /// Where the dot of each item sits along its item, with the contents of the item aligned to it.
+    /// Where the dot of each item sits along its item, with the contents of the item aligned to it: at its middle
+    /// (Center, the default), at its Start (the top in a vertical timeline) or at its End (the bottom in a vertical timeline).
     /// Start pins the dot to the first line of an item whose contents run over several lines.
     /// </summary>
+    /// <remarks>
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineDotAlignment? DotAlignment { get; set; }
+    public BitPlacement? DotAlignment { get; set; }
 
     /// <summary>
     /// Renders the timeline horizontally.
@@ -87,12 +91,17 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
-    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the contents on
-    /// both sides of it, or along its Start or End edge, with the contents of each item stacked on one side of it.
+    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the primary
+    /// contents of the items on one side of it and the secondary contents on the other, or along its Start edge
+    /// (the top in a horizontal timeline) or its End edge (the bottom in a horizontal timeline), with the contents
+    /// of each item stacked on one side of it, as in an activity feed.
     /// Reversed and Alternate only apply to the centered line.
     /// </summary>
+    /// <remarks>
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineLinePosition? LinePosition { get; set; }
+    public BitPlacement? LinePlacement { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -204,11 +213,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Alternate ? "bit-tln-alt" : string.Empty);
 
-        // The centered dot is what the stylesheet paints on its own, so only the other two carry a class.
+        // The centered dot is what the stylesheet paints on its own, so only the other two carry a class,
+        // and every value the dot does not honour carries none, which falls back to the centered dot.
         ClassBuilder.Register(() => DotAlignment switch
         {
-            BitTimelineDotAlignment.Start => "bit-tln-das",
-            BitTimelineDotAlignment.End => "bit-tln-dae",
+            BitPlacement.Start => "bit-tln-das",
+            BitPlacement.End => "bit-tln-dae",
             _ => string.Empty
         });
 
@@ -225,11 +235,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
-        // The centered line is what the stylesheet paints on its own, so only the other two carry a class.
-        ClassBuilder.Register(() => LinePosition switch
+        // The centered line is what the stylesheet paints on its own, so only the other two carry a class,
+        // and every value the line does not honour carries none, which falls back to the centered line.
+        ClassBuilder.Register(() => LinePlacement switch
         {
-            BitTimelineLinePosition.Start => "bit-tln-lps",
-            BitTimelineLinePosition.End => "bit-tln-lpe",
+            BitPlacement.Start => "bit-tln-lps",
+            BitPlacement.End => "bit-tln-lpe",
             _ => string.Empty
         });
 

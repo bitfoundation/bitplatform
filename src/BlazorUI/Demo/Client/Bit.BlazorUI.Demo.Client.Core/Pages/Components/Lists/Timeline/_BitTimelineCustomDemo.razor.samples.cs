@@ -181,11 +181,11 @@ private List<Event> lineVariantCustoms =
     private readonly string example7RazorCode = @"
 <BitTimeline Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline DotAlignment=""BitTimelineDotAlignment.End"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline DotAlignment=""BitPlacement.End"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline Horizontal DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+<BitTimeline Horizontal DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example7CsharpCode = @"
 private List<Event> alignCustoms =
 [
@@ -202,11 +202,11 @@ private List<Event> basicCustoms =
 ];";
 
     private readonly string example8RazorCode = @"
-<BitTimeline LinePosition=""BitTimelineLinePosition.Start"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline LinePlacement=""BitPlacement.Start"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline LinePosition=""BitTimelineLinePosition.End"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline LinePlacement=""BitPlacement.End"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline Horizontal LinePosition=""BitTimelineLinePosition.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+<BitTimeline Horizontal LinePlacement=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example8CsharpCode = @"
 private List<Event> alignCustoms =
 [

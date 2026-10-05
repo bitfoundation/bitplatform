@@ -193,17 +193,20 @@ public class BitPanelTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains(positionClass));
     }
 
-    // The panel draws its inline edges logically, so a physical side is read against the direction: Left is the
-    // start edge of a left-to-right panel and the end edge of a right-to-left one. The swipe is registered with the
-    // same edge, so the class the panel draws and the edge the gesture returns it to never disagree.
+    // A physical side is drawn physically whatever the direction, given or not: a panel given no Dir reads the way
+    // the page around it does, which is not known until it is laid out, so resolving Left to Start or End here would
+    // land it on the wrong side of a right-to-left page. The swipe is registered with the same edge, so the class the
+    // panel draws and the edge the gesture returns it to never disagree.
     [TestMethod,
-        DataRow(BitPlacement.Left, BitDir.Ltr, "bit-pnl-start", "start"),
-        DataRow(BitPlacement.Right, BitDir.Ltr, "bit-pnl-end", "end"),
-        DataRow(BitPlacement.Left, BitDir.Rtl, "bit-pnl-end", "end"),
-        DataRow(BitPlacement.Right, BitDir.Rtl, "bit-pnl-start", "start"),
+        DataRow(BitPlacement.Left, null, "bit-pnl-left", "left"),
+        DataRow(BitPlacement.Right, null, "bit-pnl-right", "right"),
+        DataRow(BitPlacement.Left, BitDir.Ltr, "bit-pnl-left", "left"),
+        DataRow(BitPlacement.Right, BitDir.Ltr, "bit-pnl-right", "right"),
+        DataRow(BitPlacement.Left, BitDir.Rtl, "bit-pnl-left", "left"),
+        DataRow(BitPlacement.Right, BitDir.Rtl, "bit-pnl-right", "right"),
         DataRow(BitPlacement.Center, BitDir.Ltr, "bit-pnl-end", "end")
     ]
-    public void BitPanelShouldReadAPhysicalSideAgainstTheDirection(BitPlacement position, BitDir dir, string expectedClass, string expectedEdge)
+    public void BitPanelShouldKeepAPhysicalSideWhereItIsNamed(BitPlacement position, BitDir? dir, string expectedClass, string expectedEdge)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {

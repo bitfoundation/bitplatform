@@ -400,14 +400,17 @@ public class BitTimelineTests : BunitTestContext
     [TestMethod,
         // A centered line is the default layout of the stylesheet, so it carries no class of its own.
         DataRow(null, null),
-        DataRow(BitTimelineLinePosition.Center, null),
-        DataRow(BitTimelineLinePosition.Start, "bit-tln-lps"),
-        DataRow(BitTimelineLinePosition.End, "bit-tln-lpe")]
-    public void BitTimelineShouldApplyTheLinePositionClass(BitTimelineLinePosition? linePosition, string? expectedClass)
+        DataRow(BitPlacement.Center, null),
+        DataRow(BitPlacement.Start, "bit-tln-lps"),
+        DataRow(BitPlacement.End, "bit-tln-lpe"),
+        // A value the line does not honour renders the default centered line, so it carries no class either.
+        DataRow(BitPlacement.Left, null),
+        DataRow(BitPlacement.TopAndBottom, null)]
+    public void BitTimelineShouldApplyTheLinePlacementClass(BitPlacement? linePlacement, string? expectedClass)
     {
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.LinePosition, linePosition);
+            parameters.Add(p => p.LinePlacement, linePlacement);
             TwoOptions()(parameters);
         });
 
@@ -1322,10 +1325,13 @@ public class BitTimelineTests : BunitTestContext
 
     [TestMethod,
         DataRow(null, null),
-        DataRow(BitTimelineDotAlignment.Center, null),
-        DataRow(BitTimelineDotAlignment.Start, "bit-tln-das"),
-        DataRow(BitTimelineDotAlignment.End, "bit-tln-dae")]
-    public void BitTimelineShouldRespectDotAlignment(BitTimelineDotAlignment? alignment, string? expectedClass)
+        DataRow(BitPlacement.Center, null),
+        DataRow(BitPlacement.Start, "bit-tln-das"),
+        DataRow(BitPlacement.End, "bit-tln-dae"),
+        // A value the dot does not honour renders the default centered dot, so it carries no class either.
+        DataRow(BitPlacement.Left, null),
+        DataRow(BitPlacement.TopAndBottom, null)]
+    public void BitTimelineShouldRespectDotAlignment(BitPlacement? alignment, string? expectedClass)
     {
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {

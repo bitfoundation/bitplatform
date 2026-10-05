@@ -219,18 +219,26 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     --bit-ttp-slide: 0 calc(-1 * #{spacing(0.5)});
 }
 
+@mixin ttp-side-rgt {
+    --bit-ttp-bridge-inset: 0 0 0 var(--bit-ttp-bridge);
+    --bit-ttp-slide: calc(-1 * #{spacing(0.5)}) 0;
+}
+
+@mixin ttp-side-lft {
+    --bit-ttp-bridge-inset: 0 var(--bit-ttp-bridge) 0 0;
+    --bit-ttp-slide: #{spacing(0.5)} 0;
+}
+
 .bit-ttp-rgt,
 .bit-ttp-rtp,
 .bit-ttp-rbm {
-    --bit-ttp-bridge-inset: 0 0 0 var(--bit-ttp-bridge);
-    --bit-ttp-slide: calc(-1 * #{spacing(0.5)}) 0;
+    @include ttp-side-rgt;
 }
 
 .bit-ttp-lft,
 .bit-ttp-ltp,
 .bit-ttp-lbm {
-    --bit-ttp-bridge-inset: 0 var(--bit-ttp-bridge) 0 0;
-    --bit-ttp-slide: #{spacing(0.5)} 0;
+    @include ttp-side-lft;
 }
 
 // Written after the shown state, which it has to beat at the same specificity.
@@ -247,7 +255,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-top {
+@mixin ttp-geo-top {
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
@@ -267,7 +275,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-tlf {
+@mixin ttp-geo-tlf {
     .bit-ttp-ctn {
         right: calc(100% - var(--bit-ttp-offset));
         bottom: calc(100% + var(--bit-ttp-gap));
@@ -281,7 +289,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-trg {
+@mixin ttp-geo-trg {
     .bit-ttp-ctn {
         left: calc(100% - var(--bit-ttp-offset));
         bottom: calc(100% + var(--bit-ttp-gap));
@@ -295,7 +303,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-rtp {
+@mixin ttp-geo-rtp {
     .bit-ttp-ctn {
         left: calc(100% + var(--bit-ttp-gap));
         bottom: calc(100% - var(--bit-ttp-offset));
@@ -309,7 +317,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-rgt {
+@mixin ttp-geo-rgt {
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
@@ -324,7 +332,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-rbm {
+@mixin ttp-geo-rbm {
     .bit-ttp-ctn {
         top: calc(100% - var(--bit-ttp-offset));
         left: calc(100% + var(--bit-ttp-gap));
@@ -338,7 +346,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-brg {
+@mixin ttp-geo-brg {
     .bit-ttp-ctn {
         top: calc(100% + var(--bit-ttp-gap));
         left: calc(100% - var(--bit-ttp-offset));
@@ -352,7 +360,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-btm {
+@mixin ttp-geo-btm {
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
@@ -367,7 +375,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-blf {
+@mixin ttp-geo-blf {
     .bit-ttp-ctn {
         top: calc(100% + var(--bit-ttp-gap));
         right: calc(100% - var(--bit-ttp-offset));
@@ -381,7 +389,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-lbm {
+@mixin ttp-geo-lbm {
     .bit-ttp-ctn {
         top: calc(100% - var(--bit-ttp-offset));
         right: calc(100% + var(--bit-ttp-gap));
@@ -395,7 +403,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-lft {
+@mixin ttp-geo-lft {
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
@@ -410,7 +418,7 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-.bit-ttp-ltp {
+@mixin ttp-geo-ltp {
     .bit-ttp-ctn {
         right: calc(100% + var(--bit-ttp-gap));
         bottom: calc(100% - var(--bit-ttp-offset));
@@ -422,6 +430,171 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
         transform: translate(50%, 50%) rotate(135deg);
         clip-path: $arrow-clip-tl;
     }
+}
+
+.bit-ttp-top {
+    @include ttp-geo-top;
+}
+
+.bit-ttp-tlf {
+    @include ttp-geo-tlf;
+}
+
+.bit-ttp-trg {
+    @include ttp-geo-trg;
+}
+
+.bit-ttp-rtp {
+    @include ttp-geo-rtp;
+}
+
+.bit-ttp-rgt {
+    @include ttp-geo-rgt;
+}
+
+.bit-ttp-rbm {
+    @include ttp-geo-rbm;
+}
+
+.bit-ttp-brg {
+    @include ttp-geo-brg;
+}
+
+.bit-ttp-btm {
+    @include ttp-geo-btm;
+}
+
+.bit-ttp-blf {
+    @include ttp-geo-blf;
+}
+
+.bit-ttp-lbm {
+    @include ttp-geo-lbm;
+}
+
+.bit-ttp-lft {
+    @include ttp-geo-lft;
+}
+
+.bit-ttp-ltp {
+    @include ttp-geo-ltp;
+}
+
+// A tooltip given no direction of its own reads the way the page (or the box) around it does, which is not known
+// when its class is chosen, so a logical Placement or Alignment is resolved as left to right there and marked with
+// bit-ttp-lgc. Laid out right to left, the marked placement is drawn as its mirror image instead: the side and the
+// corner swap, the edge the arrow points from swaps with them, and the bridge and the entry slide follow the side.
+// The physical properties of the placement it replaces are cleared first, since each one is pinned by its own.
+.bit-ttp-lgc.bit-ttp-tlf:dir(rtl) {
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-trg;
+}
+
+.bit-ttp-lgc.bit-ttp-trg:dir(rtl) {
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-tlf;
+}
+
+.bit-ttp-lgc.bit-ttp-rtp:dir(rtl) {
+    @include ttp-side-lft;
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-ltp;
+}
+
+.bit-ttp-lgc.bit-ttp-rgt:dir(rtl) {
+    @include ttp-side-lft;
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-lft;
+}
+
+.bit-ttp-lgc.bit-ttp-rbm:dir(rtl) {
+    @include ttp-side-lft;
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-lbm;
+}
+
+.bit-ttp-lgc.bit-ttp-brg:dir(rtl) {
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-blf;
+}
+
+.bit-ttp-lgc.bit-ttp-blf:dir(rtl) {
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-brg;
+}
+
+.bit-ttp-lgc.bit-ttp-lbm:dir(rtl) {
+    @include ttp-side-rgt;
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-rbm;
+}
+
+.bit-ttp-lgc.bit-ttp-lft:dir(rtl) {
+    @include ttp-side-rgt;
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-rgt;
+}
+
+.bit-ttp-lgc.bit-ttp-ltp:dir(rtl) {
+    @include ttp-side-rgt;
+
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        left: auto;
+        right: auto;
+    }
+
+    @include ttp-geo-rtp;
 }
 
 

@@ -89,12 +89,12 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "DotsPosition",
-            Type = "BitCarouselDotsPosition?",
+            Name = "DotsPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End.",
+            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End, which follow the reading direction. Every other value renders the default.",
             LinkType = LinkType.Link,
-            Href = "#dots-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -615,19 +615,7 @@ public partial class BitCarouselDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "dots-position-enum",
-            Name = "BitCarouselDotsPosition",
-            Description = "Where the dots of the carousel are placed around its slides.",
-            Items =
-            [
-                new() { Name = "Bottom", Description = "Below the slides.", Value = "0" },
-                new() { Name = "Top", Description = "Above the slides.", Value = "1" },
-                new() { Name = "Start", Description = "In a column beside the slides, at the start of the reading direction.", Value = "2" },
-                new() { Name = "End", Description = "In a column beside the slides, at the end of the reading direction.", Value = "3" },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "color-kind-enum",
@@ -885,7 +873,7 @@ public partial class BitCarouselDemo
         {
             Name = "--bit-Carousel-dots-margin",
             DefaultValue = "spacing(1.25)",
-            Description = "Space between the slides and the dots, on whichever side DotsPosition puts them.",
+            Description = "Space between the slides and the dots, on whichever side DotsPlacement puts them.",
         },
     ];
 

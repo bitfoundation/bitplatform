@@ -24,7 +24,11 @@
     <div class="bit-cht-mid">
         @if (_scene.Title is { } leftTitle && TitleSide(leftTitle) == BitPlacement.Left)
         {
-            @RenderTitle(leftTitle, "bit-cht-ttl bit-cht-ttl-v", false)
+            @RenderTitle(leftTitle, "bit-cht-ttl bit-cht-ttl-v bit-cht-ttl-l", false)
+        }
+        @if (_scene.Subtitle is { } leftSub && TitleSide(leftSub) == BitPlacement.Left)
+        {
+            @RenderTitle(leftSub, "bit-cht-sub bit-cht-ttl-v bit-cht-ttl-l", true)
         }
         @if (_scene.Legend is { Placement: BitPlacement.Left })
         {
@@ -240,6 +244,10 @@
         @if (_scene.Legend is { Placement: BitPlacement.Right })
         {
             @RenderLegend(_scene.Legend)
+        }
+        @if (_scene.Subtitle is { } rightSub && TitleSide(rightSub) == BitPlacement.Right)
+        {
+            @RenderTitle(rightSub, "bit-cht-sub bit-cht-ttl-v", true)
         }
         @if (_scene.Title is { } rightTitle && TitleSide(rightTitle) == BitPlacement.Right)
         {

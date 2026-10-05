@@ -874,6 +874,37 @@ public class BitChartTests : BunitTestContext
         StringAssert.Contains(title.TextContent, "Down the side");
     }
 
+    // A subtitle goes wherever a title can - beside the plot it sits between the title and the plot, on either
+    // side - and the ones on the left are the ones turned over, by a class of their own rather than by being the
+    // first child, which only the outermost of them is.
+    [DataTestMethod]
+    [DataRow(BitPlacement.Left, true)]
+    [DataRow(BitPlacement.Right, false)]
+    public void ASideSubtitleShouldRenderBesideThePlot(BitPlacement placement, bool turnedOver)
+    {
+        var options = new BitChartOptions
+        {
+            Plugins =
+            {
+                Title = { Display = true, Text = "Title", Placement = placement },
+                Subtitle = { Display = true, Text = "Sub", Placement = placement }
+            }
+        };
+        var component = RenderChart(options: options);
+
+        var title = component.Find(".bit-cht-mid > .bit-cht-ttl");
+        var subtitle = component.Find(".bit-cht-mid > .bit-cht-sub");
+        Assert.IsTrue(subtitle.ClassList.Contains("bit-cht-ttl-v"));
+        Assert.AreEqual("Sub", subtitle.TextContent.Trim());
+        Assert.AreEqual(turnedOver, title.ClassList.Contains("bit-cht-ttl-l"));
+        Assert.AreEqual(turnedOver, subtitle.ClassList.Contains("bit-cht-ttl-l"));
+
+        var order = component.Find(".bit-cht-mid").Children
+                             .Select(c => c.ClassList.Contains("bit-cht-plot") ? "plot" : c.ClassList.Contains("bit-cht-sub") ? "sub" : "title")
+                             .ToArray();
+        CollectionAssert.AreEqual(turnedOver ? new[] { "title", "sub", "plot" } : new[] { "plot", "sub", "title" }, order);
+    }
+
     [TestMethod]
     public void ATitleWithNowhereToGoShouldRenderAtTheTop()
     {

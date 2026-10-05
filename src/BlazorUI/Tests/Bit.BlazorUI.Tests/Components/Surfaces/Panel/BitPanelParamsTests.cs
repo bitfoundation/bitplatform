@@ -245,6 +245,8 @@ public class BitPanelParamsTests : BunitTestContext
     [TestMethod]
     [DataRow(".bit-pnl-start", "top,bottom,left,right")]
     [DataRow(".bit-pnl-end", "top,bottom,left,right")]
+    [DataRow(".bit-pnl-left", "top,bottom,left,right")]
+    [DataRow(".bit-pnl-right", "top,bottom,left,right")]
     [DataRow(".bit-pnl-top", "top,left,right")]
     [DataRow(".bit-pnl-bottom", "bottom,left,right")]
     [DataRow(".bit-pnl-fsz", "top,right,bottom,left")]

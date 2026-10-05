@@ -549,54 +549,60 @@
 // pinned by the physical property and shrunk to its content instead, which keeps it on the same side of the
 // screen in both reading directions. max-width on .bit-snb still caps how wide it may grow. Which side its
 // items sit on within it is settled at the end of the block, by a margin rather than by align-items, for the
-// same reason.
+// same reason. Like the logical ones, every edge it is pinned to is measured from the safe area.
 .bit-snb-tlf {
     width: auto;
     right: auto;
-    top: var(--bit-snb-off-block);
-    left: var(--bit-snb-off-inline);
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-trg {
     width: auto;
     left: auto;
-    top: var(--bit-snb-off-block);
-    right: var(--bit-snb-off-inline);
+    top: var(--bit-snb-off-top);
+    right: var(--bit-snb-off-right);
     --bit-snb-ent: bit-snb-ent-t;
 }
 
 .bit-snb-blf {
     width: auto;
     right: auto;
-    left: var(--bit-snb-off-inline);
-    bottom: var(--bit-snb-off-block);
+    left: var(--bit-snb-off-left);
+    bottom: var(--bit-snb-off-bottom);
 }
 
 .bit-snb-brg {
     width: auto;
     left: auto;
-    right: var(--bit-snb-off-inline);
-    bottom: var(--bit-snb-off-block);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
 }
 
-// The centred stacks are pinned at the middle of the block axis and pulled back by half their own height. The
-// horizontally centred one carries both halves of the translate, since a transform is one declaration.
+// The centred stacks span the whole safe band of the block axis and center their items in it with
+// justify-content, rather than being pinned at 50% of the screen and pulled back by a translate: the band is
+// what is left once the notch and the home indicator are cleared, so its middle is the middle of the part
+// that is safe to draw on. The stack lets the pointer through (.bit-snb), so spanning the band covers nothing.
 // A stack pinned to a side slides its items in from that side; the logical pair names the side by the reading
 // direction, so it turns its animation around with it, and the one centred on the screen, pinned to no edge, keeps
 // the default rise from below.
 .bit-snb-cst {
-    top: 50%;
-    transform: translateY(-50%);
-    inset-inline: var(--bit-snb-off-inline);
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
     --bit-snb-ent: bit-snb-ent-l;
 }
 
 .bit-snb-cen {
-    top: 50%;
     align-items: flex-end;
-    transform: translateY(-50%);
-    inset-inline: var(--bit-snb-off-inline);
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
     --bit-snb-ent: bit-snb-ent-r;
 }
 
@@ -619,28 +625,32 @@
 }
 
 .bit-snb-clf {
-    top: 50%;
     width: auto;
     right: auto;
-    transform: translateY(-50%);
-    left: var(--bit-snb-off-inline);
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    bottom: var(--bit-snb-off-bottom);
     --bit-snb-ent: bit-snb-ent-l;
 }
 
 .bit-snb-crg {
-    top: 50%;
     width: auto;
     left: auto;
-    transform: translateY(-50%);
-    right: var(--bit-snb-off-inline);
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
     --bit-snb-ent: bit-snb-ent-r;
 }
 
 .bit-snb-ctr {
-    top: 50%;
-    left: 50%;
     align-items: center;
-    transform: translate(-50%, -50%);
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
 }
 
 // A stack shrunk to its content is only as wide as its widest item, so a shorter one has room to slide inside

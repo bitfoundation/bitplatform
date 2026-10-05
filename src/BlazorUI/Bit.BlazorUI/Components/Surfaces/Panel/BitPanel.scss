@@ -188,6 +188,40 @@
     transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
+// The physical pair, which stays on the side it is named for in both reading directions, so it slides in and out
+// along the screen rather than along the reading direction. Its notch is the one on its own side.
+.bit-pnl-left {
+    left: 0;
+    height: 100%;
+    inset-block: 0;
+    max-height: 100%;
+    padding-top: var(--bit-pnl-sa-top);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    padding-left: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
+    width: var(--bit-Panel-size, fit-content);
+    max-width: var(--bit-pnl-max, 85%);
+    border-right: var(--bit-pnl-edge);
+    border-top-right-radius: var(--bit-pnl-rad);
+    border-bottom-right-radius: var(--bit-pnl-rad);
+    transform: translateX(-100%);
+}
+
+.bit-pnl-right {
+    right: 0;
+    height: 100%;
+    inset-block: 0;
+    max-height: 100%;
+    padding-top: var(--bit-pnl-sa-top);
+    padding-bottom: var(--bit-pnl-sa-bottom);
+    padding-right: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
+    width: var(--bit-Panel-size, fit-content);
+    max-width: var(--bit-pnl-max, 85%);
+    border-left: var(--bit-pnl-edge);
+    border-top-left-radius: var(--bit-pnl-rad);
+    border-bottom-left-radius: var(--bit-pnl-rad);
+    transform: translateX(100%);
+}
+
 .bit-pnl-top {
     top: 0;
     width: 100%;
