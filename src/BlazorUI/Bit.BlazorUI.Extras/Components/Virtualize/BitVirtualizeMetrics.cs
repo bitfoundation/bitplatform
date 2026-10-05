@@ -19,4 +19,14 @@ public sealed class BitVirtualizeMetrics
     /// The size (px) of the list across the scroll axis.
     /// </summary>
     public double CrossSize { get; set; }
+
+    /// <summary>
+    /// How far (px) the start of the scroll range lies before the start of the items (e.g. the HeaderTemplate).
+    /// </summary>
+    public double HeadSize { get; set; }
+
+    /// <summary>
+    /// How far (px) the end of the scroll range lies past the end of the items (e.g. the FooterTemplate).
+    /// </summary>
+    public double TailSize { get; set; }
 }

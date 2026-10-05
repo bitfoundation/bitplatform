@@ -176,14 +176,14 @@ public partial class BitVirtualizeDemo
             Name = "OnAtEndChanged",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "The callback to be called when the viewport arrives at the end of the list (true) or leaves it (false), for example to show a \"Jump to latest\" button only while the newest items are out of view. Also called with the initial state once the list has taken its initial position.",
+            Description = "The callback to be called when the viewport arrives at the end of the list (true) or leaves it (false), for example to show a \"Jump to latest\" button only while the newest items are out of view. Also called with the initial state once the list has taken its initial position. The end is the one ScrollToEndAsync goes to, the FooterTemplate included; an emptied list is at both edges.",
          },
          new()
          {
             Name = "OnAtStartChanged",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "The callback to be called when the viewport arrives at the start of the list (true) or leaves it (false), for example to show a \"Back to top\" button only once the user has scrolled away. Also called with the initial state once the list has taken its initial position.",
+            Description = "The callback to be called when the viewport arrives at the start of the list (true) or leaves it (false), for example to show a \"Back to top\" button only once the user has scrolled away. Also called with the initial state once the list has taken its initial position. The start is the one ScrollToStartAsync goes to, the HeaderTemplate included; an emptied list is at both edges.",
          },
          new()
          {

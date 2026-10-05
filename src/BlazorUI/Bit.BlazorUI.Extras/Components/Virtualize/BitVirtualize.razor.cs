@@ -64,10 +64,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private int _lastEndReachedCount = -1;
     private int _lastStartReachedCount = -1;
     private object? _startReachedItem;   // the identity of the first item when OnStartReached last fired
-    private bool _wasAtStart;
+    private bool _wasAtStart;            // within ReachedThreshold items of either edge, for OnStartReached / OnEndReached
     private bool _wasAtEnd;
-    private bool? _atStart;              // the edge states last reported through OnAtStartChanged / OnAtEndChanged
-    private bool? _atEnd;
+    // The scroll edges last reported through OnAtStartChanged / OnAtEndChanged (null while there is no handler to report
+    // to), unlike _wasAtStart / _wasAtEnd: the positions ScrollToStartAsync / ScrollToEndAsync take the viewport to.
+    private bool? _reportedAtStart;
+    private bool? _reportedAtEnd;
+    private double _edgeHead;            // how far (real px) the start of the scroll range lies before the items (a header)
+    private double _edgeTail;            // how far (real px) the end of the scroll range lies past the items (a footer)
 
     // Sticky (grouped) header tracking.
     private List<int>? _stickyIndices;   // sorted indices flagged by IsStickyItem
@@ -268,6 +272,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// The callback to be called when the viewport arrives at the end of the list (true) or leaves it (false), for example
     /// to show a "Jump to latest" button only while the newest items are out of view. Also called with the initial state
     /// once the list has taken its initial position.
+    /// The end is the one ScrollToEndAsync goes to, the FooterTemplate included; an emptied list is at both edges.
     /// </summary>
     [Parameter] public EventCallback<bool> OnAtEndChanged { get; set; }
 
@@ -275,6 +280,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// The callback to be called when the viewport arrives at the start of the list (true) or leaves it (false), for
     /// example to show a "Back to top" button only once the user has scrolled away. Also called with the initial state
     /// once the list has taken its initial position.
+    /// The start is the one ScrollToStartAsync goes to, the HeaderTemplate included; an emptied list is at both edges.
     /// </summary>
     [Parameter] public EventCallback<bool> OnAtStartChanged { get; set; }
 
@@ -371,7 +377,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     /// <summary>
     /// Scrolls the viewport so that the item at the provided index becomes visible.
-    /// A call made before the component is ready (for example, before its data arrives) gets applied once it is.
+    /// A call made before the component is ready (for example, before its data arrives) gets applied once it is, instantly
+    /// as the initial position of the list.
     /// </summary>
     /// <param name="index">The zero-based index of the target item.</param>
     /// <param name="alignment">Where the item should be positioned within the viewport.</param>
@@ -386,7 +393,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         if (_initialized is false)
         {
-            _queuedScroll = () => ScrollToOffsetAsync(offset, smooth);
+            // Performed instantly, like the initial position it takes the place of (see TryApplyInitialScrollAsync).
+            _queuedScroll = () => ScrollToOffsetAsync(offset, smooth: false);
             return;
         }
 
@@ -398,6 +406,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         if (rangeChanged)
         {
             StateHasChanged();
+        }
+        else if (smooth && Reversed && RealFromVirtual(MaxScrollOffset - virtualTarget) > 4d)
+        {
+            // Unpinned as it leaves the end, so the measurements settling meanwhile do not pull it back there.
+            _stickToEnd = false;
         }
 
         await _js.BitVirtualizeScrollToOffset(UniqueId, realTarget, smooth, seq);
@@ -430,13 +443,19 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// <param name="seq">The number of the latest scroll requested from here that the browser had performed when it
     /// sent this report; -1 when unknown.</param>
     /// <param name="crossSize">The size of the list across the scroll axis; -1 when unknown.</param>
+    /// <param name="headSize">How far the start of the scroll range lies before the start of the items; NaN when unknown.</param>
+    /// <param name="tailSize">How far the end of the scroll range lies past the end of the items; NaN when unknown.</param>
     [JSInvokable("Scroll")]
-    public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1, double crossSize = -1)
+    public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1, double crossSize = -1,
+                              double headSize = double.NaN, double tailSize = double.NaN)
     {
         if (IsDisposed) return;
 
         var viewportChanged = Math.Abs(viewportSize - _viewportSize) > 0.5;
         int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
+
+        // Independent of the scroll position, so a stale report still has them right.
+        ApplyEdges(headSize, tailSize);
 
         if (crossSize >= 0 && Math.Abs(crossSize - _crossSize) > 0.5)
         {
@@ -899,6 +918,20 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         _realScrollOffset = metrics.ScrollOffset;
         UpdateScale();
         _scrollOffset = VirtualFromReal(metrics.ScrollOffset);
+        ApplyEdges(metrics.HeadSize, metrics.TailSize);
+    }
+
+    private void ApplyEdges(double headSize, double tailSize)
+    {
+        if (double.IsFinite(headSize))
+        {
+            _edgeHead = headSize;
+        }
+
+        if (double.IsFinite(tailSize))
+        {
+            _edgeTail = tailSize;
+        }
     }
 
     // n lanes of MinLaneSize take n * MinLaneSize plus the n - 1 gaps between them.
@@ -971,6 +1004,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         _scrollOffset = virtualOffset;
         _realScrollOffset = realOffset;
+        if (Reversed)
+        {
+            // A scroll decided here pins or unpins the list as a scroll of the user's would, rather than leaving that to
+            // the browser's report: until it arrives, the measurements settling would pull the list back to its end.
+            _stickToEnd = IsNearEnd();
+        }
         RecomputeRange();
 
         return _renderStart != prevRenderStart || _renderEnd != prevRenderEnd;
@@ -980,7 +1019,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         if (_initialized is false || _itemCount == 0)
         {
-            _queuedScroll = () => ScrollToIndexCoreAsync(index, alignment, smooth, markPending);
+            // Performed instantly, like the initial position it takes the place of (see TryApplyInitialScrollAsync).
+            _queuedScroll = () => ScrollToIndexCoreAsync(index, alignment, smooth: false, markPending);
             return;
         }
 
@@ -1011,17 +1051,25 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         if (_initialized is false)
         {
-            _queuedScroll = () => ScrollToEdgeAsync(end, smooth);
+            // Performed instantly, like the initial position it takes the place of (see TryApplyInitialScrollAsync).
+            _queuedScroll = () => ScrollToEdgeAsync(end, smooth: false);
             return;
         }
 
         var seq = NextScrollSeq();
-        if (smooth is false && MoveTo(end ? MaxScrollOffset : 0, end ? Math.Max(0, _realTotal - _viewportSize) : 0))
+        // The browser scrolls to its real edge, so the header / footer come into view as well: past the items by them,
+        // which is where its report will have the list (and where the edge states are measured from).
+        var realTarget = end ? Math.Max(-_edgeHead, _realTotal - _viewportSize + _edgeTail) : -_edgeHead;
+        if (smooth is false && MoveTo(VirtualFromReal(realTarget), realTarget))
         {
             StateHasChanged();
         }
+        else if (smooth && end is false && Reversed)
+        {
+            // Unpinned as it leaves the end, so the measurements settling meanwhile do not pull it back there.
+            _stickToEnd = false;
+        }
 
-        // The browser scrolls to its real edge, so the header / footer come into view as well.
         await _js.BitVirtualizeScrollToEdge(UniqueId, end, smooth, seq);
 
         if (ItemsProvider is not null)
@@ -1036,11 +1084,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         if (_queuedScroll is { } queued)
         {
-            // An explicit scroll request takes precedence over the initial position.
+            // An explicit scroll request takes precedence over the initial position. Like it, it is performed instantly (a
+            // smooth one would leave the offset behind until the browser reports it), so the edge states it reports
+            // through RecomputeRange are those of where it lands.
             _queuedScroll = null;
             _initialScrollDone = true;
             await queued();
-            NotifyEdgeStates();
             return;
         }
 
@@ -1057,9 +1106,12 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         {
             await ScrollToIndexAsync(idx);
         }
-
-        // The initial position may well be the one the list started at, which no scroll then reports.
-        NotifyEdgeStates();
+        else
+        {
+            // The list stays where it started, which no scroll then reports; the two scrolls above report through
+            // RecomputeRange where they land.
+            NotifyEdgeStates();
+        }
     }
 
     private async Task ApplyPendingScrollAsync()
@@ -1578,6 +1630,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             _renderStartOffset = 0;
             _blockOffset = 0;
             _stickyActiveIndex = -1;
+            NotifyEdgeStates();
             if (prevStart != _visibleStart || prevEnd != _visibleEnd)
             {
                 NotifyRangeChanged();
@@ -1682,7 +1735,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         _stickyNextOffset = next >= 0 ? _blockOffset + (GetItemOffset(next) - _renderStartOffset) : -1;
     }
 
-    private bool IsNearEnd() => GetTotalSize() - (_scrollOffset + _viewportSize) <= 4d;
+    // In real px, since a scaled list (_ratio > 1) turns one real pixel of the browser's rounding into _ratio virtual ones.
+    private bool IsNearEnd() => RealFromVirtual(GetTotalSize() - (_scrollOffset + _viewportSize)) <= 4d;
 
     private void CheckEdgesReached()
     {
@@ -1725,32 +1779,48 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     }
 
     // Reports the viewport arriving at or leaving either edge, once the list has taken its initial position: before it, a
-    // Reversed list (or one opened at InitialIndex) would report the start it is about to leave.
+    // Reversed list (or one opened at InitialIndex) would report the start it is about to leave. The edges are the ones
+    // ScrollToStartAsync / ScrollToEndAsync go to, the HeaderTemplate and FooterTemplate included; a list an ancestor
+    // scrolls counts as at its start while the viewport is still before it, and at its end once past it.
     private void NotifyEdgeStates()
     {
-        if (_initialized is false || _initialScrollDone is false || _itemCount == 0 || _viewportSize <= 0) return;
+        if (IsDisposed || _initialized is false || _initialScrollDone is false) return;
 
-        // Negative while the content before the items (a header, or the page above a list an ancestor scrolls) is in view.
-        var atStart = _scrollOffset <= 0.5;
-        // A Reversed list pinned to its end stays there while the measurements of its newest items settle.
-        var atEnd = (Reversed && _stickToEnd) || IsNearEnd();
-
-        if (atStart != _atStart)
+        bool atStart, atEnd;
+        if (_itemCount == 0)
         {
-            _atStart = atStart;
-            if (OnAtStartChanged.HasDelegate)
-            {
-                _ = ObserveCallbackAsync(OnAtStartChanged.InvokeAsync(atStart));
-            }
+            // A list that has emptied has nothing left to scroll to.
+            atStart = atEnd = true;
+        }
+        else
+        {
+            if (_viewportSize <= 0) return;
+
+            // In real px, like the edges: the virtual offset is negative while the content before the items is in view.
+            atStart = RealFromVirtual(_scrollOffset) <= 0.5 - _edgeHead;
+            // A Reversed list pinned to its end stays there while the measurements of its newest items settle.
+            atEnd = (Reversed && _stickToEnd) || RealFromVirtual(GetTotalSize() - (_scrollOffset + _viewportSize)) <= 4d - _edgeTail;
         }
 
-        if (atEnd != _atEnd)
+        // A state is only taken as reported once a handler got it, so one attached later still learns where the list is.
+        if (OnAtStartChanged.HasDelegate is false)
         {
-            _atEnd = atEnd;
-            if (OnAtEndChanged.HasDelegate)
-            {
-                _ = ObserveCallbackAsync(OnAtEndChanged.InvokeAsync(atEnd));
-            }
+            _reportedAtStart = null;
+        }
+        else if (atStart != _reportedAtStart)
+        {
+            _reportedAtStart = atStart;
+            _ = ObserveCallbackAsync(OnAtStartChanged.InvokeAsync(atStart));
+        }
+
+        if (OnAtEndChanged.HasDelegate is false)
+        {
+            _reportedAtEnd = null;
+        }
+        else if (atEnd != _reportedAtEnd)
+        {
+            _reportedAtEnd = atEnd;
+            _ = ObserveCallbackAsync(OnAtEndChanged.InvokeAsync(atEnd));
         }
     }
 

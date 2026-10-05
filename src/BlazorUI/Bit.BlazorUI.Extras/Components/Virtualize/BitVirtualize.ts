@@ -191,7 +191,29 @@ namespace BitBlazorUI {
         }
 
         public metrics() {
-            return { scrollOffset: this._readOffset(), viewportSize: this._viewportSize(), crossSize: this._crossSize() };
+            // The offset first: it refreshes the lead of a list an ancestor scrolls, which the edges are read from.
+            const scrollOffset = this._readOffset();
+            const { headSize, tailSize } = this._edges();
+            return { scrollOffset, viewportSize: this._viewportSize(), crossSize: this._crossSize(), headSize, tailSize };
+        }
+
+        // How far the edges scrollToEdge goes to lie beyond the items, before and after them: the content of the list
+        // around its items (the header, the footer) as far as the scroll range reaches it. Independent of the scroll
+        // position and of the size of the items, so .NET measures the edges against its own size of them.
+        private _edges() {
+            const spacer = this._spacer;
+            if (!spacer || !spacer.isConnected) return { headSize: 0, tailSize: 0 };
+
+            const spacerEnd = this._lead + this._sizeOf(spacer);
+            const after = this._scrollExtent() - spacerEnd;
+            if (!this._external) return { headSize: this._lead, tailSize: after };
+
+            // An ancestor scrolls more than the list: its edges are the ones of the list, short of the scroll range's own.
+            const start = this._startOf(this._element);
+            return {
+                headSize: Math.min(this._lead, this._lead - start),
+                tailSize: Math.min(after, start + this._sizeOf(this._element) - spacerEnd),
+            };
         }
 
         public update(horizontal: boolean, dynamic: boolean, threshold: number) {
@@ -688,7 +710,7 @@ namespace BitBlazorUI {
             const m = this.metrics();
 
             if (this._shouldNotify(m.scrollOffset)) {
-                this._notify(m.scrollOffset, m.viewportSize);
+                this._notify(m);
             } else {
                 this._scheduleTrailing();
             }
@@ -720,12 +742,12 @@ namespace BitBlazorUI {
             return 0;
         }
 
-        private _notify(offset: number, viewportSize: number) {
+        private _notify(m: ReturnType<VirtualizeInstance['metrics']>) {
             this._notified = true;
-            this._lastNotifiedOffset = offset;
+            this._lastNotifiedOffset = m.scrollOffset;
             this._viewportChanged = false;
             if (this._trailingTimer) { clearTimeout(this._trailingTimer); this._trailingTimer = null; }
-            this._dotnetObj.invokeMethodAsync('Scroll', offset, viewportSize, this._seq, this._crossSize());
+            this._dotnetObj.invokeMethodAsync('Scroll', m.scrollOffset, m.viewportSize, this._seq, m.crossSize, m.headSize, m.tailSize);
         }
 
         // Ensure the final resting position is always reported after the user stops scrolling.
@@ -744,7 +766,7 @@ namespace BitBlazorUI {
                     if (side !== 0 && side === this._sideOf(this._lastNotifiedOffset)) return;
                 }
 
-                this._notify(m.scrollOffset, m.viewportSize);
+                this._notify(m);
             }, 150);
         }
 

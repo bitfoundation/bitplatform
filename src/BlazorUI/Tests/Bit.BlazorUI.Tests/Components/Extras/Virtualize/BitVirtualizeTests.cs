@@ -1126,6 +1126,126 @@ public class BitVirtualizeTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { true, false }, ends);
     }
 
+    [TestMethod]
+    public async Task BitVirtualizeReversedShouldLeaveTheEndOnAScrollDecidedHere()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.Reversed, true);
+            p.Add(x => x.Dynamic, true);
+            p.Add(x => x.EstimatedItemSize, 50);
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        await component.InvokeAsync(() => component.Instance.ScrollToStartAsync());
+        // Measurements settling before the browser reports the scroll must not pull the list back to its end.
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([0, 1, 2], [80, 80, 80]));
+
+        CollectionAssert.AreEqual(new[] { false, true }, starts);
+        CollectionAssert.AreEqual(new[] { true, false }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportTheLandingOfAScrollQueuedBeforeTheItems()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(0, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        // Asked to animate, but there is nothing on screen to animate from: it lands at once, as the initial position.
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(99, smooth: true));
+        component.Render(p => p.Add(x => x.Items, Enumerable.Range(0, 100).ToArray()));
+
+        CollectionAssert.AreEqual(new[] { false }, starts);
+        CollectionAssert.AreEqual(new[] { true }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportBothEdgesOnceTheListEmpties()
+    {
+        SetupViewport(300);
+
+        bool? atStart = null, atEnd = null;
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, value => atStart = value);
+            p.Add(x => x.OnAtEndChanged, value => atEnd = value);
+        });
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+        Assert.IsFalse(atStart);
+        Assert.IsFalse(atEnd);
+
+        component.Render(p => p.Add(x => x.Items, Array.Empty<int>()));
+
+        Assert.IsTrue(atStart);
+        Assert.IsTrue(atEnd);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldMeasureTheEdgesFromTheHeaderAndTheFooter()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        // A 100px header is in view at the start of the scroll range, which leaves the items at -100.
+        await component.InvokeAsync(() => component.Instance._Scroll(-100, 300, -1, -1, 100, 80));
+        // The header scrolled out of view is the start left, although the first item is right at the top.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, -1, 100, 80));
+        // The last item at the bottom, with the 80px footer still below it.
+        await component.InvokeAsync(() => component.Instance._Scroll(4700, 300, -1, -1, 100, 80));
+        await component.InvokeAsync(() => component.Instance._Scroll(4780, 300, -1, -1, 100, 80));
+
+        CollectionAssert.AreEqual(new[] { true, false }, starts);
+        CollectionAssert.AreEqual(new[] { false, true }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportTheEndOfAScaledListInRealPixels()
+    {
+        SetupViewport(300);
+
+        bool? atEnd = null;
+        var component = RenderList(1_000_000, 200, p => p.Add(x => x.OnAtEndChanged, value => atEnd = value));
+
+        // The browser's rounding leaves the real offset a fraction of a pixel short of its end, which is many virtual ones.
+        await component.InvokeAsync(() => component.Instance._Scroll(10_000_000 - 300 - 0.4, 300));
+
+        Assert.IsTrue(atEnd);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportTheCurrentEdgesToAHandlerAttachedLater()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50);
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+
+        bool? atStart = null;
+        component.Render(p => p.Add(x => x.OnAtStartChanged, value => atStart = value));
+
+        Assert.IsFalse(atStart);
+    }
+
     // ---------------------------------------------------------------- data changes
 
     [TestMethod]
