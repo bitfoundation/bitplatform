@@ -383,7 +383,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitNavPanel", "BitNavPanelParams")]
     [DataRow("BitVirtualize", "BitVirtualizeParams")]
     [DataRow("BitPhoneInput", "BitPhoneInputParams")]
-    [DataRow("BitTextField", "BitTextFieldParams")]
+    [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitFlag", "BitFlagParams")]
     [DataRow("BitMessageBox", "BitMessageBoxParams")]
@@ -408,7 +408,7 @@ public class ComponentCatalogTests : McpTestBase
 
         // The line is only worth its cost where it is true: a component with no params class of its
         // own must not carry it.
-        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitToggle" });
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitThemeSwitcher" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
     }
