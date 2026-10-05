@@ -578,7 +578,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// </summary>
     public async Task FocusAsync()
     {
-        var item = _items.FirstOrDefault(IsItemEnabled);
+        var item = _items.FirstOrDefault(i => GetIsDisabled(i) is false);
         if (item is null) return;
 
         await InvokeAsync(() => FocusItemCore(item));
@@ -1326,7 +1326,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         // A disabled header is out of the tab order, so the navigation walks past it rather than parking the
         // focus on something that cannot be reached by the Tab key either.
-        var focusables = _items.Where(IsItemEnabled).ToList();
+        var focusables = _items.Where(i => GetIsDisabled(i) is false).ToList();
         if (focusables.Count == 0) return;
 
         var index = focusables.FindIndex(i => ReferenceEquals(i, item));
@@ -1977,10 +1977,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
-
-    private bool IsItemEnabled(TItem? item) => GetIsDisabled(item) is false;
 
     private bool GetIsExpanded(TItem? item)
     {

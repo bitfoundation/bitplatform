@@ -735,9 +735,9 @@
                 gesture in the grid, which reports <i>aria-disabled</i>.
             </div>
             <br />
-            <BitToggle @bind-Value="gridEnabled" Label="Enabled" Inline />
+            <BitToggle @bind-Value="gridDisabled" Label="Disabled" Inline />
             <br />
-            <BitDataGrid Items="@disabledProducts" Height="380px" Disabled="gridEnabled is false"
+            <BitDataGrid Items="@disabledProducts" Height="380px" Disabled="gridDisabled"
                          SelectionMode="BitDataGridSelectionMode.Multiple" CellNavigation="true" ClipboardCopy="true"
                          Filterable="true" Resizable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Filterable="false" />

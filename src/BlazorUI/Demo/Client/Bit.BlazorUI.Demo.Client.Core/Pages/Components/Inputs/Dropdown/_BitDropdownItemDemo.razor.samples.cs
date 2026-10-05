@@ -1508,7 +1508,6 @@ private IEnumerable<BitDropdownItem<string>> initialSelectedItem = [
             Name = ""Product 100""
         },
         AriaLabel = ""Product 100"",
-        IsDisabled = false,
         ItemType = BitDropdownItemType.Normal
     }
 ];
@@ -1524,7 +1523,6 @@ private IEnumerable<BitDropdownItem<string>> initialSelectedItems = [
             Name = ""Product 100""
         },
         AriaLabel = ""Product 100"",
-        IsDisabled = false,
         ItemType = BitDropdownItemType.Normal
     },
     new()
@@ -1537,7 +1535,6 @@ private IEnumerable<BitDropdownItem<string>> initialSelectedItems = [
             Name = ""Product 99""
         },
         AriaLabel = ""Product 99"",
-        IsDisabled = false,
         ItemType = BitDropdownItemType.Normal
     }
 ];
@@ -1585,7 +1582,6 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
             Value = i.Id.ToString(),
             Data = i,
             AriaLabel = i.Name,
-            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         }).ToList();
 

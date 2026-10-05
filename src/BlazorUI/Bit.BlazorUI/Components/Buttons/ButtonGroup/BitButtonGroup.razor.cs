@@ -1833,7 +1833,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     private string? GetStyle(TItem? item)

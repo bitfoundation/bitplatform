@@ -1017,7 +1017,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     private bool GetIsSelected(TItem? item)

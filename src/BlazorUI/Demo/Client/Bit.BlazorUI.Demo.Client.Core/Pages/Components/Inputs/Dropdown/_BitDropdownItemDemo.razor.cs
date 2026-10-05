@@ -262,7 +262,6 @@ public partial class _BitDropdownItemDemo
                 Name = "Product 100"
             },
             AriaLabel = "Product 100",
-            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         }
     ];
@@ -278,7 +277,6 @@ public partial class _BitDropdownItemDemo
                 Name = "Product 100"
             },
             AriaLabel = "Product 100",
-            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         },
         new()
@@ -291,7 +289,6 @@ public partial class _BitDropdownItemDemo
                 Name = "Product 99"
             },
             AriaLabel = "Product 99",
-            IsDisabled = false,
             ItemType = BitDropdownItemType.Normal
         }
     ];
@@ -386,7 +383,6 @@ public partial class _BitDropdownItemDemo
                 Value = i.Id.ToString(),
                 Data = i,
                 AriaLabel = i.Name,
-                IsDisabled = false,
                 ItemType = BitDropdownItemType.Normal
             }).ToList();
 

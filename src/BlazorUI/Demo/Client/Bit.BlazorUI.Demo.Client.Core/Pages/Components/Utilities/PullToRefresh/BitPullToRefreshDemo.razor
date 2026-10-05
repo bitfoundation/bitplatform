@@ -262,10 +262,10 @@
             that starts in a form field is always left to the field.
         </div>
         <br />
-        <BitToggle @bind-Value="isEnabled" Label="Enabled" />
+        <BitToggle @bind-Value="isDisabled" Label="Disabled" />
         <BitToggle @bind-Value="noMouse" Label="NoMouse" />
         <br />
-        <BitPullToRefresh Disabled="isEnabled is false" NoMouse="noMouse" OnRefresh="HandleOnRefreshDisabled">
+        <BitPullToRefresh Disabled="isDisabled" NoMouse="noMouse" OnRefresh="HandleOnRefreshDisabled">
             <div class="anchor">
                 @foreach (var (idx, i) in disabledItems)
                 {

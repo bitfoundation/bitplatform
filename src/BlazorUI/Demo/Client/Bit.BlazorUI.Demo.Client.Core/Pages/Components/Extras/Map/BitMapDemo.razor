@@ -249,10 +249,10 @@
                 <BitToggle Value="interDragging" ValueChanged="v => { interDragging = v; BuildInteractionProvider(); }" Text="Dragging" />
                 <BitToggle Value="interScaleBar" ValueChanged="v => { interScaleBar = v; BuildInteractionProvider(); }" Text="Scale bar" />
                 <BitToggle Value="interMaxBounds" ValueChanged="v => { interMaxBounds = v; BuildInteractionProvider(); }" Text="Keep inside London" />
-                <BitToggle @bind-Value="interEnabled" Text="Enabled" />
+                <BitToggle @bind-Value="interDisabled" Text="Disabled" />
             </div>
             <div class="map-container">
-                <BitMap TMapProvider="BitLeafletMapProvider" Provider="@interProvider" Disabled="interEnabled is false" />
+                <BitMap TMapProvider="BitLeafletMapProvider" Provider="@interProvider" Disabled="interDisabled" />
             </div>
         </DemoExample>
 

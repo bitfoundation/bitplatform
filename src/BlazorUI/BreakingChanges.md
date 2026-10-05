@@ -48,6 +48,11 @@ Markup:
 
 `IsEnabled="true"` is the default it always was; remove it.
 
+An `IsEnabled` left on a component still compiles, since a component passes any attribute it does not
+take through to its element, but it would no longer disable anything. So it throws an
+`InvalidOperationException` naming the component when it renders, rather than leaving a control meant to
+be gated quietly enabled. Search the markup for `IsEnabled` before upgrading.
+
 The option components (`BitDropdownOption`, `BitNavOption`, ...) take `IsDisabled`, like the items they
 stand for, not the components' `Disabled`. They capture no unmatched attributes, so `Disabled` (or a
 lowercase `disabled`) written on an option compiles but throws at runtime, as any unknown parameter would.
@@ -81,6 +86,9 @@ NameSelectors = new() { IsDisabled = { Name = nameof(MyItem.Disabled) } };   // 
 
 A custom class with an `IsEnabled` property and no name selector was read through the default name
 before; rename that property to `IsDisabled` and invert its values, or point a selector at it as above.
+Read through the new default name, such a class would have every item it marks off selectable, so a
+component reading the default `IsDisabled` off a type that has an `IsEnabled` property but no
+`IsDisabled` one throws an `InvalidOperationException` that says which type to change.
 
 **A lowercase `disabled` attribute written in markup is now the parameter.** The Razor compiler matches
 the attributes written on a component to its parameters regardless of case, so `disabled` written on a

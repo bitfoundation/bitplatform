@@ -89,7 +89,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 ];
 
 private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
-     basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsDisabled = false, Value = i });
+     basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, Value = i });
 
 private MenuItem? twoWaySelectedItem;";
 

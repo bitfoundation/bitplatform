@@ -1571,10 +1571,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
-
-    private bool IsItemEnabled(TItem item) => GetIsDisabled(item) is false;
 
     internal bool GetIsHidden(TItem item)
     {
@@ -3822,8 +3820,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 Text = text,
                 Title = text,
-                Value = default,
-                IsDisabled = false
+                Value = default
             };
 
             if (DynamicValueGenerator is not null)
@@ -3844,8 +3841,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 Text = text,
                 Title = text,
-                Value = default,
-                IsDisabled = false
+                Value = default
             };
 
             if (DynamicValueGenerator is not null)

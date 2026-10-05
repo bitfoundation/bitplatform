@@ -1305,9 +1305,9 @@ private readonly BitDataGridStrings germanStrings = new()
 };" + ProductModelCode + SampleDataCode;
 
     private readonly string example27RazorCode = @"
-<BitToggle @bind-Value=""gridEnabled"" Label=""Enabled"" Inline />
+<BitToggle @bind-Value=""gridDisabled"" Label=""Disabled"" Inline />
 
-<BitDataGrid Items=""@disabledProducts"" Height=""380px"" Disabled=""gridEnabled is false""
+<BitDataGrid Items=""@disabledProducts"" Height=""380px"" Disabled=""gridDisabled""
              SelectionMode=""BitDataGridSelectionMode.Multiple"" CellNavigation=""true"" ClipboardCopy=""true""
              Filterable=""true"" Resizable=""true"" Pageable=""true"" PageSize=""8"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitDataGridColumnAlign.Right"" Filterable=""false"" />
@@ -1317,7 +1317,7 @@ private readonly BitDataGridStrings germanStrings = new()
 </BitDataGrid>";
     private readonly string example27CsharpCode = @"
 private readonly List<Product> disabledProducts = SampleData.Generate(40);
-private bool gridEnabled;" + ProductModelCode + SampleDataCode;
+private bool gridDisabled = true;" + ProductModelCode + SampleDataCode;
 
     private readonly string example28RazorCode = @"
 <BitParams Parameters=""@dataGridParams"">

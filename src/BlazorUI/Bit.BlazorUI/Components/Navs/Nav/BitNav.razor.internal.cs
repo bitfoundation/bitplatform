@@ -295,7 +295,7 @@ public partial class BitNav<TItem>
             return NameSelectors.IsDisabled.Selector!(item) ?? false;
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     internal bool? GetIsExpanded(TItem item)

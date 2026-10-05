@@ -56,6 +56,27 @@ internal static class ObjectExtensions
         return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 
+    // The disabled flag of an item read through its name selector. The flag used to be IsEnabled, true by
+    // default (#5527): a custom item type that still has only that property would be read as not disabled,
+    // every item it marks off quietly selectable, so it is refused with what to change instead.
+    internal static bool GetIsDisabledFromProperty(this object? obj, string propertyName)
+    {
+        if (obj is null) return false;
+
+        var type = obj.GetType();
+        if (propertyName == "IsDisabled" &&
+            GetPropertyInfo(type, "IsDisabled") is null &&
+            GetPropertyInfo(type, "IsEnabled") is not null)
+        {
+            throw new InvalidOperationException(
+                $"The item type '{type.Name}' has an 'IsEnabled' property, which is no longer read: the items' enabled state is now " +
+                $"the 'IsDisabled' flag, true for an item that is disabled. Add an 'IsDisabled' property to '{type.Name}', or map " +
+                "the existing one through the name selectors: NameSelectors = new() { IsDisabled = { Selector = i => i.IsEnabled is false } }.");
+        }
+
+        return obj.GetValueFromProperty(propertyName, false);
+    }
+
     internal static void SetValueToProperty(this object? obj, string propertyName, object value)
     {
         if (obj is null) return;

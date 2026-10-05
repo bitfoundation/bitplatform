@@ -507,10 +507,10 @@ private readonly Person[] people =
     }
 </style>
 
-<BitToggle @bind-Value=""isStickyEnabled"" Text=""Sticky enabled"" />
+<BitToggle @bind-Value=""isStickyDisabled"" Text=""Sticky disabled"" />
 <div class=""vertical-container"">
-    <BitSticky Class=""sticky"" Disabled=""isStickyEnabled is false"">
-        @(isStickyEnabled ? ""Sticking to the top"" : ""Scrolling away with the content"")
+    <BitSticky Class=""sticky"" Disabled=""isStickyDisabled"">
+        @(isStickyDisabled ? ""Scrolling away with the content"" : ""Sticking to the top"")
     </BitSticky>
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
     <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
@@ -518,7 +518,7 @@ private readonly Person[] people =
     <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
 </div>";
     private readonly string example10CsharpCode = @"
-private bool isStickyEnabled = true;";
+private bool isStickyDisabled;";
 
     private readonly string example11RazorCode = @"
 <style>

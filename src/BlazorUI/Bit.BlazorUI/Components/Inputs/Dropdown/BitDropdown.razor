@@ -21,7 +21,7 @@
     @* A disabled item is one the callout refuses to unselect, so its chip carries no remove button and
        cannot be the reason the hidden name element is rendered either. *@
     var hasChipRemoveButtons = Chips && Disabled is false && ReadOnly is false &&
-                               _selectedItems.Take(GetDisplayedItemsCount()).Any(IsItemEnabled);
+                               _selectedItems.Take(GetDisplayedItemsCount()).Any(i => GetIsDisabled(i) is false);
 
     // The combobox role, and the state that goes with it, belong on the element the keyboard actually
     // lands on - which is the field itself only while it has nothing focusable inside it. The ComboBox

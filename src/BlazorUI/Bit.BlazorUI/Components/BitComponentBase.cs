@@ -85,6 +85,11 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
+    /// </summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the component's animations play at their full duration
     /// even when reduced motion is requested.
     /// <br />
@@ -128,11 +133,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// If the value is null, the <see cref="BitComponentBase.UniqueId"/> will be used as the HTML id attribute of the root element of the component.
     /// </remarks>
     [Parameter] public string? Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
-    /// </summary>
-    [Parameter] public bool Disabled { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.
@@ -207,6 +207,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(Disabled):
+                    _assignedParameters.Add(nameof(Disabled));
+                    var disabled = (bool)parameter.Value;
+                    if (Disabled != disabled) ClassBuilder.Reset();
+                    Disabled = disabled;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(ForceAnimation):
                     _assignedParameters.Add(nameof(ForceAnimation));
                     var forceAnimation = (bool)parameter.Value;
@@ -218,14 +226,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                 case nameof(Id):
                     _assignedParameters.Add(nameof(Id));
                     Id = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(Disabled):
-                    _assignedParameters.Add(nameof(Disabled));
-                    var disabled = (bool)parameter.Value;
-                    if (Disabled != disabled) ClassBuilder.Reset();
-                    Disabled = disabled;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -251,6 +251,15 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     Visibility = visibility;
                     parametersDictionary.Remove(parameter.Key);
                     break;
+
+                // IsEnabled became the Disabled flag, with the opposite meaning (#5527). Left in markup it is no
+                // longer a parameter, so it would land in HtmlAttributes as a plain attribute and the component
+                // would quietly render enabled: refused instead, with what to write.
+                case var key when string.Equals(key, "IsEnabled", StringComparison.OrdinalIgnoreCase):
+                    throw new InvalidOperationException(
+                        $"{GetType().Name} has no '{key}' parameter: the enabled state is now the 'Disabled' flag, with the opposite " +
+                        "meaning. Write Disabled instead of IsEnabled=\"false\", Disabled=\"condition is false\" instead of " +
+                        "IsEnabled=\"condition\", and remove IsEnabled=\"true\".");
 
                 default:
                     HtmlAttributes.Add(parameter.Key, parameter.Value);

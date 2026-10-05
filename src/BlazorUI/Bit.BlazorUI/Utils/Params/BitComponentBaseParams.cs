@@ -29,6 +29,13 @@ public abstract class BitComponentBaseParams
     public BitDir? Dir { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
+    /// <br />
+    /// <see cref="BitComponentBase.Disabled"/>.
+    /// </summary>
+    public bool? Disabled { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the component's animations play at their full duration
     /// even when reduced motion is requested.
     /// <br />
@@ -51,13 +58,6 @@ public abstract class BitComponentBaseParams
     /// <see cref="BitComponentBase.Id"/>.
     /// </summary>
     public string? Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
-    /// <br />
-    /// <see cref="BitComponentBase.Disabled"/>.
-    /// </summary>
-    public bool? Disabled { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.
@@ -116,6 +116,13 @@ public abstract class BitComponentBaseParams
             bitComponentBase.ClassBuilder.Reset();
         }
 
+        if (Disabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(Disabled)) && bitComponentBase.Disabled != Disabled)
+        {
+            bitComponentBase.Disabled = Disabled.Value;
+
+            bitComponentBase.ClassBuilder.Reset();
+        }
+
         if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)) && bitComponentBase.ForceAnimation != ForceAnimation)
         {
             bitComponentBase.ForceAnimation = ForceAnimation.Value;
@@ -136,13 +143,6 @@ public abstract class BitComponentBaseParams
         if (Id.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Id)))
         {
             bitComponentBase.Id = Id;
-        }
-
-        if (Disabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(Disabled)) && bitComponentBase.Disabled != Disabled)
-        {
-            bitComponentBase.Disabled = Disabled.Value;
-
-            bitComponentBase.ClassBuilder.Reset();
         }
 
         if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)) && bitComponentBase.Style != Style)

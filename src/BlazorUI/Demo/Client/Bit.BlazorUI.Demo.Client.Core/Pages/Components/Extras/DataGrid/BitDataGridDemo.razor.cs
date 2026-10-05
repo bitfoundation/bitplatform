@@ -600,7 +600,7 @@ public partial class BitDataGridDemo : AppComponentBase
 
     // example 27 - disabled
     private readonly List<Product> disabledProducts = SampleData.Generate(40);
-    private bool gridEnabled;
+    private bool gridDisabled = true;
 
 
     // example 28 - cascading parameters

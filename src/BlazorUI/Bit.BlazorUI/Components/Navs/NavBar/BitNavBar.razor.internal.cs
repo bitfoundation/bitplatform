@@ -199,7 +199,7 @@ public partial class BitNavBar<TItem>
             return NameSelectors.IsDisabled.Selector!(item) ?? false;
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     private string? GetKey(TItem item)

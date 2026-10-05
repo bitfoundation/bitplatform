@@ -806,7 +806,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     internal BitIconInfo? GetIcon(TItem item)

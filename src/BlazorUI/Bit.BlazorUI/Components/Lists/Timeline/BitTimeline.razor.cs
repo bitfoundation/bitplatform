@@ -598,7 +598,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     // Joins the style of the item with the one of the Styles object, so an item that carries neither of

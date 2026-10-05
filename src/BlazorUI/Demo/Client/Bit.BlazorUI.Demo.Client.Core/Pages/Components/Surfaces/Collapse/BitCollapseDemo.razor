@@ -58,9 +58,9 @@
                 <BitButton OnClick="() => collapseRef?.ExpandAsync()">Expand</BitButton>
                 <BitButton OnClick="() => collapseRef?.CollapseAsync()">Collapse</BitButton>
                 <BitButton OnClick="() => collapseRef?.ToggleAsync()">Toggle</BitButton>
-                <BitCheckbox Label="Enabled" @bind-Value="collapseEnabled" />
+                <BitCheckbox Label="Disabled" @bind-Value="collapseDisabled" />
             </div>
-            <BitCollapse @ref="collapseRef" DefaultExpanded Disabled="collapseEnabled is false" OnChange="HandleChange">
+            <BitCollapse @ref="collapseRef" DefaultExpanded Disabled="collapseDisabled" OnChange="HandleChange">
                 Starts open through DefaultExpanded; nothing on the page holds its state.
             </BitCollapse>
             <div>@changeLog</div>

@@ -86,9 +86,9 @@
         <br />
         <div class="example-content">
             <div>Two-way:</div>
-            <BitToggle @bind-Value="bindingIsEnabled" OnText="Enabled" OffText="Disabled" />
+            <BitToggle @bind-Value="bindingIsDisabled" OnText="Disabled" OffText="Enabled" />
             <BitToggle @bind-Value="bindingIsExpanded" OnText="Expanded" OffText="Collapsed" />
-            <BitAccordion Title="Bound" Disabled="bindingIsEnabled is false" @bind-IsExpanded="bindingIsExpanded">
+            <BitAccordion Title="Bound" Disabled="bindingIsDisabled" @bind-IsExpanded="bindingIsExpanded">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </div>

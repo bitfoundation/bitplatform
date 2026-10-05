@@ -1301,7 +1301,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
+        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
     }
 
     private RenderFragment<TItem>? GetOverflowTemplate(TItem? item)
