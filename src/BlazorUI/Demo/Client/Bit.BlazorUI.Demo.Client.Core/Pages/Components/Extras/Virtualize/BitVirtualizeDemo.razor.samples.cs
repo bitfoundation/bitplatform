@@ -234,13 +234,15 @@ private bool gridResponsive;";
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(-500, scrollSmooth)"">-500px</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(500, scrollSmooth)"">+500px</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollToEndAsync(scrollSmooth)"">To end</BitButton>
-    <BitTag Text=""@($""[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible"")"" Color=""BitColor.SecondaryBackground"" />
+    <BitTag Text=""@($""[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible{(scrollAtStart ? "" · at start"" : null)}{(scrollAtEnd ? "" · at end"" : null)}"")"" Color=""BitColor.SecondaryBackground"" />
 </div>
 
 <BitVirtualize @ref=""scrollRef"" Items=""scrollItems"" ItemSize=""48""
                TItem=""int"" Context=""item""
                InitialIndex=""500""
                OnVisibleRangeChanged=""range => visibleRange = range""
+               OnAtStartChanged=""atStart => scrollAtStart = atStart""
+               OnAtEndChanged=""atEnd => scrollAtEnd = atEnd""
                Class=""list"">
     <div class=""basic-item @(item == scrollTargetIndex ? ""target"" : null)"">
         <b>#@item.ToString(""N0"")</b>
@@ -252,6 +254,8 @@ private readonly int[] scrollItems = Enumerable.Range(0, 100_000).ToArray();
 private int scrollTargetIndex = 5_000;
 private bool scrollSmooth = true;
 private (int Start, int End) visibleRange;
+private bool scrollAtStart;
+private bool scrollAtEnd;
 
 private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
 {
@@ -625,6 +629,7 @@ public record TaskItem(int Id, string Title);";
                TItem=""Message""
                Reversed AlignToEnd ItemKey=""m => m.Id""
                OnStartReached=""LoadChatHistory"" ReachedThreshold=""3""
+               OnAtEndChanged=""atEnd => chatAtEnd = atEnd""
                AriaLabel=""Messages""
                Class=""list"">
     <HeaderTemplate>
@@ -641,7 +646,7 @@ public record TaskItem(int Id, string Title);";
     <BitButton OnClick=""SendChatMessage"" IsEnabled=""@(string.IsNullOrWhiteSpace(draftMessage) is false)"">Send</BitButton>
 </div>
 <div class=""composer"">
-    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => chatRef.ScrollToEndAsync(smooth: true)"">Jump to latest</BitButton>
+    <BitButton Variant=""@(chatAtEnd ? BitVariant.Outline : BitVariant.Fill)"" OnClick=""() => chatRef.ScrollToEndAsync(smooth: true)"">Jump to latest</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""NewConversation"">New conversation</BitButton>
 </div>";
     private readonly string example13CsharpCode = @"
@@ -649,6 +654,7 @@ private BitVirtualize<Message> chatRef = default!;
 private List<Message> messages = [];
 private string? draftMessage;
 private bool loadingChatHistory;
+private bool chatAtEnd = true;
 private int chatHistoryRemaining = 381; // count of the older messages (0..380) not loaded yet
 
 protected override void OnInitialized()

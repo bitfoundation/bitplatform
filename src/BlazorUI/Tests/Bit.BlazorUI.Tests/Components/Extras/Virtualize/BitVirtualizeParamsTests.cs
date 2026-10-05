@@ -36,6 +36,8 @@ public class BitVirtualizeParamsTests : BunitTestContext
         nameof(BitVirtualize<int>.ItemTemplate),
         nameof(BitVirtualize<int>.Lanes),
         nameof(BitVirtualize<int>.MinLaneSize),
+        nameof(BitVirtualize<int>.OnAtEndChanged),
+        nameof(BitVirtualize<int>.OnAtStartChanged),
         nameof(BitVirtualize<int>.OnEndReached),
         nameof(BitVirtualize<int>.OnStartReached),
         nameof(BitVirtualize<int>.OnVisibleRangeChanged),

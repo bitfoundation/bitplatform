@@ -173,6 +173,20 @@ public partial class BitVirtualizeDemo
          },
          new()
          {
+            Name = "OnAtEndChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "The callback to be called when the viewport arrives at the end of the list (true) or leaves it (false), for example to show a \"Jump to latest\" button only while the newest items are out of view. Also called with the initial state once the list has taken its initial position.",
+         },
+         new()
+         {
+            Name = "OnAtStartChanged",
+            Type = "EventCallback<bool>",
+            DefaultValue = "",
+            Description = "The callback to be called when the viewport arrives at the start of the list (true) or leaves it (false), for example to show a \"Back to top\" button only once the user has scrolled away. Also called with the initial state once the list has taken its initial position.",
+         },
+         new()
+         {
             Name = "OnEndReached",
             Type = "EventCallback",
             DefaultValue = "",
@@ -555,6 +569,8 @@ public partial class BitVirtualizeDemo
     private int scrollTargetIndex = 5_000;
     private bool scrollSmooth = true;
     private (int Start, int End) visibleRange;
+    private bool scrollAtStart;
+    private bool scrollAtEnd;
 
     private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
     {
@@ -637,6 +653,7 @@ public partial class BitVirtualizeDemo
     private List<Message> messages = [];
     private string? draftMessage;
     private bool loadingChatHistory;
+    private bool chatAtEnd = true;
     private int chatHistoryRemaining = 381; // count of the older messages (0..380) not loaded yet
 
     private void InitMessages()

@@ -130,7 +130,8 @@
                     <b>InitialIndex</b> opens the list at an item. <b>ScrollToIndexAsync</b> brings an item into view aligned to
                     its Start, Center or End, or by the least movement (Auto); <b>ScrollToOffsetAsync</b>, <b>ScrollByAsync</b>,
                     <b>ScrollToStartAsync</b> and <b>ScrollToEndAsync</b> cover the rest. Each can animate, and a call made before
-                    the list is ready is applied once it is. <b>OnVisibleRangeChanged</b> reports the visible [Start, End).
+                    the list is ready is applied once it is. <b>OnVisibleRangeChanged</b> reports the visible [Start, End), and
+                    <b>OnAtStartChanged</b> / <b>OnAtEndChanged</b> whether an edge is reached.
                 </div>
                 <br />
                 <div class="toolbar">
@@ -147,13 +148,15 @@
                     <BitButton Variant="BitVariant.Outline" OnClick="() => scrollRef.ScrollByAsync(-500, scrollSmooth)">-500px</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="() => scrollRef.ScrollByAsync(500, scrollSmooth)">+500px</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="() => scrollRef.ScrollToEndAsync(scrollSmooth)">To end</BitButton>
-                    <BitTag Text="@($"[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible")" Color="BitColor.SecondaryBackground" />
+                    <BitTag Text="@($"[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible{(scrollAtStart ? " · at start" : null)}{(scrollAtEnd ? " · at end" : null)}")" Color="BitColor.SecondaryBackground" />
                 </div>
                 <br />
                 <BitVirtualize @ref="scrollRef" Items="scrollItems" ItemSize="48"
                                TItem="int" Context="item"
                                InitialIndex="500"
                                OnVisibleRangeChanged="range => visibleRange = range"
+                               OnAtStartChanged="atStart => scrollAtStart = atStart"
+                               OnAtEndChanged="atEnd => scrollAtEnd = atEnd"
                                Class="list">
                     <div class="basic-item @(item == scrollTargetIndex ? "target" : null)">
                         <b>#@item.ToString("N0")</b>
@@ -181,16 +184,10 @@
             <DemoExample Title="Keyboard & accessibility" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>
                     Each item carries its position in the whole list (aria-posinset / aria-setsize), so a screen reader says
-                    "article 12 of 10,000" with only a few items in the DOM. <b>Role</b> and <b>ItemRole</b> (list / listitem by
-                    default) are set here to a feed of articles, and <b>AriaLabel</b> names it. <b>ItemAttributes</b> adds
-                    attributes to the element of each item, the one that takes the focus: here the aria-labelledby and
-                    aria-describedby a feed asks of its articles (an aria-selected would make a listbox of options).
-                </div>
-                <br />
-                <div>
-                    Tab in, then use the arrows, PageUp / PageDown, Home and End: only the focused item is tabbable (roving
-                    tabindex), the list scrolls to it, and it stays in the DOM - focused - when scrolled away with the mouse.
-                    Keys pressed in an item's own controls are left to them.
+                    "article 12 of 10,000" with only a few items in the DOM. Here <b>Role</b> and <b>ItemRole</b> (list /
+                    listitem by default) make a feed of articles, <b>AriaLabel</b> names it and <b>ItemAttributes</b> labels
+                    each focusable article. Tab in, then use the arrows, PageUp / PageDown, Home and End: only the focused item
+                    is tabbable, and it stays focused when scrolled away. Keys pressed in an item's own controls are left to them.
                 </div>
                 <br />
                 <BitVirtualize Items="articles" ItemSize="72"
@@ -310,14 +307,16 @@
             <DemoExample Title="Reversed (chat)" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
                 <div>
                     <b>Reversed</b> starts at the newest message and stays pinned there as messages arrive. Scrolling up,
-                    <b>OnStartReached</b> prepends older history without moving the view. <b>AlignToEnd</b> keeps a short
-                    conversation at the bottom (start a new one to see it).
+                    <b>OnStartReached</b> prepends older history without moving the view, and <b>OnAtEndChanged</b> highlights
+                    "Jump to latest" while the newest messages are out of view. <b>AlignToEnd</b> keeps a short conversation
+                    at the bottom (start a new one to see it).
                 </div>
                 <br />
                 <BitVirtualize @ref="chatRef" Items="messages" Dynamic EstimatedItemSize="48"
                                TItem="Message"
                                Reversed AlignToEnd ItemKey="m => m.Id"
                                OnStartReached="LoadChatHistory" ReachedThreshold="3"
+                               OnAtEndChanged="atEnd => chatAtEnd = atEnd"
                                AriaLabel="Messages"
                                Class="list">
                     <HeaderTemplate>
@@ -334,7 +333,7 @@
                     <BitButton OnClick="SendChatMessage" IsEnabled="@(string.IsNullOrWhiteSpace(draftMessage) is false)">Send</BitButton>
                 </div>
                 <div class="composer">
-                    <BitButton Variant="BitVariant.Outline" OnClick="() => chatRef.ScrollToEndAsync(smooth: true)">Jump to latest</BitButton>
+                    <BitButton Variant="@(chatAtEnd ? BitVariant.Outline : BitVariant.Fill)" OnClick="() => chatRef.ScrollToEndAsync(smooth: true)">Jump to latest</BitButton>
                     <BitButton Variant="BitVariant.Outline" OnClick="NewConversation">New conversation</BitButton>
                 </div>
             </DemoExample>

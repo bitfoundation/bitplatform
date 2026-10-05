@@ -1041,6 +1041,91 @@ public class BitVirtualizeTests : BunitTestContext
 
 
 
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportArrivingAtAndLeavingTheEdges()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        // The initial state, reported once.
+        CollectionAssert.AreEqual(new[] { true }, starts);
+        CollectionAssert.AreEqual(new[] { false }, ends);
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(1200, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(4700, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300));
+
+        // Only the changes are reported.
+        CollectionAssert.AreEqual(new[] { true, false, true }, starts);
+        CollectionAssert.AreEqual(new[] { false, true, false }, ends);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldReportTheEdgesOfTheInitialPosition()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        RenderList(100, 50, p =>
+        {
+            p.Add(x => x.InitialIndex, 50);
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+        });
+
+        // The start the list opens away from is never reported.
+        CollectionAssert.AreEqual(new[] { false }, starts);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldReportBothEdgesForAListThatFitsItsViewport()
+    {
+        SetupViewport(300);
+
+        bool? atStart = null, atEnd = null;
+        RenderList(3, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, value => atStart = value);
+            p.Add(x => x.OnAtEndChanged, value => atEnd = value);
+        });
+
+        Assert.IsTrue(atStart);
+        Assert.IsTrue(atEnd);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeReversedShouldStayAtTheEndWhileItsNewestItemsGetMeasured()
+    {
+        SetupViewport(300);
+
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.Reversed, true);
+            p.Add(x => x.Dynamic, true);
+            p.Add(x => x.EstimatedItemSize, 50);
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        await component.InvokeAsync(() => component.Instance._Scroll(4700, 300));
+        // The newest items turn out taller than estimated, which grows the list past the viewport until it is re-pinned.
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([97, 98, 99], [80, 80, 80]));
+
+        CollectionAssert.AreEqual(new[] { true }, ends);
+
+        // The user scrolls up to read the history.
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+
+        CollectionAssert.AreEqual(new[] { true, false }, ends);
+    }
+
     // ---------------------------------------------------------------- data changes
 
     [TestMethod]

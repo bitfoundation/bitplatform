@@ -66,6 +66,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private object? _startReachedItem;   // the identity of the first item when OnStartReached last fired
     private bool _wasAtStart;
     private bool _wasAtEnd;
+    private bool? _atStart;              // the edge states last reported through OnAtStartChanged / OnAtEndChanged
+    private bool? _atEnd;
 
     // Sticky (grouped) header tracking.
     private List<int>? _stickyIndices;   // sorted indices flagged by IsStickyItem
@@ -261,6 +263,20 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// The custom template to render until the component has performed its first load.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The callback to be called when the viewport arrives at the end of the list (true) or leaves it (false), for example
+    /// to show a "Jump to latest" button only while the newest items are out of view. Also called with the initial state
+    /// once the list has taken its initial position.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnAtEndChanged { get; set; }
+
+    /// <summary>
+    /// The callback to be called when the viewport arrives at the start of the list (true) or leaves it (false), for
+    /// example to show a "Back to top" button only once the user has scrolled away. Also called with the initial state
+    /// once the list has taken its initial position.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnAtStartChanged { get; set; }
 
     /// <summary>
     /// The callback to be called when the last item comes within ReachedThreshold items of the visible window,
@@ -1024,6 +1040,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             _queuedScroll = null;
             _initialScrollDone = true;
             await queued();
+            NotifyEdgeStates();
             return;
         }
 
@@ -1040,6 +1057,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         {
             await ScrollToIndexAsync(idx);
         }
+
+        // The initial position may well be the one the list started at, which no scroll then reports.
+        NotifyEdgeStates();
     }
 
     private async Task ApplyPendingScrollAsync()
@@ -1605,6 +1625,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         UpdateSticky();
         CheckEdgesReached();
+        NotifyEdgeStates();
 
         if (rangeChanged)
         {
@@ -1701,6 +1722,36 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             }
         }
         _wasAtStart = atStart;
+    }
+
+    // Reports the viewport arriving at or leaving either edge, once the list has taken its initial position: before it, a
+    // Reversed list (or one opened at InitialIndex) would report the start it is about to leave.
+    private void NotifyEdgeStates()
+    {
+        if (_initialized is false || _initialScrollDone is false || _itemCount == 0 || _viewportSize <= 0) return;
+
+        // Negative while the content before the items (a header, or the page above a list an ancestor scrolls) is in view.
+        var atStart = _scrollOffset <= 0.5;
+        // A Reversed list pinned to its end stays there while the measurements of its newest items settle.
+        var atEnd = (Reversed && _stickToEnd) || IsNearEnd();
+
+        if (atStart != _atStart)
+        {
+            _atStart = atStart;
+            if (OnAtStartChanged.HasDelegate)
+            {
+                _ = ObserveCallbackAsync(OnAtStartChanged.InvokeAsync(atStart));
+            }
+        }
+
+        if (atEnd != _atEnd)
+        {
+            _atEnd = atEnd;
+            if (OnAtEndChanged.HasDelegate)
+            {
+                _ = ObserveCallbackAsync(OnAtEndChanged.InvokeAsync(atEnd));
+            }
+        }
     }
 
     // What tells the item at an index apart from others: its ItemKey or, without one, the item itself; null while it is not loaded.
