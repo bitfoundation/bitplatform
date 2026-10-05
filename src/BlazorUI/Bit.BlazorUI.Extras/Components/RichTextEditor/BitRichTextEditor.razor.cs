@@ -22,9 +22,31 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>Transient inline error message shown in the editor chrome.</summary>
     private string? _inlineError;
 
+    /// <summary>What the polite live region says about a change nothing on screen announces (a checked task).</summary>
+    private string? _announcement;
+
+    // Set when a panel or a menu closes from its own controls, so the focus that was inside it (and is about to be
+    // removed with it) goes back to the text on the render that follows instead of falling to the page.
+    private bool _pendingEditorFocus;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the rich text editor component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration (the localizer of a localized app, its toolbar, its
+    /// sanitization policy and its image upload handler, above all) to be applied to multiple editors through the
+    /// <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitRichTextEditorParams.ParamName)]
+    public BitRichTextEditorParams? CascadingParameters { get; set; }
 
 
 
@@ -41,7 +63,8 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the rich text editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitRichTextEditorClassStyles? Classes { get; set; }
 
     private int _debounceMs = 200;
     /// <summary>
@@ -56,15 +79,53 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     /// <summary>
-    /// Minimum height of the editing surface (any CSS length).
+    /// The helper text shown in the footer of the editor (what to write, a format to follow). The editing surface is
+    /// described by it, so a screen reader reads it along with the name on focus.
     /// </summary>
-    [Parameter] public string Height { get; set; } = "300px";
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// The message shown under the editor when its content was rejected, which turns a red frame into something the
+    /// reader can act on. Setting it marks the editor invalid on its own - the same look and aria-invalid that
+    /// <see cref="Invalid"/> gives it - describes the editing surface by it and announces it once as it appears.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two fields). An
+    /// editor inside an <c>EditForm</c> already gets its messages from the cascading EditContext through the
+    /// <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The height the editing surface starts at (any CSS length); it grows with the content from there, up to
+    /// <see cref="MaxHeight"/>. Null leaves it to the --bit-RichTextEditor-height CSS variable (300px by default).
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Marks the content as invalid, which gives a rejection by something other than the cascading EditContext - a
+    /// server, a rule of the app - the same error border and aria-invalid a failing data annotation gives it. An
+    /// editor failing its own field validation stays invalid regardless of this parameter.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
+
+    /// <summary>
+    /// The visible label of the editor, rendered above the toolbar. It also names the editing surface for assistive
+    /// technologies (taking the place of <see cref="BitComponentBase.AriaLabel"/>), and clicking it moves the focus
+    /// into the text.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
 
     /// <summary>
     /// Maximum height of the editing surface (any CSS length). Content beyond it scrolls inside
-    /// the editor instead of growing the page. Null leaves the surface unbounded.
+    /// the editor instead of growing the page. Null leaves it to the --bit-RichTextEditor-max-height CSS variable
+    /// (unbounded by default).
     /// </summary>
-    [Parameter] public string? MaxHeight { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? MaxHeight { get; set; }
 
     /// <summary>
     /// Callback for when the editor loses focus.
@@ -105,6 +166,12 @@ public partial class BitRichTextEditor : BitComponentBase
     public bool ReadOnly { get; set; }
 
     /// <summary>
+    /// Marks the editor as required: the editing surface reports <c>aria-required</c> and the <see cref="Label"/>
+    /// carries an asterisk. The rule itself is the bound model's (a [Required] attribute in an EditForm).
+    /// </summary>
+    [Parameter] public bool Required { get; set; }
+
+    /// <summary>
     /// Lets the reader drag the bottom edge of the editing surface to make it taller or shorter,
     /// the way the source-view textarea already can be resized.
     /// </summary>
@@ -134,9 +201,17 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public bool SpellCheck { get; set; } = true;
 
     /// <summary>
+    /// Keeps the toolbar in view while the page scrolls past a tall editor, pinned the
+    /// --bit-RichTextEditor-toolbar-sticky-offset CSS variable below the top of the scrolling area.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool StickyToolbar { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the rich text editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitRichTextEditorClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Which toolbar groups to display.
@@ -204,6 +279,12 @@ public partial class BitRichTextEditor : BitComponentBase
         if (_initialized is false || _inSourceView) return "";
         return await _js.BitRichTextEditorGetSelectedText(_editorRef);
     }
+
+    /// <summary>
+    /// The formatting under the current selection - the snapshot the toolbar highlights itself from and
+    /// <see cref="OnSelectionChange"/> reports - so a custom toolbar item can act on what is at the caret.
+    /// </summary>
+    public BitRichTextEditorSelectionState SelectionState => _state;
 
     /// <summary>
     /// Runs a raw editing command against the editor.
@@ -278,12 +359,35 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private bool ControlsDisabled => EffectiveReadOnly || _inSourceView;
 
+    private string LabelId => $"{UniqueId}-label";
+
+    private string ErrorMessageId => $"{UniqueId}-error-message";
+
+    private string DescriptionId => $"{UniqueId}-description";
+
+    private string HintId => $"{UniqueId}-hint";
+
     /// <summary>
-    /// The size constraints shared by the WYSIWYG surface and the source-view textarea, so both
-    /// modes occupy the same box and toggling between them does not make the page jump.
+    /// The ids the content is described by, what is wrong first: the error message, the description, the count footer,
+    /// and the inline error while one is shown. The source view reads them as they are.
     /// </summary>
-    private string SurfaceSizeStyle
-        => MaxHeight is null ? $"min-height:{Height};" : $"min-height:{Height};max-height:{MaxHeight};";
+    private string? FieldDescribedBy
+    {
+        get
+        {
+            var ids = (ErrorMessage.HasValue() ? $"{ErrorMessageId} " : "")
+                    + (Description.HasValue() ? $"{DescriptionId} " : "")
+                    + (ShowCount ? $"{UniqueId}-count " : "")
+                    + (_inlineError is null ? "" : $"{UniqueId}-error");
+            return ids.Length == 0 ? null : ids.TrimEnd();
+        }
+    }
+
+    /// <summary>
+    /// What the editing surface is described by: <see cref="FieldDescribedBy"/>, then the hint that Alt+0 lists the
+    /// keyboard shortcuts - which only the surface answers to.
+    /// </summary>
+    private string SurfaceDescribedBy => FieldDescribedBy is { } ids ? $"{ids} {HintId}" : HintId;
 
     /// <summary>
     /// Whether the floating selection toolbar should be on screen: it is opt-in, needs a real
@@ -296,7 +400,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     /// <summary>Whether one of the inline tool bars under the toolbar is currently showing.</summary>
     private bool AnyPanelOpen
-        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji;
+        => _showLinkInput || _showImageInput || _showMediaInput || _showTableInput || _showFind || _showEmoji || _showColor || _showHelp;
 
     /// <summary>
     /// Places the selection toolbar just above the selection, in the component root's coordinates.
@@ -320,6 +424,14 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     private bool Has(BitRichTextEditorToolbar group) => Toolbar.HasFlag(group);
+
+    private static readonly HashSet<string> BlockFormats = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre"];
+
+    /// <summary>
+    /// The paragraph format selector's value: the block at the caret, or Normal while it is one the selector does
+    /// not offer (a list item, a table cell, nothing reported yet), which would otherwise draw the selector blank.
+    /// </summary>
+    private string SelectedBlockFormat => BlockFormats.Contains(_state.Block) ? _state.Block : "p";
 
 
 
@@ -370,6 +482,16 @@ public partial class BitRichTextEditor : BitComponentBase
         return OnSelectionChange.InvokeAsync(state);
     }
 
+    /// <summary>
+    /// Reported by the bridge when a checklist item is ticked or unticked from the keyboard or by its marker: the
+    /// marker is drawn by CSS, so the new state is said through the live region.
+    /// </summary>
+    [JSInvokable("OnTaskToggled")]
+    public void _OnTaskToggled(bool isChecked)
+    {
+        Announce(isChecked ? Loc("task-checked", "Task checked") : Loc("task-unchecked", "Task unchecked"));
+    }
+
     [JSInvokable("OnFocused")]
     public Task _OnFocused() => OnFocus.InvokeAsync();
 
@@ -386,7 +508,7 @@ public partial class BitRichTextEditor : BitComponentBase
         // Surface a consistent localized message tied to the command-failed key, matching the
         // other error paths (e.g. custom-action-failed) rather than exposing bridge internals.
         return RaiseErrorAsync(new BitRichTextEditorError("command-failed",
-            string.Format(Label("command-failed", "Command '{0}' failed."), command)));
+            string.Format(Loc("command-failed", "Command '{0}' failed."), command)));
     }
 
 
@@ -431,6 +553,55 @@ public partial class BitRichTextEditor : BitComponentBase
     private void RequestPanelFocus(Func<ElementReference> target) => _pendingPanelFocus = target;
 
     /// <summary>
+    /// Escape anywhere in a tool panel - a field, a checkbox, one of its buttons, the emoji grid - closes it and puts
+    /// the focus back in the text.
+    /// </summary>
+    private static async Task OnPanelKeyDown(KeyboardEventArgs e, Func<Task> close)
+    {
+        if (e.Key == "Escape") await close();
+    }
+
+    /// <summary>Sends the focus back to the text on the next render (a panel or a menu is closing under it).</summary>
+    private void RequestEditorFocus() => _pendingEditorFocus = true;
+
+    private async Task FocusEditorIfPendingAsync()
+    {
+        if (_pendingEditorFocus is false) return;
+        _pendingEditorFocus = false;
+        if (_initialized is false || _inSourceView || IsEnabled is false) return;
+        try
+        {
+            await _js.BitRichTextEditorRestoreFocus(_editorRef);
+        }
+        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
+        catch (JSException) { } // interop unavailable
+    }
+
+    // A live region only speaks when its text changes, so the same message twice in a row (two tasks checked one
+    // after the other) is told apart by an invisible character.
+    private void Announce(string message)
+    {
+        SetAnnouncement(message);
+        StateHasChanged();
+    }
+
+    private void SetAnnouncement(string message)
+        => _announcement = _announcement == message ? message + "\u200B" : message;
+
+    // The error message last said through the live region, so a message is announced once as it appears rather than
+    // on every render that keeps it.
+    private string? _announcedErrorMessage;
+
+    private void AnnounceErrorMessageIfNew()
+    {
+        if (_initialized && ErrorMessage.HasValue() && ErrorMessage != _announcedErrorMessage)
+        {
+            SetAnnouncement(ErrorMessage!);
+        }
+        _announcedErrorMessage = ErrorMessage;
+    }
+
+    /// <summary>
     /// Closes every inline panel except the one being opened. They all occupy the same strip under
     /// the toolbar, so leaving two open stacks unrelated bars over the editor and makes the
     /// aria-expanded state of the toolbar buttons disagree with what is on screen.
@@ -442,6 +613,8 @@ public partial class BitRichTextEditor : BitComponentBase
         if (keep != "media") { _showMediaInput = false; _mediaUrl = ""; }
         if (keep != "table") { _showTableInput = false; }
         if (keep != "emoji") { _showEmoji = false; _emojiSearch = ""; }
+        if (keep != "color") { _showColor = false; }
+        if (keep != "help") { _showHelp = false; }
         if (keep != "find" && _showFind)
         {
             // The find panel is one of the same strip of bars, so opening another tool closes it -
@@ -493,11 +666,33 @@ public partial class BitRichTextEditor : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => _fullScreen ? "bit-rte-fsc" : string.Empty);
         ClassBuilder.Register(() => EffectiveReadOnly ? "bit-rte-ro" : string.Empty);
+        ClassBuilder.Register(() => StickyToolbar ? "bit-rte-stk" : string.Empty);
+        ClassBuilder.Register(() => IsInvalid ? "bit-inv" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        // The size parameters set the public variables on the instance, so the surface and the source view (which
+        // both read them) keep one box, and a full-screen editor can still lift the cap in its stylesheet.
+        StyleBuilder.Register(() => Height is null ? string.Empty : $"--bit-RichTextEditor-height:{Height}");
+        StyleBuilder.Register(() => MaxHeight is null ? string.Empty : $"--bit-RichTextEditor-max-height:{MaxHeight}");
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorParams))]
+    protected override void OnParametersSet()
+    {
+        // Before anything below reads the parameters it may fill in. A BitParams that has gone away takes what it
+        // had cascaded with it, which the base class has already put back by now.
+        CascadingParameters?.UpdateParameters(this);
+
+        EnsureField();
+        TrackEditContext();
+
+        AnnounceErrorMessageIfNew();
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -543,6 +738,7 @@ public partial class BitRichTextEditor : BitComponentBase
         Debounce = DebounceMs,
         Policy = BuildPolicyPayload(),
         HasUpload = OnImageUpload is not null,
+        MaxImageBytes = MaxImageSize,
         PlainTextPaste = PasteAsPlainText,
         MaxLength = MaxLength,
         ShortcutKeys = BuildOwnedShortcutCombos(),
@@ -624,6 +820,9 @@ public partial class BitRichTextEditor : BitComponentBase
         await FocusSlashIfPendingAsync();
         await FocusMentionIfPendingAsync();
         await FocusPanelIfPendingAsync();
+        await EnableEmojiGridIfPendingAsync();
+        await EnableColorGridIfPendingAsync();
+        await FocusEditorIfPendingAsync();
     }
 
     private async ValueTask OnValueSet()
@@ -712,6 +911,8 @@ public partial class BitRichTextEditor : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        UntrackEditContext();
 
         _dotnetObj?.Dispose();
 

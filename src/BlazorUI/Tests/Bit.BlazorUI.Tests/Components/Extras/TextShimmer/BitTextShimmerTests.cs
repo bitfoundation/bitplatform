@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -78,7 +79,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         Assert.AreEqual("1234567890", root.TextContent);
         // The band is scaled by the length of the text, so a new text is a new width of the band as well.
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-spread:20px");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-auto-spread:20px");
     }
 
     [TestMethod]
@@ -99,7 +100,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        component.MarkupMatches(@"<p id:ignore class=""bit-tsh"" style=""--bit-tsh-spread:10px"">12345</p>");
+        component.MarkupMatches(@"<p id:ignore class=""bit-tsh"" style=""--bit-tsh-auto-spread:10px"">12345</p>");
     }
 
     [TestMethod,
@@ -236,7 +237,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.AddChildContent("content");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:8px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:8px");
     }
 
     // The length is counted in user-perceived characters, so an emoji with a skin tone modifier or a letter with a
@@ -252,12 +253,12 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, text);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-spread:{expected}");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-auto-spread:{expected}");
     }
 
     [TestMethod,
         DataRow(-1.0, 0, "0px"),
-        DataRow(2.0, -5, "0px"),
+        DataRow(3.0, -5, "0px"),
         DataRow(0.5, 3, "1.5px"),
         DataRow(1.0 / 3, 1, "0.333px")]
     public void BitTextShimmerShouldClampAndFormatSpread(double spread, int contentLength, string expected)
@@ -285,7 +286,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
     }
 
     [TestMethod]
@@ -314,6 +315,26 @@ public class BitTextShimmerTests : BunitTestContext
         }
     }
 
+    // The spread of an unset multiplier is published as the fallback of --bit-TextShimmer-spread only, so a class or
+    // an ancestor can restyle the band of every shimmer; a multiplier that was asked for wins over it, even the default.
+    [TestMethod,
+        DataRow(2.0, "--bit-tsh-spread:10px"),
+        DataRow(2.5, "--bit-tsh-spread:12.5px"),
+        DataRow(1.0, "--bit-tsh-spread:5px")]
+    public void BitTextShimmerShouldPublishOnlyAnExplicitSpreadOverThePublicVariable(double spread, string expected)
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Text, "12345");
+            parameters.Add(p => p.Spread, spread);
+        });
+
+        var style = component.Find(".bit-tsh").GetAttribute("style")!;
+
+        StringAssert.Contains(style, expected);
+        Assert.AreEqual(1, Regex.Matches(style, "spread:").Count, style);
+    }
+
     [TestMethod]
     public void BitTextShimmerShouldRespectSpreadChangingAfterRender()
     {
@@ -322,7 +343,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
 
         component.Render(parameters =>
         {
@@ -339,7 +360,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-spread:20px"));
+        Assert.IsTrue(style.Contains("--bit-tsh-auto-spread:20px"));
         Assert.IsFalse(style.Contains("--bit-tsh-duration"));
         Assert.IsFalse(style.Contains("--bit-tsh-delay"));
         Assert.IsFalse(style.Contains("--bit-tsh-iterations"));
@@ -742,9 +763,10 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
     }
 
-    // Without a Duration the pause follows the default sweep, which the loop factor of the theme retunes.
+    // Without a Duration the pause is written as the literal time the public variable takes - the stylesheet takes it
+    // as a ratio of the default sweep, which is what lets the loop factor of the theme retune the two together.
     [TestMethod]
-    public void BitTextShimmerShouldScaleRepeatDelayByTheLoopFactorWithoutADuration()
+    public void BitTextShimmerShouldWriteRepeatDelayAsALiteralTimeWithoutADuration()
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
         {
@@ -753,8 +775,24 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        CollectionAssert.Contains(style.Split(';'), "--bit-tsh-repeat-delay:calc(1000ms * var(--bit-mot-loop-factor, 1))");
+        CollectionAssert.Contains(style.Split(';'), "--bit-tsh-repeat-delay:1000ms");
         Assert.IsFalse(style.Contains("--bit-tsh-duration"));
+        Assert.IsFalse(style.Contains("--bit-tsh-sweep"));
+    }
+
+    // A Duration is the sweep the rest is a ratio of, as well as the duration of the animation.
+    [TestMethod]
+    public void BitTextShimmerShouldWriteTheDurationAsTheSweep()
+    {
+        var component = RenderComponent<BitTextShimmer>(parameters =>
+        {
+            parameters.Add(p => p.Duration, 3000);
+        });
+
+        var style = component.Find(".bit-tsh").GetAttribute("style")!.Split(';');
+
+        CollectionAssert.Contains(style, "--bit-tsh-duration:3000ms");
+        CollectionAssert.Contains(style, "--bit-tsh-sweep:3000ms");
     }
 
     // A pause of nothing, or a sweep of no length to pause between, leaves the stylesheet's defaults alone.
@@ -858,7 +896,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
     }
 
     [TestMethod,
@@ -930,7 +968,7 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.AreEqual("the text", root.TextContent);
         Assert.AreEqual(0, root.QuerySelectorAll("strong").Length);
         // Without the content the band is scaled by the text again.
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-spread:16px");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-auto-spread:16px");
     }
 
     [TestMethod]
@@ -943,7 +981,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Style, "font-size:2rem");
         });
 
-        Assert.AreEqual("--bit-tsh-spread:10px;--bit-tsh-duration:1000ms;font-size:2rem",
+        Assert.AreEqual("--bit-tsh-auto-spread:10px;--bit-tsh-duration:1000ms;--bit-tsh-sweep:1000ms;font-size:2rem",
                         component.Find(".bit-tsh").GetAttribute("style"));
     }
 
@@ -1058,7 +1096,7 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.IsTrue(element.ClassList.Contains("bit-tsh"));
         Assert.IsTrue(element.ClassList.Contains("splatted-class"));
 
-        Assert.AreEqual("font-weight:bold;--bit-tsh-spread:10px", element.GetAttribute("style"));
+        Assert.AreEqual("font-weight:bold;--bit-tsh-auto-spread:10px", element.GetAttribute("style"));
     }
 
     // A value the component would otherwise write as null does not leave a splatted attribute of the same name
@@ -1204,7 +1242,7 @@ public class BitTextShimmerTests : BunitTestContext
         });
 
         // Without an explicit length the spread is computed from the text again.
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
     }
 
     [TestMethod]
@@ -1216,14 +1254,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.AddChildContent("content");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.ContentLength, 15);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:30px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:30px");
     }
 
     // The content takes over from the text, and so does the length the band is scaled by.
@@ -1235,7 +1273,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345678");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:16px");
+        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:16px");
 
         component.Render(parameters =>
         {
@@ -1245,7 +1283,7 @@ public class BitTextShimmerTests : BunitTestContext
         var root = component.Find(".bit-tsh");
 
         Assert.AreEqual("content", root.TextContent);
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-spread:20px");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-auto-spread:20px");
     }
 
     [TestMethod,
@@ -1316,7 +1354,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         StringAssert.Contains(style, "display:none");
         // The variables of the shimmer are kept beside it, so it shows again as it was.
-        StringAssert.Contains(style, "--bit-tsh-spread:10px");
+        StringAssert.Contains(style, "--bit-tsh-auto-spread:10px");
     }
 
     // A custom element - a name with a hyphen - is a valid name as well, which is how a shimmer is rendered as a web

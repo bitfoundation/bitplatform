@@ -31,10 +31,33 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "ColorPalette",
+            Type = "IReadOnlyList<BitRichTextEditorColor>?",
+            DefaultValue = "null",
+            Description = "The colors the text and highlight color buttons offer as swatches (plus a custom field). Null or empty keeps the browser's color picker.",
+            LinkType = LinkType.Link,
+            Href = "#color"
+        },
+        new()
+        {
             Name = "DebounceMs",
             Type = "int",
             DefaultValue = "200",
             Description = "Debounce window (ms) for content-change notifications while typing. Negative values are treated as 0."
+        },
+        new()
+        {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The helper text shown in the footer of the editor; the editing surface is described by it."
+        },
+        new()
+        {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown under the editor when its content was rejected. It marks the editor invalid, describes the surface and is announced as it appears."
         },
         new()
         {
@@ -53,9 +76,16 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Name = "Height",
-            Type = "string",
-            DefaultValue = "300px",
-            Description = "Minimum height of the editing surface (any CSS length)."
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The height the editing surface starts at (any CSS length); it grows with the content up to MaxHeight. Null leaves it to --bit-RichTextEditor-height (300px)."
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the content as invalid (error border and aria-invalid) for a rejection that does not come from the cascading EditContext."
         },
         new()
         {
@@ -63,6 +93,13 @@ public partial class BitRichTextEditorDemo
             Type = "IReadOnlyDictionary<string, string>?",
             DefaultValue = "null",
             Description = "Custom key-combo to command map, merged over the built-in defaults."
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The visible label of the editor. It names the editing surface for assistive technologies, and clicking it focuses the text."
         },
         new()
         {
@@ -78,7 +115,14 @@ public partial class BitRichTextEditorDemo
             Name = "MaxHeight",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Maximum height of the editing surface (any CSS length). Content beyond it scrolls inside the editor."
+            Description = "Maximum height of the editing surface (any CSS length); content beyond it scrolls inside the editor. Null leaves it to --bit-RichTextEditor-max-height (unbounded)."
+        },
+        new()
+        {
+            Name = "MaxImageSize",
+            Type = "long",
+            DefaultValue = "10485760",
+            Description = "The largest image, in bytes, that a drop or a paste may insert (10 MB). Checked in the browser and again before OnImageUpload; zero or less restores the default."
         },
         new()
         {
@@ -140,7 +184,7 @@ public partial class BitRichTextEditorDemo
             Name = "OnImageUpload",
             Type = "Func<BitRichTextEditorImageUpload, Task<string?>>?",
             DefaultValue = "null",
-            Description = "Invoked to persist an image binary, returning the URL to embed. When null, dropped or pasted images are embedded as inline data URLs.",
+            Description = "Invoked to persist an image binary, returning the URL to embed. While it runs the editor shows and announces the upload (aria-busy on the surface). When null, dropped or pasted images are embedded as inline data URLs.",
             LinkType = LinkType.Link,
             Href = "#image-upload"
         },
@@ -173,6 +217,13 @@ public partial class BitRichTextEditorDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the editor readonly."
+        },
+        new()
+        {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the editor as required: aria-required on the surface and an asterisk on the Label."
         },
         new()
         {
@@ -224,6 +275,13 @@ public partial class BitRichTextEditorDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the browser's native spell checking runs over the editor content."
+        },
+        new()
+        {
+            Name = "StickyToolbar",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the toolbar in view while the page scrolls past a tall editor, --bit-RichTextEditor-toolbar-sticky-offset below the top."
         },
         new()
         {
@@ -331,6 +389,14 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
+            Name = "SelectionState",
+            Type = "BitRichTextEditorSelectionState",
+            Description = "The formatting under the current selection, the snapshot the toolbar highlights itself from.",
+            LinkType = LinkType.Link,
+            Href = "#selection-state"
+        },
+        new()
+        {
             Name = "SelectAllAsync",
             Type = "ValueTask",
             Description = "Selects the whole editor content."
@@ -355,6 +421,43 @@ public partial class BitRichTextEditorDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new() { Name = "--bit-RichTextEditor-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Text color of the editor." },
+        new() { Name = "--bit-RichTextEditor-background", DefaultValue = "var(--bit-clr-bg-pri)", Description = "Background of the editor and of its floating toolbar and menus." },
+        new() { Name = "--bit-RichTextEditor-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Color of the outer border." },
+        new() { Name = "--bit-RichTextEditor-border-width", DefaultValue = "var(--bit-shp-brd-width)", Description = "Width of the outer border." },
+        new() { Name = "--bit-RichTextEditor-border-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the editor." },
+        new() { Name = "--bit-RichTextEditor-divider-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Lines between the toolbar, its panels, the surface and the footer, and between the toolbar groups." },
+        new() { Name = "--bit-RichTextEditor-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the editor." },
+        new() { Name = "--bit-RichTextEditor-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Border of an invalid editor, the required asterisk, the error message, the inline error and the limit reached." },
+        new() { Name = "--bit-RichTextEditor-height", DefaultValue = "spacing(37.5)", Description = "Height the editing surface starts at (the Height parameter sets it on the instance)." },
+        new() { Name = "--bit-RichTextEditor-max-height", DefaultValue = "none", Description = "Height past which the surface scrolls (the MaxHeight parameter sets it on the instance)." },
+        new() { Name = "--bit-RichTextEditor-padding", DefaultValue = "spacing(1.75) spacing(2)", Description = "Padding of the editing surface and the source view." },
+        new() { Name = "--bit-RichTextEditor-font-family", DefaultValue = "inherit", Description = "Font of the content." },
+        new() { Name = "--bit-RichTextEditor-font-size", DefaultValue = "inherit", Description = "Font size of the content." },
+        new() { Name = "--bit-RichTextEditor-line-height", DefaultValue = "1.6", Description = "Line height of the content and the source view." },
+        new() { Name = "--bit-RichTextEditor-placeholder-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Placeholder text of the editing surface." },
+        new() { Name = "--bit-RichTextEditor-link-color", DefaultValue = "var(--bit-clr-pri)", Description = "Links in the content." },
+        new() { Name = "--bit-RichTextEditor-code-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of code spans, code blocks and the source view." },
+        new() { Name = "--bit-RichTextEditor-quote-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Leading rule of a block quote." },
+        new() { Name = "--bit-RichTextEditor-table-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Table cell borders and horizontal rules in the content." },
+        new() { Name = "--bit-RichTextEditor-mention-color", DefaultValue = "var(--bit-clr-pri-dark)", Description = "Text of a mention chip." },
+        new() { Name = "--bit-RichTextEditor-mention-background", DefaultValue = "var(--bit-clr-pri-light)", Description = "Background of a mention chip." },
+        new() { Name = "--bit-RichTextEditor-find-background", DefaultValue = "var(--bit-clr-wrn-light)", Description = "Highlight of every find match (the current one takes the primary color)." },
+        new() { Name = "--bit-RichTextEditor-toolbar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the toolbar and its panels." },
+        new() { Name = "--bit-RichTextEditor-toolbar-sticky-offset", DefaultValue = "0", Description = "Gap between a StickyToolbar and the top of the scrolling area once it is pinned (the height of a fixed header)." },
+        new() { Name = "--bit-RichTextEditor-button-size", DefaultValue = "var(--bit-siz-ctrl-md)", Description = "Height (and minimum width) of a toolbar button and selector." },
+        new() { Name = "--bit-RichTextEditor-button-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Glyph of a toolbar button." },
+        new() { Name = "--bit-RichTextEditor-button-radius", DefaultValue = "var(--bit-shp-radius-button)", Description = "Corner radius of a toolbar button." },
+        new() { Name = "--bit-RichTextEditor-button-hover-background", DefaultValue = "var(--bit-clr-bg-sec-hover)", Description = "Background of a toolbar button, an emoji or a menu item under the pointer." },
+        new() { Name = "--bit-RichTextEditor-button-active-color", DefaultValue = "var(--bit-clr-pri)", Description = "Glyph and border of a pressed button (the format at the caret, an open panel) and of the current menu item." },
+        new() { Name = "--bit-RichTextEditor-button-active-background", DefaultValue = "var(--bit-clr-bg-pri-active)", Description = "Background of a pressed button and of the current menu item." },
+        new() { Name = "--bit-RichTextEditor-description-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Helper text (Description) in the footer." },
+        new() { Name = "--bit-RichTextEditor-footer-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text of the counts in the footer." },
+        new() { Name = "--bit-RichTextEditor-footer-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the footer that holds the description and the counts." },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -364,12 +467,20 @@ public partial class BitRichTextEditorDemo
             Parameters =
             [
                 new() { Name = "Root", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the root of the BitRichTextEditor." },
+                new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the label of the BitRichTextEditor." },
                 new() { Name = "Toolbar", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditor." },
                 new() { Name = "Group", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar groups of the BitRichTextEditor." },
                 new() { Name = "Button", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar buttons of the BitRichTextEditor." },
+                new() { Name = "Panel", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the tool panels (link, image, media, table, find, emoji, color and keyboard help) of the BitRichTextEditor." },
+                new() { Name = "QuickToolbar", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the floating selection toolbar of the BitRichTextEditor." },
+                new() { Name = "Menu", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the slash command and mention menus of the BitRichTextEditor." },
+                new() { Name = "Error", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the inline error banner (a failed command, link or upload) of the BitRichTextEditor." },
                 new() { Name = "Editor", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the editor (content) area of the BitRichTextEditor." },
                 new() { Name = "Source", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the HTML source view textarea of the BitRichTextEditor." },
-                new() { Name = "Count", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the character/word count footer of the BitRichTextEditor." },
+                new() { Name = "ErrorMessage", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the error message (the ErrorMessage parameter) of the BitRichTextEditor." },
+                new() { Name = "Footer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the footer row (holding the description and the counts) of the BitRichTextEditor." },
+                new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the description (helper text) in the footer of the BitRichTextEditor." },
+                new() { Name = "Count", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the character/word counts in the footer of the BitRichTextEditor." },
             ]
         },
         new()
@@ -394,6 +505,7 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Text label shown when no icon is provided." },
                 new() { Name = "Icon", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional icon content." },
                 new() { Name = "AriaLabel", Type = "string?", DefaultValue = "null", Description = "Optional accessible label / tooltip. When omitted, Label is used as the accessible name." },
+                new() { Name = "IsActive", Type = "Func<BitRichTextEditorSelectionState, bool>?", DefaultValue = "null", Description = "Whether the item shows as pressed (and reports aria-pressed) for the formatting at the caret. Null makes a plain action button." },
                 new() { Name = "OnActivate", Type = "Func<BitRichTextEditor, Task>", DefaultValue = "", Description = "Action invoked when the item is activated; receives the editor instance." },
             ]
         },
@@ -458,6 +570,7 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "ImageAlign", Type = "string?", DefaultValue = "null", Description = "Alignment of the selected image (\"left\", \"center\", \"right\"), or null when it flows inline." },
                 new() { Name = "ImageSrc", Type = "string?", DefaultValue = "null", Description = "Source of the selected image, or null when no image is selected." },
                 new() { Name = "ImageAlt", Type = "string?", DefaultValue = "null", Description = "Alternative text of the selected image (empty when it has none), or null when no image is selected." },
+                new() { Name = "ImageWidth", Type = "int?", DefaultValue = "null", Description = "Width in pixels the selected image was given, or null when it keeps its natural size or no image is selected." },
                 new() { Name = "HasSelection", Type = "bool", DefaultValue = "false", Description = "Whether a non-empty range inside the editor is selected." },
                 new() { Name = "SelectionTop", Type = "double", DefaultValue = "0", Description = "Top of the selection rectangle, in pixels relative to the component root." },
                 new() { Name = "SelectionLeft", Type = "double", DefaultValue = "0", Description = "Left edge of the selection rectangle, in pixels relative to the component root." },
@@ -475,6 +588,17 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Id", Type = "string", DefaultValue = "", Description = "Stable identifier written into the inserted markup as data-mention-id." },
                 new() { Name = "Display", Type = "string", DefaultValue = "", Description = "The text shown in the menu and inserted after the trigger character." },
                 new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "Optional secondary line shown under the display text in the menu." },
+            ]
+        },
+        new()
+        {
+            Id = "color",
+            Title = "BitRichTextEditorColor",
+            Description = "A color offered as a swatch by the text and highlight color panels.",
+            Parameters =
+            [
+                new() { Name = "Value", Type = "string", DefaultValue = "", Description = "The color applied, as a hex value (#2563eb); a hex value also lets the swatch show it is the color under the caret." },
+                new() { Name = "Name", Type = "string?", DefaultValue = "null", Description = "The accessible name and tooltip of the swatch (\"Brand blue\"). Without it the value is read out." },
             ]
         },
         new()
@@ -531,59 +655,86 @@ public partial class BitRichTextEditorDemo
                 new() { Name = "Find", Value = "262144" },
                 new() { Name = "FullScreen", Value = "524288" },
                 new() { Name = "Direction", Value = "1048576" },
+                new() { Name = "Help", Value = "2097152" },
                 new() { Name = "All", Value = "255" },
-                new() { Name = "AllExtended", Value = "2097151" },
+                new() { Name = "AllExtended", Value = "4194303" },
             ]
         }
     ];
 
 
 
-    private readonly string readOnlyHtml = "<p>This instance is <strong>read-only</strong> with the toolbar hidden - useful for displaying stored content.</p>";
+    private readonly string readOnlyHtml = "<p>This instance is <strong>read-only</strong>.</p>";
 
-    private readonly string disabledHtml = "<p>This instance is <strong>disabled</strong>: the toolbar and the surface both refuse input.</p>";
+    private readonly string disabledHtml = "<p>This instance is <strong>disabled</strong>.</p>";
 
     private string? bindingHtml = "<p>The bound value is just a <strong>string</strong> you own.</p>";
+    private int changeCount;
 
-    private string? debounceHtml = "<p>Type and watch the value update after the debounce window.</p>";
+    private string? toolbarHtml = "<h2>Every group</h2><p>Scroll the page while this editor is in view: the toolbar stays pinned to the top.</p><ul class=\"bit-rte-tasks\"><li data-checked=\"true\">Try the table, emoji and find buttons</li><li data-checked=\"false\">Toggle full screen</li></ul>";
 
-    private string focusState = "blurred";
-
-    private string? formattingHtml = "<h2>Headings</h2><p>Mix <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s> and <code>inline code</code>.</p><blockquote>A short quote.</blockquote><ol><li>First</li><li>Second</li></ol><ul class=\"bit-rte-tasks\"><li data-checked=\"true\">A finished task</li><li data-checked=\"false\">Something still to do</li></ul>";
-
-    private string? scriptHtml = "<p>Water is H<sub>2</sub>O. Einstein wrote E = mc<sup>2</sup>.</p><ul><li>Put the caret here and press Tab to nest this item.</li></ul>";
+    private string? customHtml = "<p>The inline group comes first, 'Today' inserts the date and 'Callout' toggles a quote.</p>";
+    private readonly BitRichTextEditorToolbarConfig customConfig = new()
+    {
+        Order = [BitRichTextEditorToolbarConfig.GroupIds.Inline, "insert-date", "callout"],
+        CustomItems =
+        [
+            new()
+            {
+                Id = "insert-date",
+                Label = "Today",
+                AriaLabel = "Insert today's date",
+                OnActivate = editor => editor.InsertTextAsync(DateTime.Now.ToString("yyyy-MM-dd"))
+            },
+            new()
+            {
+                Id = "callout",
+                Label = "Callout",
+                IsActive = state => state.Block == "blockquote",
+                OnActivate = editor => editor.ExecuteCommandAsync("formatBlock", editor.SelectionState.Block == "blockquote" ? "p" : "blockquote")
+            }
+        ]
+    };
 
     private string? linkHtml = "<p>Read the <a href=\"https://learn.microsoft.com/aspnet/core/blazor\">Blazor docs</a> to learn more.</p>";
     private string? linkError;
-
     private void HandleLinkHtmlChanged(string? value)
     {
         linkHtml = value;
-        // A successful content update means the previous error no longer applies, so clear the
-        // stale message that OnError left behind.
+        // A successful content update means the previous error no longer applies.
         linkError = null;
     }
 
     private string? imageHtml = "<p>Images can sit inline with text.</p>";
     private string? lastUpload;
-    private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
+    private async Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
     {
         lastUpload = $"{image.FileName} ({image.ContentType}, {image.Content.Length:N0} bytes)";
-        var dataUrl = $"data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}";
-        return Task.FromResult<string?>(dataUrl);
+        // Stands in for the round trip to a storage service, while the editor shows it is uploading.
+        await Task.Delay(1500);
+        return $"data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}";
     }
 
-    private string? colorHtml = "<p>Make words <span style=\"color:#5b3df5\">colorful</span> or <span style=\"background-color:#fff3a3\">highlighted</span>.</p>";
-
-    private string? fontHtml = "<p>Choose a typeface for this paragraph.</p>";
+    private string? colorHtml = "<p>Make words <span style=\"color:#5b3df5\">colorful</span> or <span style=\"background-color:#fff3a3\">highlighted</span>, then pick a typeface.</p>";
     private readonly string[] fonts = ["Segoe UI", "Georgia", "Courier New", "Comic Sans MS"];
     private readonly string[] sizes = ["12px", "16px", "20px", "28px"];
+    private readonly BitRichTextEditorColor[] palette =
+    [
+        new("#1f2937", "Ink"),
+        new("#5b3df5", "Brand violet"),
+        new("#2563eb", "Blue"),
+        new("#059669", "Green"),
+        new("#d97706", "Amber"),
+        new("#dc2626", "Red"),
+        new("#fff3a3", "Soft yellow"),
+        new("#dbeafe", "Soft blue"),
+    ];
 
     private string? tableHtml = "<table><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Tables</td><td>Ready</td></tr><tr><td>Merge &amp; split cells</td><td>Ready</td></tr></tbody></table>";
 
     private string? mediaHtml = "<p>Add a divider below, then embed a video.</p><hr><p>Next section.</p>";
 
-    private string? sourceHtml = "<p>Switch to <strong>source view</strong> to see and edit the raw HTML.</p>";
+    private string? findHtml = "<p>The quick brown fox jumps over the lazy dog. The fox is quick, and the foxes are quicker.</p>";
 
     private string? sanitizationHtml = "<p>Only allowlisted tags, attributes and URI schemes survive.</p>";
     private readonly BitRichTextEditorSanitizationPolicy sanitizationPolicy = new()
@@ -597,151 +748,17 @@ public partial class BitRichTextEditorDemo
         AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "http", "https", "mailto" },
         AllowDataImageUris = false,
     };
+    private string? plainPasteHtml;
 
-    private string? plainPasteHtml = "<p>Try pasting formatted content here.</p>";
+    private string? typingHtml = "<p>Type \"quotes\" -- an ellipsis... or (c) 2026, and start a new line with / or [] .</p>";
 
-    private string? findHtml = "<p>The quick brown fox jumps over the lazy dog. The fox is quick, and the foxes are quicker.</p>";
-
-    private string? fullScreenHtml = "<p>Expand me to full screen and write without distractions.</p>";
-
-    private string? slashHtml = "<p>Place the cursor on a new line and type a slash, or start a line with # or -.</p>";
-
-    private string? shortcutHtml = "<p>Press your custom Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L, or Ctrl/Cmd+Shift+1.</p>";
+    private string? shortcutHtml = "<p>Press Ctrl/Cmd+Shift+S, Ctrl/Cmd+Shift+L or Ctrl/Cmd+Shift+1, and Alt+0 to list them all.</p>";
     private readonly Dictionary<string, string> shortcuts = new()
     {
         ["ctrl+shift+s"] = "strikeThrough",
         ["ctrl+shift+l"] = "insertUnorderedList",
         ["ctrl+shift+1"] = "h1",
     };
-
-    private string? emojiHtml = "<p>Add a little ✨ to your text - or a → arrow, a ½ fraction, or π.</p>";
-
-    private string? countHtml = "<p>Counting characters and words.</p>";
-
-    private readonly FormModel formModel = new();
-    private bool formSubmitted;
-    private void HandleValidSubmit()
-    {
-        formSubmitted = true;
-    }
-    // Clear the submitted banner whenever the bound content changes so the "submitted" state does
-    // not linger after the user edits the body again.
-    private void HandleFormBodyChanged(string? value)
-    {
-        formModel.Body = value;
-        formSubmitted = false;
-    }
-    public class FormModel : IValidatableObject
-    {
-        [Required(ErrorMessage = "The body is required.")]
-        public string? Body { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            // The bound value is HTML, so measure normalized visible text: strip tags, decode
-            // entities, and trim. Markup with no visible text (e.g. "<p></p>") passes [Required]
-            // because the raw HTML is non-empty, so require non-whitespace visible text here and
-            // base the min-length check on that same normalized text.
-            var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
-            var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-            if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
-            {
-                yield return new ValidationResult("The body is required.", [nameof(Body)]);
-            }
-            else if (text.Length > 0 && text.Length < 20)
-            {
-                yield return new ValidationResult("Add a bit more detail (min 20 characters).", [nameof(Body)]);
-            }
-        }
-    }
-
-    private string? customHtml = "<p>A custom toolbar button can run any command.</p>";
-    private readonly BitRichTextEditorToolbarConfig customConfig = new()
-    {
-        CustomItems =
-        [
-            new()
-            {
-                Id = "insert-date",
-                Label = "Today",
-                AriaLabel = "Insert today's date",
-                OnActivate = editor => editor.InsertTextAsync(DateTime.Now.ToString("yyyy-MM-dd"))
-            }
-        ]
-    };
-
-    private string? reorderHtml = "<p>The inline, lists and link groups are pulled to the front.</p>";
-    private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
-    {
-        Order =
-        [
-            BitRichTextEditorToolbarConfig.GroupIds.Inline,
-            BitRichTextEditorToolbarConfig.GroupIds.Lists,
-            BitRichTextEditorToolbarConfig.GroupIds.Link
-        ]
-    };
-
-    private string? localizedHtml = "<p>Pase el cursor sobre los botones para ver las descripciones traducidas.</p>";
-    private readonly SpanishEditorLocalizer localizer = new();
-    // Only the keys present here are translated; every other key falls back to the built-in
-    // English text, so a partial dictionary is a valid localizer.
-    public class SpanishEditorLocalizer : IBitRichTextEditorLocalizer
-    {
-        private static readonly Dictionary<string, string> Labels = new()
-        {
-            ["toolbar"] = "Formato",
-            ["editor"] = "Editor de texto enriquecido",
-            ["undo"] = "Deshacer (Ctrl+Z)",
-            ["redo"] = "Rehacer (Ctrl+Y)",
-            ["bold"] = "Negrita (Ctrl+B)",
-            ["italic"] = "Cursiva (Ctrl+I)",
-            ["underline"] = "Subrayado (Ctrl+U)",
-            ["strikethrough"] = "Tachado",
-            ["paragraph-format"] = "Formato de párrafo",
-            ["block-normal"] = "Normal",
-            ["heading-1"] = "Título 1",
-            ["heading-2"] = "Título 2",
-            ["heading-3"] = "Título 3",
-            ["bullet-list"] = "Lista con viñetas",
-            ["numbered-list"] = "Lista numerada",
-            ["task-list"] = "Lista de tareas",
-            ["quote"] = "Cita",
-            ["code-block"] = "Bloque de código",
-            ["link"] = "Insertar o editar enlace",
-            ["find-replace"] = "Buscar y reemplazar",
-            ["find"] = "Buscar",
-            ["replace"] = "Reemplazar",
-            ["no-matches"] = "Sin coincidencias",
-            ["clear-formatting"] = "Borrar formato",
-        };
-
-        public string? this[string key] => Labels.TryGetValue(key, out var value) ? value : null;
-    }
-
-    private BitRichTextEditor apiEditor = default!;
-    private string? apiHtml = "<p>Drive me from the buttons below.</p>";
-    private string? apiResult;
-    private async Task FocusEditor()
-    {
-        await apiEditor.FocusAsync();
-    }
-    private async Task GetEditorHtml()
-    {
-        apiResult = await apiEditor.GetHtmlAsync();
-    }
-    private async Task GetEditorText()
-    {
-        apiResult = await apiEditor.GetTextAsync();
-    }
-    private void ShowEditorFacts()
-    {
-        apiResult = $"{apiEditor.WordCount} words, {apiEditor.CharacterCount} chars, empty: {apiEditor.IsEmpty}";
-    }
-
-    private async Task GetEditorSelection()
-    {
-        apiResult = await apiEditor.GetSelectedTextAsync();
-    }
 
     private string? quickHtml = "<p>Select any part of this sentence and the formatting bar appears right above it.</p>";
 
@@ -763,9 +780,41 @@ public partial class BitRichTextEditorDemo
         return Task.FromResult(matches);
     }
 
-    private string? selectionHtml = "<h2>A heading</h2><p>Some <strong>bold</strong> text with a <a href=\"https://example.com\">link</a> in it.</p>";
-    private string selectionSummary = "nothing yet";
+    private readonly FormModel formModel = new();
+    private bool formSubmitted;
+    private void HandleValidSubmit()
+    {
+        formSubmitted = true;
+    }
+    public class FormModel : IValidatableObject
+    {
+        [Required(ErrorMessage = "The description is required.")]
+        public string? Body { get; set; }
 
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // The value is HTML, so measure its visible text: markup with no text passes [Required].
+            var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
+            var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
+            if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
+            {
+                yield return new ValidationResult("The description is required.", [nameof(Body)]);
+            }
+            else if (text.Length > 0 && text.Length < 20)
+            {
+                yield return new ValidationResult("Add a bit more detail (min 20 characters).", [nameof(Body)]);
+            }
+        }
+    }
+
+    private string? commentHtml = "<p>Save this to see the server reject it, then edit it to clear the error.</p>";
+    private string? commentError;
+    // Stands in for a server round trip that refuses the content.
+    private void SaveComment() => commentError = "The server refused the comment: it reads like spam.";
+
+    private string? eventsHtml ="<h2>A heading</h2><p>Some <strong>bold</strong> text with a <a href=\"https://example.com\">link</a> in it.</p>";
+    private string focusState = "blurred";
+    private string selectionSummary = "nothing yet";
     private void HandleSelectionChange(BitRichTextEditorSelectionState state)
     {
         var parts = new List<string>();
@@ -778,359 +827,94 @@ public partial class BitRichTextEditorDemo
         selectionSummary = parts.Count > 0 ? string.Join(", ", parts) : "nothing yet";
     }
 
-    private string? smartTypographyHtml ="<p>Type: \"quoted words\", an em dash -- like this, an ellipsis ... , (c) 2026, 1/2 a cup, -> and >= .</p>";
-
-    private string? rtlHtml = "<p>این ویرایشگر از راست به چپ چیده شده است.</p><p dir=\"ltr\">And this block is left-to-right.</p>";
-
-
-
-    private readonly string example1RazorCode = @"
-<BitRichTextEditor />";
-
-    private readonly string example2RazorCode = @"
-<BitRichTextEditor Placeholder=""Write something...""
-                   Height=""10rem"" MaxHeight=""14rem"" SpellCheck=""false"" Resizable />";
-
-    private readonly string example3RazorCode = @"
-<BitRichTextEditor Value=""<p>This is <strong>read-only</strong>.</p>""
-                   ReadOnly ShowToolbar=""false"" Height=""auto"" />
-
-<BitRichTextEditor Value=""<p>This is <strong>disabled</strong>.</p>""
-                   IsEnabled=""false"" Height=""auto""
-                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists"" />";
-
-    private readonly string example4RazorCode = @"
-<BitButton OnClick='() => bindingHtml = ""<h3>Set from code</h3>""'>Set content</BitButton>
-<BitButton OnClick=""() => bindingHtml = string.Empty"">Clear</BitButton>
-<BitButton OnClick='() => bindingHtml += ""<p>Appended.</p>""'>Append</BitButton>
-
-<BitRichTextEditor @bind-Value=""bindingHtml"" Placeholder=""Edit me..."" />
-
-<pre>@bindingHtml</pre>";
-    private readonly string example4CsharpCode = @"
-private string? bindingHtml = ""<p>The bound value is just a <strong>string</strong> you own.</p>"";";
-
-    private readonly string example5RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" DebounceMs=""600""
-                   Placeholder=""Change notifications are debounced by 600ms..."" />";
-
-    private readonly string example6RazorCode = @"
-<BitRichTextEditor OnFocus='() => focusState = ""focused""'
-                   OnBlur='() => focusState = ""blurred""' />
-
-<div>Editor is currently: <b>@focusState</b></div>";
-    private readonly string example6CsharpCode = @"
-private string focusState = ""blurred"";";
-
-    private readonly string example7RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.All"" />";
-
-    private readonly string example8RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists |
-                            BitRichTextEditorToolbar.Indent | BitRichTextEditorToolbar.Script"" />";
-
-    private readonly string example9RazorCode = @"
-<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists"" />";
-
-    private readonly string example10RazorCode = @"
-<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended"" />";
-
-    private readonly string example11RazorCode = @"
-<BitRichTextEditor Value=""@linkHtml"" ValueChanged=""HandleLinkHtmlChanged""
-                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
-                   OnError='e => linkError = $""{e.Code}: {e.Message}""' />";
-    private readonly string example11CsharpCode = @"
-private string? linkHtml = ""<p>Read the <a href=\""https://...\"">docs</a>.</p>"";
-private string? linkError;
-
-private void HandleLinkHtmlChanged(string? value)
-{
-    linkHtml = value;
-    linkError = null; // a successful update clears the stale error
-}";
-
-    private readonly string example12RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline""
-                   OnImageUpload=""HandleImageUpload"" />";
-    private readonly string example12CsharpCode = @"
-private async Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
-{
-    // image.FileName, image.ContentType, image.Content (byte[])
-    var url = await storage.SaveAsync(image.FileName, image.Content);
-    return url; // return null to cancel the insert
-}";
-
-    private readonly string example13RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Inline"" />";
-
-    private readonly string example14RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Font""
-                   FontFamilies=""fonts""
-                   FontSizes=""sizes"" />";
-    private readonly string example14CsharpCode = @"
-private readonly string[] fonts = [""Segoe UI"", ""Georgia"", ""Courier New"", ""Comic Sans MS""];
-private readonly string[] sizes = [""12px"", ""16px"", ""20px"", ""28px""];";
-
-    private readonly string example15RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Table | BitRichTextEditorToolbar.Inline"" />";
-
-    private readonly string example16RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Media | BitRichTextEditorToolbar.Rule |
-                            BitRichTextEditorToolbar.BlockFormat"" />";
-
-    private readonly string example17RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source"" />";
-
-    private readonly string example18RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source""
-                   SanitizationPolicy=""sanitizationPolicy"" />";
-    private readonly string example18CsharpCode = @"
-private readonly BitRichTextEditorSanitizationPolicy sanitizationPolicy = new()
-{
-    AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        { ""p"", ""br"", ""strong"", ""em"", ""a"", ""ul"", ""ol"", ""li"" },
-    AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+    private string? localizedHtml = "<p>Pase el cursor sobre los botones para ver las descripciones traducidas.</p>";
+    private readonly SpanishEditorLocalizer localizer = new();
+    // Only the keys present here are translated; every other key keeps the built-in English text.
+    public class SpanishEditorLocalizer : IBitRichTextEditorLocalizer
     {
-        [""*""] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ""class"" },
-        [""a""] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ""href"", ""title"" },
-    },
-    AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        { ""http"", ""https"", ""mailto"" },
-    AllowDataImageUris = false,
-};
+        private static readonly Dictionary<string, string> Labels = new()
+        {
+            ["toolbar"] = "Formato",
+            ["editor"] = "Editor de texto enriquecido",
+            ["undo"] = "Deshacer (Ctrl+Z)",
+            ["undo-label"] = "Deshacer",
+            ["redo"] = "Rehacer (Ctrl+Y)",
+            ["redo-label"] = "Rehacer",
+            ["bold"] = "Negrita (Ctrl+B)",
+            ["bold-label"] = "Negrita",
+            ["italic"] = "Cursiva (Ctrl+I)",
+            ["italic-label"] = "Cursiva",
+            ["underline"] = "Subrayado (Ctrl+U)",
+            ["underline-label"] = "Subrayado",
+            ["strikethrough"] = "Tachado",
+            ["paragraph-format"] = "Formato de párrafo",
+            ["block-normal"] = "Normal",
+            ["heading-1"] = "Título 1",
+            ["heading-2"] = "Título 2",
+            ["heading-3"] = "Título 3",
+            ["bullet-list"] = "Lista con viñetas",
+            ["numbered-list"] = "Lista numerada",
+            ["task-list"] = "Lista de tareas",
+            ["quote"] = "Cita",
+            ["code-block"] = "Bloque de código",
+            ["link"] = "Insertar o editar enlace",
+            ["link-label"] = "Insertar o editar enlace",
+            ["find-replace"] = "Buscar y reemplazar",
+            ["find-replace-label"] = "Buscar y reemplazar",
+            ["find"] = "Buscar",
+            ["replace"] = "Reemplazar",
+            ["no-matches"] = "Sin coincidencias",
+            ["clear-formatting"] = "Borrar formato",
+        };
 
-// BitRichTextEditorSanitizationPolicy.Default returns a fresh copy of the built-in policy,
-// so a custom policy can start from it and only add or remove what it needs.";
-
-    private readonly string example19RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" PasteAsPlainText />";
-
-    private readonly string example20RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Inline"" />";
-
-    private readonly string example21RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.FullScreen"" />";
-
-    private readonly string example22RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.AllExtended"" />
-
-<!-- set AutoLink=""false"" to stop a typed URL from becoming a link -->";
-
-    private readonly string example23RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" KeyboardShortcuts=""shortcuts"" />";
-    private readonly string example23CsharpCode = @"
-private readonly Dictionary<string, string> shortcuts = new()
-{
-    [""ctrl+shift+s""] = ""strikeThrough"",
-    [""ctrl+shift+l""] = ""insertUnorderedList"",
-    // A paragraph format works as a shortcut command too, and toggles like the toolbar button.
-    [""ctrl+shift+1""] = ""h1"",
-};";
-
-    private readonly string example24RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.Emoji | BitRichTextEditorToolbar.Inline"" />";
-
-    private readonly string example25RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" ShowCount MaxLength=""120"" />";
-
-    private readonly string example26RazorCode = @"
-<EditForm Model=""formModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
-    <BitRichTextEditor @bind-Value=""formModel.Body""
-                       Toolbar=""BitRichTextEditorToolbar.All""
-                       ShowCount MaxLength=""500"" />
-    <ValidationMessage For=""() => formModel.Body"" />
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example26CsharpCode = @"
-private readonly FormModel formModel = new();
-private bool formSubmitted;
-private void HandleValidSubmit() => formSubmitted = true;
-
-public class FormModel : System.ComponentModel.DataAnnotations.IValidatableObject
-{
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = ""The body is required."")]
-    public string? Body { get; set; }
-
-    public System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext validationContext)
-    {
-        // Body is HTML, so validate the normalized visible text: strip tags, decode entities,
-        // and trim. Markup with no visible text passes [Required] (the raw HTML is non-empty),
-        // so require non-whitespace visible text and base the min-length check on it too.
-        var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
-        var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-        if (string.IsNullOrWhiteSpace(Body) is false && text.Length == 0)
-            yield return new System.ComponentModel.DataAnnotations.ValidationResult(""The body is required."", [nameof(Body)]);
-        else if (text.Length > 0 && text.Length < 20)
-            yield return new System.ComponentModel.DataAnnotations.ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
+        public string? this[string key] => Labels.TryGetValue(key, out var value) ? value : null;
     }
-}";
 
-    private readonly string example27RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All""
-                   ToolbarConfig=""customConfig"" />";
-    private readonly string example27CsharpCode = @"
-private readonly BitRichTextEditorToolbarConfig customConfig = new()
-{
-    CustomItems =
+    private BitRichTextEditor apiEditor = default!;
+    private string? apiHtml = "<p>Drive me from the buttons above.</p>";
+    private string? apiResult;
+    private async Task FocusEditor()
+    {
+        await apiEditor.FocusAsync();
+    }
+    private async Task GetEditorHtml()
+    {
+        apiResult = await apiEditor.GetHtmlAsync();
+    }
+    private async Task GetEditorText()
+    {
+        apiResult = await apiEditor.GetTextAsync();
+    }
+    private async Task GetEditorSelection()
+    {
+        apiResult = await apiEditor.GetSelectedTextAsync();
+    }
+    private void ShowEditorFacts()
+    {
+        apiResult = $"{apiEditor.WordCount} words, {apiEditor.CharacterCount} chars, empty: {apiEditor.IsEmpty}";
+    }
+
+    private readonly BitRichTextEditorParams[] richTextEditorParams =
     [
         new()
         {
-            Id = ""insert-date"",
-            Label = ""Today"",
-            AriaLabel = ""Insert today's date"",
-            OnActivate = editor => editor.InsertTextAsync(DateTime.Now.ToString(""yyyy-MM-dd""))
+            Height = "6rem",
+            ShowCount = true,
+            StickyToolbar = true,
+            Toolbar = BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Link,
+            Placeholder = "Defaults come from BitParams...",
         }
-    ]
-};";
+    ];
 
-    private readonly string example28RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All""
-                   ToolbarConfig=""reorderConfig"" />";
-    private readonly string example28CsharpCode = @"
-// listed ids appear first; enabled-but-omitted groups follow in default order
-private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
-{
-    Order =
-    [
-        BitRichTextEditorToolbarConfig.GroupIds.Inline,
-        BitRichTextEditorToolbarConfig.GroupIds.Lists,
-        BitRichTextEditorToolbarConfig.GroupIds.Link
-    ]
-};";
+    private string? cssVariablesHtml = "<p>Restyled with the <a href=\"#example23\">public CSS variables</a>: <code>no class needed</code>.</p><blockquote>Even the quote rule.</blockquote>";
+    private const string cssVariablesStyle = "--bit-RichTextEditor-border-radius:1rem;" +
+                                             "--bit-RichTextEditor-border-color:var(--bit-clr-pri);" +
+                                             "--bit-RichTextEditor-toolbar-background:color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);" +
+                                             "--bit-RichTextEditor-footer-background:color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);" +
+                                             "--bit-RichTextEditor-button-radius:999px;" +
+                                             "--bit-RichTextEditor-quote-border-color:var(--bit-clr-pri);" +
+                                             "--bit-RichTextEditor-font-family:Georgia, serif;" +
+                                             "--bit-RichTextEditor-line-height:1.8;";
 
-    private readonly string example29RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Find""
-                   Localizer=""localizer"" />";
-    private readonly string example29CsharpCode = @"
-private readonly SpanishEditorLocalizer localizer = new();
-
-// Only the keys present here are translated; every other key falls back to the built-in
-// English text, so a partial dictionary is a valid localizer.
-public class SpanishEditorLocalizer : IBitRichTextEditorLocalizer
-{
-    private static readonly Dictionary<string, string> Labels = new()
-    {
-        [""toolbar""] = ""Formato"",
-        [""bold""] = ""Negrita (Ctrl+B)"",
-        [""italic""] = ""Cursiva (Ctrl+I)"",
-        [""bullet-list""] = ""Lista con viñetas"",
-        [""find-replace""] = ""Buscar y reemplazar"",
-        [""no-matches""] = ""Sin coincidencias"",
-        // ...
-    };
-
-    public string? this[string key] => Labels.TryGetValue(key, out var value) ? value : null;
-}";
-
-    private readonly string example30RazorCode = @"
-<BitRichTextEditor @ref=""apiEditor"" @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.All"" />
-
-<BitButton OnClick=""FocusEditor"">FocusAsync</BitButton>
-<BitButton OnClick='@(() => apiEditor.ExecuteCommandAsync(""bold""))'>ExecuteCommand(""bold"")</BitButton>
-<BitButton OnClick='@(() => apiEditor.InsertTextAsync("" inserted""))'>InsertTextAsync</BitButton>
-<BitButton OnClick='@(() => apiEditor.InsertHtmlAsync(""<b>bold</b>""))'>InsertHtmlAsync</BitButton>
-<BitButton OnClick=""@(async () => await apiEditor.SelectAllAsync())"">SelectAllAsync</BitButton>
-<BitButton OnClick=""@(() => apiEditor.UndoAsync())"">UndoAsync</BitButton>
-<BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
-<BitButton OnClick=""GetEditorText"">GetTextAsync</BitButton>
-<BitButton OnClick=""GetEditorSelection"">GetSelectedTextAsync</BitButton>
-<BitButton OnClick=""ShowEditorFacts"">Counts</BitButton>
-<BitButton OnClick=""@(() => apiEditor.ClearAsync())"">ClearAsync</BitButton>
-
-<pre>@apiResult</pre>";
-    private readonly string example30CsharpCode = @"
-private BitRichTextEditor apiEditor = default!;
-private string? apiResult;
-private async Task FocusEditor()
-{
-    await apiEditor.FocusAsync();
-}
-private async Task GetEditorHtml()
-{
-    apiResult = await apiEditor.GetHtmlAsync();
-}
-private async Task GetEditorText()
-{
-    apiResult = await apiEditor.GetTextAsync();
-}
-private async Task GetEditorSelection()
-{
-    apiResult = await apiEditor.GetSelectedTextAsync();
-}
-private void ShowEditorFacts()
-{
-    // Kept current by the editor itself - no interop call needed.
-    apiResult = $""{apiEditor.WordCount} words, {apiEditor.CharacterCount} chars, empty: {apiEditor.IsEmpty}"";
-}";
-
-    private readonly string example31RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" ShowQuickToolbar ShowToolbar=""false"" />";
-
-    private readonly string example32RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   OnMentionSearch=""SearchMentions""
-                   OnMentionSelected=""m => lastMention = m.Display"" />";
-    private readonly string example32CsharpCode = @"
-private static readonly BitRichTextEditorMention[] people =
-[
-    new(""1"", ""Ada Lovelace"", ""Analytical engine""),
-    new(""2"", ""Alan Turing"", ""Computing machinery""),
-    new(""3"", ""Grace Hopper"", ""Compilers""),
-];
-
-private Task<IReadOnlyList<BitRichTextEditorMention>> SearchMentions(string term)
-{
-    IReadOnlyList<BitRichTextEditorMention> matches = string.IsNullOrWhiteSpace(term)
-        ? people
-        : people.Where(p => p.Display.Contains(term, StringComparison.OrdinalIgnoreCase)).ToArray();
-    return Task.FromResult(matches);
-}";
-
-    private readonly string example33RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" SmartTypography />";
-
-    private readonly string example34RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
-                   Toolbar=""BitRichTextEditorToolbar.All""
-                   OnSelectionChange=""HandleSelectionChange"" />
-
-<div>Caret is in: <b>@selectionSummary</b></div>";
-    private readonly string example34CsharpCode = @"
-private string selectionSummary = ""nothing yet"";
-
-private void HandleSelectionChange(BitRichTextEditorSelectionState state)
-{
-    var parts = new List<string>();
-    if (string.IsNullOrEmpty(state.Block) is false) parts.Add(state.Block);
-    if (state.Bold) parts.Add(""bold"");
-    if (state.Italic) parts.Add(""italic"");
-    if (state.InLink) parts.Add(""a link"");
-    if (state.InTable) parts.Add(""a table cell"");
-    if (state.ImageSelected) parts.Add(""an image"");
-    selectionSummary = parts.Count > 0 ? string.Join("", "", parts) : ""nothing yet"";
-}";
-
-    private readonly string example35RazorCode = @"
-<BitRichTextEditor Styles=""@(new() { Toolbar = ""border-bottom-color: red"", Editor = ""background-color: #fff8e1"" })""
-                   Classes=""@(new() { Toolbar = ""custom-rte-toolbar"", Editor = ""custom-rte-editor"" })""
-                   Placeholder=""Custom styles and classes applied to the toolbar and editor."" />";
-
-    private readonly string example36RazorCode = @"
-<BitRichTextEditor @bind-Value=""html"" Dir=""BitDir.Rtl""
-                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Direction"" />";
+    private string? rtlHtml = "<p>این ویرایشگر از راست به چپ چیده شده است.</p><p dir=\"ltr\">And this block is left-to-right.</p>";
 }

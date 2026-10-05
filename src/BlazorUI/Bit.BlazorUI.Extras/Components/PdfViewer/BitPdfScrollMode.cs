@@ -12,6 +12,6 @@ public enum BitPdfScrollMode
     /// <summary>Pages flow left to right and wrap onto the next row, filling the width of the surface.</summary>
     Wrapped,
 
-    /// <summary>Only the current page (or spread) is shown; navigation replaces it rather than scrolling to it.</summary>
+    /// <summary>Only the current page (or spread) is shown; navigation replaces it rather than scrolling to it, and on a touch screen a horizontal swipe turns it.</summary>
     Page,
 }
