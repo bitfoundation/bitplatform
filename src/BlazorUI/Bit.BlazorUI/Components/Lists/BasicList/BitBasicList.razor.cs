@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -17,6 +18,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private bool _autoLoadRegistered;
     private bool _internalLoadMore;
     private bool _internalVirtualize;
+    private bool _virtualizeTookOver;
     private int _internalLoadMoreSize = 20;
     private ICollection<TItem> _viewItems = [];
     private string? _autoLoadMargin = null;
@@ -81,7 +83,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     // count here, so it keeps the role.
     private string? _EffectiveRole => _ShowLoading is false
                                       && _viewItems.Count == 0
-                                      && (Virtualize && ItemsProvider is not null && LoadMore is false) is false
+                                      && (Virtualize && _VirtualizeProvider) is false
                                       ? null
                                       : Role;
 
@@ -96,6 +98,32 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private string _LoadMoreId => $"{_Id}-lmb";
 
     private bool _ShowSentinel => LoadMore && AutoLoad && IsEnabled && _loadMoreFinished is false;
+
+    // Whether the virtualized items come straight off the provider rather than out of the items the list holds.
+    private bool _VirtualizeProvider => ItemsProvider is not null && LoadMore is false;
+
+    // How many rows the list renders itself until Virtualize takes over, estimated the way BitVirtualize
+    // estimates its own first window: a 600px viewport of items plus the overscan on either side of it. That
+    // is what is on screen before the page is interactive, so a list holding its items shows them right away
+    // rather than an empty region, and one reading a provider reserves their room with its placeholders.
+    private int _VirtualizeWindowCount
+    {
+        get
+        {
+            if (Virtualize is false || _virtualizeTookOver || ItemSize <= 0) return 0;
+
+            var count = (int)Math.Ceiling(600 / ItemSize) + (Math.Max(0, OverscanCount) * 2) + 1;
+
+            return _VirtualizeProvider ? count : Math.Min(count, _viewItems.Count);
+        }
+    }
+
+    // While the window is on screen, the spacer Virtualize renders after its (still missing) rows is laid over
+    // it rather than pushing it down, and a provider list keeps the spacer before them in view, so the spacers
+    // its JS watches report the region the user is looking at whichever way the list was scrolled meanwhile.
+    private string? _VirtualizeWindowClass => _VirtualizeWindowCount > 0
+                                              ? (_VirtualizeProvider ? " bit-bsl-vwn bit-bsl-vwp" : " bit-bsl-vwn")
+                                              : null;
 
 
 
@@ -511,6 +539,14 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         if (sourceChanged)
         {
+            // A change of mode renders a Virtualize of its own, which has measured nothing yet.
+            if (_internalVirtualize != Virtualize
+                || _internalLoadMore != LoadMore
+                || (_internalItemsProvider is null) != (ItemsProvider is null))
+            {
+                _virtualizeTookOver = false;
+            }
+
             _internalItems = Items;
             _internalLoadMore = LoadMore;
             _internalVirtualize = Virtualize;
@@ -537,6 +573,8 @@ public partial class BitBasicList<TItem> : BitComponentBase
                 _viewItems = [];
             }
         }
+
+        ResetVirtualizeWindowWhileLoading();
 
         await base.OnParametersSetAsync();
     }
@@ -807,11 +845,52 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         _isLoadingMore = value;
 
+        ResetVirtualizeWindowWhileLoading();
+
         if (IsDisposed) return;
 
         StateHasChanged();
 
         await OnLoadingChange.InvokeAsync(value);
+    }
+
+    // Virtualize renders a row only once its JS has measured the list, so the first row it renders is what says
+    // it has taken over from the window the list rendered itself. The list is re-rendered right away, which puts
+    // that render in the same batch as the row: the browser never paints the two windows together, nor a frame
+    // with neither of them.
+    private RenderFragment VirtualizedRow(TItem item)
+    {
+        if (_virtualizeTookOver is false)
+        {
+            TakeOverVirtualizeWindow();
+        }
+
+        return _EffectiveRowTemplate(item);
+    }
+
+    private void TakeOverVirtualizeWindow()
+    {
+        _virtualizeTookOver = true;
+
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
+    // The loading content takes the place of the element holding the rows, so the Virtualize inside it is a new
+    // one once the rows are back, which has to be stood in for again until it has measured the list.
+    private void ResetVirtualizeWindowWhileLoading()
+    {
+        if (_ShowLoading)
+        {
+            _virtualizeTookOver = false;
+        }
+    }
+
+    // The same spacer Virtualize reserves the room of the items it does not render with.
+    private string GetVirtualizeSpacerStyle(int itemCount)
+    {
+        return $"height: {(itemCount * ItemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
     }
 
     private async ValueTask<BitBasicListItemsProviderResult<TItem>> FetchItems(
@@ -854,6 +933,13 @@ public partial class BitBasicList<TItem> : BitComponentBase
         var result = await FetchItems(request.StartIndex, request.Count, request.CancellationToken, true);
 
         if (request.CancellationToken.IsCancellationRequested) return new([], 0);
+
+        // A provider with nothing to show has Virtualize render its EmptyContent rather than a row, which would
+        // otherwise leave the placeholders of the first window on screen beside it.
+        if (_virtualizeTookOver is false && (result.Items is null || result.Items.Count == 0))
+        {
+            TakeOverVirtualizeWindow();
+        }
 
         return new ItemsProviderResult<TItem>(result.Items ?? [], result.TotalItemCount);
     }

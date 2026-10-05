@@ -182,9 +182,11 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
             if (Nav.Mode == BitNavMode.Automatic)
             {
-                // Defer the URL match to a single pass after this registration batch renders, instead
-                // of matching here per option (which would flatten and scan the whole tree each time).
-                Nav.MarkSelectionDirty();
+                // The nav decides when the URL match runs: a single pass after this registration batch renders
+                // rather than one per option (which would flatten and scan the whole tree each time), except for
+                // the options of the first render, whose selection has to be in the HTML a prerender sends.
+                // It is asked after the expansion state is set, so the path the match opens is not undone here.
+                Nav.OnOptionRegistered(this);
             }
         }
 

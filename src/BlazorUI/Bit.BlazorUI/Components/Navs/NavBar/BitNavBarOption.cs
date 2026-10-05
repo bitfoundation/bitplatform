@@ -178,7 +178,10 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        NavBar?.RegisterOption(this);
+        if (NavBar is not null)
+        {
+            await NavBar.RegisterOption(this);
+        }
 
         await base.OnInitializedAsync();
     }

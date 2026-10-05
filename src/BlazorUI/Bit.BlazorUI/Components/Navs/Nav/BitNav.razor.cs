@@ -480,29 +480,39 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         _selectionDirty = true;
     }
 
-    internal void SetSelectedItemByCurrentUrl()
+    // Called by an option as it registers in the automatic mode. Once the nav has rendered, the match is only
+    // flagged, so a batch of options added together collapses into the single pass of OnAfterRender. The options
+    // of the first render register during the very render a prerender (or a static SSR page) sends as HTML,
+    // though, and neither of those ever gets to an after-render pass: an option pointing at the current URL is
+    // matched right away there instead, so that HTML already carries the selection. Only a matching option runs
+    // the match, which keeps the first render from scanning the whole tree once per option; and the match still
+    // runs over the whole tree rather than selecting the option itself, so an option that registers later and
+    // wins the match (a child of a parent that matches by its prefix) still takes the selection over.
+    internal void OnOptionRegistered(TItem item)
+    {
+        MarkSelectionDirty();
+
+        if (IsRendered || IsCurrentUrlItem(item) is false) return;
+
+        SetSelectedItemByCurrentUrl();
+    }
+
+    // Only a navigation can re-select the item that is already selected (a Reselectable nav reports the
+    // destination the reader went back to): every other match - the one of the first render, the ones after the
+    // items or the matching rules changed - is the nav re-checking where it already is, and reporting that as a
+    // selection would fire OnSelectItem for nothing the reader did.
+    internal void SetSelectedItemByCurrentUrl(bool isNavigation = false)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
-        var baseUri = _navigationManager.BaseUri;
+        var isCurrentUrlItem = GetCurrentUrlMatcher();
 
-        var currentItem = Flatten(_items).FirstOrDefault(item =>
-        {
-            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
+        var currentItem = Flatten(_items).FirstOrDefault(isCurrentUrlItem);
 
-            if (IsMatch(GetUrl(item), match)) return true;
-
-            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
-        });
+        if (isNavigation is false && IsSelected(currentItem)) return;
 
         _ = SetSelectedItem(currentItem);
-
-        bool IsMatch(string? itemUrl, BitNavMatch match)
-        {
-            return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
-        }
     }
 
 
@@ -513,12 +523,36 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // so a URL match stops at the first hit instead of materializing the whole tree on every pass.
     private IEnumerable<TItem> Flatten(IList<TItem> items) => items.SelectMany(i => Flatten(GetChildItems(i))).Concat(items);
 
+    private bool IsCurrentUrlItem(TItem item) => GetCurrentUrlMatcher()(item);
+
+    // Whether an item points at the page the app currently sits on, through its own URL or one of its
+    // additional ones. The current URL is read once per matcher rather than once per item it is asked about.
+    private Func<TItem, bool> GetCurrentUrlMatcher()
+    {
+        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
+        var baseUri = _navigationManager.BaseUri;
+
+        return item =>
+        {
+            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
+
+            if (IsMatch(GetUrl(item))) return true;
+
+            return GetAdditionalUrls(item)?.Any(IsMatch) is true;
+
+            bool IsMatch(string? itemUrl)
+            {
+                return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
+            }
+        };
+    }
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        SetSelectedItemByCurrentUrl();
+        SetSelectedItemByCurrentUrl(isNavigation: true);
 
         StateHasChanged();
     }

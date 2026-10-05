@@ -217,7 +217,8 @@ public partial class BitFullCalendar
     [Parameter] public EventCallback<BitFullCalendarChangingEventArgs> OnChanging { get; set; }
 
     /// <summary>
-    /// Raised when the visible date range changes - on first render, and afterwards whenever the user
+    /// Raised when the visible date range changes - as the calendar initializes (awaited, so the events fetched
+    /// for it are in a prerendered page), and afterwards whenever the user
     /// navigates with the prev/next/today buttons, switches views, or the grid shape changes. The
     /// callback receives the inclusive start and end dates of the new range together with the active view.
     /// </summary>
@@ -537,11 +538,14 @@ public partial class BitFullCalendar
         // Raise the single coalesced date-range change (if any) now that all parameter-driven
         // setters have run, so consumers see only the final resolved range rather than each
         // intermediate one produced while applying parameters.
+        // The very first range is left to OnParametersSetAsync, which raises the range the state ends up showing anyway.
         if (_pendingDateChange is { } pending)
         {
             _pendingDateChange = null;
-            _initialDateChangeRaised = true;
-            InvokeAsync(() => OnDateChange.InvokeAsync(pending));
+            if (_initialDateChangeRaised)
+            {
+                InvokeAsync(() => OnDateChange.InvokeAsync(pending));
+            }
         }
 
         // A bound View/Mode the state refuses can resolve to the value that is already active, which
@@ -554,27 +558,32 @@ public partial class BitFullCalendar
         base.OnParametersSet();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
         // Consumers commonly fetch the events for the range the calendar is about to show, so the
         // initial range is reported like every later one instead of only after the first navigation.
-        if (firstRender && _initialDateChangeRaised is false && OnDateChange.HasDelegate)
+        // It is reported here, and awaited, rather than after the first render: a prerender or a static
+        // SSR page never renders a second time, so only the events fetched before it ends make it into
+        // the HTML sent before the page is interactive (each render of a prerendered page, the server's
+        // and the interactive one, is a calendar of its own that reports it once). The range is the
+        // state's alone, so nothing it needs waits for the browser.
+        if (_initialDateChangeRaised is false && OnDateChange.HasDelegate)
         {
             _initialDateChangeRaised = true;
             var (start, end) = State.GetVisibleRange();
-            // This range never travelled through the state's own channel, so tell it the range has
-            // been reported - otherwise a first navigation that lands right back on it (pressing
+            // This range may never have travelled through the state's own channel, so tell it the range
+            // has been reported - otherwise a first navigation that lands right back on it (pressing
             // "Today" while today is already showing) would report the same range a second time.
             State.MarkCurrentRangeReported();
-            InvokeAsync(() => OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
+            await OnDateChange.InvokeAsync(new BitFullCalendarDateChangeEventArgs
             {
                 Start = start,
                 End = end,
                 View = State.View
-            }));
+            });
         }
 
-        base.OnAfterRender(firstRender);
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

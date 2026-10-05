@@ -62,12 +62,22 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
 
 
-    internal void RegisterOption(BitNavBarOption option)
+    internal async Task RegisterOption(BitNavBarOption option)
     {
-        _items.Add((option as TItem)!);
+        var item = (option as TItem)!;
+
+        _items.Add(item);
         _selectionDirty = true;
         _optionsOrderDirty = true;
         StateHasChanged();
+
+        // The options of the first render register during the very render a prerender (or a static SSR page)
+        // sends as HTML, and neither of those ever gets to the after-render pass that resolves the selection
+        // waiting for them, so the option that selection is waiting for is selected as it registers instead.
+        // Every later option is left to that pass, which handles a whole batch of them at once.
+        if (IsRendered) return;
+
+        await SelectRegisteringOption(item);
     }
 
     internal void UnregisterOption(BitNavBarOption option)
@@ -804,26 +814,64 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
-        var baseUri = _navigationManager.BaseUri;
-
-        var currentItem = _items.FirstOrDefault(item =>
-        {
-            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
-
-            if (IsMatch(GetUrl(item), match)) return true;
-
-            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
-        });
+        var currentItem = _items.FirstOrDefault(GetCurrentUrlMatcher());
 
         if (isNavigation is false && IsSelected(currentItem)) return;
 
         await SetSelectedItem(currentItem);
+    }
 
-        bool IsMatch(string? itemUrl, BitNavMatch match)
+    // Whether an item points at the page the app currently sits on, through its own URL or one of its
+    // additional ones. The current URL is read once per matcher rather than once per item it is asked about.
+    private Func<TItem, bool> GetCurrentUrlMatcher()
+    {
+        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
+        var baseUri = _navigationManager.BaseUri;
+
+        return item =>
         {
-            return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
+            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
+
+            if (IsMatch(GetUrl(item))) return true;
+
+            return GetAdditionalUrls(item)?.Any(IsMatch) is true;
+
+            bool IsMatch(string? itemUrl)
+            {
+                return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
+            }
+        };
+    }
+
+    // Selects an option of the first render as it registers, when it is the one the selection is waiting for:
+    // the one pointing at the current URL in the automatic mode, the one carrying the pending SelectedKey or
+    // DefaultSelectedKey in the manual one. Only such an option runs the lookup, which keeps the first render
+    // from scanning every option once per option. The options of the first render register in their markup
+    // order, so the first of them to match is the one the lookup over the whole bar would have picked as well.
+    private async Task SelectRegisteringOption(TItem item)
+    {
+        if (Mode is BitNavMode.Automatic)
+        {
+            if (GetCurrentUrlMatcher()(item) is false) return;
+
+            await SetSelectedItemByCurrentUrl();
+            return;
         }
+
+        var key = GetKey(item);
+        if (key is null) return;
+
+        if (_selectedKeyPending && key == SelectedKey)
+        {
+            await ApplySelectedKey();
+        }
+        else if (_defaultSelectedKeyPending && key == DefaultSelectedKey)
+        {
+            await ApplyDefaultSelectedKey();
+        }
+
+        // The key follows the item once it is selected, so a bound SelectedKey learns the default as well.
+        await SyncSelectedKey();
     }
 
     // Reads the Items collection into the list the navbar renders from. The content of the collection is

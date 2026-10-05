@@ -346,21 +346,24 @@ namespace BitBlazorUI {
             // Always sanitize inbound HTML against the active policy (or the secure default
             // when no policy is set) before it reaches the DOM.
             const next = RichTextEditor.sanitize(editor, html ?? '');
-            if (editor.innerHTML === next) return;
-
-            const focused = document.activeElement === editor;
-            const hasContent = editor.innerHTML.trim().length > 0;
-            if (focused && hasContent) {
-                const sel = document.getSelection();
-                const range = document.createRange();
-                range.selectNodeContents(editor);
-                sel!.removeAllRanges();
-                sel!.addRange(range);
-                if (!RichTextEditor.execNative(editor, 'insertHTML', next)) {
+            // The markup may already be there - the first set of a value the component rendered into the surface
+            // itself (prerendered) - in which case the DOM is left alone, but the facts below are still reported:
+            // nothing else counts the content the surface started with.
+            if (editor.innerHTML !== next) {
+                const focused = document.activeElement === editor;
+                const hasContent = editor.innerHTML.trim().length > 0;
+                if (focused && hasContent) {
+                    const sel = document.getSelection();
+                    const range = document.createRange();
+                    range.selectNodeContents(editor);
+                    sel!.removeAllRanges();
+                    sel!.addRange(range);
+                    if (!RichTextEditor.execNative(editor, 'insertHTML', next)) {
+                        editor.innerHTML = next;
+                    }
+                } else {
                     editor.innerHTML = next;
                 }
-            } else {
-                editor.innerHTML = next;
             }
             RichTextEditor.updateEmpty(editor);
             // The content changed programmatically (e.g. a bound Value assignment), not via a user

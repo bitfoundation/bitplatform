@@ -7,7 +7,13 @@ namespace BitBlazorUI.Legacy {
             const editor = new Editor(textArea, dotnetObj);
 
             if (defaultValue) {
-                editor.value = defaultValue;
+                if (editor.value === defaultValue) {
+                    // the textarea already holds the value, rendered with it so it shows before the page is
+                    // interactive, which the setter skips as unchanged; so report it the way the setter does.
+                    setTimeout(() => editor.change({} as Event), 0);
+                } else {
+                    editor.value = defaultValue;
+                }
             }
 
             editor.resetHistory();

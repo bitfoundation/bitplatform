@@ -725,6 +725,8 @@ public partial class BitCarousel : BitComponentBase
 
         _needsReset = true;
 
+        LayOutBeforeFirstRender();
+
         StateHasChanged();
     }
 
@@ -742,6 +744,8 @@ public partial class BitCarousel : BitComponentBase
         if (IsDisposed) return;
 
         _needsReset = true;
+
+        LayOutBeforeFirstRender();
 
         StateHasChanged();
     }
@@ -879,6 +883,8 @@ public partial class BitCarousel : BitComponentBase
         }
 
         UpdateAutoPlayTimer();
+
+        LayOutBeforeFirstRender();
 
         base.OnParametersSet();
     }
@@ -1121,6 +1127,34 @@ public partial class BitCarousel : BitComponentBase
             _containerHeight = rect.Height;
         }
 
+        LayOutSlides();
+
+        // A re-layout can land the carousel on another page (a breakpoint that changed how many pages there
+        // are), which the bound page follows, the same way it follows a move.
+        await SyncSelectedPage();
+
+        StateHasChanged();
+    }
+
+    // A carousel is only measured once it has rendered in the browser, which a prerendered or a statically
+    // rendered one never has, but most of its layout takes no measurement at all: how many pages there are, the
+    // dots that stand for them, the page it starts on, which slides are on screen (and which are inert), and
+    // where each of them sits, as a share of the container rather than in pixels. So it is laid out as the
+    // items arrive and the parameters change, which is what a page shows before it is interactive and all a
+    // static page ever shows. The interactive render that replaces a prerendered one is laid out the same way
+    // from the same parameters, so the hand-over moves nothing, and the first measurement takes over from there.
+    // Only what does hang on the width - the breakpoint variants of VisibleItemsCount and the
+    // ResponsiveOptions - waits for it.
+    private void LayOutBeforeFirstRender()
+    {
+        if (_afterFirstRender || IsDisposed) return;
+
+        LayOutSlides();
+    }
+
+    // Lays the slides out against the last measurement that landed, or against none (see LayOutBeforeFirstRender).
+    private void LayOutSlides()
+    {
         ClampCounts();
 
         // The counts the measurement landed on are the ones the next comparison has to be made against,
@@ -1157,10 +1191,12 @@ public partial class BitCarousel : BitComponentBase
         var first = _currentIndices.Length > 0 ? _currentIndices[0] : 0;
 
         // The page the carousel starts on is applied to the first layout that has something to lay out, so
-        // it is rendered on that page instead of sliding over to it after the fact.
+        // it is rendered on that page instead of sliding over to it after the fact. A layout before the first
+        // render applies it without settling it: the measurement may land on other counts, whose pages the
+        // start page is then a page of.
         if (_defaultPageApplied is false && itemsCount > 0)
         {
-            _defaultPageApplied = true;
+            _defaultPageApplied = _afterFirstRender;
 
             var startPage = _appliedSelectedPage > 0 ? _appliedSelectedPage : DefaultPage;
 
@@ -1192,69 +1228,60 @@ public partial class BitCarousel : BitComponentBase
         // one whose items were taken away stops.
         UpdateAutoPlayTimer();
 
-        // The transform of a slide and the opacity of the fade effect belong to a layout, so they
-        // are cleared up front rather than left behind stale when the measurement above failed.
-        foreach (var item in _allItems)
+        // The accessible name a slide falls back to counts the slides around it, so all of them are
+        // rendered again when the carousel gains or loses one. Nothing else about a slide depends on
+        // the others, so an ordinary re-layout (a resize, for one) leaves them alone.
+        if (itemsCountChanged)
         {
-            item.InternalFadeStyle = string.Empty;
-            item.InternalTransformStyle = string.Empty;
-
-            // The accessible name a slide falls back to counts the slides around it, so all of them are
-            // rendered again when the carousel gains or loses one. Nothing else about a slide depends on
-            // the others, so an ordinary re-layout (a resize, for one) leaves them alone.
-            if (itemsCountChanged)
+            foreach (var item in _allItems)
             {
                 item.Refresh();
             }
         }
 
         // The slides are sized from the axis the carousel runs on, out of the last measurement that
-        // landed. A carousel that has not been measured yet (or was measured while it was collapsed)
-        // is left to the stylesheet, which shows its first slide rather than an empty box.
+        // landed. A carousel that has not been measured yet (or was measured while it was collapsed) gives
+        // each slide its share of the container as a percentage instead, which is the same size for as long
+        // as the container keeps the one it would be measured at; the transforms below are percentages of
+        // the slide itself either way, so the slides sit where a measurement would put them.
         var size = Vertical ? _containerHeight : _containerWidth;
+        var sign = (Vertical is false && Dir == BitDir.Rtl) ? -1 : 1;
 
-        if (size > 0)
+        var itemStyle = size > 0
+            ? (Vertical
+                ? FormattableString.Invariant($"height:{size / visible}px;width:100%;display:block")
+                : FormattableString.Invariant($"width:{size / visible}px;display:block"))
+            : (Vertical
+                ? FormattableString.Invariant($"height:calc(100% / {visible});width:100%;display:block")
+                : FormattableString.Invariant($"width:calc(100% / {visible});display:block"));
+
+        for (int i = 0; i < itemsCount; i++)
         {
-            var itemSize = visible > 0 ? size / visible : size;
-            var sign = (Vertical is false && Dir == BitDir.Rtl) ? -1 : 1;
+            var item = _allItems[i];
 
-            for (int i = 0; i < itemsCount; i++)
+            item.InternalStyle = itemStyle;
+            item.InternalTransitionStyle = string.Empty;
+
+            if (Fade)
             {
-                var item = _allItems[i];
+                var isCurrent = Array.IndexOf(_currentIndices, i) >= 0;
 
-                item.InternalStyle = Vertical
-                    ? FormattableString.Invariant($"height:{itemSize}px;width:100%;display:block")
-                    : FormattableString.Invariant($"width:{itemSize}px;display:block");
+                item.InternalTransformStyle = string.Empty;
+                item.InternalFadeStyle = isCurrent ? "opacity:1;z-index:1" : "opacity:0;z-index:0";
+            }
+            else
+            {
+                // A slide that is on screen sits at its place in the visible run, and everything else
+                // is laid out relative to the first visible slide, which is what puts the slides before
+                // the current page out to its start rather than piling them up after it.
+                var position = Array.IndexOf(_currentIndices, i);
 
-                item.InternalTransitionStyle = string.Empty;
+                if (position < 0) position = i - first;
 
-                if (Fade)
-                {
-                    var isCurrent = Array.IndexOf(_currentIndices, i) >= 0;
-
-                    item.InternalTransformStyle = string.Empty;
-                    item.InternalFadeStyle = isCurrent ? "opacity:1;z-index:1" : "opacity:0;z-index:0";
-                }
-                else
-                {
-                    // A slide that is on screen sits at its place in the visible run, and everything else
-                    // is laid out relative to the first visible slide, which is what puts the slides before
-                    // the current page out to its start rather than piling them up after it.
-                    var position = Array.IndexOf(_currentIndices, i);
-
-                    if (position < 0) position = i - first;
-
-                    item.InternalFadeStyle = string.Empty;
-                    item.InternalTransformStyle = Translate(sign * 100 * position);
-                }
+                item.InternalFadeStyle = string.Empty;
+                item.InternalTransformStyle = Translate(sign * 100 * position);
             }
         }
-
-        // A re-layout can land the carousel on another page (a breakpoint that changed how many pages there
-        // are), which the bound page follows, the same way it follows a move.
-        await SyncSelectedPage();
-
-        StateHasChanged();
     }
 
     // Writes the page the carousel is on back to SelectedPage. The value is recorded as seen before it is

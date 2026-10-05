@@ -27,6 +27,10 @@ public partial class BitPdfViewer : BitComponentBase
     private int _renderEpoch; // bumped whenever page slots are rebuilt (load, rotation, mode change)
     private string _status = string.Empty;
     private bool _loading;
+    // Set when a URL source could not be fetched before the viewer ever rendered - a prerender, or a static SSR
+    // page, where the server has no HttpClient or none that can resolve a URL meant for the browser. Such a
+    // failure is not the document's: the viewer stays in its loading state and tries again on its first render.
+    private bool _loadDeferred;
     // How far the work behind the loading bar has got, from 0 to 1, when that is known (a
     // download that declared its length, a print catching up on its pages); null leaves
     // the bar indeterminate.
@@ -2362,6 +2366,15 @@ public partial class BitPdfViewer : BitComponentBase
                 await _js.BitPdfViewerRegisterFocusTracker(RootElement);
             }
             catch (JSDisconnectedException) { } // Circuit gone mid-render; ignore.
+
+            // A URL the viewer could not fetch before it had ever rendered is fetched again now that it has, and
+            // this time a failure is the document's own and is reported.
+            if (_loadDeferred)
+            {
+                _loadDeferred = false;
+                await OpenCoreAsync(_source);
+                StateHasChanged();
+            }
         }
 
         // Keyboard shortcuts live on the root element (so they work wherever focus
@@ -2797,6 +2810,7 @@ public partial class BitPdfViewer : BitComponentBase
             // owns _loadVersion); reset it here so e.g. Source = null while a load is
             // in flight doesn't leave the bar up forever.
             _loading = false;
+            _loadDeferred = false; // a retry owed to the old source is not owed to this one
         }
         finally
         {
@@ -2826,6 +2840,13 @@ public partial class BitPdfViewer : BitComponentBase
         {
             if (_services.GetService(typeof(HttpClient)) is not HttpClient http)
             {
+                // A server prerendering a page commonly registers no HttpClient even when the browser does; the
+                // loading state stays up for the first render to retry (see _loadDeferred).
+                if (IsRendered is false)
+                {
+                    _loadDeferred = true;
+                    return;
+                }
                 _status = ActiveTexts.HttpClientRequired;
                 _errorMessage = _status;
                 _loading = false;
@@ -2844,6 +2865,15 @@ public partial class BitPdfViewer : BitComponentBase
                 // its failure is not the current document's, so don't publish a stale
                 // error or hide the newer load's progress bar (mirrors the parse catch).
                 if (version != _loadVersion) return;
+                // Before the first render this is most likely the server failing on a URL the browser can fetch (a
+                // relative one, against an HttpClient with no BaseAddress); the first render retries it, and only a
+                // failure there is reported (see _loadDeferred).
+                if (IsRendered is false)
+                {
+                    _loadDeferred = true;
+                    _progress = null;
+                    return;
+                }
                 _status = string.Format(ActiveTexts.FetchFailedFormat, ex.Message);
                 _errorMessage = _status;
                 _loading = false;

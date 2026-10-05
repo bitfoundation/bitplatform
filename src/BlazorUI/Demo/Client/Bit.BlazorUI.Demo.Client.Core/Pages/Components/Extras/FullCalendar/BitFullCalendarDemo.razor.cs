@@ -214,7 +214,7 @@ public partial class BitFullCalendarDemo
             Name = "OnDateChange",
             Type = "EventCallback<BitFullCalendarDateChangeEventArgs>",
             DefaultValue = "",
-            Description = "Raised on the first render and whenever the visible range moves (navigation, a view switch). Carries the inclusive Start/End and the active View - fetch that range here.",
+            Description = "Raised as the calendar initializes (awaited, so the events fetched for it are in a prerendered page) and whenever the visible range moves (navigation, a view switch). Carries the inclusive Start/End and the active View - fetch that range here.",
             LinkType = LinkType.Link,
             Href = "#date-change-args-class",
         },

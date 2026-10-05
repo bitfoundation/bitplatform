@@ -154,9 +154,13 @@
     <div class="bit-mde-bdy bit-mde-@Mode.ToString().ToLowerInvariant()">
         <div class="bit-mde-pne bit-mde-epn">
             @* The Preview mode hides the textarea, and a browser refuses to submit a form over a required control it
-               cannot focus without saying why, so only aria-required stays on it there. *@
+               cannot focus without saying why, so only aria-required stays on it there.
+               The value is the one it had before the first render, and never changes after it: that is what a
+               prerendered or static page shows before the script seeds the textarea, while the script owns it from
+               then on - a value Blazor kept in step would be written over the text being typed. *@
             <textarea @ref="InputElement"
                       @attributes="InputHtmlAttributes"
+                      value="@_seedValue"
                       id="@TextAreaId"
                       name="@Name"
                       style="@Styles?.TextArea"

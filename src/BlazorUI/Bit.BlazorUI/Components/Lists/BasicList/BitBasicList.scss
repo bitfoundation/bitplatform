@@ -56,6 +56,30 @@
     }
 }
 
+// The first window of a virtualized list, which the list renders itself after the two spacers of Virtualize
+// until Virtualize has measured the list and renders rows of its own. The second spacer already reserves the
+// height of every item, so it is laid over the window from the top rather than pushing it down out of view
+// (the window reserves that height again in the flow), and it takes no pointer from the rows under it. Laid
+// over the whole list, it is in view wherever the list was scrolled to before it became interactive, which
+// is what has the JS of Virtualize measure the region the user is actually looking at.
+.bit-bsl-vwn {
+    position: relative;
+
+    > :nth-child(2) {
+        top: 0;
+        inset-inline: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+}
+
+// A provider list knows no count before its provider has answered, so its second spacer has no height to be
+// laid over anything with; the first one is kept in view instead, for the same measuring to start from.
+.bit-bsl-vwp > :first-child {
+    top: 0;
+    position: sticky;
+}
+
 .bit-bsl-hdr, .bit-bsl-ftr {
     flex-shrink: 0;
 }

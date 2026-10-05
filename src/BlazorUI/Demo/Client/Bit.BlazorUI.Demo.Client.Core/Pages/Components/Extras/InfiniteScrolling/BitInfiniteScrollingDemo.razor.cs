@@ -160,7 +160,7 @@ public partial class BitInfiniteScrollingDemo
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render while loading the new items.",
+            Description = "The custom template to render while loading the new items, and until the first page is fetched.",
          },
          new()
          {
@@ -223,7 +223,7 @@ public partial class BitInfiniteScrollingDemo
             Name = "Preload",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Pre-loads the data at the initialization of the component. Useful in prerendering mode.",
+            Description = "Pre-loads the data at the initialization of the component. Useful in prerendering mode: the first page is then in the HTML of a prerendered (or statically rendered) page, which otherwise shows the loading state, since the items provider is not called on the server without it.",
          },
          new()
          {

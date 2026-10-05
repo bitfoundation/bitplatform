@@ -11,6 +11,9 @@ public partial class BitRichTextEditor : BitComponentBase
 {
     private bool _initialized;
     private string _currentHtml = "";
+    // What the editing surface is rendered with: the value as it stood until the first render, sanitized, and frozen
+    // after it (see the surface in the markup).
+    private MarkupString _surfaceSeed;
     private string? _lastSetupSnapshot;
     private string? _lastPolicySnapshot;
     private bool _toolbarRovingEnabled;
@@ -686,6 +689,14 @@ public partial class BitRichTextEditor : BitComponentBase
         // Before anything below reads the parameters it may fill in. A BitParams that has gone away takes what it
         // had cascaded with it, which the base class has already put back by now.
         CascadingParameters?.UpdateParameters(this);
+
+        // Before the first render there is no bridge to fill the surface - a prerender or a static SSR page never
+        // gets one - so the value is put into it here, through the same allowlist the bridge would apply. After it,
+        // the surface is the bridge's alone.
+        if (IsRendered is false)
+        {
+            _surfaceSeed = new(BitRichTextEditorHtmlSanitizer.Sanitize(Value, SanitizationPolicy ?? BitRichTextEditorSanitizationPolicy.Default));
+        }
 
         EnsureField();
         TrackEditContext();

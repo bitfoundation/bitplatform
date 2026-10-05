@@ -380,7 +380,10 @@
     @* A non-editable div is not focusable, so a read-only editor would be unreachable by keyboard -
        its content unable to be scrolled or read out. The surface below therefore gets a tab stop
        while read-only, unless the whole component is disabled, where nothing inside it should take
-       focus. A visible Label names it in place of the aria-label. *@
+       focus. A visible Label names it in place of the aria-label.
+       Its content belongs to the bridge, which fills it on the first interactive render. What Blazor renders into it
+       is the value as it stood until then, sanitized in C#: that is what a prerendered or static page shows, and it
+       never changes afterwards, so Blazor never touches the surface's children again once the bridge owns them. *@
     <div class="bit-rte-edt @(Resizable ? "bit-rte-edt-rsz" : null) @Classes?.Editor"
          @ref="_editorRef"
          role="textbox"
@@ -399,7 +402,7 @@
          tabindex="@(ReadOnly && IsEnabled && _inSourceView is false ? "0" : null)"
          data-placeholder="@Placeholder"
          hidden="@_inSourceView"
-         style="@Styles?.Editor"></div>
+         style="@Styles?.Editor">@if (_surfaceSeed.Value is { Length: > 0 }) { @_surfaceSeed }</div>
 
     @if (_inSourceView)
     {

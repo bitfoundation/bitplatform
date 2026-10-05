@@ -25,7 +25,7 @@
          class="bit-map-canvas @Classes?.Canvas"
          style="@Styles?.Canvas"
          role="region"
-         aria-busy="@(_loadState == BitMapLoadState.Loading ? "true" : null)"
+         aria-busy="@(IsLoading ? "true" : null)"
          aria-roledescription="@RoleDescription"
          tabindex="@(TabIndex ?? "0")"
          inert="@(IsEnabled is false)"
@@ -57,7 +57,7 @@
        is computed on it as well. Always rendered: it is read from the first marker on. *@
     <span class="bit-map-probe" aria-hidden="true"></span>
 
-    @if (_loadState == BitMapLoadState.Loading && ShowLoading)
+    @if (IsLoading && ShowLoading)
     {
         <div class="bit-map-status @Classes?.Status" style="@Styles?.Status" role="status">
             @if (LoadingTemplate is not null)

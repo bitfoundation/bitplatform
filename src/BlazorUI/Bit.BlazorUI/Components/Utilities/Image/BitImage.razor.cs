@@ -22,7 +22,9 @@ namespace Bit.BlazorUI;
 /// <see cref="LoadingTemplate"/> and an <see cref="ErrorTemplate"/> stand in its place, and a
 /// <see cref="FallbackSrc"/> is tried once before the error state is reached at all. While the image
 /// is hidden its <see cref="Alt"/> is still announced, so a screen reader is never left with less than
-/// the frame.
+/// the frame. All of that starts with the first render in the browser: a prerendered or a statically
+/// rendered page has no load event to follow, so until then the image is left to the browser and shown
+/// while it loads, with its <see cref="PlaceholderSrc"/> under it rather than over it.
 /// <br />
 /// What the browser itself decides is reachable rather than reimplemented: <see cref="Loading"/>,
 /// <see cref="Decoding"/>, <see cref="FetchPriority"/>, <see cref="CrossOrigin"/> and
@@ -66,6 +68,20 @@ public partial class BitImage : BitComponentBase
     private bool _placeholderFaded;
 
     /// <summary>
+    /// Whether the component has rendered in the browser yet, which only the first OnAfterRenderAsync can
+    /// tell. A prerender and a static render never get that far, so everything they produce comes from
+    /// before it - see <see cref="_isLeftToBrowser"/>.
+    /// </summary>
+    private bool _hasRendered;
+
+    /// <summary>
+    /// Whether the image arrived while the browser was already showing it as its own (see
+    /// <see cref="_isLeftToBrowser"/>), which leaves it nothing to fade in from and its placeholder nothing to
+    /// cross-fade with.
+    /// </summary>
+    private bool _arrivedOnScreen;
+
+    /// <summary>
     /// The key of the img element. Changing it replaces the element rather than patching it, which is
     /// the only way to make the browser fetch a source it already has an answer for - see
     /// <see cref="ReloadAsync"/>.
@@ -95,11 +111,22 @@ public partial class BitImage : BitComponentBase
 
     private bool _isPlaceholderLeaving => _loadingState is BitImageState.Loaded && FadeIn && _placeholderFaded is false;
 
+    // Until the component has rendered in the browser the image is left to the browser, shown while it loads the
+    // way an img with nothing around it is. That is all a prerendered page shows before it is interactive and all
+    // a statically rendered one ever shows, and neither has a load event coming to take a hidden image out of
+    // hiding: nothing attaches a handler to their img at all. The interactive render that replaces a prerendered
+    // one renders it the same way, so the hand-over changes nothing on screen, and the first render in the
+    // browser is where the component takes the image over (see TakeOverFromBrowserAsync). An img with nothing to
+    // load has nothing for the browser to show either, so it is hidden from the start as it always is.
+    private bool _isLeftToBrowser => _hasRendered is false &&
+                                     _loadingState is BitImageState.Loading &&
+                                     (_src.HasValue() || Srcset.HasValue() || _hasSources);
+
     // Whether the img element is on screen, which is also whether its alt is in the accessibility tree.
     private bool _isImageVisible => _loadingState is BitImageState.Loaded ||
-                                    (_loadingState is BitImageState.Loading && StartVisible);
+                                    (_loadingState is BitImageState.Loading && (StartVisible || _isLeftToBrowser));
 
-    private bool _isLoadingTemplateShown => _loadingState is BitImageState.Loading && StartVisible is false && LoadingTemplate is not null;
+    private bool _isLoadingTemplateShown => _loadingState is BitImageState.Loading && _isImageVisible is false && LoadingTemplate is not null;
 
     private bool _isErrorTemplateShown => _loadingState is BitImageState.Error && ErrorTemplate is not null;
 
@@ -696,6 +723,11 @@ public partial class BitImage : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        if (firstRender)
+        {
+            await TakeOverFromBrowserAsync();
+        }
+
         // Space scrolls the page by default, and an image that answers Space is a control the reader
         // pressed it on rather than a place to scroll from. A Blazor keydown handler cannot decide that
         // per key - @onkeydown:preventDefault is evaluated at render time, so a flag set from the
@@ -743,7 +775,58 @@ public partial class BitImage : BitComponentBase
         if (_loadingState == BitImageState.Loading) return;
 
         _loadingState = BitImageState.Loading;
+        _arrivedOnScreen = false;
         _stateChangePending = true;
+    }
+
+    /// <summary>
+    /// Takes the image over from the browser, which has had it to itself until the first render in the browser
+    /// (see <see cref="_isLeftToBrowser"/>).
+    /// </summary>
+    /// <remarks>
+    /// An image the browser has already finished is kept on screen as it is: it has arrived, and hiding it only to
+    /// show it again on its load event would be the very flash the hand-over is there to avoid. It is the img the
+    /// browser is asked about rather than its load event that is waited for, since a cached image is complete the
+    /// moment its element is inserted. The load event still follows, and reports the load through
+    /// <see cref="OnLoad"/> as it always does; the state it would move to is already reached. An image still on
+    /// its way goes back to the loading state as the component shows it - hidden, behind its
+    /// <see cref="LoadingTemplate"/> or its <see cref="PlaceholderSrc"/> - to be revealed by that event.
+    /// </remarks>
+    private async Task TakeOverFromBrowserAsync()
+    {
+        if (_isLeftToBrowser is false)
+        {
+            _hasRendered = true;
+            return;
+        }
+
+        var src = _src;
+        var reloadKey = _reloadKey;
+        var loaded = false;
+
+        try
+        {
+            var complete = _js.BitUtilsGetProperty(_imageElement, "complete");
+            var naturalWidth = _js.BitUtilsGetProperty(_imageElement, "naturalWidth");
+
+            // A broken image is complete as well, and only the size the browser decoded tells the two apart.
+            loaded = await complete == "true" && (await naturalWidth) is { Length: > 0 } width && width != "0";
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, there is nothing left to show
+        catch (JSException) { } // an image that cannot be asked about is shown the way the component shows any other
+
+        // A load or an error event, a new source or a reload that landed while the browser was being asked is
+        // newer than its answer, which is then about an image that is no longer the one on screen.
+        if (loaded && _loadingState is BitImageState.Loading && _reloadKey == reloadKey && string.Equals(_src, src, StringComparison.Ordinal))
+        {
+            // Reached while the image is still the browser's own, which is what keeps the fade and the
+            // placeholder out of the arrival of an image that was on screen all along.
+            await SetLoadingStateAsync(BitImageState.Loaded);
+        }
+
+        _hasRendered = true;
+
+        StateHasChanged();
     }
 
     /// <summary>
@@ -966,10 +1049,21 @@ public partial class BitImage : BitComponentBase
 
             // The fade belongs to the moment the image becomes visible rather than to the mounting of
             // the component: the class arrives with the one above it, which is the render the load
-            // event caused, so the animation starts where the image does.
-            if (FadeIn)
+            // event caused, so the animation starts where the image does. An image the browser is showing
+            // as its own has not arrived in that sense - a prerendered one would fade in on page load and
+            // again when the interactive render replaces it - and neither has one that was on screen
+            // before the component took it over.
+            if (FadeIn && _isLeftToBrowser is false && _arrivedOnScreen is false)
             {
                 className.Append(" bit-img-fde");
+            }
+
+            // The image the browser is showing as its own is lifted over the placeholder, which stays under
+            // it, so the image paints over the blur as it arrives rather than waiting under a placeholder
+            // that nothing on a static page would ever take away.
+            if (_isLeftToBrowser)
+            {
+                className.Append(" bit-img-nat");
             }
         }
         else
@@ -1071,13 +1165,24 @@ public partial class BitImage : BitComponentBase
     {
         var changed = _loadingState != state;
 
+        // Read before the state moves on, since the loading state is part of what leaves the image to the browser.
+        var arrivedOnScreen = _isLeftToBrowser;
+
         _loadingState = state;
 
         // Arriving again is a new fade, and so a placeholder to fade out again. Only an arrival counts: a
-        // srcset that swaps in another candidate on a resize loads again without ever having left.
-        if (changed && state is BitImageState.Loaded)
+        // srcset that swaps in another candidate on a resize loads again without ever having left. An image
+        // that arrives while the browser is already showing it as its own has been on screen all along, so it
+        // has nothing to fade in from, and its placeholder - kept under it until now - is let go at once
+        // rather than brought up over it to fade out.
+        if (changed)
         {
-            _placeholderFaded = false;
+            _arrivedOnScreen = state is BitImageState.Loaded && arrivedOnScreen;
+
+            if (state is BitImageState.Loaded)
+            {
+                _placeholderFaded = arrivedOnScreen;
+            }
         }
 
         // A state set from outside a DOM event - the fallback swap, ReloadAsync - has nothing rendering
