@@ -1,4 +1,6 @@
 ﻿using Bit.Cli.Infrastructure;
+using Bit.Cli.Projects;
+using Bit.Cli.Templates;
 using Bit.Cli.Tests.Infrastructure;
 
 namespace Bit.Cli.Tests;
@@ -9,10 +11,10 @@ public class WizardTests
     [TestMethod]
     public async Task Docker_Should_BeCheckedWhenAspireRunsTheProjectsContainers()
     {
-        var prompter = new ScriptedPrompter().On("Features", new[] { "Redis" }).On("Create it?", false);
+        var prompter = new ScriptedPrompter().On("Create it?", false);
         using var host = MissingDocker(prompter);
 
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--redis"), host.Output);
 
         var install = prompter.Find("Install these?");
         Assert.IsNotNull(install, host.Output);
@@ -24,10 +26,10 @@ public class WizardTests
     [TestMethod]
     public async Task Docker_Should_BeOfferedUncheckedWithoutAspire()
     {
-        var prompter = new ScriptedPrompter().On(".NET Aspire?", false).On("Create it?", false);
+        var prompter = new ScriptedPrompter().On("Create it?", false);
         using var host = MissingDocker(prompter);
 
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--aspire", "false"), host.Output);
 
         var install = prompter.Find("Install these?");
         Assert.IsNotNull(install, host.Output);
@@ -48,74 +50,7 @@ public class WizardTests
     }
 
     [TestMethod]
-    [DataRow(HostOs.Linux, new[] { "Android" })]
-    [DataRow(HostOs.Windows, new[] { "Android", "Windows" })]
-    [DataRow(HostOs.MacOS, new[] { "Android", "iOS", "macOS" })]
-    public async Task NativeApps_Should_OnlyIncludeWhatThisMachineCanBuild(HostOs os, string[] expected)
-    {
-        var prompter = new ScriptedPrompter().On("Create it?", false);
-        using var host = new TestHost(os, prompter: prompter);
-        host.AllToolsInstalled();
-
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
-
-        var platforms = prompter.Find("Set up native apps on this machine now too?");
-        Assert.IsNotNull(platforms, host.Output);
-        CollectionAssert.AreEqual(expected, platforms.Choices.ToArray());
-        Assert.IsEmpty(platforms.Preselected);
-        StringAssert.Contains(host.Output, "Every project has the web, Android, iOS, Windows and macOS apps.");
-        StringAssert.Contains(host.Output, "so fewer is faster");
-    }
-
-    [TestMethod]
-    public async Task OptionsOnTheCommandLine_Should_NotBeAskedAgain()
-    {
-        var prompter = new ScriptedPrompter().On("Create it?", false);
-        using var host = new TestHost(HostOs.Linux, prompter: prompter);
-        host.AllToolsInstalled();
-
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--database", "PostgreSQL", "--aspire", "false", "--platforms", "web", "--ide", "none"), host.Output);
-
-        Assert.IsNull(prompter.Find("Database"));
-        Assert.IsNull(prompter.Find(".NET Aspire?"));
-        Assert.IsNull(prompter.Find("Set up native apps on this machine now too?"));
-        Assert.IsNull(prompter.Find("Open it in"));
-        Assert.IsNotNull(prompter.Find("Features"));
-        Assert.IsNull(prompter.Find("Install these?"), "every tool is installed");
-    }
-
-    [TestMethod]
-    public async Task TheAnswers_Should_BecomeACommandThatAsksNothing()
-    {
-        var prompter = new ScriptedPrompter()
-            .On("Database", "PostgreSQL")
-            .On("Set up native apps on this machine now too?", new[] { "Android" })
-            .On("Create it?", false);
-        using var host = new TestHost(HostOs.Linux, prompter: prompter);
-        host.AllToolsInstalled();
-
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
-
-        StringAssert.Contains(host.Output, "bit new Contoso --database PostgreSQL --platforms web,android --yes");
-    }
-
-    [TestMethod]
-    public async Task AnInvalidName_Should_BeAskedAgainWithASuggestion()
-    {
-        var prompter = new ScriptedPrompter().On("Create it?", false);
-        using var host = new TestHost(HostOs.Linux, prompter: prompter);
-        host.AllToolsInstalled();
-
-        Assert.AreEqual(0, await host.RunAsync("new", "my-app"), host.Output);
-
-        var name = prompter.Find("Project name");
-        Assert.IsNotNull(name, host.Output);
-        CollectionAssert.AreEqual(new[] { "MyApp" }, name.Preselected.ToArray());
-        StringAssert.Contains(host.Output, "MyApp in ");
-    }
-
-    [TestMethod]
-    public async Task TheIdeQuestion_Should_PreferVsCode()
+    public async Task NothingAboutTheProject_Should_BeAsked()
     {
         var prompter = new ScriptedPrompter().On("Create it?", false);
         using var host = new TestHost(HostOs.Linux, prompter: prompter);
@@ -124,14 +59,40 @@ public class WizardTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
 
-        var ide = prompter.Find("Open it in");
-        Assert.IsNotNull(ide, host.Output);
-        CollectionAssert.AreEqual(new[] { "VS Code" }, ide.Preselected.ToArray());
-        Assert.AreEqual("Don't open it", ide.Choices[^1]);
+        CollectionAssert.AreEqual(new[] { "Create it?" }, prompter.Prompts.Select(p => p.Question).ToArray(), host.Output);
+        StringAssert.Contains(host.Output, "open in VS Code");
     }
 
     [TestMethod]
-    public async Task WithoutQuestions_VsCode_Should_BeTheIdeOutsideCi()
+    public async Task AMissingName_Should_PointToTheCreateProjectPage()
+    {
+        var prompter = new ScriptedPrompter();
+        using var host = new TestHost(HostOs.Linux, prompter: prompter);
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new"), host.Output);
+
+        StringAssert.Contains(host.Output, "bit new <name>");
+        StringAssert.Contains(host.Output, "https://bitplatform.dev/templates/create-project");
+        Assert.IsEmpty(prompter.Prompts);
+    }
+
+    [TestMethod]
+    public async Task AnInvalidName_Should_StopWithASuggestion()
+    {
+        var prompter = new ScriptedPrompter();
+        using var host = new TestHost(HostOs.Linux, prompter: prompter);
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "my-app"), host.Output);
+
+        StringAssert.Contains(host.Output, "Try: bit new MyApp");
+        Assert.IsEmpty(prompter.Prompts);
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.WorkingDirectory, "my-app")));
+    }
+
+    [TestMethod]
+    public async Task VsCode_Should_BeTheIdeOutsideCi()
     {
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
@@ -145,7 +106,25 @@ public class WizardTests
         Assert.AreEqual(0, await ci.RunAsync("new", "Contoso", "--dry-run", "--yes"), ci.Output);
         Assert.IsFalse(ci.Output.Contains("open in", StringComparison.Ordinal), ci.Output);
         Assert.IsFalse(ci.Output.Contains("Chromium", StringComparison.Ordinal), ci.Output);
-        StringAssert.Contains(ci.Output, "--ide none");
+    }
+
+    [TestMethod]
+    [DataRow(HostOs.Linux, new[] { "Android" })]
+    [DataRow(HostOs.Windows, new[] { "Android", "Windows" })]
+    [DataRow(HostOs.MacOS, new[] { "Android", "iOS", "macOS" })]
+    public void TheNativeAppsBitSetupOffers_Should_OnlyIncludeWhatThisMachineCanBuild(HostOs os, string[] expected)
+    {
+        var prompter = new ScriptedPrompter();
+        using var host = new TestHost(os, prompter: prompter);
+
+        NewWorkflow.AskPlatforms(host.Services, [Platform.Web]);
+
+        var platforms = prompter.Find("Set up native apps on this machine now too?");
+        Assert.IsNotNull(platforms, host.Output);
+        CollectionAssert.AreEqual(expected, platforms.Choices.ToArray());
+        Assert.IsEmpty(platforms.Preselected);
+        StringAssert.Contains(host.Output, "Every project has the web, Android, iOS, Windows and macOS apps.");
+        StringAssert.Contains(host.Output, "so fewer is faster");
     }
 
     private static TestHost MissingDocker(ScriptedPrompter prompter)

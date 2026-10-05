@@ -19,7 +19,7 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
-1. Asks for the project name and options, or takes them from flags.
+1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command.
 2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, and for native apps Windows long paths, the Windows Hypervisor Platform the Android emulator uses, and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while Docker Desktop or the Android emulator needs it, less than 24 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own.
@@ -39,11 +39,9 @@ bit new Contoso.Shop --platforms web,android
 bit new Contoso.Shop --yes --no-open --no-trust
 ```
 
-The interactive questions end with the same command without questions, to repeat the project in CI.
-
 ### Options
 
-Every option of `dotnet new bit-bp` works the same way:
+Every option of the bit Boilerplate template works the same way:
 
 | Option | Values | Default |
 |---|---|---|
@@ -78,10 +76,10 @@ And these of its own:
 | `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
 | `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up, and each native app adds several GB of build tools and minutes of build, so it can wait for `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
-| `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code, asked in a terminal; `none` in CI. |
+| `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
 | `--template-package <nupkg>` | Create from a local Bit.Boilerplate package, the way this repository's CI does. |
-| `-y, --yes` | Accept every default and never ask. |
+| `-y, --yes` | Install the tools the project needs and create it without asking. |
 | `--non-interactive` | Never ask; fail when a required value is missing. |
 | `--dry-run` | Show the plan and change nothing. |
 | `--no-setup` | Only create the project: nothing is installed, restored or built. Run `bit setup` in its folder later. |
@@ -222,4 +220,3 @@ gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>
 |---|---|
 | `dnx Bit.ResxTranslator` | `dnx Bit.Cli translate`, or `bit translate` |
 | `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli decode map trace`, or `bit decode map trace` |
-| `dotnet new install Bit.Boilerplate` + `dotnet new bit-bp ...` | `bit new ...`, with the same options |

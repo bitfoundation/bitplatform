@@ -10,8 +10,7 @@ namespace Bit.Cli.Projects;
 
 public sealed class NewWorkflow(CliServices cli)
 {
-    private static readonly string[] featureOrder = ["realProject", "multitenant", "notification", "cloudflare", "redis", "signalR", "offlineDb", "sentry", "appInsights", "ads", "brouter", "sample", "advancedTests"];
-    private static readonly string[] moreOptions = ["filesStorage", "api", "pipeline", "captcha", "theme", "apiServerUrl", "webAppUrl"];
+    private const string CreateProjectPage = "https://bitplatform.dev/templates/create-project";
 
     public async Task<int> RunAsync(NewRequest request, CancellationToken cancellationToken)
     {
@@ -35,42 +34,21 @@ public sealed class NewWorkflow(CliServices cli)
 
         var name = request.Name;
 
-        if (name is not null && ProjectName.Validate(name) is { } nameError)
-        {
-            if (interactive is false)
-                return UsageError($"{nameError} Try: bit new {ProjectName.Suggest(name)}");
-
-            cli.Console.Warn(nameError);
-            name = null;
-        }
-
         if (name is null)
-        {
-            if (interactive is false)
-                return UsageError("Pass the project name: bit new <name>");
+            return UsageError($"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
 
-            name = cli.Prompter.Text("Project name", ProjectName.Suggest(request.Name ?? "MyApp"), ProjectName.Validate);
-        }
+        if (ProjectName.Validate(name) is { } nameError)
+            return UsageError($"{nameError} Try: bit new {ProjectName.Suggest(name)}");
 
         var directory = Path.GetFullPath(request.Output ?? name, cli.Environment.CurrentDirectory);
 
         if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
             return UsageError($"{directory} already exists and isn't empty. Pick another name, or a folder with -o.");
 
-        if (interactive)
-        {
-            AskTemplateOptions(selection, request);
-        }
-
         var (platforms, platformError) = SharedOptions.ParsePlatforms(request.Platforms, cli.Environment.Os);
 
         if (platformError is not null)
             return UsageError(platformError);
-
-        if (interactive && request.PlatformsGiven is false)
-        {
-            platforms = AskPlatforms(cli, platforms);
-        }
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request) };
@@ -82,7 +60,7 @@ public sealed class NewWorkflow(CliServices cli)
             WriteHardwareWarnings(cli, await hardware, needs);
         }
 
-        ide ??= interactive ? AskIde(selectedTools) : DefaultIde(selectedTools);
+        ide ??= DefaultIde(selectedTools);
 
         if (interactive)
         {
@@ -90,10 +68,9 @@ public sealed class NewWorkflow(CliServices cli)
         }
 
         var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, Template = selection };
-        var command = EquivalentCommand(name, request, selection, platforms, ide);
 
         TagTelemetry(selection, platforms, selectedTools, ide, request);
-        WritePlan(context, selection, selectedTools, ide, request, command);
+        WritePlan(context, selection, selectedTools, ide, request);
 
         if (request.DryRun)
         {
@@ -338,66 +315,6 @@ public sealed class NewWorkflow(CliServices cli)
         }
     }
 
-    private void AskTemplateOptions(TemplateSelection selection, NewRequest request)
-    {
-        bool Given(string name) => request.TemplateValues.ContainsKey(name);
-
-        void AskChoice(string name)
-        {
-            if (Given(name) || selection.Manifest.Find(name) is not { Type: TemplateParameterType.Choice } parameter)
-                return;
-
-            var answer = cli.Prompter.Select(TemplateLabels.For(parameter), parameter.Choices, parameter.Choices.First(c => c.Value == selection[name]), TemplateLabels.For);
-            selection.Set(name, answer.Value);
-        }
-
-        AskChoice("database");
-
-        if (Given("aspire") is false && selection.Manifest.Find("aspire") is not null)
-        {
-            var aspire = cli.Prompter.Confirm(".NET Aspire? It runs the app with a dashboard, and the database, Keycloak and the rest in containers", selection.Aspire);
-            selection.Set("aspire", aspire ? "true" : "false");
-        }
-
-        AskChoice("module");
-
-        var features = featureOrder
-            .Where(f => Given(f) is false)
-            .Select(selection.Manifest.Find)
-            .OfType<TemplateParameter>()
-            .Where(p => p.Type is TemplateParameterType.Bool)
-            .ToList();
-
-        if (features.Count > 0)
-        {
-            var chosen = cli.Prompter.MultiSelect("Features", features, features.Where(f => selection.IsTrue(f.Name)), TemplateLabels.For);
-
-            foreach (var feature in features)
-            {
-                selection.Set(feature.Name, chosen.Contains(feature) ? "true" : "false");
-            }
-        }
-
-        var remaining = moreOptions.Where(o => Given(o) is false && selection.Manifest.Find(o) is not null).ToList();
-
-        if (remaining.Count > 0 && cli.Prompter.Confirm("Change more options? (files storage, API hosting, CI/CD, captcha, theme, URLs)", false))
-        {
-            foreach (var option in remaining)
-            {
-                var parameter = selection.Manifest.Find(option)!;
-
-                if (parameter.Type is TemplateParameterType.Choice)
-                {
-                    AskChoice(option);
-                }
-                else
-                {
-                    selection.Set(option, cli.Prompter.Text(TemplateLabels.For(parameter), selection[option]));
-                }
-            }
-        }
-    }
-
     public static HashSet<Platform> AskPlatforms(CliServices cli, HashSet<Platform> current)
     {
         var native = Platforms.AvailableOn(cli.Environment.Os).Where(p => p is not Platform.Web).ToList();
@@ -419,25 +336,6 @@ public sealed class NewWorkflow(CliServices cli)
         return IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null || selectedTools.Any(t => t.Tool.Id is "vscode")
             ? IdeLocator.VsCode
             : IdeLocator.None;
-    }
-
-    private string AskIde(IReadOnlyList<ToolCheck> selectedTools)
-    {
-        var found = IdeLocator.FindAll(cli.Environment, cli.Runner).ToList();
-
-        if (found.All(i => i.Id is not IdeLocator.VsCode) && selectedTools.Any(t => t.Tool.Id is "vscode"))
-        {
-            found.Insert(0, new Ide(IdeLocator.VsCode, "VS Code", "code"));
-        }
-
-        if (found.Count == 0)
-            return IdeLocator.None;
-
-        var none = new Ide(IdeLocator.None, "Don't open it", "");
-        var choices = found.Append(none).ToList();
-        var preferred = found.FirstOrDefault(i => i.Id is IdeLocator.VsCode) ?? found[0];
-
-        return cli.Prompter.Select("Open it in", choices, preferred, i => i.Name).Id;
     }
 
     private void AskUsageTelemetry()
@@ -507,37 +405,7 @@ public sealed class NewWorkflow(CliServices cli)
         cli.Telemetry.SetTag(TelemetryFields.TemplateVersion, request.TemplatePackage is null ? request.TemplateVersion ?? BuildInfo.Version : "local");
     }
 
-    public static string EquivalentCommand(string name, NewRequest request, TemplateSelection selection, IReadOnlySet<Platform> platforms, string ide)
-    {
-        var tokens = new List<string> { "bit", "new", name };
-
-        if (request.Output is not null)
-        {
-            tokens.AddRange(["-o", request.Output]);
-        }
-
-        tokens.AddRange(selection.ToCommandLineTokens());
-
-        if (platforms.Count > 1)
-        {
-            tokens.AddRange(["--platforms", string.Join(',', platforms.Order().Select(Platforms.Name))]);
-        }
-
-        if (ide is not IdeLocator.VsCode)
-        {
-            tokens.AddRange(["--ide", ide]);
-        }
-
-        if (request.TemplateVersion is not null)
-        {
-            tokens.AddRange(["--template-version", request.TemplateVersion]);
-        }
-
-        tokens.AddRange(request.ExtraTemplateArguments);
-        return string.Join(' ', tokens.Select(ProcessSpec.Quote));
-    }
-
-    private void WritePlan(ProjectContext context, TemplateSelection selection, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request, string command)
+    private void WritePlan(ProjectContext context, TemplateSelection selection, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request)
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(2)).AddColumn();
 
@@ -590,7 +458,6 @@ public sealed class NewWorkflow(CliServices cli)
             cli.Console.Out.MarkupLine("[grey]Installing the build tools can show a Windows permission prompt too.[/]");
         }
 
-        cli.Console.Out.MarkupLine($"[grey]The same project, without questions:[/] {Markup.Escape(command)} --yes");
         cli.Console.Out.WriteLine();
     }
 

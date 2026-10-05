@@ -104,7 +104,7 @@ public class CommandTests
     }
 
     [TestMethod]
-    public async Task ADryRun_Should_ShowThePlanAndTheSameCommandWithoutQuestions()
+    public async Task ADryRun_Should_ShowThePlanAndChangeNothing()
     {
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
@@ -112,7 +112,8 @@ public class CommandTests
         var exitCode = await host.RunAsync("new", "Contoso.Shop", "--database", "postgresql", "--redis", "--aspire", "false", "--platforms", "web,android", "--dry-run", "--yes");
 
         Assert.AreEqual(0, exitCode, host.Output);
-        StringAssert.Contains(host.Output, "bit new Contoso.Shop --database PostgreSQL --aspire false --redis --platforms web,android --yes");
+        StringAssert.Contains(host.Output, "Database: PostgreSQL");
+        StringAssert.Contains(host.Output, "Web, Android");
         StringAssert.Contains(host.Output, "Dry run");
         Assert.IsFalse(Directory.Exists(Path.Combine(host.WorkingDirectory, "Contoso.Shop")));
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "new"));
