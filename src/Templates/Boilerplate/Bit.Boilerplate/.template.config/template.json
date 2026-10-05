@@ -801,6 +801,7 @@
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs",
                         "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnElevatedAccessTests.cs",
                         "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
@@ -1099,7 +1100,8 @@
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
-                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs"
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs"
                     ]
                 },
                 {
