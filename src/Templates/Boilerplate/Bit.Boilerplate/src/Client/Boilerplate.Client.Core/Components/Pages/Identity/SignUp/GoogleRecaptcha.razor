@@ -2,7 +2,11 @@
 @inject ClientCoreSettings clientCoreSettings
 
 <script type="text/javascript">
-    function onloadCallback() { grecaptcha.render('grecaptcha_element'); };
+    function onloadCallback() {
+        const element = document.getElementById('grecaptcha_element');
+        element.dataset.theme = (document.documentElement.getAttribute('bit-theme') || '').endsWith('dark') ? 'dark' : 'light';
+        grecaptcha.render(element);
+    };
 </script>
 <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)" async defer></script>
 
