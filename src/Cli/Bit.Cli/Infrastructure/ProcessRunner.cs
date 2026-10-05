@@ -52,6 +52,8 @@ public interface IProcessRunner
 {
     Task<ProcessResult> RunAsync(ProcessSpec spec, CancellationToken cancellationToken = default);
 
+    bool StartDetached(ProcessSpec spec);
+
     string? FindExecutable(string name);
 }
 
@@ -111,37 +113,7 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
             CreateNoWindow = spec.Interactive is false
         };
 
-        foreach (var argument in spec.Arguments)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        foreach (var variable in CliEnvironment.InProcessOnlyVariables)
-        {
-            if (environment.Variables.TryGetValue(variable, out var original))
-            {
-                startInfo.Environment[variable] = original;
-            }
-            else
-            {
-                startInfo.Environment.Remove(variable);
-            }
-        }
-
-        if (spec.Environment is not null)
-        {
-            foreach (var (key, value) in spec.Environment)
-            {
-                if (value is null)
-                {
-                    startInfo.Environment.Remove(key);
-                }
-                else
-                {
-                    startInfo.Environment[key] = value;
-                }
-            }
-        }
+        PrepareStart(startInfo, spec);
 
         using var process = new Process { StartInfo = startInfo };
         var output = new StringBuilder();
@@ -207,6 +179,66 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
         lock (outputLock)
         {
             return new ProcessResult { ExitCode = process.ExitCode, Output = output.ToString(), Duration = stopwatch.Elapsed };
+        }
+    }
+
+    public bool StartDetached(ProcessSpec spec)
+    {
+        log.Write($"> {spec.CommandLine}   (detached)");
+
+        var startInfo = new ProcessStartInfo(FindExecutable(spec.FileName) ?? spec.FileName)
+        {
+            UseShellExecute = false,
+            WorkingDirectory = spec.WorkingDirectory ?? environment.CurrentDirectory,
+            CreateNoWindow = true
+        };
+
+        PrepareStart(startInfo, spec);
+
+        try
+        {
+            using var process = Process.Start(startInfo);
+            return process is not null;
+        }
+        catch (Win32Exception)
+        {
+            log.Write($"  {spec.FileName} was not found");
+            return false;
+        }
+    }
+
+    private void PrepareStart(ProcessStartInfo startInfo, ProcessSpec spec)
+    {
+        foreach (var argument in spec.Arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        foreach (var variable in CliEnvironment.InProcessOnlyVariables)
+        {
+            if (environment.Variables.TryGetValue(variable, out var original))
+            {
+                startInfo.Environment[variable] = original;
+            }
+            else
+            {
+                startInfo.Environment.Remove(variable);
+            }
+        }
+
+        if (spec.Environment is not null)
+        {
+            foreach (var (key, value) in spec.Environment)
+            {
+                if (value is null)
+                {
+                    startInfo.Environment.Remove(key);
+                }
+                else
+                {
+                    startInfo.Environment[key] = value;
+                }
+            }
         }
     }
 

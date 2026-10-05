@@ -74,6 +74,7 @@ public sealed class CliTelemetry : IDisposable
         telemetry.Root?
             .SetTag(TelemetryFields.Command, command)
             .SetTag(TelemetryFields.CliVersion, BuildInfo.Version)
+            .SetTag(TelemetryFields.UpdatedFrom, environment.GetVariable(SelfUpdate.HandedOffVariable))
             .SetTag(TelemetryFields.FirstRun, settings.IsFirstRun)
             .SetTag(TelemetryFields.UserId, installId)
             .SetTag(TelemetryFields.SessionId, Guid.NewGuid().ToString("N"))

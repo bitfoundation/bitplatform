@@ -19,7 +19,7 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
-1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command.
+1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
 2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, and for native apps Windows long paths, the Windows Hypervisor Platform the Android emulator uses, and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while Docker Desktop or the Android emulator needs it, less than 24 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own.
@@ -81,6 +81,7 @@ And these of its own:
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
 | `--template-package <nupkg>` | Create from a local Bit.Boilerplate package, the way this repository's CI does. |
 | `--github-repo` | Create a private GitHub repository for the project and push to it. Needs the GitHub pipeline, the default. |
+| `--no-update` | Create it with this bit even when a newer one is out. |
 | `-y, --yes` | Install the tools the project needs and create it without asking. Windows' permission prompt, `sudo`'s password and the GitHub sign-in still show when there's a terminal. |
 | `--non-interactive` | Never ask; fail when a required value is missing. |
 | `--dry-run` | Show the plan and change nothing. |
@@ -168,6 +169,15 @@ bit decode < trace.txt
 
 Without a map, the newest `obj/**/bit-minifier.map` under the current folder is used. Without a trace file, the trace is read from standard input.
 
+## Staying up to date
+
+`bit new` creates every project from the newest stable bit Boilerplate. As it starts, it looks up the newest `Bit.Cli` on this machine's NuGet sources. When a newer one is out, it installs it next to itself in `~/.bitplatform/cli`, and the same command carries on with it in the same terminal, so nothing is asked twice. When the run ends, the installed global tool updates to that version in the background, with its log in `~/.bitplatform/logs`.
+
+- `--template-version <version>` hands the run to the bit of that version, which knows that template best, and leaves the installed bit as it is.
+- It never happens in CI, with `--template-package`, under `dnx`, which runs the version you ask it for, or in a build from source, so CI and local builds always run the code they were built from.
+- `--no-update`, or `BIT_CLI_NO_UPDATE=1`, keeps the bit you have.
+- `bit update` updates the installed bit on request.
+
 ## What it changes on your machine
 
 - **Tools** you tick, with `winget` on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.
@@ -176,11 +186,12 @@ Without a map, the newest `obj/**/bit-minifier.map` under the current folder is 
 - **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
+- **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, and telemetry not sent yet.
 
 ## Telemetry
 
-bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, the type and stack trace of a crash, the OS, .NET and bit versions, whether it runs in CI, through `dnx` or for a coding agent, and which hardware warnings it showed. A random ID, made on the first run, ties one machine's runs together.
+bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, the type and stack trace of a crash, the OS, .NET and bit versions, the bit version a run was handed over from, whether it runs in CI, through `dnx` or for a coding agent, and which hardware warnings it showed. A random ID, made on the first run, ties one machine's runs together.
 
 It never sends project names, paths, user or machine names, file contents, `.resx` text, prompts, API keys, environment variable values, feed URLs, git remotes, exception messages or the output of the tools it runs.
 

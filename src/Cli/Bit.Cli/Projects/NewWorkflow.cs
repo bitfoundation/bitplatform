@@ -20,6 +20,10 @@ public sealed class NewWorkflow(CliServices cli)
         }
 
         var interactive = cli.IsInteractive && cli.Prompter.CanPrompt;
+        var newer = await cli.SelfUpdate.FindTargetAsync(request, cancellationToken);
+
+        if (newer is not null && request.DryRun is false && await cli.SelfUpdate.HandOffAsync(newer, request, cancellationToken) is { } handedOffExitCode)
+            return handedOffExitCode;
 
         WriteHeader(cli);
 
@@ -80,6 +84,11 @@ public sealed class NewWorkflow(CliServices cli)
 
         if (request.DryRun)
         {
+            if (newer is not null)
+            {
+                cli.Console.Dim($"Without --dry-run, bit {newer} would create it.");
+            }
+
             cli.Console.Out.MarkupLine("[grey]Dry run: nothing was changed.[/]");
             return CliApp.ExitOk;
         }

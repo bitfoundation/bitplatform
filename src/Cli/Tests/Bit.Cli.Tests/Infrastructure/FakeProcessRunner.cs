@@ -10,6 +10,8 @@ public sealed class FakeProcessRunner : IProcessRunner
 
     public List<ProcessSpec> Calls { get; } = [];
 
+    public List<ProcessSpec> Detached { get; } = [];
+
     public ProcessResult Default { get; set; } = new() { ExitCode = 0 };
 
     public FakeProcessRunner On(string fileName, string argumentsStartWith, Func<ProcessSpec, ProcessResult> respond)
@@ -45,6 +47,12 @@ public sealed class FakeProcessRunner : IProcessRunner
         }
 
         return Task.FromResult(Default);
+    }
+
+    public bool StartDetached(ProcessSpec spec)
+    {
+        Detached.Add(spec);
+        return true;
     }
 
     public string? FindExecutable(string name)

@@ -27,6 +27,7 @@ public static class CliApp
             TranslateCommand.Create(services),
             DecodeCommand.Create(services),
             TelemetryCommand.Create(services),
+            UpdateCommand.Create(services),
             AboutCommand.Create(services)
         };
 
@@ -44,6 +45,7 @@ public static class CliApp
         }
 
         var environment = CliEnvironment.FromProcess();
+        Environment.SetEnvironmentVariable(SelfUpdate.HandedOffVariable, null);
         var console = CliConsole.Create();
         CliServices? services = null;
 

@@ -17,6 +17,7 @@ public sealed class CliServices : IDisposable
         Runner = runner ?? new ProcessRunner(environment, Log);
         Settings = CliSettings.Load(environment);
         Telemetry = CliTelemetry.Disabled(TelemetryDecision.Resolve(environment, Settings, null));
+        SelfUpdate = new SelfUpdate(this);
     }
 
     public CliEnvironment Environment { get; }
@@ -32,6 +33,8 @@ public sealed class CliServices : IDisposable
     public CliSettings Settings { get; }
 
     public CliTelemetry Telemetry { get; set; }
+
+    public SelfUpdate SelfUpdate { get; set; }
 
     public bool NonInteractive { get; private set; }
 

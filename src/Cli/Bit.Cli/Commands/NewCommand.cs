@@ -54,6 +54,10 @@ public sealed record NewRequest
 
     public bool GitHubRepo { get; init; }
 
+    public bool NoUpdate { get; init; }
+
+    public IReadOnlyList<string> Arguments { get; init; } = [];
+
     public IReadOnlyDictionary<string, string> TemplateValues { get; init; } = new Dictionary<string, string>();
 
     public IReadOnlyList<string> ExtraTemplateArguments { get; init; } = [];
@@ -80,6 +84,7 @@ public static class NewCommand
         var noMigration = new Option<bool>("--no-migration") { Description = "Don't add the initial EF Core migration." };
         var noTrust = new Option<bool>("--no-trust") { Description = "Don't mark the folder as trusted for VS Code and the AI coding tools." };
         var noOpen = new Option<bool>("--no-open") { Description = "Don't open an IDE." };
+        var noUpdate = new Option<bool>("--no-update") { Description = "Create it with this bit even when a newer one is out." };
         var gitHubRepo = new Option<bool>("--github-repo") { Description = "Create a private GitHub repository and push develop and main to it. Needs the GitHub pipeline; installs the GitHub CLI and signs in when needed." };
 
         var command = new Command("new", "Create a bit Boilerplate project and get it ready to run: tools, workloads, packages, build, git, migration, trust and IDE.")
@@ -97,6 +102,7 @@ public static class NewCommand
             noMigration,
             noTrust,
             noOpen,
+            noUpdate,
             gitHubRepo
         };
 
@@ -164,6 +170,8 @@ public static class NewCommand
                 NoTrust = parseResult.GetValue(noTrust),
                 NoOpen = parseResult.GetValue(noOpen),
                 GitHubRepo = parseResult.GetValue(gitHubRepo),
+                NoUpdate = parseResult.GetValue(noUpdate),
+                Arguments = [.. parseResult.Tokens.Select(t => t.Value)],
                 TemplateValues = values,
                 ExtraTemplateArguments = [.. parseResult.UnmatchedTokens]
             };
