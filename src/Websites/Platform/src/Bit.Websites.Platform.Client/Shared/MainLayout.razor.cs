@@ -11,16 +11,6 @@ public partial class MainLayout : IDisposable
 
 
 
-    private readonly List<BitNavItem> lcncNavItems =
-    [
-        new BitNavItem { Text = "Overview", Url = "/lowcode-nocode/overview" },
-        new BitNavItem { Text = "Benefits", Url = "/lowcode-nocode/benefits" },
-        new BitNavItem { Text = "Specs", Url = "/lowcode-nocode/specs" },
-        new BitNavItem { Text = "Customizations", Url = "/lowcode-nocode/customizations" },
-        new BitNavItem { Text = "Comparison", Url = "/lowcode-nocode/comparison" },
-        new BitNavItem { Text = "Stats", Url = "/lowcode-nocode/stats" },
-    ];
-
     private readonly List<BitNavItem> templatesNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/templates", AdditionalUrls = [ "/templates/overview", "/boilerplate", "/boilerplate/overview" ] },
@@ -93,7 +83,6 @@ public partial class MainLayout : IDisposable
 
         navItems = navMenuService.IsTemplateDocRoute ? templatesNavItems
                  : navMenuService.IsBesqlDocRoute ? besqlNavItems
-                 //: navMenuService.IsLcncDocRoute ? lcncNavItems
                  : [];
     }
 
