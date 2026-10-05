@@ -391,6 +391,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitErrorBoundary", "BitErrorBoundaryParams")]
     [DataRow("BitChart", "BitChartParams")]
     [DataRow("BitMap", "BitMapParams")]
+    [DataRow("BitToggle", "BitToggleParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
@@ -407,8 +408,8 @@ public class ComponentCatalogTests : McpTestBase
         Assert.DoesNotContain("has no public type called", reference, $"{paramsType} does not resolve by name.");
 
         // The line is only worth its cost where it is true: a component with no params class of its
-        // own must not carry it.
-        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitToggle" });
+        // own must not carry it. A legacy component is frozen, so it stays without one.
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitPdfReaderLegacy" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
     }
