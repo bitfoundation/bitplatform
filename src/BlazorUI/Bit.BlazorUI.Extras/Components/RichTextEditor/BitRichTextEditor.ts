@@ -20,6 +20,10 @@ namespace BitBlazorUI {
         ];
         private static readonly MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
+        // On Apple platforms Option (Alt) is a text modifier: Option+<key> types a character rather than reaching a menu.
+        private static readonly ALT_TYPES_TEXT = /Mac|iPhone|iPad|iPod/i.test(
+            (navigator as any).userAgentData?.platform || navigator.platform || navigator.userAgent || '');
+
         // Elements that are never content: they are removed outright (with their subtree) rather
         // than unwrapped, because unwrapping them can re-expose their body as markup on the next
         // parse (the classic mutation-XSS vector) or leave foreign-namespace children behind.
@@ -576,7 +580,7 @@ namespace BitBlazorUI {
                 return;
             }
             const size = (width && width > 0 && RichTextEditor.isAttrAllowed(editor, 'img', 'width'))
-                ? ` width="${Math.round(width)}"`
+                ? ` width="${RichTextEditor.clampImageWidth(editor, width)}"`
                 : '';
             RichTextEditor.dispatch(editor, 'insertImage', {
                 html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="${RichTextEditor.escapeAttr(alt ?? '')}"${size}>`
@@ -605,15 +609,23 @@ namespace BitBlazorUI {
             // The width field is the keyboard's (and a single pointer's) way to what the resize handle does
             // by dragging; an empty one gives the image back its natural size.
             if (width && width > 0) {
-                const w = Math.max(16, Math.min(Math.round(width), editor.clientWidth || Math.round(width)));
+                const w = RichTextEditor.clampImageWidth(editor, width);
                 if (RichTextEditor.isAttrAllowed(editor, 'img', 'width')) img.setAttribute('width', String(w));
                 img.style.width = `${w}px`;
-            } else {
+            } else if (RichTextEditor.imageWidthOf(img) !== null) {
+                // Only a width the panel could show is cleared by emptying its field. One it cannot (a percentage,
+                // an em length) was never offered for editing, so applying the panel to fix the alt text keeps it.
                 img.removeAttribute('width');
                 img.style.removeProperty('width');
             }
             if (editor._resizeReposition) editor._resizeReposition();
             RichTextEditor.afterChange(editor);
+        }
+
+        // The width the image panel writes, held to what the resize handle allows: from 16px up to the editor's width.
+        private static clampImageWidth(editor: any, width: number): number {
+            const w = Math.round(width);
+            return Math.max(16, Math.min(w, editor.clientWidth || w));
         }
 
         public static applyColor(editor: any, kind: string, value: string) {
@@ -1401,13 +1413,13 @@ namespace BitBlazorUI {
             RichTextEditor.restoreSelection(editor);
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) {
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'no-selection', 'Select a block to change its direction.');
+                RichTextEditor.reportClientError(editor, 'no-selection', 'direction-no-selection', 'Select a block to change its direction.');
                 return;
             }
             // Reject selections that are not inside this editor so external DOM cannot be
             // modified through the restored/live selection.
             if (!sel.anchorNode || !editor.contains(sel.anchorNode)) {
-                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'no-selection', 'Select a block to change its direction.');
+                RichTextEditor.reportClientError(editor, 'no-selection', 'direction-no-selection', 'Select a block to change its direction.');
                 return;
             }
             let node: Node | null = sel.anchorNode;
@@ -2923,7 +2935,10 @@ namespace BitBlazorUI {
 
             // Alt+0 lists the keyboard shortcuts, the chord other editors use for their help. Read off the
             // physical digit key only: Alt with the numeric keypad is how Windows types a character by its code.
-            if (e.altKey && !primaryDown && !e.shiftKey && e.code === 'Digit0') {
+            // Where Option types text (macOS: Option+0 is "º" on a US layout), the chord is claimed only when it
+            // would type nothing else, so the character still reaches the text; the toolbar's help button remains.
+            if (e.altKey && !primaryDown && !e.shiftKey && e.code === 'Digit0'
+                && (!RichTextEditor.ALT_TYPES_TEXT || e.key === '0')) {
                 e.preventDefault();
                 if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnHelpRequested');
                 return;
@@ -3138,10 +3153,17 @@ namespace BitBlazorUI {
         }
 
         // The width an image was given (by the handle or the panel), or null while it keeps its natural size.
+        // A styled width the panel cannot show (a percentage, an em length) is reported as null too, and since the
+        // style is what renders, the width attribute beneath it is not offered in its place.
         private static imageWidthOf(img: HTMLImageElement): number | null {
-            const styled = parseFloat(img.style.width || '');
-            if (styled > 0 && (img.style.width || '').endsWith('px')) return Math.round(styled);
-            const attr = parseInt(img.getAttribute('width') || '', 10);
+            const style = img.style.width || '';
+            if (style) {
+                const styled = parseFloat(style);
+                return styled > 0 && style.endsWith('px') ? Math.round(styled) : null;
+            }
+            // The legacy width="50%" is a percentage too, not 50 pixels.
+            const raw = (img.getAttribute('width') || '').trim();
+            const attr = /^\d+$/.test(raw) ? parseInt(raw, 10) : 0;
             return attr > 0 ? attr : null;
         }
 
@@ -3187,8 +3209,11 @@ namespace BitBlazorUI {
             const raw = (value || '').trim();
             if (!raw || raw === 'transparent') return null;
 
-            const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(raw);
+            const rgb = /^rgba?\(\s*(\d+)\s*[,\s]\s*(\d+)\s*[,\s]\s*(\d+)\s*(?:[,/]\s*([\d.]+%?))?/i.exec(raw);
             if (rgb) {
+                // A fully transparent color is no color: unhighlighted text reports its background as
+                // rgba(0, 0, 0, 0), which must not read as a black highlight.
+                if (rgb[4] !== undefined && parseFloat(rgb[4]) === 0) return null;
                 const hex = (n: string) => Math.max(0, Math.min(255, parseInt(n, 10) || 0)).toString(16).padStart(2, '0');
                 return `#${hex(rgb[1])}${hex(rgb[2])}${hex(rgb[3])}`;
             }
