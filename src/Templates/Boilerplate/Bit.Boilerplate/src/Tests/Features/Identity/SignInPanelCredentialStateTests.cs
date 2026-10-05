@@ -1,4 +1,5 @@
 using Bunit;
+using OtpNet;
 using Bit.BlazorUI;
 using Microsoft.AspNetCore.Components.Authorization;
 using Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
@@ -111,6 +112,64 @@ public class SignInPanelCredentialStateTests
             var user = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
             Assert.IsTrue(user.IsAuthenticated(),
                 "A failed magic link must not turn every later password sign-in on this page into an OTP sign-in.");
+        }, timeout: TimeSpan.FromSeconds(30));
+    }
+
+    [TestMethod]
+    public async Task SignInPanel_Should_KeepTheMagicLinkOtp_ForTheTwoFactorStep()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        string email;
+        string recoveryCode;
+
+        await using (var client = server.CreateAppClient())
+        {
+            (email, _) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+            var userController = client.GetController<IUserController>();
+            var enrolment = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
+            var enabled = await userController.TwoFactorAuth(new()
+            {
+                Enable = true,
+                TwoFactorCode = new Totp(Base32Encoding.ToBytes(enrolment.SharedKey!.Replace(" ", ""))).ComputeTotp()
+            }, TestContext.CancellationToken);
+
+            recoveryCode = enabled.RecoveryCodes![0];
+        }
+
+        await using (var anonymousClient = server.CreateAppClient())
+        {
+            await anonymousClient.GetController<IIdentityController>().SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
+        }
+
+        var magicLink = await server.WaitForCapturedEmail(email,
+            capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
+
+        await using var ctx = server.CreateBunitContext();
+
+        ctx.Services.GetRequiredService<NavigationManager>().NavigateTo(magicLink.Link!.PathAndQuery);
+
+        var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters
+            .AddChildContent<SignInPanel>(panel => panel
+                .Add(p => p.SignInPanelType, SignInPanelType.Full)
+                .Add(p => p.ReturnUrl, PageUrls.Settings)));
+
+        var recoveryCodeSelector = $"input[placeholder='{AppStrings.TwoFactorRecoveryCode}']";
+
+        cut.WaitForAssertion(() => cut.Find(recoveryCodeSelector), timeout: TimeSpan.FromSeconds(30));
+
+        cut.Find(recoveryCodeSelector).Input(recoveryCode);
+        cut.Find("form").Submit();
+
+        var authenticationStateProvider = ctx.Services.GetRequiredService<AuthenticationStateProvider>();
+
+        await cut.WaitForAssertionAsync(async () =>
+        {
+            var user = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
+            Assert.IsTrue(user.IsAuthenticated(),
+                "The magic link's one-time code is the first factor, so it has to go out again along with the second one.");
         }, timeout: TimeSpan.FromSeconds(30));
     }
 
