@@ -1888,8 +1888,9 @@
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
         of the component individually - the label, the container, the callout, the search box, the scroll
-        container, the items and everything else listed in the class-styles reference below. Because the callout is
-        rendered beside the root element rather than inside it, styling it through <b>Styles.Callout</b> or
+        container, the items and everything else listed in the class-styles reference below. The callout is never
+        inside the root element: it is rendered beside the root while closed and moves into a wrapper appended to the
+        body while open, so styling it through <b>Styles.Callout</b> or
         <b>Classes.Callout</b> is the dependable way to reach it rather than a descendant selector on the root.
         <br /><br />
         Above all of them sit the public <b>--bit-Dropdown-*</b> CSS variables listed further down this page: one
