@@ -382,9 +382,9 @@ public static partial class ToolCatalog
 
         public override bool AppliesInCi(ToolContext context) => context.Environment.IsLinux;
 
-        public override string Why(ToolContext context) => "lets browsers trust https://localhost, which the Aspire dashboard uses";
+        public override string Why(ToolContext context) => "lets browsers trust https://localhost, where the app and the Aspire dashboard run";
 
-        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
+        public override bool IsNeeded(ToolContext context) => true;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
@@ -418,7 +418,7 @@ public static partial class ToolCatalog
 
         public override string Why(ToolContext context) => "MAUI builds and npm packages can exceed the 260 character path limit";
 
-        public override bool IsNeeded(ToolContext context) => context.Needs.NeedsMaui;
+        public override bool IsNeeded(ToolContext context) => true;
 
         public override Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {

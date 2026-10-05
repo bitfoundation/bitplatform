@@ -301,6 +301,29 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task TheDevelopmentCertificate_Should_BeNeededWithOrWithoutAspire()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "dev-certs", 1);
+
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds { Aspire = false })).Single(c => c.Tool.Id == "dev-cert").Needed);
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "dev-cert").Needed);
+    }
+
+    [TestMethod]
+    public async Task WindowsLongPaths_Should_BeNeededForEveryProject()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "long-paths").Needed);
+    }
+
+    [TestMethod]
     public async Task AnOptionalToolThatFails_Should_OnlyWarn()
     {
         using var host = new TestHost(HostOs.Linux);
