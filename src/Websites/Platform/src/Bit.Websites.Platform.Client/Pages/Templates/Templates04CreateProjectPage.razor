@@ -289,6 +289,13 @@
                     </div>
                     break;
             }
+            @if (pipeline.Value is "GitHub")
+            {
+                <div class="github-repo">
+                    <BitCheckbox Label="Create a private GitHub repository and push the project to it" @bind-Value="githubRepo" />
+                    <BitText Typography="BitTypography.Body2" Class="github-repo-hint">Adds <code>--github-repo</code>. The <code>bit new</code> command installs the GitHub CLI if it's missing, and opens GitHub in your browser when you need to sign in.</BitText>
+                </div>
+            }
         </BitGridItem>
 
         <BitGridItem Class="grid-item">

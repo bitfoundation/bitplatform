@@ -21,6 +21,8 @@ public partial class Templates04CreateProjectPage
 
     private string CopyButtonText => copiedCommand == GetFinalCommand().Trim() ? "Copied" : "Copy";
 
+    private bool githubRepo = true;
+
     private bool android;
     private bool ios;
     private bool macOS;
@@ -150,6 +152,11 @@ public partial class Templates04CreateProjectPage
         if (pipeline.IsModified)
         {
             finalCommand.Append(GetPipelineCommand());
+        }
+
+        if (pipeline.Value is "GitHub" && githubRepo)
+        {
+            finalCommand.Append("--github-repo ");
         }
 
         if (sample.IsModified)

@@ -65,9 +65,21 @@
     min-width: 0;
 }
 
-::deep .real-project-hint {
+::deep .real-project-hint,
+::deep .github-repo-hint {
     color: $bit-color-foreground-secondary;
     padding-inline-start: rem2(28px);
+}
+
+.github-repo {
+    display: flex;
+    flex-direction: column;
+    gap: rem2(2px);
+    margin-top: rem2(16px);
+}
+
+::deep .github-repo-hint code {
+    white-space: nowrap;
 }
 
 ::deep .assistant-user-message {
