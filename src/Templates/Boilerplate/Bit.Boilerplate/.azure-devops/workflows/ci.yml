@@ -28,7 +28,7 @@ jobs:
       targetType: 'inline'
       script: 'dotnet format whitespace --folder . --verify-no-changes'
 
-  - script: dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - task: Bash@3
@@ -50,7 +50,7 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli@10.6.2 -- setup --yes
+  - script: dnx Bit.Cli --prerelease -- setup --yes
     displayName: 'Prepare this machine and build with bit setup'
 
   - task: Bash@3

@@ -32,14 +32,14 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli@10.6.2 -- setup --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --no-restore --no-build --yes
 
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli@10.6.2 -- translate
+          dnx Bit.Cli --prerelease -- translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -176,14 +176,14 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli@10.6.2 -- setup --platforms windows --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --platforms windows --no-restore --no-build --yes
 
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli@10.6.2 -- translate
+          dnx Bit.Cli --prerelease -- translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -225,7 +225,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -239,7 +239,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli@10.6.2 -- translate
+          dnx Bit.Cli --prerelease -- translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -287,14 +287,14 @@ jobs:
           xcode-version: '26.6'
 
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli@10.6.2 -- setup --platforms ios --no-restore --no-build --yes
+        run: dnx Bit.Cli --prerelease -- setup --platforms ios --no-restore --no-build --yes
 
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli@10.6.2 -- translate
+          dnx Bit.Cli --prerelease -- translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2

@@ -35,11 +35,11 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli@10.6.2 -- setup --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --no-restore --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.Cli@10.6.2 -- translate
+      dnx Bit.Cli --prerelease -- translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -133,11 +133,11 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli@10.6.2 -- setup --platforms windows --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --platforms windows --no-restore --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.Cli@10.6.2 -- translate
+      dnx Bit.Cli --prerelease -- translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -186,7 +186,7 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+  - script: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - task: Bash@3
@@ -207,7 +207,7 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dnx Bit.Cli@10.6.2 -- translate
+      dnx Bit.Cli --prerelease -- translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)

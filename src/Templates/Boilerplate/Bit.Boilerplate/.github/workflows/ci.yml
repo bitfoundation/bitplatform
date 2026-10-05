@@ -39,7 +39,7 @@ jobs:
       run: dotnet format whitespace --folder . --verify-no-changes
 
     - name: Prepare this machine with bit setup
-      run: dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+      run: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
 
     - name: Build
       run: dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
@@ -61,7 +61,7 @@ jobs:
         global-json-file: global.json
 
     - name: Prepare this machine and build with bit setup
-      run: dnx Bit.Cli@10.6.2 -- setup --yes
+      run: dnx Bit.Cli --prerelease -- setup --yes
 
     - name: Test
       id: test

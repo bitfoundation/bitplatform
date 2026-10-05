@@ -181,7 +181,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: `dnx Bit.Cli@10.6.2 -- setup`, the bit CLI of this project's bit version
+- **Machine setup**: `dnx Bit.Cli --prerelease -- setup`, which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -267,7 +267,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Localization with `bit translate`**
    ```bash
-   dnx Bit.Cli@10.6.2 -- translate
+   dnx Bit.Cli --prerelease -- translate
    ```
    - Automatically translates all `.resx` resource files missing values
 
@@ -396,7 +396,7 @@ This is the **core deployment workflow** that handles building and deploying all
 2. **Build Android App Bundle (AAB)**
 ```bash
 # Install Node.js when missing and the MAUI Android workload
-dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
    
 # Install Android SDK platform tools
 ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
@@ -559,7 +559,7 @@ build_api_blazor:
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - run: dnx Bit.Cli@10.6.2 -- setup --no-restore --no-build --yes
+    - run: dnx Bit.Cli --prerelease -- setup --no-restore --no-build --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 

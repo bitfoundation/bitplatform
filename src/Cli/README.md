@@ -104,7 +104,7 @@ It installs missing tools, build tools and packages, builds, installs Playwright
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships do it like this, before they publish:
 
 ```bash
-dnx Bit.Cli@<version> -- setup --platforms android --no-restore --no-build --yes
+dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
 ```
 
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
