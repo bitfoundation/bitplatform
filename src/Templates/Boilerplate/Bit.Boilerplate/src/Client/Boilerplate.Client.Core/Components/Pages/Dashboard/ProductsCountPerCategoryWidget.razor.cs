@@ -14,6 +14,7 @@ public partial class ProductsCountPerCategoryWidget
         Type = BitChartType.Bar,
         Options = new BitChartOptions
         {
+            AspectRatio = 1.4,
             Plugins = new BitChartPluginOptions
             {
                 Legend = new BitChartLegendOptions { Display = false }
