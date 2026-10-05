@@ -193,7 +193,7 @@ public partial class BitPersonaDemo
             DefaultValue = "null",
             Description = "Specifies the loading behavior of the image. Maps to the HTML loading attribute (e.g., \"lazy\" or \"eager\").",
             LinkType = LinkType.Link,
-            Href = "#image-loading"
+            Href = "#image-loading-enum"
         },
         new()
         {
@@ -991,117 +991,7 @@ public partial class BitPersonaDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "Primary general color.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "Secondary general color.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "Tertiary general color.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Info",
-                    Description = "Info general color.",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Success",
-                    Description = "Success general color.",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "Warning",
-                    Description = "Warning general color.",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "SevereWarning",
-                    Description = "SevereWarning general color.",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Error",
-                    Description = "Error general color.",
-                    Value = "7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
+        DemoSharedEnums.BitColor(),
         new()
         {
             Id = "shape-enum",
@@ -1156,54 +1046,8 @@ public partial class BitPersonaDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name = "Fill",
-                    Description = "Fill styled variant.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Outline",
-                    Description = "Outline styled variant.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Text",
-                    Description = "Text styled variant.",
-                    Value = "2",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "image-loading",
-            Name = "BitImageLoading",
-            Description = "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
-            Items =
-            [
-                new()
-                {
-                    Name= "Eager",
-                    Description="The default behavior, eager tells the browser to load the image as soon as the img element is processed.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Lazy",
-                    Description="Tells the user agent to hold off on loading the image until the browser estimates that it will be needed imminently.",
-                    Value="1",
-                }
-            ]
-        },
+        DemoSharedEnums.BitVariant(),
+        DemoSharedEnums.BitImageLoading(),
     ];
 
 

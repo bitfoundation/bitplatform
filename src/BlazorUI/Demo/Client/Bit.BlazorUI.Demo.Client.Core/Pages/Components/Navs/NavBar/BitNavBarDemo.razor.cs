@@ -364,7 +364,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavAriaCurrent.Page",
                    Description = "The value of the aria-current attribute of the navbar item when it is the selected one.",
                    LinkType = LinkType.Link,
-                   Href = "#aria-current-enum",
+                   Href = "#nav-aria-current-enum",
                },
                new()
                {
@@ -536,7 +536,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavAriaCurrent.Page",
                    Description = "The value of the aria-current attribute of the navbar option when it is the selected one.",
                    LinkType = LinkType.Link,
-                   Href = "#aria-current-enum",
+                   Href = "#nav-aria-current-enum",
                },
                new()
                {
@@ -976,72 +976,9 @@ public partial class BitNavBarDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "nav-mode-enum",
-            Name = "BitNavMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Automatic",
-                    Description = "The navbar follows the browser: it selects the item whose URL points at the page the app currently sits on, and it re-selects on every navigation.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Manual",
-                    Description = "The selection is driven by clicks and by the SelectedItem binding instead of by the current URL, which is what a navbar that switches between the panels of a single page needs.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-match-enum",
-            Name = "BitNavMatch",
-            Items =
-            [
-                new()
-                {
-                    Name = "Exact",
-                    Description = "Specifies that the item should be active when it matches exactly the current URL.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Prefix",
-                    Description = "Specifies that the item should be active when it matches any prefix of the current URL.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Regex",
-                    Description = "Specifies that the item should be active when its provided regex matches the current URL.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Wildcard",
-                    Description = "Specifies that the item should be active when its provided wildcard matches the current URL.",
-                    Value = "3",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "aria-current-enum",
-            Name = "BitNavAriaCurrent",
-            Items =
-            [
-                new() { Name = "Page", Description = "Represents the current page within a set of pages.", Value = "0" },
-                new() { Name = "Step", Description = "Represents the current step within a process.", Value = "1" },
-                new() { Name = "Location", Description = "Represents the current location within an environment or context.", Value = "2" },
-                new() { Name = "Date", Description = "Represents the current date within a collection of dates.", Value = "3" },
-                new() { Name = "Time", Description = "Represents the current time within a set of times.", Value = "4" },
-                new() { Name = "True", Description = "Represents the current item within a set.", Value = "5" }
-            ]
-        },
+        DemoSharedEnums.BitNavMode(),
+        DemoSharedEnums.BitNavMatch(),
+        DemoSharedEnums.BitNavAriaCurrent(),
         new()
         {
             Id = "template-render-mode-enum",

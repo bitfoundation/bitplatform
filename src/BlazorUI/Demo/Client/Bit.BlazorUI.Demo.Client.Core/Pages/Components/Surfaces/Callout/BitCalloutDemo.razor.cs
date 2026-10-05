@@ -486,27 +486,7 @@ public partial class BitCalloutDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Value = "0",
-                    Description = "The direction determined automatically based on the available spaces in all directions."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "1",
-                    Description = "The direction determined automatically based on the available spaces in only top and bottom directions."
-                },
-            ]
-        },
+        DemoSharedEnums.BitDropDirection(),
         new()
         {
             Id = "responsive-mode-enum",
@@ -565,32 +545,8 @@ public partial class BitCalloutDemo
                 new() { Name = "End", Value = "2", Description = "Lined up with the edge the anchor ends at - its right edge in a left-to-right layout for a callout above or below it, and its bottom edge for a callout beside it." },
             ]
         },
-        new()
-        {
-            Id = "panel-position-enum",
-            Name = "BitPanelPosition",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Start", Value = "0", Description = "The panel slides in from the start edge of the screen." },
-                new() { Name = "End", Value = "1", Description = "The panel slides in from the end edge of the screen." },
-                new() { Name = "Top", Value = "2", Description = "The panel slides in from the top edge of the screen." },
-                new() { Name = "Bottom", Value = "3", Description = "The panel slides in from the bottom edge of the screen." },
-            ]
-        },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Primary", Value = "0", Description = "The primary color kind." },
-                new() { Name = "Secondary", Value = "1", Description = "The secondary color kind." },
-                new() { Name = "Tertiary", Value = "2", Description = "The tertiary color kind." },
-                new() { Name = "Transparent", Value = "3", Description = "The transparent color kind." },
-            ]
-        }
+        DemoSharedEnums.BitPanelPosition(),
+        DemoSharedEnums.BitColorKind()
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =

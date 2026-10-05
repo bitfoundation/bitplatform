@@ -156,7 +156,7 @@ public partial class BitImageDemo
             DefaultValue = "null",
             Description = "Allows for browser-level image loading (lazy or eager).",
             LinkType = LinkType.Link,
-            Href = "#image-loading"
+            Href = "#image-loading-enum"
         },
         new()
         {
@@ -541,27 +541,7 @@ public partial class BitImageDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "image-loading",
-            Name = "BitImageLoading",
-            Description = "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
-            Items =
-            [
-                new()
-                {
-                    Name= "Eager",
-                    Description="The default behavior, eager tells the browser to load the image as soon as the img element is processed.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Lazy",
-                    Description="Tells the user agent to hold off on loading the image until the browser estimates that it will be needed imminently.",
-                    Value="1",
-                }
-            ]
-        },
+        DemoSharedEnums.BitImageLoading(),
         new()
         {
             Id = "image-decoding",

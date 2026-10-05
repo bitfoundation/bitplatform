@@ -719,99 +719,10 @@ public partial class BitDropMenuDemo
                 new() { Name = "End", Description = "Lined up with the edge the anchor ends at.", Value = "2" },
             ]
         },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
-            ]
-        },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "The primary color kind.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "The secondary color kind.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "The tertiary color kind.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "The transparent color kind.",
-                    Value = "3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "Determines the allowed drop directions of the callout.",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Description = "The direction determined automatically based on the available spaces in all directions.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Description = "The direction determined automatically based on the available spaces in only top and bottom directions.",
-                    Value = "1",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "panel-position-enum",
-            Name = "BitPanelPosition",
-            Description = "Determines the edge the responsive panel slides in from.",
-            Items =
-            [
-                new() { Name = "Start", Description = "The panel is positioned at the start edge (left in LTR).", Value = "0" },
-                new() { Name = "End", Description = "The panel is positioned at the end edge (right in LTR).", Value = "1" },
-                new() { Name = "Top", Description = "The panel is positioned at the top edge.", Value = "2" },
-                new() { Name = "Bottom", Description = "The panel is positioned at the bottom edge.", Value = "3" },
-            ]
-        },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitPanelPosition(description: "Determines the edge the responsive panel slides in from."),
         new()
         {
             Id = "callout-side-enum",
@@ -825,30 +736,8 @@ public partial class BitDropMenuDemo
                 new() { Name = "End", Description = "Beside the button, on its end side (right in LTR).", Value = "3" },
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new() { Name = "Fill", Description = "Fill styled variant.", Value = "0" },
-                new() { Name = "Outline", Description = "Outline styled variant.", Value = "1" },
-                new() { Name = "Text", Description = "Text styled variant.", Value = "2" },
-            ]
-        }
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant()
     ];
 
     private bool isOpen;

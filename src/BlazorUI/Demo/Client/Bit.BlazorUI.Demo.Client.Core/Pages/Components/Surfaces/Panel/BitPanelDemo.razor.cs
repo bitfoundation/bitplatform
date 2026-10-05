@@ -249,7 +249,7 @@ public partial class BitPanelDemo
             Type = "BitPanelPosition?",
             DefaultValue = "null",
             Description = "The edge the panel slides in from; Start and End follow the text direction. Defaults to End.",
-            Href = "#position-enum",
+            Href = "#panel-position-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -544,19 +544,7 @@ public partial class BitPanelDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPanelPosition",
-            Description = "The edge of the screen the panel slides in from.",
-            Items =
-            [
-                new() { Name = "Start", Description = "The start edge: the left in left-to-right, the right in right-to-left.", Value = "0" },
-                new() { Name = "End", Description = "The end edge: the right in left-to-right, the left in right-to-left.", Value = "1" },
-                new() { Name = "Top", Description = "The top edge.", Value = "2" },
-                new() { Name = "Bottom", Description = "The bottom edge.", Value = "3" }
-            ]
-        },
+        DemoSharedEnums.BitPanelPosition(),
         new()
         {
             Id = "dismiss-reason-enum",

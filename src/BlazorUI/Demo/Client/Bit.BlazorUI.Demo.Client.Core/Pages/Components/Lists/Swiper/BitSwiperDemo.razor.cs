@@ -489,57 +489,9 @@ public partial class BitSwiperDemo
                 new() { Name = "End", Description = "The item settles with its trailing edge at the end of the swiper.", Value = "2" },
             ]
         },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "The primary color kind.", Value = "0" },
-                new() { Name = "Secondary", Description = "The secondary color kind.", Value = "1" },
-                new() { Name = "Tertiary", Description = "The tertiary color kind.", Value = "2" },
-                new() { Name = "Transparent", Description = "The transparent color kind.", Value = "3" },
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(),
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =

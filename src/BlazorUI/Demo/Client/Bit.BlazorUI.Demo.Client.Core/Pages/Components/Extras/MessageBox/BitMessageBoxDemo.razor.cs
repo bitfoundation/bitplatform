@@ -897,18 +897,7 @@ public partial class BitMessageBoxDemo
                 new() { Name = "No", Description = "The No button ended the showing.", Value = "4" }
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "The size of the message box.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" }
-            ]
-        }
+        DemoSharedEnums.BitSize(description: "The size of the message box.")
     ];
 
 

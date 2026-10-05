@@ -44,6 +44,12 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
   introduced.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
+- **A library-wide enum's table is written once.** `BitColor`, `BitSize`, `BitVariant` and the other
+  types many pages list come from `Models/DemoSharedEnums` (`DemoSharedEnums.BitColor()` in the page's
+  `componentSubEnums`), with one anchor id per type. A page passes `description:` for its own line above
+  the table and `.Only(...)` for the members it supports (BitPagination's eight general colors), and
+  keeps a table of its own only when the members mean something different there (BitLoading's pixel
+  sizes). `DemoSharedEnumsTests` pins every shared table to its enum.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
 - **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -
