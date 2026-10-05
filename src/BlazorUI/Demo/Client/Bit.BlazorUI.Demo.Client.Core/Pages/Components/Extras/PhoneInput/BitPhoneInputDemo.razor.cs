@@ -1298,8 +1298,8 @@ private readonly BitPhoneInputParams[] phoneInputParams =
                Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"", ItemCode = ""color: blueviolet;"" })""
                Classes=""@(new() { Input = ""custom-input"" })"" />";
     private const string example27ScssCode = @"
-// The public custom properties are inherited, so one scope re-skins every field inside it
-// without a rule naming a part of the component.
+// The public custom properties are inherited, so one scope re-skins every field inside it, and the
+// country list each one opens, without a rule naming a part of the component.
 .phi-brand-scope {
     --bit-PhoneInput-radius: 0;
     --bit-PhoneInput-border-width: 2px;
@@ -1309,6 +1309,9 @@ private readonly BitPhoneInputParams[] phoneInputParams =
     --bit-PhoneInput-dropdown-background: #e0f2f1;
     --bit-PhoneInput-dropdown-color: #004d40;
     --bit-PhoneInput-separator-color: #00796b;
+    --bit-PhoneInput-callout-radius: 0;
+    --bit-PhoneInput-item-selected-background: #e0f2f1;
+    --bit-PhoneInput-item-selected-color: #004d40;
 }
 
 ::deep .custom-class {

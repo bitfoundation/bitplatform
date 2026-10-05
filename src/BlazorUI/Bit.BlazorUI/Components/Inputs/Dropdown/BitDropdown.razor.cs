@@ -3537,7 +3537,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             setCalloutWidth: PreserveCalloutWidth is false,
             fixedCalloutWidth: false,
             maxWindowWidth: 0,
-            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0);
+            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0,
+            rootId: _Id);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -4144,76 +4145,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
-    // The public custom properties of the component, which are what its stylesheet reads off the root with a
-    // fallback (see BitDropdown.scss). Nothing else in a style string is copied to the callout.
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Dropdown-";
-
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
-
-    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
-    // callout is open - so they inherit nothing an author sets on the dropdown: neither the Style of the
-    // instance nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them
-    // once they have moved). The public --bit-Dropdown-* declarations are therefore carried across by hand, so
-    // ONE Style on the component restyles the field, the list it opens and the layer behind it together, the
-    // way it reads as if it would.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-
-        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
-        // re-rendered on every keystroke typed into the search box, and parsing two style strings per
-        // render for a result that almost never changes is work no one asked for.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
-    }
-
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles()
-    {
-        var variables = GetPublicCssVariables();
-        var stylesCallout = Styles?.Callout;
-
-        if (variables.HasNoValue()) return stylesCallout;
-        if (stylesCallout.HasNoValue()) return variables;
-
-        return variables + stylesCallout;
-    }
-
-    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
-    // rather than in the stylesheet because it is what the component toggles the layer with.
+    // The display is written here rather than in the stylesheet because it is what the component toggles the
+    // layer with; Styles.Overlay is appended after it, so a value written for the overlay still wins.
     private string GetOverlayStyles()
     {
-        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
-    }
-
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
-    {
-        if (style.HasNoValue()) return;
-
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
-
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
-        }
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
     private string GetCalloutCssClasses()

@@ -46,8 +46,9 @@ public class BitDateRangePickerClassStyles
     /// Custom CSS classes/styles for the callout of the BitDateRangePicker.
     /// </summary>
     /// <remarks>
-    /// The callout is rendered outside the root element, so the --bit-DateRangePicker-* variables written in
-    /// Style and Styles.Root are copied onto it; a style given here is applied after that copy and wins over it.
+    /// The callout is rendered outside the root element and relocated to the body while it is open, and the
+    /// --bit-DateRangePicker-* variables written in Style and Styles.Root still reach it like any inherited
+    /// value; a style given here is declared on the callout itself and wins over them.
     /// </remarks>
     public string? Callout { get; set; }
 

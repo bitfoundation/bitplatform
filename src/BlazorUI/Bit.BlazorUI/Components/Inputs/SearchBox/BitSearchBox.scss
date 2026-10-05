@@ -2,9 +2,9 @@
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
 // search box and one set on the Style of an instance re-skins that one alone. The suggest callout is rendered
-// outside the root element, so every callout-* and item-* name is read there instead: the component copies
-// the --bit-SearchBox-* declarations of its Style and Styles.Root onto the callout (with Styles.Callout last,
-// so a value written for the callout itself still wins), and a value on :root reaches it as usual.
+// outside the root element and relocated to the body while it is open, so every callout-* and item-* name is
+// read there instead: Callouts.ts carries what the root and its ancestors declare into it, so a value set on
+// an ancestor, through a class, in Style or in Styles.Root reaches it like any inherited value.
 //   --bit-SearchBox-color                       text color of the input, the prefix and the suffix (default: $clr-fg-pri)
 //   --bit-SearchBox-placeholder-color           text color of the placeholder                      (default: $clr-fg-sec)
 //   --bit-SearchBox-background                  background of the field                            (default: per Background kind)

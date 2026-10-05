@@ -154,6 +154,8 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
         try
         {
+            // No rootId: the submenu is opened from inside the menu's callout, so it already inherits the root
+            // through the chain Callouts.ts built for that callout.
             await _js.BitCalloutToggleCallout(
                 dotnetObj: _dotnetObj,
                 componentId: _itemId,

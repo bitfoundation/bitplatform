@@ -1677,7 +1677,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            // The callout is anchored to the input wrapper, but the root is the element whose public variables
+            // (of Style and Styles.Root) and classes the dial has to go on inheriting once the callout is
+            // relocated to the body, so it is named apart.
+            rootId: _Id);
     }
 
     // Maps a position on the dial - an angle clockwise from 12 o'clock and a distance as a fraction of the

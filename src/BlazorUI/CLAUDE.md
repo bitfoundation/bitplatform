@@ -269,14 +269,21 @@ global token tier: add the token, let the component read it, and keep the preset
 
 A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
 `componentCssVariables`) are read off its root **with a fallback and never declared**, so they
-inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel, which the
-callout JS then reparents to the body - therefore hands it nothing: inside its own markup the popup is
-a SIBLING of the root, and once it has moved only `:root` and `body` are still its ancestors. Such a
-component resolves its variables in one mixin that both the root and the popup include, and carries
-the public declarations across by hand (BitDropdown's `GetCalloutStyles` copies the
-`--bit-Dropdown-*` entries of `Style` and `Styles.Root` onto the callout, appending `Styles.Callout`
-last so a value written for the popup still wins). One `Style` on the component then restyles the
-field and the list it opens together, which is what an author setting a variable expects.
+inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
+it as a SIBLING of the root, and the callout JS reparents it to the body while it is open. So
+`Callouts.moveCalloutToBody` never moves the popup on its own: it moves it into a chain of
+`display: contents` copies of every ancestor it is leaving (classes, inline style, CSS-isolation scopes,
+`data-*` / `bit-*` attributes, `dir`, `lang`; kept in step by a `MutationObserver` while it is open),
+plus one link for the root, named by the `rootId` argument of `BitCalloutToggleCallout`, that carries
+what the consumer put on it (its non-`bit-` classes and the custom properties of its inline style).
+A variable set on `:root`, an ancestor, a class or the `Style` of one instance - and a
+`BitThemeProvider` or `[bit-theme]` scope around it - therefore reaches the popup the way it reaches
+the root, and still follows the theme while it is open. Such a component resolves its variables in one
+mixin that both the root and the popup include, and copies nothing in C#: a popup's open call passes
+`rootId: _Id`, except one opened from inside another popup, which inherits through that one's chain.
+The one exception is a part that sits beside the root but is never relocated - the calendar of a
+`Standalone` date picker - which gets no chain, so it still has the public declarations of `Style` /
+`Styles.Root` copied onto it (`BitPublicCssVariables`, `GetStandaloneStyles`).
 
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,

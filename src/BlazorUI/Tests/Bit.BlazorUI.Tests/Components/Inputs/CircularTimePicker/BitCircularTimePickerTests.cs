@@ -3130,6 +3130,25 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldNameItsRootToTheCallout()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color: red;");
+        });
+
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+
+        // The callout is anchored to the input wrapper, but what the dial goes on inheriting once it is
+        // relocated to the body is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-ctp").Id, toggle.Arguments[^1]);
+        Assert.AreNotEqual(component.Find(".bit-ctp-wrp").Id, toggle.Arguments[^1]);
+        Assert.IsFalse((component.Find(".bit-ctp-cal").GetAttribute("style") ?? "").Contains("--bit-CircularTimePicker-"));
+    }
+
     private static string GetOverlayDisplay(IRenderedComponent<BitCircularTimePicker> component)
     {
         var style = component.Find(".bit-ctp-ovl").GetAttribute("style") ?? string.Empty;

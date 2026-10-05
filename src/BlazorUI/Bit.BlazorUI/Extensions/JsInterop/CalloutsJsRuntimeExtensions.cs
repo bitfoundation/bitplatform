@@ -57,7 +57,12 @@ internal static class CalloutsJsRuntimeExtensions
         int arrowPadding = 0,
         // Keeps a scroll or a resize of the page from dismissing the callout, without what noDismiss also
         // takes away: a click outside of it still closes it. It is re-anchored to its anchor instead.
-        bool noScrollDismiss = false) where T : class
+        bool noScrollDismiss = false,
+        // The id of the root of the component, which its popup is rendered beside rather than inside. What the
+        // consumer declared on the root - the custom properties of Style and Styles.Root, the classes of Class
+        // and Classes.Root - is carried into the popup while it is relocated to the body; an empty string
+        // carries nothing, which is what a callout opened from inside another one passes.
+        string rootId = "") where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -88,7 +93,8 @@ internal static class CalloutsJsRuntimeExtensions
             collisionPadding,
             alignmentOffset,
             arrowPadding,
-            noScrollDismiss);
+            noScrollDismiss,
+            rootId);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above

@@ -1631,6 +1631,25 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.IsNull(instance.Text);
     }
 
+    [TestMethod]
+    public void BitMenuButtonShouldNameItsRootToTheCallout()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Style, "--bit-MenuButton-callout-background: red;");
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        // The callout is a sibling of the root, so the root is named to Callouts.toggle - its last argument -
+        // for what the root declares to go on reaching the callout once it is relocated to the body.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(com.Find(".bit-mnb").Id, toggle.Arguments[^1]);
+        Assert.IsFalse((com.Find(".bit-mnb-cal").GetAttribute("style") ?? "").Contains("--bit-MenuButton-"));
+    }
+
     private class RadioModel
     {
         public string? Label { get; set; }

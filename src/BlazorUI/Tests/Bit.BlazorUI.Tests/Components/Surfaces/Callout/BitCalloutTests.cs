@@ -2127,7 +2127,7 @@ public class BitCalloutTests : BunitTestContext
 
         // The page moving under it re-anchors the callout, while an outside click still dismisses it.
         Assert.AreEqual(false, arguments[20]);
-        Assert.AreEqual(true, arguments[^1]);
+        Assert.AreEqual(true, arguments[^2]);
     }
 
     [TestMethod]
@@ -2737,7 +2737,7 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalloutShouldCopyThePublicCssVariablesOntoThePartsItRelocates()
+    public void BitCalloutShouldLeaveItsPublicCssVariablesOnTheRoot()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -2746,25 +2746,29 @@ public class BitCalloutTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitCalloutClassStyles { Root = "--bit-Callout-radius:0;margin:2px" });
         });
 
-        // The callout, its arrow and its overlay are relocated to the body while it is open, out of the reach of
-        // what the root declares, so the public variables travel with them - and nothing else does.
-        foreach (var selector in new[] { ".bit-clo-cal", ".bit-clo-arw", ".bit-clo-ovl" })
-        {
-            var style = component.Find(selector).GetAttribute("style") ?? string.Empty;
+        // The root keeps all of what was written for it, the public variables included.
+        var root = component.Find(".bit-clo").GetAttribute("style")!;
 
-            StringAssert.Contains(style, "--bit-Callout-background: tomato;", selector);
-            StringAssert.Contains(style, "--bit-Callout-radius:0;", selector);
-            Assert.IsFalse(style.Contains("color: blue"), selector);
-            Assert.IsFalse(style.Contains("margin:2px"), selector);
-        }
+        StringAssert.Contains(root, "--bit-Callout-background: tomato");
+        StringAssert.Contains(root, "color: blue");
+        StringAssert.Contains(root, "--bit-Callout-radius:0");
+        StringAssert.Contains(root, "margin:2px");
+
+        // Nothing of it is copied onto the callout, its arrow or its overlay: the variables reach them through the
+        // root once they are relocated to the body, so each part writes only what the component composes for it.
+        Assert.IsNull(component.Find(".bit-clo-cal").GetAttribute("style"));
+        Assert.IsNull(component.Find(".bit-clo-arw").GetAttribute("style"));
+        Assert.AreEqual("display:none;", component.Find(".bit-clo-ovl").GetAttribute("style"));
     }
 
     [TestMethod]
-    public void BitCalloutShouldLetTheStylesOfAPartWinOverTheCopiedVariables()
+    public void BitCalloutShouldWriteOnlyTheStylesOfAPartOnIt()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
             parameters.Add(p => p.ShowArrow, true);
+            parameters.Add(p => p.MaxHeight, "20rem");
+            parameters.Add(p => p.ArrowSize, 10);
             parameters.Add(p => p.Style, "--bit-Callout-background: tomato");
             parameters.Add(p => p.Styles, new BitCalloutClassStyles
             {
@@ -2774,25 +2778,11 @@ public class BitCalloutTests : BunitTestContext
             });
         });
 
-        var content = component.Find(".bit-clo-cal").GetAttribute("style")!;
-        var arrow = component.Find(".bit-clo-arw").GetAttribute("style")!;
-        var overlay = component.Find(".bit-clo-ovl").GetAttribute("style")!;
-
-        Assert.IsTrue(content.IndexOf("tomato", StringComparison.Ordinal) < content.IndexOf("teal", StringComparison.Ordinal));
-        Assert.IsTrue(arrow.IndexOf("tomato", StringComparison.Ordinal) < arrow.IndexOf("navy", StringComparison.Ordinal));
-        Assert.IsTrue(overlay.IndexOf("tomato", StringComparison.Ordinal) < overlay.IndexOf("gold", StringComparison.Ordinal));
-    }
-
-    [TestMethod]
-    public void BitCalloutShouldCopyNoVariablesWhenNoneIsSet()
-    {
-        var component = RenderComponent<BitCallout>(parameters =>
-        {
-            parameters.Add(p => p.Style, "color: blue");
-        });
-
-        Assert.IsNull(component.Find(".bit-clo-cal").GetAttribute("style"));
-        Assert.AreEqual("display:none;", component.Find(".bit-clo-ovl").GetAttribute("style"));
+        // The sizing the component composes comes first and the styles of the part last, with nothing of the
+        // root's Style between them.
+        Assert.AreEqual("--bit-clo-mxh:20rem;--bit-Callout-background: teal", component.Find(".bit-clo-cal").GetAttribute("style"));
+        Assert.AreEqual("--bit-clo-arw-siz:10px;--bit-Callout-background: navy", component.Find(".bit-clo-arw").GetAttribute("style"));
+        Assert.AreEqual("display:none;--bit-Callout-overlay-background: gold", component.Find(".bit-clo-ovl").GetAttribute("style"));
     }
 
     [TestMethod]
@@ -2934,27 +2924,7 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalloutShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
-    {
-        const string background = "--bit-Callout-background:url('data:image/svg+xml;utf8,<svg></svg>')";
-
-        var component = RenderComponent<BitCallout>(parameters =>
-        {
-            parameters.Add(p => p.MaxHeight, "20rem");
-            parameters.Add(p => p.Style, $"{background};color:blue");
-        });
-
-        var style = component.Find(".bit-clo-cal").GetAttribute("style")!;
-
-        // Cut at the semicolon of the data URI, the declaration would leave a quote open that swallows every
-        // declaration after it, the sizing ones included.
-        StringAssert.Contains(style, $"{background};");
-        StringAssert.Contains(style, "--bit-clo-mxh:20rem;");
-        Assert.IsFalse(style.Contains("color:blue"));
-    }
-
-    [TestMethod]
-    public void BitCalloutShouldCopyTheVariablesOfItsOpenedStylesWhileItIsOpen()
+    public void BitCalloutShouldLeaveItsOpenedStylesOnTheRootAndNameTheRootToTheCallout()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -2962,19 +2932,26 @@ public class BitCalloutTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitCalloutClassStyles { Opened = "--bit-Callout-background:red;margin:1px" });
         });
 
-        // The root only carries Styles.Opened while the callout is open, and neither does the callout before then.
-        Assert.IsFalse((component.Find(".bit-clo-cal").GetAttribute("style") ?? string.Empty).Contains("--bit-Callout-background"));
+        // The root only carries Styles.Opened while the callout is open.
+        Assert.IsFalse((component.Find(".bit-clo").GetAttribute("style") ?? string.Empty).Contains("--bit-Callout-background"));
 
         component.Find(".bit-clo-acn").Click();
 
-        var style = component.Find(".bit-clo-cal").GetAttribute("style")!;
+        var root = component.Find(".bit-clo");
 
-        StringAssert.Contains(style, "--bit-Callout-background:red;");
-        Assert.IsFalse(style.Contains("margin:1px"));
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-Callout-background:red");
+        StringAssert.Contains(root.GetAttribute("style")!, "margin:1px");
+        Assert.IsFalse((component.Find(".bit-clo-cal").GetAttribute("style") ?? string.Empty).Contains("--bit-Callout-"));
+
+        // The callout is a sibling of the root, so the root is named to Callouts.toggle - its last argument - for
+        // what it declares, Styles.Opened included, to go on reaching the callout once it is relocated to the body.
+        var toggle = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1];
+
+        Assert.AreEqual(root.Id, toggle.Arguments[^1]);
 
         component.Find(".bit-clo-ovl").Click();
 
-        Assert.IsFalse((component.Find(".bit-clo-cal").GetAttribute("style") ?? string.Empty).Contains("--bit-Callout-background"));
+        Assert.IsFalse((component.Find(".bit-clo").GetAttribute("style") ?? string.Empty).Contains("--bit-Callout-background"));
     }
 
     [TestMethod]

@@ -9,8 +9,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Breadcrumb-";
-
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;
     private bool _focusFirstItemOnOpen;
@@ -878,32 +876,24 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return MaxItemWidth.HasValue() ? $"--bit-brc-itm-max-width:{MaxItemWidth}" : null;
     }
 
-    // The callout is moved to the body by the JS positioning, so it is not a descendant of the root
-    // element and cannot inherit anything from it: the class and style hooks that drive the look of
-    // the items have to be repeated on it.
+    // The callout is rendered beside the root element rather than inside it, and while it is open it is
+    // relocated to the body. Callouts.ts carries what the consumer declared on the root into it, but never
+    // the component's own bit-brc-* classes, so the color and size classes that drive the look of the
+    // items are repeated on it.
     private string GetCalloutClasses()
     {
         return string.Join(' ', new[] { "bit-brc-cal", GetColorClass(), GetSizeClass(), Classes?.Callout }
                                     .Where(c => c.HasValue()));
     }
 
-    // Neither the Style of the instance nor a custom property declared on an ancestor of the root reaches the
-    // callout once it has moved (only :root and body stay ancestors of it), so the public --bit-Breadcrumb-*
-    // declarations of Style and Styles.Root are carried across by hand: ONE Style on the component restyles the
-    // trail and the menu it opens together. Styles.Callout is appended last, so a value written for the callout
-    // still wins over the copy.
+    // The public --bit-Breadcrumb-* variables need nothing here: whether they are set on an ancestor, through
+    // a class, in Style or in Styles.Root, Callouts.ts carries them into the relocated callout, so they reach
+    // it like any inherited value and ONE Style on the component restyles the trail and the menu it opens
+    // together. The callout only writes the max item width of its rows, then Styles.Callout.
     private string GetCalloutStyles()
     {
-        return string.Join(';', new[] { GetMaxItemWidthStyle(), GetPublicCssVariables(Style), GetPublicCssVariables(Styles?.Root), Styles?.Callout }
+        return string.Join(';', new[] { GetMaxItemWidthStyle(), Styles?.Callout }
                                     .Where(s => s.HasValue()).Select(s => s!.Trim(';')));
-    }
-
-    private static string? GetPublicCssVariables(string? style)
-    {
-        if (style.HasNoValue() || style!.Contains(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return null;
-
-        return string.Join(';', style.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                     .Where(d => d.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal)));
     }
 
     private string? GetKey(TItem item)
@@ -1402,7 +1392,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 footerId: "",
                 setCalloutWidth: false,
                 fixedCalloutWidth: false,
-                maxWindowWidth: 0);
+                maxWindowWidth: 0,
+                // The anchor of the callout is the overflow button, but what the consumer declared is on the
+                // nav, which is the element carried into the callout while it is relocated.
+                rootId: _Id);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is no callout left to move
         catch (JSException) { } // a JS-side failure must not escape into the render lifecycle

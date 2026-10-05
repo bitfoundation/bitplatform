@@ -2063,9 +2063,9 @@ public partial class BitDropdownDemo
 
     // The public custom properties BitDropdown.scss reads off its root, in the order the stylesheet groups
     // them: the field, its accent, the label and description, the chips, the callout, the rows.
-    // The callout is a sibling of the root and is moved to the body while it is open, so the component copies
-    // the --bit-Dropdown-* declarations of Style (and of Styles.Root) onto it: one Style restyles the field
-    // and the list it opens together.
+    // The callout is a sibling of the root and is moved to the end of the body while it is open, yet it keeps
+    // inheriting from the root and its ancestors: one Style, class or ancestor restyles the field and the list
+    // it opens together.
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new()

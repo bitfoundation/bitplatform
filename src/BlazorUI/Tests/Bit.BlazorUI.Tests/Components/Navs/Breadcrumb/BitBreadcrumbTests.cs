@@ -1717,7 +1717,7 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBreadcrumbShouldCarryItsPublicCssVariablesOverToTheCallout()
+    public void BitBreadcrumbShouldLeaveItsPublicCssVariablesOnTheRootAndNameTheRootToTheCallout()
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
@@ -1727,21 +1727,32 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitBreadcrumbClassStyles
             {
                 Root = "--bit-Breadcrumb-callout-background: navy; margin: 0",
-                Callout = "--bit-Breadcrumb-color: orange"
+                Callout = "padding: 4px"
             });
         });
 
-        var style = component.Find(".bit-brc-cal").GetAttribute("style")!;
+        // The root keeps all of what was written for it, the public variables included.
+        var rootStyle = component.Find(".bit-brc").GetAttribute("style")!;
 
-        // Only the public variables travel: the rest of Style and Styles.Root belongs to the root alone.
-        Assert.IsTrue(style.Contains("--bit-Breadcrumb-color: green"));
-        Assert.IsTrue(style.Contains("--bit-Breadcrumb-callout-background: navy"));
-        Assert.IsFalse(style.Contains("color:red"));
-        Assert.IsFalse(style.Contains("margin"));
-        Assert.IsFalse(style.Contains("--bit-brc-internal"));
+        Assert.IsTrue(rootStyle.Contains("color:red"));
+        Assert.IsTrue(rootStyle.Contains("--bit-Breadcrumb-color: green"));
+        Assert.IsTrue(rootStyle.Contains("--bit-Breadcrumb-callout-background: navy"));
+        Assert.IsTrue(rootStyle.Contains("margin: 0"));
 
-        // Styles.Callout is written last, so a value meant for the menu alone still wins over the copy.
-        Assert.IsTrue(style.IndexOf("--bit-Breadcrumb-color: orange") > style.IndexOf("--bit-Breadcrumb-color: green"));
+        // Nothing of it is copied onto the menu, which writes only what is meant for it: the variables reach
+        // the menu through the root once it is relocated, rather than through its own inline style.
+        Assert.AreEqual("padding: 4px", component.Find(".bit-brc-cal").GetAttribute("style"));
+
+        component.Find(".bit-brc-obt").Click();
+
+        // The menu is anchored to the overflow button, but the element carried into it while it is relocated
+        // is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var rootId = component.Find(".bit-brc").Id;
+
+        Assert.AreEqual(rootId, toggle.Arguments[^1]);
+        Assert.AreNotEqual(component.Find(".bit-brc-obt").Id, rootId);
+        Assert.IsFalse((component.Find(".bit-brc-cal").GetAttribute("style") ?? "").Contains("--bit-Breadcrumb-"));
     }
 
     [TestMethod]

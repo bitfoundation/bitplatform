@@ -1571,7 +1571,7 @@ public partial class BitDateRangePickerDemo
                     Name = "Callout",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the callout of the BitDateRangePicker. Applied after the --bit-DateRangePicker-* variables copied from Style and Styles.Root, so it wins over them."
+                    Description = "Custom CSS classes/styles for the callout of the BitDateRangePicker. A --bit-DateRangePicker-* variable set here wins over one set in Style or Styles.Root."
                 },
                 new()
                 {

@@ -2388,7 +2388,7 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldCarryItsPublicCssVariablesToTheCalloutAndTheOverlay()
+    public void BitPhoneInputShouldLeaveItsPublicCssVariablesOnTheRoot()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
@@ -2401,32 +2401,45 @@ public class BitPhoneInputTests : BunitTestContext
             });
         });
 
+        var root = component.Find(".bit-phi").GetAttribute("style")!;
         var callout = component.Find(".bit-phi-cal").GetAttribute("style")!;
         var overlay = component.Find(".bit-phi-ovl").GetAttribute("style")!;
 
-        // The callout and the overlay are rendered outside the root, so the public declarations are copied
-        // onto them - and nothing else of the root's style is.
-        StringAssert.Contains(callout, "--bit-PhoneInput-radius: 2rem;");
-        StringAssert.Contains(callout, "--bit-PhoneInput-item-height: 40px;");
-        Assert.IsFalse(callout.Contains("width"));
-        StringAssert.Contains(overlay, "--bit-PhoneInput-radius: 2rem;");
-        StringAssert.Contains(overlay, "display:none");
-        Assert.IsFalse(overlay.Contains("width"));
+        // The root keeps its whole style, and Callouts.ts is what carries it into the callout and the overlay
+        // while they are relocated to the body, so nothing of it is written onto them here.
+        StringAssert.Contains(root, "width: 300px");
+        StringAssert.Contains(root, "--bit-PhoneInput-radius: 2rem");
+        StringAssert.Contains(root, "--bit-PhoneInput-item-height: 40px");
 
-        // What is written for the callout itself comes last, so it wins over the copy.
-        Assert.IsTrue(callout.IndexOf("--bit-PhoneInput-radius: 1rem;") > callout.IndexOf("--bit-PhoneInput-radius: 2rem;"));
-        Assert.IsTrue(overlay.EndsWith("opacity: 0.5;"));
+        Assert.AreEqual("--bit-PhoneInput-radius: 1rem;", callout);
+        Assert.AreEqual("display:none;opacity: 0.5;", overlay);
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldLeaveTheCalloutStyleAloneWithoutPublicCssVariables()
+    public void BitPhoneInputShouldLeaveTheCalloutStyleAloneWithoutStylesCallout()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.Style, "width: 300px;");
+            parameters.Add(p => p.Style, "width: 300px; --bit-PhoneInput-radius: 2rem");
         });
 
         Assert.IsNull(component.Find(".bit-phi-cal").GetAttribute("style"));
+        Assert.IsFalse(component.Find(".bit-phi-ovl").GetAttribute("style")!.Contains("--bit-PhoneInput-"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameItsRootToTheCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The callout is anchored to the field group, but the element whose declarations it goes on inheriting
+        // once it is relocated is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-phi").Id, toggle.Arguments[^1]);
+        Assert.AreNotEqual(component.Find(".bit-phi-fgp").Id, toggle.Arguments[^1]);
     }
 
     [TestMethod]

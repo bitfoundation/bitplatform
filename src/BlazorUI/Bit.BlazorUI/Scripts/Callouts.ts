@@ -23,7 +23,9 @@
             arrow: HTMLElement | null,
             arrowParent: Element | null,
             arrowNextSibling: Node | null,
-            wrapper: HTMLElement | null
+            wrapper: HTMLElement | null,
+            holder: HTMLElement | null,
+            observer: MutationObserver | null
         }> = new Map();
 
         // The innermost open callout, which is the one the page-level handlers speak for. It reads as the
@@ -94,6 +96,12 @@
             // Keeps a scroll or a resize of the page from dismissing the callout without taking away what
             // noDismiss does as well: a click outside of it still closes it. It follows its component instead.
             noScrollDismiss: boolean = false,
+            // The id of the root of the component, when it is not an ancestor of the callout - which it is not
+            // for any component whose popup is rendered beside its root. What the consumer declared on it (the
+            // custom properties of Style and Styles.Root, the classes of Class and Classes.Root) is carried into
+            // the callout while it is relocated; '' carries nothing, which is what a callout opened from inside
+            // another one passes, as it already inherits all of that through the one it was opened from.
+            rootId: string = '',
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -121,7 +129,7 @@
                 return false;
             }
 
-            Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId);
+            Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId, rootId);
 
             Callouts.replaceCurrent({
                 dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
@@ -916,7 +924,21 @@
                 : false;
         }
 
-        private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '') {
+        // Relocating the callout to the body escapes the clipping, stacking contexts and transformed containing
+        // blocks of its ancestors, but it also takes it out of everything it inherited from them: the custom
+        // properties set on an ancestor or through a class (a component's public --bit-<Component>-* variables, a
+        // BitThemeProvider's tokens, a scoped [bit-theme] preset), the inherited text styles, the Blazor CSS
+        // isolation scopes that `::deep` rules match against, and the `bit-fam` class of ForceAnimation.
+        //
+        // So the callout is not moved on its own: it is moved into a copy of the chain of ancestors it is leaving.
+        // Every ancestor up to the body becomes a `display: contents` element carrying its attributes (see
+        // mirrorAncestor), nested the same way, so what cascades and inherits down the original chain cascades and
+        // inherits down this one too - and the declarations are copied rather than their computed values, so a
+        // value that refers to a theme token keeps following it. The component's root is not an ancestor of its
+        // popup but a sibling of it, so what its consumer declared on it is carried by one more link at the bottom
+        // of the chain (see mirrorRoot). The chain is kept in step with the elements it copies for as long as the
+        // callout is open.
+        private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '', rootId: string = '') {
             if (Callouts._calloutOriginalParents.has(calloutId)) return;
             if (callout.parentElement === document.body) return;
 
@@ -925,29 +947,61 @@
             const parent = callout.parentElement;
             const nextSibling = parent ? callout.nextSibling : null;
 
-            // Relocating the callout to the body escapes the clipping/stacking-context issues of
-            // its ancestors, but it also detaches it from the DOM subtree that the Blazor CSS
-            // isolation scopes (and `::deep` rules) of the consuming components rely on.
-            // To preserve those locally defined styles we wrap the relocated callout (and overlay)
-            // in a `display: contents` element that carries the same scope attributes the callout
-            // inherited from its original ancestors, so it keeps matching the scoped selectors.
-            const scopes = Callouts.collectCssScopes(parent);
-            const wrapper = document.createElement('div');
-            wrapper.style.display = 'contents';
+            const wrapper = Callouts.createChainLink();
             wrapper.setAttribute('data-bit-callout-wrapper', calloutId);
-            for (const scope of scopes) {
-                wrapper.setAttribute(scope, '');
+
+            const ancestors: Element[] = [];
+            for (let current = parent; current && current !== document.body && current !== document.documentElement; current = current.parentElement) {
+                ancestors.push(current);
             }
 
-            // ForceAnimation works by re-pointing inherited custom properties on the subtree carrying
-            // `bit-fam`, so relocating the callout to the body drops it back to the reduced-motion
-            // durations even though its original ancestors opted in. The wrapper is `display: contents`
-            // and therefore still inherits into the callout, so carrying the class over restores it.
-            // The callout may also carry the class itself, for the components that render it there
-            // because their root - the only element the class would otherwise land on - is not an
-            // ancestor of the callout.
-            if (parent?.closest('.bit-fam')) {
-                wrapper.classList.add('bit-fam');
+            const links: BitCalloutChainLink[] = [];
+            let bottom = wrapper;
+            for (let i = ancestors.length - 1; i >= 0; i--) {
+                const link = Callouts.createChainLink();
+                links.push({ source: ancestors[i], link, root: false });
+                bottom.appendChild(link);
+                bottom = link;
+            }
+
+            const root = rootId ? document.getElementById(rootId) : null;
+            if (root && root.contains(callout) === false) {
+                const link = Callouts.createChainLink();
+                links.push({ source: root, link, root: true });
+                bottom.appendChild(link);
+                bottom = link;
+            }
+
+            for (const link of links) {
+                Callouts.syncChainLink(link);
+            }
+
+            // The parts themselves go into an element of their own rather than into the last link, which is
+            // rewritten whenever the element it copies changes: this one carries the level of the callout in the
+            // stack (see replaceCurrent), and nothing else ever writes to it.
+            const holder = Callouts.createChainLink();
+            bottom.appendChild(holder);
+
+            // Only the attributes are watched: a change in the structure of the original chain is a re-render
+            // that either keeps the component where it was or removes it, and removing it closes the callout.
+            let observer: MutationObserver | null = null;
+            if (links.length > 0) {
+                observer = new MutationObserver(records => {
+                    const changed: Node[] = [];
+                    for (const record of records) {
+                        if (changed.indexOf(record.target) === -1) {
+                            changed.push(record.target);
+                        }
+                    }
+                    for (const link of links) {
+                        if (changed.indexOf(link.source) !== -1) {
+                            Callouts.syncChainLink(link);
+                        }
+                    }
+                });
+                for (const link of links) {
+                    observer.observe(link.source, { attributes: true });
+                }
             }
 
             Callouts._calloutOriginalParents.set(calloutId, {
@@ -959,37 +1013,103 @@
                 arrow: arrow,
                 arrowParent: arrow?.parentElement ?? null,
                 arrowNextSibling: arrow?.nextSibling ?? null,
-                wrapper: wrapper
+                wrapper: wrapper,
+                holder: holder,
+                observer: observer
             });
 
             if (overlay) {
-                wrapper.appendChild(overlay);
+                holder.appendChild(overlay);
             }
             // The arrow is appended before the callout so that the callout paints over the half of it
             // that lands inside the callout, leaving only the beak showing.
             if (arrow) {
-                wrapper.appendChild(arrow);
+                holder.appendChild(arrow);
             }
-            wrapper.appendChild(callout);
+            holder.appendChild(callout);
             document.body.appendChild(wrapper);
         }
 
-        private static collectCssScopes(element: Element | null): string[] {
-            const scopes: string[] = [];
-            let current: Element | null = element;
-            while (current && current !== document.body && current !== document.documentElement) {
-                const attributes = current.attributes;
-                for (let i = 0; i < attributes.length; i++) {
-                    const attribute = attributes[i];
-                    if (attribute.value === '' &&
-                        Callouts.CSS_SCOPE_REGEX.test(attribute.name) &&
-                        scopes.indexOf(attribute.name) === -1) {
-                        scopes.push(attribute.name);
-                    }
-                }
-                current = current.parentElement;
+        private static createChainLink(): HTMLElement {
+            const link = document.createElement('div');
+            link.style.setProperty('display', 'contents', 'important');
+            return link;
+        }
+
+        // Rewrites a link of the chain from the element it stands for. Its display is forced back to `contents`
+        // afterwards, whatever the copied style or a copied class says, so the chain never draws a box of its own;
+        // the stylesheet also keeps it from generating the ::before and ::after of a copied class (general.scss).
+        private static syncChainLink(link: BitCalloutChainLink) {
+            const names = link.link.getAttributeNames();
+            for (let i = 0; i < names.length; i++) {
+                link.link.removeAttribute(names[i]);
             }
-            return scopes;
+
+            link.link.setAttribute('data-bit-callout-link', '');
+
+            if (link.root) {
+                Callouts.mirrorRoot(link.source, link.link);
+            } else {
+                Callouts.mirrorAncestor(link.source, link.link);
+            }
+
+            link.link.style.setProperty('display', 'contents', 'important');
+        }
+
+        // An ancestor is copied with everything a selector or an inherited value can depend on: its classes, its
+        // inline style, its direction and language, the scope attributes of CSS isolation, and its data-* and
+        // bit-* attributes (bit-theme scopes a preset). What would make the copy act rather than look like it -
+        // an id, a role or aria-*, tabindex, hidden, inert, event handlers - is left behind, as are the markers
+        // of the chain itself, which an ancestor carries when the callout is opened from inside another one.
+        private static mirrorAncestor(source: Element, link: HTMLElement) {
+            const attributes = source.attributes;
+            for (let i = 0; i < attributes.length; i++) {
+                const name = attributes[i].name;
+                if (Callouts.isMirroredAttribute(name)) {
+                    link.setAttribute(name, attributes[i].value);
+                }
+            }
+        }
+
+        private static isMirroredAttribute(name: string) {
+            if (name === 'class' || name === 'style' || name === 'dir' || name === 'lang') return true;
+            if (Callouts.CSS_SCOPE_REGEX.test(name)) return true;
+            if (name.indexOf('data-bit-callout-') === 0) return false;
+            return name.indexOf('data-') === 0 || name.indexOf('bit-') === 0;
+        }
+
+        // The root is copied for what its consumer put on it - the custom properties of its inline style (Style
+        // and Styles.Root, and whatever a state such as Styles.Opened adds while the callout is open), the classes
+        // of Class and Classes.Root, a bit-theme preset, its direction and language - and never for what the
+        // component itself put there. Its own bit-* classes are left behind: they would make the component's
+        // stylesheet match its popup as if it were inside its root, which it never is, and the popup is styled
+        // through classes of its own. Only the custom properties of the style are taken, as the rest of it sizes
+        // and places the root, and nothing in the popup is meant to inherit that.
+        private static mirrorRoot(source: Element, link: HTMLElement) {
+            for (let i = 0; i < source.classList.length; i++) {
+                const name = source.classList[i];
+                if (name.indexOf('bit-') !== 0) {
+                    link.classList.add(name);
+                }
+            }
+
+            const attributes = source.attributes;
+            for (let i = 0; i < attributes.length; i++) {
+                const name = attributes[i].name;
+                if (name === 'dir' || name === 'lang' || name.indexOf('bit-theme') === 0) {
+                    link.setAttribute(name, attributes[i].value);
+                }
+            }
+
+            const style = (source as HTMLElement).style;
+            if (style == null) return;
+
+            for (let i = 0; i < style.length; i++) {
+                const name = style[i];
+                if (name.indexOf('--') === 0) {
+                    link.style.setProperty(name, style.getPropertyValue(name), style.getPropertyPriority(name));
+                }
+            }
         }
 
         // Puts the relocated parts of a callout back where they came from and takes the wrapper they were
@@ -1001,6 +1121,8 @@
             if (!original) return;
 
             Callouts._calloutOriginalParents.delete(calloutId);
+
+            original.observer?.disconnect();
 
             if (original.parent && callout) {
                 if (original.nextSibling && original.nextSibling.parentNode === original.parent) {
@@ -1065,11 +1187,13 @@
             // How deep the callout is in the stack, for the stylesheet to lift it - and the overlay that
             // takes the clicks for it - above the callout it was opened from. An overlay left at the shared
             // level would sit under that callout, and a click on it would never reach the overlay meant to
-            // dismiss the one on top. The wrapper is `display: contents`, so the level inherits into all
-            // three of the parts inside it, and Blazor never re-renders it away.
-            const wrapper = Callouts._calloutOriginalParents.get(callout.calloutId)?.wrapper;
-            if (wrapper) {
-                wrapper.style.setProperty('--bit-clo-lvl', String(Callouts._stack.length - 1));
+            // dismiss the one on top. The holder is `display: contents`, so the level inherits into all
+            // three of the parts inside it, and Blazor never re-renders it away. It is the innermost element
+            // of the chain, so the level of an outer callout - copied into this chain along with the rest of
+            // the chain that callout was moved into - never overrides it.
+            const holder = Callouts._calloutOriginalParents.get(callout.calloutId)?.holder;
+            if (holder) {
+                holder.style.setProperty('--bit-clo-lvl', String(Callouts._stack.length - 1));
             }
         }
 
@@ -1200,6 +1324,14 @@
         dotnetObj?: DotNetObject;
         scrollContainerId?: string;
         responsiveMode?: BitResponsiveMode;
+    }
+
+    // One element of the chain a relocated callout is moved into, and the element of the page it stands for.
+    interface BitCalloutChainLink {
+        source: Element;
+        link: HTMLElement;
+        // The root of the component, which is copied for what its consumer declared on it alone.
+        root: boolean;
     }
 
     interface BitCalloutParams {

@@ -1204,9 +1204,10 @@
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each item, the Styles and Classes parameters targeting the internal parts of the
-        component, and the public CSS variables - set on the Style for the button, on Styles.Callout for the menu
-        (which is rendered outside the root element), and on the Style of a single item for that row alone, which is
-        how one destructive command is coloured without a class.
+        component, and the public CSS variables - set on the Style, Styles.Root, a class or an ancestor, which reach
+        the button and the menu it opens alike (the menu is moved to the end of the body while it is open, yet keeps
+        inheriting from the button and its ancestors), on Styles.Callout for the menu alone, and on the Style of a
+        single item for that row alone, which is how one destructive command is coloured without a class.
     </div>
     <br />
     <div><b>Component's Style & Class</b>:</div>

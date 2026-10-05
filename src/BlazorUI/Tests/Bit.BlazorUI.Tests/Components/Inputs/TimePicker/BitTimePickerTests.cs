@@ -2664,38 +2664,50 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTimePickerShouldCarryThePublicCssVariablesOverToTheCalloutAndTheOverlay()
+    public void BitTimePickerCalloutAndOverlayShouldCarryOnlyTheirOwnStyleWhileTheRootKeepsTheWholeStyle()
     {
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
             parameters.Add(p => p.Style, "margin:1rem;--bit-TimePicker-color:teal;");
-            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Root = "--bit-TimePicker-radius:2rem;" });
+            parameters.Add(p => p.Styles, new BitTimePickerClassStyles
+            {
+                Root = "--bit-TimePicker-radius:2rem;",
+                Callout = "--bit-TimePicker-color:tomato;"
+            });
         });
 
-        var callout = component.Find(".bit-tpc-cal").GetAttribute("style");
-        var overlay = component.Find(".bit-tpc-ovl").GetAttribute("style");
+        // Nothing of the root's style is written onto the popup any more: Callouts.ts carries it into the chain
+        // the callout and the overlay are relocated into, so they hold exactly what the component composes.
+        Assert.AreEqual("--bit-TimePicker-color:tomato;", component.Find(".bit-tpc-cal").GetAttribute("style"));
+        Assert.AreEqual("display:none;", component.Find(".bit-tpc-ovl").GetAttribute("style"));
 
-        StringAssert.Contains(callout, "--bit-TimePicker-color:teal");
-        StringAssert.Contains(callout, "--bit-TimePicker-radius:2rem");
-        StringAssert.Contains(overlay, "--bit-TimePicker-color:teal");
-        StringAssert.Contains(overlay, "--bit-TimePicker-radius:2rem");
-
-        // Only the public custom properties are copied; nothing else of the root style is.
-        Assert.IsFalse(callout.Contains("margin:1rem"));
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-tpc").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin:1rem");
+        StringAssert.Contains(root, "--bit-TimePicker-color:teal");
+        StringAssert.Contains(root, "--bit-TimePicker-radius:2rem");
     }
 
     [TestMethod]
-    public void BitTimePickerCalloutStylesShouldWinOverTheCopiedVariables()
+    public void BitTimePickerShouldNameItsRootWhenItTogglesTheCallout()
     {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
             parameters.Add(p => p.Style, "--bit-TimePicker-color:teal;");
-            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Callout = "--bit-TimePicker-color:tomato;" });
         });
 
-        var callout = component.Find(".bit-tpc-cal").GetAttribute("style");
+        component.Find(".bit-tpc-wrp").Click();
 
-        StringAssert.EndsWith(callout, "--bit-TimePicker-color:tomato;");
+        // The root is what Callouts.ts copies into the chain it relocates the callout and the overlay into,
+        // which is how the public variables of the instance still reach them once they sit under the body.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var rootId = component.Find(".bit-tpc").Id;
+
+        Assert.IsFalse(string.IsNullOrEmpty(rootId));
+        Assert.AreEqual(rootId, toggle.Arguments[^1]);
     }
 
     #endregion

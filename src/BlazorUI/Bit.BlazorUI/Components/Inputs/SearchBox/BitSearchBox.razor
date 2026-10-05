@@ -258,11 +258,13 @@
              style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
     }
 
-    @* The callout is a sibling of the root element rather than a child of it, so it inherits neither
-       the direction, the animation opt-out nor the public custom properties set on the component and
-       has to be given all three by hand. *@
+    @* The callout is a sibling of the root element rather than a child of it, and is relocated to the
+       body while it is open. Callouts.ts carries what the root and its ancestors declare into it, so the
+       public custom properties (set on an ancestor, through a class, in Style or in Styles.Root) reach
+       it like any inherited value - but not the component's own bit-srb-* classes, so the direction and
+       the animation opt-out are still written on it here. *@
     <div id="@_calloutId"
-         style="@GetCalloutStyles()"
+         style="@Styles?.Callout"
          dir="@Dir?.ToString().ToLower()"
          class="bit-srb-cal @_calloutSizeClass @_calloutColorClass @(ReadOnly ? "bit-srb-rol" : null) @(DisableAnimation ? "bit-srb-nan" : null) @Classes?.Callout">
 

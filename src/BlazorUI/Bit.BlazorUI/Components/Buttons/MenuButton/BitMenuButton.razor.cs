@@ -1703,7 +1703,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             footerId: "",
             setCalloutWidth: true,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            // The root is named so that what it declares - the public variables of Style and Styles.Root, the
+            // classes of Class and Classes.Root - goes on reaching the callout once it is relocated to the body.
+            rootId: _Id);
     }
 
     private void OnSetIsOpen()
@@ -1775,10 +1778,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
 
         // The callout is rendered outside the root element - and moved to the body while it is open - so it is
-        // a sibling of the root rather than a descendant of it, and nothing the root declares reaches it. The
-        // two classes that carry what the items need are repeated here: the size class sizes their text, their
-        // height and their padding, and the color class paints the focus ring of the focused one and the glyph
-        // of a checked one in the color the menu button was given.
+        // a sibling of the root rather than a descendant of it. Callouts.ts carries the custom properties and the
+        // author's classes of the root into it, but none of the component's own bit- classes, so the two that
+        // carry what the items need are repeated here: the size class sizes their text, their height and their
+        // padding, and the color class paints the focus ring of the focused one and the glyph of a checked one in
+        // the color the menu button was given.
         classes.Add(BitCssClasses.Color(Color, "bit-mnb"));
         classes.Add(BitCssClasses.Size(Size ?? BitSize.Medium, "bit-mnb"));
 

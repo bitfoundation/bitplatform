@@ -2,9 +2,11 @@
 
 namespace Bit.BlazorUI;
 
-// A component whose popup is rendered outside its root - and relocated to the body while it is open - hands that
-// popup none of what its own Style declares, so the public --bit-<Component>-* declarations of it are copied onto
-// the popup by hand. This is the one place that picks them out of a style string.
+// A popup relocated to the body inherits what its root declares through the chain Callouts.ts moves it into, but a
+// part rendered beside the root that is never relocated - the calendar of a standalone date picker - is never given
+// that chain, and so none of what the Style of its component declares reaches it. The public --bit-<Component>-*
+// declarations of that Style are copied onto such a part by hand, and this is the one place that picks them out of
+// a style string.
 internal static class BitPublicCssVariables
 {
     // Appends every declaration of the given style whose property starts with the prefix, each ended with a

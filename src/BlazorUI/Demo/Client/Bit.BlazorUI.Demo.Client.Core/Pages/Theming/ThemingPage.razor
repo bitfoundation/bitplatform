@@ -715,7 +715,7 @@ await _bitThemeManager.SetThemeAsync(corporate);</CodeBox>
 &lt;/section&gt;</CodeBox>
 
                 <BitText>
-                    Scoped presets and <code>BitThemeProvider</code> are complementary: the attribute swaps a subtree to a <i>named palette</i> from CSS, the provider overlays <i>individual token values</i> from a C# <code>BitTheme</code> object - and they can nest. One caveat applies to both: components that render at the document level (modals, callouts with <code>AbsolutePosition</code> disabled, snackbars) escape the subtree in the DOM, so they inherit the document palette rather than the scoped one.
+                    Scoped presets and <code>BitThemeProvider</code> are complementary: the attribute swaps a subtree to a <i>named palette</i> from CSS, the provider overlays <i>individual token values</i> from a C# <code>BitTheme</code> object - and they can nest. Both reach the popups inside the subtree too: the callout of a dropdown, a picker, a menu or a <code>BitCallout</code> is moved to the end of the body while it is open, yet it keeps inheriting from where it is declared, so it follows the scoped palette. One caveat applies to both: a modal opened through <code>BitModalService</code> renders inside the <code>BitModalContainer</code>, and a snackbar inside its <code>BitSnackBar</code>, so each follows the theme around that container, wherever the app placed it, rather than around the code that opened it.
                 </BitText>
 
                 <BitText>
