@@ -23,7 +23,7 @@ public class BitDropMenuStylesheetTests
     {
         var forcedColors = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {\n    .bit-drm {");
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(forcedColors, selector), declaration);
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(forcedColors, selector), declaration);
     }
 
     [TestMethod]

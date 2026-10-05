@@ -79,7 +79,7 @@ public class BitSplitterStylesheetTests
     public void BitSplitterCoarsePointerShouldStillReadTheHitSizeVariable()
     {
         var stylesheet = ReadStylesheet();
-        var coarse = stylesheet[stylesheet.IndexOf("@media (pointer: coarse)", StringComparison.Ordinal)..];
+        var coarse = SourceFiles.GetScssBlock(stylesheet, "@media (pointer: coarse) {");
 
         StringAssert.Contains(coarse, "--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(5.5)});");
     }
@@ -111,13 +111,12 @@ public class BitSplitterStylesheetTests
         // of its parts has to go through a child combinator: a descendant one hands the orientation, the drag or the
         // read-only look of the outer splitter to every splitter inside it - a row nested in a column would get a
         // gutter lying on its side and lose the width limits of its panels.
-        var stylesheet = ReadStylesheet();
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         var descendant = new Regex(@"\.bit-spl[a-z-]*(?:[.:][^\s,{>)]+)*\s+\.bit-spl", RegexOptions.Compiled);
 
         var offending = stylesheet.Split('\n')
                                   .Where(line => line.TrimEnd().EndsWith('{') || line.TrimEnd().EndsWith(','))
-                                  .Where(line => line.TrimStart().StartsWith("//", StringComparison.Ordinal) is false)
                                   .Where(line => descendant.IsMatch(line))
                                   .ToArray();
 
@@ -129,8 +128,6 @@ public class BitSplitterStylesheetTests
 
         foreach (var line in stylesheet.Split('\n').Select(l => l.Trim()))
         {
-            if (line.StartsWith("//", StringComparison.Ordinal)) continue;
-
             if (line.EndsWith('{'))
             {
                 if (line.StartsWith(".bit-spl", StringComparison.Ordinal) && parents.Any(p => p.StartsWith(".bit-spl", StringComparison.Ordinal)))
@@ -182,9 +179,9 @@ public class BitSplitterStylesheetTests
     public void BitSplitterHoverShouldOnlyApplyWhereThePointerCanHover()
     {
         // A finger lifting off the gutter would otherwise leave it in its hover color until the next tap elsewhere.
-        var stylesheet = ReadStylesheet();
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
-        var rules = Regex.Matches(stylesheet, @"^[^/\n]*:hover[^\n]*\{", RegexOptions.Multiline);
+        var rules = Regex.Matches(stylesheet, @"^[^\n]*:hover[^\n]*\{", RegexOptions.Multiline);
 
         Assert.IsTrue(rules.Count > 0);
 
@@ -222,7 +219,7 @@ public class BitSplitterStylesheetTests
         foreach (var selector in new[] { "    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {",
                                          "\n.bit-spl-drg > .bit-spl-gtr {", "        &:hover {" })
         {
-            var block = SourceFiles.GetScssBlock(stylesheet, selector);
+            var block = SourceFiles.GetScssDeclarations(stylesheet, selector);
 
             Assert.IsFalse(Regex.IsMatch(block, @"^\s*(background-color|background|color|border-color)\s*:", RegexOptions.Multiline),
                            $"{selector.Trim()} paints the part directly.");

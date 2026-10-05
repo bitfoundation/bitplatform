@@ -73,7 +73,7 @@ public class BitChartStylesheetTests
     public void BitChartShouldKeepItsSwatchesInForcedColors()
     {
         var stylesheet = ReadStylesheet();
-        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", StringComparison.Ordinal)..];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "forced-color-adjust: none;");
         StringAssert.Contains(forced, "border: 1px solid CanvasText;");

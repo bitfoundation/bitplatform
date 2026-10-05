@@ -79,8 +79,8 @@ public class BitTooltipStylesheetTests
             StringAssert.Contains(root, $"{property}: var({variable}, ");
         }
 
-        var sizes = stylesheet[stylesheet.IndexOf("\n.bit-ttp-sm {", System.StringComparison.Ordinal)..];
-        var colors = stylesheet[stylesheet.IndexOf("@each $role, $tokens in $bit-color-roles", System.StringComparison.Ordinal)..];
+        var sizes = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ttp-sm {");
+        var colors = SourceFiles.GetScssBlock(stylesheet, "@each $role, $tokens in $bit-color-roles");
 
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-ttp {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-ttp-sm {", System.StringComparison.Ordinal));
         StringAssert.Contains(sizes, "--bit-ttp-fontsize: #{$tg-fs-xs};");

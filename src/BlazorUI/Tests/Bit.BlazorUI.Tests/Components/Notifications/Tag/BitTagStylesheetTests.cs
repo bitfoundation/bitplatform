@@ -73,7 +73,7 @@ public class BitTagStylesheetTests
     public void BitTagForcedColorsStatesShouldOutrankThePaintOfTheRoot()
     {
         var stylesheet = ReadStylesheet();
-        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", System.StringComparison.Ordinal)..];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
         // The root paints its selected and disabled states from .bit-tag.bit-tag-sel / .bit-tag.bit-dis, so the system
         // colors only win with the same two classes and a later place in the file.
@@ -85,8 +85,7 @@ public class BitTagStylesheetTests
     public void BitTagDisabledRootShouldOnlyKeepAnsweringThePointerForItsTitle()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("&.bit-dis {", System.StringComparison.Ordinal);
-        var disabled = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+        var disabled = SourceFiles.GetScssBlock(stylesheet, "&.bit-dis {");
 
         // the whole tag is inert - a handler on the root and a link in a template included - except for a root
         // that carries a title, which keeps the hover so the Title still shows; its content stays inert even then
@@ -103,7 +102,7 @@ public class BitTagStylesheetTests
         foreach (var control in new[] { "\n.bit-tag-int {", "\n.bit-tag-cls {" })
         {
             var rule = SourceFiles.GetScssBlock(stylesheet, control);
-            var disabled = SourceFiles.GetScssBlock(rule, "&[aria-disabled=\"true\"] {");
+            var disabled = SourceFiles.GetScssDeclarations(rule, "&[aria-disabled=\"true\"] {");
 
             StringAssert.Contains(disabled, "background-color: transparent;", control);
             Assert.IsTrue(rule.IndexOf("&:active", System.StringComparison.Ordinal) < rule.IndexOf("&[aria-disabled", System.StringComparison.Ordinal), control);
@@ -114,7 +113,7 @@ public class BitTagStylesheetTests
     public void BitTagForcedColorsShouldKeepTheHighlightRingOnADisabledSelectedTag()
     {
         var stylesheet = ReadStylesheet();
-        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", System.StringComparison.Ordinal)..];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
         // a disabled tag is painted Canvas again, where a HighlightText ring would vanish
         foreach (Match match in Regex.Matches(forced, @"\.bit-tag\.bit-tag-sel[^{,]*(?:,|\{)"))

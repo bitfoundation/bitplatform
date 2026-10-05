@@ -98,10 +98,9 @@ public partial class BitCollapseStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n    &.bit-dis {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The disabled collapse has no rule of its own.");
+        StringAssert.Contains(stylesheet, "\n    &.bit-dis {", "The disabled collapse has no rule of its own.");
 
-        var block = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {");
 
         StringAssert.Contains(block, "color: $clr-fg-dis;");
         StringAssert.Contains(block, "background-color: $clr-bg-dis;");
@@ -165,7 +164,7 @@ public partial class BitCollapseStylesheetTests
         StringAssert.Contains(stylesheet, "&.bit-col-pek.bit-col-col:dir(rtl) > .bit-col-con {");
 
         // A section printed open prints its peek in full.
-        var print = stylesheet[stylesheet.IndexOf("\n@media print {", System.StringComparison.Ordinal)..];
+        var print = SourceFiles.GetScssBlock(stylesheet, "\n@media print {");
 
         StringAssert.Contains(print, "--bit-col-fade: initial;");
     }

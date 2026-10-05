@@ -191,8 +191,7 @@ public partial class BitImageStylesheetTests
         // the hover rule, whose selector is the heavier one. So the ring is an outline, which the forced-colors
         // palette keeps.
         var stylesheet = ReadStylesheet();
-        var focus = stylesheet[stylesheet.IndexOf("&:has(.bit-img-img:focus-visible) {", System.StringComparison.Ordinal)..];
-        focus = focus[..focus.IndexOf("\n    }", System.StringComparison.Ordinal)];
+        var focus = SourceFiles.GetScssBlock(stylesheet, "&:has(.bit-img-img:focus-visible) {");
 
         Assert.IsFalse(focus.Contains("box-shadow"), "The focus ring is drawn with the box-shadow the elevation uses.");
         Assert.IsFalse(focus.Contains("focus-ring("), "The focus ring is drawn with the box-shadow the elevation uses.");

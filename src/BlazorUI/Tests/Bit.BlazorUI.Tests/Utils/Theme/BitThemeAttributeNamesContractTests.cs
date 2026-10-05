@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +21,7 @@ public sealed class BitThemeAttributeNamesContractTests
     [TestMethod]
     public void ThemeTypeScriptConstantsMatchTheirCSharpDefinitions()
     {
-        var constants = ReadConstants("BitTheme.ts");
+        var constants = ReadConstants("Bit.BlazorUI", "Utils", "Theme", "BitTheme.ts");
 
         var expected = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -52,13 +51,10 @@ public sealed class BitThemeAttributeNamesContractTests
         }
     }
 
-    private static Dictionary<string, string> ReadConstants(string fileName)
+    private static Dictionary<string, string> ReadConstants(params string[] segments)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", fileName);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure {fileName} is copied to output (see Bit.BlazorUI.Tests.csproj).");
-
         var constants = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (Match match in ConstDeclaration.Matches(File.ReadAllText(path)))
+        foreach (Match match in ConstDeclaration.Matches(SourceFiles.Read(segments)))
         {
             constants[match.Groups["name"].Value] = match.Groups["value"].Value.Trim('\'');
         }

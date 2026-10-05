@@ -103,8 +103,7 @@ public partial class BitFlagStylesheetTests
         // to the mixin as a layer to keep: a focused raised flag keeps its shadow under the ring.
         var stylesheet = ReadStylesheet();
 
-        var focus = stylesheet[stylesheet.IndexOf("&:focus-visible {", System.StringComparison.Ordinal)..];
-        focus = focus[..focus.IndexOf("\n    }", System.StringComparison.Ordinal)];
+        var focus = SourceFiles.GetScssBlock(stylesheet, "&:focus-visible {");
 
         StringAssert.Contains(focus, "@include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));");
         Assert.IsFalse(focus.Contains("outline:"), "The focus ring is drawn by hand rather than with the shared mixin.");

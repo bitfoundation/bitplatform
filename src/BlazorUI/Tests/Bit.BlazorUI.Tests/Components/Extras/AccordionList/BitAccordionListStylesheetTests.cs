@@ -53,7 +53,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
 
         // Every rule of the joined list is chained through the item wrapper, so an accordion nested in a panel keeps
         // its own corners and its own outline.
-        var joined = stylesheet[stylesheet.IndexOf(".bit-acl-jnd {", System.StringComparison.Ordinal)..];
+        var joined = SourceFiles.GetScssBlock(stylesheet, "\n.bit-acl-jnd {");
 
         foreach (Match rule in Regex.Matches(joined, @"^\s*(>[^{]+)\{", RegexOptions.Multiline))
         {

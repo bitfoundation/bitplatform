@@ -40,11 +40,11 @@ public class BitScrollablePaneStylesheetTests
     public void BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("&:focus-visible {\n        @include focus-ring;", System.StringComparison.Ordinal);
+        var focusRing = "&:focus-visible {\n        @include focus-ring;";
 
-        Assert.IsTrue(start >= 0, "The focus ring is not the default one of the library.");
+        StringAssert.Contains(stylesheet, focusRing, "The focus ring is not the default one of the library.");
 
-        var ring = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+        var ring = SourceFiles.GetScssBlock(stylesheet, focusRing);
 
         // An unset focus color leaves --bit-scp-fcr invalid, which is what makes box-shadow fall back to the global
         // composite - so an app that re-shapes --bit-shd-focus-ring re-shapes this ring too.

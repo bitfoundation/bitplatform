@@ -51,12 +51,12 @@ public class BitSwipeTrapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "&.bit-stp-hrz {"), "touch-action: pan-y pinch-zoom;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "&.bit-stp-vrt {"), "touch-action: pan-x pinch-zoom;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-stp-hrz {"), "touch-action: pan-y pinch-zoom;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-stp-vrt {"), "touch-action: pan-x pinch-zoom;");
 
         // A disabled trap takes nothing, so the page scrolls over it - and the rule comes after the locks it overrides.
         var disabled = stylesheet.IndexOf("&.bit-dis {", StringComparison.Ordinal);
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "&.bit-dis {"), "touch-action: auto;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-dis {"), "touch-action: auto;");
         Assert.IsTrue(disabled > stylesheet.IndexOf("&.bit-stp-lck {", StringComparison.Ordinal));
     }
 
