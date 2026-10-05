@@ -3,14 +3,14 @@
 Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, and decode stack traces minified by Bit.Minifier.
 
 ```bash
-dotnet tool install --global Bit.Cli
+dotnet tool install --global Bit.Cli --prerelease
 bit new MyApp
 ```
 
 Or run it without installing anything:
 
 ```bash
-dnx Bit.Cli new MyApp
+dnx Bit.Cli --prerelease -- new MyApp
 ```
 
 It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
@@ -170,7 +170,7 @@ In a pipeline:
 - name: Translate .resx files
   env:
     OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
-  run: dnx Bit.Cli translate
+  run: dnx Bit.Cli --prerelease -- translate
 ```
 
 ## bit decode
@@ -247,5 +247,5 @@ gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>
 
 | Before | Now |
 |---|---|
-| `dnx Bit.ResxTranslator` | `dnx Bit.Cli translate`, or `bit translate` |
-| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli decode map trace`, or `bit decode map trace` |
+| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --prerelease -- translate`, or `bit translate` |
+| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --prerelease -- decode map trace`, or `bit decode map trace` |
