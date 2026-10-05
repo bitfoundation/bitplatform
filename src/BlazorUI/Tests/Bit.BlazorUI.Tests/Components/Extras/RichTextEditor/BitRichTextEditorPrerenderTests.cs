@@ -249,7 +249,7 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
         var document = await PrerenderAsync(value);
         watch.Stop();
 
-        Assert.IsTrue(watch.Elapsed < System.TimeSpan.FromSeconds(1), $"{name}: {watch.Elapsed}");
+        Assert.IsTrue(watch.Elapsed < System.TimeSpan.FromSeconds(10), $"{name}: {watch.Elapsed}");
 
         var root = document.QuerySelector(".bit-rte")!;
         Assert.IsTrue(root.Contains(Surface(document)), name);

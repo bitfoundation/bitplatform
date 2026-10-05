@@ -1168,8 +1168,9 @@ public partial class BitDataGrid<TItem> : BitComponentBase
             {
                 // Rows read ahead belong to the query being replaced, and so does a read of them still in flight:
                 // superseding it (a new load version) keeps it from committing the old query's rows, total and
-                // aggregates over the ones Virtualize is about to read.
-                if (_serverHeadLoading) ResetLoadCancellation();
+                // aggregates over the ones Virtualize is about to read. Done unconditionally: _serverHeadLoading
+                // can already be cleared by a window Virtualize answered while that read is still pending.
+                ResetLoadCancellation();
                 _serverHead = null;
                 _serverHeadLoad = null;
                 _serverHeadLoading = false;
