@@ -155,7 +155,7 @@ public partial class BitToggleButtonDemo
             Name = "IconPosition",
             Type = "BitIconPosition?",
             DefaultValue = "null",
-            Description = "The position of the icon relative to the content of the toggle button.",
+            Description = "The position of the icon relative to the content of the toggle button. The default value is Start.",
             LinkType = LinkType.Link,
             Href = "#icon-position-enum",
         },

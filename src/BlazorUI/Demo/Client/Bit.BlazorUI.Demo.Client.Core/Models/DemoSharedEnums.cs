@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Models;
+﻿using System;
+using System.Linq;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
 /// <summary>
 /// The enum tables of the types the whole library shares - <c>BitColor</c>, <c>BitSize</c>,
@@ -11,9 +14,10 @@
 /// </para>
 /// <para>
 /// A table is only shared while what it says holds on every page that shows it. A page whose members
-/// mean something of their own there - BitLoading's sizes are pixel sizes, BitStack's are spacing
-/// steps - keeps its own table. What a page may still adjust is the line above the table, through
-/// <c>description</c>, and the members it actually supports, through <see cref="Only"/>.
+/// mean something of their own there - BitLoading's sizes are pixel sizes, BitNavBar's alignments
+/// spread its own items - keeps its own table, under the same anchor id. What a page may still adjust
+/// is the line above the table, through <c>description</c> (every factory takes one), and the members
+/// it actually supports, through <see cref="Only"/>.
 /// </para>
 /// <para>
 /// Every call builds a new instance, so nothing a page does to its list reaches another page.
@@ -39,11 +43,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitButtonType() => new()
+    public static ComponentSubEnum BitButtonType(string? description = null) => new()
     {
         Id = "button-type-enum",
         Name = "BitButtonType",
-        Description = "",
+        Description = description ?? "Defines the type attribute of the rendered button element, which decides what clicking it does inside a form.",
         Items =
         [
             new() { Name = "Button", Value = "0", Description = "The button is a clickable button." },
@@ -52,11 +56,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitColor() => new()
+    public static ComponentSubEnum BitColor(string? description = null) => new()
     {
         Id = "color-enum",
         Name = "BitColor",
-        Description = "Defines the general colors available in the bit BlazorUI.",
+        Description = description ?? "Defines the general colors available in the bit BlazorUI.",
         Items =
         [
             new() { Name = "Primary", Value = "0", Description = "Primary general color." },
@@ -79,11 +83,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitColorKind() => new()
+    public static ComponentSubEnum BitColorKind(string? description = null) => new()
     {
         Id = "color-kind-enum",
         Name = "BitColorKind",
-        Description = "Defines the color kinds available in the bit BlazorUI.",
+        Description = description ?? "Defines the color kinds available in the bit BlazorUI.",
         Items =
         [
             new() { Name = "Primary", Value = "0", Description = "The primary color kind." },
@@ -93,11 +97,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitDropDirection() => new()
+    public static ComponentSubEnum BitDropDirection(string? description = null) => new()
     {
         Id = "drop-direction-enum",
         Name = "BitDropDirection",
-        Description = "Determines the allowed drop directions of the callout.",
+        Description = description ?? "Determines the allowed drop directions of the callout.",
         Items =
         [
             new() { Name = "All", Value = "0", Description = "The direction determined automatically based on the available spaces in all directions." },
@@ -105,11 +109,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitEnterKeyHint() => new()
+    public static ComponentSubEnum BitEnterKeyHint(string? description = null) => new()
     {
         Id = "enter-key-hint-enum",
         Name = "BitEnterKeyHint",
-        Description = "Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.",
+        Description = description ?? "Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.",
         Items =
         [
             new() { Name = "Enter", Value = "0", Description = "Typically inserting a new line." },
@@ -122,11 +126,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitIconLocation() => new()
+    public static ComponentSubEnum BitIconLocation(string? description = null) => new()
     {
         Id = "icon-location-enum",
         Name = "BitIconLocation",
-        Description = "",
+        Description = description ?? "Defines the side of the input the icon is shown on.",
         Items =
         [
             new() { Name = "Left", Value = "0", Description = "Show the icon at the left side." },
@@ -138,11 +142,11 @@ public static class DemoSharedEnums
     /// Which end is the default differs from one component to the next, so the members do not say;
     /// the parameter table does.
     /// </remarks>
-    public static ComponentSubEnum BitIconPosition() => new()
+    public static ComponentSubEnum BitIconPosition(string? description = null) => new()
     {
         Id = "icon-position-enum",
         Name = "BitIconPosition",
-        Description = "Describes the placement of an icon relative to other content.",
+        Description = description ?? "Describes the placement of an icon relative to other content.",
         Items =
         [
             new() { Name = "Start", Value = "0", Description = "Icon renders before the content." },
@@ -150,11 +154,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitImageLoading() => new()
+    public static ComponentSubEnum BitImageLoading(string? description = null) => new()
     {
         Id = "image-loading-enum",
         Name = "BitImageLoading",
-        Description = "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
+        Description = description ?? "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
         Items =
         [
             new() { Name = "Eager", Value = "0", Description = "The default behavior, eager tells the browser to load the image as soon as the img element is processed." },
@@ -162,11 +166,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitInputMode() => new()
+    public static ComponentSubEnum BitInputMode(string? description = null) => new()
     {
         Id = "input-mode-enum",
         Name = "BitInputMode",
-        Description = "Defines the inputmode html attribute, which is what lets a browser display an appropriate virtual keyboard.",
+        Description = description ?? "Defines the inputmode html attribute, which is what lets a browser display an appropriate virtual keyboard.",
         Items =
         [
             new() { Name = "None", Value = "0", Description = "No virtual keyboard. For when the page implements its own keyboard input control." },
@@ -180,11 +184,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitInputType() => new()
+    public static ComponentSubEnum BitInputType(string? description = null) => new()
     {
         Id = "input-type-enum",
         Name = "BitInputType",
-        Description = "",
+        Description = description ?? "Defines the type attribute of the rendered input element, which decides what it accepts and which virtual keyboard a browser offers for it.",
         Items =
         [
             new() { Name = "Text", Value = "0", Description = "The input expects text characters." },
@@ -197,11 +201,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitLinkRels() => new()
+    public static ComponentSubEnum BitLinkRels(string? description = null) => new()
     {
         Id = "link-rels-enum",
         Name = "BitLinkRels",
-        Description = "The rel attribute defines the relationship between a linked resource and the current document.",
+        Description = description ?? "The rel attribute defines the relationship between a linked resource and the current document.",
         Items =
         [
             new() { Name = "Alternate", Value = "1", Description = "Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)" },
@@ -226,11 +230,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitNavAriaCurrent() => new()
+    public static ComponentSubEnum BitNavAriaCurrent(string? description = null) => new()
     {
         Id = "nav-aria-current-enum",
         Name = "BitNavAriaCurrent",
-        Description = "Defines the value of the aria-current attribute reported by the current link of a set.",
+        Description = description ?? "Defines the value of the aria-current attribute reported by the current link of a set.",
         Items =
         [
             new() { Name = "Page", Value = "0", Description = "Represents the current page within a set of pages." },
@@ -242,11 +246,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitNavItemTemplateRenderMode() => new()
+    public static ComponentSubEnum BitNavItemTemplateRenderMode(string? description = null) => new()
     {
-        Id = "nav-itemtemplate-rendermode",
+        Id = "nav-item-template-render-mode-enum",
         Name = "BitNavItemTemplateRenderMode",
-        Description = "Defines how the item template of a nav is rendered.",
+        Description = description ?? "Defines how the item template of a nav is rendered.",
         Items =
         [
             new() { Name = "Normal", Value = "0", Description = "Renders the template inside the button/anchor root element of the item." },
@@ -254,25 +258,25 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitNavMatch() => new()
+    public static ComponentSubEnum BitNavMatch(string? description = null) => new()
     {
         Id = "nav-match-enum",
         Name = "BitNavMatch",
-        Description = "Modifies the URL matching behavior of a nav item.",
+        Description = description ?? "Modifies the URL matching behavior of an item.",
         Items =
         [
-            new() { Name = "Exact", Value = "0", Description = "Specifies that the nav item should be active when it matches exactly the current URL." },
-            new() { Name = "Prefix", Value = "1", Description = "Specifies that the nav item should be active when it matches any prefix of the current URL." },
-            new() { Name = "Regex", Value = "2", Description = "Specifies that the nav item should be active when its provided regex matches the current URL." },
-            new() { Name = "Wildcard", Value = "3", Description = "Specifies that the nav item should be active when its provided wildcard matches the current URL." },
+            new() { Name = "Exact", Value = "0", Description = "Specifies that the item should be active when it matches exactly the current URL." },
+            new() { Name = "Prefix", Value = "1", Description = "Specifies that the item should be active when it matches any prefix of the current URL." },
+            new() { Name = "Regex", Value = "2", Description = "Specifies that the item should be active when its provided regex matches the current URL." },
+            new() { Name = "Wildcard", Value = "3", Description = "Specifies that the item should be active when its provided wildcard matches the current URL." },
         ]
     };
 
-    public static ComponentSubEnum BitNavMode() => new()
+    public static ComponentSubEnum BitNavMode(string? description = null) => new()
     {
         Id = "nav-mode-enum",
         Name = "BitNavMode",
-        Description = "Defines the mode in which navigation is handled by the nav component.",
+        Description = description ?? "Defines whether the selection of the component follows the current URL or is driven by the app.",
         Items =
         [
             new() { Name = "Automatic", Value = "0", Description = "The component follows the browser: it selects the item whose URL points at the page the app currently sits on, and it re-selects on every navigation." },
@@ -280,11 +284,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitNavRenderType() => new()
+    public static ComponentSubEnum BitNavRenderType(string? description = null) => new()
     {
         Id = "nav-render-type-enum",
         Name = "BitNavRenderType",
-        Description = "Determines how the nav items are rendered visually.",
+        Description = description ?? "Determines how the nav items are rendered visually.",
         Items =
         [
             new() { Name = "Normal", Value = "0", Description = "All items will be rendered normally only based on their own properties." },
@@ -306,11 +310,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitPoliteness() => new()
+    public static ComponentSubEnum BitPoliteness(string? description = null) => new()
     {
         Id = "politeness-enum",
         Name = "BitPoliteness",
-        Description = "How urgently a live region interrupts a screen reader, which is what the aria-live attribute carries.",
+        Description = description ?? "How urgently a live region interrupts a screen reader, which is what the aria-live attribute carries.",
         Items =
         [
             new() { Name = "Off", Value = "0", Description = "The region is not a live region: nothing in it is announced as it changes (aria-live=\"off\")." },
@@ -357,11 +361,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitTimeFormat() => new()
+    public static ComponentSubEnum BitTimeFormat(string? description = null) => new()
     {
         Id = "time-format-enum",
         Name = "BitTimeFormat",
-        Description = "",
+        Description = description ?? "Defines the clock the time picker shows its hours in.",
         Items =
         [
             new() { Name = "TwentyFourHours", Value = "0", Description = "Show time pickers in 24 hours format." },
@@ -369,11 +373,11 @@ public static class DemoSharedEnums
         ]
     };
 
-    public static ComponentSubEnum BitVariant() => new()
+    public static ComponentSubEnum BitVariant(string? description = null) => new()
     {
         Id = "variant-enum",
         Name = "BitVariant",
-        Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+        Description = description ?? "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
         Items =
         [
             new() { Name = "Fill", Value = "0", Description = "Fill styled variant." },
@@ -384,10 +388,16 @@ public static class DemoSharedEnums
 
     /// <summary>
     /// Narrows a shared table down to the members a component actually supports, in the table's own
-    /// order - BitPagination renders only the eight general colors of <c>BitColor</c>.
+    /// order - BitPagination renders only the eight general colors of <c>BitColor</c>. A name that is not
+    /// a member of the table throws, so a typo or a renamed member cannot quietly empty a page's table.
     /// </summary>
     public static ComponentSubEnum Only(this ComponentSubEnum subEnum, params string[] names)
     {
+        var unknown = names.Except(subEnum.Items.Select(i => i.Name)).ToArray();
+
+        if (unknown.Length > 0)
+            throw new ArgumentException($"{string.Join(", ", unknown)} is not a member of {subEnum.Name}.", nameof(names));
+
         subEnum.Items = [.. subEnum.Items.Where(i => names.Contains(i.Name))];
 
         return subEnum;

@@ -175,7 +175,7 @@ public partial class BitButtonDemo
             Name = "IconPosition",
             Type = "BitIconPosition?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content.",
+            Description = "Gets or sets the position of the icon relative to the component's content. The default value is Start.",
             LinkType = LinkType.Link,
             Href = "#icon-position-enum",
         },

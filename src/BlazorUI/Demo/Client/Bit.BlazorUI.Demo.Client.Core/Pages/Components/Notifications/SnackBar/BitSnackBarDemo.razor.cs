@@ -264,7 +264,7 @@ public partial class BitSnackBarDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the snack bar items.",
+            Description = "The size of the snack bar items. The default value is Medium.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },

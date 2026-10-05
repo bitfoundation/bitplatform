@@ -154,7 +154,7 @@ public partial class BitNavBarDemo
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "Whether the ItemTemplate renders inside the anchor (or button) of each item, or replaces it for items that are controls of their own. Replaced items own their clicks, focus and accessible name, and are left out of the keyboard navigation.",
             LinkType = LinkType.Link,
-            Href = "#template-render-mode-enum",
+            Href = "#nav-item-template-render-mode-enum",
         },
         new()
         {
@@ -491,7 +491,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "Whether the Template of the navbar item is rendered inside the anchor (or the button) the item is, or replaces it altogether, which is what an item that is a control of its own needs, since an interactive element cannot be nested in another one. A replaced item is left out of the keyboard navigation of the navbar.",
                    LinkType = LinkType.Link,
-                   Href = "#template-render-mode-enum",
+                   Href = "#nav-item-template-render-mode-enum",
                },
                new()
                {
@@ -663,7 +663,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "Whether the Template of the navbar option is rendered inside the anchor (or the button) the option is, or replaces it altogether, which is what an option that is a control of its own needs, since an interactive element cannot be nested in another one. A replaced option is left out of the keyboard navigation of the navbar.",
                    LinkType = LinkType.Link,
-                   Href = "#template-render-mode-enum",
+                   Href = "#nav-item-template-render-mode-enum",
                },
                new()
                {
@@ -833,7 +833,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "new(nameof(BitNavBarItem.TemplateRenderMode))",
                    Description = "The TemplateRenderMode field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
-                   Href = "#template-render-mode-enum",
+                   Href = "#nav-item-template-render-mode-enum",
                },
                new()
                {
@@ -981,7 +981,7 @@ public partial class BitNavBarDemo
         DemoSharedEnums.BitNavAriaCurrent(),
         new()
         {
-            Id = "template-render-mode-enum",
+            Id = "nav-item-template-render-mode-enum",
             Name = "BitNavItemTemplateRenderMode",
             Items =
             [
@@ -1016,16 +1016,6 @@ public partial class BitNavBarDemo
                 new() { Name = "Stretch", Description = "Carries no distribution of its own here, so the navbar keeps its default. Use Justified to have the items fill the navbar.", Value = "7" }
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" }
-            ]
-        }
+        DemoSharedEnums.BitSize(),
     ];
 }

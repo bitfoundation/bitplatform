@@ -182,7 +182,7 @@ public partial class BitNavPanelDemo
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom HeaderTemplate.",
             LinkType = LinkType.Link,
-            Href = "#nav-itemtemplate-rendermode",
+            Href = "#nav-item-template-render-mode-enum",
         },
         new()
         {
@@ -270,7 +270,7 @@ public partial class BitNavPanelDemo
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom ItemTemplate.",
             LinkType = LinkType.Link,
-            Href = "#nav-itemtemplate-rendermode",
+            Href = "#nav-item-template-render-mode-enum",
         },
         new()
         {
@@ -851,7 +851,7 @@ public partial class BitNavPanelDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav item's custom template.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -1035,7 +1035,7 @@ public partial class BitNavPanelDemo
                    Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
                    DefaultValue = "new(nameof(BitNavItem.TemplateRenderMode))",
                    Description = "The TemplateRenderMode field name and selector of the custom input class.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()

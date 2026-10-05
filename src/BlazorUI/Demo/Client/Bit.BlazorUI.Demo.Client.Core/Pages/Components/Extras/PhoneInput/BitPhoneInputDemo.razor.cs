@@ -648,18 +648,7 @@ public partial class BitPhoneInputDemo
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitColorKind(),
         DemoSharedEnums.BitDropDirection(),
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Value = "0" },
-                new() { Name = "Medium", Value = "1" },
-                new() { Name = "Large", Value = "2" },
-            ]
-        }
+        DemoSharedEnums.BitSize(),
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
