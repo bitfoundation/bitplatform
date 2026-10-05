@@ -126,7 +126,7 @@ private static readonly List<Section> customBasicNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -237,7 +237,7 @@ private static readonly List<Section> customSeparatorNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -361,7 +361,7 @@ private static readonly List<Section> customIconOnlyNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -449,7 +449,7 @@ private static readonly List<Section> customNoCollapseNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -490,7 +490,7 @@ private static readonly List<Section> customChevronNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -627,7 +627,7 @@ private static readonly BitNavNameSelectors<CarMenu> carSelectors = new()
 };
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -684,7 +684,7 @@ private readonly List<Section> customApiNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -916,7 +916,7 @@ private static readonly List<Section> customColorNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -948,7 +948,7 @@ private static readonly List<Section> customColorNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -1042,7 +1042,7 @@ private static readonly List<Section> customSizeNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -1148,7 +1148,7 @@ private static readonly List<Section> customColorNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },
@@ -1209,7 +1209,7 @@ private static readonly List<Section> customRtlNavItems =
 ];
 
 // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-// the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+// the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
 private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 {
     IconName = { Name = nameof(Section.ImageName) },

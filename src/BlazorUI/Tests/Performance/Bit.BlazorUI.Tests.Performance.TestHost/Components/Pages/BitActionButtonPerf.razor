@@ -10,7 +10,7 @@
         <input type="number" @bind="Count" @bind:event="oninput" min="1" max="10000" style="width: 100px;" />
         <button @onclick="Render" id="btn-render">Render</button>
         <button @onclick="Clear" id="btn-clear">Clear</button>
-        <button @onclick="ReRender" id="btn-rerender">Re-render (Toggle Disabled is false)</button>
+        <button @onclick="ReRender" id="btn-rerender">Re-render (Toggle Disabled)</button>
     </div>
     <div id="metrics" style="font-family: monospace;">
         <p>Render Time: <span id="render-time">@RenderTimeMs</span> ms</p>
@@ -27,7 +27,7 @@
         {
             var index = i;
             <BitActionButton IconName="@BitIconName.Add" 
-                             Disabled="_isEnabled is false"
+                             Disabled="_isDisabled"
                              Title="@($"Button {index}")"
                              OnClick="@(() => OnButtonClick(index))">
                 Button @index
@@ -45,7 +45,7 @@
     private double ReRenderTimeMs { get; set; }
     private string Status { get; set; } = "Loading";
     private bool _isRendered;
-    private bool _isEnabled = true;
+    private bool _isDisabled;
     private System.Diagnostics.Stopwatch _stopwatch = new();
 
     protected override void OnInitialized()
@@ -104,7 +104,7 @@
         if (!_isRendered) return;
         
         _stopwatch.Restart();
-        _isEnabled = !_isEnabled;
+        _isDisabled = !_isDisabled;
         Status = "Re-rendering...";
     }
 

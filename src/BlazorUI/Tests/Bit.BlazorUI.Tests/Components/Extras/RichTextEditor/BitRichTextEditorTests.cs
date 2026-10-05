@@ -315,7 +315,7 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
         });
 
-        // Disabled=false must lock editing exactly like ReadOnly; painting the disabled class
+        // Disabled=true must lock editing exactly like ReadOnly; painting the disabled class
         // while leaving the surface editable would let a "disabled" editor be typed into.
         var root = component.Find(".bit-rte");
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));

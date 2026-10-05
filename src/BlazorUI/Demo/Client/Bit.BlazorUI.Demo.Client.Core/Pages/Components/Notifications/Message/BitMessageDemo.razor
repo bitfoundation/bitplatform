@@ -426,7 +426,7 @@
             </div>
             <br />
             <div class="box">
-                <BitMessage Disabled="isMessageEnabled is false"
+                <BitMessage Disabled="isMessageDisabled"
                             Truncate
                             Dismissible
                             DismissOnEscape
@@ -439,7 +439,7 @@
                     everyone who is using them today; after that they turn read-only, and nothing new can be uploaded
                     to them until the licence is renewed.
                 </BitMessage>
-                <BitToggle Label="Disabled is false" @bind-Value="isMessageEnabled" />
+                <BitToggle Label="Disabled" @bind-Value="isMessageDisabled" />
                 @if (isDisabledSampleDismissed)
                 {
                     <BitButton OnClick="() => isDisabledSampleDismissed = false">Bring it back</BitButton>

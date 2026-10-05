@@ -262,11 +262,11 @@
                     and a disabled viewer keeps them read-only.
                 </div>
                 <br />
-                <BitCheckbox Label="Disabled is false" @bind-Value="tasksEnabled" />
+                <BitCheckbox Label="Disabled" @bind-Value="tasksDisabled" />
                 <br />
                 <BitMarkdownViewer Markdown="@taskListMarkdown"
                                    Pipeline="BitMarkdownPipelines.GitHub"
-                                   Disabled="tasksEnabled is false"
+                                   Disabled="tasksDisabled"
                                    OnTaskChanged="HandleTaskChanged" />
                 <div class="mdv-hint">@taskListStatus</div>
             </DemoExample>

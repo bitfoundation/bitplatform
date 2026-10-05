@@ -332,7 +332,7 @@ private bool isAutoFocusDismissed = true;
 private BitMessage? focusableMessage;";
 
     private readonly string example12RazorCode = @"
-<BitMessage Disabled=""isMessageEnabled is false""
+<BitMessage Disabled=""isMessageDisabled""
             Truncate
             Dismissible
             DismissOnEscape
@@ -345,13 +345,13 @@ private BitMessage? focusableMessage;";
     everyone who is using them today; after that they turn read-only, and nothing new can be uploaded
     to them until the licence is renewed.
 </BitMessage>
-<BitToggle Label=""Disabled is false"" @bind-Value=""isMessageEnabled"" />
+<BitToggle Label=""Disabled"" @bind-Value=""isMessageDisabled"" />
 @if (isDisabledSampleDismissed)
 {
     <BitButton OnClick=""() => isDisabledSampleDismissed = false"">Bring it back</BitButton>
 }";
     private readonly string example12CsharpCode = @"
-private bool isMessageEnabled = true;
+private bool isMessageDisabled;
 private bool isDisabledSampleDismissed;";
 
     private readonly string example13RazorCode = @"

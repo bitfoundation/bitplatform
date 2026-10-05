@@ -3,7 +3,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
 public partial class _BitNavCustomDemo
 {
     // The Section class only renames a handful of the members the nav expects, so only those are mapped and
-    // the rest (Text, Url, Disabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
+    // the rest (Text, Url, IsDisabled, IsExpanded, Style, Class, ...) keep matching BitNavItem by convention.
     private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
     {
         IconName = { Name = nameof(Section.ImageName) },

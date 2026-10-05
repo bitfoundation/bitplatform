@@ -10,7 +10,7 @@
         <input type="number" @bind="Count" @bind:event="oninput" min="1" max="1000" style="width: 100px;" />
         <button @onclick="Render" id="btn-render">Render</button>
         <button @onclick="Clear" id="btn-clear">Clear</button>
-        <button @onclick="ReRender" id="btn-rerender">Re-render (Toggle Disabled is false)</button>
+        <button @onclick="ReRender" id="btn-rerender">Re-render (Toggle Disabled)</button>
         <button @onclick="ToggleResponsive" id="btn-toggle-responsive">
             Responsive: @(_responsive ? "ON" : "OFF")
         </button>
@@ -34,7 +34,7 @@
                          TValue="string"
                          Items="_items"
                          Placeholder="@($"Dropdown {index}")"
-                         Disabled="_isEnabled is false"
+                         Disabled="_isDisabled"
                          Responsive="@_responsive"
                          Style="width: 180px;" />
         }
@@ -53,7 +53,7 @@
     // this to "Ready", giving Playwright a reliable "Blazor interactive circuit is up" signal.
     private string _status = "Loading";
     private bool _isRendered;
-    private bool _isEnabled = true;
+    private bool _isDisabled;
     private bool _responsive;
     private readonly System.Diagnostics.Stopwatch _stopwatch = new();
 
@@ -116,7 +116,7 @@
         if (!_isRendered) return;
 
         _stopwatch.Restart();
-        _isEnabled = !_isEnabled;
+        _isDisabled = !_isDisabled;
         _status = "Re-rendering...";
     }
 

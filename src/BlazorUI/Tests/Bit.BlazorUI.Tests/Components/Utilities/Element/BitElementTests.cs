@@ -769,6 +769,19 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitElementShouldKeepASplattedDisabledAttributeOfAnEnabledElement()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[16];
+
+        Assert.IsFalse(component.FindComponents<BitElement>()[16].Instance.Disabled);
+        Assert.IsTrue(element.HasAttribute("disabled"));
+        Assert.IsFalse(element.HasAttribute("aria-disabled"));
+        Assert.IsFalse(element.ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
     public void BitElementShouldCaptureItsRootElement()
     {
         var component = RenderComponent<BitElement>();

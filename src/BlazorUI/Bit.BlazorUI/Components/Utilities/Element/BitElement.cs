@@ -242,15 +242,14 @@ public partial class BitElement : BitComponentBase
             element = "div";
         }
 
-        var disabled = Disabled;
         // HTML only defines the disabled attribute on the form elements, so everywhere else the state has to be carried
         // by the aria attribute and by the tab order rather than by the browser's own handling of the attribute.
-        var nativelyDisabled = disabled && _disableableElements.Contains(element!);
+        var nativelyDisabled = Disabled && _disableableElements.Contains(element!);
         // A hyperlink is reachable and activatable through its own href whatever the tab order says: it stays focusable
         // programmatically, and the enter key on a focused link follows the href without a click the pointer-events of
         // the disabled class could stop. The two tags that are hyperlinks of their own are disabled in two ways, below.
-        var disabledAnchor = disabled && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase);
-        var disabledArea = disabled && string.Equals(element, "area", StringComparison.OrdinalIgnoreCase);
+        var disabledAnchor = Disabled && string.Equals(element, "a", StringComparison.OrdinalIgnoreCase);
+        var disabledArea = Disabled && string.Equals(element, "area", StringComparison.OrdinalIgnoreCase);
 
         builder.OpenElement(0, element!);
         // The splatted attributes come first so everything the component builds itself is written over them. The values
@@ -263,7 +262,7 @@ public partial class BitElement : BitComponentBase
         builder.AddAttribute(5, "dir", Dir?.ToString().ToLowerInvariant() ?? GetSplattedAttribute("dir"));
         // A tag HTML has no disabled attribute for keeps its keyboard tab stop while it is disabled, and the pointer
         // events the disabled class turns off are only one of the two ways to reach it, so the tab stop goes as well.
-        builder.AddAttribute(6, "tabindex", disabled && nativelyDisabled is false
+        builder.AddAttribute(6, "tabindex", Disabled && nativelyDisabled is false
                                             ? "-1"
                                             : (TabIndex ?? GetSplattedAttribute("tabindex")));
         builder.AddAttribute(7, "aria-label", AriaLabel ?? GetSplattedAttribute("aria-label"));
@@ -276,7 +275,7 @@ public partial class BitElement : BitComponentBase
         // What keeps a disabled element announced as disabled rather than as missing, whichever tag it renders. It is
         // written on a tag the disabled attribute applies to as well, where it repeats that attribute harmlessly and
         // keeps the markup a selector or a test matches a disabled element by the same for every tag.
-        builder.AddAttribute(9, "aria-disabled", disabled ? "true" : GetSplattedAttribute("aria-disabled"));
+        builder.AddAttribute(9, "aria-disabled", Disabled ? "true" : GetSplattedAttribute("aria-disabled"));
         // Written over the splatted href of a disabled anchor, which is what takes the link out of the tab order the
         // browser builds of itself and leaves nothing for the enter key to follow; every other tag keeps what it has.
         var href = GetSplattedAttribute("href");
@@ -299,7 +298,7 @@ public partial class BitElement : BitComponentBase
         var seq = 12;
         foreach (var @event in _activationEvents)
         {
-            if (disabled)
+            if (Disabled)
             {
                 builder.AddAttribute(seq, @event, (object?)null);
             }

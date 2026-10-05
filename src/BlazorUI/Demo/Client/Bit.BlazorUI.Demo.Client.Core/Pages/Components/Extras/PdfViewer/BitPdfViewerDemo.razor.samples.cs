@@ -424,15 +424,15 @@ private readonly BitPdfViewerTexts germanTexts = new()
 };";
 
     private readonly string example16RazorCode = @"
-<BitToggle @bind-Value=""a11yEnabled"" Label=""Disabled is false"" />
+<BitToggle @bind-Value=""a11yDisabled"" Label=""Disabled"" />
 <BitButton Disabled=""a11ySource is not null""
            OnClick='() => a11ySource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 @* EnableKeyboardShortcuts=""false"" hands every key back to the page. *@
-<BitPdfViewer Source=""a11ySource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Bookmarks"" Disabled=""a11yEnabled is false"" />";
+<BitPdfViewer Source=""a11ySource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Bookmarks"" Disabled=""a11yDisabled"" />";
     private readonly string example16CsharpCode = @"
 private BitPdfSource? a11ySource;
-private bool a11yEnabled = true;";
+private bool a11yDisabled;";
 
     private readonly string example17RazorCode = @"
 <BitButton Disabled=""cascadeSource is not null""

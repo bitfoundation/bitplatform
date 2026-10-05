@@ -385,10 +385,10 @@
                     <div><kbd>F4</kbd> toggle the sidebar, <kbd>Esc</kbd> close the find box, a dialog or presentation mode</div>
                 </div>
                 <br />
-                <BitToggle @bind-Value="a11yEnabled" Label="Disabled is false" />
+                <BitToggle @bind-Value="a11yDisabled" Label="Disabled" />
                 <BitButton Disabled="a11ySource is not null" OnClick="() => a11ySource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
-                <BitPdfViewer Source="a11ySource" Height="450px" DefaultSidebar="BitPdfSidebar.Bookmarks" Disabled="a11yEnabled is false" />
+                <BitPdfViewer Source="a11ySource" Height="450px" DefaultSidebar="BitPdfSidebar.Bookmarks" Disabled="a11yDisabled" />
             </DemoExample>
 
             <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">

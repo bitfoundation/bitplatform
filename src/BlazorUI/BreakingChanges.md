@@ -5,11 +5,13 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
-### Boolean parameters are flags: none of them defaults to `true` ([#5527](https://github.com/bitfoundation/bitplatform/issues/5527))
+### The enabled state is a flag: `IsEnabled` is now `Disabled` / `IsDisabled` ([#5527](https://github.com/bitfoundation/bitplatform/issues/5527))
 
-Every boolean parameter now defaults to `false`, so it is switched on by writing its name alone
-(`<BitButton Disabled>`) and never has to be written as `="false"`. A parameter that used to default to
-`true` is renamed to its opposite, and its meaning is inverted along with its name.
+The enabled state of every component, item, option and name selector used to be `IsEnabled`, which
+defaults to `true` and so had to be written as `IsEnabled="false"`. It is renamed to its opposite and its
+meaning is inverted along with its name: it now defaults to `false`, so it is switched on by writing its
+name alone (`<BitButton Disabled>`). Other boolean parameters are not affected by this change; those that
+default to `true` (`AllowDisabledFocus`, `ShowValue`, `AutoClose`, ...) keep their names and defaults.
 
 The renames follow one scheme:
 
@@ -45,6 +47,10 @@ Markup:
 ```
 
 `IsEnabled="true"` is the default it always was; remove it.
+
+The option components (`BitDropdownOption`, `BitNavOption`, ...) take `IsDisabled`, like the items they
+stand for, not the components' `Disabled`. They capture no unmatched attributes, so `Disabled` (or a
+lowercase `disabled`) written on an option compiles but throws at runtime, as any unknown parameter would.
 
 C#:
 

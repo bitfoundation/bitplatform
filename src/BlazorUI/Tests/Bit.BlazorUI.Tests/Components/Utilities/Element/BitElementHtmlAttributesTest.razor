@@ -61,6 +61,10 @@
 
 <BitElement Element="a" href="https://bitplatform.dev/" role="@true" Disabled>I'm a disabled link with a true role</BitElement>
 
+@* A disabled key that only arrives at runtime, in a splatted dictionary, is not the Disabled parameter: an element the
+   component was not asked to disable keeps it, since the component never writes the attribute as false over it. *@
+<BitElement Element="button" @attributes="@(new Dictionary<string, object> { ["disabled"] = true })">I'm a splatted-disabled element</BitElement>
+
 @code {
     [Parameter] public bool LinkEnabled { get; set; }
 }
