@@ -209,7 +209,8 @@ does not serve silently gets the newest one it does.
    `BitAccordion.Busy` came in 10.6.1, so
    `mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'` lists `Busy` and the
    same call on 10.6.0 does not. Pick a new difference for each new pair of releases; the other libraries work the
-   same way (`src/Butil/Bit.Butil/Publics`, ...).
+   same way (`src/Butil/Bit.Butil/Publics`, ...). The `source:` link of the same answer points at that release's
+   code too - its tag (`blob/v-10.6.1/...`), never `develop`.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
