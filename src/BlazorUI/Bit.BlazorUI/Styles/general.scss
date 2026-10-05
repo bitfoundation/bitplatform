@@ -54,6 +54,14 @@ button {
     content: none !important;
 }
 
+// Copying those classes also lets a descendant selector of the page (`.sidebar div`) match the overlay, the arrow
+// and the callout that sit in the chain, as it would where they were rendered. Every one of them is placed in
+// viewport coordinates by the positioning code, so the one declaration such a rule must never win is the fixed
+// positioning they all share.
+[data-bit-callout-holder] > * {
+    position: fixed !important;
+}
+
 .bit-input-hidden {
     left: 0;
     bottom: 0;

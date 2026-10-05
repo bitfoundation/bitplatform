@@ -7,13 +7,44 @@ namespace Bit.BlazorUI;
 // that chain, and so none of what the Style of its component declares reaches it. The public --bit-<Component>-*
 // declarations of that Style are copied onto such a part by hand, and this is the one place that picks them out of
 // a style string.
-internal static class BitPublicCssVariables
+//
+// One instance belongs to one component and remembers what it last picked out: the parts it is copied onto are
+// re-rendered on every arrow key and on every hover while a range is being picked, and the result only changes
+// when the Style of the instance or Styles.Root does.
+internal sealed class BitPublicCssVariables(string prefix)
 {
+    private string? _style;
+    private string? _stylesRoot;
+    private string? _variables;
+
+    // The public declarations of the Style of the component and of its Styles.Root, ahead of the part's own
+    // style, which therefore still wins.
+    internal string? Prepend(string? style, string? stylesRoot, string? partStyle)
+    {
+        if (string.Equals(style, _style, StringComparison.Ordinal) is false ||
+            string.Equals(stylesRoot, _stylesRoot, StringComparison.Ordinal) is false)
+        {
+            _style = style;
+            _stylesRoot = stylesRoot;
+
+            StringBuilder? builder = null;
+
+            Append(ref builder, style, prefix);
+            Append(ref builder, stylesRoot, prefix);
+
+            _variables = builder?.ToString();
+        }
+
+        if (_variables is null) return partStyle;
+
+        return partStyle.HasNoValue() ? _variables : _variables + partStyle;
+    }
+
     // Appends every declaration of the given style whose property starts with the prefix, each ended with a
     // semicolon. A semicolon only ends a declaration outside of quotes and brackets, since a value can carry one
     // of its own - the url(data:image/png;base64,...) of an image - and cutting it there would copy a declaration
     // whose unclosed quote or bracket swallows everything written after it on the element it is copied onto.
-    internal static void Append(ref StringBuilder? builder, string? style, string prefix)
+    private static void Append(ref StringBuilder? builder, string? style, string prefix)
     {
         if (style.HasNoValue() || style!.Contains(prefix, StringComparison.Ordinal) is false) return;
 

@@ -1210,8 +1210,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             footerId: CalloutFooterTemplate is not null ? _footerId : string.Empty,
             setCalloutWidth: true,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0,
-            rootId: _Id);
+            // No rootId: the callout is rendered inside the root, so the root is one of the ancestors the chain
+            // Callouts.ts relocates it into copies anyway.
+            maxWindowWidth: 0);
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -2240,11 +2241,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         return true;
     }
 
-    // The callout and the overlay are relocated to the body while the callout is open; Callouts.ts carries
-    // what the root and its ancestors declare into them (a public --bit-TimePicker-* variable set on an
-    // ancestor, through a class, in Style or in Styles.Root), so it reaches them like any inherited value. The
-    // display is written here rather than in the stylesheet because it is what the component toggles the layer
-    // with.
+    // The callout and the overlay are rendered inside the root and relocated to the body while the callout is
+    // open; Callouts.ts moves them into a copy of the chain of ancestors they leave, the root among them, so a
+    // public --bit-TimePicker-* variable set on an ancestor, through a class, in Style or in Styles.Root reaches
+    // them like any inherited value. The display is written here rather than in the stylesheet because it is
+    // what the component toggles the layer with.
     private string GetOverlayStyles()
     {
         return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
@@ -2252,9 +2253,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private string GetCalloutCssClasses()
     {
-        // The callout is moved out to the body while it is open, so the custom properties of the color and
-        // the size have to be declared on it as well - nothing the root's own bit-tpc-* classes declare
-        // cascades down to it there.
+        // The callout is rendered inside the root, and while it is open it is relocated into a copy of the root
+        // that carries the root's classes too, so the color and size classes reach it from there either way. They
+        // are declared on the callout as well so that its own custom properties never depend on the copy.
         List<string> classes = ["bit-tpc-cal", GetColorClass()];
 
         var sizeClass = GetSizeClass();

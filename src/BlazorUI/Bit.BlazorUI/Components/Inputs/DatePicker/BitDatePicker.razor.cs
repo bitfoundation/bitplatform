@@ -24,7 +24,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const string YEAR_PATTERN = "yyyy";
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-DatePicker-";
 
     // The parts of the time of day the time picker edits. Everything that moves the time - the spin buttons,
     // the keys, what is typed - names the part it moves rather than carrying a flag per part.
@@ -76,6 +75,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string _datePickerId = string.Empty;
     private string _errorId = string.Empty;
     private string _descriptionId = string.Empty;
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-DatePicker-");
     private string _ariaDescriptionId = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
@@ -4182,14 +4182,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // the calendar and the messages that follow it by hand - ahead of the part's own style, which therefore still wins.
     private string? GetStandaloneStyles(string? style)
     {
-        if (Standalone is false) return style;
-
-        StringBuilder? builder = null;
-
-        BitPublicCssVariables.Append(ref builder, Style, PUBLIC_CSS_VARIABLE_PREFIX);
-        BitPublicCssVariables.Append(ref builder, Styles?.Root, PUBLIC_CSS_VARIABLE_PREFIX);
-
-        return builder is null ? style : builder.Append(style).ToString();
+        return Standalone ? _standaloneCssVariables.Prepend(Style, Styles?.Root, style) : style;
     }
 
     private string GetCalloutCssClasses()

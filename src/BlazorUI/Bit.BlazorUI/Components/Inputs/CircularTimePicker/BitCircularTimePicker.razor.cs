@@ -2200,9 +2200,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         }
 
         // The callout is a sibling of the root, so the class that opts a subtree out of the reduced-motion
-        // collapse never reaches it from there - and the slide the callout opens with, along with the sheet
-        // the responsive mode turns it into, are exactly the motion ForceAnimation is asked for. Rendered
-        // onto the callout itself for the same reason BitCallout, BitDropMenu and BitMenuButton do it.
+        // collapse only reaches it while it is relocated, through the copy of the root Callouts.ts moves it
+        // into, and never where it is rendered - standalone, or on its way out - while the slide the callout
+        // opens with, along with the sheet the responsive mode turns it into, are exactly the motion
+        // ForceAnimation is asked for. Rendered onto the callout itself for the same reason BitCallout,
+        // BitDropMenu and BitMenuButton do it.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");

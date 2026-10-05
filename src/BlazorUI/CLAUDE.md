@@ -272,13 +272,18 @@ A component's own `--bit-<Component>-*` properties (the public surface its demo 
 inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
 it as a SIBLING of the root, and the callout JS reparents it to the body while it is open. So
 `Callouts.moveCalloutToBody` never moves the popup on its own: it moves it into a chain of
-`display: contents` copies of every ancestor it is leaving (classes, inline style, CSS-isolation scopes,
-`data-*` / `bit-*` attributes, `dir`, `lang`; kept in step by a `MutationObserver` while it is open),
-plus one link for the root, named by the `rootId` argument of `BitCalloutToggleCallout`, that carries
-what the consumer put on it (its non-`bit-` classes and the custom properties of its inline style).
-A variable set on `:root`, an ancestor, a class or the `Style` of one instance - and a
-`BitThemeProvider` or `[bit-theme]` scope around it - therefore reaches the popup the way it reaches
-the root, and still follows the theme while it is open. Such a component resolves its variables in one
+`display: contents` copies of every ancestor it is leaving (same tag for plain structural elements,
+classes, inline style, CSS-isolation scopes, `bit-*` and theme-scoping `data-*theme` / `-scheme` /
+`-mode` attributes, `dir`, `lang`; kept in step by a `MutationObserver` while it is open), plus one
+link for the root, named by the `rootId` argument of `BitCalloutToggleCallout`, that carries what the
+consumer put on it (its inline style, its non-`bit-` classes and `bit-fam`). A variable set on `:root`,
+on an ancestor's `Style` or class, or on the `Style` of one instance - and a `BitThemeProvider` or
+`[bit-theme]` scope around it - therefore reaches the popup the way it reaches the root, and still
+follows the theme while it is open. What identifies an element or makes it act is never copied (id,
+role, aria-*, other `data-*`, the state `:hover` / `:focus-within` match), so a variable set through
+such a selector does not reach the popup; nor is the inline style of another callout's relocated popup,
+which holds that one's private sizing. The flip side of copying classes is that a page's descendant
+selectors match the popup again, so `general.scss` pins the relocated parts' `position: fixed`. Such a component resolves its variables in one
 mixin that both the root and the popup include, and copies nothing in C#: a popup's open call passes
 `rootId: _Id`, except one opened from inside another popup, which inherits through that one's chain.
 The one exception is a part that sits beside the root but is never relocated - the calendar of a

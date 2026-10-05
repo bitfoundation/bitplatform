@@ -2690,7 +2690,7 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTimePickerShouldNameItsRootWhenItTogglesTheCallout()
+    public void BitTimePickerShouldRenderTheCalloutInsideItsRootAndNameNoRootWhenItTogglesIt()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -2701,13 +2701,15 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-wrp").Click();
 
-        // The root is what Callouts.ts copies into the chain it relocates the callout and the overlay into,
-        // which is how the public variables of the instance still reach them once they sit under the body.
-        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
-        var rootId = component.Find(".bit-tpc").Id;
+        // The callout and the overlay are rendered inside the root, so the root is one of the ancestors whose
+        // copies Callouts.ts relocates them into, and the public variables of the instance reach them from there.
+        // No root is named for a second copy of it.
+        Assert.IsNotNull(component.Find(".bit-tpc").QuerySelector(".bit-tpc-cal"));
+        Assert.IsNotNull(component.Find(".bit-tpc").QuerySelector(".bit-tpc-ovl"));
 
-        Assert.IsFalse(string.IsNullOrEmpty(rootId));
-        Assert.AreEqual(rootId, toggle.Arguments[^1]);
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(string.Empty, toggle.Arguments[^1]);
     }
 
     #endregion

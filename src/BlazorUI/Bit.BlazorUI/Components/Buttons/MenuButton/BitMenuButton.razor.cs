@@ -1769,9 +1769,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             classes.Add("bit-mnb-ocl");
         }
 
-        // While open the callout is reparented to the body, which takes it out of the subtree that
-        // carries the root's bit-fam class, so ForceAnimation has to be rendered on the callout
-        // itself for its opening animation to opt out of reduced motion.
+        // The callout is a sibling of the root, so the root's bit-fam class never reaches it where it is
+        // rendered - only while it is relocated, through the copy of the root Callouts.ts moves it into. So
+        // ForceAnimation is rendered on the callout itself, for its motion to opt out of reduced motion
+        // whether or not it is relocated.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");

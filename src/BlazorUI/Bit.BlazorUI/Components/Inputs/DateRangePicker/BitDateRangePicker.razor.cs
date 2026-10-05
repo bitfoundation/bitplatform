@@ -4305,7 +4305,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-DateRangePicker-";
+    // The public custom properties of the component, which are what its stylesheet reads with a fallback.
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-DateRangePicker-");
 
     // A standalone calendar is never opened as a callout, so it is never relocated either, and the chain Callouts.ts
     // carries the root's declarations through is never built for it: it stays where it is rendered, a sibling of
@@ -4314,14 +4315,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // onto the calendar by hand - ahead of its own style, which therefore still wins.
     private string? GetStandaloneStyles(string? style)
     {
-        if (Standalone is false) return style;
-
-        StringBuilder? builder = null;
-
-        BitPublicCssVariables.Append(ref builder, Style, PUBLIC_CSS_VARIABLE_PREFIX);
-        BitPublicCssVariables.Append(ref builder, Styles?.Root, PUBLIC_CSS_VARIABLE_PREFIX);
-
-        return builder is null ? style : builder.Append(style).ToString();
+        return Standalone ? _standaloneCssVariables.Prepend(Style, Styles?.Root, style) : style;
     }
 
 
