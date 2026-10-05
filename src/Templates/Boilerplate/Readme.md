@@ -66,6 +66,6 @@ dotnet tool install --global Bit.Cli
 bit new MyApp
 ```
 
-It asks for the options it needs, installs what the project needs, and leaves it built, with git, its first migration and your IDE open. `dotnet new install Bit.Boilerplate` and `dotnet new bit-bp` keep working too.
+Pick the options on the [create project page](https://bitplatform.dev/templates/create-project), which builds the command. `bit new` installs what the project needs and leaves it built, with git, its first migration and your IDE open.
 
 Check out our [30-part documentation](https://bitplatform.dev/templates/getting-started) to learn more.

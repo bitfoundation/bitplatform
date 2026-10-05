@@ -307,7 +307,7 @@ You do **NOT** need to run `dotnet ef database update` or `Update-Database` manu
 
 ### The Initial Migration
 
-`bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way, e.g. with `dotnet new bit-bp`, starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
+`bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
 dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose

@@ -50,9 +50,11 @@ source ~/.bashrc</CodeBox>
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>3. Create your project</BitText>
-            <CodeBox>bit new MyFirstProject</CodeBox>
+            Pick your project's options on the <a href="/templates/create-project">Create project</a> page, or describe your app to its assistant,
+            then copy the command it builds and run it, e.g.:
+            <CodeBox>bit new MyFirstProject --yes</CodeBox>
             <br />
-            <code>bit new</code> asks a few questions (database, Aspire, features, IDE), then checks this machine and offers to install what's missing:
+            The <code>bit new</code> command checks this machine and offers to install what's missing:
             Node.js, Git, Docker, the Aspire CLI, VS Code and more. What the project needs is checked already; the rest is up to you,
             and anything that's already there isn't shown at all. When an install needs it, Windows asks once for administrator permission, and on macOS and Linux sudo asks once for your password.
             <br />
@@ -64,7 +66,7 @@ source ~/.bashrc</CodeBox>
             Then it creates the project with a certificate of its own, initializes git with <b>develop</b> and <b>main</b>, installs the build tools the apps need,
             restores the packages, builds, installs the Chromium the UI tests run in, formats the code, adds the initial EF Core migration,
             trusts the folder for VS Code and the AI coding tools, installs the VS Code extensions the project recommends, and opens it in VS Code.
-            All that's left is signing in to Claude or GitHub Copilot.
+            Then use any AI assistant you like: the project comes fully configured for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor.
             A step that fails doesn't stop the rest, and the summary shows how to finish it.
             <br />
             <br />
@@ -99,7 +101,7 @@ source ~/.bashrc</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>Open source, and verifiable</BitText>
             The bit CLI is <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli" target="_blank" rel="noopener">open source</a> under the MIT license.
             Its packages are built from the repository by GitHub Actions, which attests their provenance.
-            <code>bit about</code> shows the commit and the run that built your copy, and the command that verifies it.
+            The <code>bit about</code> command shows the commit and the run that built your copy, and the command that verifies it.
             Every install or change is listed before it runs, and the log of each run is kept in <code>~/.bitplatform/logs</code>.
         </div>
     </section>
