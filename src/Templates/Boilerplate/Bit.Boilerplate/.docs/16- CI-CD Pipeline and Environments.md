@@ -395,12 +395,8 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build Android App Bundle (AAB)**
 ```bash
-# Install Node.js when missing and the MAUI Android workload
+# Install Node.js when missing, the MAUI Android workload and what the Android SDK lacks
 dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
-   
-# Install Android SDK platform tools
-${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
-  --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
    
 # Generate CSS/JS files
 dotnet build -t:BeforeBuildTasks -c Release

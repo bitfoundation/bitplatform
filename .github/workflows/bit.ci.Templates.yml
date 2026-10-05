@@ -37,15 +37,8 @@ jobs:
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
-    - name: Prepare this machine with bit setup
-      run: bit setup src/Templates/Boilerplate/Bit.Boilerplate --platforms android --no-restore --no-build --yes
-
-    - name: InstallNodejsDependencies
-      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+    - name: Set up and build Boilerplate with bit setup
+      run: bit setup src/Templates/Boilerplate/Bit.Boilerplate --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 
     - name: Verify formatting
       run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
-
-    - name: dotnet build Boilerplate
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -p:EnforceCodeStyleInBuild=true

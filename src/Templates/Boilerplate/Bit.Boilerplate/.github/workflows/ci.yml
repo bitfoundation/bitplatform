@@ -38,11 +38,8 @@ jobs:
     - name: Verify formatting
       run: dotnet format whitespace --folder . --verify-no-changes
 
-    - name: Prepare this machine with bit setup
-      run: dnx Bit.Cli --prerelease -- setup --platforms android --no-restore --no-build --yes
-
-    - name: Build
-      run: dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
+    - name: Set up and build with bit setup
+      run: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 
   test:
     name: test
