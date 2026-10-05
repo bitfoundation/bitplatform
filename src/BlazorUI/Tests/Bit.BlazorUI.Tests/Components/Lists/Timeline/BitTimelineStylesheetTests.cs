@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -65,7 +63,7 @@ public class BitTimelineStylesheetTests : BunitTestContext
     [TestMethod]
     public void BitTimelineShouldLayOutOnlyItsOwnItemsHorizontally()
     {
-        var horizontal = GetBlock(ReadStylesheet(), "\n.bit-tln-hrz {");
+        var horizontal = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tln-hrz {");
 
         // The parts of an item are only reached through the item, or the button of a clickable one, that holds them.
         Assert.IsFalse(Regex.IsMatch(horizontal, @"\n    \.bit-tln-(pcn|scn|dvd|itm)"), "A horizontal rule selects the parts of any descendant timeline.");
@@ -74,23 +72,5 @@ public class BitTimelineStylesheetTests : BunitTestContext
         StringAssert.Contains(horizontal, "\n    > .bit-tln-itm.bit-tln-irv {");
     }
 
-    private static string GetBlock(string stylesheet, string selector)
-    {
-        var start = stylesheet.IndexOf(selector, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Lists", "Timeline", "BitTimeline.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Lists", "Timeline", "BitTimeline.scss");
 }

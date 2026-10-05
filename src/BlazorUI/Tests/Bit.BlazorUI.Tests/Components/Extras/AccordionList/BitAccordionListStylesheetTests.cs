@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bunit;
@@ -24,7 +23,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
     [TestMethod]
     public void BitAccordionListShouldReadEveryPublicVariableWithAFallbackAndNeverDeclareIt()
     {
-        var stylesheet = StripComments(ReadStylesheet());
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         foreach (var variable in PublicVariables)
         {
@@ -40,7 +39,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
     [TestMethod]
     public void BitAccordionListShouldDocumentEveryPublicVariableOnTheDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "AccordionList", "BitAccordionListDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "AccordionList", "BitAccordionListDemo.razor.cs");
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-AccordionList-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -50,7 +49,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
     [TestMethod]
     public void BitAccordionListJoinedShouldReachOnlyTheListsOwnItems()
     {
-        var stylesheet = StripComments(ReadStylesheet());
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         // Every rule of the joined list is chained through the item wrapper, so an accordion nested in a panel keeps
         // its own corners and its own outline.
@@ -73,7 +72,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
     [TestMethod]
     public void BitAccordionListJoinedShouldFindTheLastItemWithoutHas()
     {
-        var stylesheet = StripComments(ReadStylesheet());
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         // :has() is the newest of the selectors that could find it; the last item is found with the older
         // `of S` syntax instead, behind a plain :last-child for the engines that predate that too.
@@ -105,24 +104,8 @@ public class BitAccordionListStylesheetTests : BunitTestContext
         StringAssert.Contains(root.GetAttribute("style"), "gap:16px");
     }
 
-    private static string StripComments(string stylesheet)
-    {
-        return Regex.Replace(stylesheet, @"//[^\n]*", string.Empty);
-    }
-
     private static string ReadStylesheet()
     {
-        return ReadFile("Bit.BlazorUI.Extras", "Components", "AccordionList", "BitAccordionList.scss");
-    }
-
-    // The path is relative to the BlazorUI folder; the test project copies each file it reads to the same path under
-    // the output directory.
-    private static string ReadFile(params string[] segments)
-    {
-        var path = Path.Combine([System.AppContext.BaseDirectory, .. segments]);
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
+        return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "AccordionList", "BitAccordionList.scss");
     }
 }

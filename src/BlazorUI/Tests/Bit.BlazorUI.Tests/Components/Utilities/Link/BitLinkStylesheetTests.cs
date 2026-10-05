@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Link-* variable is declared, which stops it inheriting.");
     }
@@ -90,7 +88,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldDrawTheUnderlineThroughItsLonghands()
     {
-        var rules = RulesOf(ReadStylesheet());
+        var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
         // The shorthand resets the color, the thickness and the offset of the underline every time a state turns it on.
         Assert.IsFalse(Regex.IsMatch(rules, @"(^|\s)text-decoration:\s"), "The text-decoration shorthand is used.");
@@ -113,7 +111,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldChangeOnTheKeyboardFocusOnly()
     {
-        var rules = RulesOf(ReadStylesheet());
+        var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
         // A link left in its hover color after a mouse click reads as stuck, so only :focus-visible is styled.
         Assert.IsFalse(Regex.IsMatch(rules, @"&:focus\b(?!-visible)"), "A bare :focus is styled.");
@@ -213,21 +211,7 @@ public partial class BitLinkStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Link", "BitLink.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Link", "BitLink.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Link-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

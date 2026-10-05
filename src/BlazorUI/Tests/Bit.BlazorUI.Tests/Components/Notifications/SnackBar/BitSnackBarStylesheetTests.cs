@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -147,13 +145,5 @@ public class BitSnackBarStylesheetTests
 
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-snb {")];
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Notifications", "SnackBar", "BitSnackBar.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "SnackBar", "BitSnackBar.scss");
 }

@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitPdfViewerStylesheetTests
     [TestMethod]
     public void BitPdfViewerShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-PdfViewer-* variable is declared, which stops it inheriting.");
     }
@@ -55,7 +53,7 @@ public partial class BitPdfViewerStylesheetTests
     [TestMethod]
     public void BitPdfViewerDemoShouldListEveryPublicVariable()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "PdfViewer", "BitPdfViewerDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "PdfViewer", "BitPdfViewerDemo.razor.cs");
 
         foreach (var name in DocumentedVariables(ReadStylesheet()))
         {
@@ -128,7 +126,7 @@ public partial class BitPdfViewerStylesheetTests
         StringAssert.Contains(stylesheet, "::highlight(bit-pdv-search-current) {");
 
         // The script no longer injects a stylesheet of its own, which no variable could have reached.
-        var script = ReadFile("Bit.BlazorUI.Extras", "Components", "PdfViewer", "BitPdfViewer.ts");
+        var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "PdfViewer", "BitPdfViewer.ts");
         Assert.IsFalse(script.Contains("::highlight("), "The script still injects the highlight colors.");
     }
 
@@ -161,24 +159,7 @@ public partial class BitPdfViewerStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what is not a comment is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet() => ReadFile("Bit.BlazorUI.Extras", "Components", "PdfViewer", "BitPdfViewer.scss");
-
-    private static string ReadFile(params string[] pathFromBlazorUI) => ReadFileCore(pathFromBlazorUI);
-
-    private static string ReadFileCore(string[] pathFromBlazorUI, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. pathFromBlazorUI]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "PdfViewer", "BitPdfViewer.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-PdfViewer-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

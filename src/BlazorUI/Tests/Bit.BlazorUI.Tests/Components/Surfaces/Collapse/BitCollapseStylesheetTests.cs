@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -56,7 +54,7 @@ public partial class BitCollapseStylesheetTests
     [TestMethod]
     public void BitCollapseShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Collapse-* variable is declared, which stops it inheriting.");
     }
@@ -72,10 +70,7 @@ public partial class BitCollapseStylesheetTests
         // collapse nested in one given a Duration or a CollapsedSize does not take them on as its own.
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n.bit-col {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The root has no rule of its own.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-col {");
 
         StringAssert.Contains(block, $"{token}: initial;");
     }
@@ -92,10 +87,7 @@ public partial class BitCollapseStylesheetTests
         // ...and the Background classes paint the theme color outright rather than through the variable.
         foreach (var kind in new[] { "pbg", "sbg", "tbg", "rbg" })
         {
-            var start = stylesheet.IndexOf($"\n.bit-col-{kind} {{", System.StringComparison.Ordinal);
-            Assert.IsTrue(start >= 0, $"The {kind} background has no rule of its own.");
-
-            var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+            var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-col-{kind} {{");
 
             Assert.IsFalse(block.Contains("--bit-Collapse-"), $"The {kind} background reads a public variable.");
         }
@@ -121,10 +113,7 @@ public partial class BitCollapseStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n@media (forced-colors: active) {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "There is no forced-colors block.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(block, ".bit-col.bit-dis {\n        color: GrayText;");
         StringAssert.Contains(block, ".bit-col-con:focus-visible {\n        outline-color: Highlight;");
@@ -186,21 +175,7 @@ public partial class BitCollapseStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Surfaces", "Collapse", "BitCollapse.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Collapse", "BitCollapse.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Collapse-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

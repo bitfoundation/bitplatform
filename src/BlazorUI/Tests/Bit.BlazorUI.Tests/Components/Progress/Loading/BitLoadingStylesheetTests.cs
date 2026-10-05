@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -138,17 +137,14 @@ public class BitLoadingStylesheetTests
         StringAssert.Contains(stylesheet, $"\n.bit-ldn-{loader}-ccn:dir(rtl) {{");
     }
 
-    private static (string Name, string Content)[] ReadStylesheets([CallerFilePath] string thisFile = "")
+    private static (string Name, string Content)[] ReadStylesheets()
     {
-        var folder = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                   "Bit.BlazorUI", "Components", "Progress", "Loading"));
-
-        Assert.IsTrue(Directory.Exists(folder), $"Missing {folder}.");
+        var folder = SourceFiles.GetDirectory("Bit.BlazorUI", "Components", "Progress", "Loading");
 
         var files = Directory.GetFiles(folder, "*.scss", SearchOption.AllDirectories);
 
         Assert.HasCount(19, files);
 
-        return [.. files.Select(f => (Path.GetFileName(f), File.ReadAllText(f).Replace("\r\n", "\n")))];
+        return [.. files.Select(f => (Path.GetFileName(f), SourceFiles.ReadFullPath(f)))];
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitImageStylesheetTests
     [TestMethod]
     public void BitImageShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Image-* variable is declared, which stops it inheriting.");
     }
@@ -67,7 +65,7 @@ public partial class BitImageStylesheetTests
         var block = RuleOf(stylesheet, selector);
 
         StringAssert.Contains(block, $"var({variable}, ");
-        Assert.AreEqual(1, Regex.Matches(RulesOf(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
+        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
     }
 
     [TestMethod,
@@ -77,7 +75,7 @@ public partial class BitImageStylesheetTests
     {
         // The tint is the feedback of a control, so it is laid over the frame of an image with a click handler and
         // nowhere else - read once, by a rule of the clickable frame's own pseudo-element.
-        var rules = RulesOf(ReadStylesheet());
+        var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.AreEqual(1, Regex.Matches(rules, $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read more than once.");
         Assert.IsTrue(Regex.IsMatch(rules, $@"(\.bit-img-clk|&)[^{{}}]*::after \{{\s*background-color: var\({Regex.Escape(variable)}, "),
@@ -118,7 +116,7 @@ public partial class BitImageStylesheetTests
         var block = RuleOf(ReadStylesheet(), ":where(.bit-img)");
 
         StringAssert.Contains(block, "background-color: var(--bit-Image-background, transparent);");
-        Assert.AreEqual(1, Regex.Matches(RulesOf(ReadStylesheet()), @"var\(--bit-Image-background[,)]").Count);
+        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(ReadStylesheet()), @"var\(--bit-Image-background[,)]").Count);
     }
 
     [TestMethod]
@@ -173,8 +171,8 @@ public partial class BitImageStylesheetTests
         // Whether the image is on screen is the hidden class's call (display, or visibility for a lazy one) and
         // the fade's; an opacity on the image or on a fit would be a second switch for a custom class to trip.
         var stylesheet = ReadStylesheet();
-        var rules = RulesOf(stylesheet[..stylesheet.IndexOf("@keyframes", System.StringComparison.Ordinal)]) +
-                    RulesOf(stylesheet[(stylesheet.IndexOf(".bit-img-img {", System.StringComparison.Ordinal))..]);
+        var rules = SourceFiles.StripScssComments(stylesheet[..stylesheet.IndexOf("@keyframes", System.StringComparison.Ordinal)]) +
+                    SourceFiles.StripScssComments(stylesheet[(stylesheet.IndexOf(".bit-img-img {", System.StringComparison.Ordinal))..]);
 
         Assert.IsFalse(Regex.IsMatch(rules, @"^\s*opacity: [01];", RegexOptions.Multiline), "An opacity decides whether the image is visible.");
     }
@@ -214,27 +212,10 @@ public partial class BitImageStylesheetTests
     // The block of a top-level rule, from its selector to the brace that closes it.
     private static string RuleOf(string stylesheet, string selector)
     {
-        var start = stylesheet.IndexOf($"\n{selector} {{", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector} has no rule of its own.");
-
-        return stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Image", "BitImage.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Image", "BitImage.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Image-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

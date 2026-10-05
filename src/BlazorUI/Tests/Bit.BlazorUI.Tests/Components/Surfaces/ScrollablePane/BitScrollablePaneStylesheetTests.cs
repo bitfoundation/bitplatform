@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -75,8 +73,7 @@ public class BitScrollablePaneStylesheetTests
     public void BitScrollablePaneShouldResolveThePublicVariablesOnTheRoot()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("\n.bit-scp {", System.StringComparison.Ordinal);
-        var root = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-scp {");
 
         // The private names are what the rest of the file reads - and what a pane styled before the public names
         // existed still sets - so they are declared once, on the root, from the public ones.
@@ -104,7 +101,7 @@ public class BitScrollablePaneStylesheetTests
         Assert.IsTrue(media > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
                       "The forced-colors override does not come after the rendering it overrides.");
 
-        var forced = stylesheet[media..stylesheet.IndexOf("\n}", media, System.StringComparison.Ordinal)];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {\n    .bit-scp-mod,");
 
         // The idle state is matched at its own specificity, so an auto hiding bar is repainted and never hidden.
         StringAssert.Contains(forced, ".bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {");
@@ -153,16 +150,6 @@ public class BitScrollablePaneStylesheetTests
         StringAssert.Contains(print, ".bit-scp-eop {\n        height: auto !important;\n        max-height: none !important;\n        overflow: visible !important;");
     }
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Surfaces", "ScrollablePane", "BitScrollablePane.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        var text = File.ReadAllText(path).Replace("\r\n", "\n");
-
-        // The header documents the variables in comments; only the rules are what the browser reads.
-        return Regex.Replace(text, @"^\s*//.*$", string.Empty, RegexOptions.Multiline);
-    }
+    // The header documents the variables in comments; only the rules are what the browser reads.
+    private static string ReadStylesheet() => SourceFiles.StripScssComments(SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "ScrollablePane", "BitScrollablePane.scss"));
 }

@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -50,7 +48,7 @@ public class BitTooltipStylesheetTests
     [TestMethod]
     public void BitTooltipShouldListEveryPublicVariableOnItsDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Surfaces", "Tooltip", "BitTooltipDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Surfaces", "Tooltip", "BitTooltipDemo.razor.cs");
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Tooltip-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -62,8 +60,7 @@ public class BitTooltipStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var root = stylesheet[stylesheet.IndexOf("\n.bit-ttp {", System.StringComparison.Ordinal)..];
-        root = root[..root.IndexOf("\n}", System.StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ttp {");
 
         // The variables only seed the private properties on the root, which the inline style of MaxWidth, Offset,
         // ArrowSize and ZIndex and the later Size and Color classes then override on that same element.
@@ -95,8 +92,7 @@ public class BitTooltipStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var surface = stylesheet[stylesheet.IndexOf("\n.bit-ttp-ctn {", System.StringComparison.Ordinal)..];
-        surface = surface[..surface.IndexOf("\n}", System.StringComparison.Ordinal)];
+        var surface = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ttp-ctn {");
 
         // A tooltip in a nowrap cell, a heading or a BitLayout would otherwise take its wrapping, its type and its
         // 1.75rem line from there.
@@ -119,8 +115,7 @@ public class BitTooltipStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var arrow = stylesheet[stylesheet.IndexOf("\n.bit-ttp-arw {\n    position: absolute;", System.StringComparison.Ordinal)..];
-        arrow = arrow[..arrow.IndexOf("\n}", System.StringComparison.Ordinal)];
+        var arrow = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ttp-arw {\n    position: absolute;");
 
         // The arrow casts the shadow of the surface (none in Material, the outline of a dark theme), and is drawn
         // above the surface so that outline is not painted across its base - cut to its outer half, so it is not
@@ -131,16 +126,5 @@ public class BitTooltipStylesheetTests
         Assert.AreEqual(12, Regex.Matches(stylesheet, @"clip-path: \$arrow-clip-(br|tl|tr|bl);").Count);
     }
 
-    private static string ReadStylesheet() => ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Tooltip", "BitTooltip.scss");
-
-    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
-
-    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Tooltip", "BitTooltip.scss");
 }

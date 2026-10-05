@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -53,32 +51,14 @@ public class BitSwipeTrapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(GetBlock(stylesheet, "&.bit-stp-hrz {"), "touch-action: pan-y pinch-zoom;");
-        StringAssert.Contains(GetBlock(stylesheet, "&.bit-stp-vrt {"), "touch-action: pan-x pinch-zoom;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "&.bit-stp-hrz {"), "touch-action: pan-y pinch-zoom;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "&.bit-stp-vrt {"), "touch-action: pan-x pinch-zoom;");
 
         // A disabled trap takes nothing, so the page scrolls over it - and the rule comes after the locks it overrides.
         var disabled = stylesheet.IndexOf("&.bit-dis {", StringComparison.Ordinal);
-        StringAssert.Contains(GetBlock(stylesheet, "&.bit-dis {"), "touch-action: auto;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "&.bit-dis {"), "touch-action: auto;");
         Assert.IsTrue(disabled > stylesheet.IndexOf("&.bit-stp-lck {", StringComparison.Ordinal));
     }
 
-    private static string GetBlock(string stylesheet, string selector, string terminator = "}")
-    {
-        var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf(terminator, start + selector.Length, StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "SwipeTrap", "BitSwipeTrap.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "SwipeTrap", "BitSwipeTrap.scss");
 }

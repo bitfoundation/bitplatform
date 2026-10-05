@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -105,20 +104,7 @@ public sealed class BitComponentCssVariablesContractTests
             $"Public CSS variables read outside the component they are named for: {string.Join(", ", offenders)}");
     }
 
-    private static string GetTestSourceDirectory([CallerFilePath] string thisFile = "")
-    {
-        var dir = Path.GetDirectoryName(thisFile);
-        Assert.IsTrue(dir is not null && Directory.Exists(dir),
-            $"The test source directory ({dir}) is not available; this contract test must run from a source checkout.");
-        return dir!;
-    }
-
-    private static string GetComponentStylesDirectory()
-    {
-        var dir = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", "..", "Bit.BlazorUI", "Components"));
-        Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}.");
-        return dir;
-    }
+    private static string GetComponentStylesDirectory() => SourceFiles.GetDirectory("Bit.BlazorUI", "Components");
 
     /// <summary>
     /// Every package's components: Extras and Legacy ship public variables of their own, and the demo pages
@@ -126,26 +112,13 @@ public sealed class BitComponentCssVariablesContractTests
     /// </summary>
     private static string[] GetPublicComponentDirectories()
     {
-        var root = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", ".."));
-        var dirs = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
-            .Select(project => Path.Combine(root, project, "Components"))
+        return new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
+            .Select(project => SourceFiles.GetDirectory(project, "Components"))
             .ToArray();
-
-        foreach (var dir in dirs)
-        {
-            Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}.");
-        }
-
-        return dirs;
     }
 
     private static string GetDemoPagesDirectory()
-    {
-        var dir = Path.GetFullPath(Path.Combine(GetTestSourceDirectory(), "..", "..", "..", "..",
-            "Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components"));
-        Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}.");
-        return dir;
-    }
+        => SourceFiles.GetDirectory("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components");
 
     private static IEnumerable<string> EnumerateStyles(string stylesDir)
         => Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories);

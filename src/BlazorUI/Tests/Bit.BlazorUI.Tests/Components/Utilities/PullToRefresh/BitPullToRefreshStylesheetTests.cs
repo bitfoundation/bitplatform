@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitPullToRefreshStylesheetTests
     [TestMethod]
     public void BitPullToRefreshShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-PullToRefresh-* variable is declared, which stops it inheriting.");
     }
@@ -134,8 +132,8 @@ public partial class BitPullToRefreshStylesheetTests
 
         // A literal easing would not follow a preset's motion, and a literal duration would not collapse under
         // reduced motion.
-        Assert.IsFalse(Regex.IsMatch(RulesOf(stylesheet), @"\b(linear|ease|ease-in|ease-out|ease-in-out|cubic-bezier)\b"), "A literal easing is used.");
-        Assert.IsFalse(Regex.IsMatch(RulesOf(stylesheet), @"transition:[^;]*\d+m?s\b"), "A literal duration is used.");
+        Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"\b(linear|ease|ease-in|ease-out|ease-in-out|cubic-bezier)\b"), "A literal easing is used.");
+        Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"transition:[^;]*\d+m?s\b"), "A literal duration is used.");
     }
 
     [TestMethod]
@@ -183,32 +181,9 @@ public partial class BitPullToRefreshStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The comments are where the variables are documented, so only the rules are searched.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "PullToRefresh", "BitPullToRefresh.scss");
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "PullToRefresh", "BitPullToRefresh.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
-
-    private static string ReadDemoPage([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components",
-                                                 "Utilities", "PullToRefresh", "BitPullToRefreshDemo.razor.cs"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path);
-    }
+    private static string ReadDemoPage() => SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "PullToRefresh", "BitPullToRefreshDemo.razor.cs");
 
     [GeneratedRegex(@"^//\s+(--bit-PullToRefresh-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

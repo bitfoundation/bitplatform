@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-RichTextEditor-* variable is declared, which stops it inheriting.");
     }
@@ -55,7 +53,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorShouldNotHardCodeWhatTheThemeDecides()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(HexColor().IsMatch(body), "A literal color is hard-coded instead of read from a theme token.");
         Assert.IsFalse(body.Contains("Consolas"), "A literal monospace stack is used instead of $tg-font-family-mono.");
@@ -66,7 +64,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorShouldOnlyUseLogicalSidesSoItMirrorsInRtl()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(PhysicalSide().IsMatch(body), "A physical left/right property keeps the layout from mirroring in RTL.");
     }
@@ -146,24 +144,7 @@ public partial class BitRichTextEditorStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The comments are where the variables are documented and the decisions explained, so only what is not a comment
-    // is searched for declarations and literals.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n')
-                                           .Where(line => line.TrimStart().StartsWith("//") is false)
-                                           .Select(line => line.Contains(" // ") ? line[..line.IndexOf(" // ", System.StringComparison.Ordinal)] : line));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-RichTextEditor-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

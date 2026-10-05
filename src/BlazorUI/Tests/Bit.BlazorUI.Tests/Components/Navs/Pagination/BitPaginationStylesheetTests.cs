@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,7 +39,7 @@ public class BitPaginationStylesheetTests
     [TestMethod]
     public void BitPaginationShouldReadEveryPublicVariableWithAFallbackAndNeverDeclareIt()
     {
-        var stylesheet = StripComments(ReadStylesheet());
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         foreach (var variable in PublicVariables)
         {
@@ -60,7 +58,7 @@ public class BitPaginationStylesheetTests
     {
         // The demo page's CSS variables table is the only source of these names the site and the MCP server have,
         // so a variable the stylesheet reads but the table leaves out is one nobody gets to know about.
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Navs", "Pagination", "BitPaginationDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Navs", "Pagination", "BitPaginationDemo.razor.cs");
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-Pagination-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -74,13 +72,13 @@ public class BitPaginationStylesheetTests
 
         // The radius is resolved into a private variable on the root, which the Rounded class declared after it
         // replaces on the same element, so a radius inherited from an ancestor does not undo the parameter.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn {"), "--bit-pgn-radius: var(--bit-Pagination-button-radius, #{$shp-radius-control});");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn-rnd {"), "--bit-pgn-radius: #{$shp-radius-full};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn {"), "--bit-pgn-radius: var(--bit-Pagination-button-radius, #{$shp-radius-control});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-rnd {"), "--bit-pgn-radius: #{$shp-radius-full};");
 
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-pgn {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-pgn-rnd {", System.StringComparison.Ordinal));
 
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn-btn {"), "border-radius: var(--bit-pgn-radius);");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn-elp {"), "border-radius: var(--bit-pgn-radius);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-btn {"), "border-radius: var(--bit-pgn-radius);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-elp {"), "border-radius: var(--bit-pgn-radius);");
     }
 
     [TestMethod]
@@ -88,11 +86,11 @@ public class BitPaginationStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn {"), "--bit-pgn-btn-size: var(--bit-Pagination-button-size, var(--bit-pgn-size-btn));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn {"), "--bit-pgn-btn-size: var(--bit-Pagination-button-size, var(--bit-pgn-size-btn));");
 
         foreach (var size in new[] { "sm", "md", "lg" })
         {
-            var block = GetBlock(stylesheet, $"\n.bit-pgn-{size} {{");
+            var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-pgn-{size} {{");
 
             StringAssert.Contains(block, $"--bit-pgn-size-btn: #{{$siz-ctrl-{size}}};");
             StringAssert.Contains(block, $"--bit-pgn-pad-x: #{{$siz-ctrl-pad-x-{size}}};");
@@ -106,39 +104,12 @@ public class BitPaginationStylesheetTests
 
         // Under the Fill variant every page is filled and the current one only a shade darker, so its weight is the
         // cue that does not rest on color, and forced colors repaint it with the system selection colors.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pgn-sel {"), "font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-fw-semibold});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-sel {"), "font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-fw-semibold});");
         StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-sel {\n        color: HighlightText;");
-    }
-
-    private static string StripComments(string stylesheet)
-    {
-        return Regex.Replace(stylesheet, @"//[^\n]*", string.Empty);
-    }
-
-    private static string GetBlock(string stylesheet, string selector)
-    {
-        var start = stylesheet.IndexOf(selector, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
     }
 
     private static string ReadStylesheet()
     {
-        return ReadFile("Bit.BlazorUI", "Components", "Navs", "Pagination", "BitPagination.scss");
+        return SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Pagination", "BitPagination.scss");
     }
-
-    // The path is relative to the BlazorUI folder this test file sits five levels under.
-    private static string ReadFile(params string[] segments)
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(GetThisFile())!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
-
-    private static string GetThisFile([CallerFilePath] string thisFile = "") => thisFile;
 }

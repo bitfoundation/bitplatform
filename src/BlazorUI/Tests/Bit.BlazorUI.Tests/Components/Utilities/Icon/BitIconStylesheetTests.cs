@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +44,7 @@ public partial class BitIconStylesheetTests
     [TestMethod]
     public void BitIconShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Icon-* variable is declared, which stops it inheriting.");
     }
@@ -84,7 +82,7 @@ public partial class BitIconStylesheetTests
     [TestMethod]
     public void BitIconShouldPaintEveryVariantThroughTheChains()
     {
-        var rules = RulesOf(ReadStylesheet());
+        var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
         // The chains are the only place the private role variables are read, so no rule can skip the public variable
         // an icon given no Color is meant to be painted in.
@@ -148,7 +146,7 @@ public partial class BitIconStylesheetTests
         // Every private variable a class or an inline style sets would otherwise be inherited by an icon drawn inside
         // this one's ChildContent - its role, its size, its turn and its timing - so each has to be in the list the
         // stylesheet registers as non-inheriting (and resets on the root, for a browser without @property).
-        var set = PrivateDeclaration().Matches(RulesOf(stylesheet))
+        var set = PrivateDeclaration().Matches(SourceFiles.StripScssComments(stylesheet))
                                       .Concat(InlinePrivateDeclaration().Matches(ReadComponentSource()))
                                       .Select(m => m.Groups[1].Value)
                                       .Distinct()
@@ -206,37 +204,12 @@ public partial class BitIconStylesheetTests
 
     private static string Block(string stylesheet, string selector)
     {
-        var start = stylesheet.IndexOf($"\n{selector} {{", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector} has no rule of its own.");
-
-        return stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
+    private static string ReadComponentSource() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Icon", "BitIcon.razor.cs");
 
-    private static string ReadComponentSource([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Icon", "BitIcon.razor.cs"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path);
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Icon", "BitIcon.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Icon", "BitIcon.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Icon-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

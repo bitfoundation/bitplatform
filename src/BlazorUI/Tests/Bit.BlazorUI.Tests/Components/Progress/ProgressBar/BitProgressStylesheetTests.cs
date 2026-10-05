@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -54,7 +52,7 @@ public class BitProgressStylesheetTests
     [TestMethod]
     public void BitProgressRoundedShouldWinOverTheRadiusVariable()
     {
-        var rounded = GetBlock(ReadStylesheet(), "\n.bit-prb-rnd {");
+        var rounded = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb-rnd {");
 
         // Rounded is a parameter, so it says the last word on the corners of the bar whatever the variable says.
         StringAssert.Contains(rounded, "--bit-prb-radius: #{$shp-radius-full};");
@@ -68,7 +66,7 @@ public class BitProgressStylesheetTests
 
         foreach (var size in new[] { "sm", "md", "lg" })
         {
-            StringAssert.Contains(GetBlock(stylesheet, $"\n.bit-prb-{size} {{"), $"--bit-prb-thickness: var(--bit-Progress-thickness, #{{$siz-track-{size}}});");
+            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-prb-{size} {{"), $"--bit-prb-thickness: var(--bit-Progress-thickness, #{{$siz-track-{size}}});");
         }
     }
 
@@ -79,15 +77,15 @@ public class BitProgressStylesheetTests
         // track, Fluent 2 a 2px ring over a 1px one), so the ring reads the spinner token rather than the track's.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb {"), "--bit-prb-ring-stroke: #{$siz-spinner-stroke};");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-md {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb {"), "--bit-prb-ring-stroke: #{$siz-spinner-stroke};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-md {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);");
     }
 
     [TestMethod]
     public void BitProgressHorizontalSweepShouldMoveAlongTheLogicalAxisOnly()
     {
-        var keyframes = GetBlock(ReadStylesheet(), "@keyframes bit-prb-animation {", "\n    }");
+        var keyframes = SourceFiles.GetScssBlock(ReadStylesheet(), "@keyframes bit-prb-animation {");
 
         // A translateX is physical: in a right-to-left bar it would push the sweep off the edge it enters from.
         StringAssert.Contains(keyframes, "inset-inline-start");
@@ -99,15 +97,15 @@ public class BitProgressStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-des {"), "font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-des-fs: #{$tg-fs-xs};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-des {"), "font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-des-fs: #{$tg-fs-xs};");
     }
 
     [TestMethod]
     public void BitProgressLabelShouldWrapRatherThanBeCutOff()
     {
         // A truncated name is lost to the reader: nothing else on the page repeats it.
-        var label = GetBlock(ReadStylesheet(), "\n.bit-prb-lbl {");
+        var label = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb-lbl {");
 
         Assert.IsFalse(label.Contains("text-overflow"), "The label is truncated with an ellipsis.");
         Assert.IsFalse(label.Contains("nowrap"), "The label is kept to one line.");
@@ -117,14 +115,14 @@ public class BitProgressStylesheetTests
     public void BitProgressRadiusShouldFallBackToAShapeToken()
     {
         // A literal corner is a design-system decision no preset can reach; the scale token is one it can.
-        StringAssert.Contains(GetBlock(ReadStylesheet(), "\n.bit-prb {"), "--bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb {"), "--bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});");
     }
 
     [TestMethod]
     public void BitProgressRingReadoutShouldTakeItsSizeFromTheTypeRamp()
     {
         var stylesheet = ReadStylesheet();
-        var readout = GetBlock(stylesheet, "\n.bit-prb-ctx {");
+        var readout = SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-ctx {");
 
         // Type comes from the ramp a preset re-skins, never from the spacing the diameter is measured in.
         StringAssert.Contains(readout, "font-size: var(--bit-Progress-percent-font-size, var(--bit-prb-ctx-fs, #{$tg-fs-xs}));");
@@ -135,36 +133,18 @@ public class BitProgressStylesheetTests
 
         foreach (var (step, token) in new[] { ("fxs", "xs"), ("fsm", "sm"), ("fmd", "md"), ("flg", "lg"), ("fxl", "xl"), ("f2x", "2xl"), ("f3x", "3xl"), ("f4x", "4xl") })
         {
-            StringAssert.Contains(GetBlock(stylesheet, $"\n.bit-prb-{step} {{"), $"--bit-prb-ctx-fs: #{{$tg-fs-{token}}};");
+            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-prb-{step} {{"), $"--bit-prb-ctx-fs: #{{$tg-fs-{token}}};");
         }
     }
 
     [TestMethod]
     public void BitProgressPrerenderHoldShouldHaveNoRevealOfItsOwn()
     {
-        var hold = GetBlock(ReadStylesheet(), "\n.bit-prb-dlh {");
+        var hold = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb-dlh {");
 
         StringAssert.Contains(hold, "visibility: hidden;");
         Assert.IsFalse(hold.Contains("animation"), "The prerender hold reveals itself, which the interactive render then replays.");
     }
 
-    private static string GetBlock(string stylesheet, string selector, string terminator = "\n}")
-    {
-        var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf(terminator, start, StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Progress", "Progress", "BitProgress.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Progress", "BitProgress.scss");
 }

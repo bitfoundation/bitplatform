@@ -1,5 +1,3 @@
-using System.IO;
-using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.DropMenu;
@@ -23,14 +21,9 @@ public class BitDropMenuStylesheetTests
         DataRow(".bit-drm-spn {", "border-top-color: CanvasText;")]
     public void BitDropMenuShouldReestablishItsStatesInForcedColors(string selector, string declaration)
     {
-        var forcedColors = GetBlock(ReadStylesheet(), "\n@media (forced-colors: active) {\n    .bit-drm {");
+        var forcedColors = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {\n    .bit-drm {");
 
-        var start = forcedColors.IndexOf(selector, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector} was not found in the forced-colors block.");
-
-        var rule = forcedColors[start..forcedColors.IndexOf('}', start)];
-
-        StringAssert.Contains(rule, declaration);
+        StringAssert.Contains(SourceFiles.GetScssBlock(forcedColors, selector), declaration);
     }
 
     [TestMethod]
@@ -46,23 +39,5 @@ public class BitDropMenuStylesheetTests
         Assert.IsTrue(forcedColors > stylesheet.IndexOf("\n.bit-drm-lg {", System.StringComparison.Ordinal));
     }
 
-    private static string GetBlock(string stylesheet, string selector)
-    {
-        var start = stylesheet.IndexOf(selector, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Navs", "DropMenu", "BitDropMenu.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "DropMenu", "BitDropMenu.scss");
 }
