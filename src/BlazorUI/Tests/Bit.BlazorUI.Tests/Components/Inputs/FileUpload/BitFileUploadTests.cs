@@ -3628,7 +3628,7 @@ public class BitFileUploadTests : BunitTestContext
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.LabelIconName, "Upload");
-            parameters.Add(p => p.LabelIconPosition, position);
+            parameters.Add(p => p.LabelIconPlacement, position);
             parameters.Add(p => p.Classes, new() { LabelIcon = "my-icon" });
         });
 
@@ -3775,7 +3775,7 @@ public class BitFileUploadTests : BunitTestContext
             ShowDropArea = true,
             ShowBatchActions = true,
             LabelIconName = "Add",
-            LabelIconPosition = BitPlacement.End,
+            LabelIconPlacement = BitPlacement.End,
             UploadAllText = "U",
             CancelAllText = "C",
             ClearText = "X",
@@ -3797,7 +3797,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsTrue(upload.ShowDropArea);
         Assert.IsTrue(upload.ShowBatchActions);
         Assert.AreEqual("Add", upload.LabelIconName);
-        Assert.AreEqual(BitPlacement.End, upload.LabelIconPosition);
+        Assert.AreEqual(BitPlacement.End, upload.LabelIconPlacement);
         Assert.AreEqual("U", upload.UploadAllText);
         Assert.AreEqual("C", upload.CancelAllText);
         // what the component sets for itself wins over the cascade.

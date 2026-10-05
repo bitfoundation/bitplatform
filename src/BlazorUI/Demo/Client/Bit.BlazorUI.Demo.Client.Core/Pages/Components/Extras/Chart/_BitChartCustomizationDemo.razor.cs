@@ -91,7 +91,7 @@ private const string _brandStyle =
 private readonly BitChartOptions _options = new()
 {
     Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitPlacement.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 // No colors in the data: the series take the palette, which the variables re-skin.
@@ -158,7 +158,7 @@ private readonly BitChartOptions _titled = new()
     {
         Title = new BitChartTitleOptions { Display = true, Text = ""Traffic"" },
         Subtitle = new BitChartTitleOptions { Display = true, Text = ""First half of the year"" },
-        Legend = new BitChartLegendOptions { Position = BitPlacement.Bottom }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
     }
 };
 

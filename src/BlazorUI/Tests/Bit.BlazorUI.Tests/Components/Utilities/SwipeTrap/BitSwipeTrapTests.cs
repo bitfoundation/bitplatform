@@ -746,11 +746,11 @@ public class BitSwipeTrapTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitPlacement.Right),
-        DataRow(BitPlacement.Left),
-        DataRow(BitPlacement.Top),
-        DataRow(BitPlacement.Bottom)]
-    public async Task BitSwipeTrapShouldInvokeOnTriggerForAKey(BitPlacement direction)
+        DataRow("right", BitPlacement.Right),
+        DataRow("left", BitPlacement.Left),
+        DataRow("top", BitPlacement.Top),
+        DataRow("bottom", BitPlacement.Bottom)]
+    public async Task BitSwipeTrapShouldInvokeOnTriggerForAKey(string name, BitPlacement direction)
     {
         BitSwipeTrapTriggerArgs? triggerArgs = null;
 
@@ -760,7 +760,7 @@ public class BitSwipeTrapTests : BunitTestContext
             parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggerArgs = args);
         });
 
-        await component.Instance._OnKeyTrigger(direction);
+        await component.Instance._OnKeyTrigger(name);
 
         Assert.IsNotNull(triggerArgs);
         Assert.AreEqual(direction, triggerArgs!.Direction);
@@ -784,7 +784,27 @@ public class BitSwipeTrapTests : BunitTestContext
             parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
         });
 
-        await component.Instance._OnKeyTrigger(BitPlacement.Right);
+        await component.Instance._OnKeyTrigger("right");
+
+        Assert.IsFalse(triggered);
+    }
+
+    [TestMethod,
+        DataRow("start"),
+        DataRow("Right"),
+        DataRow("5"),
+        DataRow("")]
+    public async Task BitSwipeTrapShouldNotInvokeOnTriggerForAnUnknownKeyDirection(string name)
+    {
+        var triggered = false;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
+        });
+
+        await component.Instance._OnKeyTrigger(name);
 
         Assert.IsFalse(triggered);
     }

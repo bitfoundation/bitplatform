@@ -311,10 +311,10 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "LabelIconPosition",
+            Name = "LabelIconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the icon of the browse button relative to its text: Start (the default) or End. In the ShowDropArea mode the icon is stacked above or below the text instead.",
+            Description = "The position of the icon of the browse button relative to its text: Start (the default) or End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it. In the ShowDropArea mode the icon is stacked above or below the text instead.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },
@@ -2140,7 +2140,7 @@ private string UploadUrl = ""/Upload"";";
                Description=""PDF or DOCX, up to 5 MB."" />
 
 <BitFileUpload Label=""Browse for an image"" UploadUrl=""@UploadUrl"" LabelIconName=""ChevronRight""
-               LabelIconPosition=""BitPlacement.End"" Accept=""image/*"" MaxSize=""1024 * 1024 * 2"">
+               LabelIconPlacement=""BitPlacement.End"" Accept=""image/*"" MaxSize=""1024 * 1024 * 2"">
     <DescriptionTemplate>
         <i class=""bit-icon bit-icon--Info"" />
         <span>Images only. Up to <b>2 MB</b>.</span>
