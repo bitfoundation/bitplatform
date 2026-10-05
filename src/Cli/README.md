@@ -110,7 +110,7 @@ dnx Bit.Cli@<version> -- setup --platforms android --no-restore --no-build --yes
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
 - Docker, WSL, the Aspire CLI and Windows features aren't installed.
-- The HTTPS development certificate is trusted on Linux only, and a failure there is a warning.
+- The HTTPS development certificate is trusted on Linux only. There it's trusted for some clients, and the step notes that .NET's own HTTPS calls also need `~/.aspnet/dev-certs/trust` in `SSL_CERT_DIR`; any other failure is a warning.
 - The runner's own Android SDK and Java are used when `ANDROID_HOME` and `JAVA_HOME` point at them.
 - Playwright gets every browser with its system libraries, since CI may test more than Chromium.
 

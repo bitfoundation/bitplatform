@@ -398,6 +398,9 @@ public static partial class ToolCatalog
             Title = "Trust the HTTPS development certificate",
             Interactive = true,
             Optional = true,
+            Partial = context.Environment.IsLinux
+                ? new PartialSuccess(4, "for some clients", "For .NET clients, add ~/.aspnet/dev-certs/trust to SSL_CERT_DIR")
+                : null,
             AfterInstall = null,
             Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["dev-certs", "https", "--trust"], Interactive = true, Timeout = TimeSpan.FromMinutes(5) }]
         };

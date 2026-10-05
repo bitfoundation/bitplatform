@@ -63,7 +63,11 @@ public sealed record ToolAction
     public IReadOnlyList<int> SuccessExitCodes { get; init; } = [0];
 
     public bool Optional { get; init; }
+
+    public PartialSuccess? Partial { get; init; }
 }
+
+public sealed record PartialSuccess(int ExitCode, string Detail, string Hint);
 
 public sealed class ToolContext(CliEnvironment environment, IProcessRunner runner, ToolNeeds needs, PackageManagers packageManagers)
 {

@@ -317,6 +317,26 @@ public class ToolTests
         Assert.IsFalse(steps.AnyFailed);
     }
 
+    [TestMethod]
+    public async Task ACertificateTrustedForSomeClientsOnLinux_Should_SucceedWithANote()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "dev-certs https --check", 1);
+        host.Runner.On("dotnet", "dev-certs https --trust", 4, "There was an error trusting the HTTPS developer certificate. It will be trusted by some clients but not by others.");
+        var needs = new ToolNeeds { Aspire = true };
+        var devCert = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dev-cert");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([devCert], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single().Result;
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        Assert.AreEqual("for some clients", result.Detail);
+        Assert.IsNull(result.FollowUp);
+        StringAssert.Contains(host.Output, "SSL_CERT_DIR");
+    }
+
     private static async Task<IReadOnlyList<ToolCheck>> CheckAsync(TestHost host, ToolNeeds needs)
     {
         var context = new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner));

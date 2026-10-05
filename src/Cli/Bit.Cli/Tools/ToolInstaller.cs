@@ -99,6 +99,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             if (succeeded)
                 return StepResult.Succeeded(done, hint: action.AfterInstall) with { Status = action.AfterInstall is null ? StepStatus.Succeeded : StepStatus.Warning, Detail = action.AfterInstall };
 
+            if (action.Partial is { } partial && last is { NotFound: false, TimedOut: false } && last.ExitCode == partial.ExitCode)
+                return StepResult.Succeeded(done, partial.Detail, partial.Hint);
+
             var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.CommandLine)));
             return action.Optional ? failed with { Status = StepStatus.Warning } : failed;
         }, cancellationToken, needsTerminal: interactive);

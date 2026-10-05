@@ -96,7 +96,7 @@ public sealed class StepRunner(CliServices cli)
 
         cli.Console.Step(result.Status, result.Title, result.Detail, result.Status is StepStatus.Skipped ? null : stopwatch.Elapsed);
 
-        if (result.Hint is not null && result.Status is not StepStatus.Succeeded)
+        if (result.Hint is not null)
         {
             cli.Console.Out.MarkupLine($"      [grey]{Markup.Escape(CliConsole.Truncate(result.Hint, cli.Console.Width - 8))}[/]");
         }
