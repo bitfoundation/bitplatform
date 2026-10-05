@@ -32,11 +32,13 @@ public enum BitRichTextEditorToolbar
     Find = 1 << 18,
     FullScreen = 1 << 19,
     Direction = 1 << 20,
+    /// <summary>A button opening the list of keyboard shortcuts (which Alt+0 opens from the text either way).</summary>
+    Help = 1 << 21,
 
     /// <summary>The default toolbar groups.</summary>
     All = History | BlockFormat | Inline | Lists | Blocks | Link | Alignment | Clear,
 
     /// <summary>Every available toolbar group, including the extended ones.</summary>
     AllExtended = All | Image | Color | Font | Indent | Script | Source
-                | Table | Media | Rule | Emoji | Find | FullScreen | Direction
+                | Table | Media | Rule | Emoji | Find | FullScreen | Direction | Help
 }

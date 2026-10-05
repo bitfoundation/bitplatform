@@ -176,7 +176,7 @@ public partial class MainLayout
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", Data = "PDF, Document viewer, Preview, Print, Thumbnails, Bookmarks, Find in document, Attachments, Fullscreen, Presentation", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
-                new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
+                new() { Text = "RichTextEditor", Url = "/components/richtexteditor", Description = "WysiwygEditor, HtmlEditor", Data = "WYSIWYG, Rich text, HTML editor, Text editor, Content editor, Comment box, Formatting, Toolbar, Mentions" },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]

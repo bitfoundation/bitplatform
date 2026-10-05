@@ -32,6 +32,7 @@ public sealed class BitRichTextEditorToolbarConfig
         public const string Source = "source";
         public const string FullScreen = "fullscreen";
         public const string Clear = "clear";
+        public const string Help = "help";
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ public sealed class BitRichTextEditorToolbarConfig
     /// Unknown ids are skipped; omitted enabled entries are appended in default order.
     /// Use <see cref="GroupIds"/> for the built-in group ids: history, blockformat, font,
     /// inline, color, script, lists, indent, blocks, link, media, image, table, rule,
-    /// alignment, direction, emoji, find, source, fullscreen, clear.
+    /// alignment, direction, emoji, find, source, fullscreen, clear, help.
     /// </summary>
     public IReadOnlyList<string>? Order { get; init; }
 
