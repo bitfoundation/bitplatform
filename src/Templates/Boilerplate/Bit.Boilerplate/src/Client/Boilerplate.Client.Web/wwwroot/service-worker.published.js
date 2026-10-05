@@ -67,6 +67,9 @@ self.assetsExclude = [
     /_content\/Bit\.BlazorUI\.Extras\/flags/,
     /_content\/Bit\.BlazorUI\.Assets\/flags/,
 
+    // the iOS launch images: one per device and orientation, and only ever read by iOS when the app is added to the home screen
+    /images\/splash\//,
+
     // Host configuration, not app assets: the host consumes them and answers 404, which stalls the offline install.
     /staticwebapp\.config\.json$/,
     /_headers$/,

@@ -59,6 +59,8 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 <link rel="manifest" href="manifest.json" />
 ```
 
+iOS ignores `manifest.json` when it launches an installed app and shows a blank white screen until the first paint, so both files also link an `apple-touch-startup-image` for every iPhone and iPad screen, in portrait and landscape, from `wwwroot/images/splash/`. Each is the manifest's `background_color` with the app icon centered; after changing either, regenerate the images at the same pixel sizes (an already installed app picks them up only when it is added to the home screen again). `service-worker.published.js` excludes that folder, so the images are never precached.
+
 **Bit.BlazorUI stylesheets:**
 ```html
 <link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />

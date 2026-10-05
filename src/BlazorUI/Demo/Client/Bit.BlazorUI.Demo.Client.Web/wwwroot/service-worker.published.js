@@ -11,6 +11,9 @@ self.assetsExclude = [
     // the flag image sets of Bit.BlazorUI.Assets: thousands of images, fetched as the flags are drawn
     /_content\/Bit\.BlazorUI\.Assets\/flags/,
 
+    // the iOS launch images: one per device and orientation, and only ever read by iOS when the app is added to the home screen
+    /images\/splash\//,
+
     /^_framework\/blazor\.webassembly\.js$/
 ];
 self.externalAssets = [
