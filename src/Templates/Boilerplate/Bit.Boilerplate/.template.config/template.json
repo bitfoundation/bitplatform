@@ -621,6 +621,7 @@
                     "copyOnly": [
                         "**/*.svg",
                         "**/*.png",
+                        "**/*.woff2",
                         "**/*.sh"
                     ],
                     "exclude": [
