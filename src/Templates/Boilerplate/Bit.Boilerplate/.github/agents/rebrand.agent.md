@@ -376,7 +376,8 @@ pass.
 
 ## 9. Report
 
-Write `.playwright-mcp/rebrand/<slug>/report.md`, in the language the request was written in, and show it:
+Write the report as an HTML page, `.playwright-mcp/rebrand/<slug>/report.html`, in the language the request was
+written in, and hand that file to the user:
 
 - The decisions a designer would want to revisit first: the role mapping, the base preset, font substitutes, the dark
   palette, the new menu item's name, and everything marked *derived*.
