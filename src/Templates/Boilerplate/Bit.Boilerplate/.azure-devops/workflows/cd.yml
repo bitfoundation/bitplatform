@@ -35,19 +35,11 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install wasm'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install wasm-tools
+  - script: dnx Bit.Cli@10.6.2 -- setup --no-restore --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.Cli translate
+      dnx Bit.Cli@10.6.2 -- translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -141,13 +133,11 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - script: dnx Bit.Cli@10.6.2 -- setup --platforms windows --no-restore --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.Cli translate
+      dnx Bit.Cli@10.6.2 -- translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -196,16 +186,8 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui-android
+  - script: dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - task: Bash@3
     displayName: 'Install Android Sdk platform tools'
@@ -225,7 +207,7 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dnx Bit.Cli translate
+      dnx Bit.Cli@10.6.2 -- translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)

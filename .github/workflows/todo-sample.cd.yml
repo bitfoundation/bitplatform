@@ -82,10 +82,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
@@ -96,7 +92,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone --redis --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -147,10 +143,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
@@ -161,7 +153,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -180,9 +172,6 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
-
     - name: Configure bswup # Always AlwaysPrerender is the last item, so overriding it has the desired effect
       run: |
           sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'InitialPrerender'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
@@ -300,7 +289,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --brouter false --theme Cupertino --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --brouter false --theme Cupertino --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -310,13 +299,6 @@ jobs:
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-restore -c Release
@@ -363,7 +345,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenant false --brouter false --theme Fluent --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --offlineDb --signalR --ads --multitenant false --brouter false --theme Fluent --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -374,13 +356,6 @@ jobs:
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure bswup # Always AlwaysPrerender is the last item, so overriding it has the desired effect
       run: |
@@ -425,7 +400,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -435,13 +410,6 @@ jobs:
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
@@ -478,10 +446,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
@@ -492,7 +456,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-restore --no-build --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -550,10 +514,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
@@ -564,7 +524,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-restore --no-build --no-format --no-migration --no-trust
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -594,9 +554,6 @@ jobs:
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui-android
 
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
@@ -664,10 +621,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
         xcode-version: '26.6'
@@ -682,7 +635,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --multitenant false --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-restore --no-build --no-format --no-migration --no-trust
       
     - name: Translate .resx files
       run: |
@@ -698,9 +651,6 @@ jobs:
         ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
       uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0

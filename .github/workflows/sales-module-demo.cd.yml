@@ -59,10 +59,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
@@ -73,7 +69,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-restore --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -86,9 +82,6 @@ jobs:
         AdsPushVapid.PublicKey: ${{ secrets.SALES_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure bswup
       run: |
@@ -173,10 +166,6 @@ jobs:
       with:
         global-json-file: src\global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
@@ -187,7 +176,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-setup --no-format --no-migration --no-trust
+      run: bit new SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-restore --no-build --no-format --no-migration --no-trust
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2

@@ -110,14 +110,6 @@ jobs:
       run: |
         echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
 
-    - name: Trust dotnet cert
-      continue-on-error: true
-      run: dotnet dev-certs https --trust # Necessary for aspire related resources
-
-    - name: Install Playwright
-      working-directory: TestPostgreSQL/src/Tests
-      run: pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
       working-directory: TestPostgreSQL/src/Tests
@@ -196,14 +188,6 @@ jobs:
     - name: Create appsettings.json for Client.Web
       run: |
         echo '{"ServerAddress":"/"}' > TestMySql/src/Client/TestMySql.Client.Web/wwwroot/appsettings.json
-
-    - name: Trust dotnet cert
-      continue-on-error: true
-      run: dotnet dev-certs https --trust # Necessary for aspire related resources
-
-    - name: Install Playwright
-      working-directory: TestMySql/src/Tests
-      run: pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
       id: test-mysql-blazorserver
@@ -291,10 +275,6 @@ jobs:
         install: sqlengine
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
-
-    - name: Install Playwright
-      working-directory: TestSqlServer/src/Tests
-      run: pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
 
     - name: Run tests (Blazor Server)
       id: test-mssql-blazorserver

@@ -130,8 +130,9 @@ The build system automatically configures the environment based on build configu
 Your project was generated with `--pipeline Azure`, so it ships **`.azure-devops/workflows/`**, not
 `.github/workflows/`:
 
-- **`ci.yml`** — triggered on `develop`. Sets up .NET and Node, restores workloads, builds `Boilerplate.slnx`,
-  installs Playwright, and runs the test suite; uploads `src/Tests/TestResults` as a pipeline artifact when the
+- **`ci.yml`** — triggered on `develop`. Sets up .NET, lets `bit setup` install what the agent is missing (Node.js,
+  the workloads, Playwright's browsers and the HTTPS development certificate), builds `Boilerplate.slnx`, and runs
+  the test suite; uploads `src/Tests/TestResults` as a pipeline artifact when the
   tests are what failed.
 - **`cd.yml`** — triggered on `main`. Four jobs: `build_api_blazor` → `deploy_api_blazor` (Azure App Service),
   plus `build_blazor_hybrid_windows` and `build_blazor_hybrid_android`.
@@ -169,10 +170,10 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **What It Does**:
 ```
 ✓ Checks out code
-✓ Sets up .NET SDK (from global.json) and Node.js 24
-✓ Restores workloads (dotnet workload restore)
+✓ Sets up .NET SDK (from global.json)
+✓ Runs bit setup, which installs what the runner is missing: Node.js, the workloads,
+  Playwright's browsers with their system libraries, and the HTTPS development certificate
 ✓ Builds entire solution (Boilerplate.slnx)
-✓ Installs Playwright browsers with dependencies
 ✓ Runs all tests (unit + integration + UI tests)
 ✓ Uploads test results as artifacts if tests fail
 ```
@@ -180,7 +181,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Node Version**: 24
+- **Machine setup**: `dnx Bit.Cli@10.6.2 -- setup`, the bit CLI of this project's bit version
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -261,12 +262,12 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Checkout source code
    - Setup .NET SDK (from global.json)
-   - Setup Node.js 24
+   - bit setup: Node.js when the runner lacks it, and the wasm-tools workload
    ```
 
 2. **Localization with `bit translate`**
    ```bash
-   dnx Bit.Cli translate
+   dnx Bit.Cli@10.6.2 -- translate
    ```
    - Automatically translates all `.resx` resource files missing values
 
@@ -280,9 +281,6 @@ This is the **core deployment workflow** that handles building and deploying all
 
 4. **Build Process**
    ```bash
-   # Install WebAssembly tools
-   dotnet workload install wasm-tools
-   
    # Generate CSS/JS from TypeScript and SCSS
    dotnet build -t:BeforeBuildTasks -c Release -p:Version="1.0.0"
    
@@ -339,7 +337,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 1. **Environment Setup & Configuration**
    ```yaml
-   - Setup .NET SDK and Node.js
+   - Setup .NET SDK, then bit setup for Node.js when the runner lacks it
    - Translate resource files (`bit translate`)
    - Update appsettings.json:
      - ServerAddress: Environment-specific API URL
@@ -397,8 +395,8 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build Android App Bundle (AAB)**
 ```bash
-# Install MAUI Android workload
-dotnet workload install maui-android
+# Install Node.js when missing and the MAUI Android workload
+dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
    
 # Install Android SDK platform tools
 ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
@@ -447,7 +445,7 @@ dotnet publish -c Release \
    ```yaml
    - Setup .NET SDK
    - Setup Xcode 26.6 (latest)
-   - Setup Node.js 24
+   - bit setup: Node.js when the runner lacks it, and the MAUI workload
    - Translate resources (`bit translate`)
    - Update appsettings.json with ServerAddress
    ```
@@ -466,9 +464,6 @@ dotnet publish -c Release \
 
 3. **Build iOS App Package (IPA)**
    ```bash
-   # Install MAUI workload (includes iOS support)
-   dotnet workload install maui
-   
    # Generate CSS/JS files
    dotnet build -t:BeforeBuildTasks -c Release
    
@@ -519,7 +514,7 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 - Uploads artifacts to GitHub (or Azure DevOps)
 - **No production access** - isolated from production systems
 
-> **The build phase does not run tests.** `cd-template.yml` goes straight from `dotnet workload install` to
+> **The build phase does not run tests.** `cd-template.yml` goes straight from `bit setup` to
 > `dotnet publish`; `ci.yml` is the only workflow that runs the test suite, and it triggers on **pull requests**,
 > not on the push that starts a deploy. If you want deploys to be test-gated, protect `main` and `test` with a
 > required status check on `ci.yml`.
@@ -564,7 +559,7 @@ build_api_blazor:
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - uses: actions/setup-node@v7
+    - run: dnx Bit.Cli@10.6.2 -- setup --no-restore --no-build --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 

@@ -631,7 +631,7 @@ That's why `bit translate` is added to the project CD pipelines. Here's how it's
     OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
     OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
   run: |
-    dnx Bit.Cli translate
+    dnx Bit.Cli@10.6.2 -- translate
 ```
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from

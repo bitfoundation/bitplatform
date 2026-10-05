@@ -22,22 +22,14 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
-
   - task: Bash@3
     displayName: 'Verify formatting'
     inputs:
       targetType: 'inline'
       script: 'dotnet format whitespace --folder . --verify-no-changes'
 
-  - task: Bash@3
-    displayName: 'Workload restore'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet workload restore'
+  - script: dnx Bit.Cli@10.6.2 -- setup --platforms android --no-restore --no-build --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - task: Bash@3
     displayName: 'Build'
@@ -58,29 +50,8 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build Boilerplate.Web.slnf'
-
-  - task: Bash@3
-    displayName: 'Install Playwright'
-    inputs:
-      targetType: 'inline'
-      script: 'pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps'
-
-  - task: Bash@3
-    displayName: 'Trust dotnet cert'
-    continueOnError: true # Fails on hosted linux images where the OS trust store is not writable.
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet dev-certs https --trust' # Necessary for aspire related resources
+  - script: dnx Bit.Cli@10.6.2 -- setup --yes
+    displayName: 'Prepare this machine and build with bit setup'
 
   - task: Bash@3
     name: test
