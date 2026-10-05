@@ -288,7 +288,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
     protected override void OnInitialized()
     {
-        ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
+        // One class for both kinds of rejection, so an input the app marks invalid never carries it twice.
+        ClassBuilder.Register(() => IsInvalid ? "bit-inv" : string.Empty);
 
         base.OnInitialized();
     }
@@ -307,6 +308,22 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// Whether the app itself has rejected the value - by an <c>Invalid</c> flag or an error message of the
+    /// input - as opposed to the cascading EditContext, whose verdict is <see cref="ValueInvalid"/>.
+    /// </summary>
+    /// <remarks>
+    /// The parameters that raise it stay on the inputs that can show an error, so this is the one place
+    /// they are turned into the invalid look and the invalid attribute every input shares.
+    /// </remarks>
+    protected virtual bool HasError => false;
+
+    /// <summary>
+    /// Whether the input reports itself as invalid, from the app (<see cref="HasError"/>) or from the
+    /// cascading EditContext (<see cref="ValueInvalid"/>).
+    /// </summary>
+    protected bool IsInvalid => ValueInvalid is true || HasError;
 
     protected EditContext EditContext { get; set; } = default!;
 

@@ -23,6 +23,13 @@ public sealed class BitMarkdownTaskCheckboxNode : BitMarkdownNode
     public int SourceLine { get; set; } = -1;
 
     /// <summary>
+    /// The text of the item the box opens, which the viewer reads off the finished tree and an
+    /// interactive box is named after - so a screen reader announces "Write the tests, checkbox"
+    /// rather than a number. <c>null</c> (or empty) falls back to <see cref="BitMarkdownTexts.Task"/>.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
     /// Set by the viewer when the host is listening for task changes. A checkbox with a handler is
     /// rendered enabled and reports its new state here; one without stays the read-only box GitHub
     /// renders, so a document nobody is editing cannot be half-edited.

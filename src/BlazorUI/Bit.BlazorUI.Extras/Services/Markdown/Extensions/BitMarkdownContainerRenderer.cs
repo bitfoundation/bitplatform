@@ -39,6 +39,8 @@ public sealed class BitMarkdownContainerRenderer : BitMarkdownNodeRenderer
         {
             b.OpenElement(2, "p");
             b.AddAttribute(3, "class", "markdown-container-title");
+            if (r.AutoDirection)
+                b.AddAttribute(9, "dir", "auto");
             b.AddContent(4, container.Title);
             b.CloseElement();
         }
@@ -54,6 +56,8 @@ public sealed class BitMarkdownContainerRenderer : BitMarkdownNodeRenderer
         // A <details> with no <summary> is labelled "Details" by the browser in whatever language
         // it likes; writing the title ourselves keeps the label the author's.
         b.OpenElement(7, "summary");
+        if (r.AutoDirection)
+            b.AddAttribute(10, "dir", "auto");
         b.AddContent(8, string.IsNullOrEmpty(container.Title) ? container.Name : container.Title);
         b.CloseElement();
         r.WriteNodes(b, container.Children);

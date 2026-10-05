@@ -1759,11 +1759,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         ClassBuilder.Register(() => GetSizeClass());
 
-        // The base class marks the root invalid from the EditContext alone, which knows nothing about a
-        // rejection the app itself decided on; it is registered separately rather than folded into that
-        // one so the two cannot both add the class to the same element.
-        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
         ClassBuilder.Register(() => ReadOnly ? "bit-drp-rol" : string.Empty);
@@ -3224,11 +3219,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     // A rejection the app decided on its own, which the EditContext knows nothing about. A message is
     // one: a field that says what is wrong with its value is a field saying the value is wrong.
-    private bool HasError => Invalid || HasErrorMessage;
-
-    // What the dropdown reports to assistive technologies as the state of its value: either the
-    // rejection the EditContext produced or the one the app asserted here.
-    private bool IsInvalid => ValueInvalid is true || HasError;
+    protected override bool HasError => Invalid || HasErrorMessage;
 
     // Every piece of text that describes the field rather than names it, in reading order: what is wrong
     // with the value first, then the visible helper text, then the one written for a screen reader alone.

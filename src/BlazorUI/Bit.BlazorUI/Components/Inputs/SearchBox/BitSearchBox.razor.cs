@@ -732,11 +732,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-srb-rol" : string.Empty);
 
-        // The base class already paints the failing validation of an EditContext. An ErrorMessage the app
-        // sets itself is the same rejection told a different way, so it reuses that class rather than
-        // adding one of its own - guarded so the two never emit it twice.
-        ClassBuilder.Register(() => ValueInvalid is not true && HasErrorMessage ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-srb-sm",
@@ -985,6 +980,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
+    // An ErrorMessage the app sets itself is the same rejection a failing validation is, told a different way.
+    protected override bool HasError => HasErrorMessage;
+
     private bool HasSuggestFailedContent => SuggestFailedText.HasValue() || SuggestFailedTemplate is not null;
 
     // aria-labelledby wins over aria-label, so pointing the input at the visible label while a name of its
@@ -994,7 +992,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     // The base class writes the aria-invalid of a failing validation into the splatted attributes, so the
     // value a consumer set is read back here instead of being overwritten by the explicit attribute below.
-    private string? AriaInvalid => HasErrorMessage || ValueInvalid is true ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => IsInvalid ? "true" : GetInputAttribute("aria-invalid");
 
     private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
 

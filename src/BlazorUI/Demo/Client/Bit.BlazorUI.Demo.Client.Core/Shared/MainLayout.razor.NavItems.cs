@@ -172,7 +172,7 @@ public partial class MainLayout
                 new() { Text = "Map", Url = "/components/map", Description = "GeoMap, Maps", Data = "Leaflet, MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium, Globe, Markers, Pins, Clustering, GeoJSON, Tiles, Location, Geolocation, GIS" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor", Data = "Markdown, Text editor, Rich text, Comment box, Notes, Preview, Toolbar" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
-                new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox" },
+                new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox", Data = "Confirmation dialog, Alert dialog, Yes No, Ok Cancel, Are you sure, Question" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },

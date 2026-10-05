@@ -17,6 +17,8 @@ public sealed class BitMarkdownFigureRenderer : BitMarkdownNodeRenderer
         // safeguard the core renderer puts on an image (lazy loading, no referrer, ...).
         r.WriteNodes(b, figure.Children);
         b.OpenElement(1, "figcaption");
+        if (r.AutoDirection)
+            b.AddAttribute(3, "dir", "auto");
         b.AddContent(2, figure.Caption);
         b.CloseElement();
         b.CloseElement();

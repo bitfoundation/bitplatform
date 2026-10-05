@@ -1014,8 +1014,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-phi-rdo" : string.Empty);
 
-        ClassBuilder.Register(() => HasError ? "bit-inv" : string.Empty);
-
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-phi-req" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? "bit-phi-fcs" : string.Empty);
@@ -1373,7 +1371,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
     // The invalid state the consumer forces, either as a flag or by handing the field a message to show.
-    private bool HasError => Invalid || HasErrorMessage;
+    protected override bool HasError => Invalid || HasErrorMessage;
 
     // The accessible name of the country selector. It carries the selected country, because an
     // aria-label replaces the content of the button for a screen reader: without the name in it, a
@@ -1435,7 +1433,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // The forced invalid state and the one the EditContext produces end up on the same attribute, and
     // the base class writes the latter into the splatted attributes, so the value of the consumer is
     // read back here instead of being overwritten by the explicit attribute of the input.
-    private string? AriaInvalid => HasError || ValueInvalid is true ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => IsInvalid ? "true" : GetInputAttribute("aria-invalid");
 
     // The list is only put in the document once the callout has been opened. A phone input renders
     // every country it offers - around 240 of them, each with a flag image - so a page holding
