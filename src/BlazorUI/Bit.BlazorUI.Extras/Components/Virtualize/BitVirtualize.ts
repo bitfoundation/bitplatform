@@ -88,6 +88,14 @@ namespace BitBlazorUI {
         // Set while the scroll gets adjusted programmatically, to suppress the resulting
         // scroll event from being treated as a user scroll.
         private _suppressScroll = false;
+        // The raw scroll position the last programmatic adjustment left the scroller at: a suppressed scroll event that
+        // finds it elsewhere also carries a movement of the user's (both coalesce into one event per frame).
+        private _adjustedRaw = NaN;
+        // Whether a report went out since the browser last performed a scroll .NET requested. .NET discards a report that
+        // was sent before the scroll it requested last got performed, so once it is, the position is reported again:
+        // otherwise a user who stopped scrolling meanwhile leaves .NET rendering the window of a position long left.
+        private _unconfirmed = false;
+        private _owed = false;
         // Set while a smooth scroll this instance started is animating: writing the scroll position (as the
         // scroll anchoring does) would cancel the animation, so the anchoring waits for it to settle.
         private _smoothScrolling = false;
@@ -298,6 +306,7 @@ namespace BitBlazorUI {
             } else {
                 scrolling.scrollTop += delta;
             }
+            this._adjustedRaw = this._rawOffset();
             // Release the suppression after the scroll event has been dispatched.
             requestAnimationFrame(() => { this._suppressScroll = false; });
         }
@@ -402,6 +411,12 @@ namespace BitBlazorUI {
         private _adoptSeq(seq: number | undefined) {
             if (typeof seq === 'number' && seq > this._seq) {
                 this._seq = seq;
+
+                if (this._unconfirmed) {
+                    this._unconfirmed = false;
+                    this._owed = true;
+                    this._scheduleFlush();
+                }
             }
         }
 
@@ -642,13 +657,17 @@ namespace BitBlazorUI {
             if (this._smoothScrolling) this._armSmoothEnd();
 
             // The scroll event of a programmatic adjustment is not a user scroll, but a viewport change that came with it
-            // (a resize can move the lead, which adjusts the scroll before notifying) still has to reach .NET.
-            if (suppressed && !this._viewportChanged) return;
+            // (a resize can move the lead, which adjusts the scroll before notifying) still has to reach .NET, and so does
+            // a movement of the user's in the same frame, or a fast scroll that stops right there is never reported.
+            if (suppressed && !this._viewportChanged && Math.abs(this._rawOffset() - this._adjustedRaw) < 0.5) return;
 
-            if (!this._scrollScheduled) {
-                this._scrollScheduled = true;
-                requestAnimationFrame(this._flushScroll);
-            }
+            this._scheduleFlush();
+        }
+
+        private _scheduleFlush() {
+            if (this._scrollScheduled) return;
+            this._scrollScheduled = true;
+            requestAnimationFrame(this._flushScroll);
         }
 
         private _onKeyDown = (e: KeyboardEvent) => {
@@ -719,7 +738,7 @@ namespace BitBlazorUI {
         // Coalesce interop: skip notifications smaller than the movement threshold unless the viewport
         // changed or the scroll is near either edge (so edge-reached callbacks stay responsive).
         private _shouldNotify(offset: number) {
-            if (this._viewportChanged || !this._notified) return true;
+            if (this._viewportChanged || !this._notified || this._owed) return true;
 
             // A list an ancestor scrolls is out of view for most of the page's scrolling: while it stays out of view on the
             // same side there is nothing new to render.
@@ -746,6 +765,8 @@ namespace BitBlazorUI {
             this._notified = true;
             this._lastNotifiedOffset = m.scrollOffset;
             this._viewportChanged = false;
+            this._owed = false;
+            this._unconfirmed = true;
             if (this._trailingTimer) { clearTimeout(this._trailingTimer); this._trailingTimer = null; }
             this._dotnetObj.invokeMethodAsync('Scroll', m.scrollOffset, m.viewportSize, this._seq, m.crossSize, m.headSize, m.tailSize);
         }
