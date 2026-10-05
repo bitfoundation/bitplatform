@@ -3,6 +3,7 @@ name: Admin Sample CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
+  ShowBuildProvenance: true
   SERVER_WEB_ADDRESS: 'https://adminpanel.bitplatform.dev'
   SERVER_API_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'

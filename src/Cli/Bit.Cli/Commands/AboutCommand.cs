@@ -11,16 +11,16 @@ public static class AboutCommand
     {
         var command = new Command("about", "Show where this build of bit comes from, how to verify it, and what a bug report needs.");
 
-        command.SetAction(_ =>
+        command.SetAction(async (_, cancellationToken) =>
         {
-            Write(services());
+            await WriteAsync(services(), cancellationToken);
             return CliApp.ExitOk;
         });
 
         return command;
     }
 
-    public static void Write(CliServices cli)
+    public static async Task WriteAsync(CliServices cli, CancellationToken cancellationToken, HttpMessageHandler? http = null)
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(2)).AddColumn();
 
@@ -31,9 +31,29 @@ public static class AboutCommand
         Row("Built by", BuildInfo.RunUrl is { } runUrl ? $"GitHub Actions {runUrl}" : "a local build, not GitHub Actions");
         Row("Package", BuildInfo.PackageUrl);
 
+        var assemblyPath = typeof(BuildInfo).Assembly.Location;
+
+        if (OperatingSystem.IsWindows())
+        {
+            var signature = Provenance.WindowsSignature(assemblyPath);
+            Row("Signature", signature.State switch
+            {
+                SignatureState.Valid => $"bit.dll is signed by {signature.Signer}, and Windows checked the signature",
+                SignatureState.Unsigned => BuildInfo.IsOfficialBuild ? "bit.dll isn't signed" : "bit.dll isn't signed, as a local build",
+                _ => "bit.dll's signature doesn't check out, so the file was changed after it was signed"
+            });
+        }
+
         if (BuildInfo.IsOfficialBuild)
         {
-            Row("Verify", $"gh attestation verify {ProcessSpec.Quote(typeof(BuildInfo).Assembly.Location)} --repo bitfoundation/bitplatform");
+            using var handler = http is null ? new HttpClientHandler() : null;
+            Row("Attestation", await Provenance.FindAttestationAsync(http ?? handler!, assemblyPath, cancellationToken) switch
+            {
+                AttestationState.Found => "GitHub has a build attestation for this exact bit.dll in bitfoundation/bitplatform",
+                AttestationState.Missing => "GitHub has no attestation for this bit.dll, so it isn't the file a release built",
+                _ => "couldn't reach GitHub to look for this bit.dll's attestation"
+            });
+            Row("Verify", $"gh attestation verify {ProcessSpec.Quote(assemblyPath)} --repo bitfoundation/bitplatform");
         }
 
         Row("Runs on", $".NET {Environment.Version} on {OsName(cli.Environment.Os)} {Environment.OSVersion.Version} ({cli.Environment.Architecture.ToString().ToLowerInvariant()})");

@@ -9,6 +9,7 @@ on:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  ShowBuildProvenance: ${{ github.event.repository.visibility == 'public' }}
 
 permissions:
   contents: read

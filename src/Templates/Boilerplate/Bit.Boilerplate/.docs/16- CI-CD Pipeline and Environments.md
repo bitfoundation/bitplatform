@@ -243,7 +243,9 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Artifact Storage**: Each platform produces an artifact that can be deployed independently
 - **Build Provenance**: In a public repository, each artifact gets a signed attestation of the commit and the run
   that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
-  repositories need GitHub Enterprise Cloud for attestations, so the step is skipped there
+  repositories need GitHub Enterprise Cloud for attestations, so the step is skipped there. In a public repository
+  the About page also shows the commit and the run that built the app, with a link to the attestations, and the
+  Windows app shows who signed it once Windows has checked the signature
 
 **Jobs Overview**:
 1. **build_api_blazor** → **deploy_api_blazor**: Server backend + Blazor WebAssembly

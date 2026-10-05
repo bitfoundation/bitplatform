@@ -113,4 +113,10 @@
     -->
     <Target Name="BeforeBuildTasks" />
 
+    <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true' AND '$(ShowBuildProvenance)' == 'true'">
+        <AssemblyMetadata Include="SourceRepositoryUrl" Value="$(GITHUB_SERVER_URL)/$(GITHUB_REPOSITORY)" />
+        <AssemblyMetadata Include="SourceCommit" Value="$(GITHUB_SHA)" />
+        <AssemblyMetadata Include="BuildRunUrl" Value="$(GITHUB_SERVER_URL)/$(GITHUB_REPOSITORY)/actions/runs/$(GITHUB_RUN_ID)" />
+    </ItemGroup>
+
 </Project>
