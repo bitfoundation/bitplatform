@@ -58,7 +58,8 @@ public static class SetupCommand
 
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms };
             var aspire = Directory.Exists(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost"));
-            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, MinimumSdk = ReadMinimumSdk(directory) };
+            var requirements = TemplateRequirements.FromProject(directory, name);
+            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, MinimumSdk = ReadMinimumSdk(directory), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
             var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var tools = parseResult.GetValue(shared.NoTools)
                 ? []

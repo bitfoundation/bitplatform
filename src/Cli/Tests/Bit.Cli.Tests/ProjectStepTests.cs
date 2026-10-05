@@ -174,6 +174,31 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    [DataRow("Xcode 26.6\nBuild version 17E101", StepStatus.Succeeded)]
+    [DataRow("Xcode 26.6.1\nBuild version 17E120", StepStatus.Succeeded)]
+    [DataRow("Xcode 26.2\nBuild version 17C52", StepStatus.Warning)]
+    public async Task Xcode_Should_MatchTheOneDotnetForIosWants(string xcodeVersion, StepStatus expected)
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        var project = CreateFakeProject(host, "Contoso");
+        var pack = Directory.CreateDirectory(Path.Combine(host.Root, "packs", "Microsoft.iOS.Sdk.net10.0_26.5", "26.5.10318")).FullName;
+        File.WriteAllText(Path.Combine(pack, "Versions.plist"), "<plist><dict>\n\t<key>RecommendedXcodeVersion</key>\n\t<string>26.6</string>\n</dict></plist>");
+        host.Runner.On("dotnet", "msbuild", 0, pack + Path.DirectorySeparatorChar + "\n");
+        host.Runner.On("xcodebuild", "-version", 0, xcodeVersion);
+
+        var result = await new ProjectSteps(host.Services, project).XcodeAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(expected, result.Status, result.Detail);
+        CollectionAssert.Contains(host.Runner.Calls.First().Arguments.ToList(), "-p:TargetFramework=net10.0-ios");
+
+        if (expected is StepStatus.Warning)
+        {
+            Assert.AreEqual("26.2 here, 26.6 wanted", result.Detail);
+            StringAssert.Contains(result.Hint, "Xcode 26.6");
+        }
+    }
+
+    [TestMethod]
     public async Task AFailedStep_Should_NotStopTheNextOnes()
     {
         using var host = new TestHost();

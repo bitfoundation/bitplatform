@@ -169,9 +169,10 @@ public static partial class ToolCatalog
                 return ToolStatus.Missing();
 
             var version = ParseVersion(result.Output);
+            var minimum = context.Needs.NodeMajor ?? MinimumMajor;
 
-            return version is null || version.Major < MinimumMajor
-                ? new ToolStatus(ToolState.Outdated, version?.ToString(), $"{MinimumMajor} or later is needed")
+            return version is null || version.Major < minimum
+                ? new ToolStatus(ToolState.Outdated, version?.ToString(), $"{minimum} or later is needed")
                 : ToolStatus.Installed(version.ToString());
         }
 
@@ -363,15 +364,32 @@ public static partial class ToolCatalog
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
             var result = await context.RunAsync("aspire", ["--version"], cancellationToken);
-            return result.Succeeded ? ToolStatus.Installed(ParseVersion(result.Output)?.ToString()) : ToolStatus.Missing();
+
+            if (result.Succeeded is false)
+                return ToolStatus.Missing();
+
+            var version = ParseVersion(result.Output);
+
+            return context.Needs.AspireVersion is { } wanted && (version is null || Normalize(version) < Normalize(wanted))
+                ? new ToolStatus(ToolState.Outdated, version?.ToString(), $"the AppHost uses Aspire {wanted}")
+                : ToolStatus.Installed(version?.ToString());
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
         {
-            ToolId = Id,
-            Title = "Install the Aspire CLI",
-            Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["tool", "install", "--global", "Aspire.Cli"], Timeout = TimeSpan.FromMinutes(10) }]
-        };
+            var wanted = context.Needs.AspireVersion?.ToString();
+            var outdated = status.State is ToolState.Outdated;
+            string[] version = wanted is null ? [] : ["--version", wanted];
+
+            return new ToolAction
+            {
+                ToolId = Id,
+                Title = outdated ? $"Update the Aspire CLI to {wanted}" : wanted is null ? "Install the Aspire CLI" : $"Install the Aspire CLI {wanted}",
+                Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
+            };
+        }
+
+        private static Version Normalize(Version version) => new(version.Major, version.Minor, Math.Max(version.Build, 0));
     }
 
     private sealed class DevCertificateTool : Tool

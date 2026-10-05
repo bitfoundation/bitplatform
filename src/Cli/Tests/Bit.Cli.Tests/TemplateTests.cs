@@ -131,6 +131,19 @@ public class TemplateTests
     }
 
     [TestMethod]
+    public void TheTemplate_Should_SayWhichNodeAndAspireItNeeds()
+    {
+        Assert.AreEqual(24, TemplateRequirements.Embedded.NodeMajor);
+        Assert.IsNotNull(TemplateRequirements.Embedded.Aspire);
+
+        Assert.AreEqual(24, TemplateRequirements.ParseNodeMajor("{ \"engines\": { \"node\": \">=24\" } }"));
+        Assert.AreEqual(22, TemplateRequirements.ParseNodeMajor("{ \"engines\": { \"node\": \"^22.11\" } }"));
+        Assert.IsNull(TemplateRequirements.ParseNodeMajor("{ \"devDependencies\": {} }"));
+        Assert.AreEqual(new Version(13, 6, 0), TemplateRequirements.ParseAspire("<Project Sdk=\"Aspire.AppHost.Sdk/13.6.0\">"));
+        Assert.IsNull(TemplateRequirements.ParseAspire("<Project Sdk=\"Microsoft.NET.Sdk\">"));
+    }
+
+    [TestMethod]
     public void TheBuild_Should_CoverTheWholeSolutionOnceANativeAppIsPicked()
     {
         Assert.AreEqual("Contoso.Web.slnf", Platforms.BuildPath("Contoso", [Platform.Web]));

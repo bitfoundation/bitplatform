@@ -61,7 +61,8 @@ public sealed class NewWorkflow(CliServices cli)
             return UsageError(platformError);
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request) };
+        var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -170,6 +171,11 @@ public sealed class NewWorkflow(CliServices cli)
             {
                 await RunProjectStepAsync(steps, context, "android", "Installing the Android SDK and Java", projectSteps.AndroidDependenciesAsync, cancellationToken);
             }
+        }
+
+        if (cli.Environment.IsMacOS && context.BuildsSolution)
+        {
+            await RunProjectStepAsync(steps, context, "xcode", "Checking Xcode", projectSteps.XcodeAsync, cancellationToken);
         }
 
         if (noRestore is false)
@@ -457,6 +463,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoCertificate is false) stepsList.Add("unique app certificate");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         if (request.NoWorkloads is false) stepsList.Add("build tools");
+        if (cli.Environment.IsMacOS && context.BuildsSolution) stepsList.Add("Xcode check");
         if (request.NoRestore is false) stepsList.Add("restore");
         if (request.NoBuild is false) stepsList.Add("build");
         if (request.NoBuild is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");

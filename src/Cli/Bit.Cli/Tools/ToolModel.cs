@@ -36,6 +36,10 @@ public sealed record ToolNeeds
 
     public Version? MinimumSdk { get; init; }
 
+    public int? NodeMajor { get; init; }
+
+    public Version? AspireVersion { get; init; }
+
     public bool NeedsMaui => Platforms.Any(p => p is not Platform.Web);
 }
 

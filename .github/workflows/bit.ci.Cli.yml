@@ -9,6 +9,8 @@ on:
     - 'src/Minifier/Bit.Minifier/MapDecoder.cs'
     - 'src/Minifier/Bit.Minifier/Decode.cs'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/.template.config/template.json'
+    - 'src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json'
+    - 'src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj'
     - '.github/actions/setup-bit-cli/**'
 
 env:

@@ -36,6 +36,42 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task NodeJs_Should_FollowTheVersionTheTemplateAsksFor()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+
+        var node = (await CheckAsync(host, new ToolNeeds { NodeMajor = 24 })).Single(c => c.Tool.Id == "node");
+
+        Assert.AreEqual(ToolState.Outdated, node.Status.State);
+        Assert.AreEqual("24 or later is needed", node.Status.Detail);
+        Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, new ToolNeeds { NodeMajor = 22 })).Single(c => c.Tool.Id == "node").Status.State);
+    }
+
+    [TestMethod]
+    public async Task AnOlderAspireCli_Should_BeUpdatedToTheAppHostsVersion()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 0) };
+
+        host.Runner.On("aspire", "--version", 0, "13.5.2+5b4c1f0");
+        var older = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        Assert.AreEqual(ToolState.Outdated, older.Status.State);
+        Assert.IsTrue(older.Needed);
+        Assert.AreEqual("Update the Aspire CLI to 13.6.0", older.Action!.Title);
+        CollectionAssert.AreEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, older.Action.Commands[0].Arguments.ToArray());
+
+        host.Runner.NotFound("aspire");
+        var missing = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        CollectionAssert.AreEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action!.Commands[0].Arguments.ToArray());
+
+        host.Runner.On("aspire", "--version", 0, "13.7.0+1a2b3c4");
+        Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Status.State);
+    }
+
+    [TestMethod]
     public async Task Docker_Should_TellNotRunningFromMissing()
     {
         using var host = new TestHost(HostOs.Linux);

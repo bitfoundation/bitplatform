@@ -155,6 +155,30 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
     }
 
+    public async Task<StepResult> XcodeAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        var sdk = await Dotnet(["msbuild", Templates.Platforms.MauiProject(project.Name), $"-p:TargetFramework={project.TargetFrameworkVersion}-ios", "-getProperty:_XamarinSdkRootDirectory"], cancellationToken, progress, TimeSpan.FromMinutes(5));
+        var sdkRoot = sdk.Succeeded ? sdk.OutputLines.Select(l => l.Trim()).LastOrDefault(Path.IsPathRooted) : null;
+        var versions = sdkRoot is null ? null : Path.Combine(sdkRoot, "Versions.plist");
+        var wanted = versions is not null && File.Exists(versions) ? RecommendedXcodeRegex().Match(File.ReadAllText(versions)) : null;
+
+        if (wanted is not { Success: true })
+            return StepResult.Skipped("Skipped the Xcode check", ".NET for iOS doesn't say which Xcode it wants");
+
+        var xcode = await Runner.RunAsync(new ProcessSpec { FileName = "xcodebuild", Arguments = ["-version"], Timeout = TimeSpan.FromMinutes(1) }, cancellationToken);
+        var installed = xcode.Succeeded ? XcodeVersionRegex().Match(xcode.Output) : null;
+
+        if (installed is not { Success: true })
+            return StepResult.Skipped("Skipped the Xcode check", "Xcode isn't installed");
+
+        var wantedVersion = wanted.Groups["version"].Value.Trim();
+        var installedVersion = installed.Groups["version"].Value;
+
+        return MajorMinor(installedVersion) == MajorMinor(wantedVersion)
+            ? StepResult.Succeeded("Xcode matches .NET for iOS", $"Xcode {installedVersion}")
+            : StepResult.Warning("Xcode doesn't match .NET for iOS", $"{installedVersion} here, {wantedVersion} wanted", hint: $"Get Xcode {wantedVersion} at https://developer.apple.com/download/all", resultCode: "xcode.mismatch");
+    }
+
     public async Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         string[] arguments = ["build", project.BuildPath];
@@ -518,6 +542,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             || output.Contains("elevat", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static string MajorMinor(string version) => string.Join('.', version.Split('.').Take(2));
+
     [GeneratedRegex(@"Extension '(?<id>[^']+)' is a built-in extension")]
     private static partial Regex BuiltInExtensionRegex();
+
+    [GeneratedRegex(@"<key>RecommendedXcodeVersion</key>\s*<string>(?<version>[^<]+)</string>")]
+    private static partial Regex RecommendedXcodeRegex();
+
+    [GeneratedRegex(@"Xcode\s+(?<version>\d+\.\d+(\.\d+)?)")]
+    private static partial Regex XcodeVersionRegex();
 }
