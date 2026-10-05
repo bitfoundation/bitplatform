@@ -162,12 +162,12 @@ jobs:
     - name: dotnet build bit CLI
       env:
         BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        BitCliTelemetryConnectionString: ${{ secrets.BIT_CLI_TELEMETRY_CONNECTION_STRING }}
+        BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
       run: dotnet build src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack bit CLI
       env:
         BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        BitCliTelemetryConnectionString: ${{ secrets.BIT_CLI_TELEMETRY_CONNECTION_STRING }}
+        BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
       run: |
         dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj --output . --configuration Release
         unzip -o -q Bit.Cli.*.nupkg 'tools/*/any/bit.dll' -d bit-cli
