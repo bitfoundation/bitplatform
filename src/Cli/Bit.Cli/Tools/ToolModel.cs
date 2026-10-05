@@ -61,6 +61,8 @@ public sealed record ToolAction
     public string? AfterInstall { get; init; }
 
     public IReadOnlyList<int> SuccessExitCodes { get; init; } = [0];
+
+    public bool Optional { get; init; }
 }
 
 public sealed class ToolContext(CliEnvironment environment, IProcessRunner runner, ToolNeeds needs, PackageManagers packageManagers)
@@ -92,6 +94,8 @@ public abstract class Tool
     public abstract string Name { get; }
 
     public virtual bool AppliesTo(ToolContext context) => true;
+
+    public virtual bool AppliesInCi(ToolContext context) => true;
 
     public abstract string Why(ToolContext context);
 

@@ -87,6 +87,32 @@ public class NewWorkflowTests
         Assert.AreEqual(2, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
     }
 
+    [TestMethod]
+    public async Task ATemplateFolder_Should_BeInstalledFromTheFolderOnce()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = Directory.CreateDirectory(Path.Combine(host.Root, "src", "Templates", "Boilerplate", "Bit.Boilerplate")).FullName;
+        var config = Directory.CreateDirectory(Path.Combine(folder, ".template.config")).FullName;
+        using (var resource = typeof(CliApp).Assembly.GetManifestResourceStream("Bit.Cli.template.json")!)
+        using (var templateJson = File.Create(Path.Combine(config, "template.json")))
+        {
+            resource.CopyTo(templateJson);
+        }
+
+        File.WriteAllText(Path.Combine(folder, "global.json"), "{ \"sdk\": { \"version\": \"10.0.300\" } }");
+
+        var source = new TemplateSource(host.Environment, host.Runner);
+        var first = await source.EnsureInstalledAsync(null, folder, null, CancellationToken.None);
+        var again = await source.EnsureInstalledAsync(null, folder, null, CancellationToken.None);
+
+        Assert.AreEqual(TemplateSource.FolderVersion, first.Package?.Version);
+        Assert.AreEqual(first.Package!.HiveDirectory, again.Package?.HiveDirectory);
+        var install = host.Runner.Calls.Single(c => c.Arguments.Take(2).SequenceEqual(["new", "install"]));
+        Assert.AreEqual(folder, install.Arguments[2]);
+        Assert.IsNotNull(TemplateSource.ReadManifest(folder));
+        StringAssert.Contains(TemplateSource.ReadEntry(folder, "Bit.Boilerplate/global.json"), "10.0.300");
+    }
+
     private static string FakeTemplatePackage(TestHost host)
     {
         var path = Path.Combine(host.Root, "Bit.Boilerplate.0.0.0.nupkg");

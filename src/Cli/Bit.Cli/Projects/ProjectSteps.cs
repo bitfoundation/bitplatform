@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Templates;
 using Bit.Cli.Tools;
@@ -10,7 +11,7 @@ namespace Bit.Cli.Projects;
 
 public sealed record PlaywrightDriver(string Node, string Cli, string? Version);
 
-public sealed class ProjectSteps(CliServices cli, ProjectContext project)
+public sealed partial class ProjectSteps(CliServices cli, ProjectContext project)
 {
     public const string DevelopmentCertificateSubject = "CN=AppCertificate, OU=Development";
 
@@ -144,6 +145,9 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
 
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
     {
+        if (cli.Environment.IsCI && (cli.Environment.GetVariable("ANDROID_HOME") ?? cli.Environment.GetVariable("ANDROID_SDK_ROOT")) is not null && cli.Environment.GetVariable("JAVA_HOME") is not null)
+            return StepResult.Skipped("Skipped the Android SDK and Java", "the CI machine has them");
+
         var target = Templates.Platforms.BuildTargets(project.Name, [Platform.Android], project.TargetFrameworkVersion)[0];
         string[] arguments = ["build", target.ProjectPath, "-t:InstallAndroidDependencies", "-f", target.TargetFramework!, "-p:AcceptAndroidSDKLicenses=True"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
@@ -235,25 +239,24 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
 
     public async Task<StepResult> PlaywrightAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        const string title = "Installed Chromium for UI tests";
-
-        if (cli.Environment.IsCI)
-            return StepResult.Skipped("Skipped Playwright's browser", "CI installs the browsers it tests with");
+        var everyBrowser = cli.Environment.IsCI;
+        var title = everyBrowser ? "Installed Playwright's browsers" : "Installed Chromium for UI tests";
+        string[] browsers = everyBrowser ? [] : ["chromium"];
 
         if (FindPlaywrightDriver(project.Directory, cli.Environment.Os) is not { } driver)
-            return StepResult.Skipped("Skipped Playwright's browser", "the UI tests weren't built");
+            return StepResult.Skipped(everyBrowser ? "Skipped Playwright's browsers" : "Skipped Playwright's browser", "the UI tests weren't built");
 
-        var install = new ProcessSpec { FileName = driver.Node, Arguments = [driver.Cli, "install", "chromium"], WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(30) };
+        var install = new ProcessSpec { FileName = driver.Node, Arguments = [driver.Cli, "install", .. browsers], WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(30) };
         var result = await Runner.RunAsync(install, cancellationToken);
         var detail = driver.Version is null ? null : $"Playwright {driver.Version}";
 
         if (result.Succeeded is false)
-            return StepResult.FromProcess(result, "", "Couldn't install Playwright's Chromium", install.CommandLine);
+            return StepResult.FromProcess(result, "", everyBrowser ? "Couldn't install Playwright's browsers" : "Couldn't install Playwright's Chromium", install.CommandLine);
 
         if (cli.Environment.IsLinux is false)
             return StepResult.Succeeded(title, detail);
 
-        var dependencies = install with { Arguments = [driver.Cli, "install-deps", "chromium"], OnOutputLine = progress };
+        var dependencies = install with { Arguments = [driver.Cli, "install-deps", .. browsers], OnOutputLine = progress };
         var followUp = "sudo " + dependencies.CommandLine;
 
         if (cli.Environment.IsElevated is false)
@@ -312,6 +315,20 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
         string[] arguments = [.. missing.SelectMany(id => new[] { "--install-extension", id })];
         var install = new ProcessSpec { FileName = code.Executable, Arguments = arguments, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(15) };
         var result = await Runner.RunAsync(install, cancellationToken);
+        var builtIn = BuiltInExtensionRegex().Matches(result.Output).Select(m => m.Groups["id"].Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (result.Succeeded is false && builtIn.Count > 0)
+        {
+            missing = [.. missing.Where(id => builtIn.Contains(id) is false)];
+
+            if (missing.Count == 0)
+                return StepResult.Succeeded("Extensions already installed", $"{recommended.Count} recommended for VS Code");
+
+            arguments = [.. missing.SelectMany(id => new[] { "--install-extension", id })];
+            install = install with { Arguments = arguments };
+            result = await Runner.RunAsync(install, cancellationToken);
+        }
+
         var names = string.Join(", ", missing.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (missing.Count > 3 ? $" and {missing.Count - 3} more" : "");
 
         return StepResult.FromProcess(result, $"Installed {missing.Count} VS Code extension{(missing.Count == 1 ? "" : "s")}", "Couldn't install the VS Code extensions",
@@ -501,4 +518,7 @@ public sealed class ProjectSteps(CliServices cli, ProjectContext project)
             || output.Contains("Inadequate permissions", StringComparison.OrdinalIgnoreCase)
             || output.Contains("elevat", StringComparison.OrdinalIgnoreCase);
     }
+
+    [GeneratedRegex(@"Extension '(?<id>[^']+)' is a built-in extension")]
+    private static partial Regex BuiltInExtensionRegex();
 }

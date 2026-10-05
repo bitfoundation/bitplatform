@@ -244,6 +244,37 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task Ci_Should_LeaveDockerWslAndTheAspireCliAloneButTrustTheCertificateOnLinux()
+    {
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        AllInstalled(ci.Runner);
+        ci.Runner.NotFound("docker");
+        ci.Runner.NotFound("aspire");
+        ci.Runner.On("dotnet", "dev-certs", 1);
+
+        var inCi = await CheckAsync(ci, new ToolNeeds { Aspire = true });
+
+        Assert.IsFalse(inCi.Any(c => c.Tool.Id is "docker" or "aspire" or "wsl"), string.Join(", ", inCi.Select(c => c.Tool.Id)));
+        Assert.IsTrue(inCi.Single(c => c.Tool.Id == "dev-cert").Needed);
+
+        using var local = new TestHost(HostOs.Linux);
+        AllInstalled(local.Runner);
+        local.Runner.NotFound("docker");
+        local.Runner.On("dotnet", "dev-certs", 1);
+
+        var onLinux = await CheckAsync(local, new ToolNeeds { Aspire = true });
+
+        Assert.IsTrue(onLinux.Single(c => c.Tool.Id == "docker").Needed);
+        Assert.IsTrue(onLinux.Single(c => c.Tool.Id == "dev-cert").Action!.Optional);
+
+        using var windowsCi = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        AllInstalled(windowsCi.Runner);
+        windowsCi.Runner.On("dotnet", "dev-certs", 1);
+
+        Assert.IsFalse((await CheckAsync(windowsCi, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id is "dev-cert" or "docker" or "wsl" or "aspire"));
+    }
+
+    [TestMethod]
     public async Task TheGitHubCli_Should_OnlyBeCheckedForAGitHubRepository()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -267,6 +298,23 @@ public class ToolTests
             new ToolAction { ToolId = "node", Title = "Update Node.js to the LTS version", Elevation = Elevation.Sudo, Commands = [] }, null);
 
         Assert.AreEqual("Update Node.js to the LTS version (found 18.0.0, 20 or later is needed): the build runs npm, needs sudo", Projects.NewWorkflow.DescribeTool(check));
+    }
+
+    [TestMethod]
+    public async Task AnOptionalToolThatFails_Should_OnlyWarn()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "dev-certs https --check", 1);
+        host.Runner.On("dotnet", "dev-certs https --trust", 1, "There was an error trusting the HTTPS developer certificate.");
+        var needs = new ToolNeeds { Aspire = true };
+        var devCert = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dev-cert");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([devCert], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, steps.Reports.Single().Result.Status);
+        Assert.IsFalse(steps.AnyFailed);
     }
 
     private static async Task<IReadOnlyList<ToolCheck>> CheckAsync(TestHost host, ToolNeeds needs)

@@ -75,7 +75,7 @@ public static class NewCommand
         var ideOption = new Option<string?>("--ide") { Description = "Open the project in this IDE when done: code, vs, rider or none.", HelpName = "code|vs|rider|none" };
         ideOption.AcceptOnlyFromAmong("code", "vs", "rider", "none");
         var templateVersionOption = new Option<string?>("--template-version") { Description = "The bit Boilerplate version to use. Default: the same as this CLI." };
-        var templatePackageOption = new Option<string?>("--template-package") { Description = "Create the project from a local Bit.Boilerplate .nupkg, the way CI does." };
+        var templatePackageOption = new Option<string?>("--template-package") { Description = "Create the project from a local Bit.Boilerplate .nupkg, or from the template's folder in a bitplatform checkout, the way its CI does." };
         var dryRunOption = new Option<bool>("--dry-run") { Description = "Show what would happen, and change nothing." };
         var noSetup = new Option<bool>("--no-setup") { Description = "Only create the project: no tools, workloads, restore or build. Run bit setup in its folder later." };
         var noCertificate = new Option<bool>("--no-certificate") { Description = "Keep the template's shared development certificate." };

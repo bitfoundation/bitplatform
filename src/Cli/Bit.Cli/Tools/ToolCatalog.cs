@@ -31,7 +31,7 @@ public static partial class ToolCatalog
 
     public static async Task<IReadOnlyList<ToolCheck>> CheckAsync(ToolContext context, CancellationToken cancellationToken)
     {
-        var applicable = All.Where(t => t.AppliesTo(context)).ToArray();
+        var applicable = All.Where(t => t.AppliesTo(context) && (context.Environment.IsCI is false || t.AppliesInCi(context))).ToArray();
         var statuses = await Task.WhenAll(applicable.Select(async tool =>
         {
             try
@@ -240,6 +240,8 @@ public static partial class ToolCatalog
 
         public override string Name => "WSL";
 
+        public override bool AppliesInCi(ToolContext context) => false;
+
         public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Aspire;
 
         public override string Why(ToolContext context) => "Docker Desktop runs its containers in WSL 2";
@@ -270,6 +272,8 @@ public static partial class ToolCatalog
         public override string Id => "docker";
 
         public override string Name => "Docker";
+
+        public override bool AppliesInCi(ToolContext context) => false;
 
         public override string Why(ToolContext context) => context.Needs switch
         {
@@ -348,6 +352,8 @@ public static partial class ToolCatalog
 
         public override string Name => "Aspire CLI";
 
+        public override bool AppliesInCi(ToolContext context) => false;
+
         public override bool AppliesTo(ToolContext context) => context.Needs.Aspire;
 
         public override string Why(ToolContext context) => "runs the project with aspire start, and backs the aspire MCP server";
@@ -374,7 +380,7 @@ public static partial class ToolCatalog
 
         public override string Name => "HTTPS development certificate";
 
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsLinux is false;
+        public override bool AppliesInCi(ToolContext context) => context.Environment.IsLinux;
 
         public override string Why(ToolContext context) => "lets browsers trust https://localhost, which the Aspire dashboard uses";
 
@@ -391,6 +397,7 @@ public static partial class ToolCatalog
             ToolId = Id,
             Title = "Trust the HTTPS development certificate",
             Interactive = true,
+            Optional = true,
             AfterInstall = null,
             Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["dev-certs", "https", "--trust"], Interactive = true, Timeout = TimeSpan.FromMinutes(5) }]
         };
@@ -437,6 +444,8 @@ public static partial class ToolCatalog
 
         public override string Name => "Windows Hypervisor Platform";
 
+        public override bool AppliesInCi(ToolContext context) => false;
+
         public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Platforms.Contains(Platform.Android);
 
         public override string Why(ToolContext context) => "lets the Android emulator run with hardware acceleration next to WSL and Docker";
@@ -469,6 +478,8 @@ public static partial class ToolCatalog
         public override string Id => "developer-mode";
 
         public override string Name => "Windows developer mode";
+
+        public override bool AppliesInCi(ToolContext context) => false;
 
         public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.NeedsMaui;
 

@@ -184,7 +184,7 @@ public sealed class NewWorkflow(CliServices cli)
                 await RunProjectStepAsync(steps, context, $"build-{Platforms.Name(target.Platform)}", $"Building the {Platforms.Title(target.Platform)} app", (progress, ct) => projectSteps.BuildAsync(target, progress, ct), cancellationToken);
             }
 
-            await RunProjectStepAsync(steps, context, "playwright", "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
+            await RunProjectStepAsync(steps, context, "playwright", cli.Environment.IsCI ? "Installing Playwright's browsers" : "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
         }
     }
 
@@ -394,7 +394,7 @@ public sealed class NewWorkflow(CliServices cli)
 
             return installed is null
                 ? StepResult.FromProcess(result.Succeeded ? result with { ExitCode = 1 } : result, "", "Couldn't get bit Boilerplate", request.TemplatePackage is null ? $"dotnet new install Bit.Boilerplate::{request.TemplateVersion ?? BuildInfo.Version}" : null)
-                : StepResult.Succeeded($"Got bit Boilerplate {installed.Version}", request.TemplatePackage is null ? "from nuget.org" : "from the local package");
+                : StepResult.Succeeded(installed.Version is TemplateSource.FolderVersion ? "Got bit Boilerplate" : $"Got bit Boilerplate {installed.Version}", request.TemplatePackage is null ? "from nuget.org" : installed.Version is TemplateSource.FolderVersion ? "from its folder" : "from the local package");
         }, cancellationToken);
 
         if (package is null)
@@ -413,7 +413,7 @@ public sealed class NewWorkflow(CliServices cli)
                 return StepResult.Failed($"Couldn't create {context.Name}", "dotnet new finished without creating the solution", hint: DiagnosticCodes.FirstErrorLine(result.Output));
 
             var files = context.Exists ? Directory.EnumerateFiles(context.Directory, "*", SearchOption.AllDirectories).Count() : 0;
-            return StepResult.FromProcess(result, $"Created {context.Name}", $"Couldn't create {context.Name}", null, $"bit Boilerplate {package.Version}, {files} files");
+            return StepResult.FromProcess(result, $"Created {context.Name}", $"Couldn't create {context.Name}", null, $"bit Boilerplate{(package.Version is TemplateSource.FolderVersion ? "" : $" {package.Version}")}, {files} files");
         }, cancellationToken);
     }
 
@@ -455,7 +455,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoWorkloads is false) stepsList.Add("build tools");
         if (request.NoRestore is false) stepsList.Add("restore");
         if (request.NoBuild is false) stepsList.Add("build");
-        if (request.NoBuild is false && cli.Environment.IsCI is false) stepsList.Add("Chromium for UI tests");
+        if (request.NoBuild is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");

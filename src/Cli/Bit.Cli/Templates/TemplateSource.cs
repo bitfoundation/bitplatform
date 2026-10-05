@@ -12,6 +12,10 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
 {
     public const string PackageId = "Bit.Boilerplate";
 
+    public const string FolderVersion = "local";
+
+    private const string FolderMarker = "folder.txt";
+
     private string TemplatesDirectory => Path.Combine(environment.BitDirectory, "templates");
 
     public async Task<(TemplatePackage? Package, ProcessResult Result)> EnsureInstalledAsync(string? version, string? packagePath, Action<string>? onOutput, CancellationToken cancellationToken)
@@ -19,18 +23,26 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
         if (packagePath is not null)
         {
             var fullPath = Path.GetFullPath(packagePath, environment.CurrentDirectory);
+            var isFolder = Directory.Exists(fullPath);
 
-            if (File.Exists(fullPath) is false)
-                return (null, new ProcessResult { ExitCode = -1, Output = $"No template package at {fullPath}." });
+            if (isFolder is false && File.Exists(fullPath) is false)
+                return (null, new ProcessResult { ExitCode = -1, Output = $"No template package or folder at {fullPath}." });
 
-            var stamp = $"{fullPath}|{File.GetLastWriteTimeUtc(fullPath).Ticks}";
+            var changed = isFolder ? File.GetLastWriteTimeUtc(Path.Combine(fullPath, ".template.config", "template.json")) : File.GetLastWriteTimeUtc(fullPath);
+            var stamp = $"{fullPath}|{changed.Ticks}";
             var localHive = Path.Combine(TemplatesDirectory, "local-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(stamp)))[..12]);
-            var localResult = FindPackage(localHive) is not null
+            var alreadyInstalled = isFolder ? File.Exists(Path.Combine(localHive, FolderMarker)) : FindPackage(localHive) is not null;
+            var localResult = alreadyInstalled
                 ? new ProcessResult { ExitCode = 0, Output = "Already installed." }
                 : await InstallAsync(fullPath, localHive, onOutput, cancellationToken);
 
+            if (isFolder && alreadyInstalled is false && localResult.Succeeded)
+            {
+                File.WriteAllText(Path.Combine(localHive, FolderMarker), fullPath);
+            }
+
             return localResult.Succeeded
-                ? (new TemplatePackage(ReadPackageVersion(fullPath) ?? "0.0.0", fullPath, localHive), localResult)
+                ? (new TemplatePackage(isFolder ? FolderVersion : ReadPackageVersion(fullPath) ?? "0.0.0", fullPath, localHive), localResult)
                 : (null, localResult);
         }
 
@@ -68,6 +80,9 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
 
     public static string? ReadEntry(string packagePath, string pathSuffix)
     {
+        if (Directory.Exists(packagePath))
+            return ReadFolderEntry(packagePath, pathSuffix);
+
         try
         {
             using var archive = ZipFile.OpenRead(packagePath);
@@ -86,6 +101,27 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
         {
             return null;
         }
+    }
+
+    private static string? ReadFolderEntry(string folder, string pathSuffix)
+    {
+        var parts = pathSuffix.Split('/');
+
+        try
+        {
+            for (var i = 0; i < parts.Length; i++)
+            {
+                var candidate = Path.Combine([folder, .. parts[i..]]);
+
+                if (File.Exists(candidate))
+                    return File.ReadAllText(candidate);
+            }
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
+
+        return null;
     }
 
     private static string? ReadPackageVersion(string packagePath)

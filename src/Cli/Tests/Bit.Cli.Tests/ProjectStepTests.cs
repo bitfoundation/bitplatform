@@ -183,6 +183,27 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task ExtensionsVsCodeBuildsIn_Should_CountAsInstalled()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var code = typeof(ProjectStepTests).Assembly.Location;
+        var name = Path.GetFileNameWithoutExtension(code);
+        host.Runner.Executables["code"] = code;
+        var project = CreateFakeProject(host, "Contoso");
+        WriteRecommendations(project, "GitHub.copilot", "GitHub.copilot-chat");
+        host.Runner.On(name, "--list-extensions", 0, "ms-dotnettools.csdevkit\n");
+        host.Runner.On(name, "--install-extension GitHub.copilot", 0);
+        host.Runner.On(name, "--install-extension GitHub.copilot --install-extension GitHub.copilot-chat", 1,
+            "Error while installing extension github.copilot-chat: Extension 'github.copilot-chat' is a built-in extension with version '0.68.0' and cannot be downgraded to version '0.48.1'.\nFailed Installing Extensions: github.copilot-chat");
+
+        var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("Installed 1 VS Code extension", result.Title);
+        CollectionAssert.AreEqual(new[] { "--install-extension", "GitHub.copilot" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
     public async Task VsCode_Should_GetOnlyTheExtensionsItLacks()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -228,7 +249,7 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task Playwright_Should_BeSkippedWithoutBuiltTestsAndInCi()
+    public async Task Playwright_Should_BeSkippedWithoutBuiltTests()
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
@@ -236,11 +257,45 @@ public class ProjectStepTests
         var notBuilt = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
         Assert.AreEqual(StepStatus.Skipped, notBuilt.Status);
         StringAssert.Contains(notBuilt.Detail, "weren't built");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
 
-        using var ci = new TestHost(variables: new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
-        var inCi = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).PlaywrightAsync(_ => { }, CancellationToken.None);
-        Assert.AreEqual(StepStatus.Skipped, inCi.Status);
+    [TestMethod]
+    public async Task Playwright_Should_InstallEveryBrowserWithItsLibrariesInCi()
+    {
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        ci.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        var project = CreateFakeProject(ci, "Contoso");
+        var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
+        Directory.CreateDirectory(Path.Combine(playwright, "package"));
+        File.WriteAllText(Path.Combine(playwright, "package", "cli.js"), "");
+        var nodeDirectory = Directory.CreateDirectory(Path.Combine(playwright, "node", "linux-x64")).FullName;
+        File.WriteAllText(Path.Combine(nodeDirectory, "node"), "");
+        var cliScript = Path.Combine(playwright, "package", "cli.js");
+
+        var result = await new ProjectSteps(ci.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("Installed Playwright's browsers", result.Title);
+        CollectionAssert.AreEqual(new[] { cliScript, "install" }, ci.Runner.Calls.First().Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "-n", Path.Combine(nodeDirectory, "node"), cliScript, "install-deps" }, ci.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task TheAndroidSdk_Should_ComeFromTheCiMachineWhenItHasOne()
+    {
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true", ["ANDROID_HOME"] = "/usr/local/lib/android/sdk", ["JAVA_HOME"] = "/usr/lib/jvm/temurin-17" });
+
+        var skipped = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Skipped, skipped.Status);
         Assert.IsEmpty(ci.Runner.Calls);
+
+        using var bare = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+
+        await new ProjectSteps(bare.Services, CreateFakeProject(bare, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        StringAssert.Contains(bare.Runner.Calls.Single().CommandLine, "-t:InstallAndroidDependencies");
     }
 
     [TestMethod]

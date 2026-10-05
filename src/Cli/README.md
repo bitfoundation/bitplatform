@@ -79,7 +79,7 @@ And these of its own:
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
-| `--template-package <nupkg>` | Create from a local Bit.Boilerplate package, the way this repository's CI does. |
+| `--template-package <nupkg or folder>` | Create from a local Bit.Boilerplate package, or from the template's folder in a bitplatform checkout, the way this repository's CI does. |
 | `--github-repo` | Create a private GitHub repository for the project and push to it. Needs the GitHub pipeline, the default. |
 | `--no-update` | Create it with this bit even when a newer one is out. |
 | `-y, --yes` | Install the tools the project needs and create it without asking. Windows' permission prompt, `sudo`'s password and the GitHub sign-in still show when there's a terminal. |
@@ -98,6 +98,21 @@ bit setup --platforms android
 ```
 
 It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, and the VS Code extensions the project recommends when VS Code is installed.
+
+## In CI
+
+`bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships do it like this, before they publish:
+
+```bash
+dnx Bit.Cli@<version> -- setup --platforms android --no-restore --no-build --yes
+```
+
+In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
+
+- Docker, WSL, the Aspire CLI and Windows features aren't installed.
+- The HTTPS development certificate is trusted on Linux only, and a failure there is a warning.
+- The runner's own Android SDK and Java are used when `ANDROID_HOME` and `JAVA_HOME` point at them.
+- Playwright gets every browser with its system libraries, since CI may test more than Chromium.
 
 ## bit doctor
 
