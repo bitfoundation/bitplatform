@@ -287,6 +287,7 @@ jobs:
     name: build blazor hybrid (windows)
     if: inputs.windows
     runs-on: windows-2025
+    environment: code-signing
     permissions:
       contents: read
       actions: read
@@ -339,6 +340,21 @@ jobs:
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
           dnx vpk@1.2.161 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+
+    - name: Log in to Azure for code signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+      with:
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+    - name: Sign the executables with Artifact Signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      run: |
+          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
+          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
+          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
 
     - name: Publish
       run: |

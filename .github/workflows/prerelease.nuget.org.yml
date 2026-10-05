@@ -13,6 +13,7 @@ jobs:
   build-publish:
     name: build & publish
     runs-on: ubuntu-24.04
+    environment: code-signing
     permissions:
       contents: read
       id-token: write
@@ -187,6 +188,31 @@ jobs:
           unzip -o -q "$package" '*.dll' -d "$RUNNER_TEMP/assemblies/$(basename "$package" .nupkg)" || true
         done
 
+    - name: Log in to Azure for code signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+      with:
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+    - name: Sign the bit assemblies
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      run: |
+        curl -fsSL -o "$RUNNER_TEMP/jsign.jar" https://github.com/ebourg/jsign/releases/download/7.5/jsign-7.5.jar
+        echo "602a51c3545a6dc4fb99bd2ea7152b26d1345916d0c93ddfbd5936cb735af91c  $RUNNER_TEMP/jsign.jar" | sha256sum -c -
+        export CODE_SIGNING_TOKEN=$(az account get-access-token --resource https://codesigning.azure.net --query accessToken -o tsv)
+        endpoint="${{ vars.CODE_SIGNING_ENDPOINT }}"
+        endpoint="${endpoint#https://}"
+        cd "$RUNNER_TEMP/assemblies"
+        java -jar "$RUNNER_TEMP/jsign.jar" --storetype TRUSTEDSIGNING --keystore "${endpoint%/}" --storepass env:CODE_SIGNING_TOKEN --alias "${{ vars.CODE_SIGNING_ACCOUNT }}/${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}" --tsaurl http://timestamp.acs.microsoft.com --tsmode RFC3161 '**/Bit.*.dll' '**/bit.dll'
+        for package in "$RUNNER_TEMP"/packages/*.nupkg; do
+          folder="$RUNNER_TEMP/assemblies/$(basename "$package" .nupkg)"
+          [ -d "$folder" ] || continue
+          files=$(cd "$folder" && find . \( -name 'Bit.*.dll' -o -name 'bit.dll' \) -printf '%P\n')
+          [ -z "$files" ] || (cd "$folder" && zip -q "$package" $files)
+        done
+
     - name: Attest the packages' provenance
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
       with:
@@ -211,7 +237,7 @@ jobs:
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: nupkg-files
-        path: ./*.nupkg
+        path: ${{ runner.temp }}/packages
 
     - name: Log in to nuget.org
       id: nuget_login
@@ -220,4 +246,4 @@ jobs:
         user: ${{ secrets.NUGET_USER }}
 
     - name: dotnet nuget push
-      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.nuget_login.outputs.NUGET_API_KEY }} --skip-duplicate
+      run: dotnet nuget push "$RUNNER_TEMP/packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key ${{ steps.nuget_login.outputs.NUGET_API_KEY }} --skip-duplicate

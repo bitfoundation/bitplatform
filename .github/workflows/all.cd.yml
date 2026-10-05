@@ -77,6 +77,11 @@ jobs:
 
   blazorui_demo:
     name: blazorui demo
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/blazorui.demo.cd.yml
     secrets: inherit
     with:

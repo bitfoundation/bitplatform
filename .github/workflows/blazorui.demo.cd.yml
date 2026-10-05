@@ -49,6 +49,11 @@ jobs:
     name: build api + blazor web
     if: inputs.server
     runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
 
     steps:
     
@@ -93,11 +98,18 @@ jobs:
           ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
 
     - name: Upload server artifact
+      id: server_artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: BlazorUIDemo
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
+
+    - name: Attest server artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: BlazorUIDemo
+        subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
 
   deploy_server:
     name: deploy
@@ -131,6 +143,12 @@ jobs:
     name: build blazor hybrid (windows)
     if: inputs.windows
     runs-on: windows-2025
+    environment: code-signing
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
   
     steps:
      
@@ -166,11 +184,34 @@ jobs:
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dnx vpk@1.2.161 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
+    - name: Log in to Azure for code signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+      with:
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+    - name: Sign the executables with Artifact Signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      run: |
+          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
+          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
+          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
+
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dnx vpk@1.2.161 -- pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+
+    - name: Attest the installer and packages
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Releases/*-Setup.exe
+          src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Releases/*-Portable.zip
+          src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Releases/*-${{ vars.APP_VERSION }}-*.nupkg
 
     # The update feed behind WindowsUpdateSettings.FilesUrl.
     - name: Upload releases to R2
@@ -178,11 +219,15 @@ jobs:
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dnx vpk@1.2.161 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
-
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     if: inputs.android
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
   
     steps:
      
@@ -227,10 +272,17 @@ jobs:
       run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
   
     - name: Upload artifact
+      id: artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: android-bundle
         path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+
+    - name: Attest artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: android-bundle
+        subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}
 
     # versionCode derives from APP_VERSION; bump it or Play rejects the bundle.
     - name: Upload to Google Play (internal track)
@@ -243,11 +295,15 @@ jobs:
         track: internal
         status: completed
 
-
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
     if: inputs.ios
     runs-on: macOS-26
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
   
     steps:
      
@@ -302,6 +358,11 @@ jobs:
     - name: Locate ipa
       id: ipa
       run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+
+    - name: Attest ipa
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: ${{ steps.ipa.outputs.path }}
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
