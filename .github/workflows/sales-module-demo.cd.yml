@@ -46,6 +46,11 @@ jobs:
     name: build api + blazor web
     if: inputs.server
     runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
 
     steps:
     
@@ -110,11 +115,18 @@ jobs:
           ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
 
     - name: Upload server artifact
+      id: server_artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: SalesModule
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
+
+    - name: Attest server artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: SalesModule
+        subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
 
   deploy_server_web:
     name: deploy server web
@@ -148,6 +160,11 @@ jobs:
     name: build blazor hybrid (windows)
     if: inputs.windows
     runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
   
     steps:
      
@@ -201,6 +218,14 @@ jobs:
           cd SalesModule\src\Client\SalesModule.Client.Windows\
           dotnet publish SalesModule.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
           dnx vpk@1.2.161 -- pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
+
+    - name: Attest the installer and packages
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          SalesModule/src/Client/SalesModule.Client.Windows/Releases/*-Setup.exe
+          SalesModule/src/Client/SalesModule.Client.Windows/Releases/*-Portable.zip
+          SalesModule/src/Client/SalesModule.Client.Windows/Releases/*-${{ vars.APP_VERSION }}-*.nupkg
 
     # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2

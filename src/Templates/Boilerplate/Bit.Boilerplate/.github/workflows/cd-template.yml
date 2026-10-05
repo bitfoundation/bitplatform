@@ -18,6 +18,10 @@ jobs:
   build_api_blazor:
     name: build api + blazor web
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -55,11 +59,19 @@ jobs:
       - name: Publish
         run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
       - name: Upload server artifact
+        id: server_artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: server-bundle
           path: server
           include-hidden-files: true # Required for wwwroot/.well-known folder
+
+      - name: Attest server artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: server-bundle
+          subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -98,6 +110,10 @@ jobs:
   build_api:
     name: build api
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -122,11 +138,19 @@ jobs:
         run: dotnet publish src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj -c Release --self-contained -r linux-x64 -o server-api -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
 
       - name: Upload api artifact
+        id: api_artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: api-bundle
           path: server-api
           include-hidden-files: true # Required for wwwroot/.well-known folder
+
+      - name: Attest api artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: api-bundle
+          subject-digest: sha256:${{ steps.api_artifact.outputs.artifact-digest }}
 
   deploy_api:
     name: deploy api
@@ -157,6 +181,10 @@ jobs:
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2025
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -195,14 +223,26 @@ jobs:
           dnx vpk@1.2.161 -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
 
       - name: Upload artifact
+        id: artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: win-exe-bundle
           path: src\Client\Boilerplate.Client.Windows\Releases
 
+      - name: Attest artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: win-exe-bundle
+          subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}
+
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
 
     steps:
@@ -244,14 +284,26 @@ jobs:
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-android
 
       - name: Upload artifact
+        id: artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/Release/net10.0-android/*-Signed.*
 
+      - name: Attest artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: android-bundle
+          subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}
+
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
     runs-on: macOS-26
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     environment: ${{ inputs.ENV_NAME }}
 
     steps:
@@ -305,7 +357,15 @@ jobs:
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net10.0-ios
 
       - name: Upload artifact
+        id: artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: iOS-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa
+
+      - name: Attest artifact
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: iOS-bundle
+          subject-digest: sha256:${{ steps.artifact.outputs.artifact-digest }}

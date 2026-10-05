@@ -241,6 +241,9 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Multi-Platform**: Builds server backend, Blazor WebAssembly, Android, iOS, macOS, and Windows
 - **Parallel Jobs**: All platform builds run in parallel for speed
 - **Artifact Storage**: Each platform produces an artifact that can be deployed independently
+- **Build Provenance**: In a public repository, each artifact gets a signed attestation of the commit and the run
+  that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
+  repositories need GitHub Enterprise Cloud for attestations, so the step is skipped there
 
 **Jobs Overview**:
 1. **build_api_blazor** → **deploy_api_blazor**: Server backend + Blazor WebAssembly
