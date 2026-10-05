@@ -26,7 +26,9 @@ private int changeCount;";
 <BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Link""
                    Height=""6rem"" Placeholder=""Only the inline, lists and link groups."" />
 
-<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended"" StickyToolbar Height=""28rem"" />";
+<BitRichTextEditor @bind-Value=""toolbarHtml"" Toolbar=""BitRichTextEditorToolbar.AllExtended"" StickyToolbar Height=""28rem"" />";
+    private readonly string example4CsharpCode = @"
+private string? toolbarHtml = ""<h2>Every group</h2><p>Scroll the page while this editor is in view: the toolbar stays pinned to the top.</p><ul class=\""bit-rte-tasks\""><li data-checked=\""true\"">Try the table, emoji and find buttons</li><li data-checked=\""false\"">Toggle full screen</li></ul>"";";
 
     private readonly string example5RazorCode = @"
 <BitRichTextEditor @bind-Value=""customHtml"" ToolbarConfig=""customConfig"" Height=""8rem"" />";
