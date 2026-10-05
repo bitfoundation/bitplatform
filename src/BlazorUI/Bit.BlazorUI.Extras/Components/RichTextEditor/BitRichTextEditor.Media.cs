@@ -11,8 +11,10 @@ public partial class BitRichTextEditor
     /// </summary>
     [Parameter] public Func<BitRichTextEditorImageUpload, Task<string?>>? OnImageUpload { get; set; }
 
-    // The OnImageUpload calls still running: a drop of several files runs one each. While any is, the editor shows
-    // and reports that it is busy, since an upload to a server can take long enough to look like nothing happened.
+    // The OnImageUpload calls still running. A drop uploads its files one after another, so it holds this at one;
+    // only drops and pastes made while an earlier one is still uploading run side by side and count higher. While
+    // any is running, the editor shows and reports that it is busy, since an upload to a server can take long
+    // enough to look like nothing happened.
     private int _uploadsInFlight;
 
     private long _maxImageSize = DefaultMaxImageSize;
@@ -130,11 +132,12 @@ public partial class BitRichTextEditor
     // an oversized base64 string cannot exhaust memory on the server side.
     private const long DefaultMaxImageSize = 10 * 1024 * 1024;
 
-    // How the limit is written in a message, the same way the bridge writes it ("10 MB", "512 KB").
+    // How the limit is written in a message, the same way the bridge writes it ("10 MB", "512 KB") - rounding half up,
+    // as its Math.round does, so a limit caught on either side reads the same.
     private static string FormatSize(long bytes)
         => bytes >= 1024 * 1024
-            ? $"{Math.Round(bytes / (1024d * 1024), 1).ToString(System.Globalization.CultureInfo.InvariantCulture)} MB"
-            : $"{Math.Max(1, (long)Math.Round(bytes / 1024d))} KB";
+            ? $"{Math.Round(bytes / (1024d * 1024), 1, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture)} MB"
+            : $"{Math.Max(1, (long)Math.Round(bytes / 1024d, MidpointRounding.AwayFromZero))} KB";
 
     private Task RaiseImageTooLargeAsync(string fileName)
         => RaiseErrorAsync(new BitRichTextEditorError("file-too-large",
