@@ -681,20 +681,13 @@ public partial class BitRichTextEditor : BitComponentBase
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorParams))]
-    protected override void OnInitialized()
-    {
-        // Before the first render reads the parameters a BitParams may fill in.
-        CascadingParameters?.UpdateParameters(this);
-
-        base.OnInitialized();
-    }
-
     protected override void OnParametersSet()
     {
         // Before anything below reads the parameters it may fill in. A BitParams that has gone away takes what it
         // had cascaded with it, which the base class has already put back by now.
         CascadingParameters?.UpdateParameters(this);
 
+        EnsureField();
         TrackEditContext();
 
         AnnounceErrorMessageIfNew();
