@@ -449,19 +449,7 @@ public partial class BitRatingDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitSize(description: "Determines the size of the rating items."),
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Determines where the label of the rating sits relative to its items.",
-            Items =
-            [
-                new() { Name = "Top", Description = "The label sits above the items.", Value = "0" },
-                new() { Name = "End", Description = "The label sits after the items, on the same line.", Value = "1" },
-                new() { Name = "Bottom", Description = "The label sits below the items.", Value = "2" },
-                new() { Name = "Start", Description = "The label sits before the items, on the same line.", Value = "3" }
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition("Determines where the label of the rating sits relative to its items."),
         DemoSharedEnums.BitColor()
     ];
 

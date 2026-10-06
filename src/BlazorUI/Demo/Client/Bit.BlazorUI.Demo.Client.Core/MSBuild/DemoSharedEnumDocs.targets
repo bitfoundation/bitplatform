@@ -1,0 +1,55 @@
+<Project>
+
+    <!-- The prose of the shared demo enum tables (Models/DemoSharedEnums.cs) is the enums' own XML
+         documentation, written into a generated half of the class before every compile - a WebAssembly
+         page has no XML documentation to read at runtime, and copying it by hand is how the tables used
+         to drift. Imported by the demo client and by the test project, which compile-links the class.
+
+         A shared table names its enum here and in its factory; DemoSharedEnumsTests fails when the two
+         lists differ, and when an enum or one of its members has no summary to show. -->
+
+    <ItemGroup>
+        <DemoSharedEnum Include="BitAlignment;BitButtonType;BitColor;BitColorKind;BitDropDirection;BitEnterKeyHint" />
+        <DemoSharedEnum Include="BitIconLocation;BitIconPosition;BitImageLoading;BitInputMode;BitInputType;BitLabelPosition" />
+        <DemoSharedEnum Include="BitLinkRels;BitNavAriaCurrent;BitNavItemTemplateRenderMode;BitNavMatch;BitNavMode" />
+        <DemoSharedEnum Include="BitNavRenderType;BitPanelPosition;BitPoliteness;BitPosition;BitSize;BitTimeFormat;BitVariant" />
+    </ItemGroup>
+
+    <UsingTask TaskName="GenerateDemoSharedEnumDocs" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <Task>
+            <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)DemoSharedEnumDocs.cs" />
+        </Task>
+    </UsingTask>
+
+    <!-- ReferencePath holds the implementation assembly of a project reference (the reference assembly
+         compiled against is swapped in later), and its XML documentation sits beside it. -->
+    <Target Name="_FindDemoSharedEnumDocumentation" DependsOnTargets="ResolveAssemblyReferences">
+        <!-- Set here rather than at the top level, where a project importing this file before the SDK's
+             targets would read IntermediateOutputPath before it has been given a value. -->
+        <PropertyGroup>
+            <_DemoSharedEnumDocsFile>$(MSBuildProjectDirectory)/$(IntermediateOutputPath)DemoSharedEnums.Docs.g.cs</_DemoSharedEnumDocsFile>
+        </PropertyGroup>
+        <ItemGroup>
+            <_DemoSharedEnumDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition=" '%(Filename)' == 'Bit.BlazorUI' " />
+        </ItemGroup>
+    </Target>
+
+    <!-- In a design-time build the library may not have been built yet, and then the half generated last
+         time is compiled as it is. -->
+    <Target Name="GenerateDemoSharedEnumDocs"
+            BeforeTargets="CoreCompile"
+            DependsOnTargets="_FindDemoSharedEnumDocumentation"
+            Inputs="@(_DemoSharedEnumDocumentation);$(MSBuildThisFileFullPath);$(MSBuildThisFileDirectory)DemoSharedEnumDocs.cs"
+            Outputs="$(_DemoSharedEnumDocsFile)">
+        <GenerateDemoSharedEnumDocs Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('@(_DemoSharedEnumDocumentation)') "
+                                    DocumentationFile="@(_DemoSharedEnumDocumentation)"
+                                    Enums="@(DemoSharedEnum)"
+                                    OutputFile="$(_DemoSharedEnumDocsFile)" />
+        <ItemGroup Condition="Exists('$(_DemoSharedEnumDocsFile)')">
+            <Compile Remove="$(_DemoSharedEnumDocsFile)" />
+            <Compile Include="$(_DemoSharedEnumDocsFile)" />
+            <FileWrites Include="$(_DemoSharedEnumDocsFile)" />
+        </ItemGroup>
+    </Target>
+
+</Project>

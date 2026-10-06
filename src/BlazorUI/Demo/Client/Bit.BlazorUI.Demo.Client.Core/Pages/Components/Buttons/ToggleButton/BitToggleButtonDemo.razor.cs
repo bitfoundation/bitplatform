@@ -779,39 +779,7 @@ public partial class BitToggleButtonDemo
         },
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitIconPosition(),
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Determines the position of the loading label in regards to the spinner icon.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label renders above the spinner.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label renders after the spinner.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label renders below the spinner.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label renders before the spinner.",
-                    Value="3",
-                }
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition("Determines the position of the loading label in regards to the spinner icon."),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant()
     ];

@@ -280,7 +280,7 @@ public partial class BitNumberFieldDemo
             DefaultValue = "null",
             Description = "The position of the label in regards to the field (Top by default).",
             LinkType = LinkType.Link,
-            Href = "#labelPosition-enum",
+            Href = "#label-position-enum",
         },
         new()
         {
@@ -826,39 +826,7 @@ public partial class BitNumberFieldDemo
     ];
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "labelPosition-enum",
-            Name = "BitLabelPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the spin button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the spin button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the spin button.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the spin button.",
-                    Value="3",
-                }
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition(),
         DemoSharedEnums.BitInputMode(),
         new()
         {

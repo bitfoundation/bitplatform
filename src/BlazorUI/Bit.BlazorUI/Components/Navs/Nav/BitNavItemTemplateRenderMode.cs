@@ -6,12 +6,15 @@
 public enum BitNavItemTemplateRenderMode
 {
     /// <summary>
-    /// Renders the template inside the button/anchor root element of the item.
+    /// Renders the template inside the anchor (or the button) the item is, so the item keeps its click, its focus and its
+    /// place in the keyboard navigation.
     /// </summary>
     Normal,
 
     /// <summary>
-    /// Replaces the button/anchor root element of the item.
+    /// Replaces the anchor (or the button) the item is with the template, which is what an item that is a control of its
+    /// own needs. The template owns its clicks, its focus and its accessible name, and the item is left out of the
+    /// keyboard navigation.
     /// </summary>
     Replace
 }

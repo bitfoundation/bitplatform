@@ -848,39 +848,7 @@ public partial class BitTextFieldDemo : IDisposable
                 },
             ]
         },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines the positions a label can take relative to the control it belongs to.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Description = "The label sits above the input.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The label sits after the input, on the same line.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Description = "The label sits under the input.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Start",
-                    Description = "The label sits before the input, on the same line.",
-                    Value = "3",
-                },
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitInputType(),
         DemoSharedEnums.BitInputMode()

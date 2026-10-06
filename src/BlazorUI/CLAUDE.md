@@ -52,10 +52,13 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
   mean something different there (BitLoading's pixel sizes) - still under the shared table's anchor
   id, and a type of its own never under a shared one (BitPersonaSize is `persona-size-enum`). A
   default that holds on one page only goes in that page's parameter description, not in the table. A
-  shared table reads its members and values off the enum and writes only the prose, which is the
-  enum's own XML documentation copied out (a WebAssembly page has none to read): changing one means
-  changing the other. `DemoSharedEnumsTests` pins the prose to the XML documentation and every page's
-  anchor ids to the shared ones.
+  shared table writes nothing but its anchor id: the members and values are read off the enum in
+  declaration order, and the prose is the enum's own XML documentation, which
+  `MSBuild/DemoSharedEnumDocs.targets` writes into a generated half of `DemoSharedEnums` before every
+  compile (a WebAssembly page has none to read) - so a table's wording is changed in the enum's doc
+  comments, and a new shared table names its enum in that file as well as adding its factory. A missing
+  summary only empties a cell at runtime; `DemoSharedEnumsTests` is what fails on it, and pins every
+  page's anchor ids - one per type, shared or not.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
 - **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -

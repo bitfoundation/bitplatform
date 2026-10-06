@@ -148,7 +148,7 @@ public partial class BitChoiceGroupDemo
             Name = "LabelPosition",
             Type = "BitLabelPosition?",
             DefaultValue = "null",
-            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it. Items rendered as image or icon tiles lay their own content out and ignore this parameter.",
+            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it; Start also aligns the items to the end of the group. Items rendered as image or icon tiles lay their own content out and ignore this parameter.",
             LinkType = LinkType.Link,
             Href = "#label-position-enum",
         },
@@ -504,45 +504,13 @@ public partial class BitChoiceGroupDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines where the content of an item is rendered relative to its radio circle.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="Renders the content above the radio circle.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Renders the content after the radio circle. This is the default.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="Renders the content below the radio circle.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="Renders the content before the radio circle and aligns the items to the end of the group.",
-                    Value="3",
-                }
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition("Defines where the content of an item is rendered relative to its radio circle."),
         DemoSharedEnums.BitSize(),
         new()
         {
             Id = "variant-enum",
             Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Description = "Determines how each item of the ChoiceGroup is drawn: as a bare radio row or as a selectable card.",
             Items =
             [
                 new()
@@ -560,7 +528,7 @@ public partial class BitChoiceGroupDemo
                 new()
                 {
                     Name= "Text",
-                    Description="Each item is a bare radio row with no surface of its own. The default.",
+                    Description="Each item is a bare radio row with no surface of its own.",
                     Value="2",
                 }
             ]

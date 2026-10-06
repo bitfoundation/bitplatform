@@ -2,10 +2,8 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.
-/// </summary>
-/// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/enterkeyhint"/>
-/// </remarks>
+/// </summary>
 public enum BitEnterKeyHint
 {
     /// <summary>

@@ -208,39 +208,7 @@ public partial class BitLoadingDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines where the label of a loading component sits relative to its animation.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows above the animation.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows at the end side of the animation, which follows the direction of the writing.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows below the animation.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows at the start side of the animation, which follows the direction of the writing.",
-                    Value="3",
-                },
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition("Defines where the label of a loading component sits relative to its animation."),
         new()
         {
             Id = "size-enum",

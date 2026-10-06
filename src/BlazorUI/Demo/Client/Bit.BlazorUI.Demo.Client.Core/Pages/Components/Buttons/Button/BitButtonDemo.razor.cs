@@ -443,39 +443,7 @@ public partial class BitButtonDemo
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitButtonType(),
         DemoSharedEnums.BitIconPosition(),
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the button.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the button.",
-                    Value="3",
-                },
-            ]
-        },
+        DemoSharedEnums.BitLabelPosition(),
         DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitPosition(),
     ];

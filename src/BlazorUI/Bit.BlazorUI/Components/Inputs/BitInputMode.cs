@@ -2,10 +2,8 @@
 
 /// <summary>
 /// Defines the inputmode html attribute, which is what lets a browser display an appropriate virtual keyboard.
-/// </summary>
-/// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode"/>
-/// </remarks>
+/// </summary>
 public enum BitInputMode
 {
     /// <summary>
