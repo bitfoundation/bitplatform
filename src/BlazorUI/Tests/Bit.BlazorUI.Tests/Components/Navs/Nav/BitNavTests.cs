@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Nav;
@@ -1034,6 +1035,21 @@ public class BitNavTests : BunitTestContext
 
         Assert.AreEqual(1, focused.Count);
         focused[0].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[1]);
+    }
+
+    [TestMethod]
+    public void BitNavShouldIgnoreAFocusThatFailsOnTheJsSide()
+    {
+        // An item taken out of the document between the key press and the focus call fails in the browser,
+        // which reaches .NET as a JSException - nothing to tear the nav (or a Server circuit) down for.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.NoCollapse, true));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowRight");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

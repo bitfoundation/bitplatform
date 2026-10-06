@@ -1568,6 +1568,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             await itemRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private TItem? FindItem(string? key)

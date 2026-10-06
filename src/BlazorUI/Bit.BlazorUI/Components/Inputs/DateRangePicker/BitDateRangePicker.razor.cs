@@ -1450,7 +1450,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // is meant to land on, so it has nothing to focus.
                 if (AutoFocus && IsEnabled && Standalone is false)
                 {
-                    await InputElement.FocusAsync();
+                    try
+                    {
+                        await InputElement.FocusAsync();
+                    }
+                    catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1492,6 +1496,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 await _startTimeHourInputRef.FocusAsync();
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
         }
     }
 
@@ -3251,6 +3256,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await InputElement.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     // Escape closes the callout from anywhere inside it, as the dialog pattern requires.

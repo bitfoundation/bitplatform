@@ -2706,7 +2706,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await _js.BitUtilsSelectText(element.Value);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no text to select
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no text to select
+        catch (JSException) { } // the input is no longer in the document, failing to select its text is not fatal
     }
 
     private void HandleComboInputFocusOut()
@@ -2870,7 +2871,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await _searchInputRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page cannot take the focus
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is nothing to focus
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task ClearComboBoxInput()
@@ -2919,7 +2921,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no value to clear
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no value to clear
+        catch (JSException) { } // the input is no longer in the document, failing to clear it is not fatal
     }
 
     private async ValueTask FocusOnComboBoxInput()

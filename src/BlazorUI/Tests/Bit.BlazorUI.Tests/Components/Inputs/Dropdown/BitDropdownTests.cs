@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -2391,6 +2392,33 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.IsTrue(component.Instance.IsOpen);
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldStayOpenWhenFocusingTheSearchBoxFailsOnTheJsSide()
+    {
+        // A search box taken out of the document before the focus call reaches it fails in the browser,
+        // which reaches .NET as a JSException: the callout still opens, and nothing is thrown.
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

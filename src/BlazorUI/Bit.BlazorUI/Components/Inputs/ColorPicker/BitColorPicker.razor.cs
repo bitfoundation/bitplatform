@@ -1338,6 +1338,7 @@ public partial class BitColorPicker : BitComponentBase
         catch (JSDisconnectedException) { }
         catch (ObjectDisposedException) { }
         catch (OperationCanceledException) { }
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task HandleOnPresetClick(string preset)

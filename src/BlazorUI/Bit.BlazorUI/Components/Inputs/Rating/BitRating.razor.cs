@@ -992,10 +992,9 @@ public partial class BitRating : BitInputBase<double>
         {
             await _itemRefs[index - 1].FocusAsync();
         }
-        catch (InvalidOperationException)
-        {
-            // The element reference is not attached yet (or anymore), which leaves the focus where it is.
-        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
 

@@ -852,6 +852,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
                 await _inputTimeHourRef.FocusAsync();
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
         }
 
         await SyncEventDialogFocus();
@@ -897,6 +898,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             await _inputTimeHourRef.FocusAsync(preventScroll);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)

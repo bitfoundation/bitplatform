@@ -1375,7 +1375,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // is meant to land on, so it has nothing to focus.
                 if (AutoFocus && IsEnabled && Standalone is false)
                 {
-                    await InputElement.FocusAsync();
+                    try
+                    {
+                        await InputElement.FocusAsync();
+                    }
+                    catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1402,6 +1406,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 await _inputTimeHourRef.FocusAsync();
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
         }
     }
 
@@ -1827,6 +1832,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             await InputElement.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task HandleOnFocusIn()
@@ -1903,6 +1909,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             await InputElement.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
 
         await OnClear.InvokeAsync();
     }
@@ -2040,6 +2047,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                     await InputElement.FocusAsync();
                 }
                 catch (JSDisconnectedException) { } // we can ignore this exception here
+                catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
             }
         }
 

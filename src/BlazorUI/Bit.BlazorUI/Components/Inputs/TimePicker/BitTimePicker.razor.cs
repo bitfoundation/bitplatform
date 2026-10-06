@@ -1070,7 +1070,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // first part that is actually on the screen - takes the focus in its place.
             if (AutoFocus && IsEnabled)
             {
-                await (Standalone ? _inputHourRef.FocusAsync() : InputElement.FocusAsync());
+                try
+                {
+                    await (Standalone ? _inputHourRef.FocusAsync() : InputElement.FocusAsync());
+                }
+                catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1500,6 +1504,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             await InputElement.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     // The time inputs are the part of an opened picker the keyboard acts on, so the first of them takes the
@@ -1513,6 +1518,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             await _inputHourRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task UpdateCurrentValue()
@@ -1737,6 +1743,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             await input.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task HandleOnTimeInputWheel(WheelEventArgs e, TimeUnit unit)

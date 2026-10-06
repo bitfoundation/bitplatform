@@ -695,7 +695,8 @@ public partial class BitPivot : BitComponentBase
                     await _menuRef.FocusAsync();
                 }
                 catch (JSDisconnectedException) { } // we can ignore this exception here
-                catch (InvalidOperationException) { } // the element is not in the dom anymore
+                catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+                catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
             }
         }
 
@@ -1367,7 +1368,8 @@ public partial class BitPivot : BitComponentBase
             await item.RootElement.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element is not in the dom anymore
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task ReorderItem(BitPivotItem item, int newIndex)
@@ -1770,7 +1772,8 @@ public partial class BitPivot : BitComponentBase
             await _moreRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element is not in the dom anymore
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task SelectFromMenu(BitPivotItem item)
@@ -1817,7 +1820,8 @@ public partial class BitPivot : BitComponentBase
             await _moreRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element is not in the dom anymore
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task HandleAddClick()
