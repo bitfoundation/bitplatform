@@ -3299,7 +3299,7 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitSnackBarAsksThePageAgainAfterAFailedPageVisibilityInitTest()
+    public async Task BitSnackBarIsHeldByARetriedPageVisibilityInitTest()
     {
         var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
         {
@@ -3312,23 +3312,26 @@ public class BitSnackBarTests : BunitTestContext
         {
             parameters.Add(p => p.AutoDismiss, true);
             parameters.Add(p => p.PauseOnPageHidden, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(2));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(5));
             parameters.Add(p => p.TransitionDuration, 0);
         });
 
-        // The script has loaded by the next render, which asks the page again rather than going without for good.
-        js.Failure = null;
-
+        // The failed call settles as not held, so the countdown runs: only the first call is waited for.
         await com.Instance.Show("title");
 
-        com.WaitForAssertion(() => Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau")));
+        Assert.IsFalse(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
 
-        // Once the page has answered it is not asked again.
-        var asked = js.InitCount;
+        // The script has loaded by the time the utility asks again on its own, and the hidden page it then reads
+        // reaches the snack bar as a change, without a render polling the page for it.
+        js.Failure = null;
+
+        com.WaitForAssertion(() => Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau")), TimeSpan.FromSeconds(4));
+
+        Assert.AreEqual(2, js.InitCount);
 
         com.Render();
 
-        Assert.AreEqual(asked, js.InitCount);
+        Assert.AreEqual(2, js.InitCount);
     }
 
     [TestMethod]

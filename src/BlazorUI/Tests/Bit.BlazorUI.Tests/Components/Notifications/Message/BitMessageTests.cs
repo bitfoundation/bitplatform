@@ -1992,6 +1992,64 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageShouldHoldTheCountdownUntilThePageHasAnswered()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":false,"blurred":false}""")
+        {
+            Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
+        Context.Services.AddSingleton(new BitPageVisibility(js));
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(150));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        Thread.Sleep(400);
+
+        // The page could already be hidden, so the countdown does not run behind a reader who may not be there.
+        Assert.AreEqual(0, dismissCount);
+
+        js.Gate.SetResult();
+
+        WaitUntil(() => dismissCount == 1);
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        Context.Services.AddSingleton(new BitPageVisibility(js));
+
+        var dismissCount = 0;
+
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(2500));
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        // The script has loaded by the time the utility asks again on its own; the message is never rendered again,
+        // and still hears of the hidden page it then reads.
+        js.Failure = null;
+
+        Thread.Sleep(3500);
+
+        Assert.AreEqual(0, dismissCount);
+        Assert.AreEqual(2, js.InitCount);
+    }
+
+    [TestMethod]
     public void BitMessageShouldCountDownAsUsualWhenThePageVisibilityScriptFails()
     {
         var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));

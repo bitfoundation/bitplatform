@@ -36,7 +36,7 @@ public partial class BitSwiper : BitComponentBase
     private bool _keysOwnedByContent;
     private bool _isPaused;
     private bool _pageHidden;
-    private bool _pageVisibilityReady;
+    private bool _pageVisibilityPending;
     private bool _needsSetup;
     private bool _needsRefresh;
     private bool _afterFirstRender;
@@ -947,7 +947,10 @@ public partial class BitSwiper : BitComponentBase
 
     protected override void OnInitialized()
     {
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and whatever it learns later - the answer to the first call, or to one it retried - comes as a change.
         _pageVisibility.OnChange += PageVisibilityChange;
+        _pageHidden = _pageVisibility.IsHidden;
 
         base.OnInitialized();
     }
@@ -992,26 +995,27 @@ public partial class BitSwiper : BitComponentBase
             _needsSetup = false;
             _laidOutItemsCount = _allItems.Count;
 
-            // The setup reports the swiper's first state back, which is what first starts the timer, so a tab
-            // that is already in the background is known before it: the rotation never starts in a page nobody is
-            // looking at.
-            await ApplyPageVisibilityAsync(_pageVisibility.Init());
+            // The page is asked whether it is hidden alongside the setup, since neither answer depends on the other,
+            // and the setup is still the first call to reach the browser, ahead of any dispose. The state the setup
+            // reports back is what first starts the timer, so the rotation is held until the page has answered: it
+            // never starts in a page nobody is looking at. A call that failed is retried by the utility itself,
+            // whose answer reaches PageVisibilityChange, so nothing waits for it beyond this first one.
+            _pageVisibilityPending = true;
+
+            var pageVisibilityInit = _pageVisibility.Init();
 
             await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
             await RegisterPreventKeysAsync();
 
+            await pageVisibilityInit;
+
+            _pageVisibilityPending = false;
+
             UpdateAutoPlayTimer();
         }
         else
         {
-            if (_pageVisibilityReady is false)
-            {
-                await ApplyPageVisibilityAsync(_pageVisibility.Init());
-
-                UpdateAutoPlayTimer();
-            }
-
             if (_needsSetup)
             {
                 _needsSetup = false;
@@ -1280,7 +1284,7 @@ public partial class BitSwiper : BitComponentBase
         if (AutoPlay is false) return false;
         if (IsEnabled is false) return false;
         if (_isPaused || _stopped) return false;
-        if (_pageHidden) return false;
+        if (_pageHidden || _pageVisibilityPending) return false;
         if (PauseOnHover && _hovered) return false;
         if (PauseOnFocus && _focused) return false;
 
@@ -1383,24 +1387,16 @@ public partial class BitSwiper : BitComponentBase
         }
     }
 
-    // No event is coming for the state the page is already in - a tab that was in the background before the
-    // swiper was rendered - so it is read rather than waited for. The utility is shared, so it may know even when
-    // this call fails; a call that failed is made again on a later render, and until then the rotation is simply
-    // not held.
-    private async Task ApplyPageVisibilityAsync(Task<bool> init)
-    {
-        _pageVisibilityReady = await init;
-
-        _pageHidden = _pageVisibility.IsHidden;
-    }
-
+    // The answer to an init the utility retried on its own comes from a timer rather than from the browser, so the
+    // change is brought onto the renderer's dispatcher before it touches the timer or asks for a render.
     private Task PageVisibilityChange(bool hidden)
     {
-        _pageHidden = hidden;
+        return InvokeAsync(() =>
+        {
+            _pageHidden = hidden;
 
-        UpdateAutoPlayTimer();
-
-        return Task.CompletedTask;
+            UpdateAutoPlayTimer();
+        });
     }
 
 

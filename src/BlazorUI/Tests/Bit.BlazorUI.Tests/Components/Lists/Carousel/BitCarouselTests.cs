@@ -2089,7 +2089,7 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldAskThePageAgainAfterAFailedPageVisibilityInit()
+    public void BitCarouselShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
     {
         var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
         {
@@ -2107,19 +2107,17 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
 
-        // The script has loaded by the next render, which asks the page again rather than going without for good.
+        // The script has loaded by the time the utility asks again on its own, and the hidden page it then reads
+        // reaches the carousel as a change: nothing has to render it again, and no render polls the page.
         js.Failure = null;
 
-        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 6000d));
+        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying), TimeSpan.FromSeconds(5));
 
-        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying));
-
-        // Once the page has answered it is not asked again.
-        var asked = js.InitCount;
+        Assert.AreEqual(2, js.InitCount);
 
         component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 7000d));
 
-        Assert.AreEqual(asked, js.InitCount);
+        Assert.AreEqual(2, js.InitCount);
     }
 
     [TestMethod]

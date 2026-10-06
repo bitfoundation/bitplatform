@@ -26,7 +26,6 @@ public partial class BitSnackBar : BitComponentBase
     private readonly Dictionary<Guid, ElementReference> _dismissButtons = [];
 
     private BitPageVisibility? _pageVisibility;
-    private bool _pageVisibilityReady;
     private bool _pageVisibilityPending;
     private BitSnackBarService? _service;
     private NavigationManager? _navigationManager;
@@ -1049,37 +1048,35 @@ public partial class BitSnackBar : BitComponentBase
         await SyncPageVisibilityAsync();
     }
 
-    // Subscribed the first time a pause asks for it, and asked of the browser on every later render until it has
-    // answered: a call that failed (the script not loaded yet, a round trip that timed out) wired nothing up, and
-    // until one gets through the countdowns are simply not held.
+    // Subscribed the first time a pause asks for it, and kept until the snack bar is disposed. Only the first call is
+    // waited for: one that failed (the script not loaded yet, a round trip that timed out) is retried by the utility
+    // itself, whose answer arrives as a change like any other, and until then the countdowns are simply not held.
     private async Task SyncPageVisibilityAsync()
     {
-        if (_pageVisibilityReady || (PauseOnPageHidden || PauseOnWindowBlur) is false) return;
+        if (_pageVisibility is not null || (PauseOnPageHidden || PauseOnWindowBlur) is false) return;
 
-        if (_pageVisibility is null)
-        {
-            // The utility is a scoped service of the library, so it is only there in an app that registered them.
-            // Nothing else about the snack bar depends on it, which is why its absence turns this one feature off
-            // instead of failing the render.
-            _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
-            if (_pageVisibility is null) return;
+        // The utility is a scoped service of the library, so it is only there in an app that registered them.
+        // Nothing else about the snack bar depends on it, which is why its absence turns this one feature off
+        // instead of failing the render.
+        _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
+        if (_pageVisibility is null) return;
 
-            _pageVisibility.OnChange += HandlePageVisibilityChange;
-            _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
+        _pageVisibility.OnChange += HandlePageVisibilityChange;
+        _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
-            // The utility is shared, so another component may already have asked the page; what it knows is taken
-            // right away, and what the page answers once it arrives.
-            await ApplyPageVisibilityAsync();
-        }
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and what the page answers once it arrives.
+        await ApplyPageVisibilityAsync();
 
         // Until the page has answered, a countdown handed out now could be running down in a tab that is already
-        // hidden, so new ones start held back; once it settles, the hold is re-evaluated below and they run unless
-        // the page is in fact hidden (or blurred). A failed call settles as not held.
+        // hidden, so new ones start held back; once the first call settles, the hold is re-evaluated below and they
+        // run unless the page is in fact hidden (or blurred). The call is bounded by the utility's own timeout, and
+        // a failed one settles as not held - the retries that follow it hold nothing back.
         _pageVisibilityPending = true;
 
         try
         {
-            _pageVisibilityReady = await _pageVisibility.Init();
+            await _pageVisibility.Init();
         }
         finally
         {

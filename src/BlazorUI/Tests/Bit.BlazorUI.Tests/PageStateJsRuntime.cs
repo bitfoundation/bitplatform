@@ -27,6 +27,11 @@ public sealed class PageStateJsRuntime : IJSRuntime
     public Exception? Failure { get; set; }
 
     /// <summary>
+    /// While set, the init call is only answered once this completes, the way a slow round trip is.
+    /// </summary>
+    public TaskCompletionSource? Gate { get; set; }
+
+    /// <summary>
     /// How many times the page has been asked for its state.
     /// </summary>
     public int InitCount { get; private set; }
@@ -44,6 +49,17 @@ public sealed class PageStateJsRuntime : IJSRuntime
 
         if (Failure is not null) return ValueTask.FromException<TValue>(Failure);
 
-        return new ValueTask<TValue>(JsonSerializer.Deserialize<TValue>(_json, JsonSerializerOptions.Web)!);
+        if (Gate is { } gate) return new ValueTask<TValue>(AnswerAfterAsync<TValue>(gate.Task));
+
+        return new ValueTask<TValue>(Read<TValue>());
     }
+
+    private async Task<TValue> AnswerAfterAsync<TValue>(Task gate)
+    {
+        await gate;
+
+        return Read<TValue>();
+    }
+
+    private TValue Read<TValue>() => JsonSerializer.Deserialize<TValue>(_json, JsonSerializerOptions.Web)!;
 }

@@ -31,7 +31,6 @@ public partial class BitCarousel : BitComponentBase
     private bool _isPaused;
     private bool _navigating;
     private bool _pageHidden;
-    private bool _pageVisibilityReady;
     private bool _needsReset;
     private bool _needsRegister;
     private bool _isPointerDown;
@@ -821,7 +820,10 @@ public partial class BitCarousel : BitComponentBase
 
     protected override void OnInitialized()
     {
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and whatever it learns later - the answer to the first call, or to one it retried - comes as a change.
         _pageVisibility.OnChange += PageVisibilityChange;
+        _pageHidden = _pageVisibility.IsHidden;
 
         base.OnInitialized();
     }
@@ -911,8 +913,9 @@ public partial class BitCarousel : BitComponentBase
             }
 
             // A tab that is already in the background is known before the layout below starts the timer, so the
-            // rotation never starts (or renders as playing) in a page nobody is looking at.
-            await ApplyPageVisibilityAsync(pageVisibilityInit);
+            // rotation never starts (or renders as playing) in a page nobody is looking at. A call that failed is
+            // retried by the utility itself, whose answer reaches PageVisibilityChange, so nothing waits for it here.
+            await pageVisibilityInit;
 
             _afterFirstRender = true;
             _needsReset = false;
@@ -926,13 +929,6 @@ public partial class BitCarousel : BitComponentBase
         }
         else
         {
-            if (_pageVisibilityReady is false)
-            {
-                await ApplyPageVisibilityAsync(_pageVisibility.Init());
-
-                UpdateAutoPlayTimer();
-            }
-
             if (_needsReset)
             {
                 _needsReset = false;
@@ -2085,24 +2081,16 @@ public partial class BitCarousel : BitComponentBase
         }
     }
 
-    // No event is coming for the state the page is already in - a tab that was in the background before the
-    // carousel was rendered - so it is read rather than waited for. The utility is shared, so it may know even when
-    // this call fails; a call that failed is made again on a later render, and until then the rotation is simply
-    // not held.
-    private async Task ApplyPageVisibilityAsync(Task<bool> init)
-    {
-        _pageVisibilityReady = await init;
-
-        _pageHidden = _pageVisibility.IsHidden;
-    }
-
+    // The answer to an init the utility retried on its own comes from a timer rather than from the browser, so the
+    // change is brought onto the renderer's dispatcher before it touches the timer or asks for a render.
     private Task PageVisibilityChange(bool hidden)
     {
-        _pageHidden = hidden;
+        return InvokeAsync(() =>
+        {
+            _pageHidden = hidden;
 
-        UpdateAutoPlayTimer();
-
-        return Task.CompletedTask;
+            UpdateAutoPlayTimer();
+        });
     }
 
 

@@ -866,7 +866,7 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitSwiperShouldAskThePageAgainAfterAFailedPageVisibilityInit()
+    public async Task BitSwiperShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
     {
         var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
         {
@@ -886,19 +886,17 @@ public class BitSwiperTests : BunitTestContext
 
         Assert.IsTrue(swiper.IsPlaying);
 
-        // The script has loaded by the next render, which asks the page again rather than going without for good.
+        // The script has loaded by the time the utility asks again on its own, and the hidden page it then reads
+        // reaches the swiper as a change: nothing has to render it again, and no render polls the page.
         js.Failure = null;
 
-        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 50000));
+        component.WaitForAssertion(() => Assert.IsFalse(swiper.IsPlaying), TimeSpan.FromSeconds(5));
 
-        component.WaitForAssertion(() => Assert.IsFalse(swiper.IsPlaying));
-
-        // Once the page has answered it is not asked again.
-        var asked = js.InitCount;
+        Assert.AreEqual(2, js.InitCount);
 
         component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 40000));
 
-        Assert.AreEqual(asked, js.InitCount);
+        Assert.AreEqual(2, js.InitCount);
     }
 
     [TestMethod]

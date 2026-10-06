@@ -26,7 +26,7 @@ public partial class BitMessage : BitComponentBase
     private bool _isPageHidden;
     private bool _isWindowBlurred;
     private BitPageVisibility? _pageVisibility;
-    private bool _pageVisibilityReady;
+    private bool _isPageVisibilityPending;
 
     // A hold has no length of its own: a pointer can rest on the message, and a PauseAutoDismiss can go unanswered,
     // for as long as the reader likes. So a held countdown waits on the resume rather than waking four times a
@@ -831,28 +831,37 @@ public partial class BitMessage : BitComponentBase
     // browser's answer, which is applied once it arrives.
     private Task SyncPageVisibility()
     {
-        if (_pageVisibilityReady || IsDisposed) return Task.CompletedTask;
+        if (_pageVisibility is not null || IsDisposed) return Task.CompletedTask;
         if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _HasAutoDismiss is false) return Task.CompletedTask;
 
-        if (_pageVisibility is null)
-        {
-            _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
-            if (_pageVisibility is null) return Task.CompletedTask;
+        _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
+        if (_pageVisibility is null) return Task.CompletedTask;
 
-            _pageVisibility.OnChange += HandlePageVisibilityChange;
-            _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
+        _pageVisibility.OnChange += HandlePageVisibilityChange;
+        _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
-            ApplyPageVisibility();
-        }
+        // Until the page has answered, the countdown armed right after this could be running down in a tab that is
+        // already hidden, so it starts held back, the way a snack bar's does.
+        _isPageVisibilityPending = true;
+
+        ApplyPageVisibility();
 
         return InitPageVisibility(_pageVisibility);
     }
 
-    // A call that failed (the script not loaded yet, a round trip that timed out) wired nothing up, so the browser is
-    // asked again on a later render; until one gets through the countdown simply is not held.
+    // Only the first call is waited for, and the utility bounds it with a timeout of its own: one that failed (the
+    // script not loaded yet, a round trip that timed out) settles as not held, and is retried by the utility itself,
+    // whose answer arrives as a change like any other - the message does not have to render again to get it.
     private async Task InitPageVisibility(BitPageVisibility pageVisibility)
     {
-        _pageVisibilityReady = await pageVisibility.Init();
+        try
+        {
+            await pageVisibility.Init();
+        }
+        finally
+        {
+            _isPageVisibilityPending = false;
+        }
 
         ApplyPageVisibility();
     }
@@ -1252,7 +1261,7 @@ public partial class BitMessage : BitComponentBase
     // loop has to ask for the render that shows it, which the pointer and focus listeners would have got for free.
     private void RefreshAutoDismissHold()
     {
-        var paused = _isPointerOver || _isFocusInside || _isPausedByApi || _IsPageHeld;
+        var paused = _isPointerOver || _isFocusInside || _isPausedByApi || _IsPageHeld || _IsPagePending;
 
         if (_isAutoDismissPaused == paused) return;
 
@@ -1279,6 +1288,9 @@ public partial class BitMessage : BitComponentBase
     // The page-level reasons are read through the parameters that asked for them rather than off the flags alone,
     // since the subscription outlives a PauseOnPageHidden or a PauseOnWindowBlur that is turned off again.
     private bool _IsPageHeld => (PauseOnPageHidden && _isPageHidden) || (PauseOnWindowBlur && _isWindowBlurred);
+
+    // Whether the page is still being asked if it is hidden, for a message that asked for either page-level hold.
+    private bool _IsPagePending => _isPageVisibilityPending && (PauseOnPageHidden || PauseOnWindowBlur);
 
     private Task HandlePageVisibilityChange(bool hidden)
     {
