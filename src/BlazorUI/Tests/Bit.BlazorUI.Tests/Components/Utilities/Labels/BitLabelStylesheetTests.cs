@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Label-* variable is declared, which stops it inheriting.");
     }
@@ -72,7 +70,7 @@ public partial class BitLabelStylesheetTests
         DataRow("lg")]
     public void BitLabelShouldLetTheSizeWinOverTheFontSizeVariable(string size)
     {
-        var block = Block(ReadStylesheet(), $"\n.bit-lbl-{size} {{");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n.bit-lbl-{size} {{");
 
         StringAssert.Contains(block, "font-size: $tg-fs-");
         Assert.IsFalse(block.Contains("--bit-Label-"), $"The {size} size reads a public variable.");
@@ -81,7 +79,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldPaintTheColorsInTheReadableForegroundOfTheirRole()
     {
-        var block = Block(ReadStylesheet(), "\n    .bit-lbl-#{$role} {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-lbl-#{$role} {");
 
         StringAssert.Contains(block, "color: role($tokens, fg);");
         Assert.IsFalse(block.Contains("--bit-Label-"), "The Color classes read a public variable.");
@@ -90,7 +88,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldKeepADisabledLabelInTheDisabledColor()
     {
-        var block = Block(ReadStylesheet(), "\n    &.bit-dis {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
         StringAssert.Contains(block, "color: $clr-fg-dis;");
         Assert.IsFalse(block.Contains("--bit-Label-"));
@@ -99,7 +97,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldDimTheIndicatorsOfADisabledLabel()
     {
-        var block = Block(ReadStylesheet(), "\n    &.bit-dis {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
         // Inheriting rather than naming the disabled color is what also carries the GrayText of a forced-colors mode.
         StringAssert.Contains(block, ".bit-lbl-rqi,\n        .bit-lbl-opi {\n            color: inherit;");
@@ -108,7 +106,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldKeepTheDisabledStateInForcedColors()
     {
-        var block = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(block, ".bit-lbl.bit-dis {\n        color: GrayText;");
     }
@@ -116,7 +114,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldDrawTheFocusRingOfTheLibrary()
     {
-        var block = Block(ReadStylesheet(), "\n    &:focus-visible {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &:focus-visible {");
 
         // The mixin draws the themed ring and brings a Highlight outline back in a forced-colors mode.
         StringAssert.Contains(block, "@include focus-ring(var(--bit-Label-focus-color, #{$clr-pri-focus}));");
@@ -142,7 +140,7 @@ public partial class BitLabelStylesheetTests
 
         foreach (var indicator in new[] { "rqi", "opi" })
         {
-            var block = Block(stylesheet, $"\n.bit-lbl-{indicator} {{");
+            var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-lbl-{indicator} {{");
 
             StringAssert.Contains(block, "margin-inline-start: var(--bit-Label-indicator-gap, ");
         }
@@ -155,7 +153,7 @@ public partial class BitLabelStylesheetTests
 
         // The label keeps its own display, so its text-align still positions the content and a display set through
         // the style still truncates; it clips whatever overflows it.
-        var noWrap = Block(stylesheet, "\n.bit-lbl-nwr {");
+        var noWrap = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lbl-nwr {");
         Assert.IsFalse(noWrap.Contains("display:"), "The label is turned into a flex container, which ignores its text-align.");
         StringAssert.Contains(noWrap, "overflow: hidden;");
         StringAssert.Contains(noWrap, "white-space: nowrap;");
@@ -164,26 +162,15 @@ public partial class BitLabelStylesheetTests
 
         // The content and its indicator are an inline row no wider than the label, lined up on their text baseline
         // as the wrapping label lines them up.
-        var row = Block(stylesheet, "\n.bit-lbl-row {");
+        var row = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lbl-row {");
         StringAssert.Contains(row, "display: inline-flex;");
         StringAssert.Contains(row, "max-width: 100%;");
         StringAssert.Contains(row, "align-items: baseline;");
 
-        var text = Block(stylesheet, "\n.bit-lbl-txt {");
+        var text = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lbl-txt {");
         StringAssert.Contains(text, "min-width: 0;");
         StringAssert.Contains(text, "overflow: hidden;");
         StringAssert.Contains(text, "text-overflow: ellipsis;");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
     }
 
     private static string[] DocumentedVariables(string stylesheet)
@@ -191,21 +178,7 @@ public partial class BitLabelStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Label", "BitLabel.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Label", "BitLabel.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Label-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

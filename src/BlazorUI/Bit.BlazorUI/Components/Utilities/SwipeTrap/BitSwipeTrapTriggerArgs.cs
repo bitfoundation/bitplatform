@@ -4,7 +4,7 @@
 /// The event arguments of the SwipeTrap trigger event.
 /// </summary>
 public class BitSwipeTrapTriggerArgs(
-    BitSwipeDirection direction,
+    BitPlacement direction,
     decimal diffX,
     decimal diffY,
     decimal velocityX = 0,
@@ -15,7 +15,15 @@ public class BitSwipeTrapTriggerArgs(
     /// <summary>
     /// The swipe direction in which the action triggered.
     /// </summary>
-    public BitSwipeDirection Direction { get; set; } = direction;
+    /// <remarks>
+    /// This is the direction the pointer travelled in, read off the screen rather than off the reading
+    /// direction, so it is always one of the physical four: <see cref="BitPlacement.Top"/>,
+    /// <see cref="BitPlacement.Bottom"/>, <see cref="BitPlacement.Left"/> or
+    /// <see cref="BitPlacement.Right"/>. A handler that wants to know whether the swipe went with or against
+    /// the reading direction compares it against <see cref="BitComponentBase.Dir"/> itself, the way
+    /// BitNavPanel does.
+    /// </remarks>
+    public BitPlacement Direction { get; set; } = direction;
 
     /// <summary>
     /// The horizontal difference of swipe action in pixels.

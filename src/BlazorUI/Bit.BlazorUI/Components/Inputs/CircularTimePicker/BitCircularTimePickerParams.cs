@@ -173,7 +173,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
     /// <summary>
     /// TimePicker icon location.
     /// </summary>
-    public BitIconLocation? IconLocation { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The name of the icon to display from the built-in Fluent UI icons.
@@ -510,9 +510,9 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.Icon = Icon;
         }
 
-        if (IconLocation.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(IconLocation)))
+        if (IconPlacement.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitCircularTimePicker.IconLocation = IconLocation.Value;
+            bitCircularTimePicker.IconPlacement = IconPlacement.Value;
 
             bitCircularTimePicker.ClassBuilder.Reset();
         }

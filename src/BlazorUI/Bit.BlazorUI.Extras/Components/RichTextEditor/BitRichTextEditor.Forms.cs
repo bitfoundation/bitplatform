@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -25,11 +25,59 @@ public partial class BitRichTextEditor
             return;
         }
 
-        // Rebuild every time: FieldIdentifier.Create(ValueExpression) can resolve to a different
-        // model instance even when the same expression delegate is reused (e.g. the bound model
-        // was swapped), so caching on the expression instance alone can notify a stale field.
+        // Rebuilt on every parameter set and before every change notification, never cached on the
+        // expression instance: FieldIdentifier.Create(ValueExpression) can resolve to a different
+        // model instance even when the same expression is reused (e.g. the bound model was swapped),
+        // so caching on the expression alone can notify a stale field.
         _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
         _hasField = true;
+    }
+
+    private EditContext? _trackedEditContext;
+
+    /// <summary>
+    /// Whether the content is invalid - marked so by <see cref="Invalid"/> or <see cref="ErrorMessage"/>, or failing
+    /// the validation of its bound field: the frame takes the error color and the editing surface reports
+    /// <c>aria-invalid</c>, the way every other input of an EditForm does.
+    /// </summary>
+    private bool IsInvalid
+    {
+        get
+        {
+            if (Invalid || ErrorMessage.HasValue()) return true;
+            // Read several times per render, so it reads the field OnParametersSet last resolved rather than
+            // walking the expression again on each read.
+            if (CascadedEditContext is null) return false;
+            return _hasField && CascadedEditContext.GetValidationMessages(_fieldIdentifier).Any();
+        }
+    }
+
+    // Follows the EditContext the editor sits in, so a submit that fails (or a later edit that passes) re-renders the
+    // invalid state without waiting for the editor's own next render.
+    private void TrackEditContext()
+    {
+        if (ReferenceEquals(_trackedEditContext, CascadedEditContext)) return;
+
+        UntrackEditContext();
+
+        _trackedEditContext = CascadedEditContext;
+        if (_trackedEditContext is not null)
+        {
+            _trackedEditContext.OnValidationStateChanged += HandleValidationStateChanged;
+        }
+    }
+
+    private void UntrackEditContext()
+    {
+        if (_trackedEditContext is null) return;
+        _trackedEditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+        _trackedEditContext = null;
+    }
+
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        ClassBuilder.Reset();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Notifies the cascaded EditContext that the bound field changed.</summary>

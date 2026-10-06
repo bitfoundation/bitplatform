@@ -163,9 +163,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Where the icon of each item is rendered relative to its text: before it (the default) or after it.
     /// <br />
-    /// An item that sets an IconPosition of its own keeps it.
+    /// An item that sets an IconPlacement of its own keeps it.
     /// </summary>
-    [Parameter] public BitIconPosition? IconPosition { get; set; }
+    [Parameter] public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Collection of the items to render in the breadcrumb.
@@ -972,7 +972,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             classes.Add("bit-brc-dis");
         }
 
-        if (GetIconPosition(item) is BitIconPosition.End)
+        if (GetIconPosition(item) is BitPlacement.End)
         {
             classes.Add("bit-brc-eni");
         }
@@ -1236,26 +1236,26 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return BitIconInfo.From(icon, iconName);
     }
 
-    private BitIconPosition? GetIconPosition(TItem item)
+    private BitPlacement? GetIconPosition(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.IconPosition ?? IconPosition;
+            return breadcrumbItem.IconPlacement ?? IconPlacement;
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.IconPosition ?? IconPosition;
+            return bitBreadcrumbOption.IconPlacement ?? IconPlacement;
         }
 
-        if (NameSelectors is null) return IconPosition;
+        if (NameSelectors is null) return IconPlacement;
 
-        if (NameSelectors.IconPosition.Selector is not null)
+        if (NameSelectors.IconPlacement.Selector is not null)
         {
-            return NameSelectors.IconPosition.Selector!(item) ?? IconPosition;
+            return NameSelectors.IconPlacement.Selector!(item) ?? IconPlacement;
         }
 
-        return item.GetValueFromProperty<BitIconPosition?>(NameSelectors.IconPosition.Name) ?? IconPosition;
+        return item.GetValueFromProperty<BitPlacement?>(NameSelectors.IconPlacement.Name) ?? IconPlacement;
     }
 
     private bool GetIsSelected(TItem item)

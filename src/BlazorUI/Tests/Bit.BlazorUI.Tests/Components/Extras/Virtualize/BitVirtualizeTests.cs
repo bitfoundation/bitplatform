@@ -175,6 +175,29 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitVirtualizeShouldBeAGroupWhileItsItemsAreReplacedByTheEmptyContent()
+    {
+        SetupViewport(300);
+
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<int>());
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.AriaLabel, "Results");
+            parameters.Add(p => p.EmptyTemplate, builder => builder.AddContent(0, "No results"));
+        });
+
+        // A list of no list items, but of a text, is not a list.
+        var root = component.Find(".bit-vir");
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("Results", root.GetAttribute("aria-label"));
+
+        component.Render(p => p.Add(x => x.Items, new List<int> { 1, 2, 3 }));
+
+        Assert.AreEqual("list", component.Find(".bit-vir").GetAttribute("role"));
+    }
+
+    [TestMethod]
     public void BitVirtualizeShouldRenderHeaderAndFooterAroundTheItems()
     {
         var component = RenderList(100, 50, p =>
@@ -486,7 +509,7 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitVirtualizeRootShouldReturnToTheTabOrderWhenTheActiveItemScrollsAway()
+    public async Task BitVirtualizeShouldKeepTheActiveItemRenderedWhenItScrollsAway()
     {
         SetupViewport(300);
 
@@ -495,8 +518,57 @@ public class BitVirtualizeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
         Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
 
-        // Scroll far away with the mouse: the active item is no longer rendered, so the root must be tabbable again.
+        // Scroll far away with the mouse: the focused item stays in the DOM (the focus is not dropped to the page), at
+        // its own offset and before the window in the DOM order, and it stays the list's only tab stop.
         await component.InvokeAsync(() => component.Instance._Scroll(3000, 300));
+
+        var kept = component.Find("[data-bit-vir-index='0']");
+        Assert.AreEqual("0", kept.GetAttribute("tabindex"));
+        Assert.AreEqual("1", kept.GetAttribute("aria-posinset"));
+        Assert.AreEqual(-3000 + 150, TranslateOf(kept.GetAttribute("style")));
+        Assert.AreEqual(0, RenderedIndices(component)[0]);
+        CollectionAssert.AreEqual(RenderedIndices(component).OrderBy(i => i).ToArray(), RenderedIndices(component));
+        Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldKeepAnActiveItemAfterTheWindowInIndexOrder()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50);
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("End"));
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300));
+
+        var rendered = RenderedIndices(component);
+        Assert.AreEqual(99, rendered[^1]);
+        Assert.AreEqual(1, rendered.Count(i => i == 99));
+        Assert.AreEqual("0", component.Find("[data-bit-vir-index='99']").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeRootShouldReturnToTheTabOrderWhenTheActiveItemIsNoLongerLoaded()
+    {
+        SetupViewport(300);
+
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, request => ValueTask.FromResult(new BitVirtualizeItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1_000 - request.StartIndex)).ToList(), 1_000)));
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+        });
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
+        await component.InvokeAsync(() => component.Instance._Scroll(30_000, 300));
+
+        // Still cached, so still kept.
+        Assert.AreEqual(1, component.FindAll("[data-bit-vir-index='0']").Count);
+        Assert.AreEqual("-1", component.Find(".bit-vir").GetAttribute("tabindex"));
+
+        // A refresh drops the cache: the item is gone, so the root must be tabbable again.
+        await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
         Assert.AreEqual(0, component.FindAll("[data-bit-vir-index='0']").Count);
         Assert.AreEqual("0", component.Find(".bit-vir").GetAttribute("tabindex"));
@@ -602,25 +674,25 @@ public class BitVirtualizeTests : BunitTestContext
 
         var component = RenderList(100, 50);
 
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.Start));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.Start));
         Assert.AreEqual(1000, LastScrollToOffset());
 
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.Center));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.Center));
         Assert.AreEqual(875, LastScrollToOffset());
 
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.End));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.End));
         Assert.AreEqual(750, LastScrollToOffset());
 
         // Auto: already fully visible (750..1050 shows 15..20) -> stays.
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.Auto));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.Nearest));
         Assert.AreEqual(750, LastScrollToOffset());
 
         // Auto: above the viewport -> aligned to the start.
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(2, BitVirtualizeScrollAlignment.Auto));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(2, BitScrollAlignment.Nearest));
         Assert.AreEqual(100, LastScrollToOffset());
 
         // Auto: below the viewport -> aligned to the end.
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(30, BitVirtualizeScrollAlignment.Auto));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(30, BitScrollAlignment.Nearest));
         Assert.AreEqual(1250, LastScrollToOffset());
     }
 
@@ -968,6 +1040,211 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
 
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportArrivingAtAndLeavingTheEdges()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        // The initial state, reported once.
+        CollectionAssert.AreEqual(new[] { true }, starts);
+        CollectionAssert.AreEqual(new[] { false }, ends);
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(1200, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(4700, 300));
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300));
+
+        // Only the changes are reported.
+        CollectionAssert.AreEqual(new[] { true, false, true }, starts);
+        CollectionAssert.AreEqual(new[] { false, true, false }, ends);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldReportTheEdgesOfTheInitialPosition()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        RenderList(100, 50, p =>
+        {
+            p.Add(x => x.InitialIndex, 50);
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+        });
+
+        // The start the list opens away from is never reported.
+        CollectionAssert.AreEqual(new[] { false }, starts);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeShouldReportBothEdgesForAListThatFitsItsViewport()
+    {
+        SetupViewport(300);
+
+        bool? atStart = null, atEnd = null;
+        RenderList(3, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, value => atStart = value);
+            p.Add(x => x.OnAtEndChanged, value => atEnd = value);
+        });
+
+        Assert.IsTrue(atStart);
+        Assert.IsTrue(atEnd);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeReversedShouldStayAtTheEndWhileItsNewestItemsGetMeasured()
+    {
+        SetupViewport(300);
+
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.Reversed, true);
+            p.Add(x => x.Dynamic, true);
+            p.Add(x => x.EstimatedItemSize, 50);
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        await component.InvokeAsync(() => component.Instance._Scroll(4700, 300));
+        // The newest items turn out taller than estimated, which grows the list past the viewport until it is re-pinned.
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([97, 98, 99], [80, 80, 80]));
+
+        CollectionAssert.AreEqual(new[] { true }, ends);
+
+        // The user scrolls up to read the history.
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+
+        CollectionAssert.AreEqual(new[] { true, false }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeReversedShouldLeaveTheEndOnAScrollDecidedHere()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.Reversed, true);
+            p.Add(x => x.Dynamic, true);
+            p.Add(x => x.EstimatedItemSize, 50);
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        await component.InvokeAsync(() => component.Instance.ScrollToStartAsync());
+        // Measurements settling before the browser reports the scroll must not pull the list back to its end.
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([0, 1, 2], [80, 80, 80]));
+
+        CollectionAssert.AreEqual(new[] { false, true }, starts);
+        CollectionAssert.AreEqual(new[] { true, false }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportTheLandingOfAScrollQueuedBeforeTheItems()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(0, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        // Asked to animate, but there is nothing on screen to animate from: it lands at once, as the initial position.
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(99, smooth: true));
+        component.Render(p => p.Add(x => x.Items, Enumerable.Range(0, 100).ToArray()));
+
+        CollectionAssert.AreEqual(new[] { false }, starts);
+        CollectionAssert.AreEqual(new[] { true }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportBothEdgesOnceTheListEmpties()
+    {
+        SetupViewport(300);
+
+        bool? atStart = null, atEnd = null;
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, value => atStart = value);
+            p.Add(x => x.OnAtEndChanged, value => atEnd = value);
+        });
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+        Assert.IsFalse(atStart);
+        Assert.IsFalse(atEnd);
+
+        component.Render(p => p.Add(x => x.Items, Array.Empty<int>()));
+
+        Assert.IsTrue(atStart);
+        Assert.IsTrue(atEnd);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldMeasureTheEdgesFromTheHeaderAndTheFooter()
+    {
+        SetupViewport(300);
+
+        var starts = new List<bool>();
+        var ends = new List<bool>();
+        var component = RenderList(100, 50, p =>
+        {
+            p.Add(x => x.OnAtStartChanged, atStart => starts.Add(atStart));
+            p.Add(x => x.OnAtEndChanged, atEnd => ends.Add(atEnd));
+        });
+
+        // A 100px header is in view at the start of the scroll range, which leaves the items at -100.
+        await component.InvokeAsync(() => component.Instance._Scroll(-100, 300, -1, -1, 100, 80));
+        // The header scrolled out of view is the start left, although the first item is right at the top.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, -1, 100, 80));
+        // The last item at the bottom, with the 80px footer still below it.
+        await component.InvokeAsync(() => component.Instance._Scroll(4700, 300, -1, -1, 100, 80));
+        await component.InvokeAsync(() => component.Instance._Scroll(4780, 300, -1, -1, 100, 80));
+
+        CollectionAssert.AreEqual(new[] { true, false }, starts);
+        CollectionAssert.AreEqual(new[] { false, true }, ends);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportTheEndOfAScaledListInRealPixels()
+    {
+        SetupViewport(300);
+
+        bool? atEnd = null;
+        var component = RenderList(1_000_000, 200, p => p.Add(x => x.OnAtEndChanged, value => atEnd = value));
+
+        // The browser's rounding leaves the real offset a fraction of a pixel short of its end, which is many virtual ones.
+        await component.InvokeAsync(() => component.Instance._Scroll(10_000_000 - 300 - 0.4, 300));
+
+        Assert.IsTrue(atEnd);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldReportTheCurrentEdgesToAHandlerAttachedLater()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50);
+        await component.InvokeAsync(() => component.Instance._Scroll(1000, 300));
+
+        bool? atStart = null;
+        component.Render(p => p.Add(x => x.OnAtStartChanged, value => atStart = value));
+
+        Assert.IsFalse(atStart);
+    }
 
     // ---------------------------------------------------------------- data changes
 
@@ -1706,6 +1983,53 @@ public class BitVirtualizeTests : BunitTestContext
         var sticky = component.Find(".bit-vir-stk");
         Assert.AreEqual("Group 2", sticky.TextContent);
         Assert.AreEqual("1500", sticky.GetAttribute("data-bit-vir-sticky-next"));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldScrollAnItemToBelowThePinnedStickyItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
+
+        // Item 25 is in the group of item 20, which is pinned at the top while 25 is the first in view: the item is
+        // placed below it, where it is not hidden.
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(25));
+        Assert.AreEqual(1200d, LastScrollToOffset());
+
+        // A sticky item is the one pinned, in its own place.
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(30));
+        Assert.AreEqual(1500d, LastScrollToOffset());
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeKeyboardShouldNotLeaveTheFocusedItemUnderThePinnedStickyItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1300, 300)); // items 26-31 in view, 20 pinned
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowUp", 27));
+
+        // Item 26 starts at 1300, right under the pinned item 20 (50px): the list scrolls it out from under it.
+        Assert.AreEqual(1250d, LastScrollToOffset());
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizePinnedCopyShouldBeMarkedWhileItMirrorsTheActiveItem()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.IsStickyItem, i => i % 10 == 0));
+
+        Assert.IsFalse(component.Find(".bit-vir-stk").ClassList.Contains("bit-vir-sac"));
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
+        Assert.IsTrue(component.Find(".bit-vir-stk").ClassList.Contains("bit-vir-sac"));
+
+        await component.InvokeAsync(() => component.Instance._KeyNavigate("ArrowDown"));
+        Assert.IsFalse(component.Find(".bit-vir-stk").ClassList.Contains("bit-vir-sac"));
     }
 
     [TestMethod]

@@ -34,6 +34,36 @@ public partial class TelegramBotService
     [GeneratedRegex(@"[_*`\[]")]
     private static partial Regex MarkdownSpecialCharacters();
 
+    public async Task SendProjectAssistantNote(string topic, string details, string? summary, CancellationToken cancellationToken)
+    {
+        var messageBuilder = new StringBuilder();
+
+        messageBuilder.AppendLine($"🧭 *Project assistant:* {EscapeMarkdown(topic)}");
+        messageBuilder.AppendLine($"📜 *Details*: {EscapeMarkdown(details)}");
+
+        if (string.IsNullOrWhiteSpace(summary) is false)
+        {
+            messageBuilder.AppendLine($"🗒️ *Conversation*: {EscapeMarkdown(summary)}");
+        }
+
+        await telegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
+    }
+
+    public async Task SendProjectCreatedMessage(string command, string? summary, CancellationToken cancellationToken)
+    {
+        var messageBuilder = new StringBuilder();
+
+        messageBuilder.AppendLine("🚀 *A project is being created*");
+        messageBuilder.AppendLine($"`{command.Replace("`", "", StringComparison.Ordinal).Trim()}`");
+
+        if (string.IsNullOrWhiteSpace(summary) is false)
+        {
+            messageBuilder.AppendLine($"🗒️ *Conversation*: {EscapeMarkdown(summary)}");
+        }
+
+        await telegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
+    }
+
     public async Task SendContactUsMessage(string? email, string? message, CancellationToken cancellationToken)
     {
         var messageBuilder = new StringBuilder();

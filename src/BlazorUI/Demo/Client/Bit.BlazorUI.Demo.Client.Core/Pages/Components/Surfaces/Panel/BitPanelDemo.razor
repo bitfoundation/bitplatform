@@ -90,21 +90,21 @@
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Position and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Placement and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                <b>Position</b> is the edge the panel slides in from; <b>Start</b> and <b>End</b> follow the text
+                <b>Placement</b> is the edge the panel slides in from; <b>Start</b> and <b>End</b> follow the text
                 direction. <b>Size</b> is its size in pixels along that axis, capped so a strip of the page stays
                 visible, and <b>FullSize</b> takes the whole screen. The edges touching the screen pad the device's
                 safe areas (notch, status bar, home indicator).
             </div>
             <br />
             <div class="controls">
-                <BitChoiceGroup @bind-Value="panelPosition" Horizontal Label="Position"
-                                TItem="BitChoiceGroupOption<BitPanelPosition>" TValue="BitPanelPosition">
-                    <BitChoiceGroupOption Text="Start" Value="BitPanelPosition.Start" />
-                    <BitChoiceGroupOption Text="End" Value="BitPanelPosition.End" />
-                    <BitChoiceGroupOption Text="Top" Value="BitPanelPosition.Top" />
-                    <BitChoiceGroupOption Text="Bottom" Value="BitPanelPosition.Bottom" />
+                <BitChoiceGroup @bind-Value="panelPosition" Horizontal Label="Placement"
+                                TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement">
+                    <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+                    <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
+                    <BitChoiceGroupOption Text="Top" Value="BitPlacement.Top" />
+                    <BitChoiceGroupOption Text="Bottom" Value="BitPlacement.Bottom" />
                 </BitChoiceGroup>
                 <BitNumberField @bind-Value="panelSize" Min="100" Step="20" Mode="BitSpinButtonMode.Inline" Label="Size" />
                 <BitToggle @bind-Value="panelFullSize" Label="FullSize" />
@@ -113,10 +113,10 @@
             <BitButton OnClick="() => isPositionPanelOpen = true">Open panel</BitButton>
 
             <BitPanel @bind-IsOpen="isPositionPanelOpen"
-                      Position="panelPosition"
+                      Placement="panelPosition"
                       Size="panelSize"
                       FullSize="panelFullSize"
-                      HeaderText="@($"Position.{panelPosition}")"
+                      HeaderText="@($"Placement.{panelPosition}")"
                       ShowCloseButton>
                 Size: @(panelFullSize ? "FullSize" : $"{panelSize}px")
             </BitPanel>
@@ -323,7 +323,7 @@
                 <BitPanel @bind-IsOpen="isInnerPanelOpen"
                           Size="280"
                           ModeFull
-                          Position="BitPanelPosition.Start"
+                          Placement="BitPlacement.Start"
                           HeaderText="Nested"
                           ShowCloseButton>
                     Declared inside the outer panel, so it covers it without a ZIndex.
@@ -334,7 +334,7 @@
                       Size="280"
                       ModeFull
                       ZIndex="1310"
-                      Position="BitPanelPosition.Start"
+                      Placement="BitPlacement.Start"
                       HeaderText="Sibling"
                       ShowCloseButton>
                 Declared beside the outer panel and lifted over it by ZIndex.
@@ -404,14 +404,14 @@
             <BitParams Parameters="@panelParams">
                 <div class="btn-container">
                     <BitButton OnClick="() => isCascadedPanelOpen = true">Cascaded values</BitButton>
-                    <BitButton OnClick="() => isOverridingPanelOpen = true">Own Position</BitButton>
+                    <BitButton OnClick="() => isOverridingPanelOpen = true">Own Placement</BitButton>
                 </div>
 
                 <BitPanel @bind-IsOpen="isCascadedPanelOpen" HeaderText="From the cascade">
                     Start edge, 320px, dimmed page and a close button - none of it set on this panel.
                 </BitPanel>
 
-                <BitPanel @bind-IsOpen="isOverridingPanelOpen" Position="BitPanelPosition.End" HeaderText="Its own Position">
+                <BitPanel @bind-IsOpen="isOverridingPanelOpen" Placement="BitPlacement.End" HeaderText="Its own Placement">
                     Slides in from the end, everything else from the cascade.
                 </BitPanel>
             </BitParams>
@@ -510,7 +510,7 @@
                       HeaderText="پنل آغاز"
                       ShowCloseButton
                       CloseButtonTitle="بستن"
-                      Position="BitPanelPosition.Start">
+                      Placement="BitPlacement.Start">
                 لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
             </BitPanel>
 
@@ -520,7 +520,7 @@
                       HeaderText="پنل پایان"
                       ShowCloseButton
                       CloseButtonTitle="بستن"
-                      Position="BitPanelPosition.End">
+                      Placement="BitPlacement.End">
                 لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
             </BitPanel>
         </DemoExample>

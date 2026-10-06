@@ -361,7 +361,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Determines the location of the DatePicker's icon.
     /// </summary>
-    public BitIconLocation? IconLocation { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The name of the DatePicker's icon from the built-in Fluent UI icon set.
@@ -1156,9 +1156,9 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.Icon = Icon;
         }
 
-        if (IconLocation.HasValue && bitDatePicker.HasNotBeenSet(nameof(IconLocation)))
+        if (IconPlacement.HasValue && bitDatePicker.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitDatePicker.IconLocation = IconLocation.Value;
+            bitDatePicker.IconPlacement = IconPlacement.Value;
 
             bitDatePicker.ClassBuilder.Reset();
         }

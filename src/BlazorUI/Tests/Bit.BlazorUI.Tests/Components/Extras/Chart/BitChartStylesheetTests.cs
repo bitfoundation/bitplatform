@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,7 +25,7 @@ public class BitChartStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var sources = Directory.GetFiles(ChartFolder(), "*.cs", SearchOption.AllDirectories)
-                               .Select(File.ReadAllText)
+                               .Select(SourceFiles.ReadFullPath)
                                .Append(stylesheet)
                                .ToArray();
 
@@ -74,7 +73,7 @@ public class BitChartStylesheetTests
     public void BitChartShouldKeepItsSwatchesInForcedColors()
     {
         var stylesheet = ReadStylesheet();
-        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", StringComparison.Ordinal)..];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "forced-color-adjust: none;");
         StringAssert.Contains(forced, "border: 1px solid CanvasText;");
@@ -83,16 +82,7 @@ public class BitChartStylesheetTests
     private static string Normalize(string name)
         => name.StartsWith("--bit-Chart-series-color-", StringComparison.Ordinal) ? "--bit-Chart-series-color-N" : name;
 
-    private static string ChartFolder([CallerFilePath] string thisFile = "")
-        => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                         "Bit.BlazorUI.Extras", "Components", "Chart"));
+    private static string ChartFolder() => SourceFiles.GetDirectory("Bit.BlazorUI.Extras", "Components", "Chart");
 
-    private static string ReadStylesheet()
-    {
-        var path = Path.Combine(ChartFolder(), "BitChart.scss");
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Chart", "BitChart.scss");
 }

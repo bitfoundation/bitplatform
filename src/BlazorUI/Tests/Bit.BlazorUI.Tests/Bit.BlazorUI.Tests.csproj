@@ -58,119 +58,13 @@
         <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
     </ItemGroup>
 
+    <!-- The tests that pin a contract a render cannot see read the source checkout itself - stylesheets, demo
+         pages, scripts, the flag images of Bit.BlazorUI.Assets - through SourceFiles, rather than through copies
+         beside the binaries that can go stale. The build records where the src/BlazorUI folder is: an MSBuild path,
+         which a PathMap or a deterministic CI build leaves alone, unlike the path the compiler records for a
+         source file. -->
     <ItemGroup>
-        <None Include="..\..\Bit.BlazorUI\Styles\theme-variables.scss" Link="theme-variables.scss">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- Full library Styles tree for the reverse token-contract test: every mapper-emitted
-             bit token (CSS custom property) must be declared or consumed somewhere in these stylesheets. -->
-        <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras
-             (see BitThemePresets), but they are stylesheets of the same theming system: the palette,
-             contrast and token-contract tests read every packaged preset out of one theme-styles tree,
-             so they are linked in beside the core ones. -->
-        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Fluent2\*.scss" Link="theme-styles\Fluent2\%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Material\*.scss" Link="theme-styles\Material\%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Cupertino\*.scss" Link="theme-styles\Cupertino\%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- The accent runtime client hardcodes the attribute, store and flag values that
-             BitAccentColorNames / BitAccentColorPersistence declare on the C# side; the two are wired
-             together by nothing but those literals, so BitAccentColorNamesContractTests reads the
-             TypeScript source itself to fail on a drift. BitTheme.ts rides along because the accent
-             cookie's max-age is documented to match the theme cookie's. -->
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\AccentColorSwitcher\BitAccentColor.ts" Link="ts-sources\BitAccentColor.ts">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI\Utils\Theme\BitTheme.ts" Link="ts-sources\BitTheme.ts">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- The media query every BitScreenQuery member stands for is built on the JS side, and
-             nothing but a switch on the member's name ties the two together: a member without a case
-             there resolves to no query at all and the component silently never listens. The XML
-             documentation of each member is the third copy of the same fact, since it is what the
-             docs and the MCP server answer with. BitMediaQueryScreenQueryContractTests reads this
-             source to fail on a drift between the three. -->
-        <None Include="..\..\Bit.BlazorUI\Components\Utilities\MediaQuery\BitMediaQuery.ts" Link="ts-sources\BitMediaQuery.ts">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- The rich text editor's C# half and its JS bridge are wired together by nothing but
-             strings: the setup option names, the JSInvokable callback names, and the
-             BitBlazorUI.RichTextEditor.* function names the interop extensions call. A rename on
-             either side compiles and then silently does nothing at runtime, so
-             BitRichTextEditorBridgeContractTests reads this source to fail on the drift. -->
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditor.ts" Link="ts-sources\BitRichTextEditor.ts">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- The tags input is wired to its script by the same kind of strings, and every one of its
-             interop calls is made inside a catch that swallows a missing function: a rename compiles,
-             renders, passes every rendering test and then silently gives back a field whose Enter
-             submits the form and whose chips scroll the page. BitTagsInputBridgeContractTests reads
-             these three sources to fail on that drift. -->
-        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInput.ts" Link="ts-sources\BitTagsInput.ts">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInputJsRuntimeExtensions.cs" Link="cs-sources\BitTagsInputJsRuntimeExtensions.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInput.razor" Link="cs-sources\BitTagsInput.razor">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInput.razor.cs" Link="cs-sources\BitTagsInput.razor.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-
-        <!-- The two C# halves of that same contract. They are internal types, so the test reads
-             them as source rather than referencing them. -->
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorSetupOptions.cs" Link="cs-sources\BitRichTextEditorSetupOptions.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorPolicyPayload.cs" Link="cs-sources\BitRichTextEditorPolicyPayload.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorJsRuntimeExtensions.cs" Link="cs-sources\BitRichTextEditorJsRuntimeExtensions.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- BitAccordionStylesheetTests pins the public bit-Accordion CSS variables against both the
-             stylesheet that reads them and the demo page table that documents them, so both are copied
-             beside the tests at their paths relative to the BlazorUI folder. -->
-        <None Include="..\..\Bit.BlazorUI\Components\Surfaces\Accordion\BitAccordion.scss" Link="Bit.BlazorUI\Components\Surfaces\Accordion\BitAccordion.scss">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Surfaces\Accordion\BitAccordionDemo.razor.cs" Link="Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Surfaces\Accordion\BitAccordionDemo.razor.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- BitAccordionListStylesheetTests does the same for the public bit-AccordionList CSS variables. -->
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\AccordionList\BitAccordionList.scss" Link="Bit.BlazorUI.Extras\Components\AccordionList\BitAccordionList.scss">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\AccordionList\BitAccordionListDemo.razor.cs" Link="Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\AccordionList\BitAccordionListDemo.razor.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <!-- BitFlagStylesheetTests does the same for the public bit-Flag CSS variables. -->
-        <None Include="..\..\Bit.BlazorUI.Extras\Components\Flag\BitFlag.scss" Link="Bit.BlazorUI.Extras\Components\Flag\BitFlag.scss">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\Flag\BitFlagDemo.razor.cs" Link="Demo\Client\Bit.BlazorUI.Demo.Client.Core\Pages\Components\Extras\Flag\BitFlagDemo.razor.cs">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        <AssemblyMetadata Include="BlazorUISourceRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))" />
     </ItemGroup>
-
-    <!-- The flag images a BitFlag with an ImageSet points at ship in Bit.BlazorUI.Assets, tied to the
-         component by nothing but their file names. Rather than copying the 2390 images beside the tests,
-         their names are written out there, and BitFlagTests checks that every image a flag offers the
-         browser is one the package ships. -->
-    <Target Name="WriteAssetsFlagNames" AfterTargets="Build">
-        <ItemGroup>
-            <_AssetsFlagImage Include="..\..\Bit.BlazorUI.Assets\wwwroot\flags\*.webp" />
-        </ItemGroup>
-        <WriteLinesToFile File="$(OutDir)assets-flags.txt" Lines="@(_AssetsFlagImage->'%(Filename)%(Extension)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
-    </Target>
 
 </Project>

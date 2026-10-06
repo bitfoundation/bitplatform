@@ -115,6 +115,7 @@ public partial class Acknowledgements
         //#if (signalR == true)
         new("Azure SignalR Service", "https://azure.microsoft.com/products/signalr-service", "https://github.com/Azure/azure-signalr", "MIT"),
         //#endif
+        new("Vazirmatn", "https://rastikerdar.github.io/vazirmatn", "https://github.com/rastikerdar/vazirmatn", "OFL-1.1"),
         // Third-party scripts that run in the visitor's own browser, so they belong here rather than in Deployment.
         //#if (captcha == "reCaptcha")
         new("Google reCAPTCHA", "https://developers.google.com/recaptcha", null, "Proprietary"),

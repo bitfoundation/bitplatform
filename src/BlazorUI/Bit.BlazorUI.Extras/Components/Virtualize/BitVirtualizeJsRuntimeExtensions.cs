@@ -8,9 +8,10 @@ internal static class BitVirtualizeJsRuntimeExtensions
                                                                               bool horizontal,
                                                                               bool dynamic,
                                                                               double scrollThreshold,
+                                                                              string? scrollerSelector,
                                                                               DotNetObjectReference<BitVirtualize<T>> dotnetObj)
     {
-        return jsRuntime.Invoke<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", id, rootElement, horizontal, dynamic, scrollThreshold, dotnetObj);
+        return jsRuntime.Invoke<BitVirtualizeMetrics?>("BitBlazorUI.Virtualize.setup", id, rootElement, horizontal, dynamic, scrollThreshold, scrollerSelector, dotnetObj);
     }
 
     public static ValueTask BitVirtualizeUpdate(this IJSRuntime jsRuntime, string id, bool horizontal, bool dynamic, double scrollThreshold)

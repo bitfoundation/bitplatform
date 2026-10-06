@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +44,7 @@ public partial class BitBadgeStylesheetTests
     [TestMethod]
     public void BitBadgeShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Badge-* variable is declared, which stops it inheriting.");
     }
@@ -56,10 +54,7 @@ public partial class BitBadgeStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n    &.bit-dis {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The disabled badge has no rule of its own.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {", "The disabled badge has no rule of its own.");
 
         // The disabled colors are handed over from the disabled tokens alone, never through the public color variables...
         StringAssert.Contains(block, "--bit-bdg-dis-txt: var(--bit-bdg-clr-dis-text);");
@@ -96,10 +91,7 @@ public partial class BitBadgeStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf($"\n.bit-bdg-{size} {{", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"The {size} size has no rule of its own.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-bdg-{size} {{");
 
         // The height and the dot are design-system decisions, so a preset re-sizes every badge through the theme.
         StringAssert.Contains(block, $"--bit-bdg-height: #{{$siz-badge-{size}}};");
@@ -109,7 +101,7 @@ public partial class BitBadgeStylesheetTests
     [TestMethod]
     public void BitBadgeShouldKeepItsOwnLookAwayFromABadgeNestedInItsChildContent()
     {
-        var rules = RulesOf(ReadStylesheet()).Split('\n');
+        var rules = SourceFiles.StripScssComments(ReadStylesheet()).Split('\n');
 
         // A badge can sit in the child content of another one, so every rule that reaches the badge from a class of
         // the root does it through child combinators: a descendant selector would hand the outer badge's corner,
@@ -138,10 +130,7 @@ public partial class BitBadgeStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n.bit-bdg-pls {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The pulse has no rule of its own.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg-pls {");
 
         // An endless attention cue has to be stoppable (WCAG 2.2.2), so reduced motion stops it outright rather than
         // slowing it the way it slows a loader, while ForceAnimation - on the root or on an ancestor - opts back in.
@@ -155,21 +144,7 @@ public partial class BitBadgeStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Notifications", "Badge", "BitBadge.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Badge", "BitBadge.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Badge-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

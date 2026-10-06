@@ -518,6 +518,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="BirthDate" xml:space="preserve">
     <value>Geboortedatum</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>De geboortedatum kan niet in de toekomst liggen.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Gebruikersnaam</value>
   </data>

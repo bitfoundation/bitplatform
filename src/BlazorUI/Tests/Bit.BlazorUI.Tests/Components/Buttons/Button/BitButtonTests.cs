@@ -323,13 +323,13 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top),
-        DataRow(BitLabelPosition.End),
-        DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Start),
+        DataRow(BitPlacement.Top),
+        DataRow(BitPlacement.End),
+        DataRow(BitPlacement.Bottom),
+        DataRow(BitPlacement.Start),
         DataRow(null),
     ]
-    public void BitButtonLoaderTest(BitLabelPosition? labelPosition)
+    public void BitButtonLoaderTest(BitPlacement? labelPosition)
     {
         const string loadingLabel = "I'm Loading Label";
 
@@ -339,16 +339,16 @@ public class BitButtonTests : BunitTestContext
             parameters.Add(p => p.LoadingLabel, loadingLabel);
             if (labelPosition.HasValue)
             {
-                parameters.Add(p => p.LoadingLabelPosition, labelPosition.Value);
+                parameters.Add(p => p.LoadingLabelPlacement, labelPosition.Value);
             }
         });
 
         var labelPositionClass = labelPosition switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
-            BitLabelPosition.Start => "bit-btn-srt",
+            BitPlacement.Top => "bit-btn-top",
+            BitPlacement.End => "bit-btn-end",
+            BitPlacement.Bottom => "bit-btn-btm",
+            BitPlacement.Start => "bit-btn-srt",
             _ => "bit-btn-end"
         };
 
@@ -360,23 +360,23 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start),
-        DataRow(BitIconPosition.End),
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.End),
         DataRow(null)
     ]
-    public void BitButtonIconPositionClassTest(BitIconPosition? iconPosition)
+    public void BitButtonIconPlacementClassTest(BitPlacement? iconPosition)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
             if (iconPosition.HasValue)
             {
-                parameters.Add(p => p.IconPosition, iconPosition.Value);
+                parameters.Add(p => p.IconPlacement, iconPosition.Value);
             }
         });
 
         var bitButton = com.Find(".bit-btn");
 
-        var expectedClassPresence = iconPosition == BitIconPosition.End;
+        var expectedClassPresence = iconPosition == BitPlacement.End;
 
         Assert.AreEqual(expectedClassPresence, bitButton.ClassList.Contains("bit-btn-eni"));
     }
@@ -1865,12 +1865,12 @@ public class BitButtonTests : BunitTestContext
             Href = "https://bitplatform.dev",
             IconName = "Share",
             IconOnly = true,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             IconUrl = "/images/icon.svg",
             IsLoading = true,
             LoadingDelay = 250,
             LoadingLabel = "Sending...",
-            LoadingLabelPosition = BitLabelPosition.Top,
+            LoadingLabelPlacement = BitPlacement.Top,
             NoWrap = true,
             Reclickable = true,
             Rel = BitLinkRels.NoOpener,
@@ -1919,12 +1919,12 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("https://bitplatform.dev", instance.Href);
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
-        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
         Assert.AreEqual("/images/icon.svg", instance.IconUrl);
         Assert.IsTrue(instance.IsLoading);
         Assert.AreEqual(250, instance.LoadingDelay);
         Assert.AreEqual("Sending...", instance.LoadingLabel);
-        Assert.AreEqual(BitLabelPosition.Top, instance.LoadingLabelPosition);
+        Assert.AreEqual(BitPlacement.Top, instance.LoadingLabelPlacement);
         Assert.IsTrue(instance.NoWrap);
         Assert.IsTrue(instance.Reclickable);
         Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);

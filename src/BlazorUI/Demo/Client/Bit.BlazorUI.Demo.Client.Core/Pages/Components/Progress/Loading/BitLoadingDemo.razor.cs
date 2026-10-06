@@ -26,7 +26,7 @@ public partial class BitLoadingDemo
         {
             Thickness = 3,
             Speed = 1.5,
-            LabelPosition = BitLabelPosition.End
+            LabelPlacement = BitPlacement.End
         }
     ];
 
@@ -96,12 +96,12 @@ public partial class BitLoadingDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The side of the drawing the label sits on: Top by default, End for an Inline loader. Start and End follow the writing direction.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -318,39 +318,7 @@ public partial class BitLoadingDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines where the label of a loading component sits relative to its animation.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows above the animation.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows at the end side of the animation, which follows the direction of the writing.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows below the animation.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows at the start side of the animation, which follows the direction of the writing.",
-                    Value="3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

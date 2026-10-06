@@ -234,7 +234,7 @@
                 <b>Never</b> and <b>Always</b> fix the shape) the panel is a modal drawer opened by <b>IsOpen</b>:
                 it locks the page scroll, takes, traps and restores the focus, and closes on the overlay, Escape, a
                 swipe toward its edge, or a navigation. <b>AutoFocus</b> moves the focus on to the search box,
-                <b>Position</b> picks the edge, and <b>ShowCloseButton</b> adds a close button (<b>CloseIcon</b>, <b>CloseIconName</b>,
+                <b>Placement</b> picks the edge (Start or End), and <b>ShowCloseButton</b> adds a close button (<b>CloseIcon</b>, <b>CloseIconName</b>,
                 <b>CloseAriaLabel</b>). <b>NoScrollLock</b>, <b>NoFocusTrap</b>, <b>NoRestoreFocus</b>,
                 <b>NoAutoClose</b> and <b>NoSwipe</b> opt out one by one; <b>NoOverlay</b> makes it non-modal.
             </div>
@@ -249,7 +249,7 @@
                                  Items="drawerNavItems"
                                  AutoFocus
                                  ShowCloseButton
-                                 Position="BitNavPanelPosition.End" />
+                                 Placement="BitPlacement.End" />
                 </div>
                 <div style="width:222px">
                     <div>Non-modal</div>

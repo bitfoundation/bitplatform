@@ -137,15 +137,15 @@ anywhere. `-p:BitMinifyMap=<path>` reads a map kept somewhere else - the one arc
 stack trace came from.
 
 Whoever reads the trace usually has neither the project nor the publish: a map kept with a release and a text
-file are enough, and the decoder is a package of its own, run without installing anything:
+file are enough, and the decoder is a command of the bit CLI, run without installing anything:
 
 ```
-dnx Bit.Minifier.Cli --decode bit-minifier.map trace.txt
+dnx Bit.Cli --prerelease -- decode bit-minifier.map trace.txt
 ```
 
-Leaving the trace out reads it from standard input there too. `Bit.Minifier` is what an app installs to be
-minified; `Bit.Minifier.Cli` is the decoder for whoever holds a map - the same source files, so the two read a
-map the same way, and nothing else, so it is a package with no dependencies.
+Leaving the trace out reads it from standard input there too, and run inside the project, `bit decode` finds the
+newest map under `obj` on its own. `Bit.Minifier` is what an app installs to be minified; `bit decode` is the
+decoder for whoever holds a map - compiled from the same source files, so the two read a map the same way.
 
 - **Keep the map with the release it belongs to.** It is written to `obj`, so a clean takes it away, and a
   CI job that publishes from a fresh checkout leaves nothing behind unless it collects the map as an

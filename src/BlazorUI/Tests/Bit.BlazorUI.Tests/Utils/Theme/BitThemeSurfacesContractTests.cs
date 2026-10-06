@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,7 +15,7 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 [TestClass]
 public sealed class BitThemeSurfacesContractTests
 {
-    /// <summary>Preset name, the palette folder under theme-styles, and its stylesheet.</summary>
+    /// <summary>Preset name, the palette folder (as SourceFiles.ReadThemeStylesheet takes it), and its stylesheet.</summary>
     private static IEnumerable<object[]> Palettes =>
     [
         [BitThemePresets.Light, "Fluent", "colors.fluent-light.scss"],
@@ -79,10 +78,7 @@ public sealed class BitThemeSurfacesContractTests
 
     private static string ReadPalette(string paletteFolder, string paletteFile)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", paletteFolder, paletteFile);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folders are copied to output (see Bit.BlazorUI.Tests.csproj).");
-
-        return File.ReadAllText(path);
+        return SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
     }
 
     private static string ReadVariable(string scss, string variable, string paletteFile)

@@ -77,6 +77,11 @@ jobs:
 
   blazorui_demo:
     name: blazorui demo
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/blazorui.demo.cd.yml
     secrets: inherit
     with:
@@ -87,6 +92,11 @@ jobs:
 
   sales_module_demo:
     name: sales module demo
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/sales-module-demo.cd.yml
     secrets: inherit
     with:
@@ -96,6 +106,11 @@ jobs:
 
   admin_sample:
     name: admin sample
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/admin-sample.cd.yml
     secrets: inherit
     with:
@@ -108,6 +123,11 @@ jobs:
 
   todo_sample:
     name: todo sample
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/todo-sample.cd.yml
     secrets: inherit
     with:

@@ -9,6 +9,28 @@ public partial class BitRichTextEditor
     private string _sourceText = "";
     private ElementReference _sourceRef = default!;
 
+    /// <summary>
+    /// A pointer click leaves the focus where it was - the button never takes it from the text - and the element holding
+    /// it is about to be hidden, so the focus follows the content into the view that replaces it instead of falling to
+    /// the page. A keyboard press is already on the toggle and stays there. A click raised from the keyboard reports
+    /// no click count, which is what tells the two apart.
+    /// </summary>
+    private async Task OnSourceToggleClick(MouseEventArgs e)
+    {
+        var wasInSource = _inSourceView;
+        await ToggleSourceViewAsync();
+        if (e.Detail <= 0 || wasInSource == _inSourceView) return;
+
+        if (_inSourceView)
+        {
+            RequestPanelFocus(() => _sourceRef);
+        }
+        else
+        {
+            RequestEditorFocus();
+        }
+    }
+
     private async Task ToggleSourceViewAsync()
     {
         // ReadOnly blocks *entering* source view, but exiting must stay possible: if the host
@@ -46,7 +68,7 @@ public partial class BitRichTextEditor
         if (await _js.BitRichTextEditorValidateHtml(_editorRef, _sourceText) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-html",
-                Label("invalid-html", "The HTML could not be parsed; fix it before leaving source view.")));
+                Loc("invalid-html", "The HTML could not be parsed; fix it before leaving source view.")));
             return;
         }
 

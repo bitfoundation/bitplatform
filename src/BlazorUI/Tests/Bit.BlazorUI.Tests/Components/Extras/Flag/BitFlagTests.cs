@@ -899,10 +899,10 @@ public class BitFlagTests : BunitTestContext
     public void BitFlagShouldOnlyPointAtImagesTheAssetsPackageShips()
     {
         // The images of the sets ship in the Bit.BlazorUI.Assets package, and nothing but their names ties
-        // the flag to them. The test project writes the names of the files the package holds beside the
-        // tests, and every image any flag offers the browser has to be one of them - with none left over.
-        var shipped = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "assets-flags.txt"))
-                          .Where(line => line.HasValue())
+        // the flag to them, so every image any flag offers the browser has to be one the package holds - with
+        // none left over.
+        var shipped = Directory.EnumerateFiles(SourceFiles.GetDirectory("Bit.BlazorUI.Assets", "wwwroot", "flags"), "*.webp")
+                          .Select(file => Path.GetFileName(file))
                           .ToHashSet(StringComparer.Ordinal);
 
         var offered = new HashSet<string>(StringComparer.Ordinal);

@@ -136,8 +136,8 @@ private readonly BitChartOptions _grace = new()
         Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
         Scales =
         {
-            ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center },
-            ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center }
+            ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center },
+            ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center }
         }
     };
 
@@ -160,8 +160,8 @@ private readonly BitChartOptions _center = new()
     Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
     Scales =
     {
-        [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center },
-        [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center }
+        [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center },
+        [""y""] = new BitChartScaleOptions { Id = ""y"", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center }
     }
 };
 

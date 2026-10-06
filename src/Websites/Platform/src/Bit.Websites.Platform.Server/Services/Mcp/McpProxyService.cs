@@ -269,6 +269,9 @@ public partial class McpProxyService : IAsyncDisposable
     /// The index prefixes every qualified name with its project name and answers with absolute paths: details of
     /// this machine that callers do not need, as a qualified name resolves without that prefix too. Tool names are
     /// renamed in errors only, since an answer can quote source code that mentions them.
+    /// A documentation server links the repository at develop, a branch that keeps moving after the release it was
+    /// built from: the release's tag never moves, so every such link is pointed at it here - one place, for every
+    /// release and every library, rather than in each server, which cannot know which tag it is being served as.
     /// </summary>
     private static string AdaptResultText(Upstream upstream, McpVersion? version, string text, bool isError)
     {
@@ -280,8 +283,31 @@ public partial class McpProxyService : IAsyncDisposable
             text = text.Replace($"{worktreeRoot}/", null, StringComparison.OrdinalIgnoreCase);
         }
 
+        // The ordinal scan is vectorized and rules most answers out before the regex is run at all.
+        if (version is not null && version.DocumentationEndpoints.ContainsKey(upstream.Name) && text.Contains("develop", StringComparison.Ordinal))
+        {
+            text = DevelopBranchLinkRegex().Replace(text, link => PinToTag(link, version.Tag));
+        }
+
         return isError ? RenameTools(upstream, text) : text;
     }
+
+    /// <summary>
+    /// An edit link becomes a blob one, since a tag cannot be edited; raw.githubusercontent's refs/heads/ prefix is
+    /// dropped, since a tag is not a head.
+    /// </summary>
+    private static string PinToTag(Match link, string tag)
+        => link.Groups["view"].Success
+            ? $"https://github.com/bitfoundation/bitplatform/{(link.Groups["view"].Value is "edit" ? "blob" : link.Groups["view"].Value)}/{tag}"
+            : $"https://raw.githubusercontent.com/bitfoundation/bitplatform/{tag}";
+
+    /// <summary>
+    /// Every form of a link at develop: a file or folder view (with or without a path after it, so the bare
+    /// /tree/develop of a project's root too), its edit, raw, blame and history views, and a raw file. A longer
+    /// branch name that only starts with develop is left alone.
+    /// </summary>
+    [GeneratedRegex(@"https://(?:github\.com/bitfoundation/bitplatform/(?<view>blob|tree|edit|raw|blame|commits)/|raw\.githubusercontent\.com/bitfoundation/bitplatform/)(?:refs/heads/)?develop(?![\w.-])")]
+    private static partial Regex DevelopBranchLinkRegex();
 
     private async ValueTask<ToolSet> ToolsOf(McpVersion? version, CancellationToken cancellationToken)
     {

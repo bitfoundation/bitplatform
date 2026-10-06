@@ -78,8 +78,7 @@
 
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json;package-lock.json" Outputs="wwwroot\scripts\app.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Environment)' == 'Development' " Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Environment)' != 'Development' " Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify --sourcemap" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <Target Name="BuildCssFiles">
@@ -89,8 +88,10 @@
     <ItemGroup>
         <Content Remove="package*.json" />
         <Content Remove="tsconfig.json" />
+        <Content Remove="wwwroot\fonts\**\README.md" />
         <None Include="package*json" />
         <None Include="tsconfig.json" />
+        <None Include="wwwroot\fonts\**\README.md" />
     </ItemGroup>
 
 </Project>

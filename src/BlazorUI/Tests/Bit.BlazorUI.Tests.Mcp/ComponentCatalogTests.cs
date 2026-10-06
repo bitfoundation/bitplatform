@@ -375,15 +375,23 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitFullCalendar", "BitFullCalendarParams")]
     [DataRow("BitInfiniteScrolling", "BitInfiniteScrollingParams")]
     [DataRow("BitMarkdownViewer", "BitMarkdownViewerParams")]
+    [DataRow("BitTextShimmer", "BitTextShimmerParams")]
+    [DataRow("BitTextField", "BitTextFieldParams")]
     [DataRow("BitMarkdownEditor", "BitMarkdownEditorParams")]
+    [DataRow("BitPdfViewer", "BitPdfViewerParams")]
     [DataRow("BitAccordionList", "BitAccordionListParams")]
     [DataRow("BitNavPanel", "BitNavPanelParams")]
+    [DataRow("BitVirtualize", "BitVirtualizeParams")]
+    [DataRow("BitPhoneInput", "BitPhoneInputParams")]
+    [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitFlag", "BitFlagParams")]
     [DataRow("BitMessageBox", "BitMessageBoxParams")]
+    [DataRow("BitRichTextEditor", "BitRichTextEditorParams")]
     [DataRow("BitErrorBoundary", "BitErrorBoundaryParams")]
     [DataRow("BitChart", "BitChartParams")]
     [DataRow("BitMap", "BitMapParams")]
+    [DataRow("BitToggle", "BitToggleParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
@@ -401,7 +409,7 @@ public class ComponentCatalogTests : McpTestBase
 
         // The line is only worth its cost where it is true: a component with no params class of its
         // own must not carry it.
-        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitTextField" });
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitThemeSwitcher" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
     }

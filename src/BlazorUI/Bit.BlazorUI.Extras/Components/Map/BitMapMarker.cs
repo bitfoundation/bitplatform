@@ -68,12 +68,19 @@ public sealed record BitMapMarker
     public bool TooltipPermanent { get; init; }
 
     /// <summary>
-    /// Tooltip placement direction.
-    /// <para><b>Provider support:</b> Leaflet honours every direction; MapLibre and Mapbox honour
-    /// all but <see cref="BitMapTooltipDirection.Auto"/>, which they resolve themselves. OpenLayers
-    /// and Azure Maps always place the tooltip above the marker.</para>
+    /// Which side of the marker the tooltip is placed on, or <see langword="null"/> - the default - to leave
+    /// the provider to pick the best one.
+    /// <para><b>Provider support:</b> Leaflet honours every side; MapLibre and Mapbox honour all but an
+    /// unset one, which they resolve themselves. OpenLayers and Azure Maps always place the tooltip above
+    /// the marker.</para>
     /// </summary>
-    public BitMapTooltipDirection TooltipDirection { get; init; } = BitMapTooltipDirection.Auto;
+    /// <remarks>
+    /// The providers name their directions physically, so only <see cref="BitPlacement.Top"/>,
+    /// <see cref="BitPlacement.Bottom"/>, <see cref="BitPlacement.Left"/>, <see cref="BitPlacement.Right"/>
+    /// and <see cref="BitPlacement.Center"/> are passed through. The logical pair and the two combined
+    /// placements have no equivalent and leave the provider to pick, exactly as leaving this unset does.
+    /// </remarks>
+    public BitPlacement? TooltipPlacement { get; init; }
 
     /// <summary>
     /// Hover label for the marker. Rendering varies by provider:

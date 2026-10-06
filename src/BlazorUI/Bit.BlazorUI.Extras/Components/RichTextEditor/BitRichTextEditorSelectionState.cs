@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Snapshot of the current selection's formatting, reported by the JS bridge and used to
@@ -82,4 +82,7 @@ public sealed class BitRichTextEditorSelectionState
 
     /// <summary>Alternative text of the selected image (empty when it has none), or null when no image is selected.</summary>
     public string? ImageAlt { get; set; }
+
+    /// <summary>Width in pixels the selected image was given, or null when it keeps its natural size or no image is selected.</summary>
+    public int? ImageWidth { get; set; }
 }

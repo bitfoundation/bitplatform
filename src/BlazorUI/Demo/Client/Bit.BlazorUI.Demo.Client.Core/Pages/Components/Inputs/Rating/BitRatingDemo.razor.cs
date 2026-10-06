@@ -128,12 +128,12 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the label sits relative to the items: above them by default, and beside them with Start or End for the compact single-line row.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -475,19 +475,7 @@ public partial class BitRatingDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Determines where the label of the rating sits relative to its items.",
-            Items =
-            [
-                new() { Name = "Top", Description = "The label sits above the items.", Value = "0" },
-                new() { Name = "End", Description = "The label sits after the items, on the same line.", Value = "1" },
-                new() { Name = "Bottom", Description = "The label sits below the items.", Value = "2" },
-                new() { Name = "Start", Description = "The label sits before the items, on the same line.", Value = "3" }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "color-enum",
@@ -706,7 +694,7 @@ public partial class BitRatingDemo
             Color = BitColor.Warning,
             SelectedIconName = BitIconName.HeartFill,
             UnselectedIconName = BitIconName.Heart,
-            LabelPosition = BitLabelPosition.Start
+            LabelPlacement = BitPlacement.Start
         }
     ];
 

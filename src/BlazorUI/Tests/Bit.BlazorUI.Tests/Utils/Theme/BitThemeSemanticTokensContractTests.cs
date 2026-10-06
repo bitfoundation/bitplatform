@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,9 +21,7 @@ public sealed class BitThemeSemanticTokensContractTests
 
     private static string ReadSemanticTokensScss()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "semantic-tokens.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
-        return File.ReadAllText(scssPath);
+        return SourceFiles.ReadThemeStylesheet("semantic-tokens.scss");
     }
 
     private static string[] MapperEmittedKeys()

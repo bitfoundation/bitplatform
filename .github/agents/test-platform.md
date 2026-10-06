@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, roll its All CD run's web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, and check that bitplatform.dev/mcp answers each release from that release's own code. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, roll its All CD run's web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, and check that a new bit Boilerplate project's dev container sets itself up with bit. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -28,6 +28,8 @@ gh variable list -R bitfoundation/bitplatform   # APP_VERSION, and when it last 
 
 Without a CD link, step 2 only verifies: the suite tests whatever is deployed.
 
+Step 5 takes a commit, usually the CI run's head. Without one, it tests the bit packages nuget.org serves.
+
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
 `<APP_VERSION>+<sha>` in the ProductVersion of the IIS assemblies and the Windows executables, as `versionName` on
 Android, and in the nav panel of every Boilerplate app. The jobs read the variable when they run, so if it changed
@@ -48,6 +50,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
+| `devcontainer [-Sha <sha>] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
 
 ## 1. The CI run
 
@@ -80,9 +83,10 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    ```
 
    A test that needs what the job generated - another database, `--module Admin`, `--advancedTests` - needs the same
-   project: replay the job's `dotnet pack`, `dotnet new install` and `dotnet new bit-bp ...` lines from `all.ci.yml` in
-   a scratch folder outside the repository, with the job's database in Docker and the job's connection string
-   (`ConnectionStrings__mssqldb` and the like, in `all.ci.yml`).
+   project: pack the template and the CLI the way `.github/actions/setup-bit-cli` does, then replay the job's
+   `bit new ...` line from `all.ci.yml` with `--template-package` in a scratch folder outside the repository, with the
+   job's database in Docker and the job's connection string (`ConnectionStrings__mssqldb` and the like, in
+   `all.ci.yml`).
 
    Run a flaky test often enough to watch it fail before the fix and not after - under load, when the failure is
    about timing.
@@ -209,7 +213,8 @@ does not serve silently gets the newest one it does.
    `BitAccordion.Busy` came in 10.6.1, so
    `mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'` lists `Busy` and the
    same call on 10.6.0 does not. Pick a new difference for each new pair of releases; the other libraries work the
-   same way (`src/Butil/Bit.Butil/Publics`, ...).
+   same way (`src/Butil/Bit.Butil/Publics`, ...). The `source:` link of the same answer points at that release's
+   code too - its tag (`blob/v-10.6.1/...`), never `develop`.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
@@ -219,7 +224,28 @@ does not serve silently gets the newest one it does.
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
 away only after the next CD.
 
-## 5. Report
+## 5. bit Boilerplate's dev container
+
+A new project's dev container is the .NET SDK image with Docker inside it. When it's created, it installs bit and runs
+`bit setup`, which does the rest the way it does on any machine: Node.js, the Aspire CLI, the build tools, the
+certificate, the packages, the build and Chromium for the UI tests. `devcontainer` checks that on Docker Desktop's Linux
+engine, as VS Code and Codespaces would run it: `bit new` makes a project here without setting it up, the
+devcontainers CLI brings its container up, and `bit doctor` runs inside it.
+
+- With `-Sha`, bit and the template come from that commit, as in CI: bit is packed into a feed the container mounts,
+  and the project's `nuget.config` maps `Bit.Cli` to that feed alone, so a newer prerelease on nuget.org can't stand
+  in for it. Without `-Sha`, it tests what nuget.org serves, which is what users get.
+- It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
+  restore. Run it on its own, after the E2E suite, never next to it.
+- Done means every `bit setup` step passed and `bit doctor` exits with 0, with VS Code not needed inside a container.
+  Its memory warning describes Docker Desktop's VM, not this machine, and is expected.
+- The logs of `bit new`, of the container's start and of `bit doctor` stay in the folder the helper names. `-Keep`
+  leaves the container up, to look inside it with the devcontainers CLI; bit's own logs are in its home folder there.
+
+A failure in bit or in the template is fixed like a CI failure, and the next `devcontainer -Sha` on the fix proves it;
+no CD is involved.
+
+## 6. Report
 
 Lead with the verdict, then:
 
@@ -229,7 +255,9 @@ Lead with the verdict, then:
 3. **E2E**: per stage, the passed, failed and skipped counts; per failure, its kind, its evidence (the assertion, the
    event log lines) and what happens next.
 4. **MCP**: the served versions, their tool counts, the version check, and how good the answers were.
-5. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
+5. **Dev container**: the commit or the nuget.org version tested, each `bit setup` step with its time, `bit doctor`'s
+   exit code, and per failure its cause and fix.
+6. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to

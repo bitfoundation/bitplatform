@@ -158,7 +158,7 @@
     }
 
     // Reversing the row would carry the check mark to the far end with the icon, and the check mark is not
-    // what IconPosition was asked to move. Ordering it after everything else puts it back at the leading
+    // what IconPlacement was asked to move. Ordering it after everything else puts it back at the leading
     // edge, since a reversed main axis lays the highest order out first.
     .bit-tgb-chm {
         order: 1;

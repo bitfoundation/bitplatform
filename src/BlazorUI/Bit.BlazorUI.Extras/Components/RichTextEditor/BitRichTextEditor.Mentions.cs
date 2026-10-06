@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Bit.BlazorUI;
 
@@ -65,7 +65,7 @@ public partial class BitRichTextEditor
             // A search superseded by a later keystroke, or by the menu closing, reports nothing.
             if (token != _mentionQueryToken) return;
             await RaiseErrorAsync(new BitRichTextEditorError("mention-search-failed",
-                Label("mention-search-failed", "Could not load mention suggestions.")));
+                Loc("mention-search-failed", "Could not load mention suggestions.")));
             return;
         }
 
@@ -106,6 +106,7 @@ public partial class BitRichTextEditor
 
             case "Escape":
                 CloseMention();
+                RequestEditorFocus();
                 break;
         }
     }
@@ -126,6 +127,7 @@ public partial class BitRichTextEditor
         CloseMention();
 
         await _js.BitRichTextEditorApplyMention(_editorRef, BuildMentionHtml(mention));
+        RequestEditorFocus();
         await OnMentionSelected.InvokeAsync(mention);
     }
 

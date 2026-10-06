@@ -121,7 +121,7 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The shape of the placeholder the shimmer draws.
     /// </summary>
-    public BitShimmerShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// The wait in ms before the placeholder appears.

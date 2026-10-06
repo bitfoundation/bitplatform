@@ -148,7 +148,7 @@
 
 // Stretches the label of each item over the full width of its row and spreads its content, so the circle
 // sits at the far edge of the row instead of right beside the item text - the settings list layout, once
-// LabelPosition.Start has put the text first. The card variants already stretch their item labels, so for
+// LabelPlacement.Start has put the text first. The card variants already stretch their item labels, so for
 // them this rule only adds the spreading. Excluded from the spreading is the icon and image tile
 // (.bit-chg-ili), which stacks its own content in a column and would have its parts pushed apart.
 .bit-chg-sil {
@@ -870,10 +870,10 @@
         background-color: transparent;
     }
 
-    // LabelPosition.Start reverses the row, so the content comes first and the circle last; spreading them
+    // LabelPlacement.Start reverses the row, so the content comes first and the circle last; spreading them
     // is what puts the circle at the far edge of a card the label now fills, instead of leaving it in the
     // middle with the empty half of the card beside it. Excluded is the icon and image tile, which stacks
-    // its content in a column and ignores LabelPosition - spreading that would push its parts apart.
+    // its content in a column and ignores LabelPlacement - spreading that would push its parts apart.
     &.bit-chg-lst .bit-chg-itl:not(.bit-chg-ili) {
         justify-content: space-between;
     }

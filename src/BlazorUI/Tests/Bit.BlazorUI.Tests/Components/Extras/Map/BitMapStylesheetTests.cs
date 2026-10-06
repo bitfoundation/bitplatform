@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -61,7 +59,7 @@ public class BitMapStylesheetTests
     [TestMethod]
     public void BitMapShouldListEveryPublicVariableOnItsDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "Map", "BitMapDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "Map", "BitMapDemo.razor.cs");
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Map-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -139,7 +137,7 @@ public class BitMapStylesheetTests
         StringAssert.Contains(stylesheet, ".leaflet-tile-pane,\n    .bit-map-ol-tiles {\n        filter: var(--bit-Map-tile-filter, none);");
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-Map-tile-filter").Count);
 
-        var openLayers = ReadFile("Bit.BlazorUI.Extras", "Components", "Map", "Providers", "BitMapOpenLayers.ts");
+        var openLayers = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", "BitMapOpenLayers.ts");
 
         Assert.AreEqual(3, Regex.Matches(openLayers, @"_tileClassName\b").Count, "Both the base layer and the tile overlays must render into the filtered canvas.");
         StringAssert.Contains(openLayers, "_tileClassName = 'ol-layer bit-map-ol-tiles'");
@@ -157,36 +155,14 @@ public class BitMapStylesheetTests
         DataRow("BitMapCesium.ts")]
     public void BitMapProvidersShouldDrawInTheThemesColors(string file)
     {
-        var script = ReadFile("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
+        var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
 
         Assert.AreEqual(1, Regex.Matches(script, @"opts = BitMapHelpers\.withDefaultIcon\(id, opts\);").Count);
         Assert.AreEqual(5, Regex.Matches(script, @"style = BitMapHelpers\.resolvePathStyle\(id, style\);").Count);
         Assert.IsFalse(script.Contains("hexToRgba", StringComparison.Ordinal), "A hex-only parser misreads every other CSS color.");
     }
 
-    private static string ReadBlock(string selector)
-    {
-        var stylesheet = ReadStylesheet();
+    private static string ReadBlock(string selector) => SourceFiles.GetScssBlock(ReadStylesheet(), $"\n{selector} {{");
 
-        var start = stylesheet.IndexOf($"\n{selector} {{", StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"{selector} has no rule of its own.");
-
-        var block = stylesheet[start..];
-
-        return block[..block.IndexOf("\n}", StringComparison.Ordinal)];
-    }
-
-    private static string ReadStylesheet() => ReadFile("Bit.BlazorUI.Extras", "Components", "Map", "BitMap.scss");
-
-    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
-
-    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "BitMap.scss");
 }

@@ -48,6 +48,15 @@ public static class Services
                         Window = TimeSpan.FromMinutes(5)
                     }));
 
+            options.AddPolicy("ProjectAssistant", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20,
+                        Window = TimeSpan.FromMinutes(10)
+                    }));
+
             // Returns the error in the same shape as ApiExceptionHandler (Request-ID header + RestErrorInfo body),
             // so the client turns it into TooManyRequestsExceptions (a KnownException) instead of retrying the POST
             // and surfacing a generic unknown-error message.

@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -48,7 +46,7 @@ public partial class BitSeparatorStylesheetTests
     [TestMethod]
     public void BitSeparatorShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Separator-* variable is declared, which stops it inheriting.");
     }
@@ -65,7 +63,7 @@ public partial class BitSeparatorStylesheetTests
     public void BitSeparatorShouldStartEveryPrivateVariableUnset(string name)
     {
         // A separator nested in the content of another would otherwise inherit its line.
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-spr {"), $"{name}: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spr {"), $"{name}: initial;");
     }
 
     [TestMethod,
@@ -93,7 +91,7 @@ public partial class BitSeparatorStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var block = Block(stylesheet, "\n    &.bit-dis {");
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {");
         StringAssert.Contains(block, "--bit-spr-dis-brd: #{$clr-brd-dis};");
         StringAssert.Contains(block, "--bit-spr-dis-fg: #{$clr-fg-dis};");
 
@@ -105,7 +103,7 @@ public partial class BitSeparatorStylesheetTests
     [TestMethod]
     public void BitSeparatorShouldKeepTheDisabledStateInForcedColors()
     {
-        var block = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(block, "border-color: GrayText;");
         StringAssert.Contains(block, "color: GrayText;");
@@ -117,14 +115,14 @@ public partial class BitSeparatorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // Logical padding takes one length for both ends or two for the start and the end, in the reading direction.
-        StringAssert.Contains(Block(stylesheet, "\n.bit-spr-hrz {"), "padding-inline: var(--bit-spr-ins, ");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-spr-vrt {"), "padding-block: var(--bit-spr-ins, ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-spr-hrz {"), "padding-inline: var(--bit-spr-ins, ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-spr-vrt {"), "padding-block: var(--bit-spr-ins, ");
     }
 
     [TestMethod]
     public void BitSeparatorShouldLetTheContentShrinkAndWrap()
     {
-        var block = Block(ReadStylesheet(), "\n.bit-spr-cnt {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spr-cnt {");
 
         StringAssert.Contains(block, "min-width: 0;");
         StringAssert.Contains(block, "overflow-wrap: break-word;");
@@ -137,8 +135,8 @@ public partial class BitSeparatorStylesheetTests
 
         // Between runs of text, or sized to the content it does not have, the line would otherwise collapse to nothing.
         // The minimum sits on the line rather than on the border-box root, whose Inset padding would otherwise eat it.
-        StringAssert.Contains(Block(stylesheet, "\n    &:not(:has(> .bit-spr-cnt))::before {"), "min-height: 1em;");
-        Assert.IsFalse(Block(stylesheet, "\n.bit-spr-vrt {").Contains("\n    min-height:"), "The minimum is on the root, where an Inset eats it.");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &:not(:has(> .bit-spr-cnt))::before {"), "min-height: 1em;");
+        Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n.bit-spr-vrt {").Contains("\n    min-height:"), "The minimum is on the root, where an Inset eats it.");
     }
 
     [TestMethod]
@@ -148,8 +146,8 @@ public partial class BitSeparatorStylesheetTests
 
         // Start- and end-aligned content keeps the same gap from the edge as from the line, however it is painted and
         // whatever its offset, so upgrading leaves an existing aligned label where it was.
-        StringAssert.Contains(Block(stylesheet, "\n.bit-spr-hrz {"), "padding: 0 var(--bit-Separator-content-gap, #{spacing(1.5)});");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-spr-vrt {"), "padding: var(--bit-Separator-content-gap, #{spacing(1.5)}) 0;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-spr-hrz {"), "padding: 0 var(--bit-Separator-content-gap, #{spacing(1.5)});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-spr-vrt {"), "padding: var(--bit-Separator-content-gap, #{spacing(1.5)}) 0;");
         Assert.IsFalse(stylesheet.Contains("padding-inline-start"), "The content is held flush with its edge.");
         Assert.IsFalse(stylesheet.Contains("padding-top"), "The content is held flush with its edge.");
     }
@@ -159,18 +157,7 @@ public partial class BitSeparatorStylesheetTests
     {
         // The size and the weight inherit, so the family does too: a label inside a heading or a monospace panel
         // matches the text around it.
-        Assert.IsFalse(Block(ReadStylesheet(), "\n.bit-spr-cnt {").Contains("font-family"), "The content forces a font family.");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
+        Assert.IsFalse(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spr-cnt {").Contains("font-family"), "The content forces a font family.");
     }
 
     private static string[] DocumentedVariables(string stylesheet)
@@ -178,21 +165,7 @@ public partial class BitSeparatorStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Separator", "BitSeparator.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Separator", "BitSeparator.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Separator-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

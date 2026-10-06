@@ -220,7 +220,7 @@
         <DemoExample Title="Gauge" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>GapDegree</b> cuts a gap (0 to 295 degrees) out of the ring, turning it into a gauge;
-                <b>GapPosition</b> moves the opening from the <b>Bottom</b> to the <b>Top</b>, <b>Start</b> or
+                <b>GapPlacement</b> moves the opening from the <b>Bottom</b> to the <b>Top</b>, <b>Start</b> or
                 <b>End</b>.
             </div>
             <br />
@@ -235,11 +235,11 @@
             <br />
             <div class="circular-box">
                 <BitProgress Circular Rounded AriaLabel="Gap at the top" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
-                             GapPosition="BitProgressGapPosition.Top" />
+                             GapPlacement="BitPlacement.Top" />
                 <BitProgress Circular Rounded AriaLabel="Gap at the start" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
-                             GapPosition="BitProgressGapPosition.Start" />
+                             GapPlacement="BitPlacement.Start" />
                 <BitProgress Circular Rounded AriaLabel="Gap at the end" GapDegree="120" Diameter="80" Thickness="8" Percent="gaugeValue"
-                             GapPosition="BitProgressGapPosition.End" />
+                             GapPlacement="BitPlacement.End" />
             </div>
         </DemoExample>
 
