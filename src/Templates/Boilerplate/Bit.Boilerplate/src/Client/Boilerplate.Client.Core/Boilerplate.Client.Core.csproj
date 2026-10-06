@@ -89,8 +89,10 @@
     <ItemGroup>
         <Content Remove="package*.json" />
         <Content Remove="tsconfig.json" />
+        <Content Remove="wwwroot\fonts\**\README.md" />
         <None Include="package*json" />
         <None Include="tsconfig.json" />
+        <None Include="wwwroot\fonts\**\README.md" />
     </ItemGroup>
 
 </Project>

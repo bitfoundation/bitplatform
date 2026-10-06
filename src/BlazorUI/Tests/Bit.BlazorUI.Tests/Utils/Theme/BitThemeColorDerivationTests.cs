@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -620,10 +619,7 @@ public sealed class BitThemeColorDerivationTests
         // -dis / -dis-text values byte for byte - which is what makes the class's promise that "a
         // derived role behaves like a packaged one" true for the disabled state, and what catches a
         // palette retune that forgets to bring the derivation along (or vice versa).
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", paletteFolder, paletteFile);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-
-        var scss = File.ReadAllText(path);
+        var scss = SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
 
         string? token(string name)
         {

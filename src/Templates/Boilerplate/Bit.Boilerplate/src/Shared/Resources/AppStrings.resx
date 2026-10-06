@@ -518,6 +518,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="BirthDate" xml:space="preserve">
     <value>Birthdate</value>
   </data>
+    <data name="BirthDateInFuture" xml:space="preserve">
+    <value>The birthdate can't be in the future.</value>
+  </data>
     <data name="UserName" xml:space="preserve">
     <value>Username</value>
   </data>

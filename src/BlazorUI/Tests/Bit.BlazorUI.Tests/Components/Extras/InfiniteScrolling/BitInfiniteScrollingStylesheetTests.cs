@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitInfiniteScrollingStylesheetTests
     [TestMethod]
     public void BitInfiniteScrollingShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-InfiniteScrolling-* variable is declared, which stops it inheriting.");
     }
@@ -55,7 +53,7 @@ public partial class BitInfiniteScrollingStylesheetTests
     [TestMethod]
     public void BitInfiniteScrollingShouldTurnTheSpinnerWithTheSpinnerTokens()
     {
-        var spinner = Block(ReadStylesheet(), "\n.bit-isc-spn {");
+        var spinner = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-spn {");
 
         // The spinner tokens slow a looping animation down under reduced motion instead of collapsing it to zero.
         StringAssert.Contains(spinner, "animation: bit-isc-spin $mot-duration-spinner $mot-easing-spinner infinite;");
@@ -64,7 +62,7 @@ public partial class BitInfiniteScrollingStylesheetTests
     [TestMethod]
     public void BitInfiniteScrollingShouldKeepItsIndicatorsInForcedColors()
     {
-        var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "border-block-start-color: CanvasText;");
         StringAssert.Contains(forced, "color: GrayText;");
@@ -73,13 +71,13 @@ public partial class BitInfiniteScrollingStylesheetTests
         StringAssert.Contains(forced, "border: $shp-border-width $shp-border-style ButtonText;");
 
         // The ring of a feed's article becomes the system's own focus color.
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-isc-art {"), "outline: #{$shp-focus-ring-width} solid Highlight;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {"), "outline: #{$shp-focus-ring-width} solid Highlight;");
     }
 
     [TestMethod]
     public void BitInfiniteScrollingFeedArticleShouldDrawItsRingAboveItsContent()
     {
-        var article = Block(ReadStylesheet(), "\n.bit-isc-art {");
+        var article = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {");
 
         // An inset box-shadow is painted under the article's children, so an item with a background would hide it.
         Assert.IsFalse(article.Contains("box-shadow"), "The ring of an article is a box-shadow, which its content covers.");
@@ -94,14 +92,14 @@ public partial class BitInfiniteScrollingStylesheetTests
         // The text-align variable takes values (justify, match-parent) that a flex alignment rejects.
         Assert.IsFalse(stylesheet.Contains("justify-content: var(--bit-InfiniteScrolling-status-text-align"),
                        "The text-align variable is read as a flex alignment.");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-isc-spn {"), "display: inline-block;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-isc-spn {"), "display: inline-block;");
     }
 
     [TestMethod]
     public void BitInfiniteScrollingButtonShouldStayFocusableAndUnclippedWhileItLoads()
     {
         var stylesheet = ReadStylesheet();
-        var button = Block(stylesheet, "\n.bit-isc-btn {");
+        var button = SourceFiles.GetScssBlock(stylesheet, "\n.bit-isc-btn {");
 
         // The busy button is marked aria-disabled, never disabled, so the focus that pressed it is kept.
         StringAssert.Contains(button, "&[aria-disabled=\"true\"] {");
@@ -115,7 +113,7 @@ public partial class BitInfiniteScrollingStylesheetTests
     [TestMethod]
     public void BitInfiniteScrollingShouldPrintAtTheLengthOfItsItems()
     {
-        var print = Block(ReadStylesheet(), "\n@media print {");
+        var print = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media print {");
 
         StringAssert.Contains(print, "overflow: visible !important;");
         StringAssert.Contains(print, "max-height: none !important;");
@@ -123,38 +121,12 @@ public partial class BitInfiniteScrollingStylesheetTests
         StringAssert.Contains(print, "display: none !important;");
     }
 
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what is not a comment is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "InfiniteScrolling", "BitInfiniteScrolling.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "InfiniteScrolling", "BitInfiniteScrolling.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-InfiniteScrolling-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

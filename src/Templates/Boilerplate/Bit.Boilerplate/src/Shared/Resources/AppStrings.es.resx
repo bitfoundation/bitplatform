@@ -518,6 +518,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="BirthDate" xml:space="preserve">
     <value>Fecha de nacimiento</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>La fecha de nacimiento no puede estar en el futuro.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Nombre de usuario</value>
   </data>

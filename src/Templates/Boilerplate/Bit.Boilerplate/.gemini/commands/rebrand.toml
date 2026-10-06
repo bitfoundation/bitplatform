@@ -1,0 +1,9 @@
+description = "Re-skin the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood): every theme token for light and dark, fonts, logo, home page, navigation and not-found page, verified state by state with measured contrast."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/rebrand.agent.md}
+
+Reference, scope and feel: {{args}}
+"""

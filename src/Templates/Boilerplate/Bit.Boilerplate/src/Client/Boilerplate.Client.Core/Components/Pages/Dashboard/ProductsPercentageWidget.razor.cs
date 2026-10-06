@@ -14,6 +14,7 @@ public partial class ProductsPercentageWidget
         Type = BitChartType.Pie,
         Options = new BitChartOptions
         {
+            AspectRatio = 1.1,
             Plugins = new BitChartPluginOptions
             {
                 Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }

@@ -31,10 +31,7 @@ public sealed class BitMediaQueryScreenQueryContractTests
 
     private static string ReadTypeScript()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", "BitMediaQuery.ts");
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure BitMediaQuery.ts is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "MediaQuery", "BitMediaQuery.ts");
     }
 
     private static string ReadBuildScreenQueryBody()

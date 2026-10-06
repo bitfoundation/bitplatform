@@ -1,8 +1,12 @@
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
     private bool lacksValidPrivilege;
+    //#if (multitenant == true)
+    private bool lacksSelectedTenant;
+    //#endif
     private bool isUpdatingAuthState = true;
 
 
@@ -11,6 +15,8 @@ public partial class NotAuthorizedPage
 
     [SupplyParameterFromQuery(Name = "try_refreshing_token"), Parameter]
     public bool? TryRefreshingToken { get; set; }
+
+    [Parameter] public Type? PageType { get; set; }
 
     private string GetSafeReturnUrl() => Uri.IsAppRelativeUrl(ReturnUrl, requireLeadingSlash: false) ? ReturnUrl : PageUrls.Home;
 
@@ -42,13 +48,41 @@ public partial class NotAuthorizedPage
 
             var user = (await AuthenticationStateTask).User;
 
-            lacksValidPrivilege = (await AuthorizationService.IsAuthorized(user, AuthPolicies.PRIVILEGED_ACCESS)) is false;
+            var failedPolicies = await GetFailedPolicies(user);
+
+            lacksValidPrivilege = failedPolicies.Contains(AuthPolicies.PRIVILEGED_ACCESS);
+            //#if (multitenant == true)
+            lacksSelectedTenant = failedPolicies.Contains(AuthPolicies.TENANT_SELECTED);
+            //#endif
         }
         finally
         {
             isUpdatingAuthState = false;
             StateHasChanged();
         }
+    }
+
+    private async Task<List<string>> GetFailedPolicies(ClaimsPrincipal user)
+    {
+        List<string> failedPolicies = [];
+
+        if (PageType is null) return failedPolicies;
+
+        var policies = PageType.GetCustomAttributes(inherit: true)
+            .OfType<IAuthorizeData>()
+            .Select(authorizeData => authorizeData.Policy)
+            .OfType<string>()
+            .Distinct();
+
+        foreach (var policy in policies)
+        {
+            if (await AuthorizationService.IsAuthorized(user, policy) is false)
+            {
+                failedPolicies.Add(policy);
+            }
+        }
+
+        return failedPolicies;
     }
 
     private async Task SignIn()

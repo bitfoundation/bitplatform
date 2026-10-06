@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +22,7 @@ public sealed class BitAccentColorNamesContractTests
     [TestMethod]
     public void AccentColorTypeScriptConstantsMatchTheirCSharpDefinitions()
     {
-        var constants = ReadConstants("BitAccentColor.ts");
+        var constants = ReadConstants("Bit.BlazorUI.Extras", "Components", "AccentColorSwitcher", "BitAccentColor.ts");
 
         var expected = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -53,8 +52,8 @@ public sealed class BitAccentColorNamesContractTests
         // Not a C# constant on either side - the accent cookie's lifetime is documented to match what
         // the core library writes for its own theme-preference cookie, so the theme client is the
         // reference. Both are the ~400-day cap browsers clamp persistent cookies to.
-        var accent = ReadConstants("BitAccentColor.ts");
-        var theme = ReadConstants("BitTheme.ts");
+        var accent = ReadConstants("Bit.BlazorUI.Extras", "Components", "AccentColorSwitcher", "BitAccentColor.ts");
+        var theme = ReadConstants("Bit.BlazorUI", "Utils", "Theme", "BitTheme.ts");
 
         Assert.IsTrue(accent.ContainsKey("COOKIE_MAX_AGE_SECONDS") && theme.ContainsKey("COOKIE_MAX_AGE_SECONDS"),
             "Both clients must keep declaring COOKIE_MAX_AGE_SECONDS for this contract to be checkable.");
@@ -62,13 +61,10 @@ public sealed class BitAccentColorNamesContractTests
             "The accent cookie and the theme cookie are one preference pair; letting one expire before the other leaves the server prerendering a half-restored appearance.");
     }
 
-    private static Dictionary<string, string> ReadConstants(string fileName)
+    private static Dictionary<string, string> ReadConstants(params string[] segments)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", fileName);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure {fileName} is copied to output (see Bit.BlazorUI.Tests.csproj).");
-
         var constants = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (Match match in ConstDeclaration.Matches(File.ReadAllText(path)))
+        foreach (Match match in ConstDeclaration.Matches(SourceFiles.Read(segments)))
         {
             constants[match.Groups["name"].Value] = match.Groups["value"].Value.Trim('\'');
         }
