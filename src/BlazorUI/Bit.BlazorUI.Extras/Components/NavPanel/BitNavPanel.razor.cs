@@ -856,11 +856,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
             try
             {
                 await _searchBoxRef.FocusAsync();
+                return;
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
-            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
-            catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
-            return;
+            catch (JSException) { } // the element is no longer in the document, so the drawer takes the focus instead
+            catch (InvalidOperationException) { } // the element has not been rendered yet, so the drawer takes the focus instead
         }
 
         if (_IsTrappingDrawer && RootElement.Context is not null)

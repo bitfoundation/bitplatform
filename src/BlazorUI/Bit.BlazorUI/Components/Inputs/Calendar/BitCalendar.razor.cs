@@ -888,7 +888,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         _focusTimePickerAfterRender = false;
 
-        await _inputTimeHourRef.FocusSafelyAsync(preventScroll);
+        await _inputTimeHourRef.FocusAsync(preventScroll);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)

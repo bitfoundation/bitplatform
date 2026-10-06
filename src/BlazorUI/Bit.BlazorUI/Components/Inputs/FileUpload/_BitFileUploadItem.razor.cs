@@ -83,9 +83,7 @@ public partial class _BitFileUploadItem : ComponentBase, IDisposable
 
             if (rendered is false) continue;
 
-            await element.FocusSafelyAsync();
-
-            return true;
+            if (await element.TryFocusAsync()) return true;
         }
 
         return false;

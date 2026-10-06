@@ -2464,6 +2464,7 @@ public class BitDropdownTests : BunitTestContext
 
         component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
 
         // The move never happened, so there is no focus event of its own to swallow: the next focus is
         // the user coming in, and it opens the callout.
