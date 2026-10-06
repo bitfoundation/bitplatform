@@ -59,6 +59,14 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
         Out.Write(grid);
     }
 
+    public void StepHint(string text)
+    {
+        var grid = new Grid { Width = Width }.AddColumn(new GridColumn().PadLeft(6).PadRight(0));
+
+        grid.AddRow(new Markup($"[grey]{Markup.Escape(text)}[/]"));
+        Out.Write(grid);
+    }
+
     public void Fail(string text) => Error.MarkupLine($"[red]{FailSymbol}[/] {Markup.Escape(text)}");
 
     public void Step(StepStatus status, string title, string? detail = null, TimeSpan? duration = null)

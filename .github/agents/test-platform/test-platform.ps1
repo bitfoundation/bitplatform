@@ -107,7 +107,7 @@ function Get-IisSites {
 # vpk pack -u names the Velopack app id, which is also the folder its setup installs into.
 function Get-WindowsApps {
     $ids = foreach ($workflow in $workflows) {
-        [regex]::Matches((Get-Content $workflow.FullName -Raw), 'vpk@[\d.]+ -- pack -u (?<id>\S+)') | ForEach-Object { $_.Groups['id'].Value }
+        [regex]::Matches((Get-Content $workflow.FullName -Raw), 'vpk(@[\d.]+ --)? pack -u (?<id>\S+)') | ForEach-Object { $_.Groups['id'].Value }
     }
 
     foreach ($id in $ids | Sort-Object -Unique) {

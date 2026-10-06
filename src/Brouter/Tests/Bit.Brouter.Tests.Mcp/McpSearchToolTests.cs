@@ -34,6 +34,7 @@ public class McpSearchToolTests
             ("query string binding", ["Auto-bound parameters", "Route parameters", "BrouterQueryAttribute"]),
             ("view transition", ["View transitions"]),
             ("nested routes outlet", ["Nested routes", "Nested routes & outlets"]),
+            ("a route parameter that must be a number", ["Constraints", "{value:int}"]),
         ];
 
         foreach (var (query, answers) in questions)

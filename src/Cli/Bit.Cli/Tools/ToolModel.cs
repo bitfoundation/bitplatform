@@ -1,4 +1,5 @@
-﻿using Bit.Cli.Infrastructure;
+﻿using System.Text.Json;
+using Bit.Cli.Infrastructure;
 using Bit.Cli.Templates;
 
 namespace Bit.Cli.Tools;
@@ -20,6 +21,28 @@ public sealed record ToolStatus(ToolState State, string? Version = null, string?
     public static ToolStatus Installed(string? version = null) => new(ToolState.Installed, version);
 }
 
+public sealed record SdkRequirement(Version Minimum, bool Preview, string? Exact = null)
+{
+    public static SdkRequirement? FromGlobalJson(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            if (document.RootElement.TryGetProperty("sdk", out var sdk) is false || sdk.TryGetProperty("version", out var version) is false || version.GetString() is not { } text)
+                return null;
+
+            var exact = sdk.TryGetProperty("rollForward", out var rollForward) && string.Equals(rollForward.GetString(), "disable", StringComparison.OrdinalIgnoreCase) ? text : null;
+
+            return ToolCatalog.ParseVersion(text) is { } minimum ? new(minimum, text.Contains('-'), exact) : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+}
+
 public sealed record ToolNeeds
 {
     public bool Aspire { get; init; }
@@ -34,7 +57,7 @@ public sealed record ToolNeeds
 
     public string? Ide { get; init; }
 
-    public Version? MinimumSdk { get; init; }
+    public SdkRequirement? Sdk { get; init; }
 
     public int? NodeMajor { get; init; }
 
