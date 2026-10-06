@@ -1,7 +1,7 @@
 @*+:cnd:noEmit*@
 @inherits AppComponentBase;
 
-<section @ref="sectionRef">
+<section>
     <BitNavBar FullWidth TItem="BitNavBarOption">
 
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="@PageUrls.Home" AdditionalUrls="@CultureInfoManager.GetCultureUrls(PageUrls.Home)" />

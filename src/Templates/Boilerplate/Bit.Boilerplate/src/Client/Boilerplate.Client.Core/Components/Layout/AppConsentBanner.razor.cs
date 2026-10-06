@@ -8,8 +8,6 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class AppConsentBanner
 {
     private bool isOpen;
-    private bool isHeightTracked;
-    private BitStack? bannerStack;
 
     [AutoInject] private ConsentService consentService = default!;
 
@@ -24,21 +22,6 @@ public partial class AppConsentBanner
         isOpen = await consentService.IsPending();
 
         StateHasChanged();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (isOpen is false)
-        {
-            isHeightTracked = false;
-        }
-        else if (isHeightTracked is false && bannerStack is not null)
-        {
-            isHeightTracked = true;
-            await JSRuntime.InvokeVoidAsync("App.trackHeight", bannerStack.RootElement, "--app-consent-banner-height");
-        }
     }
 
     private async Task AcceptAll()

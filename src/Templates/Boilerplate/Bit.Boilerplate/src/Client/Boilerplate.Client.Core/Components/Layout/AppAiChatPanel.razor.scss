@@ -7,11 +7,10 @@
         width: 2.5rem;
         height: 2.5rem;
         border-radius: 50%;
-        bottom: calc(var(--bit-Button-float-offset, 2rem) + var(--app-consent-banner-height, 0px));
 
         @include lt-md {
+            bottom: 4rem;
             inset-inline-end: 1rem;
-            bottom: calc(4rem + var(--app-consent-banner-height, 0px));
         }
 
         i {

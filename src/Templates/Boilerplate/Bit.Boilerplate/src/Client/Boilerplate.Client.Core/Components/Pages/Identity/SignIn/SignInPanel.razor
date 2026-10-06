@@ -110,7 +110,6 @@
                                         }
                                         <BitButton IsLoading="isWaiting"
                                                    IsEnabled="isWaiting is false"
-                                                   Class="identity-main-action"
                                                    ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.Continue)]
                                         </BitButton>
@@ -122,7 +121,6 @@
                                     <BitButton IsLoading="isWaiting"
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(() => SendOtp(resend: true))"
-                                               Class="@(internalSignInPanelType is SignInPanelType.Otp ? "identity-main-action" : null)"
                                                Variant="@(internalSignInPanelType is SignInPanelType.Otp ? BitVariant.Fill : BitVariant.Outline)"
                                                IsEnabled="@(isWaiting is false && (model.Email is not null || model.PhoneNumber is not null))">
                                         @(currentTab == SignInPanelTab.Email ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])
