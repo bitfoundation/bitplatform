@@ -378,7 +378,8 @@ namespace BitBlazorUI {
             // The keyboard's alternative to the swipe: an arrow key pressed on the trap itself triggers in its own
             // direction. Only the trap's own keys are taken - a key pressed on a descendant is the descendant's, a
             // modified one is the browser's, a held one is one swipe rather than a stream of them - and only along
-            // an axis a lock leaves to the trap. The direction values are the ones of BitSwipeDirection.
+            // an axis a lock leaves to the trap. The direction crosses to the C# side by name, which reads it into
+            // a BitPlacement, so the order of that library-wide enum is no contract with this file.
             const onKeyDown = (e: KeyboardEvent) => {
                 if (isStale()) cancelGesture(e).catch(() => { });
                 if (!keyboardTrigger || active) return;
@@ -389,12 +390,12 @@ namespace BitBlazorUI {
                 const horizontal = orientationLock !== BitSwipeOrientation.Vertical;
                 const vertical = orientationLock !== BitSwipeOrientation.Horizontal;
 
-                let direction = -1;
-                if (horizontal && e.key === 'ArrowRight') direction = 0;
-                else if (horizontal && e.key === 'ArrowLeft') direction = 1;
-                else if (vertical && e.key === 'ArrowUp') direction = 2;
-                else if (vertical && e.key === 'ArrowDown') direction = 3;
-                if (direction < 0) return;
+                let direction: 'top' | 'bottom' | 'left' | 'right' | null = null;
+                if (horizontal && e.key === 'ArrowRight') direction = 'right';
+                else if (horizontal && e.key === 'ArrowLeft') direction = 'left';
+                else if (vertical && e.key === 'ArrowUp') direction = 'top';
+                else if (vertical && e.key === 'ArrowDown') direction = 'bottom';
+                if (direction === null) return;
 
                 // The arrow keys scroll the page by default, which is not what a key the trap answers to should do.
                 e.preventDefault();

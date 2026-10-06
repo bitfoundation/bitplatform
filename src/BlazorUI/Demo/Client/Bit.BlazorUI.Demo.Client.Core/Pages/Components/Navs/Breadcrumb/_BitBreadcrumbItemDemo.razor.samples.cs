@@ -155,7 +155,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithLongText =
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />
 
-<BitBreadcrumb Items=""BreadcrumbItemsWithIcon"" IconPosition=""BitIconPosition.End"" />
+<BitBreadcrumb Items=""BreadcrumbItemsWithIcon"" IconPlacement=""BitPlacement.End"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithHomeIcon"" DividerText=""/"" />";
     private readonly string example6CsharpCode = @"

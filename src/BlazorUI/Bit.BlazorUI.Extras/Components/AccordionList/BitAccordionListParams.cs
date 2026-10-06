@@ -79,7 +79,7 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
     /// <summary>
     /// The side of the header the expander icon of all the items sits on.
     /// </summary>
-    public BitIconPosition? ExpanderIconPosition { get; set; }
+    public BitPlacement? ExpanderIconPlacement { get; set; }
 
     /// <summary>
     /// Opens the panel of every item while the page is being printed.
@@ -262,9 +262,9 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
             bitAccordionList.ExpanderIconName = ExpanderIconName;
         }
 
-        if (ExpanderIconPosition.HasValue && bitAccordionList.HasNotBeenSet(nameof(ExpanderIconPosition)))
+        if (ExpanderIconPlacement.HasValue && bitAccordionList.HasNotBeenSet(nameof(ExpanderIconPlacement)))
         {
-            bitAccordionList.ExpanderIconPosition = ExpanderIconPosition.Value;
+            bitAccordionList.ExpanderIconPlacement = ExpanderIconPlacement.Value;
         }
 
         if (ExpandOnPrint.HasValue && bitAccordionList.HasNotBeenSet(nameof(ExpandOnPrint)))

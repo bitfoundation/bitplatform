@@ -125,7 +125,7 @@ public class BitProgressParamsTests : BunitTestContext
         {
             Circular = true,
             GapDegree = 90,
-            GapPosition = BitProgressGapPosition.Top,
+            GapPlacement = BitPlacement.Top,
             Diameter = 64,
             Thickness = 6,
         });

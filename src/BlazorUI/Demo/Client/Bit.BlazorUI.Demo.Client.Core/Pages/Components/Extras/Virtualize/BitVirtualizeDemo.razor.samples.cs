@@ -174,7 +174,7 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
 </style>
 
 <BitNumberField @bind-Value=""gridLanes"" Min=""1"" Max=""8"" Mode=""BitSpinButtonMode.Inline""
-                Label=""Lanes"" LabelPosition=""BitLabelPosition.Start""
+                Label=""Lanes"" LabelPlacement=""BitPlacement.Start""
                 IsEnabled=""@(gridResponsive is false)"" Style=""max-width:12rem"" />
 <BitToggle @bind-Value=""gridResponsive"" Label=""MinLaneSize = 200"" Inline />
 
@@ -221,11 +221,11 @@ private bool gridResponsive;";
 </style>
 
 <div class=""toolbar"">
-    <BitNumberField @bind-Value=""scrollTargetIndex"" Min=""0"" Max=""99999"" Label=""Index"" LabelPosition=""BitLabelPosition.Start"" Style=""max-width:12rem"" />
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Start)"">Start</BitButton>
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Center)"">Center</BitButton>
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.End)"">End</BitButton>
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Auto)"">Auto</BitButton>
+    <BitNumberField @bind-Value=""scrollTargetIndex"" Min=""0"" Max=""99999"" Label=""Index"" LabelPlacement=""BitPlacement.Start"" Style=""max-width:12rem"" />
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.Start)"">Start</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.Center)"">Center</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.End)"">End</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.Nearest)"">Auto</BitButton>
     <BitToggle @bind-Value=""scrollSmooth"" Label=""Smooth"" Inline />
 </div>
 
@@ -257,7 +257,7 @@ private (int Start, int End) visibleRange;
 private bool scrollAtStart;
 private bool scrollAtEnd;
 
-private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
+private async Task ScrollToTarget(BitScrollAlignment alignment)
 {
     await scrollRef.ScrollToIndexAsync(scrollTargetIndex, alignment, scrollSmooth);
 }";

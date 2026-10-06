@@ -29,6 +29,11 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Where along the placement the tooltip lines up with its anchor.
+    /// </summary>
+    public BitPlacement? Alignment { get; set; }
+
+    /// <summary>
     /// The size in pixels of the arrow that points at the anchor.
     /// </summary>
     public int? ArrowSize { get; set; }
@@ -79,11 +84,6 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
     public string? MaxWidth { get; set; }
 
     /// <summary>
-    /// Mirrors the position of the tooltip along the horizontal axis while the direction is right to left.
-    /// </summary>
-    public bool? MirrorInRtl { get; set; }
-
-    /// <summary>
     /// Removes the fade the tooltip is shown and hidden with.
     /// </summary>
     public bool? NoAnimation { get; set; }
@@ -104,9 +104,9 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
     public int? Offset { get; set; }
 
     /// <summary>
-    /// The position of the tooltip around its anchor.
+    /// The side of the anchor the tooltip is placed on.
     /// </summary>
-    public BitTooltipPosition? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// What the tooltip is to the anchor it belongs to: its description, its name, or nothing at all.
@@ -177,6 +177,11 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTooltip);
 
+        if (Alignment.HasValue && bitTooltip.HasNotBeenSet(nameof(Alignment)))
+        {
+            bitTooltip.Alignment = Alignment.Value;
+        }
+
         if (ArrowSize.HasValue && bitTooltip.HasNotBeenSet(nameof(ArrowSize)))
         {
             bitTooltip.ArrowSize = ArrowSize.Value;
@@ -241,11 +246,6 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.StyleBuilder.Reset();
         }
 
-        if (MirrorInRtl.HasValue && bitTooltip.HasNotBeenSet(nameof(MirrorInRtl)))
-        {
-            bitTooltip.MirrorInRtl = MirrorInRtl.Value;
-        }
-
         if (NoAnimation.HasValue && bitTooltip.HasNotBeenSet(nameof(NoAnimation)))
         {
             bitTooltip.NoAnimation = NoAnimation.Value;
@@ -270,9 +270,9 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.StyleBuilder.Reset();
         }
 
-        if (Position.HasValue && bitTooltip.HasNotBeenSet(nameof(Position)))
+        if (Placement.HasValue && bitTooltip.HasNotBeenSet(nameof(Placement)))
         {
-            bitTooltip.Position = Position.Value;
+            bitTooltip.Placement = Placement.Value;
         }
 
         if (Relationship.HasValue && bitTooltip.HasNotBeenSet(nameof(Relationship)))

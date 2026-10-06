@@ -203,7 +203,7 @@ private readonly List<Section> rtlItems =
                   TItem=""Section""
                   NameSelectors=""nameSelectors"" />
 
-<BitAccordionList ExpanderIconPosition=""BitIconPosition.Start""
+<BitAccordionList ExpanderIconPlacement=""BitPlacement.Start""
                   Items=""basicItems""
                   TItem=""Section""
                   NameSelectors=""nameSelectors"" />

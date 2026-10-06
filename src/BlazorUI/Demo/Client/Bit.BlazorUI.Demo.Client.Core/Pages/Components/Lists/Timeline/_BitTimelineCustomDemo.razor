@@ -83,7 +83,7 @@
 
 <DemoExample Title="Line" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>
-        TruncateLine ends the line at the first dot (Start), at the last one (End) or at both. LineVariant
+        TruncateLine ends the line at the first dot (Start), at the last one (End) or at both. LineStyle
         paints it Solid, Dashed or Dotted, and an item can override it for its own stretch, which is how the
         part still to come is usually told apart.
     </div>
@@ -97,17 +97,17 @@
     <div>TruncateLine: End</div><br />
     <BitTimeline TruncateLine="BitTimelineTruncateLine.End" Items="basicCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
-    <div>LineVariant: Dashed</div><br />
-    <BitTimeline LineVariant="BitTimelineLineVariant.Dashed" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <div>LineStyle: Dashed</div><br />
+    <BitTimeline LineStyle="BitLineStyle.Dashed" Items="basicCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
-    <div>LineVariant: Dotted</div><br />
-    <BitTimeline LineVariant="BitTimelineLineVariant.Dotted" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <div>LineStyle: Dotted</div><br />
+    <BitTimeline LineStyle="BitLineStyle.Dotted" Items="basicCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
-    <div>Item's LineVariant</div><br />
+    <div>Item's LineStyle</div><br />
     <BitTimeline Items="lineVariantCustoms" NameSelectors="nameSelectors" TruncateLine="BitTimelineTruncateLine.Both" />
     <br /><br /><br />
     <div>Horizontal (Dashed, truncated at both ends)</div><br />
-    <BitTimeline Horizontal LineVariant="BitTimelineLineVariant.Dashed" TruncateLine="BitTimelineTruncateLine.Both" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline Horizontal LineStyle="BitLineStyle.Dashed" TruncateLine="BitTimelineTruncateLine.Both" Items="basicCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
 <DemoExample Title="Dot alignment" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
@@ -120,30 +120,30 @@
     <BitTimeline Items="alignCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
     <div>Start</div><br />
-    <BitTimeline DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="alignCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline DotAlignment="BitPlacement.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="alignCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
     <div>End</div><br />
-    <BitTimeline DotAlignment="BitTimelineDotAlignment.End" Items="alignCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline DotAlignment="BitPlacement.End" Items="alignCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
     <div>Horizontal (Start)</div><br />
-    <BitTimeline Horizontal DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline Horizontal DotAlignment="BitPlacement.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="basicCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="Line position" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Line placement" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <div>
-        LinePosition moves the line from the middle (Center, default) to the Start or the End edge, stacking the
+        LinePlacement moves the line from the middle (Center, default) to the Start or the End edge, stacking the
         contents of each item beside it, as an activity feed does. Reversed and Alternate only apply to a
         centered line.
     </div>
     <br /><br /><br />
     <div>Start</div><br />
-    <BitTimeline LinePosition="BitTimelineLinePosition.Start" DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="alignCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline LinePlacement="BitPlacement.Start" DotAlignment="BitPlacement.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="alignCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
     <div>End</div><br />
-    <BitTimeline LinePosition="BitTimelineLinePosition.End" DotAlignment="BitTimelineDotAlignment.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="alignCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline LinePlacement="BitPlacement.End" DotAlignment="BitPlacement.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="alignCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
     <div>Horizontal (Start)</div><br />
-    <BitTimeline Horizontal LinePosition="BitTimelineLinePosition.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline Horizontal LinePlacement="BitPlacement.Start" TruncateLine="BitTimelineTruncateLine.Both" Items="basicCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
 <DemoExample Title="Item customization" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>

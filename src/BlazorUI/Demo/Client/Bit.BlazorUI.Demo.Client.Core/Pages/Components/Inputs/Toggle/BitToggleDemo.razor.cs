@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
 
 public partial class BitToggleDemo
 {
@@ -129,12 +129,12 @@ public partial class BitToggleDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set.",
+            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -592,39 +592,7 @@ public partial class BitToggleDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "The position of the label in regards to the knob of the toggle.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the toggle.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label shows on the end of the toggle.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label shows on the bottom of the toggle.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label shows on the start of the toggle.",
-                    Value="3",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",
@@ -922,7 +890,7 @@ public partial class BitToggleDemo
             FullWidth = true,
             OnText = "On",
             OffText = "Off",
-            LabelPosition = BitLabelPosition.Start
+            LabelPlacement = BitPlacement.Start
         }
     ];
 

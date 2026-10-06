@@ -19,7 +19,7 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      data-bit-dtg-copy="@(ClipboardCopy ? "true" : null)"
-     data-bit-dtg-select-all="@(IsEnabled && SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)">
+     data-bit-dtg-select-all="@(IsEnabled && SelectionMode == BitSelectionMode.Multiple ? "true" : null)">
 
     @* Announces sort/filter/page changes to screen readers; these are otherwise silent view mutations. *@
     <div class="bit-dtg-visually-hidden" role="status" aria-live="polite">@_srAnnouncement</div>
@@ -123,7 +123,7 @@
         </div>
     }
 
-    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Top or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPlacement is BitPlacement.Top or BitPlacement.TopAndBottom))
     {
         @RenderPager
     }
@@ -144,7 +144,7 @@
              aria-labelledby="@AriaLabelledBy"
              aria-describedby="@AriaDescribedBy"
              aria-rowcount="@ComputeAriaRowCount()" aria-colcount="@TotalColumnSpan"
-             aria-multiselectable="@(SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)"
+             aria-multiselectable="@(SelectionMode == BitSelectionMode.Multiple ? "true" : null)"
              aria-busy="@(Loading || InfiniteLoading ? "true" : null)"
              aria-disabled="@(IsEnabled ? null : "true")"
              style="--bit-dtg-template:@BuildGridTemplate();">
@@ -504,7 +504,7 @@
         </div>
     </div>
 
-    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Bottom or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPlacement is not BitPlacement.Top))
     {
         @RenderPager
     }

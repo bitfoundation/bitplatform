@@ -56,7 +56,7 @@
 
     <DemoExample Title="Label placement" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            <b>LabelPosition</b> places the label on any of the four sides of the box: <b>End</b> is the default
+            <b>LabelPlacement</b> places the label on any of the four sides of the box: <b>End</b> is the default
             reading order, <b>Start</b> puts it before the box - the usual layout when the BitCheckbox sits at the end
             of a settings row - and <b>Top</b> and <b>Bottom</b> stack it above or below, which is what dense toolbars
             and table headers need. <b>Reversed</b> is the single-flag shorthand for <b>Start</b>; the explicit
@@ -64,10 +64,10 @@
         </div>
         <br />
         <div class="example-box">
-            <BitCheckbox Label="End" LabelPosition="BitLabelPosition.End" />
-            <BitCheckbox Label="Start" LabelPosition="BitLabelPosition.Start" />
-            <BitCheckbox Label="Top" LabelPosition="BitLabelPosition.Top" />
-            <BitCheckbox Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
+            <BitCheckbox Label="End" LabelPlacement="BitPlacement.End" />
+            <BitCheckbox Label="Start" LabelPlacement="BitPlacement.Start" />
+            <BitCheckbox Label="Top" LabelPlacement="BitPlacement.Top" />
+            <BitCheckbox Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
             <BitCheckbox Label="Reversed" Reversed />
         </div>
     </DemoExample>

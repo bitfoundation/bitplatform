@@ -208,7 +208,7 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPosition=""BitIconPosition.End"" />
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPlacement=""BitPlacement.End"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithHomeIcon"" NameSelectors=""nameSelectors"" DividerText=""/"" />";
     private readonly string example6CsharpCode = @"

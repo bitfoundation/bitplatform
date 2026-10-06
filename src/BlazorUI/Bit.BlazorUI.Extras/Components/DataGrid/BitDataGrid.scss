@@ -297,9 +297,25 @@
     text-align: center;
 }
 
-.bit-dtg-right {
+/* The logical pair turns around with the reading direction; the physical pair deliberately does not. The physical
+   justify-content keywords are the newer ones in a flex box, so each is preceded by the logical keyword naming the
+   same edge in a left-to-right grid: a browser that drops the physical one still aligns an LTR column where it was
+   asked to, which is where BitTextAlign.End used to put it. */
+.bit-dtg-end {
     justify-content: flex-end;
     text-align: end;
+}
+
+.bit-dtg-left {
+    justify-content: flex-start;
+    justify-content: left;
+    text-align: left;
+}
+
+.bit-dtg-right {
+    justify-content: flex-end;
+    justify-content: right;
+    text-align: right;
 }
 
 /* The header's title is a flex item that takes the whole cell, so the column's alignment has to reach inside it
@@ -308,8 +324,18 @@
     justify-content: center;
 }
 
+.bit-dtg-end > .bit-dtg-htext {
+    justify-content: flex-end;
+}
+
+.bit-dtg-left > .bit-dtg-htext {
+    justify-content: flex-start;
+    justify-content: left;
+}
+
 .bit-dtg-right > .bit-dtg-htext {
     justify-content: flex-end;
+    justify-content: right;
 }
 
 /* Striping, hover, editing and selection. The grid-level switches (Striped, Hoverable) are flags on the root,

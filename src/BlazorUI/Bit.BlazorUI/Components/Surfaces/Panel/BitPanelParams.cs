@@ -120,7 +120,7 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The edge of the screen the panel slides in from.
     /// </summary>
-    public BitPanelPosition? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The ARIA role the panel reports itself under, instead of dialog.
@@ -275,9 +275,9 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
             bitPanel.NoSwipe = NoSwipe.Value;
         }
 
-        if (Position.HasValue && bitPanel.HasNotBeenSet(nameof(Position)))
+        if (Placement.HasValue && bitPanel.HasNotBeenSet(nameof(Placement)))
         {
-            bitPanel.Position = Position.Value;
+            bitPanel.Placement = Placement.Value;
         }
 
         if (Role.HasValue() && bitPanel.HasNotBeenSet(nameof(Role)))

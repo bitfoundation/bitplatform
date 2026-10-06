@@ -176,9 +176,9 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
     public string? OverflowIconName { get; set; }
 
     /// <summary>
-    /// Position of the pivot header.
+    /// Placement of the pivot header.
     /// </summary>
-    public BitPivotPosition? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The aria-label of the previous button in the Slide overflow behavior (default: Previous).
@@ -401,9 +401,9 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.OverflowIconName = OverflowIconName;
         }
 
-        if (Position.HasValue && bitPivot.HasNotBeenSet(nameof(Position)))
+        if (Placement.HasValue && bitPivot.HasNotBeenSet(nameof(Placement)))
         {
-            bitPivot.Position = Position.Value;
+            bitPivot.Placement = Placement.Value;
 
             bitPivot.ClassBuilder.Reset();
         }

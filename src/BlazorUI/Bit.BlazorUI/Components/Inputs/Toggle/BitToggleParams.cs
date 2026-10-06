@@ -106,7 +106,7 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
     /// The position of the label in regards to the knob of the toggle.
     /// Takes precedence over <see cref="Inline"/> and <see cref="Reversed"/> when set.
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Renders a spinner in place of everything the knob carries - its icon or <c>ThumbTemplate</c> - and
@@ -291,9 +291,9 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (LabelPosition.HasValue && bitToggle.HasNotBeenSet(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitToggle.HasNotBeenSet(nameof(LabelPlacement)))
         {
-            bitToggle.LabelPosition = LabelPosition.Value;
+            bitToggle.LabelPlacement = LabelPlacement.Value;
 
             bitToggle.ClassBuilder.Reset();
         }

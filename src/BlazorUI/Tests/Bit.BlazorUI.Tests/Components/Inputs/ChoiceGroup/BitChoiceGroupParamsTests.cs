@@ -61,7 +61,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
                 Color = BitColor.Success,
                 Size = BitSize.Large,
                 Variant = BitVariant.Outline,
-                LabelPosition = BitLabelPosition.Start,
+                LabelPlacement = BitPlacement.Start,
                 Horizontal = true,
                 FullWidth = true,
                 Inline = true,
@@ -142,7 +142,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             Horizontal = true,
             Inline = true,
             Label = "Cascaded label",
-            LabelPosition = BitLabelPosition.Start,
+            LabelPlacement = BitPlacement.Start,
             NoCircle = true,
             Size = BitSize.Small,
             StretchItemLabel = true,
@@ -169,7 +169,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.IsTrue(instance.Horizontal);
         Assert.IsTrue(instance.Inline);
         Assert.AreEqual("Cascaded label", instance.Label);
-        Assert.AreEqual(BitLabelPosition.Start, instance.LabelPosition);
+        Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
         Assert.IsTrue(instance.NoCircle);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.StretchItemLabel);

@@ -284,8 +284,13 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// The position of the icon of the browse button relative to its text: before it (the default) or after it.
+    /// In the ShowDropArea mode the icon is stacked above or below the text instead.
     /// </summary>
-    public BitIconPosition? LabelIconPosition { get; set; }
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
+    public BitPlacement? LabelIconPlacement { get; set; }
 
     /// <summary>
     /// Maximum allowed number of files in the file list (0 for unlimited).
@@ -866,9 +871,9 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.LabelIconName = LabelIconName;
         }
 
-        if (LabelIconPosition.HasValue && bitFileUpload.HasNotBeenSet(nameof(LabelIconPosition)))
+        if (LabelIconPlacement.HasValue && bitFileUpload.HasNotBeenSet(nameof(LabelIconPlacement)))
         {
-            bitFileUpload.LabelIconPosition = LabelIconPosition.Value;
+            bitFileUpload.LabelIconPlacement = LabelIconPlacement.Value;
 
             bitFileUpload.ClassBuilder.Reset();
         }
