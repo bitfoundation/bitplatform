@@ -115,7 +115,7 @@ A CI build job lets bit build too, with its own MSBuild properties, and skips th
 bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 ```
 
-A job that publishes lets bit build first too, so its CSS and JS are generated before `dotnet publish`. A web job passes `-p:Configuration=Release` and its `-p:Version`, so the publish reuses that build; a native job builds Debug, and its Release publish rebuilds the JavaScript, which bit Boilerplate regenerates whenever the Environment changes.
+A job that publishes lets bit build first too, so its CSS and JS are generated before `dotnet publish`. A web job passes `-p:Configuration=Release` and its `-p:Version`, so the publish reuses that build; a native job builds Debug, and its Release publish reuses the same JavaScript, which bit Boilerplate always minifies, with a source map.
 
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
