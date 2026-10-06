@@ -26,6 +26,7 @@ public partial class BitMessage : BitComponentBase
     private bool _isPageHidden;
     private bool _isWindowBlurred;
     private BitPageVisibility? _pageVisibility;
+    private bool _pageVisibilityReady;
 
     // A hold has no length of its own: a pointer can rest on the message, and a PauseAutoDismiss can go unanswered,
     // for as long as the reader likes. So a held countdown waits on the resume rather than waking four times a
@@ -830,30 +831,28 @@ public partial class BitMessage : BitComponentBase
     // browser's answer, which is applied once it arrives.
     private Task SyncPageVisibility()
     {
-        if (_pageVisibility is not null || IsDisposed) return Task.CompletedTask;
+        if (_pageVisibilityReady || IsDisposed) return Task.CompletedTask;
         if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _HasAutoDismiss is false) return Task.CompletedTask;
 
-        _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
-        if (_pageVisibility is null) return Task.CompletedTask;
+        if (_pageVisibility is null)
+        {
+            _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
+            if (_pageVisibility is null) return Task.CompletedTask;
 
-        _pageVisibility.OnChange += HandlePageVisibilityChange;
-        _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
+            _pageVisibility.OnChange += HandlePageVisibilityChange;
+            _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
-        ApplyPageVisibility();
+            ApplyPageVisibility();
+        }
 
         return InitPageVisibility(_pageVisibility);
     }
 
-    // Without the script the countdown simply is not held, which is no reason to fail the render.
+    // A call that failed (the script not loaded yet, a round trip that timed out) wired nothing up, so the browser is
+    // asked again on a later render; until one gets through the countdown simply is not held.
     private async Task InitPageVisibility(BitPageVisibility pageVisibility)
     {
-        try
-        {
-            await pageVisibility.Init();
-        }
-        catch (JSDisconnectedException) { return; } // the circuit is gone, and the page with it
-        catch (JSException) { return; }
-        catch (OperationCanceledException) { return; } // the interop call timed out
+        _pageVisibilityReady = await pageVisibility.Init();
 
         ApplyPageVisibility();
     }

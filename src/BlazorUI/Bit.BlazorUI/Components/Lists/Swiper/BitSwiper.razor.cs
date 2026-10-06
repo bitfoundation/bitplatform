@@ -36,6 +36,7 @@ public partial class BitSwiper : BitComponentBase
     private bool _keysOwnedByContent;
     private bool _isPaused;
     private bool _pageHidden;
+    private bool _pageVisibilityReady;
     private bool _needsSetup;
     private bool _needsRefresh;
     private bool _afterFirstRender;
@@ -991,16 +992,26 @@ public partial class BitSwiper : BitComponentBase
             _needsSetup = false;
             _laidOutItemsCount = _allItems.Count;
 
+            // The setup reports the swiper's first state back, which is what first starts the timer, so a tab
+            // that is already in the background is known before it: the rotation never starts in a page nobody is
+            // looking at.
+            await ApplyPageVisibilityAsync(_pageVisibility.Init());
+
             await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
             await RegisterPreventKeysAsync();
-
-            await InitPageVisibilityAsync();
 
             UpdateAutoPlayTimer();
         }
         else
         {
+            if (_pageVisibilityReady is false)
+            {
+                await ApplyPageVisibilityAsync(_pageVisibility.Init());
+
+                UpdateAutoPlayTimer();
+            }
+
             if (_needsSetup)
             {
                 _needsSetup = false;
@@ -1374,17 +1385,11 @@ public partial class BitSwiper : BitComponentBase
 
     // No event is coming for the state the page is already in - a tab that was in the background before the
     // swiper was rendered - so it is read rather than waited for. The utility is shared, so it may know even when
-    // this call fails, and without the script the rotation is simply not held, which is no reason to fail the
-    // render.
-    private async Task InitPageVisibilityAsync()
+    // this call fails; a call that failed is made again on a later render, and until then the rotation is simply
+    // not held.
+    private async Task ApplyPageVisibilityAsync(Task<bool> init)
     {
-        try
-        {
-            await _pageVisibility.Init();
-        }
-        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
-        catch (JSException) { }
-        catch (OperationCanceledException) { } // the interop call timed out
+        _pageVisibilityReady = await init;
 
         _pageHidden = _pageVisibility.IsHidden;
     }

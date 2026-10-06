@@ -13,7 +13,7 @@ public sealed class BitPageVisibilityTests
     [TestMethod]
     public async Task BitPageVisibilityShouldReadTheStateThePageIsAlreadyIn()
     {
-        var js = new PageStateJsRuntime();
+        var js = new DeferredPageStateJsRuntime();
         var visibility = new BitPageVisibility(js);
 
         var init = visibility.Init();
@@ -27,7 +27,7 @@ public sealed class BitPageVisibilityTests
     [TestMethod]
     public async Task BitPageVisibilityShouldNotLetTheInitialStateOverwriteALaterChange()
     {
-        var js = new PageStateJsRuntime();
+        var js = new DeferredPageStateJsRuntime();
         var visibility = new BitPageVisibility(js);
 
         var init = visibility.Init();
@@ -47,20 +47,38 @@ public sealed class BitPageVisibilityTests
     [TestMethod]
     public async Task BitPageVisibilityShouldLetALaterCallRetryAFailedInit()
     {
-        var js = new PageStateJsRuntime();
+        var js = new DeferredPageStateJsRuntime();
         var visibility = new BitPageVisibility(js);
 
         var failed = visibility.Init();
+        var waiting = visibility.Init();
         js.Fail(new JSException("BitBlazorUI.PageVisibility is not defined"));
 
-        await Assert.ThrowsExactlyAsync<JSException>(() => failed);
+        // The failure is answered rather than thrown, to the caller that asked and to the one that waited alike.
+        Assert.IsFalse(await failed);
+        Assert.IsFalse(await waiting);
+        Assert.AreEqual(1, js.InitCount);
 
         var retried = visibility.Init();
         js.Answer("""{"hidden":true,"blurred":false}""");
-        await retried;
 
+        Assert.IsTrue(await retried);
         Assert.AreEqual(2, js.InitCount);
         Assert.IsTrue(visibility.IsHidden);
+    }
+
+    [TestMethod]
+    public async Task BitPageVisibilityShouldNotAskThePageAgainOnceItHasAnswered()
+    {
+        var js = new DeferredPageStateJsRuntime();
+        var visibility = new BitPageVisibility(js);
+
+        var init = visibility.Init();
+        js.Answer("""{"hidden":false,"blurred":false}""");
+
+        Assert.IsTrue(await init);
+        Assert.IsTrue(await visibility.Init());
+        Assert.AreEqual(1, js.InitCount);
     }
 
     [TestMethod]
@@ -82,7 +100,7 @@ public sealed class BitPageVisibilityTests
     [TestMethod]
     public async Task BitPageVisibilityShouldTakeItselfOutOfTheScriptWhenDisposed()
     {
-        var js = new PageStateJsRuntime();
+        var js = new DeferredPageStateJsRuntime();
         var visibility = new BitPageVisibility(js);
 
         var init = visibility.Init();
@@ -97,7 +115,7 @@ public sealed class BitPageVisibilityTests
 
 
     // Answers the init call when the test says so, the way the browser answers it after a round trip.
-    private sealed class PageStateJsRuntime : IJSRuntime
+    private sealed class DeferredPageStateJsRuntime : IJSRuntime
     {
         private TaskCompletionSource<string> _pending = new(TaskCreationOptions.RunContinuationsAsynchronously);
 

@@ -2089,6 +2089,40 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCarouselShouldAskThePageAgainAfterAFailedPageVisibilityInit()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        Services.AddSingleton(new BitPageVisibility(js));
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 5000d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+
+        // The script has loaded by the next render, which asks the page again rather than going without for good.
+        js.Failure = null;
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 6000d));
+
+        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying));
+
+        // Once the page has answered it is not asked again.
+        var asked = js.InitCount;
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 7000d));
+
+        Assert.AreEqual(asked, js.InitCount);
+    }
+
+    [TestMethod]
     public async Task BitCarouselShouldTogglePlayFromCode()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>

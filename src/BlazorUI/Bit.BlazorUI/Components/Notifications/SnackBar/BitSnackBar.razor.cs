@@ -26,6 +26,7 @@ public partial class BitSnackBar : BitComponentBase
     private readonly Dictionary<Guid, ElementReference> _dismissButtons = [];
 
     private BitPageVisibility? _pageVisibility;
+    private bool _pageVisibilityReady;
     private BitSnackBarService? _service;
     private NavigationManager? _navigationManager;
     private bool _pageHidden;
@@ -1044,29 +1045,33 @@ public partial class BitSnackBar : BitComponentBase
 
         await SyncSwipeAsync();
 
-        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _pageVisibility is not null) return;
+        await SyncPageVisibilityAsync();
+    }
 
-        // The utility is a scoped service of the library, so it is only there in an app that registered them.
-        // Nothing else about the snack bar depends on it, which is why its absence turns this one feature off
-        // instead of failing the render.
-        _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
-        if (_pageVisibility is null) return;
+    // Subscribed the first time a pause asks for it, and asked of the browser on every later render until it has
+    // answered: a call that failed (the script not loaded yet, a round trip that timed out) wired nothing up, and
+    // until one gets through the countdowns are simply not held.
+    private async Task SyncPageVisibilityAsync()
+    {
+        if (_pageVisibilityReady || (PauseOnPageHidden || PauseOnWindowBlur) is false) return;
 
-        _pageVisibility.OnChange += HandlePageVisibilityChange;
-        _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
-
-        // The utility is shared, so another component may already have asked the page; what it knows is taken
-        // right away, and what the page answers once it arrives.
-        await ApplyPageVisibilityAsync();
-
-        // Without the script the countdowns are simply not held, which is no reason to fail the render.
-        try
+        if (_pageVisibility is null)
         {
-            await _pageVisibility.Init();
+            // The utility is a scoped service of the library, so it is only there in an app that registered them.
+            // Nothing else about the snack bar depends on it, which is why its absence turns this one feature off
+            // instead of failing the render.
+            _pageVisibility = _serviceProvider?.GetService(typeof(BitPageVisibility)) as BitPageVisibility;
+            if (_pageVisibility is null) return;
+
+            _pageVisibility.OnChange += HandlePageVisibilityChange;
+            _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
+
+            // The utility is shared, so another component may already have asked the page; what it knows is taken
+            // right away, and what the page answers once it arrives.
+            await ApplyPageVisibilityAsync();
         }
-        catch (JSDisconnectedException) { return; } // the circuit is gone, and the page with it
-        catch (JSException) { return; }
-        catch (OperationCanceledException) { return; } // the interop call timed out
+
+        _pageVisibilityReady = await _pageVisibility.Init();
 
         await ApplyPageVisibilityAsync();
     }

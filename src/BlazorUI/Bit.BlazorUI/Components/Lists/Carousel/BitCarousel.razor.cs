@@ -31,6 +31,7 @@ public partial class BitCarousel : BitComponentBase
     private bool _isPaused;
     private bool _navigating;
     private bool _pageHidden;
+    private bool _pageVisibilityReady;
     private bool _needsReset;
     private bool _needsRegister;
     private bool _isPointerDown;
@@ -889,6 +890,10 @@ public partial class BitCarousel : BitComponentBase
         {
             _dotnetObj = DotNetObjectReference.Create(this);
 
+            // The page is asked whether it is hidden alongside the round trips below, since the answer depends on
+            // none of them; it is only waited for where the timer could first start.
+            var pageVisibilityInit = _pageVisibility.Init();
+
             // The observer watches the container rather than the root, since that is the box the slides
             // are laid out in: the root also holds the row of dots, which is none of their business.
             await _js.BitObserversRegisterResize(UniqueId, _carouselContainer, _dotnetObj);
@@ -905,6 +910,10 @@ public partial class BitCarousel : BitComponentBase
                 _isPaused = true;
             }
 
+            // A tab that is already in the background is known before the layout below starts the timer, so the
+            // rotation never starts (or renders as playing) in a page nobody is looking at.
+            await ApplyPageVisibilityAsync(pageVisibilityInit);
+
             _afterFirstRender = true;
             _needsReset = false;
             _needsRegister = false;
@@ -913,12 +922,17 @@ public partial class BitCarousel : BitComponentBase
 
             await RegisterPreventDefaultsAsync();
 
-            await InitPageVisibilityAsync();
-
             UpdateAutoPlayTimer();
         }
         else
         {
+            if (_pageVisibilityReady is false)
+            {
+                await ApplyPageVisibilityAsync(_pageVisibility.Init());
+
+                UpdateAutoPlayTimer();
+            }
+
             if (_needsReset)
             {
                 _needsReset = false;
@@ -2073,17 +2087,11 @@ public partial class BitCarousel : BitComponentBase
 
     // No event is coming for the state the page is already in - a tab that was in the background before the
     // carousel was rendered - so it is read rather than waited for. The utility is shared, so it may know even when
-    // this call fails, and without the script the rotation is simply not held, which is no reason to fail the
-    // render.
-    private async Task InitPageVisibilityAsync()
+    // this call fails; a call that failed is made again on a later render, and until then the rotation is simply
+    // not held.
+    private async Task ApplyPageVisibilityAsync(Task<bool> init)
     {
-        try
-        {
-            await _pageVisibility.Init();
-        }
-        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
-        catch (JSException) { }
-        catch (OperationCanceledException) { } // the interop call timed out
+        _pageVisibilityReady = await init;
 
         _pageHidden = _pageVisibility.IsHidden;
     }

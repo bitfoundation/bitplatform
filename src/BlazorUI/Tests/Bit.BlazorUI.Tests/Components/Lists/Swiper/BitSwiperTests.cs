@@ -866,6 +866,42 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldAskThePageAgainAfterAFailedPageVisibilityInit()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        Services.AddSingleton(new BitPageVisibility(js));
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+
+        Assert.IsTrue(swiper.IsPlaying);
+
+        // The script has loaded by the next render, which asks the page again rather than going without for good.
+        js.Failure = null;
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 50000));
+
+        component.WaitForAssertion(() => Assert.IsFalse(swiper.IsPlaying));
+
+        // Once the page has answered it is not asked again.
+        var asked = js.InitCount;
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 40000));
+
+        Assert.AreEqual(asked, js.InitCount);
+    }
+
+    [TestMethod]
     public async Task BitSwiperShouldStopOnInteractionWhenRequested()
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>

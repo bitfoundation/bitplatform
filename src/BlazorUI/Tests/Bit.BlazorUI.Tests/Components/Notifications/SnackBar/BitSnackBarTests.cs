@@ -3272,10 +3272,11 @@ public class BitSnackBarTests : BunitTestContext
         var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
         Context.Services.AddSingleton(visibility);
 
+        // The countdown is long enough that the hold, not how fast the machine runs the test, decides what is seen.
         var com = RenderComponent<BitSnackBar>(parameters =>
         {
             parameters.Add(p => p.AutoDismiss, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(2));
             parameters.Add(p => p.TransitionDuration, 0);
         });
 
@@ -3286,17 +3287,48 @@ public class BitSnackBarTests : BunitTestContext
         {
             parameters.Add(p => p.AutoDismiss, true);
             parameters.Add(p => p.PauseOnPageHidden, true);
-            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(2));
             parameters.Add(p => p.TransitionDuration, 0);
         });
 
-        await Task.Delay(600);
-
-        Assert.AreEqual(1, com.Instance.Items.Count);
+        com.WaitForAssertion(() => Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau")));
 
         await visibility._VisibilityChanged(false);
 
         com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarAsksThePageAgainAfterAFailedPageVisibilityInitTest()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        var visibility = new BitPageVisibility(js);
+        Context.Services.AddSingleton(visibility);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(2));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        // The script has loaded by the next render, which asks the page again rather than going without for good.
+        js.Failure = null;
+
+        await com.Instance.Show("title");
+
+        com.WaitForAssertion(() => Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau")));
+
+        // Once the page has answered it is not asked again.
+        var asked = js.InitCount;
+
+        com.Render();
+
+        Assert.AreEqual(asked, js.InitCount);
     }
 
     [TestMethod]

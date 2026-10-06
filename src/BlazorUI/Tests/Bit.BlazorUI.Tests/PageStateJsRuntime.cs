@@ -8,15 +8,28 @@ namespace Bit.BlazorUI.Tests;
 
 /// <summary>
 /// Answers the page visibility init call the way the browser would, or fails it the way a missing script does.
+/// Every other call (the dispose one, for one) is answered with nothing, the way a void call is.
 /// </summary>
 public sealed class PageStateJsRuntime : IJSRuntime
 {
-    private readonly string? _json;
-    private readonly Exception? _exception;
+    private const string InitIdentifier = "BitBlazorUI.PageVisibility.init";
+
+    private readonly string _json = """{"hidden":false,"blurred":false}""";
 
     public PageStateJsRuntime(string json) => _json = json;
 
-    public PageStateJsRuntime(Exception exception) => _exception = exception;
+    public PageStateJsRuntime(Exception exception) => Failure = exception;
+
+    /// <summary>
+    /// What the init call fails with while it is set; clearing it lets a later call through, the way a script that
+    /// has finished loading does.
+    /// </summary>
+    public Exception? Failure { get; set; }
+
+    /// <summary>
+    /// How many times the page has been asked for its state.
+    /// </summary>
+    public int InitCount { get; private set; }
 
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
     {
@@ -25,8 +38,12 @@ public sealed class PageStateJsRuntime : IJSRuntime
 
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
     {
-        if (_exception is not null) return ValueTask.FromException<TValue>(_exception);
+        if (identifier != InitIdentifier) return new ValueTask<TValue>(default(TValue)!);
 
-        return new ValueTask<TValue>(JsonSerializer.Deserialize<TValue>(_json!, JsonSerializerOptions.Web)!);
+        InitCount++;
+
+        if (Failure is not null) return ValueTask.FromException<TValue>(Failure);
+
+        return new ValueTask<TValue>(JsonSerializer.Deserialize<TValue>(_json, JsonSerializerOptions.Web)!);
     }
 }

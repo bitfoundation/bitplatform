@@ -49,26 +49,34 @@ public class BitPageVisibility(IJSRuntime js) : IDisposable, IAsyncDisposable
     /// Initializes the js api of the page visibility utility, and reads the state the page is already in into
     /// <see cref="IsHidden"/> and <see cref="IsWindowBlurred"/>, since no event is coming for it.
     /// </summary>
-    public async Task Init()
+    /// <returns>
+    /// <c>true</c> once the browser is reporting to this instance; <c>false</c> when it could not be asked - the
+    /// script is not loaded, the circuit is gone or the call timed out - in which case a later call asks again.
+    /// </returns>
+    /// <remarks>
+    /// An interop failure is answered rather than thrown, so a caller has nothing to catch: without the script the
+    /// page is simply taken to be visible and focused, which is no reason to fail a render.
+    /// </remarks>
+    public async Task<bool> Init()
     {
-        if (_initTask is not null)
-        {
-            // A later caller only waits for the state the first one asked for; a failure is the first caller's.
-            try { await _initTask; } catch { }
-            return;
-        }
-
-        _initTask = InitCore();
+        // Every caller waits for the one call already on its way rather than asking the page again.
+        var initTask = _initTask ??= InitCore();
 
         try
         {
-            await _initTask;
+            await initTask;
+
+            return true;
         }
-        catch
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
-            // A failed call wired nothing up, so the next caller is let to try again.
-            _initTask = null;
-            throw;
+            // A failed call wired nothing up, so the next caller is let to try again - unless one already has.
+            if (ReferenceEquals(_initTask, initTask))
+            {
+                _initTask = null;
+            }
+
+            return false;
         }
     }
 
