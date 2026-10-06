@@ -98,6 +98,8 @@ public sealed class CliEnvironment
 
     public bool IsCI => CiName is not null;
 
+    public bool IsDevContainer => IsVariableTrue("REMOTE_CONTAINERS") || IsVariableTrue("CODESPACES") || IsVariableTrue("DEVCONTAINER");
+
     public string? CodingAgent => this switch
     {
         _ when GetVariable("CLAUDECODE") is not null => "claude-code",

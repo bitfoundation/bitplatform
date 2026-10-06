@@ -582,7 +582,7 @@ public static partial class ToolCatalog
         public override string Why(ToolContext context) => "a code editor with the C#, Aspire and AI extensions the project recommends";
 
         public override bool IsNeeded(ToolContext context) => context.Needs.Ide is IdeLocator.VsCode
-            || (context.Needs.Ide is null && context.Environment.IsCI is false);
+            || (context.Needs.Ide is null && context.Environment.IsCI is false && context.Environment.IsDevContainer is false);
 
         public override Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {

@@ -265,7 +265,7 @@ public class ToolTests
     }
 
     [TestMethod]
-    public async Task VsCode_Should_BeNeededUnlessAnotherIdeIsChosenOrItRunsInCi()
+    public async Task VsCode_Should_BeNeededUnlessAnotherIdeIsChosenOrItRunsInCiOrADevContainer()
     {
         using var host = new TestHost(HostOs.Linux);
         AllInstalled(host.Runner);
@@ -277,6 +277,14 @@ public class ToolTests
         AllInstalled(ci.Runner);
 
         Assert.IsFalse((await CheckAsync(ci, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed);
+
+        foreach (var variable in new[] { "REMOTE_CONTAINERS", "CODESPACES", "DEVCONTAINER" })
+        {
+            using var container = new TestHost(HostOs.Linux, new Dictionary<string, string> { [variable] = "true" });
+            AllInstalled(container.Runner);
+
+            Assert.IsFalse((await CheckAsync(container, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed, variable);
+        }
     }
 
     [TestMethod]

@@ -36,6 +36,10 @@
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:4": {}
     },
+    "containerEnv": {
+        "DEVCONTAINER": "true",
+        "SSL_CERT_DIR": "/root/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
+    },
     "remoteEnv": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "PATH": "${containerEnv:PATH}:/root/.dotnet/tools"
