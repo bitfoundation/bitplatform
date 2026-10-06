@@ -169,10 +169,14 @@ public partial class BitLinkStylesheetTests
         var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-lnk-#{$role} {");
 
         // A secondary or a warning main is picked to fill a surface and falls under the contrast of body text,
-        // while the primary main is the brand's own link color and a surface role is a page color already.
+        // while the primary main is the brand's own link color and a foreground role is a text color already.
         StringAssert.Contains(roles, "@if role($tokens, kind) == semantic and $role != pri {");
         StringAssert.Contains(roles, "--bit-lnk-clr: #{role($tokens, fg)};");
         StringAssert.Contains(roles, "--bit-lnk-clr: #{role($tokens, main)};");
+
+        // A background or border main is the page's own color or a hairline's, invisible or far under 4.5:1 as text,
+        // so those roles read their foreground - the body text - with that text color's own states.
+        StringAssert.Contains(roles, "@else if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {\n            --bit-lnk-clr: #{role($tokens, fg)};\n            --bit-lnk-clr-hover: #{$clr-fg-pri-hover};\n            --bit-lnk-clr-active: #{$clr-fg-pri-active};");
         StringAssert.Contains(roles, "--bit-lnk-clr-dis: #{role($tokens, dis-text)};");
     }
 
