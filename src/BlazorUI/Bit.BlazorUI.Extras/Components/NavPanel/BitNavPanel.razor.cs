@@ -790,7 +790,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         {
             _focusSearchBoxPending = false;
 
-            await _searchBoxRef.FocusAsync();
+            try
+            {
+                await _searchBoxRef.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+            catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
         }
 
         // The panel that has just become an open drawer takes the focus with it, so the keyboard lands in the
@@ -847,13 +853,19 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     {
         if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
         {
-            await _searchBoxRef.FocusAsync();
+            try
+            {
+                await _searchBoxRef.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+            catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
             return;
         }
 
         if (_IsTrappingDrawer && RootElement.Context is not null)
         {
-            await RootElement.FocusAsync(preventScroll: true);
+            await RootElement.FocusSafelyAsync(preventScroll: true);
         }
 
         if (AutoFocus && _bitNavRef is not null && _filteredNavItems.Count > 0)

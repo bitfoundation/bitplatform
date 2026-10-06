@@ -103,7 +103,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
         if (AutoFocus)
         {
-            await InputElement.FocusAsync();
+            await InputElement.FocusSafelyAsync();
         }
     }
 

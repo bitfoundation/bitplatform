@@ -957,15 +957,7 @@ public partial class BitCarousel : BitComponentBase
         {
             _pendingFocus = null;
 
-            // The control the focus was meant for can be gone by the time the render lands (a dot taken
-            // away by a re-layout, a button by HideNextPrev), and a focus that cannot land is no reason to
-            // take the whole circuit down with it.
-            try
-            {
-                await focusTarget.FocusAsync();
-            }
-            catch (JSException) { }
-            catch (InvalidOperationException) { }
+            await focusTarget.FocusSafelyAsync();
         }
 
         await base.OnAfterRenderAsync(firstRender);

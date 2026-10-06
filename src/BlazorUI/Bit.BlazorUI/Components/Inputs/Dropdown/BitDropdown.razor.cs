@@ -1944,7 +1944,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             // initial document, which the trigger of an interactively rendered dropdown is not.
             if (AutoFocus && IsEnabled)
             {
-                await FocusTrigger();
+                await TriggerElement.FocusSafelyAsync();
             }
 
             // A dropdown that starts out open ends up with the focus its search box would have taken on
@@ -2271,12 +2271,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // the trigger, so it takes the focus in place of the trigger element itself. The responsive panel
     // has an input of its own, but it goes away with the panel, so it only takes the focus while the
     // panel is actually on the screen.
-    private ValueTask FocusTrigger()
-    {
-        if (Combo is false) return InputElement.FocusAsync();
+    private ElementReference TriggerElement => Combo is false
+                                                ? InputElement
+                                                : IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef;
 
-        return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync();
-    }
+    // The public focus methods are told when the focus could not be moved; the component's own moves
+    // (AutoFocus, a label click, dismissing the callout) go through FocusSafelyAsync instead.
+    private ValueTask FocusTrigger() => TriggerElement.FocusAsync();
 
     // Moves the focus back to the trigger after the component itself dismissed whatever had it, without
     // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
@@ -2286,15 +2287,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         _suppressOpenOnFocus = true;
 
+        var focused = false;
         try
         {
-            await FocusTrigger();
+            focused = await TriggerElement.TryFocusAsync();
         }
-        catch
+        finally
         {
-            _suppressOpenOnFocus = false;
-
-            throw;
+            if (focused is false)
+            {
+                _suppressOpenOnFocus = false;
+            }
         }
     }
 
@@ -2667,7 +2670,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false) return Task.CompletedTask;
 
-        return FocusTrigger().AsTask();
+        return TriggerElement.FocusSafelyAsync().AsTask();
     }
 
     private void HandleSearchBoxFocusIn()
@@ -2721,7 +2724,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // The clear button only renders while there is a text, so activating it removes it from under
         // the focus; the focus moves to the input it emptied instead of dropping to the document body.
-        await _searchInputRef.FocusAsync();
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
@@ -2866,13 +2869,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // that went away in between has to end here rather than throw out of a discarded task.
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _searchInputRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is nothing to focus
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task ClearComboBoxInput()
@@ -2908,17 +2905,24 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (Combo is false || IsRendered is false || IsDisposed) return;
 
+        // Each input is emptied on its own, so one that cannot be reached does not leave the other one
+        // holding the stale text: in responsive mode the inline input is detached while the panel is open.
+        await ClearInputValue(_comboBoxInputRef);
+
+        // The responsive panel has an input of its own, and it only exists while the panel is on the
+        // screen. Its reference is assigned a render later than the flag, so a clear that lands in between
+        // finds nothing to empty - which ClearInputValue turns into a no-op.
+        if (_isResponsiveMode && IsOpen)
+        {
+            await ClearInputValue(_comboBoxInputResponsiveRef);
+        }
+    }
+
+    private async ValueTask ClearInputValue(ElementReference input)
+    {
         try
         {
-            await _js.BitUtilsSetProperty(_comboBoxInputRef, "value", string.Empty);
-
-            // The responsive panel has an input of its own, and it only exists while the panel is on
-            // the screen. Its reference is assigned a render later than the flag, so a clear that lands
-            // in between finds nothing to empty - which the catch below turns into a no-op.
-            if (_isResponsiveMode && IsOpen)
-            {
-                await _js.BitUtilsSetProperty(_comboBoxInputResponsiveRef, "value", string.Empty);
-            }
+            await _js.BitUtilsSetProperty(input, "value", string.Empty);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no value to clear
@@ -2932,7 +2936,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Combo is false) return;
         if (_isResponsiveMode) return;
 
-        await _comboBoxInputRef.FocusAsync();
+        await _comboBoxInputRef.FocusSafelyAsync();
     }
 
     // The term the items are actually filtered by. It is null until the typed text is long enough for
@@ -3471,7 +3475,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (_isResponsiveMode && MultiSelect)
         {
-            await _comboBoxInputResponsiveRef.FocusAsync();
+            await _comboBoxInputResponsiveRef.FocusSafelyAsync();
 
             return;
         }

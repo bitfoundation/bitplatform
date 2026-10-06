@@ -1238,18 +1238,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // a callout opened through the IsOpen parameter would otherwise leave the keys nowhere to go.
             if (IsOpen && NoDropdown is false)
             {
-                try
+                if (NoSearchBox)
                 {
-                    if (NoSearchBox)
-                    {
-                        await _dropdownButtonRef.FocusAsync();
-                    }
-                    else
-                    {
-                        await _searchInputRef.FocusAsync();
-                    }
+                    await _dropdownButtonRef.FocusSafelyAsync();
                 }
-                catch (JSException) { } // the element might not be ready/visible yet
+                else
+                {
+                    await _searchInputRef.FocusSafelyAsync();
+                }
             }
 
             // The active option was decided after the render that got here, so what names it - the
@@ -2125,7 +2121,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // with the focus itself instead of a render later, once the focusin finds its way back.
             SetHasFocus(true);
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (JSException) { } // the element might not be ready/visible yet
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
     }
 
     private async Task ClearNumber()
@@ -2159,11 +2157,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         await ClearNumber();
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSException) { } // the element might not be ready/visible yet
+        await InputElement.FocusSafelyAsync();
     }
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
@@ -2267,7 +2261,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // with the focus itself instead of a render later, once the focusin finds its way back.
             SetHasFocus(true);
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (JSException) { } // the element might not be ready/visible yet
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
     }
 
     // The focus ring is on while the focus is in the field, and stays on while the callout has taken

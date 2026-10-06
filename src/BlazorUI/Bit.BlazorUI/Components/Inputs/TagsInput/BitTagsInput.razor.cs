@@ -1214,7 +1214,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
             if (AutoFocus && IsEnabled)
             {
-                await InputElement.FocusAsync();
+                await InputElement.FocusSafelyAsync();
             }
         }
 
@@ -1260,7 +1260,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                 }
                 catch { }
 
-                await _editInputRef.FocusAsync();
+                await _editInputRef.FocusSafelyAsync();
 
                 if (selectEdit)
                 {
@@ -1278,11 +1278,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             }
             else if (focusInput)
             {
-                await InputElement.FocusAsync();
+                await InputElement.FocusSafelyAsync();
             }
             else if (focusTagIndex >= 0 && focusTagIndex < _tagRefs.Length)
             {
-                await _tagRefs[focusTagIndex].FocusAsync();
+                await _tagRefs[focusTagIndex].FocusSafelyAsync();
             }
         }
         catch { } // the element is gone or JS is unavailable; the focus simply stays where it is.
@@ -2197,7 +2197,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // meanwhile returned to.
         PutTagBack();
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnFocusIn(FocusEventArgs e)

@@ -501,7 +501,12 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         // The whole code was taken out of the inputs at once, wherever the caret happened to be, so the
         // typing carries on at the start of an empty code rather than in the middle of one.
-        await FocusAsync();
+        try
+        {
+            await FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
 
@@ -668,7 +673,7 @@ public partial class BitOtpInput : BitInputBase<string?>
             // code has none, in which case the first input is the one to land on.
             var emptyIndex = Array.FindIndex(_inputValues, v => v.HasNoValue());
 
-            await _inputRefs[emptyIndex < 0 ? 0 : emptyIndex].FocusAsync();
+            await _inputRefs[emptyIndex < 0 ? 0 : emptyIndex].FocusSafelyAsync();
         }
 
         // A read-only or a disabled component is showing a code rather than waiting for one, so it must
@@ -959,7 +964,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // and the first empty input itself is exactly where the focus is meant to be.
         if (emptyIndex < 0 || emptyIndex >= index) return;
 
-        await _inputRefs[emptyIndex].FocusAsync();
+        await _inputRefs[emptyIndex].FocusSafelyAsync();
     }
 
     private async Task HandleOnFocusOut(FocusEventArgs e, int index)
@@ -1082,7 +1087,7 @@ public partial class BitOtpInput : BitInputBase<string?>
                     CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
                     int nextIndex = index + 1;
-                    if (nextIndex < _length) await _inputRefs[nextIndex].FocusAsync();
+                    if (nextIndex < _length) await _inputRefs[nextIndex].FocusSafelyAsync();
 
                     await OnInput.InvokeAsync((e, index));
                     await CallOnFill();
@@ -1188,7 +1193,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
             CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
-            await _inputRefs[previousIndex].FocusAsync();
+            await _inputRefs[previousIndex].FocusSafelyAsync();
 
             await CallOnFill();
             return;
@@ -1224,7 +1229,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
             CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
-            await _inputRefs[index].FocusAsync();
+            await _inputRefs[index].FocusSafelyAsync();
 
             await CallOnFill();
             return;
@@ -1254,7 +1259,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // pressed at either end of the code, or the vertical pair of arrows in a horizontal row.
         if (targetIndex is not -1 && targetIndex != index)
         {
-            await _inputRefs[targetIndex].FocusAsync();
+            await _inputRefs[targetIndex].FocusSafelyAsync();
         }
     }
 
@@ -1330,7 +1335,7 @@ public partial class BitOtpInput : BitInputBase<string?>
             emptyIndex = Array.FindIndex(_inputValues, v => v.HasNoValue());
         }
 
-        await _inputRefs[emptyIndex < 0 ? _length - 1 : emptyIndex].FocusAsync();
+        await _inputRefs[emptyIndex < 0 ? _length - 1 : emptyIndex].FocusSafelyAsync();
     }
 
     private async Task CallOnFill()

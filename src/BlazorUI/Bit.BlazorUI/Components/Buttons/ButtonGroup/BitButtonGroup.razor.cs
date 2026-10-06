@@ -433,7 +433,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // to render.
         _autoFocusDone = true;
 
-        await FocusElement(element);
+        await element.FocusSafelyAsync();
     }
 
 
@@ -453,22 +453,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (_itemElements.TryGetValue(item, out var element) is false) return ValueTask.CompletedTask;
 
-        return FocusElement(element);
-    }
-
-    // An element reference left behind by a render that has not happened yet, or by one whose markup has since
-    // been removed, throws instead of doing nothing when it is focused. Awaited rather than handed back, since
-    // the call itself only starts the interop: a disconnected circuit throws when the task completes.
-    private static async ValueTask FocusElement(ElementReference element)
-    {
-        if (element.Context is null) return;
-
-        try
-        {
-            await element.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        return element.FocusSafelyAsync();
     }
 
 
@@ -930,7 +915,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (_itemElements.TryGetValue(item, out var element))
         {
-            await FocusElement(element);
+            await element.FocusSafelyAsync();
         }
 
         if (_SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)

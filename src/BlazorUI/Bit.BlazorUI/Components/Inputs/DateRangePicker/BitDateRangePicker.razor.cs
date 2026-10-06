@@ -1450,11 +1450,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // is meant to land on, so it has nothing to focus.
                 if (AutoFocus && IsEnabled && Standalone is false)
                 {
-                    try
-                    {
-                        await InputElement.FocusAsync();
-                    }
-                    catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+                    await InputElement.FocusSafelyAsync();
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1491,12 +1487,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             _focusTimePickerAfterRender = false;
 
-            try
-            {
-                await _startTimeHourInputRef.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+            await _startTimeHourInputRef.FocusSafelyAsync();
         }
     }
 
@@ -1760,7 +1751,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             // A click that landed on the icon rather than on the input never moved the focus into the
             // field, so the picker would open with none of the focus cues the very same click on the
             // input two pixels away produces.
-            await InputElement.FocusAsync();
+            await InputElement.FocusSafelyAsync();
         }
 
         StateHasChanged();
@@ -1908,7 +1899,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _hoveredDate = null;
         _focusedDate = null;
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
 
         await OnClear.InvokeAsync();
     }
@@ -3251,12 +3242,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
         if (IsOpen) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await InputElement.FocusSafelyAsync();
     }
 
     // Escape closes the callout from anywhere inside it, as the dialog pattern requires.

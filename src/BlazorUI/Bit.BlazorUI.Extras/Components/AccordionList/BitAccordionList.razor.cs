@@ -1569,6 +1569,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
     }
 
     private TItem? FindItem(string? key)

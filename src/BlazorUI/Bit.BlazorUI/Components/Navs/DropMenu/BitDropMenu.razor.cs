@@ -1028,12 +1028,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsDisposed) return;
 
-        try
-        {
-            await _buttonRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await _buttonRef.FocusSafelyAsync();
     }
 
     private async Task<bool> CalloutContainsFocus()

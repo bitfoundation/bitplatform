@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -3664,6 +3665,34 @@ public class BitDateRangePickerTests : BunitTestContext
 
         Assert.IsNull(value);
         Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldStillReportTheClearButtonWhenFocusingTheInputFailsOnTheJsSide()
+    {
+        // An input taken out of the document before the focus call reaches it fails in the browser, which
+        // reaches .NET as a JSException: the value is still cleared, OnClear still fires, nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var cleared = 0;
+        BitDateRangePickerValue? value = new()
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 0, 0, 0, TimeSpan.Zero)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.OnClear, () => cleared++);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtrp-clr").Click();
+
+        Assert.IsNull(value);
+        Assert.AreEqual(1, cleared);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

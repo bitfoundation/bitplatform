@@ -859,13 +859,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         if (_itemElements.TryGetValue(item, out var element) is false) return;
 
-        try
-        {
-            await element.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await element.FocusSafelyAsync();
     }
 
     // The items the keyboard can reach: the rendered ones, in the order they appear, which means the

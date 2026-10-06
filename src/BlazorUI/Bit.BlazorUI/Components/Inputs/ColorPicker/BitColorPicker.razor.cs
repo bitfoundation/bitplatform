@@ -374,48 +374,48 @@ public partial class BitColorPicker : BitComponentBase
     /// instead, so a palette picker is focused the same way. A disabled picker is not in the tab order and is
     /// left alone; a read-only one is, and takes the focus like any other.
     /// </remarks>
-    public ValueTask FocusAsync() => IsEnabled ? FocusFirstAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusAsync() => IsEnabled && FirstFocusTarget() is { } target ? target.FocusAsync() : ValueTask.CompletedTask;
 
     /// <summary>
-    /// Moves the focus to the first control the picker actually renders, in the order they are rendered in.
+    /// The first control the picker actually renders, in the order they are rendered in.
     /// Every part above the text fields is optional, so the area a picker is normally focused at is not
-    /// always there to be focused.
+    /// always there to be focused. Null when the picker renders nothing that can take the focus.
     /// </summary>
-    private ValueTask FocusFirstAsync()
+    private ElementReference? FirstFocusTarget()
     {
-        if (ShowSaturationArea) return _saturationPickerRef.FocusAsync();
+        if (ShowSaturationArea) return _saturationPickerRef;
 
         // Everything below carries the native disabled attribute on a picker with nowhere to report a change
         // to, and a disabled element cannot take the focus. The inputs mode switch is the exception: it moves
         // which numbers the color is read as rather than the color, so it is enabled wherever the picker is.
         if (_IsInputDisabled is false)
         {
-            if (ShowHueSlider) return _hueInputRef.FocusAsync();
+            if (ShowHueSlider) return _hueInputRef;
 
-            if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync();
+            if (ShowAlphaSlider) return _alphaSliderRef;
 
-            if (_ShowEyeDropper) return _eyeDropperRef.FocusAsync();
+            if (_ShowEyeDropper) return _eyeDropperRef;
 
             if (ShowInputs)
             {
                 // The alpha field is not a case of its own: it is only rendered beside the alpha slider,
                 // which would have taken the focus above.
-                if (_ShowHexField) return _hexInputRef.FocusAsync();
+                if (_ShowHexField) return _hexInputRef;
 
-                if (_ChannelFields.Length > 0) return _channelInputRefs[0].FocusAsync();
+                if (_ChannelFields.Length > 0) return _channelInputRefs[0];
             }
         }
 
-        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef.FocusAsync();
+        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef;
 
         // The palette is the last part of the panel, and it is entered at the swatch the picker is already
         // on - the same one a Tab would land on.
         if (_IsInputDisabled is false && _presetRefs.Length > 0)
         {
-            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync();
+            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)];
         }
 
-        return ValueTask.CompletedTask;
+        return null;
     }
 
 
@@ -602,7 +602,10 @@ public partial class BitColorPicker : BitComponentBase
                 // a picker rendered into a page that is already up has to ask for the focus itself.
                 if (AutoFocus && IsEnabled)
                 {
-                    await FocusFirstAsync();
+                    if (FirstFocusTarget() is { } target)
+                    {
+                        await target.FocusSafelyAsync();
+                    }
                 }
             }
 
@@ -1333,12 +1336,10 @@ public partial class BitColorPicker : BitComponentBase
 
         try
         {
-            await _presetRefs[target].FocusAsync();
+            await _presetRefs[target].FocusSafelyAsync();
         }
-        catch (JSDisconnectedException) { }
         catch (ObjectDisposedException) { }
         catch (OperationCanceledException) { }
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task HandleOnPresetClick(string preset)

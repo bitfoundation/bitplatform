@@ -241,6 +241,15 @@ public partial class BitRichTextEditor : BitComponentBase
         await _js.BitRichTextEditorFocus(_editorRef);
     }
 
+    // The editor moving the focus on its own behalf (AutoFocus, a click on the label), where an element that
+    // is no longer in the document only leaves the focus where it is; FocusAsync reports that to its caller.
+    private ValueTask FocusEditor()
+    {
+        if (_inSourceView) return _sourceRef.FocusSafelyAsync();
+
+        return _js.BitRichTextEditorFocus(_editorRef);
+    }
+
     /// <summary>
     /// Returns the current HTML content of the editor.
     /// </summary>
@@ -633,12 +642,7 @@ public partial class BitRichTextEditor : BitComponentBase
         if (_pendingPanelFocus is null) return;
         var target = _pendingPanelFocus;
         _pendingPanelFocus = null;
-        try
-        {
-            await target().FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
-        catch (JSException) { } // interop unavailable or the element was not rendered
+        await target().FocusSafelyAsync();
     }
 
     private async Task RaiseErrorAsync(BitRichTextEditorError error)
@@ -794,7 +798,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
             if (AutoFocus)
             {
-                await FocusAsync();
+                await FocusEditor();
             }
         }
 

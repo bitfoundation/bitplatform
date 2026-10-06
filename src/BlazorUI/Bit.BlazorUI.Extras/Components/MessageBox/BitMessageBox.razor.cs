@@ -513,7 +513,13 @@ public partial class BitMessageBox : BitComponentBase
     {
         if (firstRender && AutoFocus)
         {
-            await FocusAsync();
+            try
+            {
+                await FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+            catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
         }
 
         await base.OnAfterRenderAsync(firstRender);

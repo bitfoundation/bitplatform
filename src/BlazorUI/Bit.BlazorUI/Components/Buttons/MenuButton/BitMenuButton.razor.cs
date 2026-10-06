@@ -1508,7 +1508,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
                 else
                 {
                     await CloseSubmenusFrom(owner.Level);
-                    await owner.FocusAsync();
+                    try
+                    {
+                        await owner.FocusAsync();
+                    }
+                    catch (JSDisconnectedException) { } // we can ignore this exception here
+                    catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
                 }
                 break;
             case "Tab":
@@ -1521,7 +1526,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
                 if (owner is not null && e.Key == backKey)
                 {
                     await CloseSubmenusFrom(owner.Level);
-                    await owner.FocusAsync();
+                    try
+                    {
+                        await owner.FocusAsync();
+                    }
+                    catch (JSDisconnectedException) { } // we can ignore this exception here
+                    catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
                 }
                 else if (e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false)
                 {
@@ -1572,11 +1582,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (Split)
         {
-            await _chevronButtonRef.FocusAsync();
+            await _chevronButtonRef.FocusSafelyAsync();
         }
         else
         {
-            await _operatorButtonRef.FocusAsync();
+            await _operatorButtonRef.FocusSafelyAsync();
         }
     }
 

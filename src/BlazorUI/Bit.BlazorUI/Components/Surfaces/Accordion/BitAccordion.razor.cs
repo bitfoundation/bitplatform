@@ -601,7 +601,7 @@ public partial class BitAccordion : BitComponentBase
         {
             _contentHasFocus = false;
 
-            await _headerRef.FocusAsync();
+            await _headerRef.FocusSafelyAsync();
         }
 
         // A real change of state, whoever made it, offers a panel whose reveal was refused to find-in-page again.

@@ -210,7 +210,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
         if (_isSubmenuOpen && _openedByPointer is false)
         {
             await CloseSubmenuAsync();
-            await FocusAsync();
+            await _itemRef.FocusSafelyAsync();
             return;
         }
 

@@ -690,13 +690,7 @@ public partial class BitPivot : BitComponentBase
 
             if (_isMenuOpen)
             {
-                try
-                {
-                    await _menuRef.FocusAsync();
-                }
-                catch (JSDisconnectedException) { } // we can ignore this exception here
-                catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
-                catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+                await _menuRef.FocusSafelyAsync();
             }
         }
 
@@ -1363,13 +1357,7 @@ public partial class BitPivot : BitComponentBase
     {
         if (item is null) return;
 
-        try
-        {
-            await item.RootElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await item.RootElement.FocusSafelyAsync();
     }
 
     private async Task ReorderItem(BitPivotItem item, int newIndex)
@@ -1767,13 +1755,7 @@ public partial class BitPivot : BitComponentBase
 
         StateHasChanged();
 
-        try
-        {
-            await _moreRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await _moreRef.FocusSafelyAsync();
     }
 
     private async Task SelectFromMenu(BitPivotItem item)
@@ -1815,13 +1797,7 @@ public partial class BitPivot : BitComponentBase
             return;
         }
 
-        try
-        {
-            await _moreRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await _moreRef.FocusSafelyAsync();
     }
 
     private async Task HandleAddClick()
