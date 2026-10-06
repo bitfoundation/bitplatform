@@ -714,7 +714,10 @@ slnf
 
 **Purpose**: Configuration for **VS Code Dev Containers** and **GitHub Codespaces**.
 
-**What it does**: Allows you to develop inside a Docker container with all dependencies pre-installed, ensuring **consistent development environments** across all team members.
+**What it does**: Allows you to develop inside a Docker container, ensuring **consistent development environments** across all team members.
+The container starts from the .NET SDK image with Docker inside it, and when it's created, `bit setup` does the rest the way it does
+on any machine: Node.js, the Aspire CLI, the build tools, the development certificate, the packages, the build and Chromium for the UI tests.
+The `bit` command stays available in its terminal, for `bit doctor` and `bit translate`.
 
 **Benefits**:
 - No need to install .NET SDK, Node.js, or other tools locally
@@ -726,7 +729,7 @@ slnf
 1. Install Docker Desktop and the "Dev Containers" extension in VS Code
 2. Open the project in VS Code
 3. Click "Reopen in Container" when prompted
-4. Wait for the container to build
+4. Wait for the container to build and for `bit setup` to finish; GitHub Codespaces prebuilds do both ahead of time
 5. Start developing!
 
 ---

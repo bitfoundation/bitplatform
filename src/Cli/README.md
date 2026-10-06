@@ -102,16 +102,17 @@ It installs missing tools, build tools and packages, builds, installs Playwright
 
 ## In CI
 
-`bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships do it like this, before they publish:
+`bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships install bit once per job and run it before they publish:
 
 ```bash
-dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
+dotnet tool install --global Bit.Cli --prerelease
+bit setup --platforms android --no-browsers --yes
 ```
 
 A CI build job lets bit build too, with its own MSBuild properties, and skips the browsers it won't test with:
 
 ```bash
-dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 ```
 
 A job that publishes lets bit build first too, so its CSS and JS are generated before `dotnet publish`. A web job passes `-p:Configuration=Release` and its `-p:Version`, so the publish reuses that build; a native job builds Debug, and its Release publish rebuilds the JavaScript, which bit Boilerplate regenerates whenever the Environment changes.
@@ -176,10 +177,13 @@ It reads `Bit.ResxTranslator.json` from the current folder or the nearest one ab
 In a pipeline:
 
 ```yaml
+- name: Install the bit CLI
+  run: dotnet tool install --global Bit.Cli --prerelease
+
 - name: Translate .resx files
   env:
     OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
-  run: dnx Bit.Cli --prerelease -- translate
+  run: bit translate
 ```
 
 ## bit decode

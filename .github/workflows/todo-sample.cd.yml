@@ -497,12 +497,18 @@ jobs:
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
+    - name: Install vpk
+      shell: pwsh
+      run: |
+        dotnet tool install vpk --version 1.2.161 --tool-path "$env:RUNNER_TEMP/vpk"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/vpk"
+
     # Needed for delta packages. Fails on the first run, when the bucket is empty.
     - name: Download previous releases from R2
       continue-on-error: true
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dnx vpk@1.2.161 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Log in to Azure for code signing
       if: vars.CODE_SIGNING_ACCOUNT != ''
@@ -527,7 +533,7 @@ jobs:
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
           dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}"
-          dnx vpk@1.2.161 -- pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
+          vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
 
     - name: Attest the installer and packages
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -541,7 +547,7 @@ jobs:
     - name: Upload releases to R2
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dnx vpk@1.2.161 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)

@@ -631,8 +631,10 @@ That's why `bit translate` is added to the project CD pipelines. Here's how it's
     OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
     OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
   run: |
-    dnx Bit.Cli --prerelease -- translate
+    bit translate
 ```
+
+The job installs the bit CLI once in an earlier step, with `dotnet tool install Bit.Cli --prerelease`.
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
 > the repository **variable** `OPENAI_ENDPOINT`. Both names have to match exactly: with no key configured the

@@ -37,15 +37,21 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION }}" --yes
+        run: bit setup --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION }}" --yes
 
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli --prerelease -- translate
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -200,15 +206,21 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --platforms windows --no-browsers --yes
+        run: bit setup --platforms windows --no-browsers --yes
 
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli --prerelease -- translate
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -275,8 +287,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
+        run: bit setup --platforms android --no-browsers --yes
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -290,7 +308,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli --prerelease -- translate
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -341,15 +359,21 @@ jobs:
         with:
           xcode-version: '26.6'
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        run: dnx Bit.Cli --prerelease -- setup --platforms ios --no-browsers --yes
+        run: bit setup --platforms ios --no-browsers --yes
 
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dnx Bit.Cli --prerelease -- translate
+          bit translate
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2

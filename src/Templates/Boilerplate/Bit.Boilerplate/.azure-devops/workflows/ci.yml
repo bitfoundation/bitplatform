@@ -28,7 +28,12 @@ jobs:
       targetType: 'inline'
       script: 'dotnet format whitespace --folder . --verify-no-changes'
 
-  - script: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
     displayName: 'Set up and build with bit setup'
 
 - job: test
@@ -44,7 +49,12 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --yes
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --yes
     displayName: 'Prepare this machine and build with bit setup'
 
   - task: Bash@3

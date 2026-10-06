@@ -38,8 +38,14 @@ jobs:
     - name: Verify formatting
       run: dotnet format whitespace --folder . --verify-no-changes
 
+    - name: Install the bit CLI
+      shell: pwsh
+      run: |
+        dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
     - name: Set up and build with bit setup
-      run: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+      run: bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 
   test:
     name: test
@@ -57,8 +63,14 @@ jobs:
       with:
         global-json-file: global.json
 
+    - name: Install the bit CLI
+      shell: pwsh
+      run: |
+        dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
     - name: Prepare this machine and build with bit setup
-      run: dnx Bit.Cli --prerelease -- setup --yes
+      run: bit setup --yes
 
     - name: Test
       id: test

@@ -5,7 +5,7 @@
         "cpus": 4
     },
     "waitFor": "onCreateCommand",
-    "postCreateCommand": "dotnet dev-certs https --trust",
+    "onCreateCommand": "dotnet tool install --global Bit.Cli --prerelease && /root/.dotnet/tools/bit setup --yes",
     "customizations": {
         "codespaces": {
             "openFiles": [
@@ -34,19 +34,10 @@
         5031
     ],
     "features": {
-        "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:3": {},
-        "ghcr.io/devcontainers/features/powershell:2": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:4": {},
-        "ghcr.io/devcontainers/features/node:2": {
-            "version": "24"
-        },
-        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-            "version": "1",
-            "helm": "4",
-            "minikube": "1"
-        }
+        "ghcr.io/devcontainers/features/docker-in-docker:4": {}
     },
     "remoteEnv": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PATH": "${containerEnv:PATH}:/root/.dotnet/tools"
     }
 }

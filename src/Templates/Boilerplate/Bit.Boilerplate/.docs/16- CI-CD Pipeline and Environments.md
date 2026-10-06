@@ -181,7 +181,8 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: `dnx Bit.Cli --prerelease -- setup`, which installs only what the runner is missing
+- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --prerelease`, then `bit setup`,
+  which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -273,7 +274,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Localization with `bit translate`**
    ```bash
-   dnx Bit.Cli --prerelease -- translate
+   bit translate
    ```
    - Automatically translates all `.resx` resource files missing values
 
@@ -414,9 +415,10 @@ Each signed file counts against the account's monthly quota. To sign only the ex
 
 2. **Build Android App Bundle (AAB)**
 ```bash
-# Install Node.js when missing, the MAUI Android workload and what the Android SDK lacks,
-# then build, which generates the CSS/JS files
-dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
+# Install the bit CLI once, then let it install Node.js when missing, the MAUI Android workload
+# and what the Android SDK lacks, then build, which generates the CSS/JS files
+dotnet tool install --global Bit.Cli --prerelease
+bit setup --platforms android --no-browsers --yes
    
 # Publish signed AAB (Or APK if needed)
 dotnet publish -c Release \
@@ -570,7 +572,8 @@ build_api_blazor:
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - run: dnx Bit.Cli --prerelease -- setup --no-restore --no-build --yes
+    - run: dotnet tool install --global Bit.Cli --prerelease
+    - run: bit setup --no-browsers --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 
