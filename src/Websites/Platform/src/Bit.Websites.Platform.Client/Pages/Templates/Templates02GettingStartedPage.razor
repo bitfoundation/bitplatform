@@ -43,6 +43,18 @@ source ~/.bashrc</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>2. Install the bit CLI</BitText>
             <CodeBox>dotnet tool install --global Bit.Cli --prerelease</CodeBox>
             Or run it once without installing it: <code>dnx Bit.Cli --prerelease -- new</code>
+            <br />
+            <br />
+            <BitText Typography="BitTypography.Subtitle1" Gutter><b>Why it's safe to run</b></BitText>
+            The bit CLI installs tools and changes your machine, so it's made to be checked, not just trusted:
+            <ul>
+                <li><b>Open source.</b> All of it is <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli" target="_blank" rel="noopener">on GitHub</a> under the MIT license.</li>
+                <li><b>Built by GitHub Actions, never on someone's laptop.</b> <code>bit about</code> shows the commit and the run that built your copy.</li>
+                <li><b>Signed.</b> <code>bit.dll</code> carries bit foundation's code signature from Azure Artifact Signing, and on Windows <code>bit about</code> shows who signed it once Windows has checked the signature.</li>
+                <li><b>Attested.</b> GitHub keeps a signed record of the run that built each package and the <code>bit.dll</code> inside it, along with a list of every component they contain. <code>bit about</code> asks GitHub whether your exact file has one, and prints the <code>gh attestation verify</code> command that checks it yourself.</li>
+                <li><b>Published without a stored key.</b> Releases reach nuget.org through trusted publishing: each one gets a key that lasts an hour and works only for this repository's release workflow, so there's no long-lived key to steal. nuget.org then signs every package it serves.</li>
+                <li><b>Nothing hidden.</b> Every install or change is listed before it runs, each step prints the command it uses, and each run's log stays in <code>~/.bitplatform/logs</code>. Error reports never include project names, paths, file contents or keys, and <code>bit telemetry off</code> stops them.</li>
+            </ul>
         </div>
     </section>
     <br />
@@ -92,22 +104,6 @@ source ~/.bashrc</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>Check a machine</BitText>
             After cloning a project, or on a new machine, run this in the project folder to see what's missing, along with the machine's memory, virtualization and drive, and add <code>--fix</code> to install it:
             <CodeBox>bit doctor</CodeBox>
-        </div>
-    </section>
-    <br />
-
-    <section class="section-card">
-        <div class="section-card-txt">
-            <BitText Typography="BitTypography.H5" Gutter>Why it's safe to run</BitText>
-            The bit CLI installs tools and changes your machine, so it's made to be checked, not just trusted:
-            <ul>
-                <li><b>Open source.</b> All of it is <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli" target="_blank" rel="noopener">on GitHub</a> under the MIT license.</li>
-                <li><b>Built by GitHub Actions, never on someone's laptop.</b> <code>bit about</code> shows the commit and the run that built your copy.</li>
-                <li><b>Signed.</b> <code>bit.dll</code> carries bit foundation's code signature from Azure Artifact Signing, and on Windows <code>bit about</code> shows who signed it once Windows has checked the signature.</li>
-                <li><b>Attested.</b> GitHub keeps a signed record of the run that built each package and the <code>bit.dll</code> inside it, along with a list of every component they contain. <code>bit about</code> asks GitHub whether your exact file has one, and prints the <code>gh attestation verify</code> command that checks it yourself.</li>
-                <li><b>Published without a stored key.</b> Releases reach nuget.org through trusted publishing: each one gets a key that lasts an hour and works only for this repository's release workflow, so there's no long-lived key to steal. nuget.org then signs every package it serves.</li>
-                <li><b>Nothing hidden.</b> Every install or change is listed before it runs, each step prints the command it uses, and each run's log stays in <code>~/.bitplatform/logs</code>. Error reports never include project names, paths, file contents or keys, and <code>bit telemetry off</code> stops them.</li>
-            </ul>
         </div>
     </section>
     <br />
