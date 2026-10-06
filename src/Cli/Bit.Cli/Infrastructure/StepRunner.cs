@@ -98,7 +98,7 @@ public sealed class StepRunner(CliServices cli)
 
         if (result.Hint is not null)
         {
-            cli.Console.Out.MarkupLine($"      [grey]{Markup.Escape(CliConsole.Truncate(result.Hint, cli.Console.Width - 8))}[/]");
+            cli.Console.StepHint(result.Hint);
         }
 
         cli.Log.Write($"== {id}: {result.Status} {result.Detail}");

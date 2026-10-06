@@ -218,6 +218,22 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AFailedStep_Should_ShowItsWholeFirstError()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        var error = $"error : The SupportedOSPlatformVersion value '15.0' in the project file is lower than the minimum value '17.0'. {string.Join(' ', Enumerable.Repeat("detail", 60))} end-of-error";
+        host.Runner.On("dotnet", "restore", 1, $"/x/Xamarin.Shared.Sdk.targets(1,1): {error} [/x/Contoso.Client.Maui.csproj]");
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        var steps = new StepRunner(host.Services);
+
+        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, CancellationToken.None);
+
+        Assert.AreEqual(error, steps.Reports.Single(r => r.Id == "restore").Result.Hint);
+        StringAssert.Contains(host.Output, "end-of-error");
+    }
+
+    [TestMethod]
     public void RecommendedExtensions_Should_BeReadDespiteCommentsAndRepeats()
     {
         using var host = new TestHost();

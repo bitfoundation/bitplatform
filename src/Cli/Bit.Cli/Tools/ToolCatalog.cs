@@ -70,16 +70,27 @@ public static partial class ToolCatalog
 
         public override string Name => ".NET SDK";
 
-        public override bool AppliesTo(ToolContext context) => context.Needs.MinimumSdk is not null;
+        public override bool AppliesTo(ToolContext context) => context.Needs.Sdk is not null;
 
-        public override string Why(ToolContext context) => $"the project's global.json asks for SDK {context.Needs.MinimumSdk} or a later patch";
+        public override string Why(ToolContext context) => context.Needs.Sdk!.Exact is { } exact
+            ? $"the project's global.json asks for exactly SDK {exact}"
+            : $"the project's global.json asks for SDK {context.Needs.Sdk.Minimum} or a later patch";
 
         public override bool IsNeeded(ToolContext context) => true;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
             var result = await context.RunAsync("dotnet", ["--list-sdks"], cancellationToken);
-            var minimum = context.Needs.MinimumSdk!;
+            var sdk = context.Needs.Sdk!;
+
+            if (sdk.Exact is { } exact)
+            {
+                var installed = result.OutputLines.Select(l => l.Split(' ')[0]).Where(v => v.Length > 0).ToArray();
+
+                return installed.Contains(exact, StringComparer.OrdinalIgnoreCase) ? ToolStatus.Installed(exact) : ToolStatus.Missing($"found {(installed.Length == 0 ? "none" : string.Join(", ", installed))}");
+            }
+
+            var minimum = sdk.Minimum;
             var versions = result.OutputLines.Select(l => ParseVersion(l.Split(' ')[0])).OfType<Version>().ToArray();
             var match = versions.Where(v => v.Major == minimum.Major && v.Minor == minimum.Minor && v >= minimum).Max();
 
@@ -88,11 +99,11 @@ public static partial class ToolCatalog
 
         public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
         {
-            var minimum = context.Needs.MinimumSdk!;
-            return context.Environment.IsWindows ? context.PackageManagers.WingetInstall(Id, $"Install .NET SDK {minimum.Major}.{minimum.Minor}", $"Microsoft.DotNet.SDK.{minimum.Major}") : null;
+            var sdk = context.Needs.Sdk!;
+            return context.Environment.IsWindows ? context.PackageManagers.WingetInstall(Id, $"Install .NET SDK {sdk.Exact ?? $"{sdk.Minimum.Major}.{sdk.Minimum.Minor}"}", sdk.Preview ? "Microsoft.DotNet.SDK.Preview" : $"Microsoft.DotNet.SDK.{sdk.Minimum.Major}", version: sdk.Exact) : null;
         }
 
-        public override string? ManualInstructions(ToolContext context) => $"https://dotnet.microsoft.com/download/dotnet/{context.Needs.MinimumSdk?.Major}.{context.Needs.MinimumSdk?.Minor}";
+        public override string? ManualInstructions(ToolContext context) => $"https://dotnet.microsoft.com/download/dotnet/{context.Needs.Sdk?.Minimum.Major}.{context.Needs.Sdk?.Minimum.Minor}";
     }
 
     private sealed class GitTool : Tool

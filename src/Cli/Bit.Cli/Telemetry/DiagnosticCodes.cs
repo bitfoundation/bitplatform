@@ -20,8 +20,7 @@ public static partial class DiagnosticCodes
 
             if (ErrorLineRegex().IsMatch(trimmed))
             {
-                var message = ProjectSuffixRegex().Replace(LocationPrefixRegex().Replace(trimmed, ""), "").Trim();
-                return message.Length > 300 ? message[..300] : message;
+                return ProjectSuffixRegex().Replace(LocationPrefixRegex().Replace(trimmed, ""), "").Trim();
             }
         }
 

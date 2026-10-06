@@ -139,13 +139,45 @@ public class ToolTests
     {
         using var host = new TestHost(HostOs.Linux);
         AllInstalled(host.Runner);
-        var needs = new ToolNeeds { MinimumSdk = new Version(10, 0, 100) };
+        var needs = new ToolNeeds { Sdk = new SdkRequirement(new Version(10, 0, 100), Preview: false) };
 
         host.Runner.On("dotnet", "--list-sdks", 0, "9.0.300 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
         Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
 
         host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
         Assert.AreEqual("10.0.401", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    }
+
+    [TestMethod]
+    public async Task APreviewGlobalJson_Should_StillRequireItsSdk()
+    {
+        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"latestFeature\" } }");
+
+        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true), sdk);
+
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
+
+        Assert.AreEqual("11.0.100", (await CheckAsync(host, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    }
+
+    [TestMethod]
+    public async Task ADisabledRollForward_Should_RequireTheExactSdk()
+    {
+        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"disable\" } }");
+
+        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128"), sdk);
+
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Sdk = sdk };
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]");
+        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
+        Assert.AreEqual("11.0.100-rc.1.26425.128", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
     }
 
     [TestMethod]
@@ -185,6 +217,17 @@ public class ToolTests
         Assert.AreEqual(Elevation.Admin, node.Elevation);
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
         Assert.AreEqual("Install Docker Desktop", checks.Single(c => c.Tool.Id == "docker").Action!.Title);
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [C:\\Program Files\\dotnet\\sdk]");
+        var stable = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: false) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+        var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        var exact = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        CollectionAssert.Contains(stable.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.11");
+        CollectionAssert.DoesNotContain(stable.Commands[0].Arguments.ToArray(), "--version");
+        CollectionAssert.Contains(preview.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.Preview");
+        CollectionAssert.IsSubsetOf(new[] { "--id", "Microsoft.DotNet.SDK.Preview", "--version", "11.0.100-rc.1.26425.128" }, exact.Commands[0].Arguments.ToArray());
     }
 
     [TestMethod]

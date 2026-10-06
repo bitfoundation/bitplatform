@@ -65,7 +65,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, MinimumSdk = MinimumSdk(request), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = Sdk(request), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -314,7 +314,7 @@ public sealed class NewWorkflow(CliServices cli)
         cli.Console.Out.WriteLine();
     }
 
-    private Version? MinimumSdk(NewRequest request)
+    private SdkRequirement? Sdk(NewRequest request)
     {
         string? globalJson = null;
 
@@ -333,20 +333,7 @@ public sealed class NewWorkflow(CliServices cli)
             }
         }
 
-        if (globalJson is null)
-            return null;
-
-        try
-        {
-            using var document = System.Text.Json.JsonDocument.Parse(globalJson);
-            return document.RootElement.TryGetProperty("sdk", out var sdk) && sdk.TryGetProperty("version", out var version) && Version.TryParse(version.GetString(), out var parsed)
-                ? parsed
-                : null;
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            return null;
-        }
+        return globalJson is null ? null : SdkRequirement.FromGlobalJson(globalJson);
     }
 
     public static HashSet<Platform> AskPlatforms(CliServices cli, HashSet<Platform> current)

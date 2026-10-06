@@ -60,7 +60,7 @@ public static class SetupCommand
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, BuildProperties = properties };
             var aspire = Directory.Exists(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost"));
             var requirements = TemplateRequirements.FromProject(directory, name);
-            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, MinimumSdk = ReadMinimumSdk(directory), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, Sdk = ReadSdk(directory), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
             var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var tools = parseResult.GetValue(shared.NoTools)
                 ? []
@@ -106,19 +106,15 @@ public static class SetupCommand
         return command;
     }
 
-    public static Version? ReadMinimumSdk(string directory)
+    public static SdkRequirement? ReadSdk(string directory)
     {
         var path = Path.Combine(directory, "global.json");
 
         try
         {
-            if (File.Exists(path) is false)
-                return null;
-
-            using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path), new System.Text.Json.JsonDocumentOptions { CommentHandling = System.Text.Json.JsonCommentHandling.Skip, AllowTrailingCommas = true });
-            return document.RootElement.TryGetProperty("sdk", out var sdk) && sdk.TryGetProperty("version", out var version) && Version.TryParse(version.GetString(), out var parsed) ? parsed : null;
+            return File.Exists(path) ? SdkRequirement.FromGlobalJson(File.ReadAllText(path)) : null;
         }
-        catch (Exception exp) when (exp is IOException or System.Text.Json.JsonException)
+        catch (IOException)
         {
             return null;
         }
