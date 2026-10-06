@@ -53,7 +53,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldLetTheVariablesWinOverTheColorAndTheSize()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
 
         // The Color and the Size classes only set the private fallbacks the public variables are read over.
         StringAssert.Contains(root, "color: var(--bit-Link-color, var(--bit-lnk-clr));");
@@ -66,7 +66,7 @@ public partial class BitLinkStylesheetTests
         DataRow("lg", "md")]
     public void BitLinkShouldSizeFromTheTypeRamp(string size, string step)
     {
-        var block = Block(ReadStylesheet(), $"\n.bit-lnk-{size} {{");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n.bit-lnk-{size} {{");
 
         StringAssert.Contains(block, $"--bit-lnk-fs: #{{$tg-fs-{step}}};");
     }
@@ -74,7 +74,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldInheritTheTypeOfTheSentenceItSitsIn()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
 
         // A link rendered as a button is talked out of everything the browser gives a button of its own.
         foreach (var property in new[] { "line-height", "text-align", "word-spacing", "letter-spacing", "text-transform" })
@@ -102,7 +102,7 @@ public partial class BitLinkStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var hover = Block(stylesheet, "\n    @media (hover: hover) {");
+        var hover = SourceFiles.GetScssBlock(stylesheet, "\n    @media (hover: hover) {");
 
         StringAssert.Contains(hover, "&:hover {");
         StringAssert.Contains(hover, "text-decoration-line: var(--bit-lnk-deco-hover, underline);");
@@ -121,7 +121,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldStyleVisitedAheadOfTheInteractiveStates()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
 
         var visited = root.IndexOf("&:visited {", System.StringComparison.Ordinal);
         var hover = root.IndexOf("&:hover {", System.StringComparison.Ordinal);
@@ -135,7 +135,7 @@ public partial class BitLinkStylesheetTests
     public void BitLinkShouldDrawTheCurrentLinkWithoutOutrankingItsStates()
     {
         var stylesheet = ReadStylesheet();
-        var root = Block(stylesheet, "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk {");
 
         // The page a current link points at is visited by definition, so the current color covers :visited too,
         // and :where() keeps it below the pointer, the press, the focus, NoColor and the disabled state.
@@ -147,7 +147,7 @@ public partial class BitLinkStylesheetTests
         StringAssert.Contains(root, "color: var(--bit-Link-current-color, var(--bit-Link-color, var(--bit-lnk-clr)));");
 
         // Color alone must not be what tells the current link apart, and NoUnderline still takes the underline off.
-        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-lnk-cur {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-lnk-nun {", System.StringComparison.Ordinal),
                       "NoUnderline is declared ahead of the current link, which would win over it.");
     }
@@ -155,7 +155,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldKeepADisabledLinkInTheDisabledColor()
     {
-        var disabled = Block(ReadStylesheet(), "\n    &.bit-dis {");
+        var disabled = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
         StringAssert.Contains(disabled, "color: var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis));");
         StringAssert.Contains(disabled, "@include focus-ring(var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis)));");
@@ -166,7 +166,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldPaintAccentColorsInTheirReadableForeground()
     {
-        var roles = Block(ReadStylesheet(), "\n    .bit-lnk-#{$role} {");
+        var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-lnk-#{$role} {");
 
         // A secondary or a warning main is picked to fill a surface and falls under the contrast of body text,
         // while the primary main is the brand's own link color and a surface role is a page color already.
@@ -179,7 +179,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldReadAsALinkAndAsDisabledInForcedColors()
     {
-        var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "color: LinkText;");
         StringAssert.Contains(forced, ".bit-lnk.bit-dis,");
@@ -191,19 +191,8 @@ public partial class BitLinkStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-sic {"), "margin-inline-end: var(--bit-Link-icon-gap, ");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-eic {"), "margin-inline-start: var(--bit-Link-icon-gap, ");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-sic {"), "margin-inline-end: var(--bit-Link-icon-gap, ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-eic {"), "margin-inline-start: var(--bit-Link-icon-gap, ");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

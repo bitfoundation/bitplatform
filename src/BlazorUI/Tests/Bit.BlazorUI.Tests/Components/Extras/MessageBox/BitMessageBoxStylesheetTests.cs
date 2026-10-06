@@ -53,7 +53,7 @@ public partial class BitMessageBoxStylesheetTests
     [TestMethod]
     public void BitMessageBoxShouldFollowTheDialogTokensOfTheTheme()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-msb {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb {");
 
         StringAssert.Contains(root, "--bit-msb-pad: #{$spa-dialog};");
         StringAssert.Contains(root, "--bit-msb-ttl-fontsize: #{$tg-dialog-title-font-size};");
@@ -61,12 +61,12 @@ public partial class BitMessageBoxStylesheetTests
 
         // The dialog's ceiling is the default only in a modal; inline, the box fills its container as it always has.
         StringAssert.Contains(root, "var(--bit-MessageBox-max-width, 100%)");
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-mdl-ctn > .bit-msb {"), "var(--bit-MessageBox-max-width, #{$siz-dialog-max-width})");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mdl-ctn > .bit-msb {"), "var(--bit-MessageBox-max-width, #{$siz-dialog-max-width})");
 
         // The floor never passes the ceiling, which a narrow preset (Cupertino's 270px alert) would otherwise do.
         StringAssert.Contains(root, "min-width: min(");
 
-        var title = Block(ReadStylesheet(), "\n.bit-msb-ttl {");
+        var title = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb-ttl {");
 
         StringAssert.Contains(title, "var(--bit-MessageBox-title-font-weight, #{$tg-dialog-title-font-weight})");
         StringAssert.Contains(title, "text-align: var(--bit-msb-text-align);");
@@ -74,13 +74,13 @@ public partial class BitMessageBoxStylesheetTests
         // Text colors come from the foreground tokens, which the forced-colors palette maps; a role color does not.
         Assert.IsFalse(ReadStylesheet().Contains("$clr-ter"), "The text is painted in a role color rather than a foreground token.");
 
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-msb-ftr {"), "justify-content: var(--bit-MessageBox-actions-justify, #{$layout-dialog-actions-justify});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb-ftr {"), "justify-content: var(--bit-MessageBox-actions-justify, #{$layout-dialog-actions-justify});");
     }
 
     [TestMethod]
     public void BitMessageBoxShouldFitTheModalItIsShownIn()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-msb {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb {");
 
         // The room a modal leaves its content is the screen less its accent border and its offset; a box as tall as
         // the screen makes the modal scroll it by those few pixels on top of the body scrolling inside it.
@@ -91,14 +91,14 @@ public partial class BitMessageBoxStylesheetTests
         // The container shrinks inside the root's padding by layout rather than by subtracting the padding, which a
         // two-value --bit-MessageBox-padding would turn into an invalid calc().
         StringAssert.Contains(root, "flex-direction: column;");
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-msb-con {"), "min-height: 0;");
-        Assert.IsFalse(Block(ReadStylesheet(), "\n.bit-msb-con {").Contains("--bit-MessageBox-padding"), "The container's height is derived from the public padding.");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb-con {"), "min-height: 0;");
+        Assert.IsFalse(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb-con {").Contains("--bit-MessageBox-padding"), "The container's height is derived from the public padding.");
     }
 
     [TestMethod]
     public void BitMessageBoxShouldBalanceACenteredTitleAgainstTheCloseButton()
     {
-        var query = Block(ReadStylesheet(), "\n@container style(--bit-msb-text-align: center) {");
+        var query = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@container style(--bit-msb-text-align: center) {");
 
         StringAssert.Contains(query, ".bit-msb-hdr:has(> .bit-btn) > .bit-msb-ttl:first-child {");
         StringAssert.Contains(query, "padding-inline-start: calc(var(--bit-msb-cls-size) + #{spacing(2)});");
@@ -112,16 +112,16 @@ public partial class BitMessageBoxStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(Block(stylesheet, "\n.bit-msb-sm {"), "--bit-msb-ttl-fontsize: calc(#{$tg-dialog-title-font-size} * 0.8);");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-msb-lg {"), "--bit-msb-ttl-fontsize: calc(#{$tg-dialog-title-font-size} * 1.2);");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-msb-sm {"), "--bit-msb-pad: calc(#{$spa-dialog} * 0.667);");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-msb-lg {"), "--bit-msb-pad: calc(#{$spa-dialog} * 1.333);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-msb-sm {"), "--bit-msb-ttl-fontsize: calc(#{$tg-dialog-title-font-size} * 0.8);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-msb-lg {"), "--bit-msb-ttl-fontsize: calc(#{$tg-dialog-title-font-size} * 1.2);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-msb-sm {"), "--bit-msb-pad: calc(#{$spa-dialog} * 0.667);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-msb-lg {"), "--bit-msb-pad: calc(#{$spa-dialog} * 1.333);");
     }
 
     [TestMethod]
     public void BitMessageBoxShouldPrintAllOfItsBody()
     {
-        var print = Block(ReadStylesheet(), "\n@media print {");
+        var print = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media print {");
 
         StringAssert.Contains(print, "max-height: none !important;");
         StringAssert.Contains(print, "overflow: visible !important;");
@@ -130,19 +130,7 @@ public partial class BitMessageBoxStylesheetTests
     [TestMethod]
     public void BitMessageBoxShouldKeepItsIconInForcedColors()
     {
-        StringAssert.Contains(Block(ReadStylesheet(), "\n@media (forced-colors: active) {"), "color: CanvasText;");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {"), "color: CanvasText;");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

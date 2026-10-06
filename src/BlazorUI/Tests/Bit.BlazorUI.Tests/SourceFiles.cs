@@ -1,8 +1,10 @@
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,13 +20,21 @@ namespace Bit.BlazorUI.Tests;
 /// the csproj copy the file beside the binaries: every path is written relative to the src/BlazorUI folder, and this
 /// is the one file that knows where that folder is, so a test file can move to any depth without counting the levels
 /// again and no source file is ever read from a stale copy. The same goes for picking a stylesheet apart -
-/// <see cref="StripScssComments"/>, <see cref="GetScssBlock"/> and <see cref="GetScssDeclarations"/> share one reading
-/// of what is a comment, a string and a brace, so a fix to it reaches every test at once.
+/// <see cref="StripScssComments"/>, <see cref="GetScssBlock"/>, <see cref="GetScssDeclarations"/> and
+/// <see cref="GetScssRules"/> share one reading
+/// of what is a comment, a string and a brace, so a fix to it reaches every test at once. A source file is read once
+/// per run, and a stylesheet classified once per string however many blocks a test picks out of it.
 /// </remarks>
 internal static class SourceFiles
 {
     /// <summary>The folders of Bit.BlazorUI.Extras/Styles that hold its packaged presets.</summary>
     private static readonly string[] ExtrasPresetFolders = ["Fluent2", "Material", "Cupertino"];
+
+    // The source tree does not change while the tests run, so a file is read once however many tests read it - and
+    // the same string is handed back each time, which is what lets its classification be kept per string.
+    private static readonly ConcurrentDictionary<string, string> FileCache = new(StringComparer.Ordinal);
+
+    private static readonly ConditionalWeakTable<string, ScssChar[]> ClassifyCache = new();
 
     /// <summary>
     /// The src/BlazorUI folder: the one the build recorded in the BlazorUISourceRoot assembly metadata, or else the
@@ -68,7 +78,7 @@ internal static class SourceFiles
     {
         Assert.IsTrue(File.Exists(path), $"Missing {path}; this test reads the source tree, so it must run from a source checkout.");
 
-        return File.ReadAllText(path).Replace("\r\n", "\n");
+        return FileCache.GetOrAdd(Path.GetFullPath(path), p => File.ReadAllText(p).Replace("\r\n", "\n"));
     }
 
     /// <summary>
@@ -124,14 +134,16 @@ internal static class SourceFiles
     }
 
     /// <summary>
-    /// The rule that starts at the first occurrence of <paramref name="start"/> outside a comment (its selector,
-    /// at-rule or mixin header), from there through the brace that closes it. Braces are counted, so the nested rules
-    /// (&amp;:hover, @media, ...) are part of the block and the block ends with the rule itself, never earlier or later;
-    /// braces in comments and strings are skipped.
+    /// The rule that starts at the first occurrence of <paramref name="start"/> in the code of the stylesheet (its
+    /// selector, at-rule or mixin header), from there through the brace that closes it. An occurrence in a comment is
+    /// skipped, and so is one inside a string - a selector quoted in a mixin argument is not the rule of that selector.
+    /// Braces are counted, so the nested rules (&amp;:hover, @media, ...) are part of the block and the block ends with
+    /// the rule itself, never earlier or later; braces in comments and strings are skipped. Fails with
+    /// <paramref name="message"/>, when one is given, if there is no such rule.
     /// </summary>
-    public static string GetScssBlock(string stylesheet, string start)
+    public static string GetScssBlock(string stylesheet, string start, string? message = null)
     {
-        var (index, _, close, _) = FindBlock(stylesheet, start);
+        var (index, _, close, _) = FindBlock(stylesheet, start, message);
 
         return stylesheet[index..(close + 1)];
     }
@@ -139,11 +151,12 @@ internal static class SourceFiles
     /// <summary>
     /// The rule <see cref="GetScssBlock"/> finds, less its nested rules (&amp;:hover, @media, ...): its header and the
     /// declarations it makes itself. What a test means by "this rule sets X" - which a nested rule setting X, applying
-    /// only in its own state, must not satisfy.
+    /// only in its own state, must not satisfy. Never what a test means by "this rule sets no X": a nested rule setting
+    /// X still sets it whenever its state holds, so an assertion that something is absent reads the whole block.
     /// </summary>
-    public static string GetScssDeclarations(string stylesheet, string start)
+    public static string GetScssDeclarations(string stylesheet, string start, string? message = null)
     {
-        var (index, open, close, kinds) = FindBlock(stylesheet, start);
+        var (index, open, close, kinds) = FindBlock(stylesheet, start, message);
 
         var declarations = new StringBuilder(stylesheet[index..(open + 1)]);
         var statementStart = declarations.Length;
@@ -174,16 +187,78 @@ internal static class SourceFiles
         return declarations.Append('}').ToString();
     }
 
-    private static (int Index, int Open, int Close, ScssChar[] Kinds) FindBlock(string stylesheet, string start)
+    /// <summary>A rule of a stylesheet, as <see cref="GetScssRules"/> lists it.</summary>
+    /// <param name="Header">Its selector, at-rule or mixin header, trimmed and without its comments.</param>
+    /// <param name="Index">Where the header starts in the stylesheet.</param>
+    /// <param name="Ancestors">The headers of the rules it is nested in, the outermost first.</param>
+    public sealed record ScssRule(string Header, int Index, IReadOnlyList<string> Ancestors);
+
+    /// <summary>
+    /// Every rule of a stylesheet - each brace that opens a block, with the header written before it - in the order
+    /// they open. The same reading as <see cref="GetScssBlock"/>: a brace in a comment or a string opens and closes
+    /// nothing, and neither does one of an interpolation (#{...}), which stays part of the header it is written in.
+    /// </summary>
+    public static IReadOnlyList<ScssRule> GetScssRules(string stylesheet)
+    {
+        var kinds = Classify(stylesheet);
+        var rules = new List<ScssRule>();
+        var ancestors = new List<string>();
+        var statementStart = 0;
+        var interpolation = 0;
+
+        for (var i = 0; i < stylesheet.Length; i++)
+        {
+            if (kinds[i] is not ScssChar.Code) continue;
+
+            var c = stylesheet[i];
+
+            if (c == '{' && (interpolation > 0 || (i > 0 && stylesheet[i - 1] == '#')))
+            {
+                interpolation++;
+            }
+            else if (interpolation > 0)
+            {
+                if (c == '}') interpolation--;
+            }
+            else if (c == '{')
+            {
+                var header = new StringBuilder();
+                for (var j = statementStart; j < i; j++)
+                {
+                    if (kinds[j] is not ScssChar.Comment) header.Append(stylesheet[j]);
+                }
+
+                var index = statementStart;
+                while (kinds[index] is ScssChar.Comment || char.IsWhiteSpace(stylesheet[index])) index++;
+
+                var text = header.ToString().Trim();
+
+                rules.Add(new ScssRule(text, index, ancestors.ToArray()));
+                ancestors.Add(text);
+                statementStart = i + 1;
+            }
+            else if (c is '}' or ';')
+            {
+                if (c == '}' && ancestors.Count > 0) ancestors.RemoveAt(ancestors.Count - 1);
+                statementStart = i + 1;
+            }
+        }
+
+        return rules;
+    }
+
+    private static (int Index, int Open, int Close, ScssChar[] Kinds) FindBlock(string stylesheet, string start, string? message)
     {
         var kinds = Classify(stylesheet);
 
+        // An occurrence counts only when it starts in the code and holds no comment: one starting inside a string is a
+        // selector quoted in a mixin argument (@include own('*:not(.bit-foo)')), not the rule of that selector.
         var index = stylesheet.IndexOf(start, StringComparison.Ordinal);
-        while (index >= 0 && Array.IndexOf(kinds, ScssChar.Comment, index, start.Length) >= 0)
+        while (index >= 0 && (kinds[index] is not ScssChar.Code || Array.IndexOf(kinds, ScssChar.Comment, index, start.Length) >= 0))
         {
             index = stylesheet.IndexOf(start, index + 1, StringComparison.Ordinal);
         }
-        Assert.IsTrue(index >= 0, $"The stylesheet has no \"{start.Trim()}\" block.");
+        Assert.IsTrue(index >= 0, message ?? $"The stylesheet has no \"{start.Trim()}\" block.");
 
         // The block is the one the first brace opens - the outer one when `start` reaches into a nested rule
         // ("@media ... {\n    .bit-foo {") - and an interpolation in the selector (#{$x}) is not taken for it.
@@ -226,8 +301,11 @@ internal static class SourceFiles
     private enum ScssChar : byte { Code, Comment, String }
 
     // What each character of a stylesheet is: code, part of a // or /* */ comment, or part of a string - a quoted one,
-    // or the inside of an unquoted url(), whose // is a protocol rather than a comment.
-    private static ScssChar[] Classify(string stylesheet)
+    // or the inside of an unquoted url(), whose // is a protocol rather than a comment. Kept per string, since a test
+    // picks several blocks out of the one stylesheet.
+    private static ScssChar[] Classify(string stylesheet) => ClassifyCache.GetValue(stylesheet, ClassifyUncached);
+
+    private static ScssChar[] ClassifyUncached(string stylesheet)
     {
         var kinds = new ScssChar[stylesheet.Length];
         var i = 0;

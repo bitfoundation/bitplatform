@@ -98,9 +98,7 @@ public partial class BitCollapseStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "\n    &.bit-dis {", "The disabled collapse has no rule of its own.");
-
-        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {");
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {", "The disabled collapse has no rule of its own.");
 
         StringAssert.Contains(block, "color: $clr-fg-dis;");
         StringAssert.Contains(block, "background-color: $clr-bg-dis;");

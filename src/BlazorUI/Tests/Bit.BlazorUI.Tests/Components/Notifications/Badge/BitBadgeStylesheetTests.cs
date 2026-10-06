@@ -54,9 +54,7 @@ public partial class BitBadgeStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "\n    &.bit-dis {", "The disabled badge has no rule of its own.");
-
-        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {");
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {", "The disabled badge has no rule of its own.");
 
         // The disabled colors are handed over from the disabled tokens alone, never through the public color variables...
         StringAssert.Contains(block, "--bit-bdg-dis-txt: var(--bit-bdg-clr-dis-text);");

@@ -22,9 +22,11 @@ public partial class BitFlagStylesheetTests
 
         Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
 
+        var body = SourceFiles.StripScssComments(stylesheet);
+
         foreach (var name in documented)
         {
-            StringAssert.Contains(SourceFiles.StripScssComments(stylesheet), $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            StringAssert.Contains(body, $"var({name}, ", $"{name} is documented but never read with a fallback.");
         }
     }
 

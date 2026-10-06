@@ -25,7 +25,7 @@ public class BitChartStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var sources = Directory.GetFiles(ChartFolder(), "*.cs", SearchOption.AllDirectories)
-                               .Select(File.ReadAllText)
+                               .Select(SourceFiles.ReadFullPath)
                                .Append(stylesheet)
                                .ToArray();
 

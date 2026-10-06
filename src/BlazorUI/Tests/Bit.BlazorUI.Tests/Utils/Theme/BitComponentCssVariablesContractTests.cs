@@ -92,7 +92,7 @@ public sealed class BitComponentCssVariablesContractTests
         {
             var component = Path.GetFileNameWithoutExtension(file);
 
-            foreach (Match match in PublicVarRead.Matches(File.ReadAllText(file)))
+            foreach (Match match in PublicVarRead.Matches(SourceFiles.ReadFullPath(file)))
             {
                 if ($"Bit{match.Groups["component"].Value}" == component) continue;
 
@@ -144,7 +144,7 @@ public sealed class BitComponentCssVariablesContractTests
         {
             var component = GetComponentName(file);
 
-            foreach (Match match in PublicVarRead.Matches(File.ReadAllText(file)))
+            foreach (Match match in PublicVarRead.Matches(SourceFiles.ReadFullPath(file)))
             {
                 byVariable[NormalizeSeries(match.Groups[1].Value)] = component;
             }
@@ -160,7 +160,7 @@ public sealed class BitComponentCssVariablesContractTests
 
         foreach (var file in Directory.EnumerateFiles(demoPagesDir, "*.cs", SearchOption.AllDirectories))
         {
-            var text = File.ReadAllText(file);
+            var text = SourceFiles.ReadFullPath(file);
 
             // The table is a field of the page, so only what follows its declaration is read - every other
             // mention of a variable on a demo page is a worked example setting one, which documents nothing.
@@ -185,7 +185,7 @@ public sealed class BitComponentCssVariablesContractTests
         foreach (var file in Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories))
         {
             var component = Path.GetFileNameWithoutExtension(file);
-            var names = CssVarDeclaration.Matches(File.ReadAllText(file)).Select(m => m.Groups[1].Value);
+            var names = CssVarDeclaration.Matches(SourceFiles.ReadFullPath(file)).Select(m => m.Groups[1].Value);
 
             foreach (var name in names)
             {

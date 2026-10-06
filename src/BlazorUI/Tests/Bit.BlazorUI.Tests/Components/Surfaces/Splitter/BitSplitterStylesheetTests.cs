@@ -179,15 +179,13 @@ public class BitSplitterStylesheetTests
     public void BitSplitterHoverShouldOnlyApplyWhereThePointerCanHover()
     {
         // A finger lifting off the gutter would otherwise leave it in its hover color until the next tap elsewhere.
-        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
+        var rules = SourceFiles.GetScssRules(ReadStylesheet()).Where(r => r.Header.Contains(":hover", StringComparison.Ordinal)).ToArray();
 
-        var rules = Regex.Matches(stylesheet, @"^[^\n]*:hover[^\n]*\{", RegexOptions.Multiline);
+        Assert.IsTrue(rules.Length > 0);
 
-        Assert.IsTrue(rules.Count > 0);
-
-        foreach (Match match in rules)
+        foreach (var rule in rules)
         {
-            Assert.IsTrue(IsInsideHoverQuery(stylesheet[..match.Index]), $"'{match.Value.Trim()}' is not gated by @media (hover: hover).");
+            Assert.IsTrue(IsInsideHoverQuery(rule), $"'{rule.Header}' is not gated by @media (hover: hover).");
         }
     }
 
@@ -213,13 +211,14 @@ public class BitSplitterStylesheetTests
     public void BitSplitterStatesShouldMoveTheVariablesRatherThanPaintOverAnAppsClass()
     {
         // A gutter or a collapse button an app paints through Classes keeps that paint under the pointer and through a
-        // drag: the states only move the private variables the one rule at rest paints from.
+        // drag: the states only move the private variables the one rule at rest paints from. The whole block is read,
+        // since paint nested in a state (its own &:hover, an @media) would paint over the app's class all the same.
         var stylesheet = ReadStylesheet();
 
         foreach (var selector in new[] { "    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {",
                                          "\n.bit-spl-drg > .bit-spl-gtr {", "        &:hover {" })
         {
-            var block = SourceFiles.GetScssDeclarations(stylesheet, selector);
+            var block = SourceFiles.GetScssBlock(stylesheet, selector);
 
             Assert.IsFalse(Regex.IsMatch(block, @"^\s*(background-color|background|color|border-color)\s*:", RegexOptions.Multiline),
                            $"{selector.Trim()} paints the part directly.");
@@ -241,33 +240,12 @@ public class BitSplitterStylesheetTests
         Assert.IsTrue(drag > hover, "The drag rule has to come after the hover rule it ties with.");
     }
 
-    // Walks the braces back out from a rule to see whether one of the blocks it sits in is the hover query - or the
-    // forced-colors one, which only repaints what the hover query already allowed.
-    private static bool IsInsideHoverQuery(string before)
+    // Whether one of the blocks a rule sits in is the hover query - or the forced-colors one, which only repaints what
+    // the hover query already allowed.
+    private static bool IsInsideHoverQuery(SourceFiles.ScssRule rule)
     {
-        var depth = 0;
-
-        for (var i = before.Length - 1; i >= 0; i--)
-        {
-            if (before[i] == '}') depth++;
-            else if (before[i] == '{')
-            {
-                if (depth == 0)
-                {
-                    var lineStart = before.LastIndexOf('\n', i) + 1;
-                    var header = before[lineStart..i];
-
-                    if (header.Contains("@media (hover: hover)", StringComparison.Ordinal)
-                        || header.Contains("@media (forced-colors: active)", StringComparison.Ordinal)) return true;
-                }
-                else
-                {
-                    depth--;
-                }
-            }
-        }
-
-        return false;
+        return rule.Ancestors.Any(header => header.Contains("@media (hover: hover)", StringComparison.Ordinal)
+                                            || header.Contains("@media (forced-colors: active)", StringComparison.Ordinal));
     }
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Splitter", "BitSplitter.scss");

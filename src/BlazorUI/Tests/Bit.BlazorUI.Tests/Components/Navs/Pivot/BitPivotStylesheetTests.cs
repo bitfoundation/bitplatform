@@ -150,42 +150,16 @@ public class BitPivotStylesheetTests
         // child combinators only (the in-header / in-tablist paths, or & and >).
         var (_, body) = SplitStylesheet();
 
-        // Comments and interpolations carry characters of their own that would read as selectors or blocks.
-        var source = SourceFiles.StripScssComments(body);
-        source = Regex.Replace(source, @"#\{[^}]*\}", "INTERPOLATION");
-
-        var stack = new System.Collections.Generic.Stack<string>();
         var leaks = new System.Collections.Generic.List<string>();
-        var start = 0;
 
-        for (var i = 0; i < source.Length; i++)
+        foreach (var rule in SourceFiles.GetScssRules(body).Where(r => r.Header.StartsWith('@') is false))
         {
-            var c = source[i];
+            var parent = rule.Ancestors.LastOrDefault(s => s.StartsWith('@') is false);
+            if (parent is null) continue;
 
-            if (c == ';')
+            foreach (var part in rule.Header.Split(',').Select(p => p.Trim()))
             {
-                start = i + 1;
-            }
-            else if (c == '{')
-            {
-                var selector = source[start..i].Trim();
-
-                var parent = stack.FirstOrDefault(s => s.StartsWith('@') is false);
-                if (parent is not null && selector.StartsWith('@') is false)
-                {
-                    foreach (var part in selector.Split(',').Select(p => p.Trim()))
-                    {
-                        if (part.StartsWith('.')) leaks.Add($"{parent} {{ {part} }}");
-                    }
-                }
-
-                stack.Push(selector);
-                start = i + 1;
-            }
-            else if (c == '}')
-            {
-                if (stack.Count > 0) stack.Pop();
-                start = i + 1;
+                if (part.StartsWith('.')) leaks.Add($"{parent} {{ {part} }}");
             }
         }
 

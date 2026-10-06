@@ -52,8 +52,12 @@ public class BitAccordionListStylesheetTests : BunitTestContext
         var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         // Every rule of the joined list is chained through the item wrapper, so an accordion nested in a panel keeps
-        // its own corners and its own outline.
-        var joined = SourceFiles.GetScssBlock(stylesheet, "\n.bit-acl-jnd {");
+        // its own corners and its own outline. Everything from the joined block on is read, not the block alone, so the
+        // checks below that something is absent also cover a joined rule written after it.
+        var start = stylesheet.IndexOf("\n.bit-acl-jnd {", System.StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, "The joined list has no rule of its own.");
+
+        var joined = stylesheet[start..];
 
         foreach (Match rule in Regex.Matches(joined, @"^\s*(>[^{]+)\{", RegexOptions.Multiline))
         {

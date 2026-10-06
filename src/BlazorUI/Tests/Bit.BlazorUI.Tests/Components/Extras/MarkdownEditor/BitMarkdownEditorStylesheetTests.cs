@@ -53,7 +53,7 @@ public partial class BitMarkdownEditorStylesheetTests
     [TestMethod]
     public void BitMarkdownEditorRootShouldNotClipTheToolbarMenus()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-mde {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde {");
 
         Assert.IsFalse(root.Contains("overflow"), "The root clips its children, which cuts a toolbar menu off at the bottom of a short editor.");
 
@@ -68,11 +68,11 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mde-bdy {"), "flex-wrap: wrap;");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mde-pne {"), "flex: 1 1 var(--bit-MarkdownEditor-pane-min-width, 18rem);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-bdy {"), "flex-wrap: wrap;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-pne {"), "flex: 1 1 var(--bit-MarkdownEditor-pane-min-width, 18rem);");
 
         // The textarea fills its pane by flex, since a wrapped body leaves a percentage height unresolved.
-        var textArea = Block(stylesheet, "\n.bit-mde-txa {");
+        var textArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {");
         StringAssert.Contains(textArea, "flex: 1 1 auto;");
         Assert.IsFalse(textArea.Contains("height: 100%"), "The textarea still fills its pane by a percentage height.");
     }
@@ -80,7 +80,7 @@ public partial class BitMarkdownEditorStylesheetTests
     [TestMethod]
     public void BitMarkdownEditorAutoHeightShouldLeaveTheBodyToTheScript()
     {
-        var autoHeight = Block(ReadStylesheet(), "\n.bit-mde-ahg .bit-mde-bdy {");
+        var autoHeight = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-ahg .bit-mde-bdy {");
 
         StringAssert.Contains(autoHeight, "resize: none;");
         StringAssert.Contains(autoHeight, "height: auto;");
@@ -95,18 +95,18 @@ public partial class BitMarkdownEditorStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var sticky = Block(stylesheet, "\n.bit-mde-stk > .bit-mde-tlb {");
+        var sticky = SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-stk > .bit-mde-tlb {");
         StringAssert.Contains(sticky, "position: sticky;");
         StringAssert.Contains(sticky, "top: var(--bit-MarkdownEditor-toolbar-sticky-offset, 0);");
 
         // Full-screen gives the editor the viewport, so there is nothing to stick to there.
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mde-fsc.bit-mde-stk > .bit-mde-tlb {"), "position: static;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-fsc.bit-mde-stk > .bit-mde-tlb {"), "position: static;");
     }
 
     [TestMethod]
     public void BitMarkdownEditorShouldKeepItsStatesInForcedColors()
     {
-        var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "background: Highlight;");
         StringAssert.Contains(forced, "color: GrayText;");
@@ -119,20 +119,8 @@ public partial class BitMarkdownEditorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(stylesheet, "$mde-focus: var(--bit-MarkdownEditor-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mde-btn {"), "@include focus-ring($mde-focus);");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mde-txa {"), "@include mde-inset-ring;");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-btn {"), "@include focus-ring($mde-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {"), "@include mde-inset-ring;");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

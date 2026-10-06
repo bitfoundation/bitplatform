@@ -71,7 +71,7 @@ public partial class BitMarkdownViewerStylesheetTests
         // A bare descendant rule would reach into a template and restyle the components drawn there.
         Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"^\s+(\*|a|p|pre|code|table|h[1-6]|ul|ol|li)\s*[,{]", RegexOptions.Multiline),
                        "An element is styled with a bare descendant rule, which reaches a template's output.");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mdv {"), ".bit-mdv-tpl {\n        display: contents;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mdv {"), ".bit-mdv-tpl {\n        display: contents;");
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public partial class BitMarkdownViewerStylesheetTests
     public void BitMarkdownViewerShouldKeepWhatBackgroundsTellApartInForcedColors()
     {
         var stylesheet = ReadStylesheet();
-        var forced = Block(stylesheet, "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "outline: $shp-border-width solid transparent;");
         StringAssert.Contains(forced, "background-color: Mark;");
@@ -105,18 +105,6 @@ public partial class BitMarkdownViewerStylesheetTests
 
         // Links, code blocks, interactive task boxes, table scroll regions and the summaries of the collapsible containers.
         Assert.AreEqual(5, Regex.Matches(stylesheet, @"&:focus-visible \{\n\s+@include focus-ring;").Count);
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsGreaterThanOrEqualTo(0, start, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
     }
 
     private static string[] DocumentedVariables(string stylesheet)

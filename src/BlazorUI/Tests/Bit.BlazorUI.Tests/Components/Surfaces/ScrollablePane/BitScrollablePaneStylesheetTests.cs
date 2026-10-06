@@ -39,12 +39,7 @@ public class BitScrollablePaneStylesheetTests
     [TestMethod]
     public void BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet()
     {
-        var stylesheet = ReadStylesheet();
-        var focusRing = "&:focus-visible {\n        @include focus-ring;";
-
-        StringAssert.Contains(stylesheet, focusRing, "The focus ring is not the default one of the library.");
-
-        var ring = SourceFiles.GetScssBlock(stylesheet, focusRing);
+        var ring = SourceFiles.GetScssBlock(ReadStylesheet(), "&:focus-visible {\n        @include focus-ring;", "The focus ring is not the default one of the library.");
 
         // An unset focus color leaves --bit-scp-fcr invalid, which is what makes box-shadow fall back to the global
         // composite - so an app that re-shapes --bit-shd-focus-ring re-shapes this ring too.
@@ -95,13 +90,11 @@ public class BitScrollablePaneStylesheetTests
         // from all of them; the forced colors rules are an override that follows the rendering instead.
         Assert.IsFalse(stylesheet.Contains("not all and (forced-colors", System.StringComparison.Ordinal), "The Modern rendering is behind a negated forced-colors query.");
 
-        var media = stylesheet.IndexOf("@media (forced-colors: active) {\n    .bit-scp-mod,", System.StringComparison.Ordinal);
+        var opening = "@media (forced-colors: active) {\n    .bit-scp-mod,";
+        var forced = SourceFiles.GetScssBlock(stylesheet, opening, "The Modern rendering has no forced-colors override.");
 
-        Assert.IsTrue(media >= 0, "The Modern rendering has no forced-colors override.");
-        Assert.IsTrue(media > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
+        Assert.IsTrue(stylesheet.IndexOf(opening, System.StringComparison.Ordinal) > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
                       "The forced-colors override does not come after the rendering it overrides.");
-
-        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {\n    .bit-scp-mod,");
 
         // The idle state is matched at its own specificity, so an auto hiding bar is repainted and never hidden.
         StringAssert.Contains(forced, ".bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {");
