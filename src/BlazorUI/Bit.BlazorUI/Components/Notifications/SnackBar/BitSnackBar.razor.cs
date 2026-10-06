@@ -1055,7 +1055,32 @@ public partial class BitSnackBar : BitComponentBase
         _pageVisibility.OnChange += HandlePageVisibilityChange;
         _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
-        await _pageVisibility.Init();
+        // The utility is shared, so another component may already have asked the page; what it knows is taken
+        // right away, and what the page answers once it arrives.
+        await ApplyPageVisibilityAsync();
+
+        // Without the script the countdowns are simply not held, which is no reason to fail the render.
+        try
+        {
+            await _pageVisibility.Init();
+        }
+        catch (JSDisconnectedException) { return; } // the circuit is gone, and the page with it
+        catch (JSException) { return; }
+        catch (OperationCanceledException) { return; } // the interop call timed out
+
+        await ApplyPageVisibilityAsync();
+    }
+
+    // No event is coming for the state the page is already in - a tab that was in the background before the snack
+    // bar subscribed, or a window that had already lost the focus - so it is read rather than waited for.
+    private Task ApplyPageVisibilityAsync()
+    {
+        if (IsDisposed || _pageVisibility is null) return Task.CompletedTask;
+
+        _pageHidden = _pageVisibility.IsHidden;
+        _windowBlurred = _pageVisibility.IsWindowBlurred;
+
+        return _items.Exists(i => i._paused) || _PageHeld ? SyncPageHoldAsync() : Task.CompletedTask;
     }
 
     // The shortcut is registered from the rendered id rather than from a parameter setter, so it follows a Hotkey

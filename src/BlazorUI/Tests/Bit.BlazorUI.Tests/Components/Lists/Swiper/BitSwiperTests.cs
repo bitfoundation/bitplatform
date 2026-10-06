@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Lists.Swiper;
@@ -820,6 +821,48 @@ public class BitSwiperTests : BunitTestContext
 
         root.FocusOut();
         Assert.IsTrue(swiper.IsPlaying);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldNotAutoPlayInAPageThatIsAlreadyHidden()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Services.AddSingleton(visibility);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+
+        // No visibilitychange is coming for a tab that was already in the background when the swiper started.
+        Assert.IsFalse(swiper.IsPlaying);
+        Assert.IsFalse(swiper.IsPaused);
+
+        await component.InvokeAsync(() => visibility._VisibilityChanged(false));
+
+        Assert.IsTrue(swiper.IsPlaying);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldAutoPlayAsUsualWhenThePageVisibilityScriptFails()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Services.AddSingleton(visibility);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        Assert.IsTrue(component.Instance.Swiper.IsPlaying);
     }
 
     [TestMethod]

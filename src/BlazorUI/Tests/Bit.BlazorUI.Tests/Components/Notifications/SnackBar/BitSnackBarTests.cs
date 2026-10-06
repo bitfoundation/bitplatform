@@ -3215,6 +3215,111 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSnackBarPauseOnPageHiddenHoldsTheCountdownInAPageThatIsAlreadyHiddenTest()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Context.Services.AddSingleton(visibility);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        await Task.Delay(600);
+
+        // No visibilitychange is coming for a tab that was already in the background when the snack bar started.
+        Assert.AreEqual(1, com.Instance.Items.Count);
+        Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-pau"));
+
+        await visibility._VisibilityChanged(false);
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarPauseOnWindowBlurHoldsTheCountdownInAWindowThatIsAlreadyBlurredTest()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":false,"blurred":true}"""));
+        Context.Services.AddSingleton(visibility);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        await Task.Delay(600);
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
+
+        await visibility._WindowFocusChanged(false);
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarPauseOnPageHiddenHoldsAnItemThatIsAlreadyCountingDownTest()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Context.Services.AddSingleton(visibility);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        // A guard turned on later only subscribes then, while the item is already counting down.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await Task.Delay(600);
+
+        Assert.AreEqual(1, com.Instance.Items.Count);
+
+        await visibility._VisibilityChanged(false);
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarCountsDownAsUsualWhenThePageVisibilityScriptFailsTest()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Context.Services.AddSingleton(visibility);
+
+        var com = RenderComponent<BitSnackBar>(parameters =>
+        {
+            parameters.Add(p => p.AutoDismiss, true);
+            parameters.Add(p => p.PauseOnPageHidden, true);
+            parameters.Add(p => p.PauseOnWindowBlur, true);
+            parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(300));
+            parameters.Add(p => p.TransitionDuration, 0);
+        });
+
+        await com.Instance.Show("title");
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.Instance.Items.Count), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
     public async Task BitSnackBarLoadingItemTest()
     {
         var com = RenderComponent<BitSnackBar>(parameters =>

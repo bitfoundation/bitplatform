@@ -995,7 +995,7 @@ public partial class BitSwiper : BitComponentBase
 
             await RegisterPreventKeysAsync();
 
-            await _pageVisibility.Init();
+            await InitPageVisibilityAsync();
 
             UpdateAutoPlayTimer();
         }
@@ -1370,6 +1370,23 @@ public partial class BitSwiper : BitComponentBase
             }
             catch { } // the renderer itself went away; there is nothing left to report the exception to
         }
+    }
+
+    // No event is coming for the state the page is already in - a tab that was in the background before the
+    // swiper was rendered - so it is read rather than waited for. The utility is shared, so it may know even when
+    // this call fails, and without the script the rotation is simply not held, which is no reason to fail the
+    // render.
+    private async Task InitPageVisibilityAsync()
+    {
+        try
+        {
+            await _pageVisibility.Init();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (JSException) { }
+        catch (OperationCanceledException) { } // the interop call timed out
+
+        _pageHidden = _pageVisibility.IsHidden;
     }
 
     private Task PageVisibilityChange(bool hidden)
