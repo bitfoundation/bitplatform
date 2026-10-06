@@ -6,6 +6,12 @@
         // data-color-scheme, data-mode, ...), which are the only data-* attributes the chain a relocated callout
         // is moved into copies (see isMirroredAttribute).
         private static readonly THEME_DATA_ATTRIBUTE_REGEX = /^data-(?:[a-z0-9]+-)*(?:theme|scheme|mode)$/i;
+        // The attribute a component renders on its root while the style of a passing state of that root - the
+        // Styles.Focused of an input, the Styles.Toggled of a split button - is applied, holding the style the
+        // root has without it. A link copying that root reads its style from there rather than from the style
+        // attribute, so a popup never takes on the look of a state that comes and goes as the focus moves
+        // between the field and the popup itself (see mirrorPopupStyle).
+        private static readonly POPUP_STYLE_ATTRIBUTE = 'data-bit-popup-style';
         // The elements a link of that chain is created as when it stands for one of them, so that a selector
         // naming the tag of an ancestor (aside, nav, section, li, td, ...) still matches the copy. Everything
         // else - a form, a label, a button, a custom element, an element display: contents would hide, anything
@@ -970,16 +976,27 @@
         // on it is carried by one more link at the bottom of the chain (see mirrorRoot). The chain is kept in
         // step with the elements it copies for as long as the callout is open.
         //
-        // The flip side of copying the classes of the ancestors is that a descendant selector of the page
-        // (`.sidebar div`) matches the relocated parts again, as it would where they were rendered; the one thing
-        // such a rule must never take away from them, the fixed positioning everything here places them with, is
-        // pinned by the stylesheet (general.scss).
+        // The flip side of copying the classes of the ancestors is deliberate, as it is what lets a class declare
+        // a variable for the popup, hand it inherited text styles, or reach into it from a `::deep` rule: the popup
+        // matches the page's rules the way it would where it was rendered, not the way it did once it was moved
+        // out of their reach. So a descendant selector of the page (`.card div`) matches the relocated parts again,
+        // and wins over a component's own single-class rule wherever it is the more specific - the one thing such
+        // a rule must never take away from them, the fixed positioning everything here places them with, is pinned
+        // by the stylesheet (general.scss). And a `closest()` from inside the popup for a class the consumer wrote
+        // finds the copy of that ancestor rather than nothing; the copy carries none of its id, data-* or
+        // children, so a script that needs the element the popup was opened from looks it up through the
+        // component, never through the DOM above the popup.
         private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string, arrowId: string = '', rootId: string = '') {
             // A panel reopened while it is still sliding out has never left its chain, which it keeps.
             Callouts.cancelPendingRestore(calloutId);
 
             if (Callouts._calloutOriginalParents.has(calloutId)) return;
-            if (callout.parentElement === document.body) return;
+
+            // A callout rendered straight into the body has no ancestor to copy, but it is still moved into a
+            // chain of its own when its root - rendered beside it - has something to hand it.
+            const root = rootId ? document.getElementById(rootId) : null;
+            const carriesRoot = root != null && root.contains(callout) === false;
+            if (callout.parentElement === document.body && carriesRoot === false) return;
 
             const overlay = overlayId ? document.getElementById(overlayId) : null;
             const arrow = arrowId ? document.getElementById(arrowId) : null;
@@ -994,21 +1011,23 @@
                 ancestors.push(current);
             }
 
-            // Of the inline style of the root and of a part another callout relocated - the popup an inner
-            // callout is opened from - only the custom properties are copied (see linkStyle).
+            // Of the inline style of the root only the custom properties are copied (see linkStyle), and of a
+            // part another callout relocated - the popup an inner callout is opened from - nothing at all: what
+            // is written there is that callout's own placement and sizing, some of it written from the
+            // parameters of its component (a Width, a MaxHeight) as the very variables an inner popup of the
+            // same kind reads its own sizing from.
             const links: BitCalloutChainLink[] = [];
             let bottom = wrapper;
             for (let i = ancestors.length - 1; i >= 0; i--) {
                 const link = Callouts.createChainLink(ancestors[i]);
-                links.push({ source: ancestors[i], link, root: false, variablesOnly: Callouts.isRelocatedPart(ancestors[i]) });
+                links.push({ source: ancestors[i], link, root: false, relocated: Callouts.isRelocatedPart(ancestors[i]) });
                 bottom.appendChild(link);
                 bottom = link;
             }
 
-            const root = rootId ? document.getElementById(rootId) : null;
-            if (root && root.contains(callout) === false) {
+            if (root && carriesRoot) {
                 const link = Callouts.createChainLink(root);
-                links.push({ source: root, link, root: true, variablesOnly: true });
+                links.push({ source: root, link, root: true, relocated: false });
                 bottom.appendChild(link);
                 bottom = link;
             }
@@ -1040,7 +1059,7 @@
                     for (const record of records) {
                         const name = record.attributeName;
                         if (name == null || changed.indexOf(record.target) !== -1) continue;
-                        if (Callouts.isMirroredAttribute(name) === false) continue;
+                        if (Callouts.isWatchedAttribute(name) === false) continue;
                         if ((record.target as Element).getAttribute(name) === record.oldValue) continue;
                         changed.push(record.target);
                     }
@@ -1112,10 +1131,10 @@
                 wanted.set('role', 'none');
             }
 
-            const sourceStyle = wanted.get('style') ?? '';
+            const sourceStyle = link.relocated ? '' : (wanted.get('style') ?? '');
             if (link.style == null || link.sourceStyle !== sourceStyle) {
                 link.sourceStyle = sourceStyle;
-                link.style = Callouts.linkStyle(sourceStyle, link.variablesOnly);
+                link.style = Callouts.linkStyle(sourceStyle, link.root);
             }
             wanted.set('style', link.style);
 
@@ -1134,8 +1153,8 @@
         }
 
         // The style a link is written with: the one it copies, forced to `display: contents`. A link that copies
-        // the variables alone (see moveCalloutToBody) drops every other declaration, so the inherited text styles
-        // and the positioning a root or a relocated part is given never reach the popup under it.
+        // the variables alone - the root's (see moveCalloutToBody) - drops every other declaration, so the
+        // inherited text styles and the sizing the root is given never reach the popup under it.
         private static linkStyle(style: string, variablesOnly: boolean) {
             const parsed = Callouts.parseStyle(style);
 
@@ -1184,7 +1203,22 @@
                 wanted.set(name, attributes[i].value);
             }
 
+            Callouts.mirrorPopupStyle(source, wanted);
+
             return wanted;
+        }
+
+        // A root in a passing state names the style it has without it (see POPUP_STYLE_ATTRIBUTE), and that is
+        // the style a link copies, whether it copies the root of the popup or an ancestor of it.
+        private static mirrorPopupStyle(source: Element, wanted: Map<string, string>) {
+            const style = source.getAttribute(Callouts.POPUP_STYLE_ATTRIBUTE);
+            if (style == null) return;
+
+            if (style) {
+                wanted.set('style', style);
+            } else {
+                wanted.delete('style');
+            }
         }
 
         // The classes a link carries. The library's own component classes are left behind: none of its
@@ -1210,7 +1244,7 @@
         // The attributes an element of the chain is watched for: every one it carries that a link copies, and
         // the ones a page adds later to switch a theme, a direction or a language under an open callout.
         private static observedAttributes(source: Element) {
-            const names = ['class', 'style', 'dir', 'lang', 'bit-theme',
+            const names = ['class', 'style', 'dir', 'lang', 'bit-theme', Callouts.POPUP_STYLE_ATTRIBUTE,
                 'data-theme', 'data-bs-theme', 'data-color-scheme', 'data-scheme', 'data-mode'];
             const own = source.getAttributeNames();
             for (let i = 0; i < own.length; i++) {
@@ -1228,6 +1262,12 @@
             return Callouts.THEME_DATA_ATTRIBUTE_REGEX.test(name);
         }
 
+        // The attributes a change of which brings a link back in step: the ones it copies, and the one its style
+        // is read from instead of the style attribute while its element is in a passing state.
+        private static isWatchedAttribute(name: string) {
+            return name === Callouts.POPUP_STYLE_ATTRIBUTE || Callouts.isMirroredAttribute(name);
+        }
+
         private static isRelocatedPart(element: Element) {
             for (const original of Callouts._calloutOriginalParents.values()) {
                 if (original.callout === element || original.overlay === element || original.arrow === element) {
@@ -1239,8 +1279,10 @@
 
         // The root is not an ancestor of its popup, which is rendered beside it, so it is copied for the one thing
         // its consumer means for the popup as much as for the field: the custom properties of its inline style
-        // (Style and Styles.Root, and whatever a state such as Styles.Opened adds while the callout is open; see
-        // linkStyle), a bit-theme preset, its direction and language, and bit-fam. Its classes are left behind -
+        // (Style and Styles.Root, and whatever a state such as Styles.Opened adds while the callout is open, but
+        // not a passing state such as Styles.Focused; see linkStyle and mirrorPopupStyle), what scopes a theme on
+        // it - a bit-theme preset, a data-*theme / -scheme / -mode attribute - the scope attributes of CSS
+        // isolation, its direction and language, and bit-fam. Its classes are left behind -
         // the component's own, and the ones of Class and Classes.Root alike: a link carrying them would be a new
         // ancestor of the popup, so a rule the consumer wrote for the field's subtree (`.compact div`) would
         // start matching the popup's internals. Classes.Callout is the class that reaches the popup.
@@ -1255,10 +1297,12 @@
             const attributes = source.attributes;
             for (let i = 0; i < attributes.length; i++) {
                 const name = attributes[i].name;
-                if (name === 'style' || name === 'dir' || name === 'lang' || name.indexOf('bit-theme') === 0) {
-                    wanted.set(name, attributes[i].value);
-                }
+                if (name === 'class' || Callouts.isMirroredAttribute(name) === false) continue;
+                if (name.indexOf('bit-') === 0 && name.indexOf('bit-theme') !== 0) continue;
+                wanted.set(name, attributes[i].value);
             }
+
+            Callouts.mirrorPopupStyle(source, wanted);
 
             return wanted;
         }
@@ -1544,9 +1588,9 @@
         link: HTMLElement;
         // The root of the component, which is copied for what its consumer declared on it alone.
         root: boolean;
-        // Whether only the custom properties of the source's inline style are copied: the root's, and those of
-        // a part another callout relocated (see moveCalloutToBody).
-        variablesOnly: boolean;
+        // A part another callout relocated - the popup an inner callout is opened from - whose inline style is
+        // not copied at all (see moveCalloutToBody).
+        relocated: boolean;
         // The inline style of the source the link was last written from, and the style that came out of it,
         // so that it is only parsed again when it has changed (see syncChainLink).
         sourceStyle?: string;

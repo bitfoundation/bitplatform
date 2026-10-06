@@ -2253,9 +2253,10 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private string GetCalloutCssClasses()
     {
-        // The callout is rendered inside the root, and while it is open it is relocated into a copy of the root
-        // that carries the root's classes too, so the color and size classes reach it from there either way. They
-        // are declared on the callout as well so that its own custom properties never depend on the copy.
+        // The callout is rendered inside the root, but while it is open it is relocated into a copy of the root
+        // that leaves the library's own classes behind (see mirroredClasses in Callouts.ts), so the root's color
+        // and size classes never reach it there. They are declared on the callout itself, which is what gives it
+        // the custom properties of its color and size wherever it is.
         List<string> classes = ["bit-tpc-cal", GetColorClass()];
 
         var sizeClass = GetSizeClass();

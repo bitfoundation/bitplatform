@@ -39,6 +39,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _circularTimePickerId = string.Empty;
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-CircularTimePicker-");
     private BitCircularTimePickerView _view = BitCircularTimePickerView.Hour;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
@@ -2161,6 +2162,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // A picker with a field does not need it: the callout of a hidden field is a closed one, and the script
     // that opens a callout writes the display of the element itself - which is the one declaration an inline
     // style would be overwritten by.
+    //
+    // A standalone dial is never opened as a callout, so it is never relocated either, and the chain Callouts.ts
+    // carries the root's declarations through is never built for it: it stays where it is rendered, a sibling of
+    // the root. What an ancestor declares still reaches it, as it shares the root's ancestors, but what the Style of
+    // the instance and Styles.Root declare does not, so their public --bit-CircularTimePicker-* declarations are
+    // copied onto the dial by hand - ahead of its own style, which therefore still wins.
     private string? GetCalloutStyle()
     {
         if (Standalone is false) return Styles?.Callout;
@@ -2172,7 +2179,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             _ => null
         };
 
-        return visibility is null ? Styles?.Callout : JoinStyles(Styles?.Callout, visibility);
+        var style = visibility is null ? Styles?.Callout : JoinStyles(Styles?.Callout, visibility);
+
+        return _standaloneCssVariables.Prepend(Style, Styles?.Root, style);
     }
 
     private string GetCalloutCssClasses()

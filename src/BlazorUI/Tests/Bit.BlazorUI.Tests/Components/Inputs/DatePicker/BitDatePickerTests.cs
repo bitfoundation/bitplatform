@@ -4720,6 +4720,37 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDatePickerShouldKeepItsFocusedStyleOutOfThePopupStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-DatePicker-today-background:red");
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles
+            {
+                Root = "--bit-DatePicker-callout-radius:1rem",
+                Focused = "--bit-DatePicker-border-color:green"
+            });
+        });
+
+        // Without a passing state applied, the root's style is all there is, and Callouts.ts reads it from there.
+        Assert.IsFalse(component.Find(".bit-dtp").HasAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-dtp-wrp input").FocusIn();
+
+        // Focused comes and goes as the focus moves between the field and the calendar, so the root names the
+        // style it has without it for the chain the calendar is relocated into to copy instead.
+        var root = component.Find(".bit-dtp");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-DatePicker-border-color:green");
+        Assert.AreEqual("--bit-DatePicker-callout-radius:1rem;--bit-DatePicker-today-background:red", root.GetAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-dtp-wrp input").FocusOut();
+
+        Assert.IsFalse(component.Find(".bit-dtp").HasAttribute("data-bit-popup-style"));
+    }
+
+    [TestMethod]
     public void BitDatePickerShouldNameItsRootWhenItTogglesTheCallout()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

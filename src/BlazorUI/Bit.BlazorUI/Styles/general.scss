@@ -55,9 +55,10 @@ button {
 }
 
 // Copying those classes also lets a descendant selector of the page (`.sidebar div`) match the overlay, the arrow
-// and the callout that sit in the chain, as it would where they were rendered. Every one of them is placed in
-// viewport coordinates by the positioning code, so the one declaration such a rule must never win is the fixed
-// positioning they all share.
+// and the callout that sit in the chain, as it would where they were rendered - deliberately, since the same
+// classes are what carry a variable, an inherited text style or a `::deep` rule into the popup. Every one of them
+// is placed in viewport coordinates by the positioning code, so the one declaration such a rule must never win
+// is the fixed positioning they all share; everything else it sets reaches the popup as it would in place.
 [data-bit-callout-holder] > * {
     position: fixed !important;
 }

@@ -1650,6 +1650,30 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.IsFalse((com.Find(".bit-mnb-cal").GetAttribute("style") ?? "").Contains("--bit-MenuButton-"));
     }
 
+    [TestMethod]
+    public void BitMenuButtonShouldKeepItsToggledStyleOutOfThePopupStyle()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.Toggle, true);
+            parameters.Add(p => p.DefaultIsToggled, true);
+            parameters.Add(p => p.Style, "--bit-MenuButton-callout-background:red");
+            parameters.Add(p => p.Styles, new BitMenuButtonClassStyles { Toggled = "--bit-MenuButton-background:green" });
+        });
+
+        // The toggled look is the button's alone, so the root names the style it has without it for the chain the
+        // callout is relocated into to copy instead.
+        var root = com.Find(".bit-mnb");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-MenuButton-background:green");
+        Assert.AreEqual("--bit-MenuButton-callout-background:red", root.GetAttribute("data-bit-popup-style"));
+
+        com.Find(".bit-mnb-opb").Click();
+
+        Assert.IsFalse(com.Find(".bit-mnb").HasAttribute("data-bit-popup-style"));
+    }
+
     private class RadioModel
     {
         public string? Label { get; set; }

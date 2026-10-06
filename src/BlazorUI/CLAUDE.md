@@ -277,25 +277,37 @@ the consumer's classes plus `bit-fam` and `bit-css-*`, inline style, CSS-isolati
 theme-scoping `data-*theme` / `-scheme` / `-mode` attributes, `dir`, `lang`; kept in step by a
 `MutationObserver` while it is open), plus one link for the root, named by the `rootId` argument of
 `BitCalloutToggleCallout`, that carries only what the consumer meant for the popup too: the custom
-properties of its inline style, `bit-fam`, `bit-theme`, `dir`, `lang`. A variable set on `:root`, on an
-ancestor's `Style` or class, or on the `Style` / `Styles.Root` of one instance - and a
-`BitThemeProvider` or `[bit-theme]` scope around it - therefore reaches the popup the way it reaches the
-root, and still follows the theme while it is open. What identifies an element or makes it act is never
-copied (id, role, aria-*, other `data-*`, the state `:hover` / `:focus-within` match), so a variable set
-through such a selector does not reach the popup. Nor are the library's component classes, which its
-scripts find elements by with `closest()`, nor any class of the root: the root is not an ancestor of
-the popup, and a link carrying its `Class` would let the consumer's rules for the field's subtree match
-the popup (use `Classes.Callout`). Another callout's relocated popup, when an inner one is opened from
-it, is copied for its classes and the custom properties of its style alone; a component that writes
-private sizing variables onto its popup resets them in that popup's own rule (`.bit-clo-cal`), so an
-outer popup's never reach an inner one. The flip side of copying an ancestor's classes is that a
-page's descendant selectors match the popup again, so `general.scss` pins the relocated parts'
-`position: fixed`. A responsive panel stays in its chain until its exit transition has run. Such a component resolves its variables in one
-mixin that both the root and the popup include, and copies nothing in C#: a popup's open call passes
-`rootId: _Id`, except one opened from inside another popup, which inherits through that one's chain.
-The one exception is a part that sits beside the root but is never relocated - the calendar of a
-`Standalone` date picker - which gets no chain, so it still has the public declarations of `Style` /
-`Styles.Root` copied onto it (`BitPublicCssVariables`, `GetStandaloneStyles`).
+properties of its inline style, `bit-fam`, `bit-theme`, the theme-scoping `data-*` attributes,
+CSS-isolation scopes, `dir`, `lang`. That link is built even when the popup is rendered straight into
+the body. A variable set on `:root`, on an ancestor's `Style` or class, or on the `Style` /
+`Styles.Root` of one instance - and a `BitThemeProvider` or `[bit-theme]` scope around it - therefore
+reaches the popup the way it reaches the root, and still follows the theme while it is open. A style
+of a passing state of the root (`Styles.Focused`, `Styles.Toggled`) does not: while it is applied the
+root renders the style it has without it as `data-bit-popup-style` (`GetPopupStyle`), and a link copies
+that instead, so the popup never flips as the focus moves between the field and the popup. What
+identifies an element or makes it act is never copied (id, role, aria-*, other `data-*`, the state
+`:hover` / `:focus-within` match), so a variable set through such a selector does not reach the popup.
+Nor are the library's component classes, which its scripts find elements by with `closest()` (so a
+popup that needs its own color and size classes, like the TimePicker's, declares them itself), nor any
+class of the root: the root is not an ancestor of the popup, and a link carrying its `Class` would let
+the consumer's rules for the field's subtree match the popup (use `Classes.Callout`). Another callout's
+relocated popup, when an inner one is opened from it, is copied for its classes alone - never its inline
+style, which holds that callout's own placement and the sizing its parameters write (a DropMenu's `Width`
+as `--bit-DropMenu-callout-width`), and which an inner popup of the same kind would read as its own; a
+component that writes private sizing variables onto its popup still resets them in that popup's own rule
+(`.bit-clo-cal`), since a closed inner popup sits under the outer one in the page too. The flip side of
+copying an ancestor's classes is deliberate, as the same classes are what carry a class-declared
+variable, an inherited text style or a `::deep` rule into the popup: a page's descendant selectors
+(`.card div`) match the popup again, as they would in place, so `general.scss` pins only the relocated
+parts' `position: fixed`; and an app's `closest('.its-class')` from inside the popup finds the inert copy
+rather than nothing. A responsive panel stays in its chain until its exit transition has run. Such a
+component resolves its variables in one mixin that both the root and the popup include, and copies
+nothing in C#: a popup's open call passes `rootId: _Id`, except one opened from inside another popup,
+which inherits through that one's chain, and the TimePicker's, which is rendered INSIDE its root and so
+inherits it as an ancestor. The exceptions are parts that sit beside the root but are never relocated -
+the calendar of a `Standalone` date picker or date range picker, the dial of a `Standalone` circular time
+picker - which get no chain, so they still have the public declarations of `Style` / `Styles.Root`
+copied onto them (`BitPublicCssVariables`, `GetStandaloneStyles` / `GetCalloutStyle`).
 
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,

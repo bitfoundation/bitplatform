@@ -3,10 +3,10 @@
 namespace Bit.BlazorUI;
 
 // A popup relocated to the body inherits what its root declares through the chain Callouts.ts moves it into, but a
-// part rendered beside the root that is never relocated - the calendar of a standalone date picker - is never given
-// that chain, and so none of what the Style of its component declares reaches it. The public --bit-<Component>-*
-// declarations of that Style are copied onto such a part by hand, and this is the one place that picks them out of
-// a style string.
+// part rendered beside the root that is never relocated - the calendar of a standalone date picker, the dial of a
+// standalone circular time picker - is never given that chain, and so none of what the Style of its component
+// declares reaches it. The public --bit-<Component>-* declarations of that Style are copied onto such a part by
+// hand, and this is the one place that picks them out of a style string.
 //
 // One instance belongs to one component and remembers what it last picked out: the parts it is copied onto are
 // re-rendered on every arrow key and on every hover while a range is being picked, and the result only changes
