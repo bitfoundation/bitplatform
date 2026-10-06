@@ -290,7 +290,7 @@ public partial class BitDropMenuDemo
             Name = "Placement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Only Top, Bottom, Start and End are honoured; any other value, or none, leaves the choice to DropDirection.",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

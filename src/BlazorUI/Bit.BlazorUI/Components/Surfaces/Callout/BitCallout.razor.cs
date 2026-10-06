@@ -467,8 +467,9 @@ public partial class BitCallout : BitComponentBase
     /// <see cref="NoFlip"/> turns the preference into a demand.
     /// </summary>
     /// <remarks>
-    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
-    /// leave the choice to Direction, exactly as leaving this unset does.
+    /// Start and End follow the reading direction, while Left and Right stay on the side of the screen they
+    /// name in both directions. Center and the two combined values name no side of the anchor and leave the
+    /// choice to Direction, exactly as leaving this unset does.
     /// </remarks>
     [Parameter] public BitPlacement? Placement { get; set; }
 

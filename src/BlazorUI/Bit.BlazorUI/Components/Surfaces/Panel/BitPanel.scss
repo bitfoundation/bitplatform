@@ -155,7 +155,8 @@
 // home indicator of a phone - the way a fixed header and footer do, so the surface still runs to the edge of
 // the screen while its content stays clear of what covers it. env() resolves to the 0px fallback on any
 // device with no inset. The side insets are physical, so the one the inline edge of a side panel touches is
-// the larger of the two: a phone held in landscape reports them alike, and a direction reads neither.
+// the larger of the two: a phone held in landscape reports them alike, and a direction reads neither. The
+// physical pair knows the edge it touches, so it takes that edge's own inset.
 .bit-pnl-start {
     height: 100%;
     inset-block: 0;
@@ -197,7 +198,7 @@
     max-height: 100%;
     padding-top: var(--bit-pnl-sa-top);
     padding-bottom: var(--bit-pnl-sa-bottom);
-    padding-left: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
+    padding-left: var(--bit-pnl-sa-left);
     width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
     border-right: var(--bit-pnl-edge);
@@ -213,7 +214,7 @@
     max-height: 100%;
     padding-top: var(--bit-pnl-sa-top);
     padding-bottom: var(--bit-pnl-sa-bottom);
-    padding-right: max(var(--bit-pnl-sa-left), var(--bit-pnl-sa-right));
+    padding-right: var(--bit-pnl-sa-right);
     width: var(--bit-Panel-size, fit-content);
     max-width: var(--bit-pnl-max, 85%);
     border-left: var(--bit-pnl-edge);

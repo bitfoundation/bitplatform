@@ -9,7 +9,7 @@ public partial class BitTooltipDemo
             Name = "Alignment",
             Type = "BitPlacement",
             DefaultValue = "BitPlacement.Center",
-            Description = "Where along Placement the tooltip lines up with its anchor. Start, Center and End are honoured on either axis (Start and End follow the reading direction across, and read top to bottom down); Left and Right only above or below the anchor, Top and Bottom only beside it. Anything else centers it.",
+            Description = "Where along Placement the tooltip lines up with its anchor: an edge value puts the tooltip's edge on the same edge of the anchor and lets it grow away from there, as BitCallout does. Start, Center and End are honoured on either axis (Start and End follow the reading direction across, and read top to bottom down); Left and Right only above or below the anchor, Top and Bottom only beside it. Anything else centers it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

@@ -323,8 +323,9 @@ public partial class BitDropMenu : BitComponentBase
     /// on the opposite side, and leaving it unset leaves the choice to <see cref="DropDirection"/> alone.
     /// </summary>
     /// <remarks>
-    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
-    /// leave the choice to DropDirection, exactly as leaving this unset does.
+    /// Start and End follow the reading direction, while Left and Right stay on the side of the screen they
+    /// name in both directions. Center and the two combined values name no side of the button and leave the
+    /// choice to DropDirection, exactly as leaving this unset does.
     /// </remarks>
     [Parameter] public BitPlacement? Placement { get; set; }
 

@@ -380,7 +380,7 @@ public partial class BitCalloutDemo
             Name = "Placement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The side of the anchor the callout is placed on when there is room for it there. It wins over Direction, falls back to the opposite side, and then to Direction. Only Top, Bottom, Start and End are honoured; Left, Right, Center and the two combined values leave the choice to Direction, exactly as leaving this unset does.",
+            Description = "The side of the anchor the callout is placed on when there is room for it there. It wins over Direction, falls back to the opposite side, and then to Direction. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center and the two combined values leave the choice to Direction, exactly as leaving this unset does.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

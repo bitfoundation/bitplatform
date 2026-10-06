@@ -169,6 +169,14 @@
     box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});
     color: var(--bit-ttp-clr-fg);
     background-color: var(--bit-ttp-clr-bg);
+    // The arrow is placed by its centre rather than by a corner: the placement below says where the centre of
+    // the rotated square is to land, and this translate takes the box back off the edge it was hung from.
+    // Written the other way round - hung off the anchor and nudged along its own diagonal - how deep it tucks
+    // under the surface would grow with the size it is given, until it is drawn over the text rather than
+    // under it. The side sets the half of the translate across the gap and the turn, the alignment the half
+    // along the edge.
+    transform: translate(var(--bit-ttp-arw-x), var(--bit-ttp-arw-y)) rotate(var(--bit-ttp-arw-turn));
+    clip-path: var(--bit-ttp-arw-clip);
 }
 
 // The four halves an arrow is cut down to, named for the corner of the unrotated square that points at the
@@ -192,53 +200,15 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
 
     // The bridge reaches a little past the gap, so that it meets the anchor rather than stopping a
     // subpixel short of it on a fractional layout. It is grown on the side the anchor is on and on
-    // that side alone: an all-sided inset would hang the same invisible band off the far edge, where
-    // there is nothing to bridge to and it would do nothing but intercept the pointer.
+    // that side alone (each side below sets that one inset): an all-sided one would hang the same
+    // invisible band off the far edge, where there is nothing to bridge to and it would do nothing
+    // but intercept the pointer.
     .bit-ttp-ctn::before {
         content: '';
         z-index: -1;
         position: absolute;
-        inset: var(--bit-ttp-bridge-inset, 0);
+        inset: 0;
     }
-}
-
-// Which side the anchor is on, per placement, written as the four-value inset the bridge takes. The
-// three placements of a family share the gap: a corner placement is shifted along the edge it sits
-// on, so it is still held off its anchor in the one direction.
-.bit-ttp-top,
-.bit-ttp-tlf,
-.bit-ttp-trg {
-    --bit-ttp-bridge-inset: 0 0 var(--bit-ttp-bridge) 0;
-    --bit-ttp-slide: 0 #{spacing(0.5)};
-}
-
-.bit-ttp-btm,
-.bit-ttp-blf,
-.bit-ttp-brg {
-    --bit-ttp-bridge-inset: var(--bit-ttp-bridge) 0 0 0;
-    --bit-ttp-slide: 0 calc(-1 * #{spacing(0.5)});
-}
-
-@mixin ttp-side-rgt {
-    --bit-ttp-bridge-inset: 0 0 0 var(--bit-ttp-bridge);
-    --bit-ttp-slide: calc(-1 * #{spacing(0.5)}) 0;
-}
-
-@mixin ttp-side-lft {
-    --bit-ttp-bridge-inset: 0 var(--bit-ttp-bridge) 0 0;
-    --bit-ttp-slide: #{spacing(0.5)} 0;
-}
-
-.bit-ttp-rgt,
-.bit-ttp-rtp,
-.bit-ttp-rbm {
-    @include ttp-side-rgt;
-}
-
-.bit-ttp-lft,
-.bit-ttp-ltp,
-.bit-ttp-lbm {
-    @include ttp-side-lft;
 }
 
 // Written after the shown state, which it has to beat at the same specificity.
@@ -255,346 +225,220 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
     }
 }
 
-@mixin ttp-geo-top {
-    .bit-ttp-ctn {
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: calc(100% + var(--bit-ttp-gap));
-    }
+// The sign of the reading direction, which every logical placement below is multiplied by: the inline insets
+// turn around with the direction on their own, but a translate and a turn are physical, so those are flipped
+// with this. It is read off :dir() rather than told by C#, so a tooltip given no direction of its own is drawn
+// the way the page (or the box) around it actually reads.
+.bit-ttp-wrp {
+    --bit-ttp-dir: 1;
 
-    // The arrow is placed by its centre rather than by a corner: the placement value is where the centre
-    // of the rotated square is to land, and the translate that follows takes the box back off the edge it
-    // was hung from. Written the other way round - hung off the anchor and nudged along its own diagonal
-    // - how deep it tucks under the surface would grow with the size it is given, until it is drawn over
-    // the text rather than under it.
-    .bit-ttp-arw {
-        left: 50%;
-        bottom: calc(100% + var(--bit-ttp-gap));
-        transform: translate(-50%, 50%) rotate(45deg);
-        clip-path: $arrow-clip-br;
+    &:dir(rtl) {
+        --bit-ttp-dir: -1;
     }
 }
 
-@mixin ttp-geo-tlf {
-    .bit-ttp-ctn {
-        right: calc(100% - var(--bit-ttp-offset));
-        bottom: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        right: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        bottom: calc(100% + var(--bit-ttp-gap));
-        transform: translate(50%, 50%) rotate(45deg);
-        clip-path: $arrow-clip-br;
-    }
-}
-
-@mixin ttp-geo-trg {
-    .bit-ttp-ctn {
-        left: calc(100% - var(--bit-ttp-offset));
-        bottom: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        left: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        bottom: calc(100% + var(--bit-ttp-gap));
-        transform: translate(-50%, 50%) rotate(45deg);
-        clip-path: $arrow-clip-br;
-    }
-}
-
-@mixin ttp-geo-rtp {
-    .bit-ttp-ctn {
-        left: calc(100% + var(--bit-ttp-gap));
-        bottom: calc(100% - var(--bit-ttp-offset));
-    }
-
-    .bit-ttp-arw {
-        left: calc(100% + var(--bit-ttp-gap));
-        bottom: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        transform: translate(-50%, 50%) rotate(-45deg);
-        clip-path: $arrow-clip-tl;
-    }
-}
-
-@mixin ttp-geo-rgt {
-    .bit-ttp-ctn {
-        bottom: 50%;
-        transform: translateY(50%);
-        left: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        top: 50%;
-        left: calc(100% + var(--bit-ttp-gap));
-        transform: translate(-50%, -50%) rotate(-45deg);
-        clip-path: $arrow-clip-tl;
-    }
-}
-
-@mixin ttp-geo-rbm {
-    .bit-ttp-ctn {
-        top: calc(100% - var(--bit-ttp-offset));
-        left: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        top: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        left: calc(100% + var(--bit-ttp-gap));
-        transform: translate(-50%, -50%) rotate(-135deg);
-        clip-path: $arrow-clip-tr;
-    }
-}
-
-@mixin ttp-geo-brg {
-    .bit-ttp-ctn {
-        top: calc(100% + var(--bit-ttp-gap));
-        left: calc(100% - var(--bit-ttp-offset));
-    }
-
-    .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-gap));
-        left: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        transform: translate(-50%, -50%) rotate(135deg);
-        clip-path: $arrow-clip-bl;
-    }
-}
-
-@mixin ttp-geo-btm {
-    .bit-ttp-ctn {
-        left: 50%;
-        transform: translateX(-50%);
-        top: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-gap));
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(45deg);
-        clip-path: $arrow-clip-tl;
-    }
-}
-
-@mixin ttp-geo-blf {
-    .bit-ttp-ctn {
-        top: calc(100% + var(--bit-ttp-gap));
-        right: calc(100% - var(--bit-ttp-offset));
-    }
-
-    .bit-ttp-arw {
-        top: calc(100% + var(--bit-ttp-gap));
-        right: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        transform: translate(50%, -50%) rotate(45deg);
-        clip-path: $arrow-clip-tl;
-    }
-}
-
-@mixin ttp-geo-lbm {
-    .bit-ttp-ctn {
-        top: calc(100% - var(--bit-ttp-offset));
-        right: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        top: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        right: calc(100% + var(--bit-ttp-gap));
-        transform: translate(50%, -50%) rotate(-135deg);
-        clip-path: $arrow-clip-bl;
-    }
-}
-
-@mixin ttp-geo-lft {
-    .bit-ttp-ctn {
-        bottom: 50%;
-        transform: translateY(50%);
-        right: calc(100% + var(--bit-ttp-gap));
-    }
-
-    .bit-ttp-arw {
-        top: 50%;
-        right: calc(100% + var(--bit-ttp-gap));
-        transform: translate(50%, -50%) rotate(135deg);
-        clip-path: $arrow-clip-tl;
-    }
-}
-
-@mixin ttp-geo-ltp {
-    .bit-ttp-ctn {
-        right: calc(100% + var(--bit-ttp-gap));
-        bottom: calc(100% - var(--bit-ttp-offset));
-    }
-
-    .bit-ttp-arw {
-        right: calc(100% + var(--bit-ttp-gap));
-        bottom: calc(100% - var(--bit-ttp-offset) + var(--bit-ttp-arrow-inset));
-        transform: translate(50%, 50%) rotate(135deg);
-        clip-path: $arrow-clip-tl;
-    }
-}
-
+// THE SIDE. Each one holds the surface and the arrow off the anchor by the gap, turns the arrow to point back
+// at it and cuts it down to the half outside the surface, starts the entry slide from it, and grows the bridge
+// of an interactive tooltip toward it. Start and End are Left and Right drawn with the inline insets, with the
+// turn and the translates signed by the direction (Start turns as Left does, 135deg, left to right and as Right
+// does, -45deg, right to left; End the other way round).
 .bit-ttp-top {
-    @include ttp-geo-top;
-}
+    --bit-ttp-arw-y: 50%;
+    --bit-ttp-arw-turn: 45deg;
+    --bit-ttp-arw-clip: #{$arrow-clip-br};
+    --bit-ttp-slide: 0 #{spacing(0.5)};
 
-.bit-ttp-tlf {
-    @include ttp-geo-tlf;
-}
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        bottom: calc(100% + var(--bit-ttp-gap));
+    }
 
-.bit-ttp-trg {
-    @include ttp-geo-trg;
-}
-
-.bit-ttp-rtp {
-    @include ttp-geo-rtp;
-}
-
-.bit-ttp-rgt {
-    @include ttp-geo-rgt;
-}
-
-.bit-ttp-rbm {
-    @include ttp-geo-rbm;
-}
-
-.bit-ttp-brg {
-    @include ttp-geo-brg;
+    .bit-ttp-ctn::before {
+        bottom: var(--bit-ttp-bridge);
+    }
 }
 
 .bit-ttp-btm {
-    @include ttp-geo-btm;
-}
+    --bit-ttp-arw-y: -50%;
+    --bit-ttp-arw-turn: 45deg;
+    --bit-ttp-arw-clip: #{$arrow-clip-tl};
+    --bit-ttp-slide: 0 calc(-1 * #{spacing(0.5)});
 
-.bit-ttp-blf {
-    @include ttp-geo-blf;
-}
+    .bit-ttp-ctn,
+    .bit-ttp-arw {
+        top: calc(100% + var(--bit-ttp-gap));
+    }
 
-.bit-ttp-lbm {
-    @include ttp-geo-lbm;
+    .bit-ttp-ctn::before {
+        top: var(--bit-ttp-bridge);
+    }
 }
 
 .bit-ttp-lft {
-    @include ttp-geo-lft;
-}
-
-.bit-ttp-ltp {
-    @include ttp-geo-ltp;
-}
-
-// A tooltip given no direction of its own reads the way the page (or the box) around it does, which is not known
-// when its class is chosen, so a logical Placement or Alignment is resolved as left to right there and marked with
-// bit-ttp-lgc. Laid out right to left, the marked placement is drawn as its mirror image instead: the side and the
-// corner swap, the edge the arrow points from swaps with them, and the bridge and the entry slide follow the side.
-// The physical properties of the placement it replaces are cleared first, since each one is pinned by its own.
-.bit-ttp-lgc.bit-ttp-tlf:dir(rtl) {
-    .bit-ttp-ctn,
-    .bit-ttp-arw {
-        left: auto;
-        right: auto;
-    }
-
-    @include ttp-geo-trg;
-}
-
-.bit-ttp-lgc.bit-ttp-trg:dir(rtl) {
-    .bit-ttp-ctn,
-    .bit-ttp-arw {
-        left: auto;
-        right: auto;
-    }
-
-    @include ttp-geo-tlf;
-}
-
-.bit-ttp-lgc.bit-ttp-rtp:dir(rtl) {
-    @include ttp-side-lft;
+    --bit-ttp-arw-x: 50%;
+    --bit-ttp-arw-turn: 135deg;
+    --bit-ttp-arw-clip: #{$arrow-clip-tl};
+    --bit-ttp-slide: #{spacing(0.5)} 0;
 
     .bit-ttp-ctn,
     .bit-ttp-arw {
-        left: auto;
-        right: auto;
+        right: calc(100% + var(--bit-ttp-gap));
     }
 
-    @include ttp-geo-ltp;
+    .bit-ttp-ctn::before {
+        right: var(--bit-ttp-bridge);
+    }
 }
 
-.bit-ttp-lgc.bit-ttp-rgt:dir(rtl) {
-    @include ttp-side-lft;
+.bit-ttp-rgt {
+    --bit-ttp-arw-x: -50%;
+    --bit-ttp-arw-turn: -45deg;
+    --bit-ttp-arw-clip: #{$arrow-clip-tl};
+    --bit-ttp-slide: calc(-1 * #{spacing(0.5)}) 0;
 
     .bit-ttp-ctn,
     .bit-ttp-arw {
-        left: auto;
-        right: auto;
+        left: calc(100% + var(--bit-ttp-gap));
     }
 
-    @include ttp-geo-lft;
+    .bit-ttp-ctn::before {
+        left: var(--bit-ttp-bridge);
+    }
 }
 
-.bit-ttp-lgc.bit-ttp-rbm:dir(rtl) {
-    @include ttp-side-lft;
+.bit-ttp-sta {
+    --bit-ttp-arw-x: calc(50% * var(--bit-ttp-dir));
+    --bit-ttp-arw-turn: calc(45deg + 90deg * var(--bit-ttp-dir));
+    --bit-ttp-arw-clip: #{$arrow-clip-tl};
+    --bit-ttp-slide: calc(#{spacing(0.5)} * var(--bit-ttp-dir)) 0;
 
     .bit-ttp-ctn,
     .bit-ttp-arw {
-        left: auto;
-        right: auto;
+        inset-inline-end: calc(100% + var(--bit-ttp-gap));
     }
 
-    @include ttp-geo-lbm;
-}
-
-.bit-ttp-lgc.bit-ttp-brg:dir(rtl) {
-    .bit-ttp-ctn,
-    .bit-ttp-arw {
-        left: auto;
-        right: auto;
+    .bit-ttp-ctn::before {
+        inset-inline-end: var(--bit-ttp-bridge);
     }
-
-    @include ttp-geo-blf;
 }
 
-.bit-ttp-lgc.bit-ttp-blf:dir(rtl) {
-    .bit-ttp-ctn,
-    .bit-ttp-arw {
-        left: auto;
-        right: auto;
-    }
-
-    @include ttp-geo-brg;
-}
-
-.bit-ttp-lgc.bit-ttp-lbm:dir(rtl) {
-    @include ttp-side-rgt;
+.bit-ttp-end {
+    --bit-ttp-arw-x: calc(-50% * var(--bit-ttp-dir));
+    --bit-ttp-arw-turn: calc(45deg - 90deg * var(--bit-ttp-dir));
+    --bit-ttp-arw-clip: #{$arrow-clip-tl};
+    --bit-ttp-slide: calc(-1 * #{spacing(0.5)} * var(--bit-ttp-dir)) 0;
 
     .bit-ttp-ctn,
     .bit-ttp-arw {
-        left: auto;
-        right: auto;
+        inset-inline-start: calc(100% + var(--bit-ttp-gap));
     }
 
-    @include ttp-geo-rbm;
+    .bit-ttp-ctn::before {
+        inset-inline-start: var(--bit-ttp-bridge);
+    }
 }
 
-.bit-ttp-lgc.bit-ttp-lft:dir(rtl) {
-    @include ttp-side-rgt;
+// THE ALIGNMENT, along the axis the side leaves free. An edge alignment puts the edge of the surface on the same
+// edge of the anchor and lets it grow away from there, with the arrow held the inset in from that edge - or on the
+// middle of an anchor too small for the inset, the surface then pushed back past the anchor's edge just as far as
+// keeps the arrow out of its rounded corner. The horizontal ones serve a tooltip above or below its anchor (Start
+// and End inline, Left and Right physical), the vertical ones a tooltip beside it.
+.bit-ttp-ahc {
+    --bit-ttp-arw-x: -50%;
 
-    .bit-ttp-ctn,
-    .bit-ttp-arw {
-        left: auto;
-        right: auto;
+    .bit-ttp-ctn {
+        left: 50%;
+        transform: translateX(-50%);
     }
 
-    @include ttp-geo-rgt;
+    .bit-ttp-arw {
+        left: 50%;
+    }
 }
 
-.bit-ttp-lgc.bit-ttp-ltp:dir(rtl) {
-    @include ttp-side-rgt;
+.bit-ttp-ast {
+    --bit-ttp-arw-x: calc(-50% * var(--bit-ttp-dir));
 
-    .bit-ttp-ctn,
-    .bit-ttp-arw {
-        left: auto;
-        right: auto;
+    .bit-ttp-ctn {
+        inset-inline-start: min(0px, 50% - var(--bit-ttp-arrow-inset));
     }
 
-    @include ttp-geo-rtp;
+    .bit-ttp-arw {
+        inset-inline-start: min(50%, var(--bit-ttp-arrow-inset));
+    }
+}
+
+.bit-ttp-aen {
+    --bit-ttp-arw-x: calc(50% * var(--bit-ttp-dir));
+
+    .bit-ttp-ctn {
+        inset-inline-end: min(0px, 50% - var(--bit-ttp-arrow-inset));
+    }
+
+    .bit-ttp-arw {
+        inset-inline-end: min(50%, var(--bit-ttp-arrow-inset));
+    }
+}
+
+.bit-ttp-alf {
+    --bit-ttp-arw-x: -50%;
+
+    .bit-ttp-ctn {
+        left: min(0px, 50% - var(--bit-ttp-arrow-inset));
+    }
+
+    .bit-ttp-arw {
+        left: min(50%, var(--bit-ttp-arrow-inset));
+    }
+}
+
+.bit-ttp-arg {
+    --bit-ttp-arw-x: 50%;
+
+    .bit-ttp-ctn {
+        right: min(0px, 50% - var(--bit-ttp-arrow-inset));
+    }
+
+    .bit-ttp-arw {
+        right: min(50%, var(--bit-ttp-arrow-inset));
+    }
+}
+
+.bit-ttp-avc {
+    --bit-ttp-arw-y: -50%;
+
+    .bit-ttp-ctn {
+        bottom: 50%;
+        transform: translateY(50%);
+    }
+
+    .bit-ttp-arw {
+        top: 50%;
+    }
+}
+
+.bit-ttp-atp {
+    --bit-ttp-arw-y: -50%;
+
+    .bit-ttp-ctn {
+        top: min(0px, 50% - var(--bit-ttp-arrow-inset));
+    }
+
+    .bit-ttp-arw {
+        top: min(50%, var(--bit-ttp-arrow-inset));
+    }
+}
+
+.bit-ttp-abm {
+    --bit-ttp-arw-y: 50%;
+
+    .bit-ttp-ctn {
+        bottom: min(0px, 50% - var(--bit-ttp-arrow-inset));
+    }
+
+    .bit-ttp-arw {
+        bottom: min(50%, var(--bit-ttp-arrow-inset));
+    }
 }
 
 

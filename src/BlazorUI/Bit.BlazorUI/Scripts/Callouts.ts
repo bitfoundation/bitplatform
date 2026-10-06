@@ -564,10 +564,13 @@
             underKeyboard: boolean,
         ): BitCalloutPlacement | null {
             // The logical sides are resolved against the direction the callout is laid out in; the
-            // physical ones the placement works in are what comes out.
+            // physical ones the placement works in are what comes out, and what the physical pair already
+            // names in both directions.
             const side: BitCalloutPlacement | '' =
                   preferredSide === 'start' ? (isRtl ? 'right' : 'left')
                 : preferredSide === 'end' ? (isRtl ? 'left' : 'right')
+                : preferredSide === 'left' ? 'left'
+                : preferredSide === 'right' ? 'right'
                 : preferredSide === 'top' ? 'above'
                 : preferredSide === 'bottom' ? 'below'
                 : '';

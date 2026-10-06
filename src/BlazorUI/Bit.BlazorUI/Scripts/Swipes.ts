@@ -257,10 +257,18 @@
                     scrollContainer.addEventListener('touchstart', e => {
                         touchOnScrollContainer = true;
 
+                        // This runs before the surface's own touchstart, so the direction is read here as well.
+                        rtl = isRtl ?? getComputedStyle(element).direction === 'rtl';
+
+                        // The two flags are the start and the end of the scroll (scrollLeft is 0 at the start in
+                        // both directions), while the gesture that dismisses the surface runs toward the physical
+                        // edge it is pinned to. A drag toward the right asks the content to scroll to its left,
+                        // which is the start left to right and the end right to left, so it is the surface's to
+                        // take once the content has no further to go that way; a drag toward the left mirrors it.
                         const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if ((position === 'end' || position === 'right') && isScrollAtLeft) return;
-                        if ((position === 'start' || position === 'left') && isScrollAtRight) return;
+                        if (onRightEdge() && (rtl ? isScrollAtRight : isScrollAtLeft)) return;
+                        if (onLeftEdge() && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
 
                         e.stopPropagation();
                     });

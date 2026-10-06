@@ -13,7 +13,9 @@ public sealed class BitChartScaleOptions
     /// at the left.
     /// </summary>
     /// <remarks>
-    /// A chart is laid out physically, so only Top, Bottom, Left and Right are meaningful here; any other side
+    /// A chart is laid out physically, so the sides meaningful here are Top, Bottom, Left and Right, plus Center:
+    /// a cartesian axis placed at the Center is drawn inside the plot where the other axis reads zero instead
+    /// of along an edge (a secondary x axis has no zero line to sit on and stays at the bottom). Any other value
     /// is read as the default for the axis.
     /// </remarks>
     public BitPlacement? Placement { get; set; }
