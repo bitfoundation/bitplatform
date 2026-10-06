@@ -44,6 +44,28 @@
                         <span class="info-value">@ProcessId</span>
                     </div>
                 }
+                @if (string.IsNullOrWhiteSpace(Signer) is false)
+                {
+                    <div class="info-item">
+                        <span class="info-label">Signed by</span>
+                        <span class="info-value">@Signer</span>
+                    </div>
+                }
+                @if (repositoryUrl is not null && commit is not null && buildRunUrl is not null)
+                {
+                    <div class="info-item">
+                        <span class="info-label">Built by</span>
+                        <span class="info-value"><BitLink Href="@buildRunUrl" Target="_blank">GitHub Actions</BitLink></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Source</span>
+                        <span class="info-value"><BitLink Href="@($"{repositoryUrl}/tree/{commit}")" Target="_blank">@(commit[..Math.Min(7, commit.Length)])</BitLink></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Verify</span>
+                        <span class="info-value"><BitLink Href="@($"{repositoryUrl}/attestations")" Target="_blank">Build attestations</BitLink></span>
+                    </div>
+                }
             </div>
 
             @if (Note is not null)

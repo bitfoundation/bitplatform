@@ -130,8 +130,9 @@ The build system automatically configures the environment based on build configu
 Your project was generated with `--pipeline Azure`, so it ships **`.azure-devops/workflows/`**, not
 `.github/workflows/`:
 
-- **`ci.yml`** — triggered on `develop`. Sets up .NET and Node, restores workloads, builds `Boilerplate.slnx`,
-  installs Playwright, and runs the test suite; uploads `src/Tests/TestResults` as a pipeline artifact when the
+- **`ci.yml`** — triggered on `develop`. Sets up .NET, lets `bit setup` install what the agent is missing (Node.js,
+  the workloads, Playwright's browsers and the HTTPS development certificate), builds `Boilerplate.slnx`, and runs
+  the test suite; uploads `src/Tests/TestResults` as a pipeline artifact when the
   tests are what failed.
 - **`cd.yml`** — triggered on `main`. Four jobs: `build_api_blazor` → `deploy_api_blazor` (Azure App Service),
   plus `build_blazor_hybrid_windows` and `build_blazor_hybrid_android`.
@@ -169,10 +170,10 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **What It Does**:
 ```
 ✓ Checks out code
-✓ Sets up .NET SDK (from global.json) and Node.js 24
-✓ Restores workloads (dotnet workload restore)
+✓ Sets up .NET SDK (from global.json)
+✓ Runs bit setup, which installs what the runner is missing: Node.js, the workloads,
+  Playwright's browsers with their system libraries, and the HTTPS development certificate
 ✓ Builds entire solution (Boilerplate.slnx)
-✓ Installs Playwright browsers with dependencies
 ✓ Runs all tests (unit + integration + UI tests)
 ✓ Uploads test results as artifacts if tests fail
 ```
@@ -180,7 +181,8 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Node Version**: 24
+- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --prerelease`, then `bit setup`,
+  which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -240,6 +242,11 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Multi-Platform**: Builds server backend, Blazor WebAssembly, Android, iOS, macOS, and Windows
 - **Parallel Jobs**: All platform builds run in parallel for speed
 - **Artifact Storage**: Each platform produces an artifact that can be deployed independently
+- **Build Provenance**: In a public repository, each artifact gets a signed attestation of the commit and the run
+  that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
+  repositories need GitHub Enterprise Cloud for attestations, so the step is skipped there. In a public repository
+  the About page also shows the commit and the run that built the app, with a link to the attestations, and the
+  Windows app shows who signed it once Windows has checked the signature
 
 **Jobs Overview**:
 1. **build_api_blazor** → **deploy_api_blazor**: Server backend + Blazor WebAssembly
@@ -261,12 +268,13 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Checkout source code
    - Setup .NET SDK (from global.json)
-   - Setup Node.js 24
+   - bit setup: Node.js when the runner lacks it, the wasm-tools workload, and a Release build
+     with the job's Version, which also generates the CSS/JS from TypeScript and SCSS
    ```
 
-2. **Localization with Bit.ResxTranslator**
+2. **Localization with `bit translate`**
    ```bash
-   dnx Bit.ResxTranslator
+   bit translate
    ```
    - Automatically translates all `.resx` resource files missing values
 
@@ -280,12 +288,6 @@ This is the **core deployment workflow** that handles building and deploying all
 
 4. **Build Process**
    ```bash
-   # Install WebAssembly tools
-   dotnet workload install wasm-tools
-   
-   # Generate CSS/JS from TypeScript and SCSS
-   dotnet build -t:BeforeBuildTasks -c Release -p:Version="1.0.0"
-   
    # Publish self-contained Linux binary (Using Linux is optional)
    dotnet publish -c Release --self-contained -r linux-x64 \
      -p:Version="1.0.0" -p:Environment=Production
@@ -339,8 +341,9 @@ This is the **core deployment workflow** that handles building and deploying all
 
 1. **Environment Setup & Configuration**
    ```yaml
-   - Setup .NET SDK and Node.js
-   - Translate resource files (Bit.ResxTranslator)
+   - Setup .NET SDK, then bit setup for Node.js when the runner lacks it, and a build that
+     generates the CSS/JS files
+   - Translate resource files (`bit translate`)
    - Update appsettings.json:
      - ServerAddress: Environment-specific API URL
      - WindowsUpdate.FilesUrl: Auto-update endpoint
@@ -348,9 +351,6 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build & Package with Velopack**
    ```bash
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
-   
    # Publish for Windows x86 (32-bit for wider compatibility)
    dotnet publish -c Release -r win-x86 --self-contained \
      -p:Version="1.0.0" -p:Environment=Production
@@ -379,6 +379,24 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Delta Updates**: Only downloads changed files for updates
 - **x86 Build**: 32-bit build runs on both 32-bit and 64-bit Windows
 
+**Optional code signing**: Once the `CODE_SIGNING_ACCOUNT` variable is set, Velopack signs the app's executables and
+DLLs, `Update.exe` and `Setup.exe` with Azure Artifact Signing, so Windows shows your organization as the publisher and
+SmartScreen warns less, and the About page shows who signed the app. Until then nothing is signed. To set it up:
+
+1. Create an Artifact Signing account in Azure, complete its identity validation, and create a Public Trust certificate
+   profile.
+2. Let the pipeline sign:
+   - **GitHub**: create an app registration with a federated credential for each environment that deploys, such as
+     `repo:<owner>/<repo>:environment:Production`, give it the **Artifact Signing Certificate Profile Signer** role on the
+     certificate profile, and set the `CODE_SIGNING_CLIENT_ID`, `CODE_SIGNING_TENANT_ID` and
+     `CODE_SIGNING_SUBSCRIPTION_ID` secrets. No password is stored: the job logs in with GitHub's OIDC token.
+   - **Azure DevOps**: give that role to the identity behind the `AZURE_SUBSCRIPTION` service connection.
+3. Set the `CODE_SIGNING_ENDPOINT` (the account's URI, such as `https://weu.codesigning.azure.net`),
+   `CODE_SIGNING_ACCOUNT` and `CODE_SIGNING_CERTIFICATE_PROFILE` variables.
+
+Each signed file counts against the account's monthly quota. To sign only the executables, add
+`--signExclude '\.dll$'` to the `vpk pack` command.
+
 ---
 
 ### Job 4: Build Android App
@@ -397,15 +415,10 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Build Android App Bundle (AAB)**
 ```bash
-# Install MAUI Android workload
-dotnet workload install maui-android
-   
-# Install Android SDK platform tools
-${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
-  --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-   
-# Generate CSS/JS files
-dotnet build -t:BeforeBuildTasks -c Release
+# Install the bit CLI once, then let it install Node.js when missing, the MAUI Android workload
+# and what the Android SDK lacks, then build, which generates the CSS/JS files
+dotnet tool install --global Bit.Cli --prerelease
+bit setup --platforms android --no-browsers --yes
    
 # Publish signed AAB (Or APK if needed)
 dotnet publish -c Release \
@@ -447,8 +460,9 @@ dotnet publish -c Release \
    ```yaml
    - Setup .NET SDK
    - Setup Xcode 26.6 (latest)
-   - Setup Node.js 24
-   - Translate resources (Bit.ResxTranslator)
+   - bit setup: Node.js when the runner lacks it, the MAUI workload, and a build that
+     generates the CSS/JS files
+   - Translate resources (`bit translate`)
    - Update appsettings.json with ServerAddress
    ```
 
@@ -466,12 +480,6 @@ dotnet publish -c Release \
 
 3. **Build iOS App Package (IPA)**
    ```bash
-   # Install MAUI workload (includes iOS support)
-   dotnet workload install maui
-   
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
-   
    # Publish and sign IPA
    dotnet publish \
      -p:ApplicationId=com.company.app \
@@ -519,7 +527,7 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 - Uploads artifacts to GitHub (or Azure DevOps)
 - **No production access** - isolated from production systems
 
-> **The build phase does not run tests.** `cd-template.yml` goes straight from `dotnet workload install` to
+> **The build phase does not run tests.** `cd-template.yml` goes straight from `bit setup` to
 > `dotnet publish`; `ci.yml` is the only workflow that runs the test suite, and it triggers on **pull requests**,
 > not on the push that starts a deploy. If you want deploys to be test-gated, protect `main` and `test` with a
 > required status check on `ci.yml`.
@@ -564,7 +572,8 @@ build_api_blazor:
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - uses: actions/setup-node@v7
+    - run: dotnet tool install --global Bit.Cli --prerelease
+    - run: bit setup --no-browsers --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 
@@ -604,12 +613,12 @@ Variables:
   APP_ID = com.myapp                       (bundle id / Velopack package id)
   APP_SERVICE_NAME = my-app-service        (Azure App Service name)
   WINDOWS_UPDATE_FILES_URL = https://api.myapp.com/windows
-  OPENAI_ENDPOINT = <optional, only if you use Bit.ResxTranslator>
+  OPENAI_ENDPOINT = <optional, only if you use bit translate>
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <production publish profile>
   PUBLIC_VAPIDKEY = <production VAPID key>
-  OPENAI_APIKEY = <optional - when unset, the Bit.ResxTranslator step is skipped>
+  OPENAI_APIKEY = <optional - when unset, the bit translate step translates nothing>
 ```
 
 The mobile/desktop jobs additionally need `ANDROID_RELEASE_KEYSTORE_FILE_BASE64`,
@@ -695,16 +704,16 @@ The workflow uses the `variable-substitution` action to replace values in JSON f
 
 ### Expected app size
 
-Depending on `dotnet new bit-bp` and `dotnet publish` commands parameters, the app size is expected to be something between the following range:
+Depending on `bit new` and `dotnet publish` commands parameters, the app size is expected to be something between the following range:
 
 - **Web** => 3.5MB to 7MB
-Enabling/Disabling LLVM during `dotnet publish` command and `--offlineDb` parameter during `dotnet new bit-bp` command have huge impacts.
+Enabling/Disabling LLVM during `dotnet publish` command and `--offlineDb` parameter during `bit new` command have huge impacts.
 ---
 - **Android** => 18MB to 35MB
-Enabling/Disabling LLVM during `dotnet publish` command has the most impact. `dotnet new` parameters doesn't have much affect on this. 
+Enabling/Disabling LLVM during `dotnet publish` command has the most impact. `bit new` parameters doesn't have much affect on this. 
 ---
 - **Windows** => 30MB to 55MB
-Enabling/Disabling AOT during `dotnet publish` command has the most impact. `dotnet new` parameters or x86/x64 don't have much affect on this.
+Enabling/Disabling AOT during `dotnet publish` command has the most impact. `bit new` parameters or x86/x64 don't have much affect on this.
 ---
 - **iOS/macOS** => 120MB to 130MB
 ---

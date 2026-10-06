@@ -13,6 +13,11 @@ jobs:
   build-publish:
     name: build & publish
     runs-on: ubuntu-24.04
+    environment: code-signing
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
     - name: Checkout source code
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -155,15 +160,16 @@ jobs:
     - name: dotnet pack Minifier
       run: dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
 
-    - name: dotnet build Minifier.Cli
-      run: dotnet build src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Minifier.Cli
-      run: dotnet pack src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj --output . --configuration Release
-
-    - name: dotnet build ResxTranslator
-      run: dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack ResxTranslator
-      run: dotnet pack src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj --output . --configuration Release
+    - name: dotnet build bit CLI
+      env:
+        BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+      run: dotnet build src/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack bit CLI
+      env:
+        BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+      run: dotnet pack src/Cli/Bit.Cli/Bit.Cli.csproj --output . --configuration Release
 
     - name: build SourceGenerators nupkg file
       run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release -p:PackageOutputPath=${{ github.workspace }}/
@@ -174,11 +180,74 @@ jobs:
     - name: dotnet pack BlazorEmpty
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
 
+    # Copies every package into one folder and unzips their dlls, so the bit ones can be signed, attested and listed in the SBOM.
+    - name: Collect the packages and their bit assemblies
+      run: |
+        mkdir -p "$RUNNER_TEMP/packages" "$RUNNER_TEMP/assemblies"
+        find . -name '*.nupkg' -not -path '*/node_modules/*' -exec cp {} "$RUNNER_TEMP/packages/" \;
+        for package in "$RUNNER_TEMP"/packages/*.nupkg; do
+          unzip -o -q "$package" '*.dll' -d "$RUNNER_TEMP/assemblies/$(basename "$package" .nupkg)" || true
+        done
+
+    - name: Log in to Azure for code signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+      with:
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+    # Signs the bit dlls with Azure Artifact Signing (Jsign, since this runs on Linux) and puts them back into their packages,
+    # before those are attested and pushed. Skipped until the CODE_SIGNING_ACCOUNT variable is set.
+    - name: Sign the bit assemblies
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      run: |
+        curl -fsSL -o "$RUNNER_TEMP/jsign.jar" https://github.com/ebourg/jsign/releases/download/7.5/jsign-7.5.jar
+        echo "602a51c3545a6dc4fb99bd2ea7152b26d1345916d0c93ddfbd5936cb735af91c  $RUNNER_TEMP/jsign.jar" | sha256sum -c -
+        export CODE_SIGNING_TOKEN=$(az account get-access-token --resource https://codesigning.azure.net --query accessToken -o tsv)
+        endpoint="${{ vars.CODE_SIGNING_ENDPOINT }}"
+        endpoint="${endpoint#https://}"
+        cd "$RUNNER_TEMP/assemblies"
+        java -jar "$RUNNER_TEMP/jsign.jar" --storetype TRUSTEDSIGNING --keystore "${endpoint%/}" --storepass env:CODE_SIGNING_TOKEN --alias "${{ vars.CODE_SIGNING_ACCOUNT }}/${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}" --tsaurl http://timestamp.acs.microsoft.com --tsmode RFC3161 '**/Bit.*.dll' '**/bit.dll'
+        for package in "$RUNNER_TEMP"/packages/*.nupkg; do
+          folder="$RUNNER_TEMP/assemblies/$(basename "$package" .nupkg)"
+          [ -d "$folder" ] || continue
+          files=$(cd "$folder" && find . \( -name 'Bit.*.dll' -o -name 'bit.dll' \) -printf '%P\n')
+          [ -z "$files" ] || (cd "$folder" && zip -q "$package" $files)
+        done
+
+    - name: Attest the packages' provenance
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          ${{ runner.temp }}/packages/*.nupkg
+          ${{ runner.temp }}/assemblies/**/Bit.*.dll
+          ${{ runner.temp }}/assemblies/**/bit.dll
+
+    # An SPDX list of everything inside the packages, attested below. The tool targets .NET 8, hence --allow-roll-forward.
+    - name: Generate the packages' SBOM
+      run: dnx Microsoft.Sbom.DotNetTool@4.1.13 --yes --allow-roll-forward -- generate -b "$RUNNER_TEMP/packages" -bc src -pn "bit platform" -pv "$(grep -oP '(?<=<ReleaseVersion>)[^<]+' src/Bit.Build.props)" -ps "bit foundation" -nsb https://github.com/bitfoundation/bitplatform -V Warning
+
+    - name: Attest the packages' SBOM
+      uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+      with:
+        subject-path: |
+          ${{ runner.temp }}/packages/*.nupkg
+          ${{ runner.temp }}/assemblies/**/Bit.*.dll
+          ${{ runner.temp }}/assemblies/**/bit.dll
+        sbom-path: ${{ runner.temp }}/packages/_manifest/spdx_2.2/manifest.spdx.json
+
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: nupkg-files
-        path: ./*.nupkg
+        path: ${{ runner.temp }}/packages
+
+    - name: Log in to nuget.org
+      id: nuget_login
+      uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+      with:
+        user: ${{ secrets.NUGET_USER }}
 
     - name: dotnet nuget push
-      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
+      run: dotnet nuget push "$RUNNER_TEMP/packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key ${{ steps.nuget_login.outputs.NUGET_API_KEY }} --skip-duplicate

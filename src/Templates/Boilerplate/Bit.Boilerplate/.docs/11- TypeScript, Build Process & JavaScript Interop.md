@@ -116,26 +116,22 @@ The `.csproj` file defines custom MSBuild targets that run automatically during 
 ### Step 2: BuildJavaScript
 
 ```xml
-<Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json" Outputs="wwwroot\scripts\app.js">
+<Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json;package-lock.json" Outputs="wwwroot\scripts\app.js">
     <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Condition=" '$(Environment)' == 'Development' " 
-          Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js" 
-          StandardOutputImportance="high" StandardErrorImportance="high" />
-    <Exec Condition=" '$(Environment)' != 'Development' " 
-          Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify" 
+    <Exec Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify --sourcemap"
           StandardOutputImportance="high" StandardErrorImportance="high" />
 </Target>
 ```
 
 **What it does:**
 1. **TypeScript Type-Checking**: Runs `tsc` to validate types only (`noEmit: true` in `tsconfig.json` means no `.js` files are generated)
-2. **Bundling (Development)**: Uses `esbuild` to compile and bundle all TypeScript modules **directly from `.ts` source files** into a single `wwwroot/scripts/app.js` file, targeting Safari 15, Firefox 100, and Chrome 95
-3. **Bundling + Minification (Production/Staging)**: Same as above, but with `--minify` flag for smaller file size
+2. **Bundling + Minification**: Uses `esbuild` to compile and bundle all TypeScript modules **directly from `.ts` source files** into a single minified `wwwroot/scripts/app.js` file, targeting Safari 15, Firefox 100, and Chrome 95
+3. **Source map**: `--sourcemap` writes `app.js.map` next to it, so the browser's developer tools show and debug the original `.ts` files. Every Environment gets the same `app.js`, so a Release publish after a Debug build never ships stale JavaScript
 
 > **Note:** The `--target` flag tells esbuild which browser versions to support, ensuring the output JavaScript is compatible with those environments.
 
 **Incremental Build Optimization:**
-- Only rebuilds when TypeScript files, `tsconfig.json`, or `package.json` change
+- Only rebuilds when TypeScript files, `tsconfig.json`, `package.json` or `package-lock.json` change
 - Skips compilation if `app.js` is up-to-date
 
 ### Step 3: BuildCssFiles
