@@ -152,6 +152,27 @@ jobs:
       script: |
         cd src/Client/Boilerplate.Client.Windows
         dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish-result -r win-x86 -p:Version="$(APP_VERSION)" --self-contained
+
+  - task: Bash@3
+    displayName: 'Pack'
+    condition: and(succeeded(), eq(variables['CODE_SIGNING_ACCOUNT'], ''))
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd src/Client/Boilerplate.Client.Windows
+        dnx vpk@1.2.161 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+
+  - task: AzureCLI@2
+    displayName: 'Pack and sign with Artifact Signing'
+    condition: and(succeeded(), ne(variables['CODE_SIGNING_ACCOUNT'], ''))
+    inputs:
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        @{ Endpoint = '$(CODE_SIGNING_ENDPOINT)'; CodeSigningAccountName = '$(CODE_SIGNING_ACCOUNT)'; CertificateProfileName = '$(CODE_SIGNING_CERTIFICATE_PROFILE)'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content '$(Agent.TempDirectory)/code-signing.json'
+        $env:VPK_AZURE_TRUSTED_SIGN_FILE = '$(Agent.TempDirectory)/code-signing.json'
+        cd src/Client/Boilerplate.Client.Windows
         dnx vpk@1.2.161 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: PublishPipelineArtifact@1

@@ -378,6 +378,24 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Delta Updates**: Only downloads changed files for updates
 - **x86 Build**: 32-bit build runs on both 32-bit and 64-bit Windows
 
+**Optional code signing**: Once the `CODE_SIGNING_ACCOUNT` variable is set, Velopack signs the app's executables and
+DLLs, `Update.exe` and `Setup.exe` with Azure Artifact Signing, so Windows shows your organization as the publisher and
+SmartScreen warns less, and the About page shows who signed the app. Until then nothing is signed. To set it up:
+
+1. Create an Artifact Signing account in Azure, complete its identity validation, and create a Public Trust certificate
+   profile.
+2. Let the pipeline sign:
+   - **GitHub**: create an app registration with a federated credential for each environment that deploys, such as
+     `repo:<owner>/<repo>:environment:Production`, give it the **Artifact Signing Certificate Profile Signer** role on the
+     certificate profile, and set the `CODE_SIGNING_CLIENT_ID`, `CODE_SIGNING_TENANT_ID` and
+     `CODE_SIGNING_SUBSCRIPTION_ID` secrets. No password is stored: the job logs in with GitHub's OIDC token.
+   - **Azure DevOps**: give that role to the identity behind the `AZURE_SUBSCRIPTION` service connection.
+3. Set the `CODE_SIGNING_ENDPOINT` (the account's URI, such as `https://weu.codesigning.azure.net`),
+   `CODE_SIGNING_ACCOUNT` and `CODE_SIGNING_CERTIFICATE_PROFILE` variables.
+
+Each signed file counts against the account's monthly quota. To sign only the executables, add
+`--signExclude '\.dll$'` to the `vpk pack` command.
+
 ---
 
 ### Job 4: Build Android App
