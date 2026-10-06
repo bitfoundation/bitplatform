@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -43,7 +41,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
 
         var declared = GetRootDeclarations();
 
-        Assert.AreEqual(8, written.Length, string.Join(", ", written));
+        Assert.AreEqual(9, written.Length, string.Join(", ", written));
         foreach (var variable in written)
         {
             CollectionAssert.Contains(declared, variable, $"{variable} is written by the component but has no default on .bit-tsh.");
@@ -77,7 +75,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         DataRow(".bit-tsh.bit-dis")]
     public void EveryStateWithoutTheBandDrawsTheTextInAFlatColor(string rule)
     {
-        var block = GetBlock(ReadStylesheet(), rule);
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), rule);
 
         StringAssert.Contains(block, "@include bit-tsh-static");
     }
@@ -87,53 +85,114 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     [TestMethod]
     public void TheBandRestsOutsideTheTextByItsSpread()
     {
-        var keyframes = GetBlock(ReadStylesheet(), "@keyframes bit-tsh-anim");
+        var keyframes = SourceFiles.GetScssBlock(ReadStylesheet(), "@keyframes bit-tsh-anim");
 
         StringAssert.Contains(keyframes, "calc(150% - var(--bit-tsh-spread) * var(--bit-tsh-cycle))");
         StringAssert.Contains(keyframes, "calc(-50% + var(--bit-tsh-spread) * var(--bit-tsh-cycle))");
     }
 
-    // The component writes the pause as a time and the cycle is derived here, from the duration the element ends up
-    // with - so a duration a class sets gets the rest that was asked for, not one taken of a duration it replaced.
+    // The component writes the pause as a time and the cycle is derived here, from the sweep the element ends up with
+    // before the loop factor - so a duration a class sets gets the rest that was asked for, and the loop factor
+    // stretches the default sweep and its rest alike, whether the rest came from RepeatDelay or from the variable.
     [TestMethod]
-    public void TheCycleIsTakenOfTheDurationTheElementEndsUpWith()
+    public void TheCycleIsTakenOfTheSweepTheElementEndsUpWithBeforeTheLoopFactor()
     {
-        var block = GetBlock(ReadStylesheet(), "@supports (animation-duration: calc(1s * tan(atan2(1s, 2s))))");
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, "@supports (animation-duration: calc(1s * tan(atan2(1s, 2s))))");
 
-        StringAssert.Contains(block, "--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-duration)), 89.9deg)));");
+        StringAssert.Contains(block, "--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-sweep)), 89.9deg)));");
+
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh {");
+
+        StringAssert.Contains(root, "--bit-tsh-sweep: var(--bit-TextShimmer-duration, 2000ms);");
+        StringAssert.Contains(root, "--bit-tsh-duration: var(--bit-TextShimmer-duration, calc(2000ms * #{$mot-loop-factor}));");
+        StringAssert.Contains(root, "--bit-tsh-repeat-delay: var(--bit-TextShimmer-repeat-delay, 0ms);");
+    }
+
+
+
+    // The public variables inherit, so a value set on :root, an ancestor or a class reaches every shimmer under it:
+    // each one is read with a fallback and never declared, and the header of the stylesheet names it.
+    [TestMethod,
+        DataRow("base-color", "--bit-tsh-base-clr"),
+        DataRow("gradient-color", "--bit-tsh-gradient-clr"),
+        DataRow("spread", "--bit-tsh-spread"),
+        DataRow("angle", "--bit-tsh-angle"),
+        DataRow("duration", "--bit-tsh-duration"),
+        DataRow("delay", "--bit-tsh-delay"),
+        DataRow("repeat-delay", "--bit-tsh-repeat-delay"),
+        DataRow("iterations", "--bit-tsh-iterations")]
+    public void EveryPublicVariableIsReadWithAFallbackAndNeverDeclared(string name, string privateVariable)
+    {
+        var stylesheet = ReadStylesheet();
+        var variable = $"--bit-TextShimmer-{name}";
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared.");
+        StringAssert.Contains(stylesheet, $"//   {variable} ");
+        StringAssert.Matches(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh {"), new Regex($@"{privateVariable}: var\({variable}, "));
+    }
+
+    // A Spread left at its default publishes the spread it computes under a name of its own, which only backs the
+    // public variable up - so --bit-TextShimmer-spread restyles every shimmer that was not given a spread.
+    [TestMethod]
+    public void TheComputedDefaultSpreadIsOnlyTheFallbackOfThePublicVariable()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tsh {");
+
+        StringAssert.Contains(root, "--bit-tsh-spread: var(--bit-TextShimmer-spread, var(--bit-tsh-auto-spread));");
+    }
+
+    // A Color is a choice the shimmer was given, so its class sets the private value again after the root reads the
+    // public variable into it.
+    [TestMethod]
+    public void TheColorRoleWinsOverThePublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+        var roles = SourceFiles.GetScssBlock(stylesheet, ".bit-tsh-#{$role} {");
+
+        StringAssert.Contains(roles, "--bit-tsh-gradient-clr:");
+        Assert.IsTrue(stylesheet.IndexOf(".bit-tsh-#{$role}", StringComparison.Ordinal) > stylesheet.IndexOf("\n.bit-tsh {", StringComparison.Ordinal));
+    }
+
+
+
+    // A disabled shimmer is dimmed by a public variable, the same as a disabled BitText, and a forced palette - which
+    // takes the dimming away - paints it in the system color for disabled text instead.
+    [TestMethod]
+    public void ADisabledShimmerIsDimmedByAPublicVariableAndGrayedOutInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh.bit-dis {"), "opacity: var(--bit-TextShimmer-disabled-opacity, #{$opa-dis});");
+        StringAssert.Contains(stylesheet, "//   --bit-TextShimmer-disabled-opacity ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active)"), ".bit-tsh.bit-dis {"), "color: GrayText;");
+    }
+
+    // Reduced motion is often on together with forced colors, so its rule must weigh no more than .bit-tsh: the
+    // forced-colors and print rules - and the GrayText of a disabled shimmer - would otherwise lose to it.
+    [TestMethod]
+    public void TheReducedMotionRuleDoesNotOutweighTheForcedColorsOnes()
+    {
+        var reducedMotion = SourceFiles.GetScssBlock(ReadStylesheet(), "@media (prefers-reduced-motion: reduce)");
+
+        StringAssert.Contains(reducedMotion, ".bit-tsh:where(:not(.bit-fam):not(.bit-fam *)) {");
+    }
+
+    // A shimmer a page made focusable is drawn with the focus ring of the library rather than the browser's own.
+    [TestMethod]
+    public void AFocusableShimmerIsDrawnWithTheFocusRing()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tsh {");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(root, "&:focus-visible:not([tabindex=\"-1\"]) {"), "@include focus-ring;");
     }
 
 
 
     private static string[] GetRootDeclarations()
     {
-        return VariableDeclaration.Matches(GetBlock(ReadStylesheet(), "\n.bit-tsh {")).Select(m => m.Groups[1].Value).ToArray();
+        return VariableDeclaration.Matches(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tsh {")).Select(m => m.Groups[1].Value).ToArray();
     }
 
-    private static string GetBlock(string stylesheet, string start)
-    {
-        var index = stylesheet.IndexOf(start, StringComparison.Ordinal);
-        Assert.IsTrue(index >= 0, $"The stylesheet has no \"{start.Trim()}\" block.");
-
-        var open = stylesheet.IndexOf('{', index + start.TrimEnd('{', ' ').Length);
-        var depth = 0;
-        for (var i = open; i < stylesheet.Length; i++)
-        {
-            if (stylesheet[i] == '{') depth++;
-            else if (stylesheet[i] == '}' && --depth == 0) return stylesheet[open..(i + 1)];
-        }
-
-        Assert.Fail($"The \"{start.Trim()}\" block is not closed.");
-        return string.Empty;
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "TextShimmer", "BitTextShimmer.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"The stylesheet ({path}) is not available; this test must run from a source checkout.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "TextShimmer", "BitTextShimmer.scss");
 }

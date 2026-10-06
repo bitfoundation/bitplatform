@@ -144,7 +144,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the snack bars to show.
     /// </summary>
-    public BitSnackBarPosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Skips showing a new snack bar while an identical one is already on screen.

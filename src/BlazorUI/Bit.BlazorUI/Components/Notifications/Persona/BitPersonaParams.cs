@@ -191,7 +191,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
     /// <br />
     /// <see cref="BitPersona.Shape"/>.
     /// </summary>
-    public BitPersonaShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// Puts the built-in glyph of each status in the presence dot, so the statuses differ by shape as well as color.

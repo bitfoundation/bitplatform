@@ -518,6 +518,9 @@
     <data name="BirthDate" xml:space="preserve">
     <value>تاریخ تولد</value>
   </data>
+    <data name="BirthDateInFuture" xml:space="preserve">
+    <value>تاریخ تولد نمی‌تواند در آینده باشد.</value>
+  </data>
     <data name="UserName" xml:space="preserve">
     <value>نام کاربری</value>
   </data>

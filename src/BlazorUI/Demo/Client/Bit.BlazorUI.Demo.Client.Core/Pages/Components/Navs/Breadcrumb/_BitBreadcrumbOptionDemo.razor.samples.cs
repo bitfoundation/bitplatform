@@ -177,7 +177,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPosition=""BitIconPosition.End"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPlacement=""BitPlacement.End"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />

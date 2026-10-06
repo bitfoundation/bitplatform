@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +44,7 @@ public class BitSplitterStylesheetTests
     {
         // A splitter nested in the panel of another would otherwise take the outer one's split, minimums and
         // maximums for its own wherever it declares none.
-        var root = GetBlock(ReadStylesheet(), "\n.bit-spl {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl {");
 
         foreach (var name in new[] { "fpn-size", "fpn-grow", "fpn-max", "fpn-min", "spn-size", "spn-grow", "spn-max", "spn-min", "col-size" })
         {
@@ -71,7 +69,7 @@ public class BitSplitterStylesheetTests
     {
         // GutterSize and GutterHitSize write the private variable inline, which beats the class declaring it from
         // the public one.
-        var root = GetBlock(ReadStylesheet(), "\n.bit-spl {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl {");
 
         StringAssert.Contains(root, "--bit-spl-gtr-size: var(--bit-Splitter-gutter-size, #{spacing(1.25)});");
         StringAssert.Contains(root, "--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(3)});");
@@ -81,7 +79,7 @@ public class BitSplitterStylesheetTests
     public void BitSplitterCoarsePointerShouldStillReadTheHitSizeVariable()
     {
         var stylesheet = ReadStylesheet();
-        var coarse = stylesheet[stylesheet.IndexOf("@media (pointer: coarse)", StringComparison.Ordinal)..];
+        var coarse = SourceFiles.GetScssBlock(stylesheet, "@media (pointer: coarse) {");
 
         StringAssert.Contains(coarse, "--bit-spl-hit-size: var(--bit-Splitter-gutter-hit-size, #{spacing(5.5)});");
     }
@@ -90,7 +88,7 @@ public class BitSplitterStylesheetTests
     public void BitSplitterCollapseButtonShouldReachTheTargetSize()
     {
         // The button is drawn 1.75 spacing units across the gutter; the part answering a press reaches out to 3.
-        var button = GetBlock(ReadStylesheet(), "\n.bit-spl-cbt {");
+        var button = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl-cbt {");
 
         StringAssert.Contains(button, "&::before {");
         StringAssert.Contains(button, "calc((spacing(1.75) - spacing(3)) / 2)");
@@ -101,7 +99,7 @@ public class BitSplitterStylesheetTests
     {
         // The gutter at rest is the decorative stroke tier, so the grip is what keeps the control at 3:1 (SC 1.4.11):
         // the secondary foreground has that floor over the gutter, the primary stroke does not.
-        var grip = GetBlock(ReadStylesheet(), "\n.bit-spl-gti {");
+        var grip = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spl-gti {");
 
         StringAssert.Contains(grip, "var(--bit-Splitter-gutter-indicator-color, #{$clr-fg-sec})");
     }
@@ -113,13 +111,12 @@ public class BitSplitterStylesheetTests
         // of its parts has to go through a child combinator: a descendant one hands the orientation, the drag or the
         // read-only look of the outer splitter to every splitter inside it - a row nested in a column would get a
         // gutter lying on its side and lose the width limits of its panels.
-        var stylesheet = ReadStylesheet();
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         var descendant = new Regex(@"\.bit-spl[a-z-]*(?:[.:][^\s,{>)]+)*\s+\.bit-spl", RegexOptions.Compiled);
 
         var offending = stylesheet.Split('\n')
                                   .Where(line => line.TrimEnd().EndsWith('{') || line.TrimEnd().EndsWith(','))
-                                  .Where(line => line.TrimStart().StartsWith("//", StringComparison.Ordinal) is false)
                                   .Where(line => descendant.IsMatch(line))
                                   .ToArray();
 
@@ -131,8 +128,6 @@ public class BitSplitterStylesheetTests
 
         foreach (var line in stylesheet.Split('\n').Select(l => l.Trim()))
         {
-            if (line.StartsWith("//", StringComparison.Ordinal)) continue;
-
             if (line.EndsWith('{'))
             {
                 if (line.StartsWith(".bit-spl", StringComparison.Ordinal) && parents.Any(p => p.StartsWith(".bit-spl", StringComparison.Ordinal)))
@@ -174,7 +169,7 @@ public class BitSplitterStylesheetTests
 
         foreach (var selector in new[] { "\n.bit-spl-fpn {", "\n.bit-spl-spn {", "\n.bit-spl-pnl {" })
         {
-            var block = GetBlock(stylesheet, selector);
+            var block = SourceFiles.GetScssBlock(stylesheet, selector);
 
             Assert.IsFalse(Regex.IsMatch(block, @"\b(min|max)-(width|height)\s*:"), $"{selector.Trim()} sets a panel limit at full specificity.");
         }
@@ -184,15 +179,13 @@ public class BitSplitterStylesheetTests
     public void BitSplitterHoverShouldOnlyApplyWhereThePointerCanHover()
     {
         // A finger lifting off the gutter would otherwise leave it in its hover color until the next tap elsewhere.
-        var stylesheet = ReadStylesheet();
+        var rules = SourceFiles.GetScssRules(ReadStylesheet()).Where(r => r.Header.Contains(":hover", StringComparison.Ordinal)).ToArray();
 
-        var rules = Regex.Matches(stylesheet, @"^[^/\n]*:hover[^\n]*\{", RegexOptions.Multiline);
+        Assert.IsTrue(rules.Length > 0);
 
-        Assert.IsTrue(rules.Count > 0);
-
-        foreach (Match match in rules)
+        foreach (var rule in rules)
         {
-            Assert.IsTrue(IsInsideHoverQuery(stylesheet[..match.Index]), $"'{match.Value.Trim()}' is not gated by @media (hover: hover).");
+            Assert.IsTrue(IsInsideHoverQuery(rule), $"'{rule.Header}' is not gated by @media (hover: hover).");
         }
     }
 
@@ -218,13 +211,14 @@ public class BitSplitterStylesheetTests
     public void BitSplitterStatesShouldMoveTheVariablesRatherThanPaintOverAnAppsClass()
     {
         // A gutter or a collapse button an app paints through Classes keeps that paint under the pointer and through a
-        // drag: the states only move the private variables the one rule at rest paints from.
+        // drag: the states only move the private variables the one rule at rest paints from. The whole block is read,
+        // since paint nested in a state (its own &:hover, an @media) would paint over the app's class all the same.
         var stylesheet = ReadStylesheet();
 
         foreach (var selector in new[] { "    :where(.bit-spl:not(.bit-spl-rdo, .bit-dis, .bit-spl-col:not(.bit-spl-cpb))) > .bit-spl-gtr:hover {",
                                          "\n.bit-spl-drg > .bit-spl-gtr {", "        &:hover {" })
         {
-            var block = GetBlock(stylesheet, selector, "}");
+            var block = SourceFiles.GetScssBlock(stylesheet, selector);
 
             Assert.IsFalse(Regex.IsMatch(block, @"^\s*(background-color|background|color|border-color)\s*:", RegexOptions.Multiline),
                            $"{selector.Trim()} paints the part directly.");
@@ -246,52 +240,13 @@ public class BitSplitterStylesheetTests
         Assert.IsTrue(drag > hover, "The drag rule has to come after the hover rule it ties with.");
     }
 
-    // Walks the braces back out from a rule to see whether one of the blocks it sits in is the hover query - or the
-    // forced-colors one, which only repaints what the hover query already allowed.
-    private static bool IsInsideHoverQuery(string before)
+    // Whether one of the blocks a rule sits in is the hover query - or the forced-colors one, which only repaints what
+    // the hover query already allowed.
+    private static bool IsInsideHoverQuery(SourceFiles.ScssRule rule)
     {
-        var depth = 0;
-
-        for (var i = before.Length - 1; i >= 0; i--)
-        {
-            if (before[i] == '}') depth++;
-            else if (before[i] == '{')
-            {
-                if (depth == 0)
-                {
-                    var lineStart = before.LastIndexOf('\n', i) + 1;
-                    var header = before[lineStart..i];
-
-                    if (header.Contains("@media (hover: hover)", StringComparison.Ordinal)
-                        || header.Contains("@media (forced-colors: active)", StringComparison.Ordinal)) return true;
-                }
-                else
-                {
-                    depth--;
-                }
-            }
-        }
-
-        return false;
+        return rule.Ancestors.Any(header => header.Contains("@media (hover: hover)", StringComparison.Ordinal)
+                                            || header.Contains("@media (forced-colors: active)", StringComparison.Ordinal));
     }
 
-    private static string GetBlock(string stylesheet, string selector, string terminator = "\n}")
-    {
-        var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf(terminator, start, StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Surfaces", "Splitter", "BitSplitter.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Splitter", "BitSplitter.scss");
 }

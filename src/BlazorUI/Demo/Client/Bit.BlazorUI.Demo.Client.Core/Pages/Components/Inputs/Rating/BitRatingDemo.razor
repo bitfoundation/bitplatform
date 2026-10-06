@@ -40,7 +40,7 @@
     <DemoExample Title="Label & item titles" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
             <b>Label</b> names the rating - and since a row of stars carries no text of its own, it is also what
-            names it for a screen reader. <b>Required</b> marks it with an asterisk, <b>LabelPosition</b> moves
+            names it for a screen reader. <b>Required</b> marks it with an asterisk, <b>LabelPlacement</b> moves
             it beside the items for a compact row, and <b>LabelTemplate</b> replaces it with markup of your own,
             below a caption that spells the value out in words. <b>Description</b> is the hint under the items,
             pointed at by <code>aria-describedby</code> so it is announced after the name rather than as part of
@@ -56,7 +56,7 @@
                        ItemTitles="@(["Terrible", "Bad", "Normal", "Good", "Wonderful"])"
                        @bind-Value="labelValue" />
             <br />
-            <BitRating Label="Cleanliness" LabelPosition="BitLabelPosition.Start" DefaultValue="4" />
+            <BitRating Label="Cleanliness" LabelPlacement="BitPlacement.Start" DefaultValue="4" />
             <br />
             <BitRating Label="Staff" DefaultValue="4">
                 <DescriptionTemplate>
@@ -64,7 +64,7 @@
                 </DescriptionTemplate>
             </BitRating>
             <br />
-            <BitRating LabelPosition="BitLabelPosition.Bottom" @bind-Value="labelTemplateValue">
+            <BitRating LabelPlacement="BitPlacement.Bottom" @bind-Value="labelTemplateValue">
                 <LabelTemplate>
                     <BitText Typography="BitTypography.Caption1">@ratingWords[(int)labelTemplateValue]</BitText>
                 </LabelTemplate>
@@ -217,7 +217,7 @@
         <br />
         <div class="example-box">
             <div>Hover over the stars:</div>
-            <BitRating LabelPosition="BitLabelPosition.Bottom"
+            <BitRating LabelPlacement="BitPlacement.Bottom"
                        @bind-Value="hoverBoundValue"
                        OnHoverChange="v => hoverPreviewValue = v">
                 <LabelTemplate>
@@ -652,8 +652,8 @@
         <div>Set once on an ancestor, inherited by every rating inside it:</div>
         <br />
         <div class="example-box" style="--bit-Rating-color: crimson; --bit-Rating-unselected-color: pink; --bit-Rating-label-color: crimson;">
-            <BitRating Label="Story" LabelPosition="BitLabelPosition.Start" ReadOnly DefaultValue="4.5" />
-            <BitRating Label="Music" LabelPosition="BitLabelPosition.Start" ReadOnly DefaultValue="3" />
+            <BitRating Label="Story" LabelPlacement="BitPlacement.Start" ReadOnly DefaultValue="4.5" />
+            <BitRating Label="Music" LabelPlacement="BitPlacement.Start" ReadOnly DefaultValue="3" />
         </div>
     </DemoExample>
 
@@ -670,7 +670,7 @@
             <br />
             <BitRating Dir="BitDir.Rtl" Precision="0.5" DefaultValue="3.5" />
             <br />
-            <BitRating Dir="BitDir.Rtl" Label="امتیاز شما" LabelPosition="BitLabelPosition.Start" DefaultValue="4" />
+            <BitRating Dir="BitDir.Rtl" Label="امتیاز شما" LabelPlacement="BitPlacement.Start" DefaultValue="4" />
         </div>
     </DemoExample>
 </DemoPage>

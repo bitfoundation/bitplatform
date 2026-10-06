@@ -511,11 +511,11 @@ public class BitBadgeTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitBadgeShape.Circular, "bit-bdg-cir")]
-    [DataRow(BitBadgeShape.Rounded, "bit-bdg-rnd")]
-    [DataRow(BitBadgeShape.Square, "bit-bdg-sqr")]
+    [DataRow(BitShape.Pill, "bit-bdg-cir")]
+    [DataRow(BitShape.Rounded, "bit-bdg-rnd")]
+    [DataRow(BitShape.Square, "bit-bdg-sqr")]
     [DataRow(null, "bit-bdg-cir")]
-    public void BitBadgeShouldRespectShape(BitBadgeShape? shape, string expectedClass)
+    public void BitBadgeShouldRespectShape(BitShape? shape, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
@@ -2278,7 +2278,7 @@ public class BitBadgeTests : BunitTestContext
         {
             Color = BitColor.Success,
             Size = BitSize.Large,
-            Shape = BitBadgeShape.Rounded,
+            Shape = BitShape.Rounded,
             Variant = BitVariant.Outline,
             Position = BitPosition.BottomStart,
             Overlap = true,
@@ -2400,7 +2400,7 @@ public class BitBadgeTests : BunitTestContext
             Pulse = true,
             Rel = BitLinkRels.NoFollow,
             Reversed = true,
-            Shape = BitBadgeShape.Square,
+            Shape = BitShape.Square,
             ShowZero = false,
             Size = BitSize.Small,
             Styles = styles,
@@ -2435,7 +2435,7 @@ public class BitBadgeTests : BunitTestContext
         Assert.IsTrue(badge.Pulse);
         Assert.AreEqual(BitLinkRels.NoFollow, badge.Rel);
         Assert.IsTrue(badge.Reversed);
-        Assert.AreEqual(BitBadgeShape.Square, badge.Shape);
+        Assert.AreEqual(BitShape.Square, badge.Shape);
         Assert.IsFalse(badge.ShowZero);
         Assert.AreEqual(BitSize.Small, badge.Size);
         Assert.AreSame(styles, badge.Styles);

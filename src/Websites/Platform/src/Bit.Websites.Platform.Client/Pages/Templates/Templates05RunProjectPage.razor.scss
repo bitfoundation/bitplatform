@@ -19,6 +19,14 @@
     @include SectionCard;
 }
 
+.ai-card {
+    border-inline-start: rem2(4px) solid var(--bit-clr-pri);
+
+    .section-card-txt {
+        font-weight: 600;
+    }
+}
+
 .section-card-txt {
     @include SectionCardText;
 }

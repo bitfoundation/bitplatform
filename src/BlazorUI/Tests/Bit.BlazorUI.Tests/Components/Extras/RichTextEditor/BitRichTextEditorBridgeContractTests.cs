@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -42,18 +41,12 @@ public sealed class BitRichTextEditorBridgeContractTests
 
     private static string ReadTypeScript()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", "BitRichTextEditor.ts");
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure BitRichTextEditor.ts is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.ts");
     }
 
     private static string ReadCSharp(string fileName)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "cs-sources", fileName);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure {fileName} is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", fileName);
     }
 
     /// <summary>The body of the bridge's updateOptions, which is where every option is read.</summary>
@@ -214,5 +207,20 @@ public sealed class BitRichTextEditorBridgeContractTests
                 $"The bridge exports {function}(), which nothing in C# calls - either it is dead code that still ships " +
                 "to every visitor, or the call site was renamed and the feature is gone.");
         }
+    }
+
+    [TestMethod]
+    public void AltF10ShouldReachTheSelectionToolbarFirst()
+    {
+        var source = ReadTypeScript().Replace("\r\n", "\n");
+        var start = source.IndexOf("private static focusToolbar(", StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, "focusToolbar() is gone.");
+        var body = source[start..source.IndexOf("\n        }\n", start, StringComparison.Ordinal)];
+
+        // The floating toolbar is the one a keyboard could otherwise never reach, and it has to be walkable once there.
+        var quick = body.IndexOf("'.bit-rte-quick'", StringComparison.Ordinal);
+        var main = body.IndexOf("'.bit-rte-tlb'", StringComparison.Ordinal);
+        Assert.IsTrue(quick >= 0 && main > quick, "Alt+F10 does not prefer the selection toolbar over the main one.");
+        StringAssert.Contains(body, "enableToolbarRoving(toolbar)", "The selection toolbar is entered without a roving tab stop.");
     }
 }

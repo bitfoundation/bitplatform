@@ -5,6 +5,9 @@ internal class BitRichTextEditorSetupOptions
     public int Debounce { get; set; }
     public BitRichTextEditorPolicyPayload? Policy { get; set; }
     public bool HasUpload { get; set; }
+
+    /// <summary>The largest image a drop or a paste may insert, checked before the file is read.</summary>
+    public long MaxImageBytes { get; set; }
     public bool PlainTextPaste { get; set; }
     public int? MaxLength { get; set; }
     public string[]? ShortcutKeys { get; set; }

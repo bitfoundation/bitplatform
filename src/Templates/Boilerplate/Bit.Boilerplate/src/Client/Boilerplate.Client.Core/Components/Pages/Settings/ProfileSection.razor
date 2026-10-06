@@ -70,6 +70,7 @@
                     <BitDatePicker Responsive @bind-Value="editUserDto.BirthDate"
                                    Class="edit-profile-dtp"
                                    Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                                   MaxDate="DateTimeOffset.Now"
                                    GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
                                    Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
                     <ValidationMessage For="@(() => editUserDto.BirthDate)" />

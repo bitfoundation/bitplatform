@@ -518,6 +518,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>La date de naissance ne peut pas être dans le futur.</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Nom d’utilisateur</value>
   </data>

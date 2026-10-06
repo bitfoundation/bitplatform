@@ -136,30 +136,7 @@ public partial class BitOverlayDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPosition",
-            Description = "Where the content sits on the layer. Start and End follow the text direction; Left and Right stay on their side.",
-            Items =
-            [
-                new() { Name = "TopLeft", Value = "0" },
-                new() { Name = "TopCenter", Value = "1" },
-                new() { Name = "TopRight", Value = "2" },
-                new() { Name = "TopStart", Value = "3" },
-                new() { Name = "TopEnd", Value = "4" },
-                new() { Name = "CenterLeft", Value = "5" },
-                new() { Name = "Center", Value = "6" },
-                new() { Name = "CenterRight", Value = "7" },
-                new() { Name = "CenterStart", Value = "8" },
-                new() { Name = "CenterEnd", Value = "9" },
-                new() { Name = "BottomLeft", Value = "10" },
-                new() { Name = "BottomCenter", Value = "11" },
-                new() { Name = "BottomRight", Value = "12" },
-                new() { Name = "BottomStart", Value = "13" },
-                new() { Name = "BottomEnd", Value = "14" },
-            ]
-        },
+        SharedSubEnums.BitPosition,
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =

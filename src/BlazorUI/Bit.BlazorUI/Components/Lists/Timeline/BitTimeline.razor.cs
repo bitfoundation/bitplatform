@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Bit.BlazorUI;
@@ -52,11 +52,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
 
     /// <summary>
-    /// Where the dot of each item sits along its item, with the contents of the item aligned to it.
+    /// Where the dot of each item sits along its item, with the contents of the item aligned to it: at its middle
+    /// (Center, the default), at its Start (the top in a vertical timeline) or at its End (the bottom in a vertical timeline).
     /// Start pins the dot to the first line of an item whose contents run over several lines.
     /// </summary>
+    /// <remarks>
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineDotAlignment? DotAlignment { get; set; }
+    public BitPlacement? DotAlignment { get; set; }
 
     /// <summary>
     /// Renders the timeline horizontally.
@@ -78,16 +82,26 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The way the connecting line of the timeline is painted, which the items can override one by one.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitLineStyle.Solid"/>, <see cref="BitLineStyle.Dashed"/> and
+    /// <see cref="BitLineStyle.Dotted"/> mean anything here; the connector is a hairline, which leaves
+    /// <see cref="BitLineStyle.Double"/> no room for the gap between its two strokes, so it is drawn solid.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineLineVariant? LineVariant { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
-    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the contents on
-    /// both sides of it, or along its Start or End edge, with the contents of each item stacked on one side of it.
+    /// Where the connecting line runs: through the middle of the timeline (Center, the default), with the primary
+    /// contents of the items on one side of it and the secondary contents on the other, or along its Start edge
+    /// (the top in a horizontal timeline) or its End edge (the bottom in a horizontal timeline), with the contents
+    /// of each item stacked on one side of it, as in an activity feed.
     /// Reversed and Alternate only apply to the centered line.
     /// </summary>
+    /// <remarks>
+    /// Only Center, Start and End are honoured; every other value renders the default Center.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTimelineLinePosition? LinePosition { get; set; }
+    public BitPlacement? LinePlacement { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -199,11 +213,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Alternate ? "bit-tln-alt" : string.Empty);
 
-        // The centered dot is what the stylesheet paints on its own, so only the other two carry a class.
+        // The centered dot is what the stylesheet paints on its own, so only the other two carry a class,
+        // and every value the dot does not honour carries none, which falls back to the centered dot.
         ClassBuilder.Register(() => DotAlignment switch
         {
-            BitTimelineDotAlignment.Start => "bit-tln-das",
-            BitTimelineDotAlignment.End => "bit-tln-dae",
+            BitPlacement.Start => "bit-tln-das",
+            BitPlacement.End => "bit-tln-dae",
             _ => string.Empty
         });
 
@@ -220,19 +235,20 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
-        // The centered line is what the stylesheet paints on its own, so only the other two carry a class.
-        ClassBuilder.Register(() => LinePosition switch
+        // The centered line is what the stylesheet paints on its own, so only the other two carry a class,
+        // and every value the line does not honour carries none, which falls back to the centered line.
+        ClassBuilder.Register(() => LinePlacement switch
         {
-            BitTimelineLinePosition.Start => "bit-tln-lps",
-            BitTimelineLinePosition.End => "bit-tln-lpe",
+            BitPlacement.Start => "bit-tln-lps",
+            BitPlacement.End => "bit-tln-lpe",
             _ => string.Empty
         });
 
         // A solid line is what the stylesheet paints on its own, so only the broken ones carry a class.
-        ClassBuilder.Register(() => LineVariant switch
+        ClassBuilder.Register(() => LineStyle switch
         {
-            BitTimelineLineVariant.Dashed => "bit-tln-ldd",
-            BitTimelineLineVariant.Dotted => "bit-tln-ldt",
+            BitLineStyle.Dashed => "bit-tln-ldd",
+            BitLineStyle.Dotted => "bit-tln-ldt",
             _ => string.Empty
         });
 
@@ -385,13 +401,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             });
         }
 
-        var lineVariant = GetLineVariant(item);
-        if (lineVariant is not null)
+        var lineStyle = GetLineStyle(item);
+        if (lineStyle is not null)
         {
-            className.Append(lineVariant switch
+            className.Append(lineStyle switch
             {
-                BitTimelineLineVariant.Dashed => " bit-tln-ild",
-                BitTimelineLineVariant.Dotted => " bit-tln-ilt",
+                BitLineStyle.Dashed => " bit-tln-ild",
+                BitLineStyle.Dotted => " bit-tln-ilt",
                 // Unlike the timeline-level solid line, an explicitly solid item needs a class of its own
                 // to win over a dashed or a dotted timeline.
                 _ => " bit-tln-ils"
@@ -930,27 +946,27 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitVariant?>(NameSelectors.Variant.Name, null);
     }
 
-    private BitTimelineLineVariant? GetLineVariant(TItem? item)
+    private BitLineStyle? GetLineStyle(TItem? item)
     {
         if (item is null) return null;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.LineVariant;
+            return timelineItem.LineStyle;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.LineVariant;
+            return timelineOption.LineStyle;
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.LineVariant.Selector is not null)
+        if (NameSelectors.LineStyle.Selector is not null)
         {
-            return NameSelectors.LineVariant.Selector!(item);
+            return NameSelectors.LineStyle.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitTimelineLineVariant?>(NameSelectors.LineVariant.Name, null);
+        return item.GetValueFromProperty<BitLineStyle?>(NameSelectors.LineStyle.Name, null);
     }
 }

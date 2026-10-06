@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -45,15 +43,15 @@ public class BitOverlayStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-ovl {"), "z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-ovl-mfl {"), "background-color: var(--bit-Overlay-background, #{$clr-bg-overlay});");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-ovl {"), "var(--bit-Overlay-transition-duration, #{$mot-duration-short})");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"), "z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl-mfl {"), "background-color: var(--bit-Overlay-background, #{$clr-bg-overlay});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"), "var(--bit-Overlay-transition-duration, #{$mot-duration-short})");
     }
 
     [TestMethod]
     public void BitOverlayAbsolutePositionShouldTakeTheCornersOfItsContainer()
     {
-        var absolute = GetBlock(ReadStylesheet(), "\n.bit-ovl-abs {");
+        var absolute = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-ovl-abs {");
 
         StringAssert.Contains(absolute, "border-radius: inherit;");
         StringAssert.Contains(absolute, "z-index: unset;");
@@ -85,23 +83,5 @@ public class BitOverlayStylesheetTests
         StringAssert.Contains(stylesheet, "$mot-duration-short");
     }
 
-    private static string GetBlock(string stylesheet, string selector, string terminator = "\n}")
-    {
-        var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf(terminator, start, StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Overlay", "BitOverlay.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Overlay", "BitOverlay.scss");
 }

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Emoji / special-character picker.
 public partial class BitRichTextEditor
@@ -10,6 +10,8 @@ public partial class BitRichTextEditor
     private bool _showEmoji;
     private string _emojiSearch = "";
     private ElementReference _emojiSearchRef = default!;
+    private ElementReference _emojiPanelRef = default!;
+    private bool _emojiGridPending;
 
     private readonly record struct EmojiEntry(string Char, string Name, string Keywords, string Group);
 
@@ -177,6 +179,7 @@ public partial class BitRichTextEditor
         {
             await CloseOtherPanels("emoji");
             RequestPanelFocus(() => _emojiSearchRef);
+            _emojiGridPending = true;
         }
         // Clear any stale inline validation message when opening or closing the picker, matching
         // the other inline tool toggles (e.g. ToggleFind) so old errors don't linger.
@@ -206,6 +209,25 @@ public partial class BitRichTextEditor
         EmojiGroupObjects => "Objects",
         _ => "Symbols"
     };
+
+    private async Task CloseEmoji()
+    {
+        if (_showEmoji) await ToggleEmoji();
+        RequestEditorFocus();
+    }
+
+    // The grid is one tab stop moved by the arrow keys, rather than a hundred and more of them, once it renders.
+    private async Task EnableEmojiGridIfPendingAsync()
+    {
+        if (_emojiGridPending is false || _showEmoji is false) return;
+        _emojiGridPending = false;
+        try
+        {
+            await _js.BitRichTextEditorEnableGridRoving(_emojiPanelRef);
+        }
+        catch (JSDisconnectedException) { } // circuit gone
+        catch (JSException) { } // interop unavailable
+    }
 
     private async Task InsertEmojiAsync(string ch)
     {

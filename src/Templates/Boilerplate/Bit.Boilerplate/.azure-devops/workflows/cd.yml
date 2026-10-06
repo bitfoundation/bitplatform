@@ -35,24 +35,21 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
 
-  - task: Bash@3
-    displayName: 'Install wasm'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install wasm-tools
+  - script: bit setup --no-browsers -p:Configuration=Release -p:Version="$(APP_VERSION)" --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.ResxTranslator
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -60,12 +57,6 @@ jobs:
       folderPath: './'
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
-
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish'
@@ -141,18 +132,21 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --platforms windows --no-browsers --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.ResxTranslator
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -162,18 +156,36 @@ jobs:
       jsonTargetFiles: 'src/**/appsettings*json'
 
   - task: Bash@3
-    displayName: 'Generate CSS/JS files'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"'
-
-  - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
       script: |
         cd src/Client/Boilerplate.Client.Windows
         dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish-result -r win-x86 -p:Version="$(APP_VERSION)" --self-contained
+
+  - task: Bash@3
+    displayName: 'Pack'
+    condition: and(succeeded(), eq(variables['CODE_SIGNING_ACCOUNT'], ''))
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd src/Client/Boilerplate.Client.Windows
+        dnx vpk@1.2.161 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+
+  - task: AzureCLI@2
+    displayName: 'Pack and sign with Artifact Signing'
+    condition: and(succeeded(), ne(variables['CODE_SIGNING_ACCOUNT'], ''))
+    inputs:
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+        # VS Code and others before the Azure CLI. On an agent they only cost time or could sign in as someone else, so only
+        # this task's az login is left.
+        @{ Endpoint = '$(CODE_SIGNING_ENDPOINT)'; CodeSigningAccountName = '$(CODE_SIGNING_ACCOUNT)'; CertificateProfileName = '$(CODE_SIGNING_CERTIFICATE_PROFILE)'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content '$(Agent.TempDirectory)/code-signing.json'
+        $env:VPK_AZURE_TRUSTED_SIGN_FILE = '$(Agent.TempDirectory)/code-signing.json'
+        cd src/Client/Boilerplate.Client.Windows
         dnx vpk@1.2.161 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: PublishPipelineArtifact@1
@@ -196,22 +208,13 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
 
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui-android
-
-  - task: Bash@3
-    displayName: 'Install Android Sdk platform tools'
-    inputs:
-      targetType: 'inline'
-      script: '${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"'
+  - script: bit setup --platforms android --no-browsers --yes
+    displayName: 'Prepare this machine with bit setup'
 
   - task: DownloadSecureFile@1
     displayName: Download Boilerplate keystore file
@@ -225,12 +228,12 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dnx Bit.ResxTranslator
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
     failOnStderr: true
-    displayName: Use Bit.ResxTranslator
+    displayName: Translate .resx files
 
   - task: FileTransform@2
     displayName: Update appsettings.json
@@ -239,11 +242,6 @@ jobs:
       enableXmlTransform: false
       jsonTargetFiles: 'src/**/appsettings*json'
   
-  - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release -p:Version="$(APP_VERSION)"
-    failOnStderr: true
-    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Publish aab'

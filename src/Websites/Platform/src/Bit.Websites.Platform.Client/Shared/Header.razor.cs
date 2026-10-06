@@ -16,8 +16,7 @@ public partial class Header : IDisposable
     private static readonly ProductMenuItem[][] productMenuColumns =
     [
         [
-            new("""Low-code/<span style="opacity:0.5">No-code</span>""", "(Private alpha)", Urls.LowCodeNoCode),
-            new("Boilerplate", "Feature-rich .NET project template", Urls.Templates),
+            new("Boilerplate", "Feature-rich project template", Urls.Templates),
             new("Butil", "Blazor utils for browser APIs", Urls.Butil, External: true),
             new("Bswup", "Blazor PWA on steroids", Urls.Bswup, External: true),
             new("Besql", "Blazor Entity Framework SQLite", Urls.Besql),
@@ -26,7 +25,6 @@ public partial class Header : IDisposable
             new("Brouter", "Modern declarative Blazor router", Urls.Brouter, External: true),
             new("Bmotion", "Blazor-native animation library", Urls.Bmotion, External: true),
             new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
-            new("bit Academy", "Coming soon", string.Empty, Disabled: true),
         ]
     ];
 
@@ -130,7 +128,6 @@ public partial class Header : IDisposable
 
     private bool IsMenuItemActive(ProductMenuItem item)
     {
-        if (item.Url == Urls.LowCodeNoCode) return navMenuService.IsLcncDocRoute;
         if (item.Url == Urls.Templates) return navMenuService.IsTemplateDocRoute;
         if (item.Url == Urls.Besql) return navMenuService.IsBesqlDocRoute;
 

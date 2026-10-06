@@ -56,15 +56,16 @@
     text-align: center;
 }
 
-// A title on the left or right runs down the side of the plot instead of across the top.
+// A title or subtitle on the left or right runs down the side of the plot instead of across the top. The ones
+// on the left are turned over, so both sides read from the plot outwards.
 .bit-cht-ttl-v {
     width: auto;
     align-items: center;
     writing-mode: vertical-rl;
+}
 
-    &:first-child {
-        rotate: 180deg;
-    }
+.bit-cht-ttl-l {
+    rotate: 180deg;
 }
 
 .bit-cht-mid {
@@ -73,6 +74,18 @@
     min-height: 0;
     flex-direction: row;
     align-items: stretch;
+}
+
+// The titles and the legend beside the plot are placed by the physical Left and Right, which stay on the side
+// they are named for in both reading directions, so the row is turned back around in a right-to-left chart.
+// Kept apart, so a browser without :dir() drops only the rule it cannot parse and still gets the turn from the
+// class the component sets itself.
+.bit-rtl > .bit-cht-mid {
+    flex-direction: row-reverse;
+}
+
+.bit-cht-mid:dir(rtl) {
+    flex-direction: row-reverse;
 }
 
 .bit-cht-plot {

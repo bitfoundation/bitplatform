@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -33,7 +31,7 @@ public class BitPanelParamsTests : BunitTestContext
             {
                 new BitPanelParams
                 {
-                    Position = BitPanelPosition.Start,
+                    Placement = BitPlacement.Start,
                     Size = 420,
                     ModeFull = true,
                     ShowCloseButton = true,
@@ -76,13 +74,13 @@ public class BitPanelParamsTests : BunitTestContext
         {
             parameters.Add(p => p.Parameters, new List<IBitComponentParams>
             {
-                new BitPanelParams { Position = BitPanelPosition.Start, ModeFull = true, Modeless = false, CloseButtonTitle = "Dismiss", ShowCloseButton = true }
+                new BitPanelParams { Placement = BitPlacement.Start, ModeFull = true, Modeless = false, CloseButtonTitle = "Dismiss", ShowCloseButton = true }
             });
             parameters.AddChildContent(builder =>
             {
                 builder.OpenComponent<BitPanel>(0);
                 builder.AddAttribute(1, nameof(BitPanel.IsOpen), true);
-                builder.AddAttribute(2, nameof(BitPanel.Position), BitPanelPosition.Bottom);
+                builder.AddAttribute(2, nameof(BitPanel.Placement), BitPlacement.Bottom);
                 builder.AddAttribute(3, nameof(BitPanel.ModeFull), false);
                 builder.AddAttribute(4, nameof(BitPanel.CloseButtonTitle), "Close it");
                 builder.CloseComponent();
@@ -234,8 +232,7 @@ public class BitPanelParamsTests : BunitTestContext
     public void BitPanelOpenStateShouldCarryNoTransform()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("\n.bit-pnl-opn {", StringComparison.Ordinal);
-        var open = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, StringComparison.Ordinal)];
+        var open = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pnl-opn {");
 
         // Any transform - an identity one included - makes the open panel the containing block of its fixed
         // descendants, which lays a panel or a dialog opened from inside it out against the panel.
@@ -245,14 +242,15 @@ public class BitPanelParamsTests : BunitTestContext
     [TestMethod]
     [DataRow(".bit-pnl-start", "top,bottom,left,right")]
     [DataRow(".bit-pnl-end", "top,bottom,left,right")]
+    [DataRow(".bit-pnl-left", "top,bottom,left")]
+    [DataRow(".bit-pnl-right", "top,bottom,right")]
     [DataRow(".bit-pnl-top", "top,left,right")]
     [DataRow(".bit-pnl-bottom", "bottom,left,right")]
     [DataRow(".bit-pnl-fsz", "top,right,bottom,left")]
     public void BitPanelEdgesShouldMakeRoomForTheSafeAreaTheyTouch(string edge, string insets)
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf($"\n{edge} {{", StringComparison.Ordinal);
-        var rule = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, StringComparison.Ordinal)];
+        var rule = SourceFiles.GetScssBlock(stylesheet, $"\n{edge} {{");
 
         foreach (var inset in insets.Split(','))
         {
@@ -287,20 +285,8 @@ public class BitPanelParamsTests : BunitTestContext
 
     private static string RuleOf(string stylesheet, string selector)
     {
-        var start = stylesheet.IndexOf($"\n{selector} {{", StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"Missing {selector}.");
-
-        return stylesheet[start..stylesheet.IndexOf("\n}", start + 1, StringComparison.Ordinal)];
+        return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Surfaces", "Panel", "BitPanel.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Panel", "BitPanel.scss");
 }

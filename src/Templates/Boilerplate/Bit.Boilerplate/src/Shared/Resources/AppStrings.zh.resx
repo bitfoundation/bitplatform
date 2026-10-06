@@ -518,6 +518,9 @@
   <data name="BirthDate" xml:space="preserve">
     <value>出生日期</value>
   </data>
+  <data name="BirthDateInFuture" xml:space="preserve">
+    <value>出生日期不能是将来的日期。</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>用户名</value>
   </data>

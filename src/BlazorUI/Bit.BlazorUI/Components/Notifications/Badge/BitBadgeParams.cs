@@ -144,7 +144,7 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The corner shape of the badge.
     /// </summary>
-    public BitBadgeShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// Renders the badge when its content is the number zero.

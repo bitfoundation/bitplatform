@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Link insertion / editing, with edit-existing-link prefill, validation, and remove affordances.
 public partial class BitRichTextEditor
@@ -34,6 +34,21 @@ public partial class BitRichTextEditor
         ClearInlineError();
     }
 
+    /// <summary>
+    /// The address the link panel's Open link points at: the link under the caret, as long as it is one a reader
+    /// may follow (the sanitizer already keeps every other scheme out of the content, this only double-checks).
+    /// </summary>
+    private string? OpenableLinkHref
+        => _state.InLink && string.IsNullOrWhiteSpace(_state.LinkHref) is false && IsAcceptableLinkUrl(_state.LinkHref!)
+            ? _state.LinkHref
+            : null;
+
+    private async Task CloseLinkInput()
+    {
+        if (_showLinkInput) await ToggleLinkInput();
+        RequestEditorFocus();
+    }
+
     private async Task ApplyLinkAsync()
     {
         if (ControlsDisabled) return;
@@ -41,12 +56,12 @@ public partial class BitRichTextEditor
         var url = NormalizeLinkUrl(_linkUrl.Trim());
         if (string.IsNullOrWhiteSpace(url))
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("link-url-required", "Enter a URL for the link.")));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Loc("link-url-required", "Enter a URL for the link.")));
             return;
         }
         if (url.Length > 2048 || IsAcceptableLinkUrl(url) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("link-url-invalid", "That link URL is not valid.")));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Loc("link-url-invalid", "That link URL is not valid.")));
             return;
         }
 
@@ -57,6 +72,7 @@ public partial class BitRichTextEditor
 
         // The link applied successfully, so clear any stale "invalid url" message.
         ClearInlineError();
+        RequestEditorFocus();
         _showLinkInput = false;
         _linkUrl = "";
         _linkText = "";
@@ -68,6 +84,8 @@ public partial class BitRichTextEditor
         if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "unlink", null);
         ClearInlineError();
+        // Removed from the panel, the focus that was on its Remove button goes back to the text.
+        if (_showLinkInput) RequestEditorFocus();
         _showLinkInput = false;
         _linkUrl = "";
         _linkText = "";
@@ -77,7 +95,6 @@ public partial class BitRichTextEditor
     private async Task OnLinkKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await ApplyLinkAsync();
-        else if (e.Key == "Escape") await ToggleLinkInput();
     }
 
     /// <summary>

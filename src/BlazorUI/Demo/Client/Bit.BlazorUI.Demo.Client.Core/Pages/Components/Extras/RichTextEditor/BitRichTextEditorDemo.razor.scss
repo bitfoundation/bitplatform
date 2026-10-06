@@ -1,17 +1,33 @@
-﻿@import '../../../../Styles/abstracts/functions';
+@import '../../../../Styles/abstracts/functions';
 
 .btn-container {
     display: flex;
-    gap: rem2(16px);
+    gap: rem2(8px);
     flex-flow: row wrap;
 }
 
-::deep .custom-rte-toolbar {
-    // A custom toolbar surface has to follow the scheme like the toolbar it replaces: a fixed light
-    // tint keeps the buttons - which take the page foreground - invisible in every dark theme.
-    background-color: var(--bit-clr-pri-light);
-}
+::deep {
+    .code-box {
+        margin: 0;
+        width: 100%;
+        min-height: 3rem;
+        overflow: auto;
+        padding: 0.5rem 1rem;
+        white-space: pre-wrap;
+        box-sizing: border-box;
+        border-radius: 0.25rem;
+        border: 1px solid #808080;
+    }
 
-::deep .custom-rte-editor {
-    font-style: italic;
+    .custom-class {
+        box-shadow: aqua 0 0 1rem 0.5rem;
+    }
+
+    .custom-toolbar {
+        background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    }
+
+    .custom-editor {
+        color: mediumseagreen;
+    }
 }
