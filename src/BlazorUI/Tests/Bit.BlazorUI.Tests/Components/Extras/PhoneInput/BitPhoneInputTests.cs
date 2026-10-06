@@ -1559,6 +1559,9 @@ public class BitPhoneInputTests : BunitTestContext
     [TestMethod]
     public void BitPhoneInputShouldShowTheOverlayOnlyWhileTheCalloutIsOpen()
     {
+        // The browser confirms that the selector took the focus it was handed back.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isActiveElement", _ => true).SetResult(true);
+
         var component = RenderComponent<BitPhoneInput>();
 
         StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
@@ -1579,6 +1582,9 @@ public class BitPhoneInputTests : BunitTestContext
     [TestMethod]
     public void BitPhoneInputShouldKeepTheFocusRingOnTheSelectorTheOverlayDismissesTo()
     {
+        // The browser confirms that the selector took the focus it was handed back.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isActiveElement", _ => true).SetResult(true);
+
         var component = RenderComponent<BitPhoneInput>();
 
         component.Find("button.bit-phi-drp").FocusIn();
@@ -1599,6 +1605,25 @@ public class BitPhoneInputTests : BunitTestContext
         // Leaving the selector afterwards is a focusout of the field like any other.
         component.Find("button.bit-phi-drp").FocusOut();
 
+        Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotShowTheFocusRingWhenTheSelectorRefusesTheFocus()
+    {
+        // A selector that refuses the focus (inert, or hidden by a collapsed container) does not make the
+        // focus call fail, so the ring is only put back on once the browser says the selector holds it.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isActiveElement", _ => true).SetResult(false);
+
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        component.Find(".bit-phi-ovl").Click();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
         Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
     }
 

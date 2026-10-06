@@ -2113,10 +2113,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         // The number is what the user came to type, so the focus lands there instead of being
         // dropped on the document body along with the callout the click happened in.
-        if (await InputElement.TryFocusAsync() is not FocusAttempt.Focused) return;
+        if (await InputElement.TryFocusConfirmedAsync(_js) is not FocusAttempt.Focused) return;
 
         // The input is part of the field, so the ring the closing callout dropped is put back on
         // with the focus itself instead of a render later, once the focusin finds its way back.
+        // Only once the browser confirms the input holds the focus: one that refuses it (inert, or
+        // hidden by a collapsed container) does not make the focus call fail.
         SetHasFocus(true);
     }
 
@@ -2247,10 +2249,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (NoDropdown) return;
 
-        if (await _dropdownButtonRef.TryFocusAsync() is not FocusAttempt.Focused) return;
+        if (await _dropdownButtonRef.TryFocusConfirmedAsync(_js) is not FocusAttempt.Focused) return;
 
         // The button is part of the field, so the ring the closing callout dropped is put back on
         // with the focus itself instead of a render later, once the focusin finds its way back.
+        // Only once the browser confirms the button holds the focus, the same way as the input.
         SetHasFocus(true);
     }
 

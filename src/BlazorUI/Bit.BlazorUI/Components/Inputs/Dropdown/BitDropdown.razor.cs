@@ -2280,7 +2280,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // Moves the focus back to the trigger after the component itself dismissed whatever had it, without
     // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
     // move produces; a move that never happens (a disconnected circuit, an element that is no longer on
-    // the page) clears it here instead, so it cannot go on to swallow the next focus the user gives.
+    // the page, or one that refuses the focus without failing the call - inert, or hidden) clears it here
+    // instead, so it cannot go on to swallow the next focus the user gives.
     private async Task RestoreFocusToTrigger()
     {
         _suppressOpenOnFocus = true;
@@ -2288,7 +2289,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         var focused = false;
         try
         {
-            focused = await TriggerElement.TryFocusAsync() is FocusAttempt.Focused;
+            focused = await TriggerElement.TryFocusConfirmedAsync(_js) is FocusAttempt.Focused;
         }
         finally
         {
@@ -2905,7 +2906,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // Each input is emptied on its own, so one that cannot be reached does not leave the other one
         // holding the stale text: in responsive mode the inline input is detached while the panel is open.
-        await ClearInputValue(_comboBoxInputRef);
+        // A circuit that is gone reaches neither, so the second one is not tried over it.
+        if (await ClearInputValue(_comboBoxInputRef) is false) return;
 
         // The responsive panel has an input of its own, and it only exists while the panel is on the
         // screen. Its reference is assigned a render later than the flag, so a clear that lands in between
@@ -2916,15 +2918,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
-    private async ValueTask ClearInputValue(ElementReference input)
+    // False once the circuit is gone, so the caller stops making calls that can only fail the same way.
+    private async ValueTask<bool> ClearInputValue(ElementReference input)
     {
         try
         {
             await _js.BitUtilsSetProperty(input, "value", string.Empty);
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSDisconnectedException) { return false; } // the circuit is gone, and the input with it
         catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no value to clear
         catch (JSException) { } // the input is no longer in the document, failing to clear it is not fatal
+
+        return true;
     }
 
     private async ValueTask FocusOnComboBoxInput()

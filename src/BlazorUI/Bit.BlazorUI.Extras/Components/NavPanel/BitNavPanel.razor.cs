@@ -846,10 +846,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private async Task FocusOnOpen()
     {
         // A search box that cannot take the focus (no longer in the document, or not rendered yet) hands it
-        // on to the drawer; a circuit that is gone ends the moves here, since none of the rest can happen.
+        // on to the drawer, but never on to a nav item: the search box is where AutoFocus puts the keyboard,
+        // so a docked panel leaves the focus where it was rather than landing it on the first item.
         if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is { } searchBox)
         {
-            if (await FocusSafely.TryAsync(searchBox.FocusAsync) is not FocusAttempt.Missed) return;
+            if (await FocusSafely.TryAsync(searchBox.FocusAsync) is FocusAttempt.Missed && _IsTrappingDrawer)
+            {
+                await RootElement.FocusSafelyAsync(preventScroll: true);
+            }
+
+            return;
         }
 
         if (_IsTrappingDrawer && await RootElement.TryFocusAsync(preventScroll: true) is FocusAttempt.Disconnected) return;

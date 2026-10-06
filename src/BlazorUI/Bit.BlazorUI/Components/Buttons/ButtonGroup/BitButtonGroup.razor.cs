@@ -451,15 +451,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         var item = GetActiveItem();
         if (item is null) return;
 
-        if (_itemElements.TryGetValue(item, out var element) is false || element.Context is null) return;
+        if (_itemElements.TryGetValue(item, out var element) is false) return;
 
-        // Only the circuit going away is ignored: a caller asking for the focus is told when a button that
-        // is there could not take it, the way the public FocusAsync of every other component tells it.
+        // A caller asking for the focus is told when a button that is there could not take it. The circuit
+        // going away is the one failure this method has always swallowed, so it keeps doing so.
         try
         {
-            await element.FocusAsync();
+            await element.FocusIfRenderedAsync();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSDisconnectedException) { } // the circuit is gone, and the group with it
     }
 
 
