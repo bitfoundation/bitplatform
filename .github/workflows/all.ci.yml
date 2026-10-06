@@ -67,6 +67,10 @@ on:
         description: Website solutions
         type: boolean
         default: true
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (the Boilerplate, BlazorEmpty and website jobs)
+        type: boolean
+        default: false
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -74,6 +78,7 @@ env:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
 
@@ -81,6 +86,8 @@ jobs:
     name: boilerplate
     if: ${{ inputs.boilerplate }}
     uses: ./.github/workflows/bit.ci.Templates.yml
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
 
 
 
@@ -99,6 +106,12 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
@@ -179,6 +192,12 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
@@ -258,6 +277,12 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
@@ -336,6 +361,12 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
@@ -397,6 +428,12 @@ jobs:
 
     - name: Install wasm
       run: cd src && dotnet workload install wasm-tools
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: .
 
     - name: Prepare BlazorEmpty template
       run: |
@@ -641,3 +678,5 @@ jobs:
     name: websites
     if: ${{ inputs.websites }}
     uses: ./.github/workflows/bit.ci.Websites.yml
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}

@@ -515,7 +515,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-browsers --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-browsers --no-format --no-migration --no-trust -p:CodesignRequireProvisioningProfile=false -p:ValidateEntitlements=warn
   
     - name: Translate .resx files
       run: |

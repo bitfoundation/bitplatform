@@ -27,7 +27,7 @@ on:
         type: boolean
         default: true
       prerelease_packages:
-        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo and the platform website)
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, and the platform and sales websites)
         type: boolean
         default: false
 
@@ -50,6 +50,8 @@ jobs:
     if: inputs.server
     uses: ./.github/workflows/sales.website.cd.yml
     secrets: inherit
+    with:
+      prerelease_packages: ${{ inputs.prerelease_packages }}
 
   bmotion_demo:
     name: bmotion demo
