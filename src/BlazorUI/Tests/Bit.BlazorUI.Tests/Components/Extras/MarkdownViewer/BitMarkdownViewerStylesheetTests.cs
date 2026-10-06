@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitMarkdownViewerStylesheetTests
     [TestMethod]
     public void BitMarkdownViewerShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-MarkdownViewer-* variable is declared, which stops it inheriting.");
     }
@@ -71,9 +69,9 @@ public partial class BitMarkdownViewerStylesheetTests
         StringAssert.Contains(stylesheet, "@include own('*:not(.bit-mdv, .bit-mdv-alert-icon, .bit-mdv-alert-icon *)') {\n        all: revert;");
 
         // A bare descendant rule would reach into a template and restyle the components drawn there.
-        Assert.IsFalse(Regex.IsMatch(RulesOf(stylesheet), @"^\s+(\*|a|p|pre|code|table|h[1-6]|ul|ol|li)\s*[,{]", RegexOptions.Multiline),
+        Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"^\s+(\*|a|p|pre|code|table|h[1-6]|ul|ol|li)\s*[,{]", RegexOptions.Multiline),
                        "An element is styled with a bare descendant rule, which reaches a template's output.");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-mdv {"), ".bit-mdv-tpl {\n        display: contents;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mdv {"), ".bit-mdv-tpl {\n        display: contents;");
     }
 
     [TestMethod]
@@ -91,7 +89,7 @@ public partial class BitMarkdownViewerStylesheetTests
     public void BitMarkdownViewerShouldKeepWhatBackgroundsTellApartInForcedColors()
     {
         var stylesheet = ReadStylesheet();
-        var forced = Block(stylesheet, "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "outline: $shp-border-width solid transparent;");
         StringAssert.Contains(forced, "background-color: Mark;");
@@ -109,47 +107,14 @@ public partial class BitMarkdownViewerStylesheetTests
         Assert.AreEqual(5, Regex.Matches(stylesheet, @"&:focus-visible \{\n\s+@include focus-ring;").Count);
     }
 
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsGreaterThanOrEqualTo(0, start, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what is not a comment is searched.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "MarkdownViewer", "BitMarkdownViewer.scss");
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        return Read(thisFile, "Bit.BlazorUI.Extras", "Components", "MarkdownViewer", "BitMarkdownViewer.scss");
-    }
-
-    private static string ReadDemo([CallerFilePath] string thisFile = "")
-    {
-        return Read(thisFile, "Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "MarkdownViewer", "BitMarkdownViewerDemo.razor.cs");
-    }
-
-    private static string Read(string thisFile, params string[] relative)
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. relative]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadDemo() => SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "MarkdownViewer", "BitMarkdownViewerDemo.razor.cs");
 
     [GeneratedRegex(@"^//\s+(--bit-MarkdownViewer-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

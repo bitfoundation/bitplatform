@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,9 +22,11 @@ public partial class BitFlagStylesheetTests
 
         Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
 
+        var body = SourceFiles.StripScssComments(stylesheet);
+
         foreach (var name in documented)
         {
-            StringAssert.Contains(RulesOf(stylesheet), $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            StringAssert.Contains(body, $"var({name}, ", $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -35,7 +36,7 @@ public partial class BitFlagStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var documented = DocumentedVariables(stylesheet);
-        var read = ReadVariable().Matches(RulesOf(stylesheet)).Select(m => m.Groups[1].Value).Distinct().ToArray();
+        var read = ReadVariable().Matches(SourceFiles.StripScssComments(stylesheet)).Select(m => m.Groups[1].Value).Distinct().ToArray();
 
         CollectionAssert.IsSubsetOf(read, documented);
     }
@@ -43,13 +44,13 @@ public partial class BitFlagStylesheetTests
     [TestMethod]
     public void BitFlagShouldNeverDeclareAPublicVariable()
     {
-        Assert.IsFalse(DeclaredVariable().IsMatch(RulesOf(ReadStylesheet())), "A public --bit-Flag-* variable is declared, which stops it inheriting.");
+        Assert.IsFalse(DeclaredVariable().IsMatch(SourceFiles.StripScssComments(ReadStylesheet())), "A public --bit-Flag-* variable is declared, which stops it inheriting.");
     }
 
     [TestMethod]
     public void BitFlagShouldDocumentEveryPublicVariableOnTheDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "Flag", "BitFlagDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "Flag", "BitFlagDemo.razor.cs");
 
         var onTheDemoPage = Regex.Matches(demo, @"Name = ""(--bit-Flag-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -71,7 +72,7 @@ public partial class BitFlagStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(RuleOf(stylesheet, selector), $"var({variable}, ");
-        Assert.AreEqual(1, Regex.Matches(RulesOf(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
+        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
     }
 
     [TestMethod]
@@ -104,8 +105,7 @@ public partial class BitFlagStylesheetTests
         // to the mixin as a layer to keep: a focused raised flag keeps its shadow under the ring.
         var stylesheet = ReadStylesheet();
 
-        var focus = stylesheet[stylesheet.IndexOf("&:focus-visible {", System.StringComparison.Ordinal)..];
-        focus = focus[..focus.IndexOf("\n    }", System.StringComparison.Ordinal)];
+        var focus = SourceFiles.GetScssBlock(stylesheet, "&:focus-visible {");
 
         StringAssert.Contains(focus, "@include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));");
         Assert.IsFalse(focus.Contains("outline:"), "The focus ring is drawn by hand rather than with the shared mixin.");
@@ -113,7 +113,7 @@ public partial class BitFlagStylesheetTests
         StringAssert.Contains(RuleOf(stylesheet, ".bit-flg"), "--bit-flg-elv: 0 0 #0000;");
         StringAssert.Contains(RuleOf(stylesheet, ".bit-flg-shd"), "--bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});\n    box-shadow: var(--bit-flg-elv);");
 
-        StringAssert.Contains(ReadFile("theme-styles", "functions.scss"),
+        StringAssert.Contains(SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss"),
 "@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset, $also: null) {");
     }
 
@@ -146,32 +146,12 @@ public partial class BitFlagStylesheetTests
     // The block of a top-level rule, from its selector to the brace that closes it.
     private static string RuleOf(string stylesheet, string selector)
     {
-        var start = stylesheet.IndexOf($"\n{selector} {{", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector} has no rule of its own.");
-
-        return stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
-    }
-
-    // The header comment is where the variables are documented, so only what is not a comment is searched.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
+        return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
     private static string ReadStylesheet()
     {
-        return ReadFile("Bit.BlazorUI.Extras", "Components", "Flag", "BitFlag.scss");
-    }
-
-    // The path is relative to the BlazorUI folder; the test project copies each file it reads to the same path under
-    // the output directory.
-    private static string ReadFile(params string[] segments)
-    {
-        var path = Path.Combine([System.AppContext.BaseDirectory, .. segments]);
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
+        return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Flag", "BitFlag.scss");
     }
 
     [GeneratedRegex(@"^//\s+(--bit-Flag-[a-z-]+)\s", RegexOptions.Multiline)]

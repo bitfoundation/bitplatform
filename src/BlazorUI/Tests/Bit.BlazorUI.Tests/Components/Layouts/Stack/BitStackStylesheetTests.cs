@@ -1,5 +1,3 @@
-using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,7 +21,7 @@ public class BitStackStylesheetTests : BunitTestContext
 
         // Declared on the root class of every stack, so a nested stack resolves the public variable against its own
         // ancestors rather than inheriting the value its parent resolved to.
-        var root = GetBlock(ReadStylesheet(), "\n.bit-stc {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-stc {");
 
         StringAssert.Contains(root, "--bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});");
     }
@@ -78,7 +76,7 @@ public class BitStackStylesheetTests : BunitTestContext
         StringAssert.Contains(stacks[0].GetAttribute("style")!, "--bit-stc-ai:center");
         Assert.IsFalse(stacks[1].GetAttribute("style")!.Contains("--bit-stc-ai"));
 
-        var rsp = GetBlock(ReadStylesheet(), "\n.bit-stc-rsp {");
+        var rsp = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-stc-rsp {");
 
         StringAssert.Contains(rsp, "--bit-stc-ai: initial;");
         StringAssert.Contains(rsp, "--bit-stc-jc: initial;");
@@ -110,23 +108,5 @@ public class BitStackStylesheetTests : BunitTestContext
         Assert.IsTrue(rule.IsMatch(ReadStylesheet()), "A [hidden] stack is not hidden by an important display:none.");
     }
 
-    private static string GetBlock(string stylesheet, string selector)
-    {
-        var start = stylesheet.IndexOf(selector, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Layouts", "Stack", "BitStack.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Layouts", "Stack", "BitStack.scss");
 }

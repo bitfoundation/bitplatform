@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,7 +28,7 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldReadEveryPublicVariableWithoutDeclaringIt()
     {
-        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+        var stylesheet = SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-Shimmer-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
@@ -46,7 +44,7 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldListEveryPublicVariableOnItsDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Progress", "Shimmer", "BitShimmerDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Progress", "Shimmer", "BitShimmerDemo.razor.cs");
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Shimmer-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -56,7 +54,7 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldLetAParameterWinOverItsPublicVariable()
     {
-        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+        var stylesheet = SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
 
         // The parameters publish the private properties inline, so they are read first and the variable only
         // restyles what the shimmer did not set.
@@ -78,26 +76,14 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldResetTheInheritedSizingOnEveryNestedShimmer()
     {
-        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+        var stylesheet = SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
 
-        var root = stylesheet[stylesheet.IndexOf("\n.bit-smr {", System.StringComparison.Ordinal)..];
-        root = root[..root.IndexOf("\n}", System.StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-smr {");
 
         // A Template is built out of shimmers of its own, which must not inherit the corner of the outer shape.
         foreach (var property in new[] { "--bit-smr-hgt", "--bit-smr-gap", "--bit-smr-llw", "--bit-smr-rad", "--bit-smr-shp", "--bit-smr-dly", "--bit-smr-lnh", "--bit-smr-crs", "--bit-smr-bg-clr", "--bit-smr-wrp-bg" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
-    }
-
-    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
-
-    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
     }
 }

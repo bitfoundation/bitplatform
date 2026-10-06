@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +20,7 @@ public class BitElementStylesheetTests
     [TestMethod]
     public void BitElementShouldReadEveryPublicVariableWithAFallbackAndNeverDeclareIt()
     {
-        var stylesheet = StripComments(ReadStylesheet());
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         foreach (var variable in PublicVariables)
         {
@@ -39,7 +37,7 @@ public class BitElementStylesheetTests
     public void BitElementShouldDocumentEveryPublicVariableOnTheDemoPage()
     {
         // The demo page's CSS variables table is the only source of these names the site and the MCP server have.
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "Element", "BitElementDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "Element", "BitElementDemo.razor.cs");
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-Element-[A-Za-z0-9_-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -59,31 +57,14 @@ public class BitElementStylesheetTests
     [TestMethod]
     public void BitElementShouldPaintADisabledElementInGrayTextUnderForcedColors()
     {
-        var stylesheet = StripComments(ReadStylesheet());
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         // Forced colors paint only the form elements the browser disables itself in GrayText.
         StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*\.bit-elm\.bit-dis \{\s*color: GrayText;"));
     }
 
-    private static string StripComments(string stylesheet)
-    {
-        return Regex.Replace(stylesheet, @"//[^\n]*", string.Empty);
-    }
-
     private static string ReadStylesheet()
     {
-        return ReadFile("Bit.BlazorUI", "Components", "Utilities", "Element", "BitElement.scss");
+        return SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Element", "BitElement.scss");
     }
-
-    // The path is relative to the BlazorUI folder this test file sits five levels under.
-    private static string ReadFile(params string[] segments)
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(GetThisFile())!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
-
-    private static string GetThisFile([CallerFilePath] string thisFile = "") => thisFile;
 }

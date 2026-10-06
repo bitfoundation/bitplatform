@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,12 +39,7 @@ public class BitScrollablePaneStylesheetTests
     [TestMethod]
     public void BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet()
     {
-        var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("&:focus-visible {\n        @include focus-ring;", System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, "The focus ring is not the default one of the library.");
-
-        var ring = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+        var ring = SourceFiles.GetScssBlock(ReadStylesheet(), "&:focus-visible {\n        @include focus-ring;", "The focus ring is not the default one of the library.");
 
         // An unset focus color leaves --bit-scp-fcr invalid, which is what makes box-shadow fall back to the global
         // composite - so an app that re-shapes --bit-shd-focus-ring re-shapes this ring too.
@@ -75,8 +68,7 @@ public class BitScrollablePaneStylesheetTests
     public void BitScrollablePaneShouldResolveThePublicVariablesOnTheRoot()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("\n.bit-scp {", System.StringComparison.Ordinal);
-        var root = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-scp {");
 
         // The private names are what the rest of the file reads - and what a pane styled before the public names
         // existed still sets - so they are declared once, on the root, from the public ones.
@@ -98,13 +90,11 @@ public class BitScrollablePaneStylesheetTests
         // from all of them; the forced colors rules are an override that follows the rendering instead.
         Assert.IsFalse(stylesheet.Contains("not all and (forced-colors", System.StringComparison.Ordinal), "The Modern rendering is behind a negated forced-colors query.");
 
-        var media = stylesheet.IndexOf("@media (forced-colors: active) {\n    .bit-scp-mod,", System.StringComparison.Ordinal);
+        var opening = "@media (forced-colors: active) {\n    .bit-scp-mod,";
+        var forced = SourceFiles.GetScssBlock(stylesheet, opening, "The Modern rendering has no forced-colors override.");
 
-        Assert.IsTrue(media >= 0, "The Modern rendering has no forced-colors override.");
-        Assert.IsTrue(media > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
+        Assert.IsTrue(stylesheet.IndexOf(opening, System.StringComparison.Ordinal) > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
                       "The forced-colors override does not come after the rendering it overrides.");
-
-        var forced = stylesheet[media..stylesheet.IndexOf("\n}", media, System.StringComparison.Ordinal)];
 
         // The idle state is matched at its own specificity, so an auto hiding bar is repainted and never hidden.
         StringAssert.Contains(forced, ".bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {");
@@ -153,16 +143,6 @@ public class BitScrollablePaneStylesheetTests
         StringAssert.Contains(print, ".bit-scp-eop {\n        height: auto !important;\n        max-height: none !important;\n        overflow: visible !important;");
     }
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Surfaces", "ScrollablePane", "BitScrollablePane.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        var text = File.ReadAllText(path).Replace("\r\n", "\n");
-
-        // The header documents the variables in comments; only the rules are what the browser reads.
-        return Regex.Replace(text, @"^\s*//.*$", string.Empty, RegexOptions.Multiline);
-    }
+    // The header documents the variables in comments; only the rules are what the browser reads.
+    private static string ReadStylesheet() => SourceFiles.StripScssComments(SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "ScrollablePane", "BitScrollablePane.scss"));
 }
