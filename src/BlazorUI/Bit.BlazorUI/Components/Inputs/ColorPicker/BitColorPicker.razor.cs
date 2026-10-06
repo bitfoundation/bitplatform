@@ -1334,12 +1334,7 @@ public partial class BitColorPicker : BitComponentBase
 
         StateHasChanged();
 
-        try
-        {
-            await _presetRefs[target].FocusSafelyAsync();
-        }
-        catch (ObjectDisposedException) { }
-        catch (OperationCanceledException) { }
+        await _presetRefs[target].FocusSafelyAsync();
     }
 
     private async Task HandleOnPresetClick(string preset)

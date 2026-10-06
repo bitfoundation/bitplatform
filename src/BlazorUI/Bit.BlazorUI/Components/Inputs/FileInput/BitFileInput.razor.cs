@@ -691,10 +691,10 @@ public partial class BitFileInput : BitComponentBase
         {
             var target = _files[Math.Min(index, _files.Count - 1)];
 
-            if (_removeRefs.TryGetValue(target.FileId, out var removeRef))
+            // only a remove button that could not take the focus hands it on to the label.
+            if (_removeRefs.TryGetValue(target.FileId, out var removeRef) &&
+                await removeRef.TryFocusAsync() is not FocusAttempt.Missed)
             {
-                await removeRef.FocusSafelyAsync();
-
                 return;
             }
         }

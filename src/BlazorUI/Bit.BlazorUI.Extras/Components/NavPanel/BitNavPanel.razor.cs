@@ -786,17 +786,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
         // The search box only exists once the panel has left its toggled state, so the focus is moved in the
         // render that brought it back rather than after a guessed delay.
-        if (_focusSearchBoxPending && _searchBoxRef is not null)
+        if (_focusSearchBoxPending && _searchBoxRef is { } searchBox)
         {
             _focusSearchBoxPending = false;
 
-            try
-            {
-                await _searchBoxRef.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
-            catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+            await FocusSafely.RunAsync(searchBox.FocusAsync);
         }
 
         // The panel that has just become an open drawer takes the focus with it, so the keyboard lands in the
@@ -851,22 +845,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // to be holding it already whatever happens next.
     private async Task FocusOnOpen()
     {
-        if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
+        // A search box that cannot take the focus (no longer in the document, or not rendered yet) hands it
+        // on to the drawer; a circuit that is gone ends the moves here, since none of the rest can happen.
+        if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is { } searchBox)
         {
-            try
-            {
-                await _searchBoxRef.FocusAsync();
-                return;
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-            catch (JSException) { } // the element is no longer in the document, so the drawer takes the focus instead
-            catch (InvalidOperationException) { } // the element has not been rendered yet, so the drawer takes the focus instead
+            if (await FocusSafely.TryAsync(searchBox.FocusAsync) is not FocusAttempt.Missed) return;
         }
 
-        if (_IsTrappingDrawer && RootElement.Context is not null)
-        {
-            await RootElement.FocusSafelyAsync(preventScroll: true);
-        }
+        if (_IsTrappingDrawer && await RootElement.TryFocusAsync(preventScroll: true) is FocusAttempt.Disconnected) return;
 
         if (AutoFocus && _bitNavRef is not null && _filteredNavItems.Count > 0)
         {

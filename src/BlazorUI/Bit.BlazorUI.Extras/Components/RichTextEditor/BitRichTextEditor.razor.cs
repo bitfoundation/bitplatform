@@ -247,7 +247,7 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         if (_inSourceView) return _sourceRef.FocusSafelyAsync();
 
-        return _js.BitRichTextEditorFocus(_editorRef);
+        return FocusSafely.RunAsync(() => _js.BitRichTextEditorFocus(_editorRef));
     }
 
     /// <summary>

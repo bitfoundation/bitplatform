@@ -446,14 +446,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// It does nothing while the group holds no focusable button at all (an empty group, or one disabled without
     /// <see cref="DisabledInteractive"/>), so a focus call is never answered with an exception.
     /// </remarks>
-    public ValueTask FocusAsync()
+    public async ValueTask FocusAsync()
     {
         var item = GetActiveItem();
-        if (item is null) return ValueTask.CompletedTask;
+        if (item is null) return;
 
-        if (_itemElements.TryGetValue(item, out var element) is false) return ValueTask.CompletedTask;
+        if (_itemElements.TryGetValue(item, out var element) is false || element.Context is null) return;
 
-        return element.FocusSafelyAsync();
+        // Only the circuit going away is ignored: a caller asking for the focus is told when a button that
+        // is there could not take it, the way the public FocusAsync of every other component tells it.
+        try
+        {
+            await element.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
 

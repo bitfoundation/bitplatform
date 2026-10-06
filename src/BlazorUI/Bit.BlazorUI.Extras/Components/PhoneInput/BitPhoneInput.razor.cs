@@ -2113,17 +2113,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         // The number is what the user came to type, so the focus lands there instead of being
         // dropped on the document body along with the callout the click happened in.
-        try
-        {
-            await InputElement.FocusAsync();
+        if (await InputElement.TryFocusAsync() is not FocusAttempt.Focused) return;
 
-            // The input is part of the field, so the ring the closing callout dropped is put back on
-            // with the focus itself instead of a render later, once the focusin finds its way back.
-            SetHasFocus(true);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element might not be ready/visible yet
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        // The input is part of the field, so the ring the closing callout dropped is put back on
+        // with the focus itself instead of a render later, once the focusin finds its way back.
+        SetHasFocus(true);
     }
 
     private async Task ClearNumber()
@@ -2253,17 +2247,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (NoDropdown) return;
 
-        try
-        {
-            await _dropdownButtonRef.FocusAsync();
+        if (await _dropdownButtonRef.TryFocusAsync() is not FocusAttempt.Focused) return;
 
-            // The button is part of the field, so the ring the closing callout dropped is put back on
-            // with the focus itself instead of a render later, once the focusin finds its way back.
-            SetHasFocus(true);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element might not be ready/visible yet
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        // The button is part of the field, so the ring the closing callout dropped is put back on
+        // with the focus itself instead of a render later, once the focusin finds its way back.
+        SetHasFocus(true);
     }
 
     // The focus ring is on while the focus is in the field, and stays on while the callout has taken

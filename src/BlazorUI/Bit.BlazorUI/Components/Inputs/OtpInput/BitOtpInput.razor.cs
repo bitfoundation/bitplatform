@@ -501,12 +501,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         // The whole code was taken out of the inputs at once, wherever the caret happened to be, so the
         // typing carries on at the start of an empty code rather than in the middle of one.
-        try
-        {
-            await FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+        await FocusSafely.RunAsync(FocusAsync);
     }
 
 

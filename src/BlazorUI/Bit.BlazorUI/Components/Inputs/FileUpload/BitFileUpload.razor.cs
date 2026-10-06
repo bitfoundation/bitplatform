@@ -1505,9 +1505,9 @@ public partial class BitFileUpload : BitComponentBase
 
         // the item the action was taken on comes first: it is still there whenever the action left it in
         // place, and the focus then belongs on the button that took over from the one that was pressed.
-        if (fileId is not null && _itemRefs.TryGetValue(fileId, out var item) && await item.TryFocus(target)) return;
+        if (fileId is not null && _itemRefs.TryGetValue(fileId, out var item) && await item.TryFocus(target) is not FocusAttempt.Missed) return;
 
-        if (fallbackId is not null && _itemRefs.TryGetValue(fallbackId, out var neighbor) && await neighbor.TryFocus(target)) return;
+        if (fallbackId is not null && _itemRefs.TryGetValue(fallbackId, out var neighbor) && await neighbor.TryFocus(target) is not FocusAttempt.Missed) return;
 
         if (_ShowLabelButton && IsEnabled)
         {

@@ -989,7 +989,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Gives focus to the combo input element. It does nothing outside of the ComboBox mode, which is
     /// what <see cref="ComboInputElement"/> reports.
     /// </summary>
-    public ValueTask FocusComboInputAsync() => Combo ? FocusTrigger() : ValueTask.CompletedTask;
+    public ValueTask FocusComboInputAsync() => Combo ? TriggerElement.FocusAsync() : ValueTask.CompletedTask;
 
     /// <inheritdoc/>
     /// <remarks>
@@ -997,7 +997,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// which is where the keyboard lands and what carries the combobox role; the field around it is
     /// out of the tab order there, so focusing it would leave the caret nowhere.
     /// </remarks>
-    public override ValueTask FocusAsync() => Combo ? FocusTrigger() : base.FocusAsync();
+    public override ValueTask FocusAsync() => Combo ? TriggerElement.FocusAsync() : base.FocusAsync();
 
     /// <inheritdoc cref="FocusAsync()"/>
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
@@ -1005,7 +1005,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (Combo is false) return base.FocusAsync(preventScroll);
 
-        return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync(preventScroll);
+        return TriggerElement.FocusAsync(preventScroll);
     }
 
     /// <summary>
@@ -2270,14 +2270,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // Where the focus belongs once the callout gives it up: the ComboBox input is the editable part of
     // the trigger, so it takes the focus in place of the trigger element itself. The responsive panel
     // has an input of its own, but it goes away with the panel, so it only takes the focus while the
-    // panel is actually on the screen.
+    // panel is actually on the screen. The public focus methods are told when the focus could not be
+    // moved; the component's own moves (AutoFocus, a label click, dismissing the callout) go through
+    // FocusSafelyAsync instead.
     private ElementReference TriggerElement => Combo is false
                                                 ? InputElement
                                                 : IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef;
-
-    // The public focus methods are told when the focus could not be moved; the component's own moves
-    // (AutoFocus, a label click, dismissing the callout) go through FocusSafelyAsync instead.
-    private ValueTask FocusTrigger() => TriggerElement.FocusAsync();
 
     // Moves the focus back to the trigger after the component itself dismissed whatever had it, without
     // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
@@ -2290,7 +2288,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         var focused = false;
         try
         {
-            focused = await TriggerElement.TryFocusAsync();
+            focused = await TriggerElement.TryFocusAsync() is FocusAttempt.Focused;
         }
         finally
         {

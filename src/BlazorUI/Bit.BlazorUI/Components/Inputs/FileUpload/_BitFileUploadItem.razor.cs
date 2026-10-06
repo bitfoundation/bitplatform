@@ -57,10 +57,10 @@ public partial class _BitFileUploadItem : ComponentBase, IDisposable
     // started, for instance, leaves an item with a retry button where the pause button was expected. The
     // remove button comes last of the fallbacks, so the focus never lands on the destructive action of an
     // item while that item still has something else to offer.
-    internal async Task<bool> TryFocus(BitFileUploadFocusTarget target)
+    internal async Task<FocusAttempt> TryFocus(BitFileUploadFocusTarget target)
     {
         // every button of a disabled component is disabled too, and none of them can take the focus.
-        if (FileUpload.IsEnabled is false) return false;
+        if (FileUpload.IsEnabled is false) return FocusAttempt.Missed;
 
         BitFileUploadFocusTarget[] order =
         [
@@ -83,10 +83,12 @@ public partial class _BitFileUploadItem : ComponentBase, IDisposable
 
             if (rendered is false) continue;
 
-            if (await element.TryFocusAsync()) return true;
+            // a disconnected circuit ends the search too: no other button can take the focus either.
+            var attempt = await element.TryFocusAsync();
+            if (attempt is not FocusAttempt.Missed) return attempt;
         }
 
-        return false;
+        return FocusAttempt.Missed;
     }
 
     private static int GetFileUploadPercent(BitFileInfo file)

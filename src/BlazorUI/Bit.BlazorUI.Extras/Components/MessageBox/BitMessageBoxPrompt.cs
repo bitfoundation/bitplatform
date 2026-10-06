@@ -219,17 +219,11 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusPending is false || _field is null || State.Validating) return;
+        if (_focusPending is false || _field is not { } field || State.Validating) return;
 
         _focusPending = false;
 
-        try
-        {
-            await _field.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
-        catch (InvalidOperationException) { } // the element has not been rendered yet, so there is nothing to focus
+        await FocusSafely.RunAsync(field.FocusAsync);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
