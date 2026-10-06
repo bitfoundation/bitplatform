@@ -572,19 +572,6 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void TheObsoleteDirectionParameterStillSetsDir()
-    {
-        // Markup written against the earlier name must keep rendering instead of failing to bind.
-#pragma warning disable CS0618
-        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Direction, BitDir.Rtl));
-#pragma warning restore CS0618
-
-        var root = component.Find(".bit-dtg");
-        Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        Assert.AreEqual(BitDir.Rtl, component.Instance.Dir);
-    }
-
-    [TestMethod]
     public void AggregateByComputesCustomFooterValue()
     {
         RenderFragment columns = builder =>

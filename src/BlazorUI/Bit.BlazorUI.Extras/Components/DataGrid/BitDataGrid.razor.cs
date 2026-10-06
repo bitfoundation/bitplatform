@@ -178,19 +178,6 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     [Parameter] public bool ShowFooter { get; set; }
 
     /// <summary>
-    /// The text direction of the grid. Superseded by <see cref="BitComponentBase.Dir"/>, which it sets;
-    /// kept so markup written against the earlier name keeps rendering instead of failing to bind.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    [Obsolete("Use Dir instead.")]
-    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-    public BitDir Direction
-    {
-        get => Dir ?? BitDir.Ltr;
-        set => Dir = value;
-    }
-
-    /// <summary>
     /// The params object a <see cref="BitParams"/> ancestor shares with every BitDataGrid below it, whose values apply
     /// wherever the grid does not set the parameter itself.
     /// </summary>

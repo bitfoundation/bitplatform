@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -31,8 +30,6 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <see cref="LabelTemplate"/> gives the component one, so the same wait is never announced twice.
     /// </remarks>
     internal const string DefaultLoadingText = "Loading";
-
-    private const string ObsoleteGeometryMessage = "The loaders are drawn in CSS units now: write an offset as calc(N * var(--bit-ldn-unit)), an 80th of the size, instead of rescaling it in C#.";
 
     /// <summary>
     /// Whether the component is still inside its <see cref="Delay"/> window, and therefore holds its content
@@ -620,38 +617,6 @@ public abstract class BitLoadingBase : BitComponentBase
         StyleBuilder.Register(() => Speed > 0 ? $"--bit-ldn-spd:{Speed.Value.ToString(CultureInfo.InvariantCulture)}" : null);
 
         StyleBuilder.Register(() => Styles?.Root);
-    }
-
-    /// <summary>
-    /// The size, in pixels, the drawing of this loader was authored at.
-    /// </summary>
-    [Obsolete(ObsoleteGeometryMessage)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    protected virtual int OriginalSize => 80;
-
-    /// <summary>
-    /// Rescales one of the drawing's authored offsets, measured against <see cref="OriginalSize"/>, to the pixel
-    /// size <see cref="Size"/> or <see cref="CustomSize"/> gives, and formats it for a CSS custom property.
-    /// </summary>
-    /// <remarks>
-    /// Kept for loaders derived outside this library. It cannot follow a size set in CSS - the --bit-Loading-size
-    /// variable, or the 1em of an unsized inline loader - which a calc() against --bit-ldn-unit does.
-    /// </remarks>
-    [Obsolete(ObsoleteGeometryMessage)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    protected string Convert(double value)
-    {
-        var size = Size switch
-        {
-            BitSize.Small => 40,
-            BitSize.Medium => 64,
-            BitSize.Large => 88,
-            _ => CustomSize > 0 ? CustomSize.Value : 64
-        };
-
-#pragma warning disable CS0618 // The obsolete pair is kept together.
-        return Math.Round(value * size / OriginalSize, 4).ToString(CultureInfo.InvariantCulture);
-#pragma warning restore CS0618
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

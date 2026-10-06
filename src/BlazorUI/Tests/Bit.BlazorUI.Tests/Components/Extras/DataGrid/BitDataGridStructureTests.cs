@@ -180,14 +180,12 @@ public class BitDataGridStructureTests : BunitTestContext
     }
 
     [TestMethod]
-    public void TheObsoleteDirectionStillSwitchesTheGridsDirectionAfterTheFirstRender()
+    public void DirStillSwitchesTheGridsDirectionAfterTheFirstRender()
     {
-#pragma warning disable CS0618 // Direction is the obsolete spelling of Dir, kept working for existing markup.
-        var component = RenderGrid(configure: p => p.Add(x => x.Direction, BitDir.Ltr));
+        var component = RenderGrid(configure: p => p.Add(x => x.Dir, BitDir.Ltr));
         Assert.IsFalse(component.Find(".bit-dtg").ClassList.Contains("bit-dtg-rtl"));
 
-        component.Render(p => p.Add(x => x.Direction, BitDir.Rtl));
-#pragma warning restore CS0618
+        component.Render(p => p.Add(x => x.Dir, BitDir.Rtl));
         Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-rtl"));
         Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-dtg-rtl"));
     }
