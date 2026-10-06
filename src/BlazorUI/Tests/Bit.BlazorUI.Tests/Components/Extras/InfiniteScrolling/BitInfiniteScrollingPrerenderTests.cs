@@ -131,6 +131,24 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitInfiniteScrollingShouldNotShowTheLoadingStateBeforeItsObserverFiresWhenNotPrerendered()
+    {
+        var requests = new List<BitInfiniteScrollingItemsProviderRequest>();
+
+        // An interactive list whose sentinel is not in view yet (a list below the fold): its observer has not asked
+        // for anything, so there is nothing to show as loading.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, CountingProvider(requests));
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.PageSize, 10);
+        });
+
+        Assert.AreEqual(0, requests.Count);
+        Assert.AreEqual(0, component.FindAll(".bit-isc-ldg").Count);
+    }
+
+    [TestMethod]
     public void BitInfiniteScrollingShouldNotLoadThePreloadedPageAgainOnceInteractive()
     {
         var requests = new List<BitInfiniteScrollingItemsProviderRequest>();

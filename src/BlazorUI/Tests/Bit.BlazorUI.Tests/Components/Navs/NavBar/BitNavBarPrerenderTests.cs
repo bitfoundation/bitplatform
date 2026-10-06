@@ -99,6 +99,24 @@ public class BitNavBarPrerenderTests
         Assert.AreEqual(0, raised);
     }
 
+    [TestMethod]
+    public async Task BitNavBarShouldNotRaiseOnSelectItemOfTheItemsApiBeforeInteractivity()
+    {
+        var raised = 0;
+        var html = await Prerenderer.RenderAsync<BitNavBar<BitNavBarItem>>(new Dictionary<string, object?>
+        {
+            [nameof(BitNavBar<BitNavBarItem>.Items)] = new List<BitNavBarItem>
+            {
+                new() { Text = "Home", Url = "/" },
+                new() { Text = "Profile", Url = "/profile" },
+            },
+            [nameof(BitNavBar<BitNavBarItem>.OnSelectItem)] = EventCallback.Factory.Create<BitNavBarItem>(new object(), _ => raised++),
+        }, services => services.AddSingleton<NavigationManager>(new TestNavigationManager("/profile")));
+
+        AssertSelected(new HtmlParser().ParseDocument(html), "Profile");
+        Assert.AreEqual(0, raised);
+    }
+
 
 
     private static void AssertSelected(IDocument document, string text)

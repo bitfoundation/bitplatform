@@ -309,7 +309,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (Mode == BitNavMode.Automatic)
         {
-            await SetSelectedItemByCurrentUrl();
+            await SetSelectedItemByCurrentUrl(isPrerender: _js.IsRuntimeInvalid());
         }
         else
         {
@@ -809,8 +809,10 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // Only a navigation can re-select the item that is already selected (a Reselectable navbar reports the
     // destination the reader went back to): every other match - the one of the first render, the ones after
     // the items or the matching rules changed - is the navbar re-checking where it already is, and reporting
-    // that as a selection would fire OnSelectItem for nothing the reader did.
-    private async Task SetSelectedItemByCurrentUrl(bool isNavigation = false)
+    // that as a selection would fire OnSelectItem for nothing the reader did. A prerender selects without the
+    // callback altogether: it is only drawing the page, and the interactive render that replaces it reports the
+    // selection itself, where a handler is free to call JavaScript or navigate.
+    private async Task SetSelectedItemByCurrentUrl(bool isNavigation = false, bool isPrerender = false)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
@@ -819,7 +821,27 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (isNavigation is false && IsSelected(currentItem)) return;
 
-        await SetSelectedItem(currentItem);
+        if (isPrerender)
+        {
+            await AssignPrerenderedSelection(currentItem);
+        }
+        else
+        {
+            await SetSelectedItem(currentItem);
+        }
+    }
+
+    private async Task AssignPrerenderedSelection(TItem? item)
+    {
+        // A SelectedKey bound one way holds the selection, as it does in SetSelectedItem.
+        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
+        if (await AssignSelectedItem(item) is false) return;
+
+        await SyncSelectedKey();
+
+        RefreshOptions();
+        StateHasChanged();
     }
 
     // Whether an item points at the page the app currently sits on (see BitNavCurrentUrlMatcher).
@@ -844,19 +866,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             if (IsCurrentUrlItem(item) is false) return;
 
-            var currentItem = _items.FirstOrDefault(IsCurrentUrlItem);
-
-            if (IsSelected(currentItem)) return;
-
-            // A SelectedKey bound one way holds the selection, as it does in SetSelectedItem.
-            if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
-
-            if (await AssignSelectedItem(currentItem) is false) return;
-
-            await SyncSelectedKey();
-
-            RefreshOptions();
-            StateHasChanged();
+            await SetSelectedItemByCurrentUrl(isPrerender: true);
             return;
         }
 

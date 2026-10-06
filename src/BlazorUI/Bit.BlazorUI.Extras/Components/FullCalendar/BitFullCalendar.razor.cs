@@ -222,7 +222,8 @@ public partial class BitFullCalendar
     /// callback receives the inclusive start and end dates of the new range together with the active view.
     /// A prerendered or statically rendered calendar has no first render in the browser, so there the first
     /// range is raised as the calendar initializes, and awaited, so the events fetched for it are in the HTML
-    /// sent before the page is interactive; a handler calling JavaScript there is let fail quietly, and the
+    /// sent before the page is interactive; a handler failing there (calling JavaScript, fetching a URL meant for
+    /// the browser) is let fail quietly, and the
     /// interactive render that replaces a prerendered calendar raises it again, as it initializes anew.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarDateChangeEventArgs> OnDateChange { get; set; }
@@ -576,10 +577,13 @@ public partial class BitFullCalendar
             {
                 await RaiseInitialDateChangeAsync();
             }
-            catch (InvalidOperationException ex) when (ex.Message.StartsWith("JavaScript interop calls cannot be issued", StringComparison.Ordinal))
+            catch (Exception)
             {
-                // A handler that calls JavaScript cannot do so before the page is interactive; the interactive
-                // render that replaces this one is a calendar of its own, which reports the range again.
+                // The handler was written for the browser, and the server is not one: it cannot call JavaScript
+                // before the page is interactive, and its HttpClient (when it has one) cannot resolve a URL meant
+                // for the browser. Whatever it fails on is no reason to fail the page, which renders the calendar
+                // without those events; the interactive render that replaces this one is a calendar of its own,
+                // which reports the range again.
             }
         }
 

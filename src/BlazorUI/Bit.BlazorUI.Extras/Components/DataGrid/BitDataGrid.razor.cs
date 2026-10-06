@@ -1321,14 +1321,25 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         catch (OperationCanceledException) when (read.CancellationToken.IsCancellationRequested)
         {
             // Superseded by a newer request, which owns the loading state.
+            if (version == _loadVersion) _serverHeadLoading = false;
             return;
         }
-        finally
+        catch (Exception) when (JS.IsRuntimeInvalid())
+        {
+            // Before the page is interactive this read runs on the server, where an OnRead written for the browser
+            // (a relative URL against an HttpClient with no BaseAddress) commonly fails - a read Virtualize alone
+            // never made there. The placeholders stay up and Virtualize's own first request, made in the browser
+            // once it has measured, reads the window again; a failure there is the grid's own and is reported.
+            return;
+        }
+        catch
         {
             if (version == _loadVersion) _serverHeadLoading = false;
+            throw;
         }
         if (version != _loadVersion) return;
 
+        _serverHeadLoading = false;
         _serverHead = result;
         _serverVirtualizeEmpty = result.TotalCount == 0;
         CommitServerWindow(result, 0);

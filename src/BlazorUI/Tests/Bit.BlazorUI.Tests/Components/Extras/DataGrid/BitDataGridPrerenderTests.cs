@@ -123,6 +123,23 @@ public class BitDataGridPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitDataGridShouldPrerenderPlaceholdersWhenTheServerVirtualizedReadFails()
+    {
+        // An OnRead written for the browser (a relative URL against a server HttpClient with no BaseAddress) fails
+        // on the server; the page still renders, with placeholders for Virtualize's own read in the browser.
+        var html = await Prerenderer.RenderAsync<BitDataGrid<TestRow>>(new Dictionary<string, object?>
+        {
+            [nameof(BitDataGrid<TestRow>.Virtualize)] = true,
+            [nameof(BitDataGrid<TestRow>.OnRead)] = (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(_ =>
+                throw new InvalidOperationException("An invalid request URI was provided.")),
+            [nameof(BitDataGrid<TestRow>.ChildContent)] = Columns(),
+        });
+
+        Assert.AreEqual(0, RenderedRowCount(html));
+        StringAssert.Contains(html, "bit-dtg-placeholder-row");
+    }
+
+    [TestMethod]
     public void BitDataGridShouldHandVirtualizeTheServerRowsItAlreadyRead()
     {
         // Fewer rows than the window read ahead at this RowHeight, so that window already holds every row Virtualize

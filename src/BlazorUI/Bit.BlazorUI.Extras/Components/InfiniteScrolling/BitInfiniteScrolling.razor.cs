@@ -33,6 +33,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     private bool _retrying;
     private int? _totalCount;
     private bool _initialized;
+    private bool _awaitsTakeOver;
     private int _loadVersion;
     private object? _resetKey;
     private bool _resetKeyRead;
@@ -68,10 +69,12 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
     // The first page is fetched once the list is interactive (by the observer, or by the first render of the manual
     // mode), which a prerender or a static SSR page never gets to, and Preload is the one opt-in for fetching it on the
-    // server. Until it is under way the list is shown as loading it, rather than as a blank box that flashes into the
-    // loading state as soon as the page turns interactive.
-    private bool _awaitsFirstLoad => _initialized is false && _isLoading is false && _error is null && _items.Count == 0
-                                     && IsEnabled && ItemsProvider is not null;
+    // server. Until it is under way such a list is shown as loading it, rather than as a blank box that flashes into
+    // the loading state as soon as the page turns interactive - and so is the interactive render that replaces it, so
+    // nothing on screen changes. A list that was never prerendered is left as it was: its observer may well not fire
+    // yet (a list below the fold), and a loader shown until it does would announce a load that is not happening.
+    private bool _awaitsFirstLoad => _awaitsTakeOver && _initialized is false && _isLoading is false && _error is null
+                                     && _items.Count == 0 && IsEnabled && ItemsProvider is not null;
 
     private bool _showLoading => _isLoading || _awaitsFirstLoad;
 
@@ -106,6 +109,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
 
@@ -653,6 +658,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         _itemsProvider = ItemsProvider;
+
+        _awaitsTakeOver = BitPrerender.IsHandOver(_services, _js);
 
         if (Preload)
         {

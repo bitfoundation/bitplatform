@@ -52,4 +52,20 @@ public class BitMapPrerenderTests
 
         Assert.IsNull(document.QuerySelector(".bit-map-status"));
     }
+
+    [TestMethod]
+    public async Task BitMapShouldNotPrerenderALoadingStateForALazyMap()
+    {
+        // A lazy map stays idle until it scrolls into view, possibly for good: announcing a load all that time would
+        // tell assistive technology about one that is not happening.
+        var html = await Prerenderer.RenderAsync<BitMap<BitLeafletMapProvider>>(new Dictionary<string, object?>
+        {
+            [nameof(BitMap<BitLeafletMapProvider>.LazyLoad)] = true,
+        });
+
+        var document = new HtmlParser().ParseDocument(html);
+
+        Assert.IsNull(document.QuerySelector(".bit-map-status"));
+        Assert.IsNull(document.QuerySelector(".bit-map-canvas")!.GetAttribute("aria-busy"));
+    }
 }

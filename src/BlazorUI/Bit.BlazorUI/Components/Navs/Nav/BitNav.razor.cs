@@ -348,7 +348,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         if (Mode == BitNavMode.Automatic)
         {
-            SetSelectedItemByCurrentUrl();
+            SetSelectedItemByCurrentUrl(isPrerender: _js.IsRuntimeInvalid());
         }
         else
         {

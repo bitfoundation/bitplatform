@@ -53,6 +53,16 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitFullCalendarShouldPrerenderWhenTheRangeHandlerFails()
+    {
+        // A fetch meant for the browser (a relative URL against a server HttpClient with no BaseAddress) fails on
+        // the server; the page still renders, and the interactive render reports the range again.
+        var html = await Prerenderer.RenderAsync<FailingHost>();
+
+        StringAssert.Contains(html, "bit-bfc");
+    }
+
+    [TestMethod]
     public void BitFullCalendarShouldRaiseTheInitialRangeOnceWhenInteractive()
     {
         var host = RenderComponent<RangeLoadingHost>(parameters => parameters.Add(p => p.View, BitFullCalendarView.Week));
@@ -100,6 +110,28 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
         private async Task HighlightRangeAsync(BitFullCalendarDateChangeEventArgs range)
         {
             await Js.InvokeVoidAsync("highlightRange", range.Start, range.End);
+        }
+    }
+
+    /// <summary>
+    /// An app page whose range handler fetches a URL only the browser can resolve.
+    /// </summary>
+    private sealed class FailingHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitFullCalendar>(0);
+            builder.AddComponentParameter(1, nameof(BitFullCalendar.CultureName), "en-US");
+            builder.AddComponentParameter(2, nameof(BitFullCalendar.DefaultDate), Anchor);
+            builder.AddComponentParameter(3, nameof(BitFullCalendar.OnDateChange), EventCallback.Factory.Create<BitFullCalendarDateChangeEventArgs>(this, FetchRangeAsync));
+            builder.CloseComponent();
+        }
+
+        private async Task FetchRangeAsync(BitFullCalendarDateChangeEventArgs range)
+        {
+            await Task.Yield();
+
+            throw new InvalidOperationException("An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.");
         }
     }
 

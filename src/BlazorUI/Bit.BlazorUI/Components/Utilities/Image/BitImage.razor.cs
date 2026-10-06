@@ -702,7 +702,6 @@ public partial class BitImage : BitComponentBase
         StyleBuilder.Register(() => AspectRatio.HasValue() ? $"aspect-ratio:{AspectRatio}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitImageParams))]
     protected override void OnInitialized()
     {
         _awaitsTakeOver = BitPrerender.IsHandOver(_services, _js);
@@ -710,6 +709,7 @@ public partial class BitImage : BitComponentBase
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitImageParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);

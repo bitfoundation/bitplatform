@@ -95,6 +95,29 @@ public class BitNavPrerenderTests
         Assert.AreEqual("Products", selected[0].QuerySelector(".bit-nav-itx")!.TextContent.Trim());
     }
 
+    [TestMethod]
+    public async Task BitNavShouldNotRaiseOnSelectItemOfTheItemsApiBeforeInteractivity()
+    {
+        // A prerender only draws the selection: the interactive render that replaces it reports it, where a handler
+        // is free to call JavaScript or navigate.
+        var raised = 0;
+        var html = await Prerenderer.RenderAsync<BitNav<BitNavItem>>(new Dictionary<string, object?>
+        {
+            [nameof(BitNav<BitNavItem>.Items)] = new List<BitNavItem>
+            {
+                new() { Text = "Home", Url = "/" },
+                new() { Text = "Products", Url = "/products" },
+            },
+            [nameof(BitNav<BitNavItem>.OnSelectItem)] = EventCallback.Factory.Create<BitNavItem>(new object(), _ => raised++),
+        }, services => services.AddSingleton<NavigationManager>(new TestNavigationManager("/products")));
+
+        var selected = new HtmlParser().ParseDocument(html).QuerySelectorAll(".bit-nav-sel");
+
+        Assert.AreEqual(1, selected.Length);
+        Assert.AreEqual("Products", selected[0].QuerySelector(".bit-nav-itx")!.TextContent.Trim());
+        Assert.AreEqual(0, raised);
+    }
+
 
 
     private static async Task<IDocument> Prerender(string url, params RenderFragment[] options)
