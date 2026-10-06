@@ -3,6 +3,10 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
+/// <summary>
+/// Asks Windows (WinVerifyTrust) whether a file's Authenticode signature checks out, and returns who signed it if it does,
+/// so the About page can show who signed the app people run.
+/// </summary>
 public static class WindowsCodeSignature
 {
     private static readonly Guid verifyAction = new("00AAC56B-CD44-11d0-8CC2-00C04FC295EE");

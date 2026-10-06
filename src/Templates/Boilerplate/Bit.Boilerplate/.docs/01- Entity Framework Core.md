@@ -323,8 +323,6 @@ dnx dotnet-ef@10.0.12 -- migrations add <MigrationName> --output-dir Infrastruct
 
 If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
 
-**Important:** A development database that an older version of this project created with `EnsureCreatedAsync()` has no migrations history, so `MigrateAsync()` can't update it: delete it once and let the app create it again.
-
 ---
 <!--#if (offlineDb == true)-->
 ## 5. Client-Side Offline Database

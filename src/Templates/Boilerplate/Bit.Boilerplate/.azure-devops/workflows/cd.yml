@@ -35,11 +35,16 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --no-browsers -p:Configuration=Release -p:Version="$(APP_VERSION)" --yes
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --no-browsers -p:Configuration=Release -p:Version="$(APP_VERSION)" --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.Cli --prerelease -- translate
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -127,11 +132,16 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --platforms windows --no-browsers --yes
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --platforms windows --no-browsers --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
-      dnx Bit.Cli --prerelease -- translate
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -170,6 +180,9 @@ jobs:
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: |
+        # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+        # VS Code and others before the Azure CLI. On an agent they only cost time or could sign in as someone else, so only
+        # this task's az login is left.
         @{ Endpoint = '$(CODE_SIGNING_ENDPOINT)'; CodeSigningAccountName = '$(CODE_SIGNING_ACCOUNT)'; CertificateProfileName = '$(CODE_SIGNING_CERTIFICATE_PROFILE)'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content '$(Agent.TempDirectory)/code-signing.json'
         $env:VPK_AZURE_TRUSTED_SIGN_FILE = '$(Agent.TempDirectory)/code-signing.json'
         cd src/Client/Boilerplate.Client.Windows
@@ -195,7 +208,12 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - script: dnx Bit.Cli --prerelease -- setup --platforms android --no-browsers --yes
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
+
+  - script: bit setup --platforms android --no-browsers --yes
     displayName: 'Prepare this machine with bit setup'
 
   - task: DownloadSecureFile@1
@@ -210,7 +228,7 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dnx Bit.Cli --prerelease -- translate
+      bit translate
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)

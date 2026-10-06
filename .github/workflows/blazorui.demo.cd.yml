@@ -192,6 +192,10 @@ jobs:
         tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
         subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
 
+    # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+    # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
+    # the az login above is left.
+    # '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls gain nothing from a signature.
     - name: Sign the executables with Artifact Signing
       if: vars.CODE_SIGNING_ACCOUNT != ''
       run: |

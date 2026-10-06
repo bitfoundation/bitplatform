@@ -180,6 +180,7 @@ jobs:
     - name: dotnet pack BlazorEmpty
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
 
+    # Copies every package into one folder and unzips their dlls, so the bit ones can be signed, attested and listed in the SBOM.
     - name: Collect the packages and their bit assemblies
       run: |
         mkdir -p "$RUNNER_TEMP/packages" "$RUNNER_TEMP/assemblies"
@@ -196,6 +197,8 @@ jobs:
         tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
         subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
 
+    # Signs the bit dlls with Azure Artifact Signing (Jsign, since this runs on Linux) and puts them back into their packages,
+    # before those are attested and pushed. Skipped until the CODE_SIGNING_ACCOUNT variable is set.
     - name: Sign the bit assemblies
       if: vars.CODE_SIGNING_ACCOUNT != ''
       run: |
@@ -221,6 +224,7 @@ jobs:
           ${{ runner.temp }}/assemblies/**/Bit.*.dll
           ${{ runner.temp }}/assemblies/**/bit.dll
 
+    # An SPDX list of everything inside the packages, attested below. The tool targets .NET 8, hence --allow-roll-forward.
     - name: Generate the packages' SBOM
       run: dnx Microsoft.Sbom.DotNetTool@4.1.13 --yes --allow-roll-forward -- generate -b "$RUNNER_TEMP/packages" -bc src -pn "bit platform" -pv "$(grep -oP '(?<=<ReleaseVersion>)[^<]+' src/Bit.Build.props)" -ps "bit foundation" -nsb https://github.com/bitfoundation/bitplatform -V Warning
 

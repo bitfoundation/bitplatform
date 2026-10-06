@@ -113,6 +113,7 @@
     -->
     <Target Name="BeforeBuildTasks" />
 
+    <!-- When the CD sets ShowBuildProvenance, the About page shows the GitHub Actions run, the commit and the attestations. -->
     <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true' AND '$(ShowBuildProvenance)' == 'true'">
         <AssemblyMetadata Include="SourceRepositoryUrl" Value="$(GITHUB_SERVER_URL)/$(GITHUB_REPOSITORY)" />
         <AssemblyMetadata Include="SourceCommit" Value="$(GITHUB_SHA)" />
