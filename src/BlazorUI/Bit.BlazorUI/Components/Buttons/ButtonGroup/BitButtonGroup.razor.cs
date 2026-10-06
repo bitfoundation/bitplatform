@@ -433,7 +433,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // to render.
         _autoFocusDone = true;
 
-        await element.FocusSafelyAsync();
+        await FocusElement(element);
     }
 
 
@@ -446,20 +446,29 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// It does nothing while the group holds no focusable button at all (an empty group, or one disabled without
     /// <see cref="DisabledInteractive"/>), so a focus call is never answered with an exception.
     /// </remarks>
-    public async ValueTask FocusAsync()
+    public ValueTask FocusAsync()
     {
         var item = GetActiveItem();
-        if (item is null) return;
+        if (item is null) return ValueTask.CompletedTask;
 
-        if (_itemElements.TryGetValue(item, out var element) is false) return;
+        if (_itemElements.TryGetValue(item, out var element) is false) return ValueTask.CompletedTask;
 
-        // A caller asking for the focus is told when a button that is there could not take it. The circuit
-        // going away is the one failure this method has always swallowed, so it keeps doing so.
+        return FocusElement(element);
+    }
+
+    // An element reference left behind by a render that has not happened yet, or by one whose markup has since
+    // been removed, throws instead of doing nothing when it is focused. Awaited rather than handed back, since
+    // the call itself only starts the interop: a disconnected circuit throws when the task completes.
+    private static async ValueTask FocusElement(ElementReference element)
+    {
+        if (element.Context is null) return;
+
         try
         {
-            await element.FocusIfRenderedAsync();
+            await element.FocusAsync();
         }
-        catch (JSDisconnectedException) { } // the circuit is gone, and the group with it
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
 
@@ -921,7 +930,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (_itemElements.TryGetValue(item, out var element))
         {
-            await element.FocusSafelyAsync();
+            await FocusElement(element);
         }
 
         if (_SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)

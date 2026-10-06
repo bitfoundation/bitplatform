@@ -374,48 +374,48 @@ public partial class BitColorPicker : BitComponentBase
     /// instead, so a palette picker is focused the same way. A disabled picker is not in the tab order and is
     /// left alone; a read-only one is, and takes the focus like any other.
     /// </remarks>
-    public ValueTask FocusAsync() => IsEnabled && FirstFocusTarget() is { } target ? target.FocusAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusAsync() => IsEnabled ? FocusFirstAsync() : ValueTask.CompletedTask;
 
     /// <summary>
-    /// The first control the picker actually renders, in the order they are rendered in.
+    /// Moves the focus to the first control the picker actually renders, in the order they are rendered in.
     /// Every part above the text fields is optional, so the area a picker is normally focused at is not
-    /// always there to be focused. Null when the picker renders nothing that can take the focus.
+    /// always there to be focused.
     /// </summary>
-    private ElementReference? FirstFocusTarget()
+    private ValueTask FocusFirstAsync()
     {
-        if (ShowSaturationArea) return _saturationPickerRef;
+        if (ShowSaturationArea) return _saturationPickerRef.FocusAsync();
 
         // Everything below carries the native disabled attribute on a picker with nowhere to report a change
         // to, and a disabled element cannot take the focus. The inputs mode switch is the exception: it moves
         // which numbers the color is read as rather than the color, so it is enabled wherever the picker is.
         if (_IsInputDisabled is false)
         {
-            if (ShowHueSlider) return _hueInputRef;
+            if (ShowHueSlider) return _hueInputRef.FocusAsync();
 
-            if (ShowAlphaSlider) return _alphaSliderRef;
+            if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync();
 
-            if (_ShowEyeDropper) return _eyeDropperRef;
+            if (_ShowEyeDropper) return _eyeDropperRef.FocusAsync();
 
             if (ShowInputs)
             {
                 // The alpha field is not a case of its own: it is only rendered beside the alpha slider,
                 // which would have taken the focus above.
-                if (_ShowHexField) return _hexInputRef;
+                if (_ShowHexField) return _hexInputRef.FocusAsync();
 
-                if (_ChannelFields.Length > 0) return _channelInputRefs[0];
+                if (_ChannelFields.Length > 0) return _channelInputRefs[0].FocusAsync();
             }
         }
 
-        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef;
+        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef.FocusAsync();
 
         // The palette is the last part of the panel, and it is entered at the swatch the picker is already
         // on - the same one a Tab would land on.
         if (_IsInputDisabled is false && _presetRefs.Length > 0)
         {
-            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)];
+            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync();
         }
 
-        return null;
+        return ValueTask.CompletedTask;
     }
 
 
@@ -602,10 +602,7 @@ public partial class BitColorPicker : BitComponentBase
                 // a picker rendered into a page that is already up has to ask for the focus itself.
                 if (AutoFocus && IsEnabled)
                 {
-                    if (FirstFocusTarget() is { } target)
-                    {
-                        await target.FocusSafelyAsync();
-                    }
+                    await FocusFirstAsync();
                 }
             }
 

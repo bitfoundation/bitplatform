@@ -2646,8 +2646,6 @@ public class BitDropdownTests : BunitTestContext
     public void BitDropdownOpenOnFocusShouldOpenTheCalloutButNotReopenAfterADismissal()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        // The browser confirms that the trigger took the focus it was handed back.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isActiveElement", _ => true).SetResult(true);
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
@@ -2667,32 +2665,6 @@ public class BitDropdownTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
 
         // The suppression only stands for that one internal move; the next focus is the user again.
-        component.Find(".bit-drp-wrp").FocusIn();
-        Assert.IsTrue(component.Instance.IsOpen);
-    }
-
-    [TestMethod]
-    public void BitDropdownOpenOnFocusShouldOpenWhenTheTriggerRefusedTheRestoredFocus()
-    {
-        // A trigger that refuses the focus (inert, or hidden by a collapsed container) does not make the
-        // focus call fail, but produces no focus event either: the suppression it armed is dropped, so the
-        // next focus - the user coming in - still opens the callout.
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isActiveElement", _ => true).SetResult(false);
-
-        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
-        {
-            parameters.Add(p => p.Items, GetShortDropdownItems());
-            parameters.Add(p => p.OpenOnFocus, true);
-        });
-
-        component.Find(".bit-drp-wrp").FocusIn();
-        Assert.IsTrue(component.Instance.IsOpen);
-
-        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
-
         component.Find(".bit-drp-wrp").FocusIn();
         Assert.IsTrue(component.Instance.IsOpen);
     }

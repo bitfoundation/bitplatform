@@ -744,19 +744,25 @@ public partial class BitPagination : BitComponentBase
         // left behind by an earlier render point at markup that has since been removed.
         if (_IsHidden) return ValueTask.CompletedTask;
 
-        // A control that was never rendered (the whole pagination hidden by HideOnSinglePage, or a first render
-        // that has not happened yet) leaves an empty reference behind, which is skipped rather than failed.
-        if (ShowPageButtons && _pageRefs.TryGetValue(_SelectedPage, out var pageRef)) return pageRef.FocusIfRenderedAsync();
+        if (ShowPageButtons && _pageRefs.TryGetValue(_SelectedPage, out var pageRef)) return Focus(pageRef);
 
-        if (ShowFirstButton) return _firstButtonRef.FocusIfRenderedAsync();
+        if (ShowFirstButton) return Focus(_firstButtonRef);
 
-        if (ShowPreviousButton) return _previousButtonRef.FocusIfRenderedAsync();
+        if (ShowPreviousButton) return Focus(_previousButtonRef);
 
-        if (ShowNextButton) return _nextButtonRef.FocusIfRenderedAsync();
+        if (ShowNextButton) return Focus(_nextButtonRef);
 
-        if (ShowLastButton) return _lastButtonRef.FocusIfRenderedAsync();
+        if (ShowLastButton) return Focus(_lastButtonRef);
 
         return ValueTask.CompletedTask;
+    }
+
+    // A control that was never rendered (the whole pagination hidden by HideOnSinglePage, or a first render
+    // that has not happened yet) leaves an empty reference behind, which throws instead of doing nothing when
+    // it is focused.
+    private static ValueTask Focus(ElementReference element)
+    {
+        return element.Context is null ? ValueTask.CompletedTask : element.FocusAsync();
     }
 
 

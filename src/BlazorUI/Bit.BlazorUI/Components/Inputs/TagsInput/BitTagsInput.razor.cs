@@ -1214,7 +1214,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
             if (AutoFocus && IsEnabled)
             {
-                await InputElement.FocusSafelyAsync();
+                await InputElement.FocusAsync();
             }
         }
 
@@ -1247,24 +1247,21 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _pendingFocusInput = false;
         _pendingFocusTagIndex = -1;
 
-        // The focus moves themselves tolerate an element that is gone or JS that is unavailable, so only the
-        // selection set inside the edit input is guarded here; the focus simply stays where it is.
-        if (focusEdit)
+        try
         {
-            // The little input needs the very same Enter and IME handling as the main one: without
-            // it, confirming a correction inside an EditForm submits the form, and the Enter that
-            // picks a candidate out of an input method window commits the tag half way through a word.
-            try
+            if (focusEdit)
             {
-                await _js.BitTagsInputSetup(_editInputRef, isEdit: true);
-            }
-            catch { }
+                // The little input needs the very same Enter and IME handling as the main one: without
+                // it, confirming a correction inside an EditForm submits the form, and the Enter that
+                // picks a candidate out of an input method window commits the tag half way through a word.
+                try
+                {
+                    await _js.BitTagsInputSetup(_editInputRef, isEdit: true);
+                }
+                catch { }
 
-            // An input that could not take the focus has no selection worth setting either.
-            if (await _editInputRef.TryFocusAsync() is not FocusAttempt.Focused) return;
+                await _editInputRef.FocusAsync();
 
-            try
-            {
                 if (selectEdit)
                 {
                     // The whole text is selected so that the correction can simply be typed over, which is
@@ -1279,18 +1276,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                     await _js.BitUtilsSetProperty(_editInputRef, "selectionStart", _editText.Length);
                 }
             }
-            catch (JSDisconnectedException) { } // the circuit is gone, and the input with it
-            catch (OperationCanceledException) { } // the interop call timed out or was cancelled
-            catch (JSException) { } // the input left the document after it took the focus
+            else if (focusInput)
+            {
+                await InputElement.FocusAsync();
+            }
+            else if (focusTagIndex >= 0 && focusTagIndex < _tagRefs.Length)
+            {
+                await _tagRefs[focusTagIndex].FocusAsync();
+            }
         }
-        else if (focusInput)
-        {
-            await InputElement.FocusSafelyAsync();
-        }
-        else if (focusTagIndex >= 0 && focusTagIndex < _tagRefs.Length)
-        {
-            await _tagRefs[focusTagIndex].FocusSafelyAsync();
-        }
+        catch { } // the element is gone or JS is unavailable; the focus simply stays where it is.
     }
 
     protected override bool TryParseValueFromString(string? value, out ICollection<string>? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -2202,7 +2197,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // meanwhile returned to.
         PutTagBack();
 
-        await InputElement.FocusSafelyAsync();
+        await InputElement.FocusAsync();
     }
 
     private async Task HandleOnFocusIn(FocusEventArgs e)

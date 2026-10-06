@@ -219,11 +219,11 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusPending is false || _field is not { } field || State.Validating) return;
+        if (_focusPending is false || _field is null || State.Validating) return;
 
         _focusPending = false;
 
-        await FocusSafely.RunAsync(field.FocusAsync);
+        await _field.FocusAsync();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

@@ -1019,22 +1019,19 @@ public partial class BitDialog : BitComponentBase
             _ => (ElementReference?)null
         };
 
-        // A button that cannot take the focus after all (it has left the document, or was never rendered)
-        // falls back like one that is not shown, so the focus still ends up inside the Dialog.
-        if (target.HasValue)
-        {
-            var attempt = await target.Value.TryFocusAsync();
-            if (attempt is not FocusAttempt.Missed) return;
-        }
-
-        // Only the circuit going away is ignored here: the JS side already copes with a selector that
-        // matches nothing, so a JSException from it means the bit Utils script is missing or stale, which
-        // is a misconfiguration to surface rather than a Dialog that silently opens without the focus.
         try
         {
-            await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector);
+            if (target.HasValue)
+            {
+                await target.Value.FocusAsync();
+            }
+            else
+            {
+                await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task SetupFocusTrap()

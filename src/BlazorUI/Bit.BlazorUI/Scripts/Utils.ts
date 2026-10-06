@@ -428,22 +428,6 @@
             }
         }
 
-        // True when the given element holds the focus. focus() does not throw for an element that refuses
-        // it (inert, hidden by a collapsed container, disabled), it only leaves the focus where it was, so
-        // a caller acting on the move having happened asks here. An element inside a shadow root is the
-        // active element of that root, not of the document.
-        public static isActiveElement(element: HTMLElement) {
-            try {
-                if (!element) return false;
-
-                const root = element.getRootNode() as Document | ShadowRoot;
-                return (root.activeElement ?? document.activeElement) === element;
-            } catch (e) {
-                console.error("BitBlazorUI.Utils.isActiveElement:", e);
-                return false;
-            }
-        }
-
         // True when the reader has asked for less motion ('prefers-reduced-motion: reduce') and the given
         // element has not been opted back into it: an element inside a subtree marked with bit-fam (which is
         // what BitComponentBase.ForceAnimation renders) keeps its motion, the same way the stylesheets

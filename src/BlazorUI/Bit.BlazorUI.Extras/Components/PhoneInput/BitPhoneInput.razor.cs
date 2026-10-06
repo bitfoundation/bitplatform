@@ -1238,14 +1238,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // a callout opened through the IsOpen parameter would otherwise leave the keys nowhere to go.
             if (IsOpen && NoDropdown is false)
             {
-                if (NoSearchBox)
+                try
                 {
-                    await _dropdownButtonRef.FocusSafelyAsync();
+                    if (NoSearchBox)
+                    {
+                        await _dropdownButtonRef.FocusAsync();
+                    }
+                    else
+                    {
+                        await _searchInputRef.FocusAsync();
+                    }
                 }
-                else
-                {
-                    await _searchInputRef.FocusSafelyAsync();
-                }
+                catch (JSException) { } // the element might not be ready/visible yet
             }
 
             // The active option was decided after the render that got here, so what names it - the
@@ -2113,13 +2117,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         // The number is what the user came to type, so the focus lands there instead of being
         // dropped on the document body along with the callout the click happened in.
-        if (await InputElement.TryFocusConfirmedAsync(_js) is not FocusAttempt.Focused) return;
+        try
+        {
+            await InputElement.FocusAsync();
 
-        // The input is part of the field, so the ring the closing callout dropped is put back on
-        // with the focus itself instead of a render later, once the focusin finds its way back.
-        // Only once the browser confirms the input holds the focus: one that refuses it (inert, or
-        // hidden by a collapsed container) does not make the focus call fail.
-        SetHasFocus(true);
+            // The input is part of the field, so the ring the closing callout dropped is put back on
+            // with the focus itself instead of a render later, once the focusin finds its way back.
+            SetHasFocus(true);
+        }
+        catch (JSException) { } // the element might not be ready/visible yet
     }
 
     private async Task ClearNumber()
@@ -2153,7 +2159,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         await ClearNumber();
 
-        await InputElement.FocusSafelyAsync();
+        try
+        {
+            await InputElement.FocusAsync();
+        }
+        catch (JSException) { } // the element might not be ready/visible yet
     }
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
@@ -2249,12 +2259,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (NoDropdown) return;
 
-        if (await _dropdownButtonRef.TryFocusConfirmedAsync(_js) is not FocusAttempt.Focused) return;
+        try
+        {
+            await _dropdownButtonRef.FocusAsync();
 
-        // The button is part of the field, so the ring the closing callout dropped is put back on
-        // with the focus itself instead of a render later, once the focusin finds its way back.
-        // Only once the browser confirms the button holds the focus, the same way as the input.
-        SetHasFocus(true);
+            // The button is part of the field, so the ring the closing callout dropped is put back on
+            // with the focus itself instead of a render later, once the focusin finds its way back.
+            SetHasFocus(true);
+        }
+        catch (JSException) { } // the element might not be ready/visible yet
     }
 
     // The focus ring is on while the focus is in the field, and stays on while the callout has taken

@@ -786,11 +786,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
         // The search box only exists once the panel has left its toggled state, so the focus is moved in the
         // render that brought it back rather than after a guessed delay.
-        if (_focusSearchBoxPending && _searchBoxRef is { } searchBox)
+        if (_focusSearchBoxPending && _searchBoxRef is not null)
         {
             _focusSearchBoxPending = false;
 
-            await FocusSafely.RunAsync(searchBox.FocusAsync);
+            await _searchBoxRef.FocusAsync();
         }
 
         // The panel that has just become an open drawer takes the focus with it, so the keyboard lands in the
@@ -845,20 +845,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // to be holding it already whatever happens next.
     private async Task FocusOnOpen()
     {
-        // A search box that cannot take the focus (no longer in the document, or not rendered yet) hands it
-        // on to the drawer, but never on to a nav item: the search box is where AutoFocus puts the keyboard,
-        // so a docked panel leaves the focus where it was rather than landing it on the first item.
-        if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is { } searchBox)
+        if (AutoFocus && NoSearchBox is false && _IsToggled is false && _searchBoxRef is not null)
         {
-            if (await FocusSafely.TryAsync(searchBox.FocusAsync) is FocusAttempt.Missed && _IsTrappingDrawer)
-            {
-                await RootElement.FocusSafelyAsync(preventScroll: true);
-            }
-
+            await _searchBoxRef.FocusAsync();
             return;
         }
 
-        if (_IsTrappingDrawer && await RootElement.TryFocusAsync(preventScroll: true) is FocusAttempt.Disconnected) return;
+        if (_IsTrappingDrawer && RootElement.Context is not null)
+        {
+            await RootElement.FocusAsync(preventScroll: true);
+        }
 
         if (AutoFocus && _bitNavRef is not null && _filteredNavItems.Count > 0)
         {

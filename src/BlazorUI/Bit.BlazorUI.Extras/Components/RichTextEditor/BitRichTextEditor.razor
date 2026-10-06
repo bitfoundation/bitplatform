@@ -15,7 +15,7 @@
         <div id="@LabelId"
              class="bit-rte-lbl@(Required ? " bit-rte-req" : null) @Classes?.Label"
              style="@Styles?.Label"
-             @onclick="() => FocusEditor().AsTask()">@Label</div>
+             @onclick="() => FocusAsync().AsTask()">@Label</div>
     }
 
     @if (ShowToolbar)

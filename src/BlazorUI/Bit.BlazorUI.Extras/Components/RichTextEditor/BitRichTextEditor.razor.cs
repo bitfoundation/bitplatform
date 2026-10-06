@@ -241,11 +241,6 @@ public partial class BitRichTextEditor : BitComponentBase
         await _js.BitRichTextEditorFocus(_editorRef);
     }
 
-    // The editor moving the focus on its own behalf (AutoFocus, a click on the label), where an element that
-    // is no longer in the document only leaves the focus where it is; FocusAsync reports that to its caller.
-    // It goes through FocusAsync itself, so which surface takes the focus is decided in one place.
-    private ValueTask FocusEditor() => FocusSafely.RunAsync(FocusAsync);
-
     /// <summary>
     /// Returns the current HTML content of the editor.
     /// </summary>
@@ -794,7 +789,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
             if (AutoFocus)
             {
-                await FocusEditor();
+                await FocusAsync();
             }
         }
 

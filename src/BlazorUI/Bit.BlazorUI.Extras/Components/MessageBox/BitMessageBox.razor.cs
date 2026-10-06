@@ -513,7 +513,7 @@ public partial class BitMessageBox : BitComponentBase
     {
         if (firstRender && AutoFocus)
         {
-            await FocusSafely.RunAsync(FocusAsync);
+            await FocusAsync();
         }
 
         await base.OnAfterRenderAsync(firstRender);

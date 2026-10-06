@@ -686,23 +686,28 @@ public partial class BitFileInput : BitComponentBase
 
         _focusAfterRemoveIndex = null;
 
-        if (ShowRemoveButton && IsEnabled && HideFileList is false &&
-            FileViewTemplate is null && _files.Count > 0)
+        try
         {
-            var target = _files[Math.Min(index, _files.Count - 1)];
-
-            // only a remove button that could not take the focus hands it on to the label.
-            if (_removeRefs.TryGetValue(target.FileId, out var removeRef) &&
-                await removeRef.TryFocusAsync() is not FocusAttempt.Missed)
+            if (ShowRemoveButton && IsEnabled && HideFileList is false &&
+                FileViewTemplate is null && _files.Count > 0)
             {
-                return;
+                var target = _files[Math.Min(index, _files.Count - 1)];
+
+                if (_removeRefs.TryGetValue(target.FileId, out var removeRef))
+                {
+                    await removeRef.FocusAsync();
+
+                    return;
+                }
+            }
+
+            if (LabelTemplate is null && HideLabel is false && IsEnabled)
+            {
+                await _labelRef.FocusAsync();
             }
         }
-
-        if (LabelTemplate is null && HideLabel is false && IsEnabled)
-        {
-            await _labelRef.FocusSafelyAsync();
-        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element may already be gone, which is not worth failing a render over
     }
 
     // the name without its extension, which is the part the file list is allowed to ellipsize.

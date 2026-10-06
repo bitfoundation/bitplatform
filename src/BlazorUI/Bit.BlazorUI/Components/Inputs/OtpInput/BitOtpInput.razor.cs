@@ -501,7 +501,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         // The whole code was taken out of the inputs at once, wherever the caret happened to be, so the
         // typing carries on at the start of an empty code rather than in the middle of one.
-        await FocusSafely.RunAsync(FocusAsync);
+        await FocusAsync();
     }
 
 

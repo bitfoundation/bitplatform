@@ -90,12 +90,6 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<bool> BitUtilsIsActiveElement(this IJSRuntime jsRuntime, ElementReference element)
-    {
-        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isActiveElement", element);
-    }
-
-
     internal static ValueTask<bool> BitUtilsPrefersReducedMotion(this IJSRuntime jsRuntime, ElementReference element)
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.prefersReducedMotion", element);
