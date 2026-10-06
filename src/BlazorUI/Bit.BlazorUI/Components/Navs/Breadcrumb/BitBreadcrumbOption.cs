@@ -44,9 +44,9 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.
+    /// Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.
     /// </summary>
-    [Parameter] public BitIconPosition? IconPosition { get; set; }
+    [Parameter] public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Whether an option is disabled or not.
@@ -116,7 +116,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
         // Template/OverflowTemplate are compared by reference identity since the parent renders them too.
         var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsDisabled, IsSelected,
-                                                  Class, Style, IconPosition, Key, Title, Target, AriaLabel);
+                                                  Class, Style, IconPlacement, Key, Title, Target, AriaLabel);
 
         var changed = _lastParametersSignature != signature ||
                       ReferenceEquals(_lastTemplate, Template) is false ||

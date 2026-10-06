@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -42,18 +41,12 @@ public sealed class BitRichTextEditorBridgeContractTests
 
     private static string ReadTypeScript()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", "BitRichTextEditor.ts");
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure BitRichTextEditor.ts is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.ts");
     }
 
     private static string ReadCSharp(string fileName)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "cs-sources", fileName);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure {fileName} is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", fileName);
     }
 
     /// <summary>The body of the bridge's updateOptions, which is where every option is read.</summary>

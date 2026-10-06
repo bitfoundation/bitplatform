@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -75,7 +73,7 @@ public class BitTagStylesheetTests
     public void BitTagForcedColorsStatesShouldOutrankThePaintOfTheRoot()
     {
         var stylesheet = ReadStylesheet();
-        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", System.StringComparison.Ordinal)..];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
         // The root paints its selected and disabled states from .bit-tag.bit-tag-sel / .bit-tag.bit-dis, so the system
         // colors only win with the same two classes and a later place in the file.
@@ -87,8 +85,7 @@ public class BitTagStylesheetTests
     public void BitTagDisabledRootShouldOnlyKeepAnsweringThePointerForItsTitle()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("&.bit-dis {", System.StringComparison.Ordinal);
-        var disabled = stylesheet[start..stylesheet.IndexOf("\n    }", start, System.StringComparison.Ordinal)];
+        var disabled = SourceFiles.GetScssBlock(stylesheet, "&.bit-dis {");
 
         // the whole tag is inert - a handler on the root and a link in a template included - except for a root
         // that carries a title, which keeps the hover so the Title still shows; its content stays inert even then
@@ -104,11 +101,10 @@ public class BitTagStylesheetTests
         // a control kept focusable by AllowDisabledFocus is still made :active by a held Space
         foreach (var control in new[] { "\n.bit-tag-int {", "\n.bit-tag-cls {" })
         {
-            var start = stylesheet.IndexOf(control, System.StringComparison.Ordinal);
-            var rule = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
-            var disabled = rule[rule.IndexOf("&[aria-disabled=\"true\"] {", System.StringComparison.Ordinal)..];
+            var rule = SourceFiles.GetScssBlock(stylesheet, control);
+            var disabled = SourceFiles.GetScssDeclarations(rule, "&[aria-disabled=\"true\"] {");
 
-            StringAssert.Contains(disabled[..disabled.IndexOf('}')], "background-color: transparent;", control);
+            StringAssert.Contains(disabled, "background-color: transparent;", control);
             Assert.IsTrue(rule.IndexOf("&:active", System.StringComparison.Ordinal) < rule.IndexOf("&[aria-disabled", System.StringComparison.Ordinal), control);
         }
     }
@@ -117,7 +113,7 @@ public class BitTagStylesheetTests
     public void BitTagForcedColorsShouldKeepTheHighlightRingOnADisabledSelectedTag()
     {
         var stylesheet = ReadStylesheet();
-        var forced = stylesheet[stylesheet.IndexOf("@media (forced-colors: active)", System.StringComparison.Ordinal)..];
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
         // a disabled tag is painted Canvas again, where a HighlightText ring would vanish
         foreach (Match match in Regex.Matches(forced, @"\.bit-tag\.bit-tag-sel[^{,]*(?:,|\{)"))
@@ -138,11 +134,7 @@ public class BitTagStylesheetTests
         // anchored at the start of a line, since the reversed tag nests a rule of the dismiss button of its own
         foreach (var control in new[] { "\n.bit-tag-int {", "\n.bit-tag-cls {" })
         {
-            var start = stylesheet.IndexOf(control, System.StringComparison.Ordinal);
-
-            Assert.IsTrue(start >= 0, control);
-
-            var rule = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+            var rule = SourceFiles.GetScssBlock(stylesheet, control);
 
             StringAssert.Contains(rule, "&[aria-disabled=\"true\"]", control);
         }
@@ -164,8 +156,7 @@ public class BitTagStylesheetTests
     public void BitTagHeightShouldBeSetInsideTheRule()
     {
         var stylesheet = ReadStylesheet();
-        var start = stylesheet.IndexOf("\n.bit-tag-cnt {", System.StringComparison.Ordinal);
-        var content = stylesheet[start..stylesheet.IndexOf("\n}", start + 1, System.StringComparison.Ordinal)];
+        var content = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-cnt {");
 
         // calc() cannot add a unitless 0 or a keyword border width to a length, so the height never adds the
         // rule back in: it is the min-height of the content, which sits inside the rule
@@ -174,16 +165,6 @@ public class BitTagStylesheetTests
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"calc\([^)]*border-width|brd-w"), "the rule width must not enter a calc()");
     }
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Notifications", "Tag", "BitTag.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        var text = File.ReadAllText(path).Replace("\r\n", "\n");
-
-        // The header documents the variables in comments; only the rules are what the browser reads.
-        return Regex.Replace(text, @"^\s*//.*$", string.Empty, RegexOptions.Multiline);
-    }
+    // The header documents the variables in comments; only the rules are what the browser reads.
+    private static string ReadStylesheet() => SourceFiles.StripScssComments(SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Tag", "BitTag.scss"));
 }

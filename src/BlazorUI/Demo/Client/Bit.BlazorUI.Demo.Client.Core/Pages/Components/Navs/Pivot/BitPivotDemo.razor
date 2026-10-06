@@ -127,9 +127,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Placement" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            <b>Position</b> puts the header on any side: <b>Top</b> (default), <b>Bottom</b>, <b>Start</b> or <b>End</b>.
+            <b>Placement</b> puts the header on any side: <b>Top</b> (default), <b>Bottom</b>, <b>Start</b> or <b>End</b>.
             Start and End stack the headers in a column, which the up and down arrows navigate. A pivot nested in a panel
             keeps its own position and header type.
         </div>
@@ -137,7 +137,7 @@
         <div>Bottom:</div>
         <br />
         <div class="box">
-            <BitPivot Position="BitPivotPosition.Bottom">
+            <BitPivot Placement="BitPlacement.Bottom">
                 <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
                 <BitPivotItem HeaderText="Shared"><div>Pivot #2: Shared</div></BitPivotItem>
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -147,7 +147,7 @@
         <div>Start:</div>
         <br />
         <div class="box">
-            <BitPivot Position="BitPivotPosition.Start">
+            <BitPivot Placement="BitPlacement.Start">
                 <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -157,7 +157,7 @@
         <div>End:</div>
         <br />
         <div class="box">
-            <BitPivot Position="BitPivotPosition.End">
+            <BitPivot Placement="BitPlacement.End">
                 <BitPivotItem HeaderText="File"><div>Pivot #1: File</div></BitPivotItem>
                 <BitPivotItem HeaderText="Shared with me"><div>Pivot #2: Shared with me</div></BitPivotItem>
                 <BitPivotItem HeaderText="Recent"><div>Pivot #3: Recent</div></BitPivotItem>
@@ -167,7 +167,7 @@
         <div>Nested:</div>
         <br />
         <div class="box">
-            <BitPivot Position="BitPivotPosition.Start" HeaderType="BitPivotHeaderType.Tab">
+            <BitPivot Placement="BitPlacement.Start" HeaderType="BitPivotHeaderType.Tab">
                 <BitPivotItem HeaderText="Account">
                     <BitPivot>
                         <BitPivotItem HeaderText="Profile"><div>Account / Profile</div></BitPivotItem>
@@ -245,7 +245,7 @@
         <div>Vertical Menu and Slide (a vertical header needs a constrained height to overflow, given here by the element around it):</div>
         <br />
         <div class="box" style="display:flex;height:200px">
-            <BitPivot Position="BitPivotPosition.Start" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+            <BitPivot Placement="BitPlacement.Start" OverflowBehavior="BitPivotOverflowBehavior.Menu">
                 @foreach (var tab in overflowTabs)
                 {
                     <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
@@ -254,7 +254,7 @@
         </div>
         <br />
         <div class="box" style="display:flex;height:200px">
-            <BitPivot Position="BitPivotPosition.Start" OverflowBehavior="BitPivotOverflowBehavior.Slide">
+            <BitPivot Placement="BitPlacement.Start" OverflowBehavior="BitPivotOverflowBehavior.Slide">
                 @foreach (var tab in overflowTabs)
                 {
                     <BitPivotItem HeaderText="@tab">Content of the @tab tab.</BitPivotItem>
@@ -942,7 +942,7 @@
         </div>
         <br /><br />
         <div class="box">
-            <BitPivot Dir="BitDir.Rtl" Position="BitPivotPosition.Start">
+            <BitPivot Dir="BitDir.Rtl" Placement="BitPlacement.Start">
                 <BitPivotItem HeaderText="اسناد">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                 </BitPivotItem>

@@ -46,24 +46,24 @@ public class BitPivotTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(BitPivotPosition.Top),
-         DataRow(BitPivotPosition.Bottom),
-         DataRow(BitPivotPosition.Start),
-         DataRow(BitPivotPosition.End)
+         DataRow(BitPlacement.Top),
+         DataRow(BitPlacement.Bottom),
+         DataRow(BitPlacement.Start),
+         DataRow(BitPlacement.End)
     ]
-    public void BitPivotShouldRespectPosition(BitPivotPosition position)
+    public void BitPivotShouldRespectPosition(BitPlacement position)
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, position);
         });
 
         var positionClass = position switch
         {
-            BitPivotPosition.Top => "bit-pvt-top",
-            BitPivotPosition.Bottom => "bit-pvt-btm",
-            BitPivotPosition.Start => "bit-pvt-sta",
-            BitPivotPosition.End => "bit-pvt-end",
+            BitPlacement.Top => "bit-pvt-top",
+            BitPlacement.Bottom => "bit-pvt-btm",
+            BitPlacement.Start => "bit-pvt-sta",
+            BitPlacement.End => "bit-pvt-end",
             _ => string.Empty
         };
 
@@ -154,7 +154,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPivotPosition.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
         });
 
         Assert.AreEqual("vertical", component.Find(".bit-pvt-hct").GetAttribute("aria-orientation"));
@@ -511,7 +511,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPivotPosition.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
         });
@@ -1488,7 +1488,7 @@ public class BitPivotTests : BunitTestContext
 
         RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPivotPosition.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });
 
@@ -1757,7 +1757,7 @@ public class BitPivotTests : BunitTestContext
             Color = BitColor.Success,
             HeaderType = BitPivotHeaderType.Tab,
             Size = BitSize.Large,
-            Position = BitPivotPosition.Start,
+            Placement = BitPlacement.Start,
             OverflowBehavior = BitPivotOverflowBehavior.Wrap,
             FullWidth = true,
             Stacked = true,
@@ -1868,7 +1868,7 @@ public class BitPivotTests : BunitTestContext
             OverflowBehavior = BitPivotOverflowBehavior.Slide,
             OverflowIcon = icon,
             OverflowIconName = "More",
-            Position = BitPivotPosition.Bottom,
+            Placement = BitPlacement.Bottom,
             PreviousAriaLabel = "Back",
             PreviousIcon = icon,
             PreviousIconName = "Back",
@@ -1914,7 +1914,7 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual(BitPivotOverflowBehavior.Slide, pivot.OverflowBehavior);
         Assert.AreSame(icon, pivot.OverflowIcon);
         Assert.AreEqual("More", pivot.OverflowIconName);
-        Assert.AreEqual(BitPivotPosition.Bottom, pivot.Position);
+        Assert.AreEqual(BitPlacement.Bottom, pivot.Placement);
         Assert.AreEqual("Back", pivot.PreviousAriaLabel);
         Assert.AreSame(icon, pivot.PreviousIcon);
         Assert.AreEqual("Back", pivot.PreviousIconName);
@@ -2064,7 +2064,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPivotPosition.Start);
+            parameters.Add(p => p.Placement, BitPlacement.Start);
             parameters.Add(p => p.Reorderable, true);
             parameters.Add(p => p.OnItemReorder, (BitPivotReorderEventArgs _) => { });
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
@@ -2089,7 +2089,7 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("Control+ArrowLeft Control+ArrowRight", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
 
-        component.Render(p => p.Add(x => x.Position, BitPivotPosition.Start));
+        component.Render(p => p.Add(x => x.Placement, BitPlacement.Start));
 
         Assert.AreEqual("Control+ArrowUp Control+ArrowDown", component.Find("[role=tab]").GetAttribute("aria-keyshortcuts"));
 
@@ -2136,14 +2136,14 @@ public class BitPivotTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(BitPivotPosition.Top, true),
-         DataRow(BitPivotPosition.Start, false)
+         DataRow(BitPlacement.Top, true),
+         DataRow(BitPlacement.Start, false)
     ]
-    public void BitPivotSlideButtonsShouldMirrorTheirArrowsInARightToLeftLayout(BitPivotPosition position, bool mirrored)
+    public void BitPivotSlideButtonsShouldMirrorTheirArrowsInARightToLeftLayout(BitPlacement position, bool mirrored)
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, position);
             parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Slide);
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });

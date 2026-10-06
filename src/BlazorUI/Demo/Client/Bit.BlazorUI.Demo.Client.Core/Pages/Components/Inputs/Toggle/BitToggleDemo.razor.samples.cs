@@ -50,10 +50,10 @@ public partial class BitToggleDemo
 </BitToggle>";
 
     private readonly string example5RazorCode = @"
-<BitToggle Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
-<BitToggle Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
-<BitToggle Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
-<BitToggle Label=""End"" LabelPosition=""BitLabelPosition.End"" />
+<BitToggle Label=""Top"" LabelPlacement=""BitPlacement.Top"" />
+<BitToggle Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" />
+<BitToggle Label=""Start"" LabelPlacement=""BitPlacement.Start"" />
+<BitToggle Label=""End"" LabelPlacement=""BitPlacement.End"" />
 
 
 <BitToggle Label=""Inline"" Inline />
@@ -376,7 +376,7 @@ private readonly BitToggleParams[] toggleParams =
         FullWidth = true,
         OnText = ""On"",
         OffText = ""Off"",
-        LabelPosition = BitLabelPosition.Start
+        LabelPlacement = BitPlacement.Start
     }
 ];";
 

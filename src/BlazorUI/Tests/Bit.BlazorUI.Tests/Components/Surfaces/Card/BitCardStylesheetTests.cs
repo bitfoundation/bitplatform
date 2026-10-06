@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +44,7 @@ public partial class BitCardStylesheetTests
     [TestMethod]
     public void BitCardShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Card-* variable is declared, which stops it inheriting.");
     }
@@ -73,14 +71,11 @@ public partial class BitCardStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n.bit-crd {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The card has no root rule.");
-
-        var root = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-crd {");
 
         // Every private variable a parameter class or an inline style sets on the root would otherwise be inherited by a
         // card nested inside it - an Outlined card would hand its rule to every card it holds, a Fill card its text color.
-        var setByAClass = PrivateDeclaration().Matches(RulesOf(stylesheet))
+        var setByAClass = PrivateDeclaration().Matches(SourceFiles.StripScssComments(stylesheet))
                                               .Select(m => m.Groups[1].Value)
                                               .Distinct()
                                               .Where(name => name is not ("--bit-crd-pad" or "--bit-crd-gap" or "--bit-crd-htx-gap"
@@ -124,10 +119,7 @@ public partial class BitCardStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf($"\n.bit-crd-{size} {{", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"The {size} size has no rule of its own.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-crd-{size} {{");
 
         // The inset is a design-system decision (Fluent 2 8/12/16px), so a preset re-pads every card through the theme.
         StringAssert.Contains(block, $"--bit-crd-pad: var(--bit-Card-padding, #{{$spa-card-{size}}});");
@@ -232,10 +224,7 @@ public partial class BitCardStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var start = stylesheet.IndexOf("\n.bit-crd-ovl {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The overlaid cover has no rule of its own.");
-
-        var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-crd-ovl {");
 
         StringAssert.Contains(block, "background: var(--bit-Card-scrim, none);");
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-Card-scrim,").Count, "The scrim is painted outside the overlaid cover.");
@@ -248,27 +237,10 @@ public partial class BitCardStylesheetTests
 
     private static string Block(string stylesheet, string selector)
     {
-        var start = stylesheet.IndexOf($"\n{selector} {{", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector} has no rule of its own.");
-
-        return stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+        return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Card-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

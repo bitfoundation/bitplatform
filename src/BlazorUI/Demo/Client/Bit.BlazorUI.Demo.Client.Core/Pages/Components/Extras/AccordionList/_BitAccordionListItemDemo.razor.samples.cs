@@ -161,7 +161,7 @@ private readonly List<BitAccordionListItem> rtlItems =
                   Items=""basicItems""
                   TItem=""BitAccordionListItem"" />
 
-<BitAccordionList ExpanderIconPosition=""BitIconPosition.Start"" Items=""basicItems"" TItem=""BitAccordionListItem"" />
+<BitAccordionList ExpanderIconPlacement=""BitPlacement.Start"" Items=""basicItems"" TItem=""BitAccordionListItem"" />
 
 <BitAccordionList HideExpanderIcon Items=""basicItems"" TItem=""BitAccordionListItem"" />";
     private readonly string example4CsharpCode = iconItemsCsharpCode + basicItemsCsharpCode + bodyForCsharpCode;

@@ -87,9 +87,9 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the label of the loading components.
     /// <br />
-    /// <see cref="BitLoadingBase.LabelPosition"/>.
+    /// <see cref="BitLoadingBase.LabelPlacement"/>.
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Holds the animation of the loading components at the frame it had reached.
@@ -202,9 +202,9 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
             bitLoading.Cascade(Label, static l => l.Label, static (l, v) => l.Label = v);
         }
 
-        if (LabelPosition.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(LabelPlacement)))
         {
-            bitLoading.Cascade(LabelPosition, static l => l.LabelPosition, static (l, v) => l.LabelPosition = v, resetClass: true);
+            bitLoading.Cascade(LabelPlacement, static l => l.LabelPlacement, static (l, v) => l.LabelPlacement = v, resetClass: true);
         }
 
         if (Paused.HasValue && bitLoading.HasNotBeenSetOnLoading(nameof(Paused)))

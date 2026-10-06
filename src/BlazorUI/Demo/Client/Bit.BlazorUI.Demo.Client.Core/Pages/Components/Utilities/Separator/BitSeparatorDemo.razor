@@ -60,16 +60,16 @@
         </div>
         <br />
         <div class="example-content">
-            <BitSeparator AlignContent="BitSeparatorAlignContent.Start">Start</BitSeparator>
-            <BitSeparator AlignContent="BitSeparatorAlignContent.Center">Center</BitSeparator>
-            <BitSeparator AlignContent="BitSeparatorAlignContent.End">End</BitSeparator>
-            <BitSeparator AlignContent="BitSeparatorAlignContent.Start" ContentOffset="2rem">Start, 2rem</BitSeparator>
-            <BitSeparator AlignContent="BitSeparatorAlignContent.End" ContentOffset="10%">End, 10%</BitSeparator>
+            <BitSeparator AlignContent="BitPlacement.Start">Start</BitSeparator>
+            <BitSeparator AlignContent="BitPlacement.Center">Center</BitSeparator>
+            <BitSeparator AlignContent="BitPlacement.End">End</BitSeparator>
+            <BitSeparator AlignContent="BitPlacement.Start" ContentOffset="2rem">Start, 2rem</BitSeparator>
+            <BitSeparator AlignContent="BitPlacement.End" ContentOffset="10%">End, 10%</BitSeparator>
             <div class="row taller">
-                <BitSeparator Vertical AlignContent="BitSeparatorAlignContent.Start">Start</BitSeparator>
-                <BitSeparator Vertical AlignContent="BitSeparatorAlignContent.Center">Center</BitSeparator>
-                <BitSeparator Vertical AlignContent="BitSeparatorAlignContent.End">End</BitSeparator>
-                <BitSeparator Vertical AlignContent="BitSeparatorAlignContent.Start" ContentOffset="25%">25%</BitSeparator>
+                <BitSeparator Vertical AlignContent="BitPlacement.Start">Start</BitSeparator>
+                <BitSeparator Vertical AlignContent="BitPlacement.Center">Center</BitSeparator>
+                <BitSeparator Vertical AlignContent="BitPlacement.End">End</BitSeparator>
+                <BitSeparator Vertical AlignContent="BitPlacement.Start" ContentOffset="25%">25%</BitSeparator>
             </div>
         </div>
     </DemoExample>
@@ -104,18 +104,18 @@
         </div>
         <br />
         <div class="example-content">
-            <BitSeparator LineStyle="BitSeparatorLineStyle.Solid">Solid</BitSeparator>
-            <BitSeparator LineStyle="BitSeparatorLineStyle.Dashed">Dashed</BitSeparator>
-            <BitSeparator LineStyle="BitSeparatorLineStyle.Dotted" Thickness="3px">Dotted, 3px</BitSeparator>
-            <BitSeparator LineStyle="BitSeparatorLineStyle.Double" Thickness="4px">Double, 4px</BitSeparator>
+            <BitSeparator LineStyle="BitLineStyle.Solid">Solid</BitSeparator>
+            <BitSeparator LineStyle="BitLineStyle.Dashed">Dashed</BitSeparator>
+            <BitSeparator LineStyle="BitLineStyle.Dotted" Thickness="3px">Dotted, 3px</BitSeparator>
+            <BitSeparator LineStyle="BitLineStyle.Double" Thickness="4px">Double, 4px</BitSeparator>
             <BitSeparator Thickness="0.5rem">Solid, 0.5rem</BitSeparator>
             <div class="row tall">
                 <span>Item 1</span>
-                <BitSeparator Vertical LineStyle="BitSeparatorLineStyle.Dashed" />
+                <BitSeparator Vertical LineStyle="BitLineStyle.Dashed" />
                 <span>Item 2</span>
-                <BitSeparator Vertical LineStyle="BitSeparatorLineStyle.Dotted" Thickness="3px" />
+                <BitSeparator Vertical LineStyle="BitLineStyle.Dotted" Thickness="3px" />
                 <span>Item 3</span>
-                <BitSeparator Vertical LineStyle="BitSeparatorLineStyle.Double" Thickness="4px" />
+                <BitSeparator Vertical LineStyle="BitLineStyle.Double" Thickness="4px" />
                 <span>Item 4</span>
             </div>
         </div>
@@ -164,7 +164,7 @@
             <BitParams Parameters="separatorParams">
                 <BitSeparator>Account</BitSeparator>
                 <BitSeparator>Billing</BitSeparator>
-                <BitSeparator LineStyle="BitSeparatorLineStyle.Solid">Danger zone</BitSeparator>
+                <BitSeparator LineStyle="BitLineStyle.Solid">Danger zone</BitSeparator>
             </BitParams>
         </div>
     </DemoExample>
@@ -242,8 +242,8 @@
         <br />
         <div class="example-content">
             <BitSeparator Dir="BitDir.Rtl">جداکننده</BitSeparator>
-            <BitSeparator Dir="BitDir.Rtl" AlignContent="BitSeparatorAlignContent.Start">ابتدا</BitSeparator>
-            <BitSeparator Dir="BitDir.Rtl" AlignContent="BitSeparatorAlignContent.End">انتها</BitSeparator>
+            <BitSeparator Dir="BitDir.Rtl" AlignContent="BitPlacement.Start">ابتدا</BitSeparator>
+            <BitSeparator Dir="BitDir.Rtl" AlignContent="BitPlacement.End">انتها</BitSeparator>
         </div>
     </DemoExample>
 </DemoPage>

@@ -2515,7 +2515,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ["tooltipHtml"] = m.TooltipHtml?.Value,
         ["tooltipText"] = m.TooltipText,
         ["tooltipPermanent"] = m.TooltipPermanent,
-        ["tooltipDirection"] = m.TooltipDirection.ToString().ToLowerInvariant(),
+        // The providers' own direction names; anything BitPlacement can say that they cannot leaves it to auto.
+        ["tooltipDirection"] = m.TooltipPlacement switch
+        {
+            BitPlacement.Top => "top",
+            BitPlacement.Bottom => "bottom",
+            BitPlacement.Left => "left",
+            BitPlacement.Right => "right",
+            BitPlacement.Center => "center",
+            _ => "auto"
+        },
         ["focusable"] = m.Focusable,
         ["draggable"] = m.Draggable,
         ["color"] = m.Color,

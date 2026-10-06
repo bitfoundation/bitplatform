@@ -414,12 +414,12 @@ public partial class BitNavPanelDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitNavPanelPosition",
-            DefaultValue = "BitNavPanelPosition.Start",
-            Description = "The edge the off-canvas drawer of a small screen comes from, and the side it is docked to while it is open. It has no effect on a wide screen, where the panel is a column in the normal flow of the page.",
+            Name = "Placement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "The edge the off-canvas drawer of a small screen comes from, and the side it is docked to while it is open. Honours Start and End, which follow the text direction; every other value renders the default Start. It has no effect on a wide screen, where the panel is a column in the normal flow of the page.",
             LinkType = LinkType.Link,
-            Href = "#nav-panel-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -1328,7 +1328,7 @@ public partial class BitNavPanelDemo
         {
             Name = "--bit-NavPanel-border-width",
             DefaultValue = "0",
-            Description = "Width of the rule along the edge the panel turns to the page (the inline end, or the inline start with Position End). A forced-colors mode always draws it.",
+            Description = "Width of the rule along the edge the panel turns to the page (the inline end, or the inline start with Placement End). A forced-colors mode always draws it.",
         },
         new()
         {
@@ -1617,27 +1617,7 @@ public partial class BitNavPanelDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "nav-panel-position-enum",
-            Name = "BitNavPanelPosition",
-            Description = "The edge of the viewport the off-canvas drawer of a BitNavPanel comes from.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "The drawer comes from the starting edge of the text direction: the left in a left-to-right layout, the right in a right-to-left one.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The drawer comes from the ending edge of the text direction: the right in a left-to-right layout, the left in a right-to-left one.",
-                    Value = "1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "nav-render-type-enum",

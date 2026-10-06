@@ -410,7 +410,7 @@ private string? cardPointerType;
 private string? cardLastEnd;
 private void HandleOnTriggerKeyboard(BitSwipeTrapTriggerArgs args)
 {
-    cardAction = args.Direction == BitSwipeDirection.Right ? ""Archived"" : ""Snoozed"";
+    cardAction = args.Direction == BitPlacement.Right ? ""Archived"" : ""Snoozed"";
     cardPointerType = args.PointerType;
 }
 private void HandleOnEndKeyboard(BitSwipeTrapEventArgs args)
@@ -513,7 +513,7 @@ private void HandleOnEndList(BitSwipeTrapEventArgs args, int index)
 }
 private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
 {
-    if (args.Direction == BitSwipeDirection.Right)
+    if (args.Direction == BitPlacement.Right)
     {
         await ConfirmDeleteList(index);
     }
@@ -639,8 +639,8 @@ private void ResetList()
                            Variant=""BitVariant.Text""
                            IconName=""@BitIconName.GlobalNavButton""
                            AriaLabel=""Left menu""
-                           aria-expanded=""@IsPanelOpenAdvanced(BitSwipeDirection.Left)""
-                           OnClick=""() => TogglePanelAdvanced(BitSwipeDirection.Left)"" />
+                           aria-expanded=""@IsPanelOpenAdvanced(BitPlacement.Left)""
+                           OnClick=""() => TogglePanelAdvanced(BitPlacement.Left)"" />
                 <div class=""brand"">
                     <BitImage Src=""/images/bit-logo.svg"" Width=""50"" />
                     <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
@@ -651,8 +651,8 @@ private void ResetList()
                            Variant=""BitVariant.Text""
                            IconName=""@BitIconName.More""
                            AriaLabel=""Right menu""
-                           aria-expanded=""@IsPanelOpenAdvanced(BitSwipeDirection.Right)""
-                           OnClick=""() => TogglePanelAdvanced(BitSwipeDirection.Right)"" />
+                           aria-expanded=""@IsPanelOpenAdvanced(BitPlacement.Right)""
+                           OnClick=""() => TogglePanelAdvanced(BitPlacement.Right)"" />
             </div>
             <div class=""main"">
                 <BitSwipeTrap Style=""width:100%;height:100%""
@@ -668,7 +668,7 @@ private void ResetList()
                         </BitText>
                     </div>
 
-                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"" inert=""@(panelOpen != BitSwipeDirection.Left)"">
+                    <div class=""panel left"" style=""@GetLeftPanelAdvancedStyle()"" inert=""@(panelOpen != BitPlacement.Left)"">
                         <div class=""panel-trap"">
                             <h3>Left Menu</h3>
                             <div>Item1</div>
@@ -676,7 +676,7 @@ private void ResetList()
                             <div>Item3</div>
                         </div>
                     </div>
-                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"" inert=""@(panelOpen != BitSwipeDirection.Right)"">
+                    <div class=""panel right"" style=""@GetRightPanelAdvancedStyle()"" inert=""@(panelOpen != BitPlacement.Right)"">
                         <div class=""panel-trap"">
                             <h3>Right Menu</h3>
                             <div>Item1</div>
@@ -691,9 +691,9 @@ private void ResetList()
 </div>";
     private readonly string example8CsharpCode = @"
 private decimal? diffXPanelAdvanced;
-private BitSwipeDirection? direction;
-private BitSwipeDirection? panelOpen;
-private void OpenPanelAdvanced(BitSwipeDirection swipeDirection)
+private BitPlacement? direction;
+private BitPlacement? panelOpen;
+private void OpenPanelAdvanced(BitPlacement swipeDirection)
 {
     if (panelOpen == swipeDirection) return;
 
@@ -706,7 +706,7 @@ private void ClosePanelAdvanced()
     panelOpen = null;
     diffXPanelAdvanced = null;
 }
-private void TogglePanelAdvanced(BitSwipeDirection side)
+private void TogglePanelAdvanced(BitPlacement side)
 {
     if (panelOpen == side)
     {
@@ -717,7 +717,7 @@ private void TogglePanelAdvanced(BitSwipeDirection side)
         OpenPanelAdvanced(side);
     }
 }
-private string IsPanelOpenAdvanced(BitSwipeDirection side) => panelOpen == side ? ""true"" : ""false"";
+private string IsPanelOpenAdvanced(BitPlacement side) => panelOpen == side ? ""true"" : ""false"";
 private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
 {
     diffXPanelAdvanced = args.DiffX;
@@ -725,8 +725,8 @@ private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
     if (Math.Abs(args.DiffX) > 2 || Math.Abs(args.DiffY) > 2)
     {
         direction = Math.Abs(args.DiffX) >= Math.Abs(args.DiffY)
-        ? args.DiffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
-        : args.DiffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+        ? args.DiffX > 0 ? BitPlacement.Right : BitPlacement.Left
+        : args.DiffY > 0 ? BitPlacement.Bottom : BitPlacement.Top;
     }
     else
     {
@@ -746,24 +746,24 @@ private void HandleOnEndPanelAdvanced(BitSwipeTrapEventArgs args)
 }
 private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
 {
-    if (args.Direction == BitSwipeDirection.Left)
+    if (args.Direction == BitPlacement.Left)
     {
-        if (panelOpen.HasValue is false || panelOpen == BitSwipeDirection.Right)
+        if (panelOpen.HasValue is false || panelOpen == BitPlacement.Right)
         {
-            OpenPanelAdvanced(BitSwipeDirection.Right);
+            OpenPanelAdvanced(BitPlacement.Right);
         }
-        else if (panelOpen == BitSwipeDirection.Left)
+        else if (panelOpen == BitPlacement.Left)
         {
             ClosePanelAdvanced();
         }
     }
-    else if (args.Direction == BitSwipeDirection.Right)
+    else if (args.Direction == BitPlacement.Right)
     {
-        if (panelOpen.HasValue is false || panelOpen == BitSwipeDirection.Left)
+        if (panelOpen.HasValue is false || panelOpen == BitPlacement.Left)
         {
-            OpenPanelAdvanced(BitSwipeDirection.Left);
+            OpenPanelAdvanced(BitPlacement.Left);
         }
-        else if (panelOpen == BitSwipeDirection.Right)
+        else if (panelOpen == BitPlacement.Right)
         {
             ClosePanelAdvanced();
         }
@@ -771,11 +771,11 @@ private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
 }
 private string GetLeftPanelAdvancedStyle()
 {
-    if (panelOpen == BitSwipeDirection.Left && direction != BitSwipeDirection.Left)
+    if (panelOpen == BitPlacement.Left && direction != BitPlacement.Left)
     {
         return ""transform: translateX(0px)"";
     }
-    else if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || (panelOpen == BitSwipeDirection.Left && direction == BitSwipeDirection.Left))
+    else if ((panelOpen.HasValue is false && direction == BitPlacement.Right) || (panelOpen == BitPlacement.Left && direction == BitPlacement.Left))
     {
         return diffXPanelAdvanced switch
         {
@@ -790,11 +790,11 @@ private string GetLeftPanelAdvancedStyle()
 }
 private string GetRightPanelAdvancedStyle()
 {
-    if (panelOpen == BitSwipeDirection.Right && direction != BitSwipeDirection.Right)
+    if (panelOpen == BitPlacement.Right && direction != BitPlacement.Right)
     {
         return ""transform: translateX(0px)"";
     }
-    else if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || (panelOpen == BitSwipeDirection.Right && direction == BitSwipeDirection.Right))
+    else if ((panelOpen.HasValue is false && direction == BitPlacement.Left) || (panelOpen == BitPlacement.Right && direction == BitPlacement.Right))
     {
         return diffXPanelAdvanced switch
         {
@@ -950,6 +950,6 @@ private string? rtlCardAction;
 private void HandleOnTriggerRtl(BitSwipeTrapTriggerArgs args)
 {
     // The directions are physical, so in a right-to-left layout the end of the line is on the left.
-    rtlCardAction = args.Direction == BitSwipeDirection.Left ? ""بایگانی شد"" : ""به تعویق افتاد"";
+    rtlCardAction = args.Direction == BitPlacement.Left ? ""بایگانی شد"" : ""به تعویق افتاد"";
 }";
 }

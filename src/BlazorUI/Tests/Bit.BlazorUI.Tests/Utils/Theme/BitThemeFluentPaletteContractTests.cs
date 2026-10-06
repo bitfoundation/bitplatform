@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,10 +29,7 @@ public sealed class BitThemeFluentPaletteContractTests
 
     private static Dictionary<string, string> Tokens(string file)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent", file);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-
-        return Regex.Matches(File.ReadAllText(path), @"--bit-clr-([a-z0-9-]+):\s*([^;]+);")
+        return Regex.Matches(SourceFiles.ReadThemeStylesheet("Fluent", file), @"--bit-clr-([a-z0-9-]+):\s*([^;]+);")
                     .ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value.Trim().ToUpperInvariant());
     }
 
@@ -124,10 +120,7 @@ public sealed class BitThemeFluentPaletteContractTests
     [TestMethod]
     public void TranscribedNeutralRampMatchesTheStylesheet()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent", "neutrals.fluent.scss");
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        var tokens = Regex.Matches(File.ReadAllText(path), @"--bit-clr-ntr-(\w+):\s*(#[0-9A-Fa-f]{6})")
+        var tokens = Regex.Matches(SourceFiles.ReadThemeStylesheet("Fluent", "neutrals.fluent.scss"), @"--bit-clr-ntr-(\w+):\s*(#[0-9A-Fa-f]{6})")
                           .ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value.ToUpperInvariant());
 
         string[] names = ["white", "black", .. Enumerable.Range(1, 22).Select(i => $"gray{i * 10}")];

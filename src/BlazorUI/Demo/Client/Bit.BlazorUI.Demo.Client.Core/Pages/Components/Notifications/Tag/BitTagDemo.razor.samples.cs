@@ -12,12 +12,12 @@ public partial class BitTagDemo
 <BitTag Text=""Outline"" Variant=""BitVariant.Outline"" />
 <BitTag Text=""Text"" Variant=""BitVariant.Text"" />
 
-<BitTag Text=""Rounded"" Shape=""BitTagShape.Rounded"" Variant=""BitVariant.Outline"" />
-<BitTag Text=""Circular"" Shape=""BitTagShape.Circular"" Variant=""BitVariant.Outline"" />
-<BitTag Text=""Square"" Shape=""BitTagShape.Square"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Rounded"" Shape=""BitShape.Rounded"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Circular"" Shape=""BitShape.Pill"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Square"" Shape=""BitShape.Square"" Variant=""BitVariant.Outline"" />
 
 <BitTag Text=""Fill"" Variant=""BitVariant.Fill"" Disabled />
-<BitTag Text=""Outline"" Variant=""BitVariant.Outline"" Shape=""BitTagShape.Circular"" Disabled />
+<BitTag Text=""Outline"" Variant=""BitVariant.Outline"" Shape=""BitShape.Pill"" Disabled />
 <BitTag Text=""Text"" Variant=""BitVariant.Text"" Disabled />";
 
     private readonly string example3RazorCode = @"
@@ -259,7 +259,7 @@ private readonly BitTagParams[] tagParams =
     {
         Color = BitColor.Info,
         Variant = BitVariant.Outline,
-        Shape = BitTagShape.Circular,
+        Shape = BitShape.Pill,
         IconName = BitIconName.Filter,
         DismissLabelFormat = ""Remove the {0} filter"",
     }

@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,9 +13,8 @@ public sealed class BitThemeContrastPreferenceTests
     [TestMethod]
     public void PrefersContrastMoreActuallyChangesTheBorderWidth()
     {
-        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent");
-        var shapes = File.ReadAllText(Path.Combine(stylesDir, "shapes.fluent.scss"));
-        var forced = File.ReadAllText(Path.Combine(stylesDir, "forced-colors.fluent.scss"));
+        var shapes = SourceFiles.ReadThemeStylesheet("Fluent", "shapes.fluent.scss");
+        var forced = SourceFiles.ReadThemeStylesheet("Fluent", "forced-colors.fluent.scss");
 
         var defaultWidth = ExtractBorderWidthPx(shapes);
         var contrastBlock = Regex.Match(forced, @"prefers-contrast:\s*more\)\s*\{(?<body>[\s\S]*?)\n\}").Groups["body"].Value;
@@ -35,9 +33,8 @@ public sealed class BitThemeContrastPreferenceTests
     [TestMethod]
     public void PrefersContrastMoreStrengthensTheFocusRing()
     {
-        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent");
-        var shapes = File.ReadAllText(Path.Combine(stylesDir, "shapes.fluent.scss"));
-        var forced = File.ReadAllText(Path.Combine(stylesDir, "forced-colors.fluent.scss"));
+        var shapes = SourceFiles.ReadThemeStylesheet("Fluent", "shapes.fluent.scss");
+        var forced = SourceFiles.ReadThemeStylesheet("Fluent", "forced-colors.fluent.scss");
 
         var defaultWidth = ExtractTokenPx(shapes, "--bit-shp-focus-ring-width");
 

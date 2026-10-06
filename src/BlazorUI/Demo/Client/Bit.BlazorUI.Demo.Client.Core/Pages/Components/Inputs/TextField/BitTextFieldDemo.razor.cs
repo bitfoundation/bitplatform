@@ -222,16 +222,16 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name for the icon shown inside the text field, at the end IconPosition puts it at, from the built-in Fluent UI icons.",
+            Description = "The icon name for the icon shown inside the text field, at the end IconPlacement puts it at, from the built-in Fluent UI icons.",
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Which end of the field the icon sits at, inside the frame. End (the default) puts it past the clear and reveal buttons, Start in front of the input. It follows the reading direction, so it mirrors itself in a right-to-left page.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -265,12 +265,12 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one.",
+            Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -969,60 +969,7 @@ public partial class BitTextFieldDemo : IDisposable
                 },
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "The icon sits in front of the input, at the leading end of the frame.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The icon sits at the trailing end of the frame, past the clear and reveal buttons.",
-                    Value = "1",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Defines the positions a label can take relative to the control it belongs to.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Description = "The label sits above the input.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "The label sits after the input, on the same line.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Description = "The label sits under the input.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Start",
-                    Description = "The label sits before the input, on the same line.",
-                    Value = "3",
-                },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",
@@ -1819,7 +1766,7 @@ public partial class BitTextFieldDemo : IDisposable
     private readonly string example5RazorCode = @"
 <BitTextField Label=""Trailing icon (the default)"" IconName=""@BitIconName.EditMail"" />
 
-<BitTextField Label=""Leading icon"" IconName=""@BitIconName.Search"" IconPosition=""BitIconPosition.Start"" Placeholder=""Search..."" />
+<BitTextField Label=""Leading icon"" IconName=""@BitIconName.Search"" IconPlacement=""BitPlacement.Start"" Placeholder=""Search..."" />
 
 <BitTextField Label=""Prefix"" Prefix=""https://"" />
 
@@ -1832,7 +1779,7 @@ public partial class BitTextFieldDemo : IDisposable
               Suffix=""USD""
               DefaultValue=""1,250.00""
               IconName=""@BitIconName.Calculator""
-              IconPosition=""BitIconPosition.Start"" />
+              IconPlacement=""BitPlacement.Start"" />
 
 <BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IconName=""@BitIconName.Globe"" Disabled />
 
@@ -2267,21 +2214,21 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
 private BitTextField? selectionRef;";
 
     private readonly string example14RazorCode = @"
-<BitTextField Label=""Top"" LabelPosition=""BitLabelPosition.Top"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""End"" LabelPosition=""BitLabelPosition.End"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Top"" LabelPlacement=""BitPlacement.Top"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Start"" LabelPlacement=""BitPlacement.Start"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""End"" LabelPlacement=""BitPlacement.End"" Placeholder=""Enter a text..."" />
 
 <BitTextField Label=""Start + Required + a counter""
               Required
               ShowCount
               MaxLength=""20""
-              LabelPosition=""BitLabelPosition.Start""
+              LabelPlacement=""BitPlacement.Start""
               Description=""The footer keeps its own line under the whole row."" />
 
 <BitTextField Label=""Underlined + Top""
               Underlined
-              LabelPosition=""BitLabelPosition.Top""
+              LabelPlacement=""BitPlacement.Top""
               Placeholder=""Enter a text...""
               Description=""The underlined variant lays its label out in a row of its own, and an explicit position takes that row apart."" />";
 

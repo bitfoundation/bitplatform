@@ -105,7 +105,7 @@ public class BitAccordionListParamsTests : BunitTestContext
             Background = BitColorKind.Tertiary,
             Border = BitColorKind.Secondary,
             ExpanderIconName = "Add",
-            ExpanderIconPosition = BitIconPosition.Start,
+            ExpanderIconPlacement = BitPlacement.Start,
             HeadingLevel = 2,
             Joined = true,
             NoContentRegion = true,

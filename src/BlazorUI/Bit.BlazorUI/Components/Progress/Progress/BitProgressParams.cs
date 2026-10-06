@@ -75,7 +75,7 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Where the <see cref="GapDegree"/> gap of the gauge sits.
     /// </summary>
-    public BitProgressGapPosition? GapPosition { get; set; }
+    public BitPlacement? GapPlacement { get; set; }
 
     /// <summary>
     /// Reports that something is running without saying how far along it is.
@@ -298,9 +298,9 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
             bitProgress.TakeFromCascade(nameof(GapDegree), GapDegree.Value, static p => p.GapDegree, static (p, v) => p.GapDegree = v);
         }
 
-        if (GapPosition.HasValue)
+        if (GapPlacement.HasValue)
         {
-            bitProgress.TakeFromCascade(nameof(GapPosition), GapPosition.Value, static p => p.GapPosition, static (p, v) => p.GapPosition = v);
+            bitProgress.TakeFromCascade(nameof(GapPlacement), GapPlacement.Value, static p => p.GapPlacement, static (p, v) => p.GapPlacement = v);
         }
 
         if (Indeterminate.HasValue)

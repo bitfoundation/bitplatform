@@ -177,17 +177,17 @@
 
     <DemoExample Title="Label position & template" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <b>LabelPosition</b> puts the label on any side; <b>LabelTemplate</b> replaces it with your own markup.
+            <b>LabelPlacement</b> puts the label on any side; <b>LabelTemplate</b> replaces it with your own markup.
         </div>
         <br />
         <div class="example-box">
             <BitNumberField Label="Top (default)" TValue="int" />
             <br />
-            <BitNumberField Label="Start" LabelPosition="BitLabelPosition.Start" TValue="int" />
+            <BitNumberField Label="Start" LabelPlacement="BitPlacement.Start" TValue="int" />
             <br />
-            <BitNumberField Label="End" LabelPosition="BitLabelPosition.End" TValue="int" />
+            <BitNumberField Label="End" LabelPlacement="BitPlacement.End" TValue="int" />
             <br />
-            <BitNumberField Label="Bottom" LabelPosition="BitLabelPosition.Bottom" TValue="int" />
+            <BitNumberField Label="Bottom" LabelPlacement="BitPlacement.Bottom" TValue="int" />
             <br />
             <BitNumberField TValue="int">
                 <LabelTemplate>
@@ -230,7 +230,7 @@
             </BitNumberField>
             <br />
             <BitNumberField Label="Label on the side" TValue="int"
-                            LabelPosition="BitLabelPosition.Start"
+                            LabelPlacement="BitPlacement.Start"
                             Description="The hint wraps onto a line of its own." />
         </div>
     </DemoExample>
@@ -697,7 +697,7 @@
                 <CascadingValue Value="BitDir.Rtl">
                     <BitNumberField Label="برچسب در بالا" TValue="int" Mode="BitSpinButtonMode.Compact" />
                     <br />
-                    <BitNumberField Label="برچسب در کنار" TValue="int" LabelPosition="BitLabelPosition.Start" />
+                    <BitNumberField Label="برچسب در کنار" TValue="int" LabelPlacement="BitPlacement.Start" />
                     <br />
                     <BitNumberField TValue="int" Required />
                     <br />

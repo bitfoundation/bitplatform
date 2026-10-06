@@ -429,16 +429,18 @@ public partial class BitCarouselTests : BunitTestContext
 
     [TestMethod,
         DataRow(null, null),
-        DataRow(BitCarouselDotsPosition.Bottom, null),
-        DataRow(BitCarouselDotsPosition.Top, "bit-csl-dtop"),
-        DataRow(BitCarouselDotsPosition.Start, "bit-csl-dstr"),
-        DataRow(BitCarouselDotsPosition.End, "bit-csl-dend")
+        DataRow(BitPlacement.Bottom, null),
+        DataRow(BitPlacement.Top, "bit-csl-dtop"),
+        DataRow(BitPlacement.Start, "bit-csl-dstr"),
+        DataRow(BitPlacement.End, "bit-csl-dend"),
+        DataRow(BitPlacement.Left, null),
+        DataRow(BitPlacement.Center, null)
     ]
-    public void BitCarouselShouldRespectDotsPosition(BitCarouselDotsPosition? position, string? expectedClass)
+    public void BitCarouselShouldRespectDotsPlacement(BitPlacement? placement, string? expectedClass)
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.DotsPosition, position);
+            parameters.Add(p => p.DotsPlacement, placement);
         });
 
         var classes = component.Find(".bit-csl").ClassList;
@@ -2580,7 +2582,7 @@ public partial class BitCarouselTests : BunitTestContext
             Color = BitColor.Warning,
             DotAriaLabel = "Page",
             DotsAriaLabel = "Pages",
-            DotsPosition = BitCarouselDotsPosition.End,
+            DotsPlacement = BitPlacement.End,
             DotTemplate = dotTemplate,
             DragThreshold = 40,
             Fade = true,
@@ -2636,7 +2638,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual(BitColor.Warning, carousel.Color);
         Assert.AreEqual("Page", carousel.DotAriaLabel);
         Assert.AreEqual("Pages", carousel.DotsAriaLabel);
-        Assert.AreEqual(BitCarouselDotsPosition.End, carousel.DotsPosition);
+        Assert.AreEqual(BitPlacement.End, carousel.DotsPlacement);
         Assert.AreSame(dotTemplate, carousel.DotTemplate);
         Assert.AreEqual(40, carousel.DragThreshold);
         Assert.IsTrue(carousel.Fade);

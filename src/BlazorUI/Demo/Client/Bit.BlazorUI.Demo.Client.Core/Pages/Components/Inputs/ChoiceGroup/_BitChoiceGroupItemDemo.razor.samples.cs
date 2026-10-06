@@ -155,13 +155,13 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 ];";
 
     private readonly string example5RazorCode = @"
-<BitChoiceGroup Label=""End (default)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.End"" Horizontal />
+<BitChoiceGroup Label=""End (default)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.End"" Horizontal />
 
-<BitChoiceGroup Label=""Start"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" Horizontal />
+<BitChoiceGroup Label=""Start"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Start"" Horizontal />
 
-<BitChoiceGroup Label=""Top"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Top"" Horizontal />
+<BitChoiceGroup Label=""Top"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Top"" Horizontal />
 
-<BitChoiceGroup Label=""Bottom"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Bottom"" Horizontal />";
+<BitChoiceGroup Label=""Bottom"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Bottom"" Horizontal />";
     private readonly string example5CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
@@ -555,9 +555,9 @@ private readonly List<BitChoiceGroupItem<string>> deploymentItems =
 
 <BitChoiceGroup Label=""FullWidth (horizontal, equal columns)"" Items=""basicItems"" DefaultValue=""@(""A"")"" Horizontal FullWidth />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth />
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start (items at the far edge)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Start"" FullWidth />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + StretchItemLabel (settings list)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth StretchItemLabel />";
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start + StretchItemLabel (settings list)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Start"" FullWidth StretchItemLabel />";
     private readonly string example16CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
@@ -606,7 +606,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
                 Variant=""BitVariant.Fill""
                 Items=""descriptionItems""
                 DefaultValue=""@(""Daily"")""
-                LabelPosition=""BitLabelPosition.Start""
+                LabelPlacement=""BitPlacement.Start""
                 FullWidth />
 
 <BitChoiceGroup Label=""Outline, horizontal icon cards""

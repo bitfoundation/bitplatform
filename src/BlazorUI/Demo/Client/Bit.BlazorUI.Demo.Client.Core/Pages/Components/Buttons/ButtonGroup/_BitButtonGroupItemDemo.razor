@@ -131,7 +131,7 @@
     <div>
         The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a
         time
-        (a shorthand for <strong>SelectionMode="BitButtonGroupSelectionMode.Single"</strong>). It renders as a
+        (a shorthand for <strong>SelectionMode="BitSelectionMode.Single"</strong>). It renders as a
         <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. Toggled
         buttons
         can swap their text and icon through the item's <strong>OnText</strong>/<strong>OffText</strong> and
@@ -251,7 +251,7 @@
     <br /><br />
     <div class="example-content">
         <div>Binding:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple"
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple"
                         Items="formatItems" @bind-ToggleKeys="formatKeys" />
         <div>Toggle keys: <b>@string.Join(", ", formatKeys ?? [])</b></div>
     </div>
@@ -263,13 +263,13 @@
             cap is visible instead of being a click that does nothing; they stay focusable and come back as soon as
             one of the toggled buttons is un-toggled.
         </div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2"
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple" MaxToggles="2"
                         Items="maxToggleItems" DefaultToggleKeys="@maxDefaultKeys" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>FixedToggle</strong> keeps at least one button toggled:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" FixedToggle
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple" FixedToggle
                         Items="fixedToggleItems" DefaultToggleKeys="@fixedDefaultKeys" />
     </div>
 </DemoExample>
@@ -381,13 +381,13 @@
     <div class="example-content">
         <div>Single</div>
         <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="indicatorSingleItems" DefaultToggleKey="list" />
+                        SelectionMode="BitSelectionMode.Single" Items="indicatorSingleItems" DefaultToggleKey="list" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Multiple</div>
         <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple" Items="indicatorMultipleItems"
+                        SelectionMode="BitSelectionMode.Multiple" Items="indicatorMultipleItems"
                         DefaultToggleKeys="@indicatorDefaultKeys" />
     </div>
 </DemoExample>
@@ -491,7 +491,7 @@
     <div class="example-content">
         <div>Tab into the group, then navigate it using the arrow, Home, and End keys:</div>
         <BitButtonGroup AriaLabel="Text alignment" Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="a11yItems" DefaultToggleKey="start" />
+                        SelectionMode="BitSelectionMode.Single" Items="a11yItems" DefaultToggleKey="start" />
     </div>
     <br /><br />
     <div class="example-content">
@@ -504,7 +504,7 @@
             take back.
         </div>
         <BitButtonGroup AriaLabel="Text alignment (committed with Space)" SelectOnFocus="false"
-                        Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Single"
+                        Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Single"
                         Items="selectOnFocusItems" DefaultToggleKey="start" />
     </div>
     <br /><br />

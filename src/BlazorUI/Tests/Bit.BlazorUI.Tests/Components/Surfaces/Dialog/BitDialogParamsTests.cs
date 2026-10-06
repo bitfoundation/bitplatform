@@ -61,7 +61,7 @@ public class BitDialogParamsTests : BunitTestContext
             Modeless = true,
             FullWidth = true,
             FullHeight = true,
-            Position = BitDialogPosition.TopEnd,
+            Position = BitPosition.TopEnd,
             OkText = "Delete",
             CancelText = "Keep",
             CloseButtonTitle = "Dismiss",
@@ -114,7 +114,7 @@ public class BitDialogParamsTests : BunitTestContext
             OkText = "Cascaded",
             ShowCancelButton = false,
             ShowCloseButton = false,
-            Position = BitDialogPosition.TopEnd,
+            Position = BitPosition.TopEnd,
         };
 
         var component = RenderWithParams(@params, RenderDialog(builder =>
@@ -123,7 +123,7 @@ public class BitDialogParamsTests : BunitTestContext
             builder.AddAttribute(11, nameof(BitDialog.OkText), "Own");
             builder.AddAttribute(12, nameof(BitDialog.ShowCancelButton), true);
             builder.AddAttribute(13, nameof(BitDialog.ShowCloseButton), true);
-            builder.AddAttribute(14, nameof(BitDialog.Position), BitDialogPosition.Center);
+            builder.AddAttribute(14, nameof(BitDialog.Position), BitPosition.Center);
         }));
 
         var root = component.Find(".bit-dlg");

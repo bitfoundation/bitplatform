@@ -568,17 +568,17 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-chb-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-chb-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-chb-lst"),
-        DataRow(BitLabelPosition.End, "bit-chb-lnd"),
+        DataRow(BitPlacement.Top, "bit-chb-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-chb-lbt"),
+        DataRow(BitPlacement.Start, "bit-chb-lst"),
+        DataRow(BitPlacement.End, "bit-chb-lnd"),
         DataRow(null, null)
     ]
-    public void BitCheckboxLabelPositionTest(BitLabelPosition? labelPosition, string expectedClass)
+    public void BitCheckboxLabelPositionTest(BitPlacement? labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         var chb = component.Find(".bit-chb");
@@ -1454,7 +1454,7 @@ public class BitCheckboxTests : BunitTestContext
             IndeterminateIcon = BitIconInfo.Fa("solid minus"),
             IndeterminateIconName = "Remove",
             Label = "Test Label",
-            LabelPosition = BitLabelPosition.Top,
+            LabelPlacement = BitPlacement.Top,
             Loading = true,
             NoWrap = true,
             Reversed = true,
@@ -1501,7 +1501,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(@params.IndeterminateIcon, instance.IndeterminateIcon);
         Assert.AreEqual("Remove", instance.IndeterminateIconName);
         Assert.AreEqual("Test Label", instance.Label);
-        Assert.AreEqual(BitLabelPosition.Top, instance.LabelPosition);
+        Assert.AreEqual(BitPlacement.Top, instance.LabelPlacement);
         Assert.IsTrue(instance.Loading);
         Assert.IsTrue(instance.NoWrap);
         Assert.IsTrue(instance.Reversed);

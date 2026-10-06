@@ -694,21 +694,21 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start),
-        DataRow(BitIconPosition.End)
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.End)
     ]
-    public void BitToggleButtonIconPositionTest(BitIconPosition iconPosition)
+    public void BitToggleButtonIconPlacementTest(BitPlacement iconPosition)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IconPosition, iconPosition);
+            parameters.Add(p => p.IconPlacement, iconPosition);
             parameters.Add(p => p.IconName, "Microphone");
             parameters.Add(p => p.Text, "Microphone");
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
 
-        Assert.AreEqual(iconPosition is BitIconPosition.End, bitToggleButton.ClassList.Contains("bit-tgb-eni"));
+        Assert.AreEqual(iconPosition is BitPlacement.End, bitToggleButton.ClassList.Contains("bit-tgb-eni"));
     }
 
     [TestMethod,
@@ -1400,11 +1400,11 @@ public class BitToggleButtonTests : BunitTestContext
             FullWidth = true,
             IconName = "Share",
             IconOnly = true,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             IsLoading = true,
             LoadingDelay = 300,
             LoadingLabel = "Saving...",
-            LoadingLabelPosition = BitLabelPosition.Top,
+            LoadingLabelPlacement = BitPlacement.Top,
             NoWrap = true,
             OffAriaLabel = "Off label",
             OffColor = BitColor.Info,
@@ -1457,11 +1457,11 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.IsTrue(instance.FullWidth);
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
-        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
         Assert.IsTrue(instance.IsLoading);
         Assert.AreEqual(300, instance.LoadingDelay);
         Assert.AreEqual("Saving...", instance.LoadingLabel);
-        Assert.AreEqual(BitLabelPosition.Top, instance.LoadingLabelPosition);
+        Assert.AreEqual(BitPlacement.Top, instance.LoadingLabelPlacement);
         Assert.IsTrue(instance.NoWrap);
         Assert.AreEqual("Off label", instance.OffAriaLabel);
         Assert.AreEqual(BitColor.Info, instance.OffColor);

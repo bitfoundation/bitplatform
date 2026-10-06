@@ -275,10 +275,10 @@
         <br />
         <BitChoiceGroup @bind-Value="alignment" Horizontal
                         Label="Alignment"
-                        TItem="BitChoiceGroupOption<BitCalloutAlignment>" TValue="BitCalloutAlignment">
-            <BitChoiceGroupOption Text="Start" Value="BitCalloutAlignment.Start" />
-            <BitChoiceGroupOption Text="Center" Value="BitCalloutAlignment.Center" />
-            <BitChoiceGroupOption Text="End" Value="BitCalloutAlignment.End" />
+                        TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement">
+            <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+            <BitChoiceGroupOption Text="Center" Value="BitPlacement.Center" />
+            <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
         </BitChoiceGroup>
         <br />
         <BitDropMenu Text="Account" IconName="@BitIconName.Contact" Alignment="alignment" FullWidth>
@@ -289,21 +289,21 @@
         </BitDropMenu>
         <br /><br />
         <div>
-            <b>Side</b> asks for a side of the button - <b>Top</b> for a menu in a bottom bar, <b>End</b> for one in a
+            <b>Placement</b> asks for a side of the button - <b>Top</b> for a menu in a bottom bar, <b>End</b> for one in a
             side bar - and falls back to the opposite side when the callout does not fit there. <b>Gap</b> spaces the
             callout off the button, in pixels.
         </div>
         <br />
         <BitChoiceGroup @bind-Value="side" Horizontal
-                        Label="Side"
-                        TItem="BitChoiceGroupOption<BitCalloutSide>" TValue="BitCalloutSide">
-            <BitChoiceGroupOption Text="Top" Value="BitCalloutSide.Top" />
-            <BitChoiceGroupOption Text="Bottom" Value="BitCalloutSide.Bottom" />
-            <BitChoiceGroupOption Text="Start" Value="BitCalloutSide.Start" />
-            <BitChoiceGroupOption Text="End" Value="BitCalloutSide.End" />
+                        Label="Placement"
+                        TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement">
+            <BitChoiceGroupOption Text="Top" Value="BitPlacement.Top" />
+            <BitChoiceGroupOption Text="Bottom" Value="BitPlacement.Bottom" />
+            <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+            <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
         </BitChoiceGroup>
         <br />
-        <BitDropMenu Text="Share" IconName="@BitIconName.Share" Side="side" Gap="8">
+        <BitDropMenu Text="Share" IconName="@BitIconName.Share" Placement="side" Gap="8">
             <BitStack Gap="0.25rem" Style="padding:0.5rem">
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Mail">Send by email</BitButton>
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Link">Copy link</BitButton>
@@ -314,20 +314,20 @@
     <DemoExample Title="Responsive" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             With <b>Responsive</b>, the callout becomes a panel on screens under 600px that slides in from
-            <b>PanelPosition</b> and is swiped away along the same axis. <b>ScrollContainerId</b> names the scrollable
+            <b>PanelPlacement</b> and is swiped away along the same axis. <b>ScrollContainerId</b> names the scrollable
             part of the content, so the swipe does not fight its scrolling. Narrow the window to try it.
         </div>
         <br />
         <BitChoiceGroup @bind-Value="panelPosition" Horizontal
-                        Label="PanelPosition"
-                        TItem="BitChoiceGroupOption<BitPanelPosition>" TValue="BitPanelPosition">
-            <BitChoiceGroupOption Text="Start" Value="BitPanelPosition.Start" />
-            <BitChoiceGroupOption Text="End" Value="BitPanelPosition.End" />
-            <BitChoiceGroupOption Text="Top" Value="BitPanelPosition.Top" />
-            <BitChoiceGroupOption Text="Bottom" Value="BitPanelPosition.Bottom" />
+                        Label="PanelPlacement"
+                        TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement">
+            <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+            <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
+            <BitChoiceGroupOption Text="Top" Value="BitPlacement.Top" />
+            <BitChoiceGroupOption Text="Bottom" Value="BitPlacement.Bottom" />
         </BitChoiceGroup>
         <br />
-        <BitDropMenu Text="Responsive" Responsive PanelPosition="panelPosition" ScrollContainerId="responsive-list">
+        <BitDropMenu Text="Responsive" Responsive PanelPlacement="panelPosition" ScrollContainerId="responsive-list">
             <div id="responsive-list" style="max-height:60vh;overflow:auto">
                 <BitStack Gap="0.5rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1">Swipe to dismiss</BitText>
@@ -725,7 +725,7 @@
                         <BitButton Variant="BitVariant.Text" IconName="@BitIconName.SignOut">خروج</BitButton>
                     </BitStack>
                 </BitDropMenu>
-                <BitDropMenu Text="ریسپانسیو" Dir="BitDir.Rtl" Responsive PanelPosition="BitPanelPosition.Start">
+                <BitDropMenu Text="ریسپانسیو" Dir="BitDir.Rtl" Responsive PanelPlacement="BitPlacement.Start">
                     <BitStack Gap="0.5rem" Style="padding:0.5rem">
                         <BitText Typography="BitTypography.Subtitle1">پنل از ابتدا</BitText>
                         <BitCheckbox Label="فعال" />

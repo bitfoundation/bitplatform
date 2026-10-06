@@ -102,7 +102,7 @@ public partial class McpServerPage
         new("Answers", "one Markdown text block per call",
             "A component's parameter table is sixty rows of four fields: as JSON that is the four field names repeated sixty times. No tool declares an outputSchema either - with one, the SDK sends the object in structuredContent AND the identical payload in the text block the protocol wants there anyway, so every answer would cross the wire twice."),
         new("Instructions", "returned by initialize",
-            "The one block of text the server writes into the model's context before it has called anything: which tool to reach for first, and the six rules that separate markup that compiles from markup that looks right."),
+            "The one block of text the server writes into the model's context before it has called anything: which tool to reach for first, and the seven rules that separate markup that compiles from markup that looks right."),
         new("Prompts", "add-bit-blazorui-to-app, build-bit-blazorui-screen, migrate-to-bit-blazorui, theme-bit-blazorui-app, debug-bit-blazorui-issue",
             "Ready-made workflows, each spending its words on the order to call the tools in rather than repeating the standing rules the instructions already carry."),
         new("Resources", "bitblazorui://components, /components/{name}, /components/{name}/examples, /types/{typeName}, /setup/{hostingModel}, /theming, /theming/{section}",

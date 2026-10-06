@@ -142,7 +142,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Gets or sets the position of the icon relative to the content of the toggle button.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Determines whether the toggle button is in the loading state, which covers its content
@@ -163,7 +163,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the loading label in regards to the spinner icon.
     /// </summary>
-    public BitLabelPosition? LoadingLabelPosition { get; set; }
+    public BitPlacement? LoadingLabelPlacement { get; set; }
 
     /// <summary>
     /// Keeps the text of the toggle button on a single line and ends it with an ellipsis where it does not fit.
@@ -408,9 +408,9 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (IconPosition.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconPosition)))
+        if (IconPlacement.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitToggleButton.IconPosition = IconPosition.Value;
+            bitToggleButton.IconPlacement = IconPlacement.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
@@ -432,9 +432,9 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.LoadingLabel = LoadingLabel;
         }
 
-        if (LoadingLabelPosition.HasValue && bitToggleButton.HasNotBeenSet(nameof(LoadingLabelPosition)))
+        if (LoadingLabelPlacement.HasValue && bitToggleButton.HasNotBeenSet(nameof(LoadingLabelPlacement)))
         {
-            bitToggleButton.LoadingLabelPosition = LoadingLabelPosition.Value;
+            bitToggleButton.LoadingLabelPlacement = LoadingLabelPlacement.Value;
         }
 
         if (NoWrap.HasValue && bitToggleButton.HasNotBeenSet(nameof(NoWrap)))

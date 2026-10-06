@@ -35,7 +35,7 @@
 
     <DemoExample Title="Expander icon" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            <b>ExpanderIconName</b> / <b>ExpanderIcon</b> replace the chevron, <b>ExpanderIconPosition</b> moves it to the start,
+            <b>ExpanderIconName</b> / <b>ExpanderIcon</b> replace the chevron, <b>ExpanderIconPlacement</b> moves it to the start,
             <b>HideExpanderIcon</b> removes it and <b>NoExpanderRotation</b> keeps it still. <b>ExpandedExpanderIconName</b> swaps
             it while open, which also stops the rotation.
         </div>
@@ -44,7 +44,7 @@
             <BitAccordion Title="ExpanderIconName" ExpanderIconName="@BitIconName.ChevronDown">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-            <BitAccordion Title="ExpanderIconPosition Start" IconName="@BitIconName.Settings" ExpanderIconPosition="BitIconPosition.Start">
+            <BitAccordion Title="ExpanderIconPlacement Start" IconName="@BitIconName.Settings" ExpanderIconPlacement="BitPlacement.Start">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
             <BitAccordion Title="HideExpanderIcon" HideExpanderIcon>
@@ -322,7 +322,7 @@
             <BitAccordion Title="Also takes the cascade" Description="Searchable while closed">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
-            <BitAccordion Title="Sets its own ExpanderIconPosition" ExpanderIconPosition="BitIconPosition.End">
+            <BitAccordion Title="Sets its own ExpanderIconPlacement" ExpanderIconPlacement="BitPlacement.End">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </BitParams>

@@ -187,11 +187,11 @@ public partial class BitRating : BitInputBase<double>
 
     /// <summary>
     /// Where the label sits relative to the items: above them by default, and beside them with
-    /// <see cref="BitLabelPosition.Start"/> or <see cref="BitLabelPosition.End"/> for the compact
+    /// <see cref="BitPlacement.Start"/> or <see cref="BitPlacement.End"/> for the compact
     /// "Quality: 3 of 5" row.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Replaces the <see cref="Label"/> with custom content, which still names the rating for assistive
@@ -387,11 +387,11 @@ public partial class BitRating : BitInputBase<double>
 
         ClassBuilder.Register(() => _IsRequired ? "bit-rtg-req" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Bottom => "bit-rtg-lbm",
-            BitLabelPosition.Start => "bit-rtg-lst",
-            BitLabelPosition.End => "bit-rtg-led",
+            BitPlacement.Bottom => "bit-rtg-lbm",
+            BitPlacement.Start => "bit-rtg-lst",
+            BitPlacement.End => "bit-rtg-led",
             _ => string.Empty
         });
 

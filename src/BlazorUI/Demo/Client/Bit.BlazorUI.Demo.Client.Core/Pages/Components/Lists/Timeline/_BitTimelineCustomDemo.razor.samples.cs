@@ -15,7 +15,7 @@ public class Event
     public RenderFragment<Event>? FirstContent { get; set; }
     public string? FirstText { get; set; }
     public BitIconInfo? ExternalIcon { get; set; }
-    public BitTimelineLineVariant? LineStyle { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
     public bool NoDot { get; set; }
     public string? Icon { get; set; }
     public string? Label { get; set; }
@@ -44,7 +44,7 @@ private BitTimelineNameSelectors<Event> nameSelectors = new()
     Color = { Selector = i => i.DotColor },
     Size = { Selector = i => i.DotSize },
     Variant = { Selector = i => i.DotVariant },
-    LineVariant = { Selector = i => i.LineStyle },
+    LineStyle = { Selector = i => i.LineStyle },
     HideDot = { Selector = i => i.NoDot },
     Template = { Selector = i => i.Content },
     OnClick = { Selector = i => i.OnSelect },
@@ -147,13 +147,13 @@ private List<Event> twoSidedCustoms =
 
 <BitTimeline TruncateLine=""BitTimelineTruncateLine.End"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline LineVariant=""BitTimelineLineVariant.Dashed"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline LineStyle=""BitLineStyle.Dashed"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline LineVariant=""BitTimelineLineVariant.Dotted"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline LineStyle=""BitLineStyle.Dotted"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />
 
 <BitTimeline Items=""lineVariantCustoms"" NameSelectors=""nameSelectors"" TruncateLine=""BitTimelineTruncateLine.Both"" />
 
-<BitTimeline Horizontal LineVariant=""BitTimelineLineVariant.Dashed"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+<BitTimeline Horizontal LineStyle=""BitLineStyle.Dashed"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example6CsharpCode = @"
 private BitTimelineNameSelectors<Event> nameSelectors = new()
 {
@@ -161,7 +161,7 @@ private BitTimelineNameSelectors<Event> nameSelectors = new()
     IconName = { Selector = i => i.Icon },
     Color = { Selector = i => i.DotColor },
     Variant = { Selector = i => i.DotVariant },
-    LineVariant = { Selector = i => i.LineStyle },
+    LineStyle = { Selector = i => i.LineStyle },
 };
 
 private List<Event> basicCustoms =
@@ -174,18 +174,18 @@ private List<Event> basicCustoms =
 private List<Event> lineVariantCustoms =
 [
     new() { FirstText = ""Ordered"", Icon = BitIconName.Accept, DotColor = BitColor.Success },
-    new() { FirstText = ""Shipped"", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed },
-    new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed }
+    new() { FirstText = ""Shipped"", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+    new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
 ];";
 
     private readonly string example7RazorCode = @"
 <BitTimeline Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline DotAlignment=""BitTimelineDotAlignment.End"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline DotAlignment=""BitPlacement.End"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline Horizontal DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+<BitTimeline Horizontal DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example7CsharpCode = @"
 private List<Event> alignCustoms =
 [
@@ -202,11 +202,11 @@ private List<Event> basicCustoms =
 ];";
 
     private readonly string example8RazorCode = @"
-<BitTimeline LinePosition=""BitTimelineLinePosition.Start"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline LinePlacement=""BitPlacement.Start"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline LinePosition=""BitTimelineLinePosition.End"" DotAlignment=""BitTimelineDotAlignment.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
+<BitTimeline LinePlacement=""BitPlacement.End"" DotAlignment=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""alignCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitTimeline Horizontal LinePosition=""BitTimelineLinePosition.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
+<BitTimeline Horizontal LinePlacement=""BitPlacement.Start"" TruncateLine=""BitTimelineTruncateLine.Both"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example8CsharpCode = @"
 private List<Event> alignCustoms =
 [
@@ -367,8 +367,8 @@ private void HandleOnSelect(Event item)
 private List<Event> a11yCustoms =
 [
     new() { FirstText = ""Ordered"", Icon = BitIconName.Accept, DotColor = BitColor.Success, Label = ""Ordered, done"", Tooltip = ""Done on 3 March"" },
-    new() { FirstText = ""Shipped"", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed, Label = ""Shipped, done"", Tooltip = ""Done on 4 March"" },
-    new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed, Label = ""Delivered, pending"", Tooltip = ""Expected on 7 March"" }
+    new() { FirstText = ""Shipped"", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitLineStyle.Dashed, Label = ""Shipped, done"", Tooltip = ""Done on 4 March"" },
+    new() { FirstText = ""Delivered"", DotVariant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed, Label = ""Delivered, pending"", Tooltip = ""Expected on 7 March"" }
 ];";
 
     private readonly string example13RazorCode = @"

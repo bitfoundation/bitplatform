@@ -73,12 +73,12 @@ private bool isHeaderTextPanelOpen;
 private bool isTemplatePanelOpen;";
 
     private readonly string example3RazorCode = @"
-<BitChoiceGroup @bind-Value=""panelPosition"" Horizontal Label=""Position""
-                TItem=""BitChoiceGroupOption<BitPanelPosition>"" TValue=""BitPanelPosition"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitPanelPosition.Start"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitPanelPosition.End"" />
-    <BitChoiceGroupOption Text=""Top"" Value=""BitPanelPosition.Top"" />
-    <BitChoiceGroupOption Text=""Bottom"" Value=""BitPanelPosition.Bottom"" />
+<BitChoiceGroup @bind-Value=""panelPosition"" Horizontal Label=""Placement""
+                TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitPlacement.Start"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitPlacement.End"" />
+    <BitChoiceGroupOption Text=""Top"" Value=""BitPlacement.Top"" />
+    <BitChoiceGroupOption Text=""Bottom"" Value=""BitPlacement.Bottom"" />
 </BitChoiceGroup>
 <BitNumberField @bind-Value=""panelSize"" Min=""100"" Step=""20"" Mode=""BitSpinButtonMode.Inline"" Label=""Size"" />
 <BitToggle @bind-Value=""panelFullSize"" Label=""FullSize"" />
@@ -86,15 +86,15 @@ private bool isTemplatePanelOpen;";
 <BitButton OnClick=""() => isPositionPanelOpen = true"">Open panel</BitButton>
 
 <BitPanel @bind-IsOpen=""isPositionPanelOpen""
-          Position=""panelPosition""
+          Placement=""panelPosition""
           Size=""panelSize""
           FullSize=""panelFullSize""
-          HeaderText=""@($""Position.{panelPosition}"")""
+          HeaderText=""@($""Placement.{panelPosition}"")""
           ShowCloseButton>
     Size: @(panelFullSize ? ""FullSize"" : $""{panelSize}px"")
 </BitPanel>";
     private readonly string example3CsharpCode = @"
-private BitPanelPosition panelPosition = BitPanelPosition.End;
+private BitPlacement panelPosition = BitPlacement.End;
 private double panelSize = 300;
 private bool panelFullSize;
 private bool isPositionPanelOpen;";
@@ -286,7 +286,7 @@ private bool isSwipePanelOpen;";
     <BitPanel @bind-IsOpen=""isInnerPanelOpen""
               Size=""280""
               ModeFull
-              Position=""BitPanelPosition.Start""
+              Placement=""BitPlacement.Start""
               HeaderText=""Nested""
               ShowCloseButton>
         Declared inside the outer panel, so it covers it without a ZIndex.
@@ -297,7 +297,7 @@ private bool isSwipePanelOpen;";
           Size=""280""
           ModeFull
           ZIndex=""1310""
-          Position=""BitPanelPosition.Start""
+          Placement=""BitPlacement.Start""
           HeaderText=""Sibling""
           ShowCloseButton>
     Declared beside the outer panel and lifted over it by ZIndex.
@@ -363,13 +363,13 @@ private bool isRenderPanelOpen;";
     private readonly string example12RazorCode = @"
 <BitParams Parameters=""@panelParams"">
     <BitButton OnClick=""() => isCascadedPanelOpen = true"">Cascaded values</BitButton>
-    <BitButton OnClick=""() => isOverridingPanelOpen = true"">Own Position</BitButton>
+    <BitButton OnClick=""() => isOverridingPanelOpen = true"">Own Placement</BitButton>
 
     <BitPanel @bind-IsOpen=""isCascadedPanelOpen"" HeaderText=""From the cascade"">
         Start edge, 320px, dimmed page and a close button - none of it set on this panel.
     </BitPanel>
 
-    <BitPanel @bind-IsOpen=""isOverridingPanelOpen"" Position=""BitPanelPosition.End"" HeaderText=""Its own Position"">
+    <BitPanel @bind-IsOpen=""isOverridingPanelOpen"" Placement=""BitPlacement.End"" HeaderText=""Its own Placement"">
         Slides in from the end, everything else from the cascade.
     </BitPanel>
 </BitParams>";
@@ -378,7 +378,7 @@ private readonly BitPanelParams[] panelParams =
 [
     new()
     {
-        Position = BitPanelPosition.Start,
+        Placement = BitPlacement.Start,
         Size = 320,
         ModeFull = true,
         ShowCloseButton = true,
@@ -489,7 +489,7 @@ private bool isCssVarsPanelOpen;";
           HeaderText=""پنل آغاز""
           ShowCloseButton
           CloseButtonTitle=""بستن""
-          Position=""BitPanelPosition.Start"">
+          Placement=""BitPlacement.Start"">
     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
 </BitPanel>
 
@@ -499,7 +499,7 @@ private bool isCssVarsPanelOpen;";
           HeaderText=""پنل پایان""
           ShowCloseButton
           CloseButtonTitle=""بستن""
-          Position=""BitPanelPosition.End"">
+          Placement=""BitPlacement.End"">
     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
 </BitPanel>";
     private readonly string example15CsharpCode = @"

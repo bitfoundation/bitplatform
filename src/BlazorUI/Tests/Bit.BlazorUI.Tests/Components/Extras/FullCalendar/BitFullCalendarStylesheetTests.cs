@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +44,7 @@ public partial class BitFullCalendarStylesheetTests
     [TestMethod]
     public void BitFullCalendarShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-FullCalendar-* variable is declared, which stops it inheriting.");
     }
@@ -63,7 +61,7 @@ public partial class BitFullCalendarStylesheetTests
     [TestMethod]
     public void BitFullCalendarShouldNotHardCodeWhiteOrALiteralShadow()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(body.Contains("#fff"), "A literal white is used instead of a theme token.");
         Assert.IsFalse(Regex.IsMatch(body, @"rgba\(\s*0\s*,\s*0\s*,\s*0"), "A literal black shadow is used instead of an elevation token.");
@@ -74,21 +72,7 @@ public partial class BitFullCalendarStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what is not a comment is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "FullCalendar", "BitFullCalendar.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "FullCalendar", "BitFullCalendar.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-FullCalendar-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

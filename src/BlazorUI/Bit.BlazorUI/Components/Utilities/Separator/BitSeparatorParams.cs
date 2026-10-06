@@ -32,7 +32,7 @@ public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
     /// <br />
     /// <see cref="BitSeparator.AlignContent"/>.
     /// </summary>
-    public BitSeparatorAlignContent? AlignContent { get; set; }
+    public BitPlacement? AlignContent { get; set; }
 
     /// <summary>
     /// Renders the separator with auto width or height.
@@ -103,7 +103,7 @@ public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
     /// <br />
     /// <see cref="BitSeparator.LineStyle"/>.
     /// </summary>
-    public BitSeparatorLineStyle? LineStyle { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// The size of the line of the separator, out of the sizes of the theme.

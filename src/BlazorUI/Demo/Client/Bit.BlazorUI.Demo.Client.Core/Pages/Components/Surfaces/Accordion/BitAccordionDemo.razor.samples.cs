@@ -17,7 +17,7 @@ public partial class BitAccordionDemo
 <BitAccordion Title=""ExpanderIconName"" ExpanderIconName=""@BitIconName.ChevronDown"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""ExpanderIconPosition Start"" IconName=""@BitIconName.Settings"" ExpanderIconPosition=""BitIconPosition.Start"">
+<BitAccordion Title=""ExpanderIconPlacement Start"" IconName=""@BitIconName.Settings"" ExpanderIconPlacement=""BitPlacement.Start"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 <BitAccordion Title=""HideExpanderIcon"" HideExpanderIcon>
@@ -256,7 +256,7 @@ private int readOnlyClickCount;";
     <BitAccordion Title=""Also takes the cascade"" Description=""Searchable while closed"">
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>
-    <BitAccordion Title=""Sets its own ExpanderIconPosition"" ExpanderIconPosition=""BitIconPosition.End"">
+    <BitAccordion Title=""Sets its own ExpanderIconPlacement"" ExpanderIconPlacement=""BitPlacement.End"">
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>
 </BitParams>";
@@ -268,7 +268,7 @@ private readonly BitAccordionParams[] accordionParams =
         HiddenUntilFound = true,
         ExpanderIconName = BitIconName.Add,
         ExpandedExpanderIconName = BitIconName.Remove,
-        ExpanderIconPosition = BitIconPosition.Start,
+        ExpanderIconPlacement = BitPlacement.Start,
     }
 ];";
 

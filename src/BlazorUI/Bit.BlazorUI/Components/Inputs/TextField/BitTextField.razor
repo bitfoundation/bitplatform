@@ -44,9 +44,9 @@
                 </div>
             }
 
-            @* The icon is written once and placed on whichever end IconPosition asks for, so a leading and a
+            @* The icon is written once and placed on whichever end IconPlacement asks for, so a leading and a
                trailing one are the same mark with the same name rather than two pieces of markup drifting apart. *@
-            @if (HasIcon && IconPosition is BitIconPosition.Start)
+            @if (HasIcon && IconPlacement is BitPlacement.Start)
             {
                 @IconFragment
             }
@@ -210,7 +210,7 @@
                 </button>
             }
 
-            @if (HasIcon && IconPosition is not BitIconPosition.Start)
+            @if (HasIcon && IconPlacement is not BitPlacement.Start)
             {
                 @IconFragment
             }

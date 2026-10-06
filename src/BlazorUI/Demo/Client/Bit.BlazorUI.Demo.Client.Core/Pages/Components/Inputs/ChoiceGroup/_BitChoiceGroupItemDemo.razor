@@ -59,14 +59,14 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="LabelPosition" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="LabelPlacement" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>Places the content of each item on any of the four sides of its radio circle. End is the default and renders the circle first; Start renders the content first and additionally aligns the items to the end of the group, so the circles line up in one column once the group is wider than its items (which is what the FullWidth section combines it with). Top and Bottom stack the content above or below the circle. Items rendered as image or icon tiles lay their own content out and are not affected.</div>
     <br />
     <div class="example-content column">
-        <BitChoiceGroup Label="End (default)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.End" Horizontal />
-        <BitChoiceGroup Label="Start" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" Horizontal />
-        <BitChoiceGroup Label="Top" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Top" Horizontal />
-        <BitChoiceGroup Label="Bottom" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Bottom" Horizontal />
+        <BitChoiceGroup Label="End (default)" Items="basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.End" Horizontal />
+        <BitChoiceGroup Label="Start" Items="basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" Horizontal />
+        <BitChoiceGroup Label="Top" Items="basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Top" Horizontal />
+        <BitChoiceGroup Label="Bottom" Items="basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Bottom" Horizontal />
     </div>
 </DemoExample>
 
@@ -266,7 +266,7 @@
 </DemoExample>
 
 <DemoExample Title="FullWidth" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
-    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest item, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the items additionally share that width in equal columns. In the vertical layout every item row spans the full width, so LabelPosition.Start now has room to push the items to the far edge; adding StretchItemLabel, which stretches the label of each item over its row and spreads its content, turns that into the text-at-the-start, circle-at-the-end list found in settings pages.</div>
+    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest item, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the items additionally share that width in equal columns. In the vertical layout every item row spans the full width, so LabelPlacement.Start now has room to push the items to the far edge; adding StretchItemLabel, which stretches the label of each item over its row and spreads its content, turns that into the text-at-the-start, circle-at-the-end list found in settings pages.</div>
     <br />
     <div class="example-content column">
         <div class="example-box">
@@ -276,10 +276,10 @@
             <BitChoiceGroup Label="FullWidth (horizontal, equal columns)" Items="basicItems" DefaultValue="@("A")" Horizontal FullWidth />
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start (items at the far edge)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" FullWidth />
+            <BitChoiceGroup Label="FullWidth + LabelPlacement.Start (items at the far edge)" Items="basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" FullWidth />
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start + StretchItemLabel (settings list)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" FullWidth StretchItemLabel />
+            <BitChoiceGroup Label="FullWidth + LabelPlacement.Start + StretchItemLabel (settings list)" Items="basicItems" DefaultValue="@("A")" LabelPlacement="BitPlacement.Start" FullWidth StretchItemLabel />
         </div>
     </div>
 </DemoExample>
@@ -305,7 +305,7 @@
 </DemoExample>
 
 <DemoExample Title="Variant" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
-    <div>Draws every item as a selectable card instead of a bare radio row. <b>Text</b> is the default and is what every example above renders; <b>Outline</b> gives an item a border, <b>Fill</b> a surface, and both tint the checked one in the current Color. The card is the label of the native input, so its whole area is the click target and the focus ring outlines it. It stacks with the rest: FullWidth for equal columns, LabelPosition.Start to move the circle to the far edge, and a description for a two line card.</div>
+    <div>Draws every item as a selectable card instead of a bare radio row. <b>Text</b> is the default and is what every example above renders; <b>Outline</b> gives an item a border, <b>Fill</b> a surface, and both tint the checked one in the current Color. The card is the label of the native input, so its whole area is the click target and the focus ring outlines it. It stacks with the rest: FullWidth for equal columns, LabelPlacement.Start to move the circle to the far edge, and a description for a two line card.</div>
     <br />
     <div class="example-content column variant-box">
         <BitChoiceGroup Label="Outline"
@@ -318,7 +318,7 @@
                         Variant="BitVariant.Fill"
                         Items="descriptionItems"
                         DefaultValue="@("Daily")"
-                        LabelPosition="BitLabelPosition.Start"
+                        LabelPlacement="BitPlacement.Start"
                         FullWidth />
 
         <BitChoiceGroup Label="Outline, horizontal icon cards"

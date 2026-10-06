@@ -2116,17 +2116,17 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-tfl-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-tfl-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-tfl-lst"),
-        DataRow(BitLabelPosition.End, "bit-tfl-led"),
+        DataRow(BitPlacement.Top, "bit-tfl-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-tfl-lbt"),
+        DataRow(BitPlacement.Start, "bit-tfl-lst"),
+        DataRow(BitPlacement.End, "bit-tfl-led"),
     ]
-    public void BitTextFieldLabelPositionTest(BitLabelPosition labelPosition, string expectedClass)
+    public void BitTextFieldLabelPositionTest(BitPlacement labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Label, "a label");
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(expectedClass));
@@ -2155,14 +2155,14 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Label, "a label");
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.Top);
+            parameters.Add(p => p.LabelPlacement, BitPlacement.Top);
         });
 
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-ltp"));
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.Start);
+            parameters.Add(p => p.LabelPlacement, BitPlacement.Start);
         });
 
         var bitTextField = component.Find(".bit-tfl");
@@ -3554,14 +3554,14 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(BitIconPosition.Start, true),
-     DataRow(BitIconPosition.End, false)]
-    public void BitTextFieldIconPositionShouldDecideWhichEndTheIconSitsAt(BitIconPosition position, bool beforeTheInput)
+     DataRow(BitPlacement.Start, true),
+     DataRow(BitPlacement.End, false)]
+    public void BitTextFieldIconPositionShouldDecideWhichEndTheIconSitsAt(BitPlacement position, bool beforeTheInput)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.IconName, "Calendar");
-            parameters.Add(p => p.IconPosition, position);
+            parameters.Add(p => p.IconPlacement, position);
         });
 
         var (iconIndex, inputWrapperIndex) = IndexOfIconAndInput(component);
@@ -3578,7 +3578,7 @@ public class BitTextFieldTests : BunitTestContext
         {
             parameters.Add(p => p.IconName, "Lock");
             parameters.Add(p => p.IconAriaLabel, "Encrypted");
-            parameters.Add(p => p.IconPosition, BitIconPosition.Start);
+            parameters.Add(p => p.IconPlacement, BitPlacement.Start);
         });
 
         var icon = component.Find(".bit-tfl-ico");

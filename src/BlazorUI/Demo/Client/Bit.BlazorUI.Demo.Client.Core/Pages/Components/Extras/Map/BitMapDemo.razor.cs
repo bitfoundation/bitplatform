@@ -597,12 +597,12 @@ public partial class BitMapDemo
                 },
                 new()
                 {
-                    Name = "TooltipDirection",
-                    Type = "BitMapTooltipDirection",
-                    DefaultValue = "BitMapTooltipDirection.Auto",
-                    Description = "Where the tooltip opens against the marker.",
+                    Name = "TooltipPlacement",
+                    Type = "BitPlacement?",
+                    DefaultValue = "null",
+                    Description = "Where the tooltip opens against the marker. Only Top, Bottom, Left, Right and Center are honoured; any other value, or none, leaves the provider to choose.",
                     LinkType = LinkType.Link,
-                    Href = "#tooltip-direction-enum",
+                    Href = "#placement-enum",
                 },
                 new()
                 {
@@ -1040,21 +1040,7 @@ public partial class BitMapDemo
                 new() { Name = "Unsupported", Value = "4", Description = "The browser cannot run this provider - no WebGL for a GL-backed one." },
             ]
         },
-        new()
-        {
-            Id = "tooltip-direction-enum",
-            Name = "BitMapTooltipDirection",
-            Description = "Where a marker's tooltip opens.",
-            Items =
-            [
-                new() { Name = "Auto", Value = "0", Description = "The provider picks." },
-                new() { Name = "Top", Value = "1", Description = "Above the marker." },
-                new() { Name = "Bottom", Value = "2", Description = "Below the marker." },
-                new() { Name = "Left", Value = "3", Description = "To the left of the marker." },
-                new() { Name = "Right", Value = "4", Description = "To the right of the marker." },
-                new() { Name = "Center", Value = "5", Description = "Centred on the marker." },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =

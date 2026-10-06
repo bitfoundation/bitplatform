@@ -42,15 +42,15 @@ public partial class BitLoadingDemo
     private readonly string example2RazorCode = @"
 <BitRingLoading Label=""Uploading photos..."" />
 
-<BitDotsRingLoading Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
+<BitDotsRingLoading Label=""Top"" LabelPlacement=""BitPlacement.Top"" />
 
-<BitDotsRingLoading Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
+<BitDotsRingLoading Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" />
 
-<BitDotsRingLoading Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
+<BitDotsRingLoading Label=""Start"" LabelPlacement=""BitPlacement.Start"" />
 
-<BitDotsRingLoading Label=""End"" LabelPosition=""BitLabelPosition.End"" />
+<BitDotsRingLoading Label=""End"" LabelPlacement=""BitPlacement.End"" />
 
-<BitRollerLoading LabelPosition=""BitLabelPosition.Bottom"">
+<BitRollerLoading LabelPlacement=""BitPlacement.Bottom"">
     <LabelTemplate>
         <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.SecondaryForeground"">
             Restoring your session
@@ -143,7 +143,7 @@ private async Task StartWork()
 
 <div class=""orders"">
     <BitOverlay IsOpen=""isRefreshing"" AbsolutePosition ModeFull Style=""align-items:center;justify-content:center;color:white"">
-        <BitRingLoading Label=""Refreshing orders..."" LabelPosition=""BitLabelPosition.End"" />
+        <BitRingLoading Label=""Refreshing orders..."" LabelPlacement=""BitPlacement.End"" />
     </BitOverlay>
     @* Only the stale content is busy: a busy region holds back its announcements, the loader's included. *@
     <div class=""order-list"" aria-busy=""@(isRefreshing ? ""true"" : ""false"")"">
@@ -184,7 +184,7 @@ private async Task Refresh()
 
     <BitDualRingLoading Label=""Uploading"" />
 
-    <BitSpinnerLoading Label=""Indexing"" LabelPosition=""BitLabelPosition.Bottom"" />
+    <BitSpinnerLoading Label=""Indexing"" LabelPlacement=""BitPlacement.Bottom"" />
 </BitParams>";
     private readonly string example9CsharpCode = @"
 private readonly BitLoadingParams[] loadingParams =
@@ -193,7 +193,7 @@ private readonly BitLoadingParams[] loadingParams =
     {
         Thickness = 3,
         Speed = 1.5,
-        LabelPosition = BitLabelPosition.End
+        LabelPlacement = BitPlacement.End
     }
 ];";
 
@@ -299,9 +299,9 @@ private readonly BitLoadingParams[] loadingParams =
 
     private readonly string example13RazorCode = @"
 <div dir=""rtl"">
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPosition=""BitLabelPosition.Start"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""شروع"" LabelPlacement=""BitPlacement.Start"" />
 
-    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPosition=""BitLabelPosition.End"" />
+    <BitRingLoading Dir=""BitDir.Rtl"" Label=""پایان"" LabelPlacement=""BitPlacement.End"" />
 
     @* The two loaders whose motion travels across the box are mirrored, so they run toward the end of the line. *@
     <BitEllipsisLoading Dir=""BitDir.Rtl"" Label=""نقطه‌ها"" />

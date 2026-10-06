@@ -58,35 +58,35 @@ public partial class BitStickyDemo
     }
 </style>
 
-<BitChoiceGroup Horizontal Label=""Vertical"" TItem=""BitChoiceGroupOption<BitStickyPosition>"" TValue=""BitStickyPosition"" @bind-Value=""verticalPosition"">
-    <BitChoiceGroupOption Text=""Top"" Value=""BitStickyPosition.Top"" />
-    <BitChoiceGroupOption Text=""Bottom"" Value=""BitStickyPosition.Bottom"" />
-    <BitChoiceGroupOption Text=""TopAndBottom"" Value=""BitStickyPosition.TopAndBottom"" />
+<BitChoiceGroup Horizontal Label=""Vertical"" TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"" @bind-Value=""verticalPosition"">
+    <BitChoiceGroupOption Text=""Top"" Value=""BitPlacement.Top"" />
+    <BitChoiceGroupOption Text=""Bottom"" Value=""BitPlacement.Bottom"" />
+    <BitChoiceGroupOption Text=""TopAndBottom"" Value=""BitPlacement.TopAndBottom"" />
 </BitChoiceGroup>
 <div class=""vertical-container"">
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
     <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
     <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
-    <BitSticky Class=""sticky"" Position=""verticalPosition"">Position=""@verticalPosition""</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""verticalPosition"">Placement=""@verticalPosition""</BitSticky>
     <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
     <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
     <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
 </div>
 <br />
-<BitChoiceGroup Horizontal Label=""Horizontal"" TItem=""BitChoiceGroupOption<BitStickyPosition>"" TValue=""BitStickyPosition"" @bind-Value=""horizontalPosition"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitStickyPosition.Start"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitStickyPosition.End"" />
-    <BitChoiceGroupOption Text=""StartAndEnd"" Value=""BitStickyPosition.StartAndEnd"" />
+<BitChoiceGroup Horizontal Label=""Horizontal"" TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"" @bind-Value=""horizontalPosition"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitPlacement.Start"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitPlacement.End"" />
+    <BitChoiceGroupOption Text=""StartAndEnd"" Value=""BitPlacement.StartAndEnd"" />
 </BitChoiceGroup>
 <div class=""horizontal-container"">
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</p>
-    <BitSticky Class=""sticky"" Position=""horizontalPosition"">Position=""@horizontalPosition""</BitSticky>
+    <BitSticky Class=""sticky"" Placement=""horizontalPosition"">Placement=""@horizontalPosition""</BitSticky>
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.</p>
 </div>";
     private readonly string example2CsharpCode = @"
-private BitStickyPosition verticalPosition = BitStickyPosition.TopAndBottom;
-private BitStickyPosition horizontalPosition = BitStickyPosition.StartAndEnd;";
+private BitPlacement verticalPosition = BitPlacement.TopAndBottom;
+private BitPlacement horizontalPosition = BitPlacement.StartAndEnd;";
 
     private readonly string example3RazorCode = @"
 <style>
@@ -201,7 +201,7 @@ private bool isStuck;";
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
     <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
     <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
-    <BitSticky Class=""sticky edge-shadow"" Position=""BitStickyPosition.TopAndBottom"" OnStuckEdgesChanged=""v => stuckEdges = v"">
+    <BitSticky Class=""sticky edge-shadow"" Placement=""BitPlacement.TopAndBottom"" OnStuckEdgesChanged=""v => stuckEdges = v"">
         @(stuckEdges is BitStickyEdges.None ? ""Travelling with the content"" : $""Pinned to {stuckEdges}"")
     </BitSticky>
     <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
@@ -253,7 +253,7 @@ private BitStickyEdges stuckEdges;";
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
     <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
     <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
-    <BitSticky Element=""footer"" Class=""sticky"" Position=""BitStickyPosition.Bottom"">A sticky footer</BitSticky>
+    <BitSticky Element=""footer"" Class=""sticky"" Placement=""BitPlacement.Bottom"">A sticky footer</BitSticky>
 </div>
 <br />
 <div class=""vertical-container"">
@@ -391,7 +391,7 @@ private readonly Person[] people =
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
     <p>Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning of something remarkable.</p>
     <p>In the beginning, there is silence: a blank canvas yearning to be filled, a quiet space where creativity waits to awaken, standing in place of ideas yet to come.</p>
-    <BitSticky ElevateOnStuck Class=""bar"" Position=""BitStickyPosition.TopAndBottom"">Elevated only while stuck</BitSticky>
+    <BitSticky ElevateOnStuck Class=""bar"" Placement=""BitPlacement.TopAndBottom"">Elevated only while stuck</BitSticky>
     <p>In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and each word can become something extraordinary.</p>
     <p>Imagine this space as a window into the future, empty yet alive with the energy of endless possibilities, ready to transform into something meaningful.</p>
     <p>Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. Each word carried meaning, each pause brought understanding.</p>
@@ -412,7 +412,7 @@ private readonly Person[] people =
             @foreach (var person in people)
             {
                 <tr>
-                    <BitSticky Element=""th"" ElevateOnStuck Position=""BitStickyPosition.Start"" Class=""row-head"" scope=""row"">@person.Name</BitSticky>
+                    <BitSticky Element=""th"" ElevateOnStuck Placement=""BitPlacement.Start"" Class=""row-head"" scope=""row"">@person.Name</BitSticky>
                     <td>@person.Role</td>
                     <td>@person.KnownFor</td>
                     <td>@person.Born</td>
@@ -624,13 +624,13 @@ private readonly BitStickyParams[] stickyParams =
 <div dir=""rtl"">
     <div class=""horizontal-container"">
         <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
-        <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Position=""BitStickyPosition.Start"">چسبیده به آغاز</BitSticky>
+        <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Placement=""BitPlacement.Start"">چسبیده به آغاز</BitSticky>
         <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
     </div>
     <br />
     <div class=""horizontal-container"">
         <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
-        <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Position=""BitStickyPosition.End"">چسبیده به پایان</BitSticky>
+        <BitSticky Dir=""BitDir.Rtl"" Class=""sticky"" Placement=""BitPlacement.End"">چسبیده به پایان</BitSticky>
         <p>روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.</p>
     </div>
 </div>";

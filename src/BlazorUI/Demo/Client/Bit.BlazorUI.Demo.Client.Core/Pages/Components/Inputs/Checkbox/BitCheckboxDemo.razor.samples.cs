@@ -17,10 +17,10 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""Disabled custom check icon"" CheckIconName=""@BitIconName.WavingHand"" Value=""true"" Disabled />";
 
     private readonly string example3RazorCode = @"
-<BitCheckbox Label=""End"" LabelPosition=""BitLabelPosition.End"" />
-<BitCheckbox Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
-<BitCheckbox Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
-<BitCheckbox Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
+<BitCheckbox Label=""End"" LabelPlacement=""BitPlacement.End"" />
+<BitCheckbox Label=""Start"" LabelPlacement=""BitPlacement.Start"" />
+<BitCheckbox Label=""Top"" LabelPlacement=""BitPlacement.Top"" />
+<BitCheckbox Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" />
 <BitCheckbox Label=""Reversed"" Reversed />";
 
     private readonly string example4RazorCode = @"

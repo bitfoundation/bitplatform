@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -16,10 +15,7 @@ public sealed class BitThemeMapperContractTests
     [TestMethod]
     public void ThemeVariablesReferencedTokensAreEmittedByMapperWhenSet()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-variables.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure theme-variables.scss is copied to output.");
-
-        var scss = File.ReadAllText(scssPath);
+        var scss = SourceFiles.ReadThemeStylesheet("theme-variables.scss");
         var expectedKeys = CssVarRef.Matches(scss)
             .Select(m => m.Groups[1].Value)
             .Distinct()
@@ -37,10 +33,7 @@ public sealed class BitThemeMapperContractTests
     [TestMethod]
     public void MapperEmittedTokensAreConsumedByShippedStyles()
     {
-        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles");
-        Assert.IsTrue(Directory.Exists(stylesDir), $"Missing {stylesDir}; ensure the library Styles folder is copied to output.");
-
-        var scss = string.Join("\n", Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories).Select(File.ReadAllText));
+        var scss = string.Join("\n", SourceFiles.EnumerateThemeStylesheets().Select(SourceFiles.ReadFullPath));
 
         var theme = new BitTheme();
         FillAllStringProperties(theme, []);

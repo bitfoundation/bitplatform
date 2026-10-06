@@ -215,7 +215,7 @@ public partial class IconographyPage
 
             if (index >= 0)
             {
-                await _grid.ScrollToIndexAsync(index, BitVirtualizeScrollAlignment.Center);
+                await _grid.ScrollToIndexAsync(index, BitScrollAlignment.Center);
             }
         }
 
