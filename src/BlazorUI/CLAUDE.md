@@ -40,6 +40,36 @@ never
      aria-label="@TagName(tag)">
 ```
 
+## Core components never render each other
+
+A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own
+SCSS; it never renders another public component of the library (no `<BitSpinnerLoading>` for a busy
+state, no `<BitShimmer>` for a skeleton, no `<BitButton>` for an action). Every component is re-skinned on
+its own - its `--bit-<Component>-*` variables, its `BitParams` cascade, its `Styles` / `Classes` - so one
+rendered inside another would carry an app's restyle of the first into the second, and couple the two
+components' markup, defaults and accessibility behaviour as well.
+
+- **Draw the part locally**, under the component's own class prefix, reading the global tokens: an inline
+  busy spinner is `@include spinner-ring($size, $color, $track)` from `Styles/functions.scss` - one ring
+  of `$siz-spinner-stroke` turning on `$mot-duration-spinner` / `$mot-easing-spinner` over the shared
+  `bit-spin` keyframes, with its forced-colors pair built in - never a hand-written copy of it (see
+  `.bit-btn-spn`, `.bit-srb-spn`, `.bit-tfl-spn`). A part that goes GrayText when disabled in
+  forced-colors mode includes `spinner-ring-forced-disabled` for its spinner in that block. A skeleton is
+  a few bars of its own (`.bit-crd-skb`). Offer a `...Template` parameter for an app that wants a library
+  component there instead - rendering one is the app's choice, never the component's default.
+- **A part drawn locally is a part of the component's public surface**, since what it replaces was
+  restylable through its own API: give it a `<Component>ClassStyles` member applied as
+  `style="@Styles?.X" class="bit-xxx-yyy @Classes?.X"` (`Spinner`, `Skeleton` / `SkeletonBar`), the public
+  `--bit-<Component>-*` variables an app would reach for (`spinner-size` / `-color` / `-track-color`,
+  `skeleton-background` / `-color`) in the stylesheet's header, and both in the demo page's
+  `componentSubClasses` and `componentCssVariables` tables, which `BitComponentCssVariablesContractTests`
+  pins to the stylesheet.
+- **Not covered**: a family's own internal shell (`BitLoading`, which every `Bit*Loading` renders its
+  drawing into), plumbing that is not a visual component (`BitCascadingValueProvider`), and a service
+  whose job is to render the component it serves (`BitModalService` opening a `BitModal`).
+- **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
+  renders a BitTextField), which is exactly what keeps the core ones from having to be.
+
 ## Demo pages
 
 A component's demo page is
@@ -59,14 +89,29 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 - **A section only uses what has already been introduced.** A demo page is read from the top down, so
   a section may only use the parameters and the features its own section, or an earlier one, has
   introduced.
-- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
-  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are written once in
-  `Models/SharedSubEnums.cs`; a page adds the one it needs to its sub-enum list and points its row at
-  the table's stable id (`Href="#placement-enum"`). Which of the values a particular parameter honours
-  is the row's own `Description` - it is what the site renders and what the MCP server hands an agent,
-  and a component honouring four of nine values says nothing without it.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
+- **A library-wide enum's table is written once.** `BitColor`, `BitSize`, `BitVariant` and the other
+  types many pages list come from `Models/DemoSharedEnums` (`DemoSharedEnums.BitColor()` in the page's
+  `componentSubEnums`), with one anchor id per type. A page passes `description:` for its own line above
+  the table and `.Only(...)` for the members it supports (BitPagination's eight general colors; a name
+  that is not a member throws, as does naming none), and keeps a table of its own only when the members
+  mean something different there (BitLoading's pixel sizes) - still under the shared table's anchor
+  id, and a type of its own never under a shared one (BitPersonaSize is `persona-size-enum`). A
+  default that holds on one page only goes in that page's parameter description, not in the table. A
+  shared table writes nothing but its anchor id: the members and values are read off the enum in
+  declaration order, and the prose is the enum's own XML documentation, which
+  `MSBuild/DemoSharedEnumDocs.targets` writes into a generated half of `DemoSharedEnums` before every
+  compile (a WebAssembly page has none to read) - so a table's wording is changed in the enum's doc
+  comments, and a new shared table names its enum in that file as well as adding its factory. A missing
+  summary only empties a cell at runtime; `DemoSharedEnumsTests` is what fails on it, and pins every
+  page's anchor ids - one per type, shared or not.
+- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
+  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are shared tables
+  like the rest; a page adds the one it needs to its sub-enum list and points its row at the table's
+  anchor id (`Href="#placement-enum"`). Which of the values a particular parameter honours is the row's
+  own `Description` - it is what the site renders and what the MCP server hands an agent, and a
+  component honouring four of nine values says nothing without it.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
 - **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -

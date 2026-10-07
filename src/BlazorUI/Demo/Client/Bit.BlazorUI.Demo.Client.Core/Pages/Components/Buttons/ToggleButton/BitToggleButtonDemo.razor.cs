@@ -155,7 +155,7 @@ public partial class BitToggleButtonDemo
             Name = "IconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the icon relative to the content of the toggle button. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
+            Description = "The position of the icon relative to the content of the toggle button. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
@@ -777,172 +777,10 @@ public partial class BitToggleButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        SharedSubEnums.BitPlacement,
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size button.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size button.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="Fill styled variant.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="Outline styled variant.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Text styled variant.",
-                    Value="2",
-                }
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant()
     ];
 
 

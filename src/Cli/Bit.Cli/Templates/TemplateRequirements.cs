@@ -1,26 +1,33 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
+using Bit.Cli.Tools;
 
 namespace Bit.Cli.Templates;
 
-public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspire)
+public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspire, SdkRequirement? Sdk)
 {
     private const string PackageJsonEntry = "Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json";
 
     private const string AppHostEntry = "Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj";
 
-    public static TemplateRequirements Embedded { get; } = new(ParseNodeMajor(ReadResource("Bit.Cli.package.json")), ParseAspire(ReadResource("Bit.Cli.AppHost.csproj")));
+    private const string GlobalJsonEntry = "Bit.Boilerplate/global.json";
+
+    public static TemplateRequirements Embedded { get; } = new(ParseNodeMajor(ReadResource("Bit.Cli.package.json")), ParseAspire(ReadResource("Bit.Cli.AppHost.csproj")), SdkRequirement.FromGlobalJson(ReadResource("Bit.Cli.global.json")));
 
     public static TemplateRequirements FromPackage(string packagePath)
     {
-        return new(ParseNodeMajor(TemplateSource.ReadEntry(packagePath, PackageJsonEntry)), ParseAspire(TemplateSource.ReadEntry(packagePath, AppHostEntry)));
+        return new(
+            ParseNodeMajor(TemplateSource.ReadEntry(packagePath, PackageJsonEntry)),
+            ParseAspire(TemplateSource.ReadEntry(packagePath, AppHostEntry)),
+            SdkRequirement.FromGlobalJson(TemplateSource.ReadEntry(packagePath, GlobalJsonEntry)));
     }
 
     public static TemplateRequirements FromProject(string directory, string name)
     {
         return new(
             ParseNodeMajor(ReadFile(Path.Combine(directory, "src", "Client", $"{name}.Client.Core", "package.json"))),
-            ParseAspire(ReadFile(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost", $"{name}.Server.AppHost.csproj"))));
+            ParseAspire(ReadFile(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost", $"{name}.Server.AppHost.csproj"))),
+            SdkRequirement.FromGlobalJson(ReadFile(Path.Combine(directory, "global.json"))));
     }
 
     public static int? ParseNodeMajor(string? packageJson)

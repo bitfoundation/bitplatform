@@ -3570,6 +3570,48 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxSpinnerClassAndStyleShouldReachTheFieldSpinner()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Classes, new BitSearchBoxClassStyles { Spinner = "custom-spinner" });
+            parameters.Add(p => p.Styles, new BitSearchBoxClassStyles { Spinner = "color: red;" });
+        });
+
+        var spinner = component.Find(".bit-srb-lsp .bit-srb-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxSpinnerClassAndStyleShouldReachTheCalloutSpinner()
+    {
+        var tcs = new TaskCompletionSource<IEnumerable<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderComponent<BitSearchBox>(p =>
+        {
+            p.Add(x => x.Immediate, true);
+            p.Add(x => x.MinSuggestTriggerChars, 1);
+            p.Add(x => x.Classes, new BitSearchBoxClassStyles { Spinner = "custom-spinner" });
+            p.Add(x => x.Styles, new BitSearchBoxClassStyles { Spinner = "color: red;" });
+            p.Add(x => x.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) => new(tcs.Task));
+        });
+
+        FocusAndType(component, "a");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-lod .bit-srb-spn").Count == 1);
+
+        var spinner = component.Find(".bit-srb-lod .bit-srb-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
+
+        await component.InvokeAsync(() => tcs.SetResult(["Apple"]));
+    }
+
+    [TestMethod]
     public void BitSearchBoxWithoutLoadingShouldKeepTheClearButton()
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.DefaultValue, "apple"));
@@ -3718,7 +3760,7 @@ public class BitSearchBoxTests : BunitTestContext
         });
 
         // ReadOnly and Required are declared by the input base classes rather than by the search box,
-        // so they are the ones the generated HasNotBeenSet knows nothing about.
+        // so they are tracked in a set of their own, apart from the ones the search box declares.
         Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("readonly"));
         Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("required"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-req"));

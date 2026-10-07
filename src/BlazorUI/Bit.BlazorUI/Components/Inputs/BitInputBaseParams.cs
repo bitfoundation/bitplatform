@@ -47,14 +47,14 @@ public abstract class BitInputBaseParams<TValue> : BitComponentBaseParams
 
         UpdateBaseParameters(bitInputBase);
 
-        if (ReadOnly.HasValue && bitInputBase.HasNotBeenSetOnInput(nameof(ReadOnly)))
+        if (ReadOnly.HasValue && bitInputBase.HasNotBeenSet(nameof(ReadOnly)))
         {
             bitInputBase.ReadOnly = ReadOnly.Value;
 
             bitInputBase.ClassBuilder.Reset();
         }
 
-        if (Required.HasValue && bitInputBase.HasNotBeenSetOnInput(nameof(Required)))
+        if (Required.HasValue && bitInputBase.HasNotBeenSet(nameof(Required)))
         {
             bitInputBase.Required = Required.Value;
 

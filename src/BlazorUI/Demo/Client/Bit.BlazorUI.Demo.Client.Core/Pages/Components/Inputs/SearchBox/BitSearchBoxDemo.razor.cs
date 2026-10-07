@@ -239,7 +239,7 @@ public partial class BitSearchBoxDemo
             DefaultValue = "null",
             Description = "Sets the inputmode html attribute of the input element.",
             LinkType = LinkType.Link,
-            Href = "#input-mode",
+            Href = "#input-mode-enum",
         },
         new()
         {
@@ -879,6 +879,12 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "--bit-SearchBox-spinner-track-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the ring the arc of the loading spinner travels on, in the field and in the callout.",
+        },
+        new()
+        {
             Name = "--bit-SearchBox-spinner-size",
             DefaultValue = "Per Size ($siz-icon-md by default)",
             Description = "Diameter of the loading spinner, in the field and in the callout.",
@@ -1091,6 +1097,13 @@ public partial class BitSearchBoxDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the spinner slot shown in the field while the search box is Loading. The spinner of the suggest callout is Loading instead.",
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's busy spinner itself - the ring drawn in the field while it is Loading, and in the suggest callout when no LoadingTemplate is set.",
                 },
                 new()
                 {
@@ -1327,285 +1340,11 @@ public partial class BitSearchBoxDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "The primary color kind.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "The secondary color kind.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "The tertiary color kind.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "The transparent color kind.",
-                    Value = "3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "enter-key-hint-enum",
-            Name = "BitEnterKeyHint",
-            Description = "Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Enter",
-                    Description="Typically inserting a new line.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Done",
-                    Description="Typically meaning there is nothing more to input and the input method editor will be closed.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Go",
-                    Description="Typically meaning to take the user to the target of the text they typed.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Next",
-                    Description="Typically taking the user to the next field that will accept text.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Previous",
-                    Description="Typically taking the user to the previous field that will accept text.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Search",
-                    Description="Typically taking the user to the results of searching for the text they have typed.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "Send",
-                    Description="Typically delivering the text to its target.",
-                    Value="6",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "input-mode",
-            Name = "BitInputMode",
-            Description = "This allows a browser to display an appropriate virtual keyboard.",
-            Items =
-            [
-                new()
-                {
-                    Name= "None",
-                    Description="The input expects text characters.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Standard input keyboard for the user's current locale.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Decimal",
-                    Description="Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Numeric",
-                    Description="Numeric input keyboard, but only requires the digits 0–9.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Tel",
-                    Description="A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Search",
-                    Description="A virtual keyboard optimized for search input.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "Email",
-                    Description="A virtual keyboard optimized for entering email addresses.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Url",
-                    Description="A keypad optimized for entering URLs.",
-                    Value="7",
-                }
-            ]
-        }
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitEnterKeyHint(),
+        DemoSharedEnums.BitInputMode()
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =

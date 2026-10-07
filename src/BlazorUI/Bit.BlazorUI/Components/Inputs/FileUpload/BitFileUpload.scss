@@ -115,16 +115,6 @@
             pointer-events: none;
         }
     }
-
-    @keyframes bit-upl-spinner-animation {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
 }
 
 .bit-upl-fi {
@@ -644,14 +634,10 @@
 }
 
 .bit-upl-spn {
-    border-radius: 50%;
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    border-color: $clr-brd-sec;
-    width: var(--bit-FileUpload-action-icon-size, var(--bit-upl-ico-fontsize));
-    height: var(--bit-FileUpload-action-icon-size, var(--bit-upl-ico-fontsize));
-    border-top-color: var(--bit-FileUpload-spinner-color, var(--bit-upl-clr));
-    animation: bit-upl-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+    @include spinner-ring(var(--bit-FileUpload-action-icon-size, var(--bit-upl-ico-fontsize)),
+                          var(--bit-FileUpload-spinner-color, var(--bit-upl-clr)),
+                          $clr-brd-sec,
+                          $box-sizing: null);
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
@@ -753,10 +739,5 @@
     .bit-upl-pgb {
         background-color: Highlight;
         forced-color-adjust: none;
-    }
-
-    .bit-upl-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
     }
 }

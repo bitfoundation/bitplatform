@@ -41,6 +41,10 @@
 //   --bit-TextField-icon-color              color of the icon at rest                       (default: $clr-fg-pri)
 //   --bit-TextField-icon-size               size of the icon and of the glyphs of the
 //                                           clear and reveal buttons                        (default: per Size, $siz-icon-*)
+//   --bit-TextField-spinner-size            diameter of the default busy spinner            (default: the icon size plus the stroke on each side)
+//   --bit-TextField-spinner-color           the spinner's moving arc                        (default: the busy indicator's color,
+//                                                                                            see --bit-TextField-accent-color)
+//   --bit-TextField-spinner-track-color     the ring the arc travels on                     (default: the arc color at 25%)
 //   --bit-TextField-button-width            width of the clear, reveal and icon buttons     (default: per Size, $siz-ctrl-*)
 //   --bit-TextField-button-color            glyph color of the clear and reveal buttons     (default: $clr-fg-sec for the clear one,
 //                                                                                            the accent for the reveal one; an icon
@@ -504,6 +508,16 @@
     padding-inline: spacing(0.5);
     color: var(--bit-TextField-accent-color, var(--bit-tfl-clr));
     min-height: var(--bit-tfl-inp-min-height);
+}
+
+// The field's own spinner rather than a BitSpinnerLoading: a component re-skinned on its own would otherwise
+// re-skin this one too. The arc and its track are painted from the color of the slot, so the spinner follows
+// the accent and the disabled state. The ring is drawn around the icon's box - the icon size with the stroke
+// outside it on each side - so it grows and shrinks with the field and stands a step above the glyphs beside it.
+.bit-tfl-spn {
+    @include spinner-ring(var(--bit-TextField-spinner-size, calc(var(--bit-TextField-icon-size, var(--bit-tfl-icon-font-size)) + 2 * #{$siz-spinner-stroke})),
+                          var(--bit-TextField-spinner-color, currentcolor),
+                          var(--bit-TextField-spinner-track-color, #{translucent(var(--bit-TextField-spinner-color, currentcolor), 25%)}));
 }
 
 .bit-tfl-ico {
@@ -1057,6 +1071,10 @@
         .bit-tfl-pre,
         .bit-tfl-suf {
             color: GrayText;
+        }
+
+        .bit-tfl-spn {
+            @include spinner-ring-forced-disabled;
         }
 
         .bit-tfl-fgp,

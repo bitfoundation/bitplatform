@@ -484,9 +484,10 @@ public static class BlazorUIComponentCatalog
     /// properties.
     /// <para>
     /// What is left out is what is public for a reason other than being called: the
-    /// <c>[JSInvokable]</c> callbacks the library's own scripts invoke, the <c>Assign*</c> setters
-    /// and the <c>HasNotBeenSet</c> probe the parameter source generator emits behind a two-way
-    /// binding, the framework members a component overrides, and disposal.
+    /// <c>[JSInvokable]</c> callbacks the library's own scripts invoke, the <c>Assign*</c> setters the
+    /// parameter source generator emits behind a two-way binding and the <c>HasNotBeenSet</c> probe it
+    /// emits on a component outside <c>BitComponentBase</c>, the framework members a component
+    /// overrides, and disposal.
     /// </para>
     /// </summary>
     private static ComponentMember[] ReflectMembers(Type? type, IReadOnlyList<ComponentMember> parameters)

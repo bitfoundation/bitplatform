@@ -227,7 +227,7 @@ public partial class BitStickyDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        SharedSubEnums.BitPlacement,
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "sticky-edges-enum",

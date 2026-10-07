@@ -523,6 +523,20 @@ public partial class BitCardDemo
                 },
                 new()
                 {
+                    Name = "Skeleton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the default placeholder of a loading BitCard, drawn when no LoadingTemplate is set."
+                },
+                new()
+                {
+                    Name = "SkeletonBar",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each bar of the default placeholder of a loading BitCard."
+                },
+                new()
+                {
                     Name = "Footer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -570,348 +584,12 @@ public partial class BitCardDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "The primary color kind.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "The secondary color kind.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "The tertiary color kind.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "The transparent color kind.",
-                    Value = "3",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Primary",
-                    Description = "Primary general color.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Secondary",
-                    Description = "Secondary general color.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Tertiary",
-                    Description = "Tertiary general color.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Info",
-                    Description = "Info general color.",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Success",
-                    Description = "Success general color.",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "Warning",
-                    Description = "Warning general color.",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "SevereWarning",
-                    Description = "SevereWarning general color.",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Error",
-                    Description = "Error general color.",
-                    Value = "7",
-                },
-                new()
-                {
-                    Name = "PrimaryBackground",
-                    Description = "Primary background color.",
-                    Value = "8",
-                },
-                new()
-                {
-                    Name = "SecondaryBackground",
-                    Description = "Secondary background color.",
-                    Value = "9",
-                },
-                new()
-                {
-                    Name = "TertiaryBackground",
-                    Description = "Tertiary background color.",
-                    Value = "10",
-                },
-                new()
-                {
-                    Name = "PrimaryForeground",
-                    Description = "Primary foreground color.",
-                    Value = "11",
-                },
-                new()
-                {
-                    Name = "SecondaryForeground",
-                    Description = "Secondary foreground color.",
-                    Value = "12",
-                },
-                new()
-                {
-                    Name = "TertiaryForeground",
-                    Description = "Tertiary foreground color.",
-                    Value = "13",
-                },
-                new()
-                {
-                    Name = "PrimaryBorder",
-                    Description = "Primary border color.",
-                    Value = "14",
-                },
-                new()
-                {
-                    Name = "SecondaryBorder",
-                    Description = "Secondary border color.",
-                    Value = "15",
-                },
-                new()
-                {
-                    Name = "TertiaryBorder",
-                    Description = "Tertiary border color.",
-                    Value = "16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "image-loading-enum",
-            Name = "BitImageLoading",
-            Description = "Determines when the browser fetches the image.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Eager",
-                    Description = "The default behavior of the browser: the image is fetched as soon as the img element is processed.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Lazy",
-                    Description = "The image is fetched only once the browser estimates that it is about to be needed.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Small",
-                    Description = "The small size.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Medium",
-                    Description = "The medium size.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Large",
-                    Description = "The large size.",
-                    Value = "2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name = "Fill",
-                    Description = "Fill styled variant.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Outline",
-                    Description = "Outline styled variant.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Text",
-                    Description = "Text styled variant.",
-                    Value = "2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "link-rels-enum",
-            Name = "BitLinkRels",
-            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Alternate",
-                    Value = "1",
-                    Description = "Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)"
-                },
-                new()
-                {
-                    Name = "Author",
-                    Value = "2",
-                    Description = "Provides a link to the author of the document."
-                },
-                new()
-                {
-                    Name = "Bookmark",
-                    Value = "4",
-                    Description = "Permanent URL used for bookmarking."
-                },
-                new()
-                {
-                    Name = "External",
-                    Value = "8",
-                    Description = "Indicates that the referenced document is not part of the same site as the current document."
-                },
-                new()
-                {
-                    Name = "Help",
-                    Value = "16",
-                    Description = "Provides a link to a help document."
-                },
-                new()
-                {
-                    Name = "License",
-                    Value = "32",
-                    Description = "Provides a link to licensing information for the document."
-                },
-                new()
-                {
-                    Name = "Next",
-                    Value = "64",
-                    Description = "Provides a link to the next document in the series."
-                },
-                new()
-                {
-                    Name = "NoFollow",
-                    Value = "128",
-                    Description = @"Links to an unendorsed document, like a paid link. (""NoFollow"" is used by Google, to specify that the Google search spider should not follow that link)"
-                },
-                new()
-                {
-                    Name = "NoOpener",
-                    Value = "256",
-                    Description = "Requires that any browsing context created by following the hyperlink must not have an opener browsing context."
-                },
-                new()
-                {
-                    Name = "NoReferrer",
-                    Value = "512",
-                    Description = "Makes the referrer unknown. No referrer header will be included when the user clicks the hyperlink."
-                },
-                new()
-                {
-                    Name = "Prev",
-                    Value = "1024",
-                    Description = "The previous document in a selection."
-                },
-                new()
-                {
-                    Name = "Search",
-                    Value = "2048",
-                    Description = "Links to a search tool for the document."
-                },
-                new()
-                {
-                    Name = "Tag",
-                    Value = "4096",
-                    Description = "A tag (keyword) for the current document."
-                },
-                new()
-                {
-                    Name = "Me",
-                    Value = "8192",
-                    Description = "Indicates that the linked document represents the person who owns the current content. (used for identity verification)"
-                },
-                new()
-                {
-                    Name = "Opener",
-                    Value = "16384",
-                    Description = "Requires that any browsing context created by following the hyperlink keeps its opener browsing context. (reverses the implicit noopener modern browsers apply to _blank targets)"
-                },
-                new()
-                {
-                    Name = "PrivacyPolicy",
-                    Value = "32768",
-                    Description = "Links to the privacy policy that applies to the current document. (rendered as privacy-policy)"
-                },
-                new()
-                {
-                    Name = "Sponsored",
-                    Value = "65536",
-                    Description = "Marks the link as an advertisement or paid placement, so search engines do not count it as an organic endorsement."
-                },
-                new()
-                {
-                    Name = "TermsOfService",
-                    Value = "131072",
-                    Description = "Links to the terms of service that apply to the current document. (rendered as terms-of-service)"
-                },
-                new()
-                {
-                    Name = "Ugc",
-                    Value = "262144",
-                    Description = "Marks the link as user-generated content, like forum posts or comments, for search engines."
-                }
-            ]
-        },
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitImageLoading(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant(),
+        DemoSharedEnums.BitLinkRels(),
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =
@@ -1047,6 +725,18 @@ public partial class BitCardDemo
             Name = "--bit-Card-scrim",
             DefaultValue = "none",
             Description = "A layer painted over a CoverOverlay picture and under the content, such as a dark gradient, so the text over it stays readable.",
+        },
+        new()
+        {
+            Name = "--bit-Card-skeleton-background",
+            DefaultValue = "The text color at 10%",
+            Description = "Resting color of the bars of the default placeholder of a loading card.",
+        },
+        new()
+        {
+            Name = "--bit-Card-skeleton-color",
+            DefaultValue = "The text color at 20%",
+            Description = "Color of the wave that sweeps across those bars.",
         },
     ];
 

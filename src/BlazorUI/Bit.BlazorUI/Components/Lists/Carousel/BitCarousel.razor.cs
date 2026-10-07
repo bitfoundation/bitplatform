@@ -28,6 +28,8 @@ public partial class BitCarousel : BitComponentBase
     private bool _hovered;
     private bool _stopped;
     private bool _focused;
+    private bool _hoverOverridden;
+    private bool _focusOverridden;
     private bool _isPaused;
     private bool _navigating;
     private bool _pageHidden;
@@ -667,6 +669,13 @@ public partial class BitCarousel : BitComponentBase
     {
         _isPaused = false;
         _stopped = false;
+
+        // Asking for the rotation is what the hover and focus pauses wait for, and the play/pause button
+        // that asks for it is itself under the pointer and holding the focus, so the pointer and the focus
+        // already inside the carousel no longer hold it back. Only leaving the carousel and coming back
+        // (or moving the focus on inside it) pauses it again.
+        _hoverOverridden = _hovered;
+        _focusOverridden = _focused;
 
         UpdateAutoPlayTimer();
     }
@@ -1946,6 +1955,7 @@ public partial class BitCarousel : BitComponentBase
         if (_hovered is false) return;
 
         _hovered = false;
+        _hoverOverridden = false;
 
         UpdateAutoPlayTimer();
     }
@@ -1962,6 +1972,7 @@ public partial class BitCarousel : BitComponentBase
     private void HandleFocusOut()
     {
         _focused = false;
+        _focusOverridden = false;
 
         UpdateAutoPlayTimer();
     }
@@ -1972,8 +1983,8 @@ public partial class BitCarousel : BitComponentBase
         if (Disabled) return false;
         if (_isPaused || _stopped) return false;
         if (_pageHidden) return false;
-        if (PauseOnHover && _hovered) return false;
-        if (PauseOnFocus && _focused) return false;
+        if (PauseOnHover && _hovered && _hoverOverridden is false) return false;
+        if (PauseOnFocus && _focused && _focusOverridden is false) return false;
 
         // A carousel with a single page has nowhere to rotate to. The timer is re-evaluated from
         // ResetDimensionsAsync whenever the items (and with them the page count) change.

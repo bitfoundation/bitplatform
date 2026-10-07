@@ -437,27 +437,10 @@
 //theme - which slow down rather than stop under reduced motion, since a loader that stands still is a
 //loader that says nothing.
 .bit-tgi-spn {
-    flex-shrink: 0;
-    box-sizing: border-box;
-    border-radius: $shp-radius-full;
-    border-style: $shp-border-style;
-    border-width: $siz-spinner-stroke;
     margin-inline-start: auto;
-    border-color: var(--bit-TagsInput-spinner-track-color, #{$clr-brd-sec});
-    border-top-color: var(--bit-TagsInput-spinner-color, var(--bit-tgi-clr));
-    width: var(--bit-TagsInput-icon-size, var(--bit-tgi-iconsize));
-    height: var(--bit-TagsInput-icon-size, var(--bit-tgi-iconsize));
-    animation: bit-tgi-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-tgi-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-TagsInput-icon-size, var(--bit-tgi-iconsize)),
+                          var(--bit-TagsInput-spinner-color, var(--bit-tgi-clr)),
+                          var(--bit-TagsInput-spinner-track-color, #{$clr-brd-sec}));
 }
 
 //the clear button sits at the end of the field rather than inside a tag, so it keeps a little room
@@ -788,14 +771,11 @@
         outline-color: Highlight;
     }
 
-    //the track and the arc of the spinner would be painted the same system color and stop reading as
-    //motion, so the pair is re-established the way every other spinner of the library is.
-    .bit-tgi-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
-    }
-
     .bit-tgi.bit-dis {
+        .bit-tgi-spn {
+            @include spinner-ring-forced-disabled;
+        }
+
         .bit-tgi-lbl,
         .bit-tgi-dsc,
         .bit-tgi-cnr,

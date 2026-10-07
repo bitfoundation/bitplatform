@@ -240,7 +240,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
     public void BitPhoneInputShouldApplyCascadedParametersOfTheInputBaseClasses()
     {
         // ReadOnly, Required, Immediate and AutoComplete are declared by the input base classes rather than by the
-        // component, so they are tracked apart from the parameters the generated HasNotBeenSet knows about.
+        // component, so they are tracked in sets of their own, apart from the parameters the component declares.
         var component = RenderWithParams(new BitPhoneInputParams
         {
             ReadOnly = true,

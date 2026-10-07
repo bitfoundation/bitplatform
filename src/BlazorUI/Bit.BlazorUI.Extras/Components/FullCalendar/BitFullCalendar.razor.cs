@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Bit.BlazorUI;
 
-public partial class BitFullCalendar
+public partial class BitFullCalendar : BitComponentBase
 {
     /// <summary>
     /// Gets or sets the cascading parameters for the calendar component.

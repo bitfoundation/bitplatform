@@ -466,25 +466,10 @@
 // the knob it lands in rather than off a token of its own, so it fits both the plain knob and the roomier
 // one a glyph asks for - which is what lets a toggle turn busy without resizing itself.
 .bit-tgl-spn {
-    border-radius: 50%;
-    box-sizing: border-box;
-    border-style: $shp-border-style;
-    border-color: translucent(var(--bit-tgl-spn-clr), 30%);
-    border-top-color: var(--bit-tgl-spn-clr);
-    border-width: var(--bit-Toggle-spinner-width, var(--bit-tgl-spn-width));
-    width: var(--bit-Toggle-spinner-size, calc(var(--bit-tgl-thb-size) * 0.8));
-    height: var(--bit-Toggle-spinner-size, calc(var(--bit-tgl-thb-size) * 0.8));
-    animation: bit-tgl-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-tgl-spinner-animation {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-Toggle-spinner-size, calc(var(--bit-tgl-thb-size) * 0.8)),
+                          var(--bit-tgl-spn-clr),
+                          translucent(var(--bit-tgl-spn-clr), 30%),
+                          $stroke: var(--bit-Toggle-spinner-width, var(--bit-tgl-spn-width)));
 }
 
 // The track content. It never shrinks the knob and never wraps, so a long label widens the track instead

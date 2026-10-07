@@ -417,10 +417,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.AutoCapitalize = AutoCapitalize;
         }
 
-        // The parameters of the input base classes are not tracked by the generated HasNotBeenSet of the
-        // component, which only knows the ones the component declares itself, so they are asked about through
-        // the tier that does track them.
-        if (AutoComplete.HasValue() && bitTextField.HasNotBeenSetOnTextInput(nameof(AutoComplete)))
+        if (AutoComplete.HasValue() && bitTextField.HasNotBeenSet(nameof(AutoComplete)))
         {
             bitTextField.AutoComplete = AutoComplete;
         }
@@ -507,7 +504,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.CountTemplate = CountTemplate;
         }
 
-        if (DebounceTime.HasValue && bitTextField.HasNotBeenSetOnTextInput(nameof(DebounceTime)))
+        if (DebounceTime.HasValue && bitTextField.HasNotBeenSet(nameof(DebounceTime)))
         {
             bitTextField.DebounceTime = DebounceTime.Value;
         }
@@ -569,7 +566,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.IconTitle = IconTitle;
         }
 
-        if (Immediate.HasValue && bitTextField.HasNotBeenSetOnTextInput(nameof(Immediate)))
+        if (Immediate.HasValue && bitTextField.HasNotBeenSet(nameof(Immediate)))
         {
             bitTextField.Immediate = Immediate.Value;
         }
@@ -751,7 +748,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.SuffixTemplate = SuffixTemplate;
         }
 
-        if (ThrottleTime.HasValue && bitTextField.HasNotBeenSetOnTextInput(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue && bitTextField.HasNotBeenSet(nameof(ThrottleTime)))
         {
             bitTextField.ThrottleTime = ThrottleTime.Value;
         }

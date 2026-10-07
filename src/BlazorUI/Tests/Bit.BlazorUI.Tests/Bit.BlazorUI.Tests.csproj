@@ -12,6 +12,7 @@
         <Nullable>enable</Nullable>
         <RollForward>Major</RollForward>
         <EnableMSTestRunner>true</EnableMSTestRunner>
+        <DefineConstants>$(DefineConstants);DEMO_SHARED_ENUM_DOCS_TESTS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -37,6 +38,15 @@
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
            blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
       <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />
+      <!-- Compile-linked so DemoSharedEnumsTests can call every shared enum table of the demo pages and
+           compare what it builds against the enum, rather than reading the tables out of the source.
+           These files carry their own usings, since this project has no implicit ones. The generated
+           half of DemoSharedEnums comes from the import below, the same as in the demo client. -->
+      <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Models\DemoSharedEnums.cs" Link="Demo\Models\DemoSharedEnums.cs" />
+      <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Models\ComponentSubEnum.cs" Link="Demo\Models\ComponentSubEnum.cs" />
+      <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Models\ComponentEnumItem.cs" Link="Demo\Models\ComponentEnumItem.cs" />
+      <!-- And the flattening that generated half is written with, less the MSBuild task around it. -->
+      <Compile Include="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\MSBuild\DemoSharedEnumDocs.cs" Link="Demo\MSBuild\DemoSharedEnumDocs.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -72,5 +82,7 @@
     <ItemGroup>
         <AssemblyMetadata Include="BlazorUISourceRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))" />
     </ItemGroup>
+
+    <Import Project="..\..\Demo\Client\Bit.BlazorUI.Demo.Client.Core\MSBuild\DemoSharedEnumDocs.targets" />
 
 </Project>

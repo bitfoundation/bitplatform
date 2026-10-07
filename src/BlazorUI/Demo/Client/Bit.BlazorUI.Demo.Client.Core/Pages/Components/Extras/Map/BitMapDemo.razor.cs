@@ -1040,7 +1040,7 @@ public partial class BitMapDemo
                 new() { Name = "Unsupported", Value = "4", Description = "The browser cannot run this provider - no WebGL for a GL-backed one." },
             ]
         },
-        SharedSubEnums.BitPlacement,
+        DemoSharedEnums.BitPlacement(),
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =

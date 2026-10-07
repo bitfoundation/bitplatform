@@ -26,7 +26,7 @@ public class TrustTests
     }
 
     [TestMethod]
-    public void ClaudeCode_Should_GetOneProjectEntryAndKeepEverythingElse()
+    public void ClaudeCode_Should_TrustEveryKeyItLooksUpAndKeepEverythingElse()
     {
         using var host = new TestHost();
         var config = Path.Combine(host.Home, ".claude.json");
@@ -39,12 +39,26 @@ public class TrustTests
         Assert.AreEqual(TrustResultKind.Trusted, outcome.Kind);
 
         var root = JsonNode.Parse(File.ReadAllText(config))!;
-        var key = TrustWriter.NormalizeFolder(folder, host.Environment);
 
         Assert.AreEqual("abc", root["userID"]!.GetValue<string>());
         Assert.AreEqual("x", root["projects"]!["C:\\other"]!["allowedTools"]![0]!.GetValue<string>());
-        Assert.IsTrue(root["projects"]![key]!["hasTrustDialogAccepted"]!.GetValue<bool>());
+
+        foreach (var key in ClaudeCodeTrust.ProjectKeys(TrustWriter.NormalizeFolder(folder, host.Environment), host.Environment))
+        {
+            Assert.IsTrue(root["projects"]![key]!["hasTrustDialogAccepted"]!.GetValue<bool>(), key);
+        }
+
         Assert.AreEqual(TrustResultKind.AlreadyTrusted, new ClaudeCodeTrust().Trust(context, folder).Kind);
+    }
+
+    [TestMethod]
+    public void ClaudeCode_Should_KeyAWindowsFolderTheWayClaudeCodeLooksItUp()
+    {
+        using var windows = new TestHost(HostOs.Windows);
+        using var linux = new TestHost(HostOs.Linux);
+
+        CollectionAssert.AreEqual(new[] { "D:/Sources/Contoso", "d:/Sources/Contoso", "D:\\Sources\\Contoso", "d:\\Sources\\Contoso" }, ClaudeCodeTrust.ProjectKeys("D:\\Sources\\Contoso", windows.Environment).ToArray());
+        CollectionAssert.AreEqual(new[] { "/home/me/Contoso" }, ClaudeCodeTrust.ProjectKeys("/home/me/Contoso", linux.Environment).ToArray());
     }
 
     [TestMethod]

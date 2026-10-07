@@ -143,8 +143,9 @@
 
             @if (Loading)
             {
-                @* The indicator is only drawn here; what it means is announced by the live region at the end
-                   of the component, which is already on the page by the time the busy state shows up. *@
+                @* Only the default spinner is hidden from assistive technologies: what it means is announced by the
+                   live region at the end of the component, which is already on the page by the time the busy state
+                   shows up. A LoadingTemplate stays exposed, since it may carry content or actions of its own. *@
                 <div style="@Styles?.Loading"
                      class="bit-tfl-lod @Classes?.Loading">
                     @if (LoadingTemplate is not null)
@@ -153,7 +154,7 @@
                     }
                     else
                     {
-                        <BitSpinnerLoading Role="none" CustomSize="@LoadingSize" CustomColor="currentColor" />
+                        <div style="@Styles?.Spinner" class="bit-tfl-spn @Classes?.Spinner" aria-hidden="true"></div>
                     }
                 </div>
             }

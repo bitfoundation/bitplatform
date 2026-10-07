@@ -111,7 +111,7 @@ public partial class BitNavDemo
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom HeaderTemplate.",
-            Href = "#nav-itemtemplate-rendermode",
+            Href = "#nav-item-template-render-mode-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -164,7 +164,7 @@ public partial class BitNavDemo
             Type = "BitNavItemTemplateRenderMode",
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "The render mode of the custom ItemTemplate.",
-            Href = "#nav-itemtemplate-rendermode",
+            Href = "#nav-item-template-render-mode-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -660,7 +660,7 @@ public partial class BitNavDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav item's custom template.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -851,7 +851,7 @@ public partial class BitNavDemo
                    Type = "BitNavItemTemplateRenderMode",
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "The render mode of the nav option's custom template.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -1042,7 +1042,7 @@ public partial class BitNavDemo
                    Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
                    DefaultValue = "new(nameof(BitNavItem.TemplateRenderMode))",
                    Description = "The TemplateRenderMode field name and selector of the custom input class.",
-                   Href = "#nav-itemtemplate-rendermode",
+                   Href = "#nav-item-template-render-mode-enum",
                    LinkType = LinkType.Link,
                },
                new()
@@ -1207,276 +1207,12 @@ public partial class BitNavDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-match-enum",
-            Name = "BitNavMatch",
-            Description = "Modifies the URL matching behavior for a BitNav<TItem>.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Exact",
-                    Description = "Specifies that the nav item should be active when it matches exactly the current URL.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Prefix",
-                    Description = "Specifies that the nav item should be active when it matches any prefix of the current URL.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Regex",
-                    Description = "Specifies that the nav item should be active when its provided regex matches the current URL.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Wildcard",
-                    Description = "Specifies that the nav item should be active when its provided wildcard matches the current URL.",
-                    Value = "3",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-mode-enum",
-            Name = "BitNavMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Automatic",
-                    Description = "The value of selected key will change using NavigationManager and the current url inside the component.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Manual",
-                    Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-render-type-enum",
-            Name = "BitNavRenderType",
-            Description="Determines how the nav items are rendered visually.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Value = "0",
-                    Description="All items will be rendered normally only based on their own properties."
-                },
-                new()
-                {
-                    Name = "Grouped",
-                    Value = "1",
-                    Description="Root elements are rendered in a specific way that resembles a grouped list of items."
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-aria-current-enum",
-            Name = "BitNavAriaCurrent",
-            Items =
-            [
-                new()
-                {
-                    Name = "Page",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Step",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Location",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Date",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Time",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "True",
-                    Value = "5",
-                },
-
-            ]
-        },
-        new()
-        {
-            Id = "nav-itemtemplate-rendermode",
-            Name = "BitNavItemTemplateRenderMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Description = "Renders the template inside the button/anchor root element of the item.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Replace",
-                    Description = "Replaces the button/anchor root element of the item.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available for a component.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Small",
-                    Description = "The small size.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Medium",
-                    Description = "The medium size.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Large",
-                    Description = "The large size.",
-                    Value = "2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitNavMatch(),
+        DemoSharedEnums.BitNavMode(),
+        DemoSharedEnums.BitNavRenderType(),
+        DemoSharedEnums.BitNavAriaCurrent(),
+        DemoSharedEnums.BitNavItemTemplateRenderMode(),
+        DemoSharedEnums.BitSize(),
     ];
 }

@@ -544,7 +544,7 @@ public partial class BitPanelDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        SharedSubEnums.BitPlacement,
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "dismiss-reason-enum",

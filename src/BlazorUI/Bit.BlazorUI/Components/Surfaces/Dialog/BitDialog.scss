@@ -51,16 +51,6 @@
     // Dialog to leave the focus.
     @include focus-anchor;
 
-    @keyframes bit-dlg-spinner-animation {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
     // The Dialog is mounted rather than transitioned into place - it is not in the DOM while it is
     // closed - so the entrance is a keyframe animation rather than a transition. Both durations come
     // from the motion tokens, which collapse to near zero under prefers-reduced-motion.
@@ -431,14 +421,7 @@
 }
 
 .bit-dlg-spn {
-    border-radius: 50%;
-    width: spacing(2.5);
-    height: spacing(2.5);
-    border-color: $clr-brd-sec;
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    border-top-color: var(--bit-dlg-clr-spn);
-    animation: bit-dlg-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+    @include spinner-ring(spacing(2.5), var(--bit-dlg-clr-spn), $clr-brd-sec, $box-sizing: null);
 }
 
 .bit-dlg-cnb {

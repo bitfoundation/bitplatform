@@ -267,21 +267,35 @@ namespace {namespaceName}
 
         builder.AppendLine("");
 
-        builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
-        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public bool HasNotBeenSet(string name)
-        {{");
-        builder.AppendLine("            return __assignedParameters.Contains(name) is false;");
-        builder.AppendLine("        }");
-
+        // HasNotBeenSet of BitComponentBase answers for the whole hierarchy through IsSetByMarkup, so a class that can
+        // add its parameters to that leaves HasNotBeenSet alone, and one that cannot (outside the assemblies that see
+        // the internal member) overrides HasNotBeenSet itself. Either way the answer is the same whatever the static
+        // type of the reference it is asked through; only a class outside BitComponentBase gets a member of its own.
         if (classInfo.TracksSetByMarkup)
         {
-            builder.AppendLine("");
             builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         private protected override bool IsSetByMarkup(string name)
         {{
             return __assignedParameters.Contains(name) || base.IsSetByMarkup(name);
+        }}");
+        }
+        else if (classInfo.InheritsFromBitComponentBase)
+        {
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        public override bool HasNotBeenSet(string name)
+        {{
+            return __assignedParameters.Contains(name) is false && base.HasNotBeenSet(name);
+        }}");
+        }
+        else
+        {
+            builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        public bool HasNotBeenSet(string name)
+        {{
+            return __assignedParameters.Contains(name) is false;
         }}");
         }
 

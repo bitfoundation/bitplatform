@@ -2874,8 +2874,28 @@ public class BitNumberFieldTests : BunitTestContext
         var indicator = component.Find(".bit-nfl-lod");
         Assert.AreEqual("true", indicator.GetAttribute("aria-hidden"));
 
+        // The field draws its own spinner rather than rendering another component of the library.
+        Assert.AreEqual(1, indicator.QuerySelectorAll(".bit-nfl-spn").Length);
+        Assert.AreEqual(0, indicator.QuerySelectorAll(".bit-ldn").Length);
+
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-busy"));
         Assert.AreEqual("Recalculating", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldSpinnerClassAndStyleShouldReachTheDefaultSpinner()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Classes, new BitNumberFieldClassStyles { Spinner = "custom-spinner" });
+            parameters.Add(p => p.Styles, new BitNumberFieldClassStyles { Spinner = "color: red;" });
+        });
+
+        var spinner = component.Find(".bit-nfl-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
     }
 
     [TestMethod]
@@ -2907,6 +2927,7 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         Assert.AreEqual("wait", component.Find(".bit-nfl-lod em").TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-lod .bit-nfl-spn").Count);
     }
 
     [TestMethod]

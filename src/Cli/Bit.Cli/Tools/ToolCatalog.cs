@@ -64,46 +64,146 @@ public static partial class ToolCatalog
     [GeneratedRegex(@"\d+\.\d+(\.\d+)?")]
     private static partial Regex VersionRegex();
 
+    public static async Task<string?> ResolveSdkAsync(IProcessRunner runner, string directory, CancellationToken cancellationToken)
+    {
+        var result = await runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["--version"], WorkingDirectory = directory, Timeout = TimeSpan.FromMinutes(1) }, cancellationToken);
+
+        return result.Succeeded ? result.OutputLines.Select(l => l.Trim()).LastOrDefault(l => SdkVersionRegex().IsMatch(l)) : null;
+    }
+
+    public static async Task<string?> ResolveSdkAsync(IProcessRunner runner, SdkRequirement sdk, CancellationToken cancellationToken)
+    {
+        var folder = Directory.CreateTempSubdirectory("bit-sdk-").FullName;
+
+        try
+        {
+            File.WriteAllText(Path.Combine(folder, "global.json"), sdk.GlobalJson);
+            return await ResolveSdkAsync(runner, folder, cancellationToken);
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(folder, recursive: true);
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+    }
+
+    public static string? DotnetRoot(ToolContext context)
+    {
+        if (context.Runner.FindExecutable("dotnet") is not { } muxer)
+            return null;
+
+        try
+        {
+            muxer = File.ResolveLinkTarget(muxer, returnFinalTarget: true)?.FullName ?? muxer;
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
+
+        var separator = muxer.LastIndexOfAny(['/', '\\']);
+        return separator > 0 ? muxer[..separator] : null;
+    }
+
+    [GeneratedRegex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$")]
+    private static partial Regex SdkVersionRegex();
+
     private sealed class DotnetSdkTool : Tool
     {
+        private const string MacOSRoot = "/usr/local/share/dotnet";
+
         public override string Id => "dotnet-sdk";
 
         public override string Name => ".NET SDK";
 
         public override bool AppliesTo(ToolContext context) => context.Needs.Sdk is not null;
 
-        public override string Why(ToolContext context) => context.Needs.Sdk!.Exact is { } exact
-            ? $"the project's global.json asks for exactly SDK {exact}"
-            : $"the project's global.json asks for SDK {context.Needs.Sdk.Minimum} or a later patch";
+        public override string Why(ToolContext context) => context.Needs.Sdk!.Pinned
+            ? $"the project's global.json asks for exactly SDK {context.Needs.Sdk.Version}"
+            : $"the project's global.json asks for SDK {context.Needs.Sdk.Version}{(context.Needs.Sdk.RollForward is { } rollForward ? $" with rollForward {rollForward}" : " or a later patch")}";
 
         public override bool IsNeeded(ToolContext context) => true;
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
-            var result = await context.RunAsync("dotnet", ["--list-sdks"], cancellationToken);
             var sdk = context.Needs.Sdk!;
 
-            if (sdk.Exact is { } exact)
-            {
-                var installed = result.OutputLines.Select(l => l.Split(' ')[0]).Where(v => v.Length > 0).ToArray();
+            if (await ResolveSdkAsync(context.Runner, sdk, cancellationToken) is { } resolved)
+                return ToolStatus.Installed(resolved);
 
-                return installed.Contains(exact, StringComparer.OrdinalIgnoreCase) ? ToolStatus.Installed(exact) : ToolStatus.Missing($"found {(installed.Length == 0 ? "none" : string.Join(", ", installed))}");
-            }
+            var listed = await context.RunAsync("dotnet", ["--list-sdks"], cancellationToken);
+            var installed = listed.OutputLines.Select(l => l.Split(' ')[0]).Where(v => v.Length > 0).ToArray();
 
-            var minimum = sdk.Minimum;
-            var versions = result.OutputLines.Select(l => ParseVersion(l.Split(' ')[0])).OfType<Version>().ToArray();
-            var match = versions.Where(v => v.Major == minimum.Major && v.Minor == minimum.Minor && v >= minimum).Max();
-
-            return match is not null ? ToolStatus.Installed(match.ToString()) : ToolStatus.Missing($"found {(versions.Length == 0 ? "none" : string.Join(", ", versions.Select(v => v.ToString())))}");
+            return ToolStatus.Missing($"found {(installed.Length == 0 ? "none" : string.Join(", ", installed))}");
         }
 
         public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
         {
             var sdk = context.Needs.Sdk!;
-            return context.Environment.IsWindows ? context.PackageManagers.WingetInstall(Id, $"Install .NET SDK {sdk.Exact ?? $"{sdk.Minimum.Major}.{sdk.Minimum.Minor}"}", sdk.Preview ? "Microsoft.DotNet.SDK.Preview" : $"Microsoft.DotNet.SDK.{sdk.Minimum.Major}", version: sdk.Exact) : null;
+            var title = $"Install .NET SDK {sdk.Version}";
+            var root = DotnetRoot(context);
+
+            return context.Environment.Os switch
+            {
+                HostOs.Windows => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = title,
+                    Elevation = Elevation.Admin,
+                    SuccessExitCodes = [0, 3010],
+                    Commands = [new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", WindowsScript(context, sdk, root)], Timeout = TimeSpan.FromMinutes(30) }]
+                },
+                HostOs.MacOS when root is null or MacOSRoot => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = title,
+                    Elevation = Elevation.Sudo,
+                    Commands = [PackageManagers.Sudo("/bin/sh", "-c", MacPackageScript(context, sdk))]
+                },
+                _ when root is not null => InstallScriptAction(context, sdk, root, title),
+                _ => null
+            };
         }
 
-        public override string? ManualInstructions(ToolContext context) => $"https://dotnet.microsoft.com/download/dotnet/{context.Needs.Sdk?.Minimum.Major}.{context.Needs.Sdk?.Minimum.Minor}";
+        public override string? ManualInstructions(ToolContext context) => $"https://dotnet.microsoft.com/download/dotnet/{context.Needs.Sdk?.Channel}";
+
+        private static string WindowsScript(ToolContext context, SdkRequirement sdk, string? root)
+        {
+            static string Quote(string value) => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'";
+
+            var installDir = root ?? @"C:\Program Files\dotnet";
+            var winget = context.PackageManagers.Winget is null
+                ? ""
+                : $"winget install --id {(sdk.Preview ? "Microsoft.DotNet.SDK.Preview" : $"Microsoft.DotNet.SDK.{sdk.Version.Split('.')[0]}")} --exact --version {Quote(sdk.Version)} --source winget --silent --accept-package-agreements --accept-source-agreements --disable-interactivity; if (@(0, 3010, -1978335189) -contains $LASTEXITCODE) {{ exit 0 }}; ";
+
+            return $"$ErrorActionPreference = 'Stop'; {winget}$installer = Join-Path ([IO.Path]::GetTempPath()) ('dotnet-install-' + [guid]::NewGuid().ToString('N') + '.ps1'); Invoke-WebRequest -UseBasicParsing -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installer; & $installer -Version {Quote(sdk.Version)} -InstallDir {Quote(installDir)} -NoPath; exit 0";
+        }
+
+        private static string MacPackageScript(ToolContext context, SdkRequirement sdk)
+        {
+            var arch = context.Environment.Architecture is System.Runtime.InteropServices.Architecture.Arm64 ? "arm64" : "x64";
+            var url = $"https://builds.dotnet.microsoft.com/dotnet/Sdk/{sdk.Version}/dotnet-sdk-{sdk.Version}-osx-{arch}.pkg";
+
+            return $"set -e; pkg=\"$(mktemp -d)/dotnet-sdk.pkg\"; curl -fsSL -o \"$pkg\" '{url}'; pkgutil --check-signature \"$pkg\" | grep -q 'Developer ID Installer: Microsoft Corporation'; installer -pkg \"$pkg\" -target /";
+        }
+
+        private ToolAction InstallScriptAction(ToolContext context, SdkRequirement sdk, string root, string title)
+        {
+            var script = $"set -e; installer=\"$(mktemp -d)/dotnet-install.sh\"; curl -fsSL -o \"$installer\" https://dot.net/v1/dotnet-install.sh; bash \"$installer\" --version '{sdk.Version}' --install-dir '{root.Replace("'", "'\\''", StringComparison.Ordinal)}' --no-path";
+            var userOwned = root.StartsWith(context.Environment.HomeDirectory + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+
+            return new ToolAction
+            {
+                ToolId = Id,
+                Title = title,
+                Elevation = userOwned ? Elevation.None : Elevation.Sudo,
+                Commands = [userOwned ? new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", script], Timeout = TimeSpan.FromMinutes(30) } : PackageManagers.Sudo("/bin/sh", "-c", script)]
+            };
+        }
     }
 
     private sealed class GitTool : Tool
@@ -190,6 +290,10 @@ public static partial class ToolCatalog
         public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
         {
             var title = status.State is ToolState.Outdated ? "Update Node.js to the LTS version" : "Install Node.js LTS";
+            var manager = FindNodeVersionManager(context.Environment, context.Runner);
+
+            if (manager is not NodeVersionManager.None)
+                return VersionManagerInstall(context, manager, $"{title} with {VersionManagerName(manager)}");
 
             if (context.Environment.IsWindows)
                 return context.PackageManagers.WingetInstall(Id, title, "OpenJS.NodeJS.LTS");
@@ -216,6 +320,84 @@ public static partial class ToolCatalog
         }
 
         public override string? ManualInstructions(ToolContext context) => "https://nodejs.org/en/download";
+
+        private static string VersionManagerName(NodeVersionManager manager) => manager switch
+        {
+            NodeVersionManager.Volta => "Volta",
+            NodeVersionManager.Fnm => "fnm",
+            _ => "nvm"
+        };
+
+        private ToolAction VersionManagerInstall(ToolContext context, NodeVersionManager manager, string title)
+        {
+            static ProcessSpec Run(string fileName, params string[] arguments) => new() { FileName = fileName, Arguments = arguments, Timeout = TimeSpan.FromMinutes(15) };
+
+            return manager switch
+            {
+                NodeVersionManager.Volta => new ToolAction { ToolId = Id, Title = title, Commands = [Run("volta", "install", "node@lts")] },
+                NodeVersionManager.Fnm => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = title,
+                    Commands = [Run("fnm", "install", "--lts"), Run("fnm", "default", "lts-latest")],
+                    PathProbe = Run("fnm", "exec", "--using=lts-latest", "--", "node", "-p", "require('path').dirname(process.execPath)")
+                },
+                NodeVersionManager.NvmWindows => new ToolAction { ToolId = Id, Title = title, Elevation = Elevation.Admin, Commands = [Run("nvm", "install", "lts"), Run("nvm", "use", "lts")] },
+                _ => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = title,
+                    Commands = [Run("bash", "-c", $"{LoadNvm(context.Environment)}; nvm install --lts && nvm alias default 'lts/*'")],
+                    PathProbe = Run("bash", "-c", $"{LoadNvm(context.Environment)}; dirname \"$(nvm which default)\"")
+                }
+            };
+        }
+
+        private static string LoadNvm(CliEnvironment environment)
+        {
+            return $". '{NvmDirectory(environment).Replace("'", "'\\''", StringComparison.Ordinal)}/nvm.sh' >/dev/null 2>&1";
+        }
+    }
+
+    private static string NvmDirectory(CliEnvironment environment) => environment.GetVariable("NVM_DIR") ?? Path.Combine(environment.HomeDirectory, ".nvm");
+
+    public enum NodeVersionManager
+    {
+        None,
+        Volta,
+        Fnm,
+        NvmWindows,
+        Nvm
+    }
+
+    public static NodeVersionManager FindNodeVersionManager(CliEnvironment environment, IProcessRunner runner)
+    {
+        static bool Under(string path, string? directory) => directory is not null && path.StartsWith(directory.Replace('\\', '/').TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase);
+
+        if (runner.FindExecutable("node")?.Replace('\\', '/') is { } node)
+        {
+            if (node.Contains("/.volta/", StringComparison.OrdinalIgnoreCase) || node.Contains("/Volta/", StringComparison.OrdinalIgnoreCase))
+                return NodeVersionManager.Volta;
+
+            if (node.Contains("/fnm_multishells/", StringComparison.OrdinalIgnoreCase) || node.Contains("/fnm/node-versions/", StringComparison.OrdinalIgnoreCase))
+                return NodeVersionManager.Fnm;
+
+            if (environment.IsWindows)
+                return environment.GetVariable("NVM_HOME") is { } nvmHome && (Under(node, environment.GetVariable("NVM_SYMLINK")) || Under(node, nvmHome)) ? NodeVersionManager.NvmWindows : NodeVersionManager.None;
+
+            return node.Contains("/.nvm/versions/node/", StringComparison.Ordinal) || Under(node, Path.Combine(NvmDirectory(environment), "versions", "node")) ? NodeVersionManager.Nvm : NodeVersionManager.None;
+        }
+
+        if (runner.FindExecutable("volta") is not null)
+            return NodeVersionManager.Volta;
+
+        if (runner.FindExecutable("fnm") is not null)
+            return NodeVersionManager.Fnm;
+
+        if (environment.IsWindows)
+            return environment.GetVariable("NVM_HOME") is not null && runner.FindExecutable("nvm") is not null ? NodeVersionManager.NvmWindows : NodeVersionManager.None;
+
+        return File.Exists(Path.Combine(NvmDirectory(environment), "nvm.sh")) ? NodeVersionManager.Nvm : NodeVersionManager.None;
     }
 
     private sealed class HomebrewTool : Tool

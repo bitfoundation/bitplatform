@@ -230,6 +230,39 @@ public partial class BitCardStylesheetTests
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-Card-scrim,").Count, "The scrim is painted outside the overlaid cover.");
     }
 
+    [TestMethod]
+    public void BitCardSkeletonWaveShouldStandOutFromTheBarItCrosses()
+    {
+        var bar = Block(ReadStylesheet(), ".bit-crd-skb");
+
+        // The wave is a stronger wash of the text color than the bar at rest, the way BitShimmer's second color is set
+        // apart from its first; the same wash twice would leave the sweep all but invisible.
+        StringAssert.Contains(bar, "background-color: var(--bit-Card-skeleton-background, #{translucent(currentcolor, 10%)});");
+        StringAssert.Contains(bar, "var(--bit-Card-skeleton-color, #{translucent(currentcolor, 20%)})");
+    }
+
+    [TestMethod]
+    public void BitCardSkeletonBarShouldTakeItsCornerFromTheSubElementScale()
+    {
+        var bar = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-crd-skb {");
+
+        // A bar is a part inside the card, not a surface: the surface alias would turn it into a pill under a preset
+        // that rounds its cards heavily.
+        StringAssert.Contains(bar, "border-radius: $shp-radius-xs;");
+        Assert.IsFalse(bar.Contains("$shp-radius-surface"), "The skeleton bar takes the card's outer corner.");
+    }
+
+    [TestMethod]
+    public void BitCardSkeletonWaveShouldFollowTheReadingDirectionOfAnyAncestor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // :dir() reads the direction the bar inherits - from the page, an ancestor or Dir on the card - where the
+        // bit-rtl class is only set by Dir on the card itself.
+        StringAssert.Contains(stylesheet, "\n.bit-crd-skb:dir(rtl)::after {\n    animation-direction: reverse;\n}");
+        Assert.IsFalse(stylesheet.Contains(".bit-rtl .bit-crd-skb"), "The wave only turns round for Dir on the card.");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
