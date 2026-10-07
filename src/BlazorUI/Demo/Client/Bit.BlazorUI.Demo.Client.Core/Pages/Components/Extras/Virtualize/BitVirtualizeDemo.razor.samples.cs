@@ -175,7 +175,7 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
 
 <BitNumberField @bind-Value=""gridLanes"" Min=""1"" Max=""8"" Mode=""BitSpinButtonMode.Inline""
                 Label=""Lanes"" LabelPlacement=""BitPlacement.Start""
-                Disabled=""@(gridResponsive)"" Style=""max-width:12rem"" />
+                Disabled=""gridResponsive"" Style=""max-width:12rem"" />
 <BitToggle @bind-Value=""gridResponsive"" Label=""MinLaneSize = 200"" Inline />
 
 <BitVirtualize Items=""gridItems"" ItemSize=""120"" Lanes=""gridLanes"" MinLaneSize=""@(gridResponsive ? 200 : null)"" Gap=""8""

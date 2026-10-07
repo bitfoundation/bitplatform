@@ -72,7 +72,7 @@ public partial class BitLoadingDemo
 private bool isPaused;";
 
     private readonly string example4RazorCode = @"
-<BitButton OnClick=""StartWork"" Disabled=""@(isWorking)"">Run a 1.5s task</BitButton>
+<BitButton OnClick=""StartWork"" Disabled=""isWorking"">Run a 1.5s task</BitButton>
 
 @if (isWorking)
 {
@@ -139,7 +139,7 @@ private async Task StartWork()
 </style>
 
 
-<BitButton OnClick=""Refresh"" Disabled=""@(isRefreshing)"">Refresh orders</BitButton>
+<BitButton OnClick=""Refresh"" Disabled=""isRefreshing"">Refresh orders</BitButton>
 
 <div class=""orders"">
     <BitOverlay IsOpen=""isRefreshing"" AbsolutePosition ModeFull Style=""align-items:center;justify-content:center;color:white"">

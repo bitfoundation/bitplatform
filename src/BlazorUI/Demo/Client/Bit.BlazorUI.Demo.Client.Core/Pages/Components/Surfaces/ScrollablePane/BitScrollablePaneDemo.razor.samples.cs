@@ -592,7 +592,7 @@ private async Task ReadScrollOffset()
 
 <BitNumberField Label=""AutoScrollThreshold (px)"" Min=""0"" Step=""10"" @bind-Value=""autoScrollThreshold"" Style=""max-width: 20rem"" />
 
-<BitButton OnClick=""AddAutoScrollContent"" Disabled=""@(autoScrollRunning)"">Add lines periodically</BitButton>
+<BitButton OnClick=""AddAutoScrollContent"" Disabled=""autoScrollRunning"">Add lines periodically</BitButton>
 
 <BitScrollablePane Height=""14rem"" Class=""pane"" AutoScroll AutoScrollThreshold=""(int)autoScrollThreshold"">
     <div class=""item"">The log starts here.</div>

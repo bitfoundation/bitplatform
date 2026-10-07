@@ -1011,8 +1011,8 @@ public partial class BitChoiceGroupDemo
                {
                    Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Disabled))",
-                   Description = "Whether the BitChoiceGroup option is disabled.",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class.",
                },
                new()
                {

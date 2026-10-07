@@ -1225,7 +1225,7 @@ public partial class BitDropdownDemo
                {
                    Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Disabled))",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsDisabled))",
                    Description = "The IsDisabled field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
