@@ -23,6 +23,8 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     private bool _optionsOrderDirty;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
     private BitNavCurrentUrlMatcher<TItem>? _currentUrlMatcher;
+    // The item an option of the interactive first render was selected as, before the render that reports it.
+    private TItem? _unreportedSelection;
 
 
 
@@ -75,8 +77,10 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         // The options of the first render register during the very render a prerender (or a static SSR page)
         // sends as HTML, and neither of those ever gets to the after-render pass that resolves the selection
         // waiting for them, so there the option that selection is waiting for is selected as it registers instead.
+        // The interactive render that replaces a prerendered one does the same, so it shows the selection the
+        // prerender showed rather than taking it away for the round trip its after-render pass waits for.
         // Every other option is left to that pass, which handles a whole batch of them at once.
-        if (IsRendered || _js.IsRuntimeInvalid() is false) return;
+        if (IsRendered) return;
 
         await SelectRegisteringOption(item);
     }
@@ -381,10 +385,20 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             _selectionDirty = false;
 
+            var unreported = _unreportedSelection;
+            _unreportedSelection = null;
+
             // A selection that actually moves pushes the render to the options it moved between itself, so
             // a pass that changes nothing leaves the options (and the element references they hand over)
             // exactly as they are.
             await InvokeAsync(() => SetSelectedItemByCurrentUrl());
+
+            // The selection the first render already showed is reported here, where a match of the whole batch
+            // would have reported it - unless that match moved it on, which reported the item it moved to.
+            if (unreported is not null && IsSelected(unreported))
+            {
+                await OnSelectItem.InvokeAsync(unreported);
+            }
         }
 
         // A navbar that scrolls has to bring its selected item into view as the selection moves, since the
@@ -858,7 +872,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // from scanning every option once per option. The options of the first render register in their markup
     // order, so the first of them to match is the one the lookup over the whole bar would have picked as well.
     // The URL match selects without OnSelectItem: a prerender is only drawing the page, and the interactive render
-    // that replaces it reports the selection after its own first render, where a handler is free to call
+    // reports the selection after its own first render (see OnAfterRenderAsync), where a handler is free to call
     // JavaScript or navigate.
     private async Task SelectRegisteringOption(TItem item)
     {
@@ -866,7 +880,17 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             if (IsCurrentUrlItem(item) is false) return;
 
+            var previous = SelectedItem;
+
             await SetSelectedItemByCurrentUrl(isPrerender: true);
+
+            // A prerender is only drawing the page; the interactive render that replaces it is the one that
+            // reports, and only a selection that actually moved (a bound selection may hold it where it is).
+            if (_js.IsRuntimeInvalid() is false && IsSelected(previous) is false)
+            {
+                _unreportedSelection = SelectedItem;
+            }
+
             return;
         }
 

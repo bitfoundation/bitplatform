@@ -121,6 +121,53 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorShouldPrerenderEveryTargetThatOpensANewContextHardened()
+    {
+        var document = await PrerenderAsync(
+            "<p><a href=\"https://a.dev\" target=\" _blank\">a</a></p>" +
+            "<p><a href=\"https://b.dev\" target=\"_blank \">b</a></p>" +
+            "<p><a href=\"https://c.dev\" target=\"named\">c</a></p>" +
+            "<p><a href=\"https://d.dev\" target=\"_self\">d</a></p>" +
+            "<p><a href=\"https://e.dev\" target=\"_TOP\">e</a></p>");
+
+        var anchors = Surface(document).QuerySelectorAll("a");
+
+        // A padded "_blank" or any name opens another browsing context, which gets window.opener without noopener.
+        Assert.AreEqual("noopener noreferrer", anchors[0].GetAttribute("rel"));
+        Assert.AreEqual("noopener noreferrer", anchors[1].GetAttribute("rel"));
+        Assert.AreEqual("noopener noreferrer", anchors[2].GetAttribute("rel"));
+        // The link's own context and its ancestors are not new ones.
+        Assert.IsFalse(anchors[3].HasAttribute("rel"));
+        Assert.IsFalse(anchors[4].HasAttribute("rel"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldPrerenderAPosterOnlyFromAnAllowedUrl()
+    {
+        var document = await PrerenderAsync(
+            "<video src=\"https://bitplatform.dev/a.mp4\" poster=\"javascript:alert(1)\"></video>" +
+            "<video src=\"https://bitplatform.dev/b.mp4\" poster=\"https://bitplatform.dev/b.png\"></video>");
+
+        var videos = Surface(document).QuerySelectorAll("video");
+
+        Assert.IsFalse(videos[0].HasAttribute("poster"));
+        Assert.AreEqual("https://bitplatform.dev/b.png", videos[1].GetAttribute("poster"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldPrerenderNoStyleThatFetchesThroughAnImageSet()
+    {
+        var document = await PrerenderAsync(
+            "<p style=\"background:image-set('https://evil.dev/t.png' 1x); color: red\">a</p>" +
+            "<p style=\"background:-webkit-image-set('https://evil.dev/t.png' 1x)\">b</p>");
+
+        var paragraphs = Surface(document).QuerySelectorAll("p");
+
+        Assert.IsFalse((paragraphs[0].GetAttribute("style") ?? string.Empty).Contains("image-set"));
+        Assert.IsFalse((paragraphs[1].GetAttribute("style") ?? string.Empty).Contains("image-set"));
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldPrerenderEscapedTextAsText()
     {
         var document = await PrerenderAsync("<p>a &amp; b &lt;img src=x onerror=alert(1)&gt; &quot;c&quot;&nbsp;d</p>");

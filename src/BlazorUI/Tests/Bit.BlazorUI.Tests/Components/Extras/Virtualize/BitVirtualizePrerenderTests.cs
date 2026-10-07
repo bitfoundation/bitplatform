@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -40,6 +41,37 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         Assert.IsFalse(html.Contains("Item 19;"));
         // The spacer already holds the whole list, so the page has its final height.
         StringAssert.Contains(html, "height:50000px");
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldPrerenderTheStickyHeaderOfTheFirstGroup()
+    {
+        var html = await Prerenderer.RenderAsync<BitVirtualize<int>>(new Dictionary<string, object?>
+        {
+            [nameof(BitVirtualize<int>.Items)] = Enumerable.Range(0, 100).ToArray(),
+            [nameof(BitVirtualize<int>.ItemSize)] = 50f,
+            [nameof(BitVirtualize<int>.ItemTemplate)] = itemTemplate,
+            [nameof(BitVirtualize<int>.IsStickyItem)] = (Func<int, bool>)(i => i % 10 == 0),
+        });
+
+        // The measured list pins the header of the group at its top, so the first window does as well.
+        StringAssert.Contains(html, "bit-vir-stk");
+        // The next header is where the pinned one is pushed out from.
+        StringAssert.Contains(html, "data-bit-vir-sticky-next=\"500\"");
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldPrerenderNoStickyHeaderWhenTheFirstItemStartsNoGroup()
+    {
+        var html = await Prerenderer.RenderAsync<BitVirtualize<int>>(new Dictionary<string, object?>
+        {
+            [nameof(BitVirtualize<int>.Items)] = Enumerable.Range(1, 100).ToArray(),
+            [nameof(BitVirtualize<int>.ItemSize)] = 50f,
+            [nameof(BitVirtualize<int>.ItemTemplate)] = itemTemplate,
+            [nameof(BitVirtualize<int>.IsStickyItem)] = (Func<int, bool>)(i => i % 10 == 0),
+        });
+
+        Assert.IsFalse(html.Contains("bit-vir-stk"));
     }
 
     [TestMethod]

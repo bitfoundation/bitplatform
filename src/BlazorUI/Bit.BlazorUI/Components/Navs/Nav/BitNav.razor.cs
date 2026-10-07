@@ -24,6 +24,8 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     internal List<TItem> _items = [];
     private bool _selectionDirty;
+    // The item an option of the interactive first render was selected as, before the render that reports it.
+    private TItem? _unreportedSelection;
     private bool _expandSelectedPending;
     private TItem? _focusedItem;
     private TItem? _pendingFocusItem;
@@ -387,7 +389,18 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         if (_selectionDirty)
         {
             _selectionDirty = false;
+
+            var unreported = _unreportedSelection;
+            _unreportedSelection = null;
+
             SetSelectedItemByCurrentUrl();
+
+            // The selection the first render already showed is reported here, where a match of the whole batch
+            // would have reported it - unless that match moved it on, which reported the item it moved to.
+            if (unreported is not null && IsSelected(unreported))
+            {
+                _ = OnSelectItem.InvokeAsync(unreported);
+            }
         }
 
         base.OnAfterRender(firstRender);
@@ -486,17 +499,28 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // Called by an option as it registers in the automatic mode. The match is only flagged, so a batch of options
     // added together collapses into the single pass of OnAfterRender. A prerender (or a static SSR page) never
     // gets to an after-render pass, though, so there an option of the first render pointing at the current URL is
-    // matched right away instead, and the HTML it sends already carries the selection. Only a matching option runs
-    // the match, which keeps the first render from scanning the whole tree once per option; and the match still
-    // runs over the whole tree rather than selecting the option itself, so an option that registers later and
-    // wins the match (a child of a parent that matches by its prefix) still takes the selection over.
+    // matched right away instead, and the HTML it sends already carries the selection. The interactive render that
+    // replaces a prerendered one does the same, so it shows the selection the prerender showed rather than taking
+    // it away for the round trip its after-render pass waits for; that pass then reports it. Only a matching
+    // option runs the match, which keeps the first render from scanning the whole tree once per option; and the
+    // match still runs over the whole tree rather than selecting the option itself, so an option that registers
+    // later and wins the match (a child of a parent that matches by its prefix) still takes the selection over.
     internal void OnOptionRegistered(TItem item)
     {
         MarkSelectionDirty();
 
-        if (IsRendered || _js.IsRuntimeInvalid() is false || IsCurrentUrlItem(item) is false) return;
+        if (IsRendered || IsCurrentUrlItem(item) is false) return;
+
+        var previous = SelectedItem;
 
         SetSelectedItemByCurrentUrl(isPrerender: true);
+
+        // A prerender is only drawing the page; the interactive render that replaces it is the one that reports,
+        // and only a selection that actually moved (a one-way bound SelectedItem holds it where it is).
+        if (_js.IsRuntimeInvalid() is false && AreEqual(previous, SelectedItem) is false)
+        {
+            _unreportedSelection = SelectedItem;
+        }
     }
 
     // Only a navigation can re-select the item that is already selected (a Reselectable nav reports the

@@ -82,7 +82,7 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
         {
             [nameof(BitInfiniteScrolling<int>.ItemsProvider)] = CountingProvider(requests),
             [nameof(BitInfiniteScrolling<int>.ItemTemplate)] = itemTemplate,
-            [nameof(BitInfiniteScrolling<int>.IsEnabled)] = false,
+            [nameof(BitInfiniteScrolling<int>.Disabled)] = true,
         });
 
         // A disabled list loads nothing, interactive or not, so it is not shown as loading either.

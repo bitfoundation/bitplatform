@@ -791,8 +791,12 @@ public partial class BitImage : BitComponentBase
         _fallbackApplied = false;
         _src = Src.HasValue() ? Src : FallbackSrc;
 
-        // What the browser was painting was the previous source; the new one is the component's to show.
+        // What the browser was painting was the previous source; the new one is the component's to show - even
+        // while the browser is still being asked about the previous one (see TakeOverFromBrowserAsync), whose answer
+        // would otherwise leave the new source to the browser until it lands, and then take it back. The source the
+        // component starts with is set before its first render, and is the one the hand-over is about.
         _isKeptByBrowser = false;
+        if (IsRendered) _awaitsTakeOver = false;
 
         if (_loadingState == BitImageState.Loading) return;
 
@@ -1160,6 +1164,10 @@ public partial class BitImage : BitComponentBase
         {
             _fallbackApplied = true;
             _src = FallbackSrc;
+
+            // The fallback is a new image, the component's to show (see OnSetSrc).
+            _isKeptByBrowser = false;
+            _awaitsTakeOver = false;
 
             await SetLoadingStateAsync(BitImageState.Loading, forceRender: true);
 

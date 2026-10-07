@@ -108,7 +108,7 @@ internal static partial class BitRichTextEditorHtmlSanitizer
     ];
 
     // The bridge's UNSAFE_CSS_VALUE.
-    [GeneratedRegex(@"url\s*\(|expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|\\", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"url\s*\(|image-set\s*\(|expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|\\", RegexOptions.IgnoreCase)]
     private static partial Regex UnsafeCssValue();
 
     // What the browser ignores in a URL's scheme, stripped before the scheme is read (the bridge's isAllowedUri).
@@ -408,7 +408,9 @@ internal static partial class BitRichTextEditorHtmlSanitizer
             {
                 if (name.StartsWith("on", StringComparison.Ordinal)) continue;
                 if (PlainAttributeName().IsMatch(name) is false) continue;
-                if ((name == "href" || name == "src") && IsAllowedUri(value, isImage: name == "src" && tag.Name == "img") is false) continue;
+                // A video's poster is an image the browser fetches like an img's src.
+                if ((name == "href" || name == "src" || name == "poster")
+                    && IsAllowedUri(value, isImage: (name == "src" && tag.Name == "img") || name == "poster") is false) continue;
                 if (AllowsAttribute(tag.Name, name) is false) continue;
 
                 var keptValue = value;
@@ -423,10 +425,12 @@ internal static partial class BitRichTextEditorHtmlSanitizer
 
             if (tag.Name == "iframe" && IsAllowedEmbedSrc(kept.Find(a => a.Key == "src").Value) is false) return null;
 
-            // A blank target hands the opened page window.opener unless rel says noopener; when the policy does not
-            // allow a rel to say it, the target goes instead.
+            // A target that opens another browsing context - not only "_blank" but any name, and any spelling of
+            // "_blank" the browser still treats as one, such as one padded with spaces - hands the opened page
+            // window.opener unless rel says noopener; when the policy does not allow a rel to say it, the target goes
+            // instead.
             var target = kept.FindIndex(a => a.Key == "target");
-            if (tag.Name == "a" && target >= 0 && string.Equals(kept[target].Value, "_blank", StringComparison.OrdinalIgnoreCase))
+            if (tag.Name == "a" && target >= 0 && OpensNewContext(kept[target].Value))
             {
                 if (AllowsAttribute("a", "rel"))
                 {
@@ -448,6 +452,14 @@ internal static partial class BitRichTextEditorHtmlSanitizer
 
             return kept;
         }
+
+        // The bridge's opensNewContext: every target but the three that name the link's own browsing context or its
+        // ancestors.
+        private static bool OpensNewContext(string target)
+            => target.Length > 0
+            && string.Equals(target, "_self", StringComparison.OrdinalIgnoreCase) is false
+            && string.Equals(target, "_parent", StringComparison.OrdinalIgnoreCase) is false
+            && string.Equals(target, "_top", StringComparison.OrdinalIgnoreCase) is false;
 
         // The bridge's isAllowedUri.
         private bool IsAllowedUri(string url, bool isImage)

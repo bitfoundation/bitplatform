@@ -1649,7 +1649,17 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             _visibleEnd = _renderEnd = Math.Min(_itemCount, _initialized ? 0 : EstimateInitialCount());
             _renderStartOffset = 0;
             _blockOffset = 0;
-            _stickyActiveIndex = -1;
+            // The first window, rendered before anything has been measured (and so all a prerendered or a static page
+            // shows), pins the header of its first group the way the measured list does at the top, so the hand-over
+            // moves nothing. A list that renders no item has no header to pin.
+            if (_visibleEnd > 0)
+            {
+                UpdateSticky();
+            }
+            else
+            {
+                _stickyActiveIndex = -1;
+            }
             NotifyEdgeStates();
             if (prevStart != _visibleStart || prevEnd != _visibleEnd)
             {

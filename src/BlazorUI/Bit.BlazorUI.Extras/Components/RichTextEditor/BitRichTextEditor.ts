@@ -51,7 +51,7 @@ namespace BitBlazorUI {
 
         // Values that can smuggle a URL, a script, or a legacy IE behavior into a style
         // declaration. Any declaration whose value matches is dropped.
-        private static readonly UNSAFE_CSS_VALUE = /url\s*\(|expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|\\/i;
+        private static readonly UNSAFE_CSS_VALUE = /url\s*\(|image-set\s*\(|expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|\\/i;
 
         // Built-in secure default allowlist, mirroring BitRichTextEditorSanitizationPolicy.Default.
         // Applied when no custom policy is supplied so the no-policy path still enforces an
@@ -349,8 +349,9 @@ namespace BitBlazorUI {
             // The markup may already be there - the first set of a value the component rendered into the surface
             // itself (prerendered) - in which case the DOM is left alone, but the facts below are still reported
             // once: nothing else counts the content the surface started with. Every later set of the markup
-            // already there is a no-op, as it has always been.
-            const unchanged = editor.innerHTML === next;
+            // already there is a no-op, as it has always been. Comments are left out of the comparison: the markup
+            // the component rendered carries Blazor's own marker comments, which no sanitized value ever does.
+            const unchanged = editor.innerHTML.replace(/<!--[\s\S]*?-->/g, '') === next;
             if (unchanged && editor._factsReported) return;
 
             if (unchanged === false) {
@@ -3459,10 +3460,11 @@ namespace BitBlazorUI {
                     const name = attr.name.toLowerCase();
                     const val = attr.value;
                     if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
-                    if (name === 'href' || name === 'src') {
+                    if (name === 'href' || name === 'src' || name === 'poster') {
                         // Enforce the active policy's scheme allowlist on every inbound HTML
                         // path (paste, source import, setHtml) - not just the command handlers.
-                        const isImageSrc = name === 'src' && tag === 'img';
+                        // A video's poster is an image the browser fetches like an img's src.
+                        const isImageSrc = (name === 'src' && tag === 'img') || name === 'poster';
                         if (!RichTextEditor.isAllowedUri(editor, val, isImageSrc)) {
                             el.removeAttribute(attr.name); continue;
                         }
@@ -3491,12 +3493,13 @@ namespace BitBlazorUI {
                     el.remove();
                     return;
                 }
-                // Harden anchors that survive sanitization with target="_blank": a blank target
-                // gives the opened page access to window.opener unless rel includes noopener.
-                // Only add rel when the active policy permits it; otherwise drop target="_blank"
-                // rather than smuggling an unlisted rel attribute through (which would violate the
-                // "only listed attributes survive" guarantee).
-                if (tag === 'a' && (el.getAttribute('target') || '').toLowerCase() === '_blank') {
+                // Harden anchors that survive sanitization with a target that opens another browsing
+                // context: not only "_blank" but any name (and any spelling of "_blank" the browser
+                // still treats as a new context, such as one padded with spaces) gives the opened page
+                // access to window.opener unless rel includes noopener. Only add rel when the active
+                // policy permits it; otherwise drop the target rather than smuggling an unlisted rel
+                // attribute through (which would violate the "only listed attributes survive" guarantee).
+                if (tag === 'a' && RichTextEditor.opensNewContext(el.getAttribute('target'))) {
                     const allowedAttributes = (policy && policy.allowedAttributes) || {};
                     const anchorAllowed = [
                         ...(allowedAttributes['a'] || []),
@@ -3510,6 +3513,14 @@ namespace BitBlazorUI {
                 }
             });
             return tpl.innerHTML;
+        }
+
+        // Whether a link target opens a browsing context other than the link's own: every target but the
+        // three that name the current one or its ancestors.
+        private static opensNewContext(target: string | null): boolean {
+            if (target === null) return false;
+            const t = target.toLowerCase();
+            return t !== '' && t !== '_self' && t !== '_parent' && t !== '_top';
         }
 
         // Filters a style attribute down to the allowlisted presentational declarations. Returns

@@ -74,7 +74,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // nothing on screen changes. A list that was never prerendered is left as it was: its observer may well not fire
     // yet (a list below the fold), and a loader shown until it does would announce a load that is not happening.
     private bool _awaitsFirstLoad => _awaitsTakeOver && _initialized is false && _isLoading is false && _error is null
-                                     && _items.Count == 0 && IsEnabled && ItemsProvider is not null;
+                                     && _items.Count == 0 && Disabled is false && ItemsProvider is not null;
 
     private bool _showLoading => _isLoading || _awaitsFirstLoad;
 

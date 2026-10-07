@@ -205,6 +205,47 @@ public class BitImagePrerenderTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
     }
 
+    [TestMethod]
+    public void BitImageShouldShowAFallbackThatArrivesWhileItTakesTheImageOverAsItsOwn()
+    {
+        var state = Context.AddBunitPersistentComponentState();
+        state.Persist("BitPrerendered", true);
+
+        // The browser is still being asked about the image when its error event lands.
+        var progress = Context.JSInterop.Setup<int>("BitBlazorUI.Utils.getImageProgress", _ => true);
+
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "missing.png");
+            parameters.Add(p => p.FallbackSrc, "fallback.png");
+            parameters.Add(p => p.FadeIn, true);
+        });
+
+        component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        // The fallback is a new image, so it is the component's from the start rather than the browser's until the
+        // answer about the failed one lands - which would then take a fallback already painted away again.
+        var image = component.Find(".bit-img-img");
+        Assert.AreEqual("fallback.png", image.GetAttribute("src"));
+        Assert.IsTrue(image.ClassList.Contains("bit-img-hid"));
+        Assert.IsFalse(image.ClassList.Contains("bit-img-nat"));
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // It arrives as the component's own, faded in.
+        Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
+        Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-fde"));
+
+        // The answer about the failed image that lands afterwards changes nothing.
+        progress.SetResult(2);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
+            Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-fde"));
+        });
+    }
+
 
 
     [TestMethod]

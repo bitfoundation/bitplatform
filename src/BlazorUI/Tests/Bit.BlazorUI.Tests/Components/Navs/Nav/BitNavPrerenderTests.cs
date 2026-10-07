@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Nav;
@@ -120,6 +122,32 @@ public class BitNavPrerenderTests
 
 
 
+    [TestMethod]
+    public async Task BitNavShouldKeepTheSelectionOfTheOptionMatchingTheUrlInTheFirstInteractiveRender()
+    {
+        // The interactive render that replaces a prerendered one shows the selection the prerender showed, rather
+        // than taking it away until its after-render pass - a round trip later on Blazor Server.
+        var raised = 0;
+        var html = await Prerenderer.RenderAsync<BitNav<BitNavOption>>(new Dictionary<string, object?>
+        {
+            [nameof(BitNav<BitNavOption>.ChildContent)] = Join([Option("Home", "/"), Option("Products", "/products")]),
+            [nameof(BitNav<BitNavOption>.OnSelectItem)] = EventCallback.Factory.Create<BitNavOption>(new object(), _ => raised++),
+        }, services =>
+        {
+            services.AddSingleton<NavigationManager>(new TestNavigationManager("/products"));
+            services.AddSingleton<IJSRuntime, InteractiveJsRuntime>();
+        });
+
+        var selected = new HtmlParser().ParseDocument(html).QuerySelectorAll(".bit-nav-sel");
+
+        Assert.AreEqual(1, selected.Length);
+        Assert.AreEqual("Products", selected[0].QuerySelector(".bit-nav-itx")!.TextContent.Trim());
+        // It is reported by the after-render pass, which this render has not reached yet.
+        Assert.AreEqual(0, raised);
+    }
+
+
+
     private static async Task<IDocument> Prerender(string url, params RenderFragment[] options)
     {
         var html = await Prerenderer.RenderAsync<BitNav<BitNavOption>>(new Dictionary<string, object?>
@@ -156,5 +184,13 @@ public class BitNavPrerenderTests
     private sealed class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager(string path) => Initialize("https://localhost/", $"https://localhost{path}");
+    }
+
+    // A runtime that can be called, as the one of an interactive render can.
+    private sealed class InteractiveJsRuntime : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => ValueTask.FromResult(default(TValue)!);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => ValueTask.FromResult(default(TValue)!);
     }
 }
