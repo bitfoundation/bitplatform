@@ -1246,6 +1246,24 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBreadcrumbShouldTurnDownTheOpenerForAnyCaseOfTheBlankTarget()
+    {
+        // The browser matches the target keyword case-insensitively, so "_BLANK" opens a new context too.
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", Target = "_BLANK" },
+            new() { Text = "Folder 2", Href = "/folder-2", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("noopener noreferrer", component.Find("a.bit-brc-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
     public void BitBreadcrumbShouldCloseTheMenuWhenTheOverflowItemsAreGone()
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>

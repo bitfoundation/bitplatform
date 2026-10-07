@@ -1051,6 +1051,25 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
     }
 
+    [TestMethod,
+        DataRow("_BLANK", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_Blank", null, "noopener"),
+        DataRow("_blank", BitLinkRels.Opener, "opener")
+    ]
+    public void BitActionButtonShouldHardenAnyCaseOfTheBlankTarget(string target, BitLinkRels? rel, string expectedRel)
+    {
+        // The browser matches the target keyword case-insensitively, so every spelling of _blank opens a new
+        // tab - and an explicit Opener is the author asking for the opener back on purpose.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Rel, rel);
+        });
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-acb").GetAttribute("rel"));
+    }
+
     [TestMethod]
     public void BitActionButtonRenderPerformanceSmokeTest()
     {

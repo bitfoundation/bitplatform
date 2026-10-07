@@ -405,6 +405,23 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMenuButtonShouldTurnDownTheOpenerForAnyCaseOfTheBlankTarget()
+    {
+        // The browser matches the target keyword case-insensitively, so "_BLANK" opens a new context too.
+        var linkItems = new List<BitMenuButtonItem>()
+        {
+            new() { Text = "Link item", Key = "A", Href = "https://bitplatform.dev", Target = "_BLANK" }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, linkItems);
+        });
+
+        Assert.AreEqual("noopener noreferrer", com.Find("a.bit-mnb-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
     public void BitMenuButtonShouldRenderLinkItems()
     {
         var linkItems = new List<BitMenuButtonItem>()

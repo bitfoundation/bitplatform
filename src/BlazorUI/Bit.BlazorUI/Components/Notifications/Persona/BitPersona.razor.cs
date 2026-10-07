@@ -435,8 +435,10 @@ public partial class BitPersona : BitComponentBase
     /// The relationship the <see cref="Href"/> link bears to the current document (maps to the anchor's rel attribute).
     /// </summary>
     /// <remarks>
-    /// When it is not set and <see cref="Target"/> is <c>_blank</c>, <c>rel="noopener"</c> is added of its own
-    /// accord, which is what keeps the page the coin opens from reaching back into the one it was opened from.
+    /// When <see cref="Target"/> is <c>_blank</c>, <c>noopener</c> is added to whatever this says, which is what
+    /// keeps the page the coin opens from reaching back into the one it was opened from - unless this already
+    /// says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// It is ignored for an empty or hash-only <see cref="Href"/>.
     /// </remarks>
     [Parameter]
@@ -1346,13 +1348,8 @@ public partial class BitPersona : BitComponentBase
             return;
         }
 
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
+        // whatever rel it was given - a NoFollow alone is about crawling and says nothing about the opener.
+        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
     }
 }

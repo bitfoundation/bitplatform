@@ -1028,7 +1028,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // which the rel of the link does, the same way the other components of the library do it.
     private string? GetItemRel(TItem item)
     {
-        return GetItemTarget(item) is "_blank" ? "noopener noreferrer" : null;
+        return BitNewTabUtils.IsNewTab(GetItemTarget(item)) ? "noopener noreferrer" : null;
     }
 
     private string? GetRawItemHref(TItem item)

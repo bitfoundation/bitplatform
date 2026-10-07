@@ -353,7 +353,7 @@ public partial class BitPersonaDemo
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "Sets the rel attribute of the coin when Href renders it as a link. When it is not set and Target is _blank, rel=\"noopener\" is added automatically.",
+            Description = "Sets the rel attribute of the coin when Href renders it as a link. When Target is _blank, noopener is added to it, unless it already says NoOpener, NoReferrer or Opener.",
         },
         new()
         {

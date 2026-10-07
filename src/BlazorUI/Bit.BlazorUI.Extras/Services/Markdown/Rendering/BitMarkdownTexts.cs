@@ -53,7 +53,7 @@ public class BitMarkdownTexts
     /// Read out after the text of a link that opens in a new tab, which a screen reader does not
     /// otherwise announce. It is not shown, and an empty string leaves it out.
     /// </summary>
-    public string NewTab { get; set; } = "(opens in a new tab)";
+    public string NewTab { get; set; } = BitNewTabUtils.DefaultHint;
 
     /// <summary>The accessible name of a code block, which scrolls and so is a tab stop.</summary>
     public string CodeBlock { get; set; } = "Code block";

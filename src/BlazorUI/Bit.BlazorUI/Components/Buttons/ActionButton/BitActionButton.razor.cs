@@ -410,14 +410,9 @@ public partial class BitActionButton : BitComponentBase
             return;
         }
 
-        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
-
-        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
-
-        _rel = rel;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
+        // author already said what the opener relationship should be.
+        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
     }
 
 

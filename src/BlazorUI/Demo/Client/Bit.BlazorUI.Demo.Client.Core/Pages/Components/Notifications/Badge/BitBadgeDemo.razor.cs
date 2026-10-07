@@ -173,7 +173,7 @@ public partial class BitBadgeDemo
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "The relationship between the current document and the one the Href of the badge leads to. With no value of its own, a badge opening in a new browsing context gets rel=\"noopener\" automatically.",
+            Description = "The relationship between the current document and the one the Href of the badge leads to. A badge opening in a new browsing context gets noopener added to it, unless it already says NoOpener, NoReferrer or Opener.",
             LinkType = LinkType.Link,
             Href = "#link-rels-enum"
         },

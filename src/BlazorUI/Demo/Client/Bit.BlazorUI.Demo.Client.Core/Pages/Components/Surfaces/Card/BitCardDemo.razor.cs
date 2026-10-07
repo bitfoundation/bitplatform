@@ -316,7 +316,7 @@ public partial class BitCardDemo
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "The rel attribute of the link of a card that has an Href. A Target of _blank always adds noopener.",
+            Description = "The rel attribute of the link of a card that has an Href. A Target of _blank adds noopener, unless the rel already says NoOpener, NoReferrer or Opener.",
             LinkType = LinkType.Link,
             Href = "#link-rels-enum",
         },

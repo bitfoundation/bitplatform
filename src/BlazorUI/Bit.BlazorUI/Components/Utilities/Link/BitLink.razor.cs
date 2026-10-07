@@ -43,11 +43,6 @@ public partial class BitLink : BitComponentBase
 
     private bool _locationSubscribed;
 
-    /// <summary>
-    /// The text a <c>_blank</c> link is announced with when nothing else is said - see <see cref="NewTabHint"/>.
-    /// </summary>
-    private const string DefaultNewTabHint = "(opens in a new tab)";
-
     private static readonly Dictionary<BitNavAriaCurrent, string> _ariaCurrentMap = new()
     {
         [BitNavAriaCurrent.Page] = "page",
@@ -480,41 +475,6 @@ public partial class BitLink : BitComponentBase
         _rel = Href.HasNoValue() || Href!.StartsWith('#') || Rel.HasValue is false
                 ? null
                 : BitLinkRelUtils.GetRels(Rel!.Value);
-    }
-
-    /// <summary>
-    /// Merges the rel values the link was given with the one a new-tab link is not safe without.
-    /// </summary>
-    /// <remarks>
-    /// The page a <c>_blank</c> link opens is handed a reference back to the one that opened it, which it can
-    /// navigate somewhere else; <c>noopener</c> is what severs that. It is added unless the rel list already
-    /// says what the opener relationship should be - an author asking for <c>opener</c> back means it, and
-    /// <c>noreferrer</c> already implies <c>noopener</c>.
-    /// </remarks>
-    private static string? BuildRel(string? rel, string? target)
-    {
-        if (target is not "_blank") return rel;
-
-        var tokens = rel?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
-
-        foreach (var token in tokens)
-        {
-            if (token is "noopener" or "noreferrer" or "opener") return rel;
-        }
-
-        return tokens.Length > 0 ? $"{rel} noopener" : "noopener";
-    }
-
-    /// <summary>
-    /// The sentence a new-tab link is announced with, or null where there is nothing to announce.
-    /// </summary>
-    private string? GetNewTabHint(string? target)
-    {
-        if (NoNewTabHint || target is not "_blank") return null;
-
-        var hint = NewTabHint ?? DefaultNewTabHint;
-
-        return hint.HasValue() ? hint : null;
     }
 
     /// <summary>

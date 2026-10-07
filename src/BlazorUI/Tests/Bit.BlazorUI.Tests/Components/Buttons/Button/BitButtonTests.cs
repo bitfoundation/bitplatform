@@ -622,6 +622,7 @@ public class BitButtonTests : BunitTestContext
 
     [TestMethod,
         DataRow("https://bitplatform.dev", "_blank", "noopener"),
+        DataRow("https://bitplatform.dev", "_BLANK", "noopener"),
         DataRow("https://bitplatform.dev", "_self", null),
         DataRow("https://bitplatform.dev", null, null)
     ]

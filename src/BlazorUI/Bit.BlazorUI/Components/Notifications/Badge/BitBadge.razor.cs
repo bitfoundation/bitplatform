@@ -394,9 +394,10 @@ public partial class BitBadge : BitComponentBase
     /// the anchor the badge becomes while <see cref="Href"/> is set.
     /// </summary>
     /// <remarks>
-    /// With no value of its own, a badge opening in a new browsing context (<see cref="Target"/> of
-    /// <c>_blank</c>) gets <c>rel="noopener"</c> on its own, which is what keeps the opened page from
-    /// reaching back into this one.
+    /// A badge opening in a new browsing context (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c>
+    /// added to whatever this says, which is what keeps the opened page from reaching back into this one -
+    /// unless this already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -659,14 +660,9 @@ public partial class BitBadge : BitComponentBase
             return;
         }
 
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
+        // whatever rel it was given - a NoFollow alone is about crawling and says nothing about the opener.
+        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
     }
 
     /// <summary>

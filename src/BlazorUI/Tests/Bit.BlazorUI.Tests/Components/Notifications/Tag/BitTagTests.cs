@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -557,6 +558,27 @@ public class BitTagTests : BunitTestContext
         Assert.IsNotNull(rel);
         Assert.IsTrue(rel.Contains("nofollow"));
         Assert.IsTrue(rel.Contains("noreferrer"));
+    }
+
+    [TestMethod,
+        DataRow(BitLinkRels.NoFollow, "_blank", "nofollow noopener"),
+        DataRow(BitLinkRels.NoFollow, "_BLANK", "nofollow noopener"),
+        DataRow(BitLinkRels.NoFollow, "_self", "nofollow"),
+        DataRow(BitLinkRels.NoOpener, "_blank", "noopener"),
+        DataRow(BitLinkRels.Opener, "_blank", "opener")
+    ]
+    public void BitTagLinkShouldAddNoOpenerToAnExplicitRel(BitLinkRels rel, string target, string expected)
+    {
+        // a NoFollow is about crawling and says nothing about the opener, so it does not stand in for the
+        // noopener a new tab needs - but an explicit Opener is the author asking for the opener back
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Rel, rel);
+        });
+
+        Assert.AreEqual(expected, component.Find(".bit-tag-cnt").GetAttribute("rel"));
     }
 
     [TestMethod]
@@ -2036,8 +2058,9 @@ public class BitTagTests : BunitTestContext
         Assert.AreEqual("_blank", anchor.GetAttribute("target"));
         Assert.AreEqual("cascaded.png", anchor.GetAttribute("download"));
         // the rel attribute is derived from Href, Rel and Target together, so it has to be recalculated
-        // after the cascaded values have filled the last two in
-        Assert.AreEqual("nofollow", anchor.GetAttribute("rel"));
+        // after the cascaded values have filled the last two in - the cascaded Rel and the noopener the
+        // cascaded _blank Target adds to it
+        Assert.AreEqual("nofollow noopener", anchor.GetAttribute("rel"));
     }
 
     [TestMethod]
@@ -2849,6 +2872,74 @@ public class BitTagTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find("a.bit-tag-cnt").QuerySelector(".bit-tag-vhd"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRespectNoNewTabHint()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Docs");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.NewTabHint, "(new tab)");
+            parameters.Add(p => p.NoNewTabHint, true);
+        });
+
+        var anchor = component.Find("a.bit-tag-cnt");
+
+        Assert.IsNull(anchor.QuerySelector(".bit-tag-vhd"));
+        Assert.IsNull(anchor.GetAttribute("aria-label"));
+        // taking the announcement off is not taking the tab off: the anchor still opens one, safely
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow(null, null, null),
+        DataRow("The docs", null, null),
+        DataRow(null, "external-name", null),
+        DataRow("The docs", "external-name", null),
+        DataRow(null, null, "(new window)"),
+        DataRow("The docs", null, "(new window)"),
+        DataRow(null, "external-name", "(new window)"),
+        DataRow(null, null, ""),
+        DataRow("The docs", null, ""),
+        DataRow(null, "external-name", "")
+    ]
+    public void BitTagShouldAnnounceANewTabTheWayBitLinkDoes(string? ariaLabel, string? ariaLabelledBy, string? newTabHint)
+    {
+        // A tag that leads somewhere and a link are the same anchor to a screen reader, so the same inputs
+        // have to make the same announcement - the same sentence, put in the same place.
+        static Action<RenderTreeBuilder> Build<T>(string? ariaLabel, string? ariaLabelledBy, string? newTabHint) where T : IComponent => builder =>
+        {
+            builder.OpenComponent<T>(0);
+            builder.AddAttribute(1, "Href", "https://bitplatform.dev");
+            builder.AddAttribute(2, "Target", "_blank");
+            if (ariaLabel is not null) builder.AddAttribute(3, "AriaLabel", ariaLabel);
+            if (ariaLabelledBy is not null) builder.AddAttribute(4, "aria-labelledby", ariaLabelledBy);
+            if (newTabHint is not null) builder.AddAttribute(5, "NewTabHint", newTabHint);
+            builder.CloseComponent();
+        };
+
+        var link = Context.Render(builder => Build<BitLink>(ariaLabel, ariaLabelledBy, newTabHint)(builder));
+        var tag = Context.Render(builder => Build<BitTag>(ariaLabel, ariaLabelledBy, newTabHint)(builder));
+
+        var linkAnchor = link.Find("a");
+        var tagAnchor = tag.Find("a.bit-tag-cnt");
+        var linkHint = linkAnchor.QuerySelector(".bit-lnk-hnt");
+        var tagHint = tagAnchor.QuerySelector(".bit-tag-vhd");
+
+        Assert.AreEqual(linkAnchor.GetAttribute("aria-label"), tagAnchor.GetAttribute("aria-label"));
+        Assert.AreEqual(linkHint?.TextContent, tagHint?.TextContent);
+        Assert.AreEqual(linkHint?.Id is { Length: > 0 }, tagHint?.Id is { Length: > 0 });
+
+        // the hint's id is each component's own, so the lists are compared with it taken out
+        static string? WithoutHintId(string? labelledBy, string? hintId)
+            => hintId is { Length: > 0 } ? labelledBy?.Replace(hintId, "{hint}") : labelledBy;
+
+        Assert.AreEqual(WithoutHintId(linkAnchor.GetAttribute("aria-labelledby"), linkHint?.Id),
+                        WithoutHintId(tagAnchor.GetAttribute("aria-labelledby"), tagHint?.Id));
     }
 
     [TestMethod]

@@ -485,8 +485,8 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     /// <remarks>
     /// A card whose <see cref="Target"/> is <c>_blank</c> gets <c>noopener</c> either way, which is what
-    /// protects the page from reverse tabnabbing; a value here that already carries <c>noopener</c> or
-    /// <c>noreferrer</c> is left as it is.
+    /// protects the page from reverse tabnabbing; a value here that already says what the opener relationship
+    /// should be (<c>noopener</c>, <c>noreferrer</c> or <c>opener</c>) is left as it is.
     /// </remarks>
     [Parameter, CallOnSet(nameof(OnSetHrefAndRel))]
     public BitLinkRels? Rel { get; set; }
@@ -806,19 +806,9 @@ public partial class BitCard : BitComponentBase
             return;
         }
 
-        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
-
         // noopener protects against reverse-tabnabbing when opening the link in a new browsing context, so it
         // is added to whatever rel the card was given rather than left to it - a Rel of NoFollow alone is about
-        // crawling and says nothing about the opener. A rel that already carries noopener or noreferrer covers
-        // it. The target attribute is matched case-insensitively by the browser, so a "_BLANK" opens the same
-        // new context and has to be recognized here as one.
-        if (string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) &&
-            rel?.Contains("noopener") is not true && rel?.Contains("noreferrer") is not true)
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
-
-        _rel = rel;
+        // crawling and says nothing about the opener.
+        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
     }
 }
