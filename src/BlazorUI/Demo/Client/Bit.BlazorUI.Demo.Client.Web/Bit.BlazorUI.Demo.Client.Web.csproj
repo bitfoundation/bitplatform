@@ -23,15 +23,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-04">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-04">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-05">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-04" PrivateAssets="all" />
+        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-05" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
