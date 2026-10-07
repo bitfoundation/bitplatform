@@ -2227,17 +2227,17 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTextFieldLoadingSlotIsHiddenFromAssistiveTechnologiesWithATemplateToo()
+    public void BitTextFieldLoadingSlotHidesOnlyTheDefaultSpinnerFromAssistiveTechnologies()
     {
-        // The live region is what says the field is busy, so whatever the slot draws - the default spinner or
-        // a template - is muted rather than read out a second time next to it.
+        // The live region is what says the field is busy, so the default spinner is muted rather than read out
+        // a second time next to it; a template stays exposed, since it may carry content or actions of its own.
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Loading, true);
             parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<em class=\"custom-loading\">wait</em>")));
         });
 
-        Assert.AreEqual("true", component.Find(".bit-tfl-lod").GetAttribute("aria-hidden"));
+        Assert.IsFalse(component.Find(".bit-tfl-lod").HasAttribute("aria-hidden"));
 
         component.Render(parameters =>
         {
@@ -2245,8 +2245,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.LoadingTemplate, (RenderFragment?)null);
         });
 
-        Assert.AreEqual("true", component.Find(".bit-tfl-lod").GetAttribute("aria-hidden"));
-        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .bit-tfl-spn").Count);
+        Assert.IsFalse(component.Find(".bit-tfl-lod").HasAttribute("aria-hidden"));
+        Assert.AreEqual("true", component.Find(".bit-tfl-lod .bit-tfl-spn").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]

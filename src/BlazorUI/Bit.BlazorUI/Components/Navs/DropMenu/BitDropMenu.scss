@@ -576,7 +576,8 @@
         border-color: GrayText;
     }
 
-    .bit-drm.bit-dis .bit-drm-spn {
+    .bit-drm.bit-dis .bit-drm-spn,
+    .bit-drm.bit-drm-ldg .bit-drm-spn {
         @include spinner-ring-forced-disabled;
     }
 }
