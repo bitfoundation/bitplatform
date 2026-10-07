@@ -85,6 +85,11 @@ public static class SetupCommand
             var projectSteps = new ProjectSteps(cli, context);
             await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
 
+            if (NewWorkflow.StartsAspireOnce(cli, aspire, parseResult.GetValue(shared.NoBuild)))
+            {
+                await NewWorkflow.RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
+            }
+
             if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
             {
                 await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);

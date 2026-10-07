@@ -235,6 +235,59 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
     }
 
+    public async Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        const string skipped = "Skipped Aspire's first start";
+        const string failed = "Couldn't start the project with Aspire";
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && aspire start";
+
+        if (System.IO.Directory.Exists(project.AppHostDirectory) is false)
+            return StepResult.Skipped(skipped, "the project has no AppHost");
+
+        if (Runner.FindExecutable("aspire") is null)
+            return StepResult.Warning(skipped, "the Aspire CLI isn't installed", followUp);
+
+        var docker = await Runner.RunAsync(new ProcessSpec { FileName = "docker", Arguments = ["info", "--format", "{{.ServerVersion}}"], Timeout = TimeSpan.FromMinutes(1) }, cancellationToken);
+
+        if (docker.Succeeded is false)
+            return StepResult.Warning(skipped, "Docker isn't running", followUp);
+
+        var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(30), cancellationToken);
+
+        if (start.Succeeded is false)
+            return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+
+        try
+        {
+            foreach (var resource in AspireResourcesToWaitFor(project.AppHostDirectory))
+            {
+                var wait = await Aspire(["wait", resource, "--status", "healthy", "--timeout", "1800", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(35), cancellationToken);
+
+                if (wait.Succeeded is false)
+                    return StepResult.FromProcess(wait, "", $"Aspire started, {resource} didn't get healthy", followUp) with { Status = StepStatus.Warning };
+            }
+        }
+        finally
+        {
+            await Aspire(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(5), CancellationToken.None);
+        }
+
+        return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+    }
+
+    public static IReadOnlyList<string> AspireResourcesToWaitFor(string appHostDirectory)
+    {
+        var program = Path.Combine(appHostDirectory, "Program.cs");
+        var text = File.Exists(program) ? File.ReadAllText(program) : "";
+
+        return [.. new[] { "serverweb", "serverapi" }.Where(resource => text.Contains($"\"{resource}\"", StringComparison.Ordinal))];
+    }
+
+    private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        return Runner.RunAsync(new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = timeout }, cancellationToken);
+    }
+
     public Task<StepResult> TrustAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         var context = new TrustContext(cli.Environment, Runner);
