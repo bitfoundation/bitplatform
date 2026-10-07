@@ -445,10 +445,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether an item is enabled or not.",
+                   DefaultValue = "false",
+                   Description = "Whether an item is disabled or not.",
                },
                new()
                {
@@ -554,10 +554,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether an option is enabled or not.",
+                   DefaultValue = "false",
+                   Description = "Whether an option is disabled or not.",
                },
                new()
                {
@@ -836,10 +836,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitBreadcrumbItem.IsEnabled))",
-                   Description = "The IsEnabled field name and selector of the custom input class.",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },

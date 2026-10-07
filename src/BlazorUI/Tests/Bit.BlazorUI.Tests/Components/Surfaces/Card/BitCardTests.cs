@@ -1796,7 +1796,7 @@ public class BitCardTests : BunitTestContext
 
         var component = RenderComponent<BitCard>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
 
@@ -2279,7 +2279,7 @@ public class BitCardTests : BunitTestContext
         var component = RenderComponent<BitCard>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var link = component.Find(".bit-crd-lnk");
@@ -2398,7 +2398,7 @@ public class BitCardTests : BunitTestContext
 
         var component = RenderComponent<BitCard>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.Selected, selected, v => selected = v);
         });
 
@@ -2657,7 +2657,7 @@ public class BitCardTests : BunitTestContext
         var component = RenderComponent<BitCard>(parameters =>
         {
             parameters.Add(p => p.TabIndex, "0");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsNull(component.Find(".bit-crd").GetAttribute("tabindex"));
@@ -2668,7 +2668,7 @@ public class BitCardTests : BunitTestContext
     {
         var component = RenderSplattedCard(builder =>
         {
-            builder.AddAttribute(1, nameof(BitCard.IsEnabled), false);
+            builder.AddAttribute(1, nameof(BitCard.Disabled), true);
             builder.AddAttribute(2, "tabindex", "0");
         });
 
@@ -2766,7 +2766,7 @@ public class BitCardTests : BunitTestContext
     {
         var component = RenderComponent<BitCard>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var card = component.Find(".bit-crd");
@@ -2782,7 +2782,7 @@ public class BitCardTests : BunitTestContext
         var component = RenderComponent<BitCard>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, "Release notes");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var card = component.Find(".bit-crd");

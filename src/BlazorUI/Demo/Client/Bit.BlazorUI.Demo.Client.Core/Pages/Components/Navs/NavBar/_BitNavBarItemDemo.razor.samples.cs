@@ -14,7 +14,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitNavBar Items=""basicNavBarItems"" IsEnabled=""false"" />
+<BitNavBar Items=""basicNavBarItems"" Disabled />
 
 <BitNavBar Items=""basicNavBarItemsDisabled"" />";
     private readonly string example2CsharpCode = @"
@@ -30,7 +30,7 @@ private static readonly List<BitNavBarItem> basicNavBarItemsDisabled =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home  },
     new() { Text = ""Products"", IconName = BitIconName.ProductVariant },
-    new() { Text = ""Academy"", IconName = BitIconName.LearningTools, IsEnabled = false },
+    new() { Text = ""Academy"", IconName = BitIconName.LearningTools, IsDisabled = true },
     new() { Text = ""Profile"", IconName = BitIconName.Contact },
 ];";
 
@@ -57,7 +57,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 ];
 
 private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
-     basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
+     basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsDisabled = i.IsDisabled, Value = i });
 
 private BitNavBarItem? twoWaySelectedItem;";
 
@@ -88,14 +88,14 @@ private static readonly List<BitNavBarItem> prefixMatchItems =
 // they still light up on a match, but a click cannot navigate to a URL no page answers.
 private static readonly List<BitNavBarItem> wildcardMatchItems =
 [
-    new() { Text = ""/components/*"", IconName = BitIconName.F12DevTools, Url = ""/components/*"", Match = BitNavMatch.Wildcard, IsEnabled = false },
-    new() { Text = ""/iconography/*"", IconName = BitIconName.AppIconDefault, Url = ""/iconography/*"", Match = BitNavMatch.Wildcard, IsEnabled = false },
+    new() { Text = ""/components/*"", IconName = BitIconName.F12DevTools, Url = ""/components/*"", Match = BitNavMatch.Wildcard, IsDisabled = true },
+    new() { Text = ""/iconography/*"", IconName = BitIconName.AppIconDefault, Url = ""/iconography/*"", Match = BitNavMatch.Wildcard, IsDisabled = true },
 ];
 
 private static readonly List<BitNavBarItem> regexMatchItems =
 [
-    new() { Text = ""^/components/navbar$"", IconName = BitIconName.Code, Url = ""^/components/navbar$"", Match = BitNavMatch.Regex, IsEnabled = false },
-    new() { Text = ""^/iconography$"", IconName = BitIconName.Code, Url = ""^/iconography$"", Match = BitNavMatch.Regex, IsEnabled = false },
+    new() { Text = ""^/components/navbar$"", IconName = BitIconName.Code, Url = ""^/components/navbar$"", Match = BitNavMatch.Regex, IsDisabled = true },
+    new() { Text = ""^/iconography$"", IconName = BitIconName.Code, Url = ""^/iconography$"", Match = BitNavMatch.Regex, IsDisabled = true },
 ];
 
 private static readonly List<BitNavBarItem> additionalUrlsItems =

@@ -469,7 +469,7 @@ public class BitDataGridStructureTests : BunitTestContext
         Assert.IsNotNull(component.Instance.EditingItem);
         Assert.AreEqual("Name", Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.DataGrid.focusEditor").Arguments[1]);
 
-        component.Render(p => p.Add(x => x.IsEnabled, false));
+        component.Render(p => p.Add(x => x.Disabled, true));
         Assert.AreEqual(0, component.FindAll("[data-bit-dtg-typable]").Count, "a disabled grid opens no editor");
     }
 

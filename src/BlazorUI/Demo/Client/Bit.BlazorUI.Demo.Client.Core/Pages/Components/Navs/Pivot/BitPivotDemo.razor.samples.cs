@@ -205,11 +205,11 @@ private readonly List<string> overflowTabs = [""File"", ""Shared with me"", ""Re
     <BitPivotItem Key=""4"" HeaderText=""Last""><div>Pivot #4: Last</div></BitPivotItem>
 </BitPivot>
 
-<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidLeft"" IsEnabled=""@(selectedKey != ""1"")""
+<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidLeft"" Disabled=""@(selectedKey == ""1"")""
            OnClick=""(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())"">
     Prev
 </BitButton>
-<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidRight"" IsEnabled=""@(selectedKey != ""4"")""
+<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidRight"" Disabled=""@(selectedKey == ""4"")""
            OnClick=""(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())"">
     Next
 </BitButton>
@@ -380,7 +380,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 </BitPivot>";
 
     private readonly string example15RazorCode = @"
-<BitPivot IsEnabled=""false"">
+<BitPivot Disabled>
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
@@ -388,11 +388,11 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 
 <BitPivot>
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" IsEnabled=""false""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared"" Disabled><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"" IsEnabled=""false"">
+<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Disabled>
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>

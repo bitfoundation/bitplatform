@@ -185,7 +185,7 @@ private void RenderEventFlags()
 
 <BitFlag AutoAlt Bordered Rounded Grayscale
          Height=""2rem""
-         IsEnabled=""false""
+         Disabled
          Title=""Not shipped to Portugal yet""
          Country=""BitCountries.Portugal""
          OnClick=""@(() => selectedCountry = BitCountries.Portugal)"" />

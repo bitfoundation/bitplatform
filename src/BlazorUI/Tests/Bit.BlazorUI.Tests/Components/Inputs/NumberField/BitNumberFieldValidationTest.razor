@@ -5,7 +5,7 @@
                     Max="@Max"
                     Step="@Step"
                     @bind-Value="@TestModel.Value"
-                    IsEnabled="@IsEnabled"
+                    Disabled="Disabled"
                     AriaDescription="@AriaDescription"
                     AriaPositionInSet="@AriaPositionInSet"
                     AriaSetSize="@AriaSetSize"
@@ -60,7 +60,7 @@
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
     [Parameter] public string? DecrementAriaLabel { get; set; }
     [Parameter] public string? IncrementAriaLabel { get; set; }
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     public int OnIncrementEventCounter { get; set; }

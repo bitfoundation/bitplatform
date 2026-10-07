@@ -513,7 +513,7 @@ public partial class BitSlider : BitInputBase<double>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-sld-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-sld-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-sld-req" : string.Empty);
 
         ClassBuilder.Register(() => Inverted ? "bit-sld-ivt" : string.Empty);
 
@@ -720,7 +720,7 @@ public partial class BitSlider : BitInputBase<double>
             if (clamped != incoming)
             {
                 // A one-way bound value has nobody to notify, so it is corrected locally instead. Assigning
-                // CurrentValue is avoided here as well, since its setter drops the write while IsEnabled is false.
+                // CurrentValue is avoided here as well, since its setter drops the write while Disabled is true.
                 if (InvalidValueBinding())
                 {
                     Value = clamped;
@@ -1289,7 +1289,7 @@ public partial class BitSlider : BitInputBase<double>
     /// change itself instead of the component having to undo it afterwards. The true bounds are still
     /// announced, through the explicit aria-valuemin and aria-valuemax the inputs always carry.
     /// </remarks>
-    private bool _IsInteractive => IsEnabled && ReadOnly is false;
+    private bool _IsInteractive => Disabled is false && ReadOnly is false;
 
 
 
@@ -1672,14 +1672,14 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocusIn.InvokeAsync(e);
     }
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocusOut.InvokeAsync(e);
     }

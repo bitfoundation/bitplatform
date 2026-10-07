@@ -849,11 +849,11 @@ public class BitLayoutTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitLayoutShouldRespectIsEnabled(bool isEnabled)
+    public void BitLayoutShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitLayout>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-lyt").ClassList.Contains("bit-dis"));

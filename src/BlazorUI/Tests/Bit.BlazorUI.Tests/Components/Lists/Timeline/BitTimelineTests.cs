@@ -57,7 +57,7 @@ public class BitTimelineTests : BunitTestContext
         PrimaryText = { Selector = i => i.FirstText },
         SecondaryText = { Selector = i => i.SecondText },
         IconName = { Selector = i => i.IconClass },
-        IsEnabled = { Selector = i => i.Off is false },
+        IsDisabled = { Selector = i => i.Off },
         Reversed = { Selector = i => i.Flipped },
         HideDot = { Selector = i => i.NoDot },
         Color = { Selector = i => i.DotColor },
@@ -274,11 +274,11 @@ public class BitTimelineTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitTimelineShouldRespectIsEnabled(bool isEnabled)
+    public void BitTimelineShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             TwoOptions()(parameters);
         });
 
@@ -786,7 +786,7 @@ public class BitTimelineTests : BunitTestContext
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {
             parameters.Add(p => p.OnItemClick, (BitTimelineItem _) => { });
-            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", IsEnabled = false }]);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", IsDisabled = true }]);
         });
 
         var item = component.Find(".bit-tln-itm");
@@ -807,7 +807,7 @@ public class BitTimelineTests : BunitTestContext
         {
             parameters.Add(p => p.Items,
             [
-                new BitTimelineItem { PrimaryText = "One", IsEnabled = false },
+                new BitTimelineItem { PrimaryText = "One", IsDisabled = true },
                 new BitTimelineItem { PrimaryText = "Two" }
             ]);
         });
@@ -865,7 +865,7 @@ public class BitTimelineTests : BunitTestContext
             parameters.AddChildContent(builder =>
             {
                 builder.OpenComponent<BitTimelineOption>(0);
-                builder.AddAttribute(1, nameof(BitTimelineOption.IsEnabled), false);
+                builder.AddAttribute(1, nameof(BitTimelineOption.IsDisabled), true);
                 builder.AddAttribute(2, nameof(BitTimelineOption.PrimaryText), "First");
                 builder.CloseComponent();
             });
@@ -886,7 +886,7 @@ public class BitTimelineTests : BunitTestContext
 
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnItemClick, (BitTimelineOption item) => clicked = item);
             TwoOptions()(parameters);
         });
@@ -1392,14 +1392,14 @@ public class BitTimelineTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTimelineShouldRespectACascadedIsEnabled()
+    public void BitTimelineShouldRespectACascadedDisabled()
     {
         var clicked = false;
 
         var component = RenderComponent<CascadingValue<BitTimelineParams>>(parameters =>
         {
             parameters.Add(p => p.Name, BitTimelineParams.ParamName);
-            parameters.Add(p => p.Value, new BitTimelineParams { IsEnabled = false });
+            parameters.Add(p => p.Value, new BitTimelineParams { Disabled = true });
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
             {
                 builder.OpenComponent<BitTimeline<BitTimelineItem>>(0);

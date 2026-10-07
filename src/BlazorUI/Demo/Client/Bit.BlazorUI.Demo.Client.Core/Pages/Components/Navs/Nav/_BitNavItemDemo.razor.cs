@@ -26,8 +26,8 @@ public partial class _BitNavItemDemo
                             ]
                         },
                         new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Cloud hosting solutions", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsDisabled = true },
+                        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsDisabled = true },
                     ]
                 },
                 new() { Text = "Pricing", IconName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
@@ -74,7 +74,7 @@ public partial class _BitNavItemDemo
         },
         new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline},
         new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools },
-        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, IsEnabled = false },
+        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, IsDisabled = true },
         new() { Text = "Contact us", IconName = BitIconName.Contact },
     ];
 
@@ -288,14 +288,14 @@ public partial class _BitNavItemDemo
     // they still light up on a match, but a click cannot navigate to a URL no page answers.
     private static readonly List<BitNavItem> wildcardMatchNavItems =
     [
-        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*", IsEnabled = false },
-        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**", IsEnabled = false },
+        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*", IsDisabled = true },
+        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**", IsDisabled = true },
     ];
 
     private static readonly List<BitNavItem> regexMatchNavItems =
     [
-        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$", IsEnabled = false },
-        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p", IsEnabled = false },
+        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$", IsDisabled = true },
+        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p", IsDisabled = true },
     ];
 
     private static readonly List<BitNavItem> itemMatchNavItems =
@@ -447,8 +447,8 @@ public partial class _BitNavItemDemo
                             ]
                         },
                         new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Cloud hosting solutions", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsDisabled = true },
+                        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsDisabled = true },
                     ]
                 },
                 new() { Text = "Pricing", IconName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
@@ -534,8 +534,8 @@ public partial class _BitNavItemDemo
                             ]
                         },
                         new() { Text = "رابط کاربری Blazor", IconName = BitIconName.F12DevTools, Url = "https://blazorui.bitplatform.dev/" },
-                        new() { Text = "راه های هاست ابری", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "آکادمی بیت", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "راه های هاست ابری", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsDisabled = true },
+                        new() { Text = "آکادمی بیت", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsDisabled = true },
                     ]
                 },
                 new() { Text = "قیمت", IconName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },

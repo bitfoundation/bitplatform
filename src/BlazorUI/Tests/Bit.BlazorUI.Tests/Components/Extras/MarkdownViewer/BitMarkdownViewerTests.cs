@@ -148,11 +148,11 @@ public class BitMarkdownViewerTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMarkdownViewerShouldRespectIsEnabled(bool isEnabled)
+    public void BitMarkdownViewerShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Markdown, "enable");
         });
 

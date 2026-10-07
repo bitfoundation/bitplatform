@@ -145,7 +145,7 @@ public class BitLabelParamsTests : BunitTestContext
     [TestMethod]
     public void BitLabelShouldApplyCascadedBaseParameters()
     {
-        var component = RenderWithParams(new BitLabelParams { Dir = BitDir.Rtl, IsEnabled = false, Class = "cascaded" });
+        var component = RenderWithParams(new BitLabelParams { Dir = BitDir.Rtl, Disabled = true, Class = "cascaded" });
 
         var root = component.Find(".bit-lbl");
 

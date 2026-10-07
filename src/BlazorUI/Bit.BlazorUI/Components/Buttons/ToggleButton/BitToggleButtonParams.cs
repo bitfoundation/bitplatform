@@ -23,7 +23,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Keeps the disabled toggle button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the toggle button from the tab order.
     /// </summary>
     public bool? AllowDisabledFocus { get; set; }

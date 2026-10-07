@@ -106,7 +106,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
     private async Task OpenSubmenu(bool focusFirstItem, bool byPointer = false)
     {
-        if (MenuButton.IsEnabled is false || MenuButton.GetIsEnabled(Item) is false) return;
+        if (MenuButton.Disabled || MenuButton.GetIsDisabled(Item)) return;
 
         if (_isSubmenuOpen)
         {
@@ -203,7 +203,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
             return;
         }
 
-        if (MenuButton.IsEnabled is false || MenuButton.GetIsEnabled(Item) is false) return;
+        if (MenuButton.Disabled || MenuButton.GetIsDisabled(Item)) return;
 
         // A submenu the pointer opened on its own is not one the click that follows should take away
         // again: the click is the user arriving at it, so it moves the keyboard into it instead.
@@ -242,9 +242,9 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
     {
         var token = MenuButton.NextHoverToken();
 
-        if (MenuButton.IsEnabled is false) return;
+        if (MenuButton.Disabled) return;
 
-        if (_hasSubmenu && MenuButton.GetIsEnabled(Item))
+        if (_hasSubmenu && MenuButton.GetIsDisabled(Item) is false)
         {
             if (_isSubmenuOpen) return;
 

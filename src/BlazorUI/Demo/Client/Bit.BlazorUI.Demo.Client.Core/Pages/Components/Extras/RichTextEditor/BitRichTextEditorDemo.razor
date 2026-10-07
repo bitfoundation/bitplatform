@@ -98,13 +98,13 @@
             <DemoExample Title="Read-only & disabled" RazorCode="@example6RazorCode" Id="example6">
                 <div>
                     <b>ReadOnly</b> locks editing but keeps the text selectable and in the tab order; with
-                    <b>ShowToolbar</b> off and <b>Height</b> auto it displays stored content. <b>IsEnabled</b> off dims the
+                    <b>ShowToolbar</b> off and <b>Height</b> auto it displays stored content. <b>Disabled</b> dims the
                     editor, takes it out of the tab order and refuses every edit path.
                 </div>
                 <br />
                 <BitRichTextEditor Value="@readOnlyHtml" ReadOnly ShowToolbar="false" Height="auto" />
                 <br />
-                <BitRichTextEditor Value="@disabledHtml" IsEnabled="false" Height="auto"
+                <BitRichTextEditor Value="@disabledHtml" Disabled Height="auto"
                                    Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists" />
             </DemoExample>
 

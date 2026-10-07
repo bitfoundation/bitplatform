@@ -45,7 +45,7 @@
             <div>
                 <b>@@bind-Expanded</b> keeps the state on the page, <b>DefaultExpanded</b> leaves it to the component, and
                 <b>ExpandAsync</b>, <b>CollapseAsync</b> and <b>ToggleAsync</b> drive it through a reference. <b>OnChange</b>
-                reports the changes the component makes itself. A disabled collapse (<b>IsEnabled="false"</b>) keeps its state,
+                reports the changes the component makes itself. A disabled collapse (<b>Disabled</b>) keeps its state,
                 ignores the three methods and takes the disabled colors.
             </div>
             <br /><br />
@@ -58,9 +58,9 @@
                 <BitButton OnClick="() => collapseRef?.ExpandAsync()">Expand</BitButton>
                 <BitButton OnClick="() => collapseRef?.CollapseAsync()">Collapse</BitButton>
                 <BitButton OnClick="() => collapseRef?.ToggleAsync()">Toggle</BitButton>
-                <BitCheckbox Label="Enabled" @bind-Value="collapseEnabled" />
+                <BitCheckbox Label="Disabled" @bind-Value="collapseDisabled" />
             </div>
-            <BitCollapse @ref="collapseRef" DefaultExpanded IsEnabled="collapseEnabled" OnChange="HandleChange">
+            <BitCollapse @ref="collapseRef" DefaultExpanded Disabled="collapseDisabled" OnChange="HandleChange">
                 Starts open through DefaultExpanded; nothing on the page holds its state.
             </BitCollapse>
             <div>@changeLog</div>

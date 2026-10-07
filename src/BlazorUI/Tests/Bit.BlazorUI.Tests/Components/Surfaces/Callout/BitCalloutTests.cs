@@ -341,11 +341,11 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalloutShouldRespectIsEnabled()
+    public void BitCalloutShouldRespectDisabled()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-clo").ClassList.Contains("bit-dis"));
@@ -356,7 +356,7 @@ public class BitCalloutTests : BunitTestContext
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
         });
 
@@ -376,7 +376,7 @@ public class BitCalloutTests : BunitTestContext
         component.Find(".bit-clo-acn").Click();
         Assert.IsTrue(component.Instance.IsOpen);
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         // A callout left hanging over the page with a disabled anchor under it could never be closed again.
         Assert.IsFalse(component.Instance.IsOpen);
@@ -1002,7 +1002,7 @@ public class BitCalloutTests : BunitTestContext
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.OpenAt(10, 20));
@@ -1016,7 +1016,7 @@ public class BitCalloutTests : BunitTestContext
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Open());

@@ -121,10 +121,10 @@ public partial class BitThemeSwitcherDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "bool",
-                    DefaultValue = "true",
-                    Description = "Whether this design system can be selected.",
+                    DefaultValue = "false",
+                    Description = "Whether this design system is disabled and cannot be selected.",
                 },
                 new()
                 {

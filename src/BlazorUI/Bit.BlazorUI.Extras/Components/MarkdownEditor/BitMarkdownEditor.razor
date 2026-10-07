@@ -140,13 +140,13 @@
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindPreviousAriaLabel" aria-label="@ActiveTexts.FindPreviousAriaLabel" @onclick="FindPreviousMatch">&uarr;</button>
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindNextAriaLabel" aria-label="@ActiveTexts.FindNextAriaLabel" @onclick="FindNextMatch">&darr;</button>
             <span class="bit-mde-fns" aria-live="polite">@FindStatusText</span>
-            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@(ReadOnly || IsEnabled is false)">@ActiveTexts.ReplaceButton</button>
+            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@(ReadOnly || Disabled)">@ActiveTexts.ReplaceButton</button>
             <button type="button"
                     class="bit-mde-fnb"
                     title="@ActiveTexts.ReplaceAllAriaLabel"
                     aria-label="@ActiveTexts.ReplaceAllAriaLabel"
                     @onclick="ReplaceAll"
-                    disabled="@(ReadOnly || IsEnabled is false)">@ActiveTexts.ReplaceAllButton</button>
+                    disabled="@(ReadOnly || Disabled)">@ActiveTexts.ReplaceAllButton</button>
             <button type="button" class="bit-mde-hcl" @onclick="CloseFind" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
         </div>
     }
@@ -166,8 +166,8 @@
                       aria-describedby="@TextAreaDescribedBy"
                       maxlength="@(MaxLength is > 0 ? MaxLength : null)"
                       spellcheck="@(SpellCheck ? "true" : "false")"
-                      readonly="@(ReadOnly || IsEnabled is false)"
-                      disabled="@(IsEnabled is false)"
+                      readonly="@(ReadOnly || Disabled)"
+                      disabled="@(Disabled)"
                       required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
                       aria-required="@(Required ? "true" : null)"
                       autocomplete="off"

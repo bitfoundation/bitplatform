@@ -456,13 +456,13 @@ public partial class BitCheckboxDemo
         {
             Name = "--bit-Checkbox-disabled-color",
             DefaultValue = "The Color role's disabled color",
-            Description = "Stroke and fill of the box when IsEnabled is false; also the focus ring color of a disabled checkbox kept focusable with AllowDisabledFocus.",
+            Description = "Stroke and fill of the box when Disabled is true; also the focus ring color of a disabled checkbox kept focusable with AllowDisabledFocus.",
         },
         new()
         {
             Name = "--bit-Checkbox-disabled-text-color",
             DefaultValue = "The Color role's disabled text color",
-            Description = "Color of the label, the description and the glyph when IsEnabled is false.",
+            Description = "Color of the label, the description and the glyph when Disabled is true.",
         },
         new()
         {

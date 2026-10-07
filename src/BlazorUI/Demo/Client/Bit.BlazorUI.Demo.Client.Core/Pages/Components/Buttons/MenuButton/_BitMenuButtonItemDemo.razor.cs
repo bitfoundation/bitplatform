@@ -29,14 +29,14 @@ public partial class _BitMenuButtonItemDemo
     private static List<BitMenuButtonItem> basicItems =
     [
         new() { Text = "Item A", Key = "A" },
-        new() { Text = "Item B", Key = "B", IsEnabled = false },
+        new() { Text = "Item B", Key = "B", IsDisabled = true },
         new() { Text = "Item C", Key = "C" }
     ];
 
     private static List<BitMenuButtonItem> basicItemsIcon =
     [
         new() { Text = "Item A", Key = "A", IconName = BitIconName.Emoji },
-        new() { Text = "Item B", Key = "B", IconName = BitIconName.Emoji, IsEnabled = false },
+        new() { Text = "Item B", Key = "B", IconName = BitIconName.Emoji, IsDisabled = true },
         new() { Text = "Item C", Key = "C", IconName = BitIconName.Emoji2 }
     ];
 
@@ -64,7 +64,7 @@ public partial class _BitMenuButtonItemDemo
     private static List<BitMenuButtonItem> basicItemsOnClick =
     [
         new() { Text = "Item A", Key = "A", IconName = BitIconName.Emoji },
-        new() { Text = "Item B", Key = "B", IconName = BitIconName.Emoji, IsEnabled = false },
+        new() { Text = "Item B", Key = "B", IconName = BitIconName.Emoji, IsDisabled = true },
         new() { Text = "Item C", Key = "C", IconName = BitIconName.Emoji2 }
     ];
 
@@ -134,7 +134,7 @@ public partial class _BitMenuButtonItemDemo
                     ChildItems =
                     [
                         new() { Text = "Scatter", Key = "scatter" },
-                        new() { Text = "Bubble", Key = "bubble", IsEnabled = false }
+                        new() { Text = "Bubble", Key = "bubble", IsDisabled = true }
                     ]
                 }
             ]
@@ -152,7 +152,7 @@ public partial class _BitMenuButtonItemDemo
             [
                 new() { Text = "Email", Key = "email", IconName = BitIconName.Mail, SecondaryText = "Ctrl+E" },
                 new() { Text = "Teams", Key = "teams", IconName = BitIconName.TeamsLogo },
-                new() { Text = "Printer", Key = "printer", IconName = BitIconName.Print, IsEnabled = false }
+                new() { Text = "Printer", Key = "printer", IconName = BitIconName.Print, IsDisabled = true }
             ]
         }
     ];
@@ -192,7 +192,7 @@ public partial class _BitMenuButtonItemDemo
     ];
 
     private static IEnumerable<BitChoiceGroupItem<BitMenuButtonItem>> choiceGroupItems =
-        basicItems.Select(i => new BitChoiceGroupItem<BitMenuButtonItem>() { Id = i.Key, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
+        basicItems.Select(i => new BitChoiceGroupItem<BitMenuButtonItem>() { Id = i.Key, Text = i.Text, IsDisabled = i.IsDisabled, Value = i });
 
     protected override void OnInitialized()
     {

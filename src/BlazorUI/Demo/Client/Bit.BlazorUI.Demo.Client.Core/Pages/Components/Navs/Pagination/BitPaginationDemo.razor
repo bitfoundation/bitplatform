@@ -16,14 +16,14 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             <b>Count</b> is all it needs. <b>DefaultSelectedPage</b> picks the page it starts on (the first by default);
-            <b>IsEnabled="false"</b> disables every control.
+            <b>Disabled</b> disables every control.
         </div>
         <br />
         <BitPagination Count="5" />
         <br /><br />
         <BitPagination Count="5" DefaultSelectedPage="3" />
         <br /><br />
-        <BitPagination Count="5" DefaultSelectedPage="3" IsEnabled="false" />
+        <BitPagination Count="5" DefaultSelectedPage="3" Disabled />
     </DemoExample>
 
     <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
@@ -334,9 +334,9 @@
         <div>Disabled</div>
         <br />
         <div class="color-row">
-            <BitPagination IsEnabled="false" Count="5" />
-            <BitPagination IsEnabled="false" Count="5" Variant="BitVariant.Outline" />
-            <BitPagination IsEnabled="false" Count="5" Variant="BitVariant.Text" />
+            <BitPagination Disabled Count="5" />
+            <BitPagination Disabled Count="5" Variant="BitVariant.Outline" />
+            <BitPagination Disabled Count="5" Variant="BitVariant.Text" />
         </div>
     </DemoExample>
 

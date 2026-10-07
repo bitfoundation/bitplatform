@@ -17,11 +17,11 @@ public class BitTagsInputTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitTagsInputIsEnabledTest(bool isEnabled)
+    public void BitTagsInputDisabledTest(bool isEnabled)
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = com.Find(".bit-tgi");
@@ -481,7 +481,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, new List<string> { "apple", "banana" });
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(com.FindAll(".bit-tgi-tag").All(t => t.GetAttribute("tabindex") == "-1"));
@@ -530,7 +530,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, new List<string> { "apple" });
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual(0, com.FindAll(".bit-tgi-dbt").Count);
@@ -3138,7 +3138,7 @@ public class BitTagsInputTests : BunitTestContext
 
     [TestMethod,
         DataRow("ReadOnly"),
-        DataRow("IsEnabled"),
+        DataRow("Disabled"),
         DataRow("EditableTags")]
     public async Task BitTagsInputAnOpenEditIsClosedWhenTheFieldTurnsInertTest(string parameter)
     {
@@ -3157,7 +3157,7 @@ public class BitTagsInputTests : BunitTestContext
             switch (parameter)
             {
                 case "ReadOnly": parameters.Add(p => p.ReadOnly, true); break;
-                case "IsEnabled": parameters.Add(p => p.IsEnabled, false); break;
+                case "Disabled": parameters.Add(p => p.Disabled, true); break;
                 default: parameters.Add(p => p.EditableTags, false); break;
             }
         });
@@ -3592,7 +3592,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
             parameters.Add(p => p.MaxDisplayedTags, 1);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
         });
 
@@ -3712,7 +3712,7 @@ public class BitTagsInputTests : BunitTestContext
             parameters.Add(p => p.EditableTags, true);
             parameters.Add(p => p.AllowReorder, true);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.DefaultValue, new List<string> { "apple" });
         });
 
@@ -3849,7 +3849,7 @@ public class BitTagsInputTests : BunitTestContext
         {
             parameters.Add(p => p.AllowReorder, true);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
         });
 
@@ -4119,7 +4119,7 @@ public class BitTagsInputTests : BunitTestContext
         {
             parameters.Add(p => p.AllowReorder, true);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
         });
 
@@ -4784,7 +4784,7 @@ public class BitTagsInputTests : BunitTestContext
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, new List<string> { "a" });
             parameters.Add(p => p.OnTagClick, (string _) => { });
         });
@@ -5091,7 +5091,7 @@ public class BitTagsInputTests : BunitTestContext
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.EditableTags, true);
             parameters.Add(p => p.DefaultValue, new List<string> { "apple", "banana" });
         });
@@ -5180,7 +5180,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInputValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, model);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var form = com.Find("form");
@@ -5201,7 +5201,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInputValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, model);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var form = com.Find("form");
@@ -5219,7 +5219,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInputValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, model);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var input = com.Find("input.bit-tgi-inp");
@@ -5241,7 +5241,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInputValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, model);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var root = com.Find(".bit-tgi");
@@ -5262,7 +5262,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInputValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, model);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         com.Find("form").Submit();

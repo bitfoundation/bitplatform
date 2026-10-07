@@ -11,7 +11,7 @@ public partial class BitTagsInputDemo
 
 <BitTagsInput Placeholder=""ReadOnly"" ReadOnly DefaultValue=""@(new List<string> { ""Tag 1"", ""Tag 2"" })"" />
 
-<BitTagsInput Placeholder=""Disabled"" IsEnabled=""false"" DefaultValue=""@(new List<string> { ""Tag 1"", ""Tag 2"" })"" />";
+<BitTagsInput Placeholder=""Disabled"" Disabled DefaultValue=""@(new List<string> { ""Tag 1"", ""Tag 2"" })"" />";
 
     private readonly string example2RazorCode = @"
 <BitTagsInput Label=""Tags"" Required Placeholder=""Add tag..."" />

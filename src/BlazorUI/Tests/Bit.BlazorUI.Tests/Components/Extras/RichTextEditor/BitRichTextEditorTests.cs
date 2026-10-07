@@ -311,11 +311,11 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
         });
 
-        // IsEnabled=false must lock editing exactly like ReadOnly; painting the disabled class
+        // Disabled=true must lock editing exactly like ReadOnly; painting the disabled class
         // while leaving the surface editable would let a "disabled" editor be typed into.
         var root = component.Find(".bit-rte");
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -334,10 +334,10 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var component = RenderComponent<BitRichTextEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
-        // The bridge refuses paste/drop/typing on this flag, so it must reflect IsEnabled too and
+        // The bridge refuses paste/drop/typing on this flag, so it must reflect Disabled too and
         // not only the ReadOnly parameter.
         Assert.AreEqual(true, SetupOption(LastSetupOptions(), "ReadOnly"));
         Assert.AreEqual(0, component.FindAll(".bit-rte-src").Count);
@@ -2771,7 +2771,7 @@ public class BitRichTextEditorTests : BunitTestContext
         {
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Source);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         // Both ways of locking the editor keep source view out of reach, so the button must look
@@ -2826,7 +2826,7 @@ public class BitRichTextEditorTests : BunitTestContext
         // A disabled component takes no focus at all.
         var disabled = RenderComponent<BitRichTextEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
         Assert.IsFalse(disabled.Find(".bit-rte-edt").HasAttribute("tabindex"));
     }

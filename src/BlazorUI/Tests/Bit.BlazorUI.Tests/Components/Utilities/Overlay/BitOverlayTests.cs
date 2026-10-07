@@ -25,11 +25,11 @@ public class BitOverlayTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitOverlayShouldRespectIsEnabled(bool isEnabled)
+    public void BitOverlayShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -38,7 +38,7 @@ public class BitOverlayTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitOverlayShouldRespectIsEnabledChangingAfterRender()
+    public void BitOverlayShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
 
@@ -46,7 +46,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div tabindex=""-1"" inert class=""bit-ovl bit-dis"" id:ignore></div>");
@@ -975,7 +975,7 @@ public class BitOverlayTests : BunitTestContext
         var component = RenderComponent<BitOverlay>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -1208,11 +1208,11 @@ public class BitOverlayTests : BunitTestContext
     // A disabled Overlay takes nothing from the user and is not opened by code either, but the code that
     // owns it can always close it: one disabled while it was open would otherwise be stuck on the screen.
     [TestMethod]
-    public async Task BitOverlayMethodsShouldRespectIsEnabled()
+    public async Task BitOverlayMethodsShouldRespectDisabled()
     {
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
@@ -1220,7 +1220,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
@@ -1228,7 +1228,7 @@ public class BitOverlayTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Close());
@@ -1238,11 +1238,11 @@ public class BitOverlayTests : BunitTestContext
     // Toggle goes through Open and Close, so it inherits their stance on being disabled: it must not open a
     // disabled Overlay, but it must still close one that was disabled while it was open.
     [TestMethod]
-    public async Task BitOverlayToggleShouldRespectIsEnabled()
+    public async Task BitOverlayToggleShouldRespectDisabled()
     {
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Toggle());
@@ -1252,7 +1252,7 @@ public class BitOverlayTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div tabindex=""-1"" class=""bit-ovl bit-ovl-opn bit-dis"" id:ignore></div>");
@@ -1436,7 +1436,7 @@ public class BitOverlayTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.Blocking, blocking);
             parameters.Add(p => p.NoDismissOnEscape, noDismissOnEscape);
-            parameters.Add(p => p.IsEnabled, disabled is false);
+            parameters.Add(p => p.Disabled, disabled);
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.watchLayerEscape"].Count));

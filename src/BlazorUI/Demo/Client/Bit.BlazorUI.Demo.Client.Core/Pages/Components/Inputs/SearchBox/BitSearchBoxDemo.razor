@@ -25,7 +25,7 @@
                 away as soon as the input is focused, and a clear button shows up as soon as the input has a value.
                 <br /><br />
                 <b>ReadOnly</b> keeps the value visible and selectable but blocks editing, clearing and picking suggestions,
-                while <b>IsEnabled="false"</b> renders the disabled state which additionally takes the whole component out of
+                while <b>Disabled</b> renders the disabled state which additionally takes the whole component out of
                 the tab order. <b>Required</b> renders the required html attribute on the input element.
             </div>
             <br />
@@ -34,7 +34,7 @@
                 <br />
                 <BitSearchBox Placeholder="ReadOnly" ReadOnly DefaultValue="Read only value" />
                 <br />
-                <BitSearchBox Placeholder="Disabled" IsEnabled="false" />
+                <BitSearchBox Placeholder="Disabled" Disabled />
                 <br />
                 <BitSearchBox Placeholder="Required" Required />
             </div>
@@ -94,11 +94,11 @@
             <div class="example-box">
                 <BitSearchBox Placeholder="Underlined" Underlined />
                 <br />
-                <BitSearchBox Placeholder="Underlined & disabled" Underlined IsEnabled="false" />
+                <BitSearchBox Placeholder="Underlined & disabled" Underlined Disabled />
                 <br />
                 <BitSearchBox Placeholder="NoBorder" NoBorder />
                 <br />
-                <BitSearchBox Placeholder="NoBorder & disabled" NoBorder IsEnabled="false" />
+                <BitSearchBox Placeholder="NoBorder & disabled" NoBorder Disabled />
             </div>
             <br />
             <div class="example-box" style="padding:1rem;background:var(--bit-clr-bg-dis)">
@@ -169,15 +169,15 @@
                 <br />
                 <BitSearchBox Placeholder="SearchButtonAriaLabel" ShowSearchButton SearchButtonAriaLabel="جستجو" />
                 <br />
-                <BitSearchBox Placeholder="Disabled" IsEnabled="false" ShowSearchButton />
+                <BitSearchBox Placeholder="Disabled" Disabled ShowSearchButton />
                 <br />
                 <BitSearchBox Placeholder="Underlined" Underlined ShowSearchButton />
                 <br />
-                <BitSearchBox Placeholder="Disabled Underlined" IsEnabled="false" Underlined ShowSearchButton />
+                <BitSearchBox Placeholder="Disabled Underlined" Disabled Underlined ShowSearchButton />
                 <br />
                 <BitSearchBox Placeholder="NoBorder" NoBorder ShowSearchButton />
                 <br />
-                <BitSearchBox Placeholder="Disabled NoBorder" IsEnabled="false" NoBorder ShowSearchButton />
+                <BitSearchBox Placeholder="Disabled NoBorder" Disabled NoBorder ShowSearchButton />
             </div>
         </DemoExample>
 
@@ -782,75 +782,75 @@
                 <br /><br />
                 <div><b>Disabled</b>:</div>
                 <br />
-                <BitSearchBox Placeholder="Primary" ShowSearchButton Color="BitColor.Primary" IsEnabled="false" />
+                <BitSearchBox Placeholder="Primary" ShowSearchButton Color="BitColor.Primary" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Primary" ShowSearchButton Color="BitColor.Primary" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Primary" ShowSearchButton Color="BitColor.Primary" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="Secondary" ShowSearchButton Color="BitColor.Secondary" IsEnabled="false" />
+                <BitSearchBox Placeholder="Secondary" ShowSearchButton Color="BitColor.Secondary" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Secondary" ShowSearchButton Color="BitColor.Secondary" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Secondary" ShowSearchButton Color="BitColor.Secondary" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="Tertiary" ShowSearchButton Color="BitColor.Tertiary" IsEnabled="false" />
+                <BitSearchBox Placeholder="Tertiary" ShowSearchButton Color="BitColor.Tertiary" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Tertiary" ShowSearchButton Color="BitColor.Tertiary" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Tertiary" ShowSearchButton Color="BitColor.Tertiary" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="Info" ShowSearchButton Color="BitColor.Info" IsEnabled="false" />
+                <BitSearchBox Placeholder="Info" ShowSearchButton Color="BitColor.Info" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Info" ShowSearchButton Color="BitColor.Info" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Info" ShowSearchButton Color="BitColor.Info" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="Success" ShowSearchButton Color="BitColor.Success" IsEnabled="false" />
+                <BitSearchBox Placeholder="Success" ShowSearchButton Color="BitColor.Success" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Success" ShowSearchButton Color="BitColor.Success" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Success" ShowSearchButton Color="BitColor.Success" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="Warning" ShowSearchButton Color="BitColor.Warning" IsEnabled="false" />
+                <BitSearchBox Placeholder="Warning" ShowSearchButton Color="BitColor.Warning" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Warning" ShowSearchButton Color="BitColor.Warning" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Warning" ShowSearchButton Color="BitColor.Warning" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="SevereWarning" ShowSearchButton Color="BitColor.SevereWarning" IsEnabled="false" />
+                <BitSearchBox Placeholder="SevereWarning" ShowSearchButton Color="BitColor.SevereWarning" Disabled />
                 <br />
-                <BitSearchBox Placeholder="SevereWarning" ShowSearchButton Color="BitColor.SevereWarning" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="SevereWarning" ShowSearchButton Color="BitColor.SevereWarning" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="Error" ShowSearchButton Color="BitColor.Error" IsEnabled="false" />
+                <BitSearchBox Placeholder="Error" ShowSearchButton Color="BitColor.Error" Disabled />
                 <br />
-                <BitSearchBox Placeholder="Error" ShowSearchButton Color="BitColor.Error" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="Error" ShowSearchButton Color="BitColor.Error" Disabled Underlined />
                 <br /><br />
                 <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-                    <BitSearchBox Placeholder="PrimaryBackground" ShowSearchButton Color="BitColor.PrimaryBackground" IsEnabled="false" />
+                    <BitSearchBox Placeholder="PrimaryBackground" ShowSearchButton Color="BitColor.PrimaryBackground" Disabled />
                     <br />
-                    <BitSearchBox Placeholder="PrimaryBackground" ShowSearchButton Color="BitColor.PrimaryBackground" IsEnabled="false" Underlined />
+                    <BitSearchBox Placeholder="PrimaryBackground" ShowSearchButton Color="BitColor.PrimaryBackground" Disabled Underlined />
                     <br /><br />
-                    <BitSearchBox Placeholder="SecondaryBackground" ShowSearchButton Color="BitColor.SecondaryBackground" IsEnabled="false" />
+                    <BitSearchBox Placeholder="SecondaryBackground" ShowSearchButton Color="BitColor.SecondaryBackground" Disabled />
                     <br />
-                    <BitSearchBox Placeholder="SecondaryBackground" ShowSearchButton Color="BitColor.SecondaryBackground" IsEnabled="false" Underlined />
+                    <BitSearchBox Placeholder="SecondaryBackground" ShowSearchButton Color="BitColor.SecondaryBackground" Disabled Underlined />
                     <br /><br />
-                    <BitSearchBox Placeholder="TertiaryBackground" ShowSearchButton Color="BitColor.TertiaryBackground" IsEnabled="false" />
+                    <BitSearchBox Placeholder="TertiaryBackground" ShowSearchButton Color="BitColor.TertiaryBackground" Disabled />
                     <br />
-                    <BitSearchBox Placeholder="TertiaryBackground" ShowSearchButton Color="BitColor.TertiaryBackground" IsEnabled="false" Underlined />
+                    <BitSearchBox Placeholder="TertiaryBackground" ShowSearchButton Color="BitColor.TertiaryBackground" Disabled Underlined />
                 </div>
                 <br /><br />
-                <BitSearchBox Placeholder="PrimaryForeground" ShowSearchButton Color="BitColor.PrimaryForeground" IsEnabled="false" />
+                <BitSearchBox Placeholder="PrimaryForeground" ShowSearchButton Color="BitColor.PrimaryForeground" Disabled />
                 <br />
-                <BitSearchBox Placeholder="PrimaryForeground" ShowSearchButton Color="BitColor.PrimaryForeground" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="PrimaryForeground" ShowSearchButton Color="BitColor.PrimaryForeground" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="SecondaryForeground" ShowSearchButton Color="BitColor.SecondaryForeground" IsEnabled="false" />
+                <BitSearchBox Placeholder="SecondaryForeground" ShowSearchButton Color="BitColor.SecondaryForeground" Disabled />
                 <br />
-                <BitSearchBox Placeholder="SecondaryForeground" ShowSearchButton Color="BitColor.SecondaryForeground" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="SecondaryForeground" ShowSearchButton Color="BitColor.SecondaryForeground" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="TertiaryForeground" ShowSearchButton Color="BitColor.TertiaryForeground" IsEnabled="false" />
+                <BitSearchBox Placeholder="TertiaryForeground" ShowSearchButton Color="BitColor.TertiaryForeground" Disabled />
                 <br />
-                <BitSearchBox Placeholder="TertiaryForeground" ShowSearchButton Color="BitColor.TertiaryForeground" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="TertiaryForeground" ShowSearchButton Color="BitColor.TertiaryForeground" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="PrimaryBorder" ShowSearchButton Color="BitColor.PrimaryBorder" IsEnabled="false" />
+                <BitSearchBox Placeholder="PrimaryBorder" ShowSearchButton Color="BitColor.PrimaryBorder" Disabled />
                 <br />
-                <BitSearchBox Placeholder="PrimaryBorder" ShowSearchButton Color="BitColor.PrimaryBorder" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="PrimaryBorder" ShowSearchButton Color="BitColor.PrimaryBorder" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="SecondaryBorder" ShowSearchButton Color="BitColor.SecondaryBorder" IsEnabled="false" />
+                <BitSearchBox Placeholder="SecondaryBorder" ShowSearchButton Color="BitColor.SecondaryBorder" Disabled />
                 <br />
-                <BitSearchBox Placeholder="SecondaryBorder" ShowSearchButton Color="BitColor.SecondaryBorder" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="SecondaryBorder" ShowSearchButton Color="BitColor.SecondaryBorder" Disabled Underlined />
                 <br /><br />
-                <BitSearchBox Placeholder="TertiaryBorder" ShowSearchButton Color="BitColor.TertiaryBorder" IsEnabled="false" />
+                <BitSearchBox Placeholder="TertiaryBorder" ShowSearchButton Color="BitColor.TertiaryBorder" Disabled />
                 <br />
-                <BitSearchBox Placeholder="TertiaryBorder" ShowSearchButton Color="BitColor.TertiaryBorder" IsEnabled="false" Underlined />
+                <BitSearchBox Placeholder="TertiaryBorder" ShowSearchButton Color="BitColor.TertiaryBorder" Disabled Underlined />
             </div>
         </DemoExample>
 

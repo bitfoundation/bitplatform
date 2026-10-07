@@ -67,7 +67,7 @@
                     <FilterTemplate>
                         <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="categoryFilterItems"
                                      MultiSelect Size="BitSize.Small" Placeholder="All"
-                                     AriaLabel="@context.Label" IsEnabled="context.IsEnabled"
+                                     AriaLabel="@context.Label" Disabled="context.Disabled"
                                      Values="@(context.Value as IEnumerable<string?>)"
                                      ValuesChanged="values => context.ApplyAsync(BitDataGridFilterOperator.In, values?.ToList())" />
                     </FilterTemplate>
@@ -138,7 +138,7 @@
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
                 <BitButton OnClick="SelectAllRows">Select all</BitButton>
                 <BitButton OnClick="ClearRowSelection" Variant="BitVariant.Outline">Clear selection</BitButton>
-                <BitButton OnClick="CopySelection" IsEnabled="clipboardSelection.Count > 0">Copy selection</BitButton>
+                <BitButton OnClick="CopySelection" Disabled="clipboardSelection.Count is 0">Copy selection</BitButton>
                 <BitText>@clipboardStatus</BitText>
             </BitStack>
             <br />
@@ -698,7 +698,7 @@
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
-                <BitButton OnClick="() => RecreateGrid(restore: true)" IsEnabled="savedGridState is not null">Recreate &amp; restore</BitButton>
+                <BitButton OnClick="() => RecreateGrid(restore: true)" Disabled="savedGridState is null">Recreate &amp; restore</BitButton>
                 <BitButton OnClick="() => RecreateGrid(restore: false)" Variant="BitVariant.Outline">Recreate fresh</BitButton>
                 <BitText>@gridStateStatus</BitText>
             </BitStack>
@@ -731,13 +731,13 @@
 
         <DemoExample Title="Disabled" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
             <div>
-                <b>IsEnabled="false"</b> keeps the data readable - a focused cell still moves and copies - but disables every control and
+                <b>Disabled</b> keeps the data readable - a focused cell still moves and copies - but disables every control and
                 gesture in the grid, which reports <i>aria-disabled</i>.
             </div>
             <br />
-            <BitToggle @bind-Value="gridEnabled" Label="Enabled" Inline />
+            <BitToggle @bind-Value="gridDisabled" Label="Disabled" Inline />
             <br />
-            <BitDataGrid Items="@disabledProducts" Height="380px" IsEnabled="gridEnabled"
+            <BitDataGrid Items="@disabledProducts" Height="380px" Disabled="gridDisabled"
                          SelectionMode="BitSelectionMode.Multiple" CellNavigation="true" ClipboardCopy="true"
                          Filterable="true" Resizable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" />

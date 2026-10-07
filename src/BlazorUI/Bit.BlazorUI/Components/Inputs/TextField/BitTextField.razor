@@ -78,7 +78,7 @@
                               placeholder="@Placeholder"
                               autocomplete="@AutoComplete"
                               value="@CurrentValueAsString"
-                              disabled=@(IsEnabled is false)
+                              disabled=@(Disabled)
                               class="bit-tfl-inp @Classes?.Input"
                               enterkeyhint="@EnterKeyHint"
                               autocapitalize="@AutoCapitalize"
@@ -118,7 +118,7 @@
                            placeholder="@Placeholder"
                            autocomplete="@AutoComplete"
                            value="@CurrentValueAsString"
-                           disabled=@(IsEnabled is false)
+                           disabled=@(Disabled)
                            class="bit-tfl-inp @Classes?.Input"
                            enterkeyhint="@EnterKeyHint"
                            autocapitalize="@AutoCapitalize"
@@ -166,7 +166,7 @@
                         style="@Styles?.ClearButton"
                         class="bit-tfl-cbt @Classes?.ClearButton"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear text")"
-                        disabled="@(IsEnabled is false || ReadOnly)">
+                        disabled="@(Disabled || ReadOnly)">
                     @if (ClearButtonTemplate is not null)
                     {
                         @ClearButtonTemplate
@@ -187,7 +187,7 @@
                         type="button"
                         tabindex="@TabIndex"
                         style="@Styles?.RevealPassword"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         class="bit-tfl-rpb @Classes?.RevealPassword"
                         aria-label="@(RevealPasswordAriaLabel ?? "Reveal password")"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
@@ -335,7 +335,7 @@
                     tabindex="@TabIndex"
                     style="@Styles?.IconButton"
                     aria-label="@IconButtonAriaLabel"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     class="bit-tfl-icb @Classes?.IconButton">
                 <i aria-hidden="true"
                    style="@Styles?.Icon"

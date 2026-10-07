@@ -7,9 +7,9 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Bus"" />
 <BitIcon IconName=""@BitIconName.Pinned"" />
 
-<BitIcon IconName=""@BitIconName.Accept"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Bus"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Pinned"" IsEnabled=""false"" />";
+<BitIcon IconName=""@BitIconName.Accept"" Disabled />
+<BitIcon IconName=""@BitIconName.Bus"" Disabled />
+<BitIcon IconName=""@BitIconName.Pinned"" Disabled />";
 
     private readonly string example2RazorCode = @"
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />
@@ -18,11 +18,11 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" Circular />
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Circular />
 
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" Circular IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Circular IsEnabled=""false"" />";
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" Disabled />
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" Disabled />
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Disabled />
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" Circular Disabled />
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" Circular Disabled />";
 
     private readonly string example3RazorCode = @"
 <BitIcon IconName=""@BitIconName.Up"" />
@@ -104,7 +104,7 @@ private int replayKey;";
 <BitIcon IconName=""@BitIconName.Delete""
          Variant=""BitVariant.Fill""
          Title=""Deleting is unavailable here""
-         IsEnabled=""false""
+         Disabled
          OnClick=""() => clickCount++"" />
 
 <div>Refreshed @clickCount times.</div>";
@@ -189,7 +189,7 @@ private readonly BitIconParams[] iconParams =
         <BitIcon IconName=""@BitIconName.Accept"" Color=""color"" />
         <BitIcon IconName=""@BitIconName.Accept"" Color=""color"" Variant=""BitVariant.Outline"" />
         <BitIcon IconName=""@BitIconName.Accept"" Color=""color"" Variant=""BitVariant.Fill"" />
-        <BitIcon IconName=""@BitIconName.Accept"" Color=""color"" Variant=""BitVariant.Fill"" IsEnabled=""false"" />
+        <BitIcon IconName=""@BitIconName.Accept"" Color=""color"" Variant=""BitVariant.Fill"" Disabled />
         <span>@color</span>
     </div>
 }";

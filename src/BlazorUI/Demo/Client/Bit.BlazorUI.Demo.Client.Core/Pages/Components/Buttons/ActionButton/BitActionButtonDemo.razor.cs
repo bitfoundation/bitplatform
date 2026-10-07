@@ -301,7 +301,7 @@ public partial class BitActionButtonDemo
         {
             Name = "--bit-ActionButton-disabled-color",
             DefaultValue = "--bit-clr-fg-dis (text), the Color role's disabled text color (icon)",
-            Description = "Text and icon color when IsEnabled is false; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
+            Description = "Text and icon color when Disabled is true; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
         },
         new()
         {

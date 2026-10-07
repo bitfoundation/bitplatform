@@ -7,7 +7,7 @@ public partial class _BitBreadcrumbItemDemo
 
 <BitBreadcrumb Items=""BreadcrumbItems"" SelectedItemAsText />
 
-<BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
+<BitBreadcrumb Items=""BreadcrumbItems"" Disabled />
 
 <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />
 
@@ -23,8 +23,8 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsDisabled =
 [
-    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", IsEnabled = false },
-    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", IsDisabled = true },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", IsDisabled = true },
     new() { Text = ""Item 3"", Href = ""/components/breadcrumb"" },
     new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];

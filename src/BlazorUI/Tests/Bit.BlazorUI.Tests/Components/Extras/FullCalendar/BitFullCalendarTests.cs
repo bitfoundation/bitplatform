@@ -1029,7 +1029,7 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Instance.State.ReadOnly);

@@ -17,7 +17,7 @@ public sealed class BitDataGridFilterContext
         string title,
         string label,
         Type? valueType,
-        bool isEnabled,
+        bool disabled,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         Func<BitDataGridFilterOperator, object?, Task> apply,
         Func<object?, object?, Task> applyRange,
@@ -27,7 +27,7 @@ public sealed class BitDataGridFilterContext
         Title = title;
         Label = label;
         ValueType = valueType;
-        IsEnabled = isEnabled;
+        Disabled = disabled;
         Filters = filters;
         _apply = apply;
         _applyRange = applyRange;
@@ -47,8 +47,8 @@ public sealed class BitDataGridFilterContext
     /// <summary>The type of the column's bound member, with any <see cref="Nullable{T}"/> unwrapped.</summary>
     public Type? ValueType { get; }
 
-    /// <summary>Whether the grid is enabled; a disabled grid's editor should be disabled too.</summary>
-    public bool IsEnabled { get; }
+    /// <summary>Whether the grid is disabled; a disabled grid's editor should be disabled too.</summary>
+    public bool Disabled { get; }
 
     /// <summary>The descriptors applied to this column: none, one, or the two halves of a range.</summary>
     public IReadOnlyList<BitDataGridFilterDescriptor> Filters { get; }

@@ -20,7 +20,7 @@
             The everyday configurations of a text field. <b>Label</b> renders the caption above the input and is what a screen
             reader announces, so it is preferred over relying on <b>Placeholder</b> alone: a placeholder disappears the moment
             the first character is typed. <b>Description</b> adds a permanent hint under the field and is wired to the input
-            through <code>aria-describedby</code>. <b>IsEnabled="false"</b> takes the field out of the tab order entirely,
+            through <code>aria-describedby</code>. <b>Disabled</b> takes the field out of the tab order entirely,
             while <b>ReadOnly</b> keeps it focusable and copyable but refuses edits. <b>Required</b> renders the html
             <code>required</code> attribute and marks the label with an asterisk, <b>MaxLength</b> and <b>MinLength</b> map to
             the html length constraints, <b>AutoFocus</b> puts the caret in the field on the first render, and <b>FullWidth</b>
@@ -32,7 +32,7 @@
             <br />
             <BitTextField Label="Placeholder" Placeholder="Enter a text..." />
             <br />
-            <BitTextField Label="Disabled" IsEnabled="false" />
+            <BitTextField Label="Disabled" Disabled />
             <br />
             <BitTextField Label="ReadOnly" ReadOnly DefaultValue="This is ReadOnly" />
             <br />
@@ -70,9 +70,9 @@
             <br />
             <BitTextField Label="NoBorder + Required" NoBorder Required />
             <br />
-            <BitTextField Label="Underlined + Disabled" Underlined IsEnabled="false" DefaultValue="Not editable" />
+            <BitTextField Label="Underlined + Disabled" Underlined Disabled DefaultValue="Not editable" />
             <br />
-            <BitTextField Label="NoBorder + Disabled" NoBorder IsEnabled="false" DefaultValue="Not editable" />
+            <BitTextField Label="NoBorder + Disabled" NoBorder Disabled DefaultValue="Not editable" />
         </div>
     </DemoExample>
 
@@ -199,7 +199,7 @@
                           IconName="@BitIconName.Calculator"
                           IconPlacement="BitPlacement.Start" />
             <br />
-            <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IconName="@BitIconName.Globe" IsEnabled="false" />
+            <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IconName="@BitIconName.Globe" Disabled />
             <br />
             <BitTextField Label="Clickable icon"
                           Placeholder="Press the magnifier..."

@@ -96,7 +96,7 @@
 
                                     <button @onclick="HandleOnCloseClick"
                                             type="button"
-                                            disabled="@(_params.IsEnabled is false)"
+                                            disabled="@(_params.Disabled is true)"
                                             title="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
                                             aria-label="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
                                             style="@JoinStyles(Styles?.CloseButton, _params.Styles?.CloseButton)"

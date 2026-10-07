@@ -28,7 +28,7 @@
          aria-busy="@(_loadState == BitMapLoadState.Loading ? "true" : null)"
          aria-roledescription="@RoleDescription"
          tabindex="@(TabIndex ?? "0")"
-         inert="@(IsEnabled is false)"
+         inert="@(Disabled)"
          aria-label="@(AriaLabel ?? "Map")"
          aria-describedby="@_helpId"></div>
 
@@ -176,7 +176,7 @@
                                 <button type="button"
                                         class="bit-map-marker-table-action @Classes?.MarkerListButton"
                                         style="@Styles?.MarkerListButton"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(Disabled)"
                                         aria-label="@($"{MarkerListActionHeader}: {DescribeMarker(marker)}")"
                                         @onclick="() => ShowMarker(marker.Id)">
                                     @MarkerListActionHeader

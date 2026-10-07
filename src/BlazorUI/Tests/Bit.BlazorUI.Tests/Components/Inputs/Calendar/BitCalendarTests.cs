@@ -17,11 +17,11 @@ public class BitCalendarTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitCalendarShouldRespectIsEnabled(bool isEnabled)
+    public void BitCalendarShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitCalendar>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var calendar = component.Find(".bit-cal");
@@ -2826,7 +2826,7 @@ public class BitCalendarTests : BunitTestContext
             WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
             WeekNumbersHeaderTitle = "Cascaded week",
             AriaLabel = "Cascaded Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -2879,7 +2879,7 @@ public class BitCalendarTests : BunitTestContext
         Assert.AreEqual(CalendarWeekRule.FirstFourDayWeek, instance.WeekNumberRule);
         Assert.AreEqual("Cascaded week", instance.WeekNumbersHeaderTitle);
         Assert.AreEqual("Cascaded Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

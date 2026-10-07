@@ -153,7 +153,7 @@ public partial class BitThemeSwitcher : BitComponentBase
             Text = i.Text ?? i.Value,
             Value = i.Value,
             AriaLabel = i.AriaLabel ?? i.Text,
-            IsEnabled = i.IsEnabled
+            IsDisabled = i.IsDisabled
         })];
 
         // Only until the first interactive render, which reads the applied theme back and takes over.
@@ -276,7 +276,7 @@ public partial class BitThemeSwitcher : BitComponentBase
 
     private async Task HandleOnSelectDesignSystem(BitDropdownItem<string> selected)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var item = _designSystems.FirstOrDefault(i => i.Value == selected.Value);
         if (item is null) return;
@@ -294,7 +294,7 @@ public partial class BitThemeSwitcher : BitComponentBase
 
     private async Task HandleOnToggleColorScheme()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var current = await _themeManager.GetCurrentThemeAsync();
 

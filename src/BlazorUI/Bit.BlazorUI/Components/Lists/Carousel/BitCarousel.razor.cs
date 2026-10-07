@@ -874,7 +874,7 @@ public partial class BitCarousel : BitComponentBase
         // What the carousel takes away from the browser is kept apart from where its slides sit, so
         // turning the wheel navigation on or off costs a flag on a listener rather than a round trip
         // to measure the carousel and a re-layout of every one of its slides.
-        var preventSignature = FormattableString.Invariant($"{Vertical}|{NoKeyboard}|{NoDrag}|{Wheel}|{IsEnabled}|{DragThreshold}");
+        var preventSignature = FormattableString.Invariant($"{Vertical}|{NoKeyboard}|{NoDrag}|{Wheel}|{Disabled}|{DragThreshold}");
 
         if (_preventSignature != preventSignature)
         {
@@ -951,7 +951,7 @@ public partial class BitCarousel : BitComponentBase
             // has somewhere to go: the re-layout that brings the pages back renders it again. A disabled
             // carousel does not move, so it keeps the request as well until it is enabled again, instead
             // of dropping it and writing its current page back over it.
-            if (_pendingSelectedPage is { } page && IsEnabled && _navigating is false && _needsReset is false && _pagesCount > 0)
+            if (_pendingSelectedPage is { } page && Disabled is false && _navigating is false && _needsReset is false && _pagesCount > 0)
             {
                 _pendingSelectedPage = null;
 
@@ -985,7 +985,7 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task RegisterPreventDefaultsAsync()
     {
-        var keys = (NoKeyboard || IsEnabled is false) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
+        var keys = (NoKeyboard || Disabled) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
 
         await _js.BitUtilsRegisterNavigationKeys(RootElement, keys, _dotnetObj);
 
@@ -996,13 +996,13 @@ public partial class BitCarousel : BitComponentBase
         // of a slide that was dragged over a link or a button inside it does not also follow it. It is
         // measured along the axis HandlePointerMove measures it along, so a scroll across the carousel that
         // ends on a link is not taken for a drag there either.
-        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled, Math.Max(1, DragThreshold), Vertical ? "y" : "x");
+        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && Disabled is false, Math.Max(1, DragThreshold), Vertical ? "y" : "x");
 
         // Keeping the wheel to the carousel is suppressed in the browser as well, since the listener
         // Blazor's preventDefault directive goes through is a passive one before net10.0, which makes
         // preventing the wheel through it a no-op there. Only the axis the carousel navigates on is
         // taken, matching HandleWheel: a vertical carousel leaves a sideways scroll to the page.
-        await _js.BitUtilsRegisterPreventWheel(_carouselContainer, Wheel && IsEnabled, Vertical);
+        await _js.BitUtilsRegisterPreventWheel(_carouselContainer, Wheel && Disabled is false, Vertical);
     }
 
     // Everything that changes where the slides sit is folded into one signature, so a single comparison
@@ -1010,7 +1010,7 @@ public partial class BitCarousel : BitComponentBase
     private string ComputeLayoutSignature()
     {
         return FormattableString.Invariant(
-            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{IsEnabled}");
+            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{Disabled}");
     }
 
     // The responsive variants of VisibleItemsCount apply from their breakpoint (of the width of the
@@ -1399,7 +1399,7 @@ public partial class BitCarousel : BitComponentBase
         {
             _pendingFocus = other;
         }
-        else if (NoKeyboard is false && IsEnabled)
+        else if (NoKeyboard is false && Disabled is false)
         {
             _pendingFocus = RootElement;
         }
@@ -1428,7 +1428,7 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task Prev()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var itemsCount = _allItems.Count;
 
@@ -1459,7 +1459,7 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task Next()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var itemsCount = _allItems.Count;
 
@@ -1489,7 +1489,7 @@ public partial class BitCarousel : BitComponentBase
     private async Task Go(bool isNext = false, int scrollCount = 0)
     {
         if (IsDisposed) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_othersIndices.Length == 0) return;
 
         // A second move started while the first one is still being handed to the browser would read the
@@ -1661,7 +1661,7 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task GotoPage(int index)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_pagesCount < 1) return;
         if (_currentIndices.Length == 0) return;
 
@@ -1755,7 +1755,7 @@ public partial class BitCarousel : BitComponentBase
     private async Task HandleNavigationKey(string key, string? origin, string? originId)
     {
         if (NoKeyboard) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var isNavigationKey = key is "Home" or "End" || (Vertical ? key is "ArrowUp" or "ArrowDown"
                                                                   : key is "ArrowLeft" or "ArrowRight");
@@ -1836,7 +1836,7 @@ public partial class BitCarousel : BitComponentBase
     private async Task HandleWheel(WheelEventArgs e)
     {
         if (Wheel is false) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var mainAxis = Math.Abs(e.DeltaY) >= Math.Abs(e.DeltaX);
 
@@ -1906,7 +1906,7 @@ public partial class BitCarousel : BitComponentBase
     private async Task HandlePointerDown(PointerEventArgs e)
     {
         if (NoDrag) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _isPointerDown = true;
         _pointerX = e.ClientX;
@@ -1969,7 +1969,7 @@ public partial class BitCarousel : BitComponentBase
     private bool ShouldAutoPlay()
     {
         if (AutoPlay is false) return false;
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
         if (_isPaused || _stopped) return false;
         if (_pageHidden) return false;
         if (PauseOnHover && _hovered) return false;

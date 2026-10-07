@@ -334,7 +334,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         get => Value;
         set
         {
-            if (IsEnabled is false) return;
+            if (Disabled) return;
 
             if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
 
@@ -399,7 +399,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
     protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _incomingValueBeforeParsing = value;
         _parsingValidationMessages?.Clear();

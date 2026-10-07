@@ -7,12 +7,12 @@ public partial class BitTooltipDemo
     <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
 </BitTooltip>
 
-<BitTooltip Text=""This tooltip never shows"" IsEnabled=""false"">
+<BitTooltip Text=""This tooltip never shows"" Disabled>
     <BitButton Variant=""BitVariant.Outline"">Disabled tooltip</BitButton>
 </BitTooltip>
 
 <BitTooltip Text=""Sign in first to save anything"">
-    <BitButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Disabled anchor</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" Disabled>Disabled anchor</BitButton>
 </BitTooltip>
 
 <BitTooltip Text=""Shown to begin with"" DefaultIsShown=""true"">

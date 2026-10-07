@@ -34,11 +34,11 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMarkdownEditorShouldRespectIsEnabled(bool isEnabled)
+    public void BitMarkdownEditorShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-mde");
@@ -1672,7 +1672,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         foreach (var button in component.FindAll(".bit-mde-btn"))

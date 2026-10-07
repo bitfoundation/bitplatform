@@ -26,7 +26,7 @@ public partial class BitTag : BitComponentBase
     {
         get
         {
-            if (_isLink is false || IsEnabled is false) return null;
+            if (_isLink is false || Disabled) return null;
 
             if (string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) is false) return null;
 
@@ -225,7 +225,7 @@ public partial class BitTag : BitComponentBase
     /// document - and <see cref="OnClick"/> for one that acts on the page it is already on. The two can be
     /// set together, in which case the handler runs and the navigation still happens.
     /// <br />
-    /// While <c>IsEnabled</c> is false the href is dropped and the tag is taken out of the tab order, so a
+    /// While <c>Disabled</c> is true the href is dropped and the tag is taken out of the tab order, so a
     /// disabled link cannot be followed by either the pointer or the keyboard.
     /// </remarks>
     [Parameter]
@@ -337,7 +337,7 @@ public partial class BitTag : BitComponentBase
     /// </summary>
     /// <remarks>
     /// While it is set the tag is focusable and can be activated with the Enter and the Space keys, and it
-    /// stops being so as soon as <c>IsEnabled</c> is false. A tag with no handler, no <see cref="Href"/> and
+    /// stops being so as soon as <c>Disabled</c> is true. A tag with no handler, no <see cref="Href"/> and
     /// no selection to toggle never takes focus: it is a label rather than a control.
     /// <br />
     /// A control needs a name, so a tag that carries no text of its own - an icon-only one, or one built out
@@ -693,14 +693,14 @@ public partial class BitTag : BitComponentBase
 
     private async Task HandleOnDismissClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnDismiss.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
 
@@ -732,7 +732,7 @@ public partial class BitTag : BitComponentBase
     /// </remarks>
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (OnDismiss.HasDelegate is false) return;
 

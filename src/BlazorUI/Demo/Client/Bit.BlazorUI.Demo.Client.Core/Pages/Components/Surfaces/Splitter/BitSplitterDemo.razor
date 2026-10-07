@@ -394,7 +394,7 @@
 
         <DemoExample Title="Read-only & disabled" RazorCode="@example13RazorCode" Id="example13">
             <div>
-                <b>ReadOnly</b> locks the split and keeps the look; <b>IsEnabled="false"</b> locks it and dims the
+                <b>ReadOnly</b> locks the split and keeps the look; <b>Disabled</b> locks it and dims the
                 splitter. Either way the gutter leaves the tab order and becomes a plain separator; the methods still work.
             </div>
             <br />
@@ -407,7 +407,7 @@
                 </SecondPanel>
             </BitSplitter>
             <br />
-            <BitSplitter IsEnabled="false" FirstPanelSize="150" Style="height:120px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
+            <BitSplitter Disabled FirstPanelSize="150" Style="height:120px;border:1px solid var(--bit-clr-brd-sec)" AriaLabel="Resize the panels">
                 <FirstPanel>
                     <div style="padding:0.5rem">Disabled</div>
                 </FirstPanel>

@@ -21,7 +21,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitDatePicker = component.Find(".bit-dtp");
@@ -75,7 +75,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -90,7 +90,7 @@ public class BitDatePickerTests : BunitTestContext
         DataRow(true, 1),
         DataRow(false, 0)
     ]
-    public void BitDatePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled, int count)
+    public void BitDatePickerCalendarItemsShouldRespectDisabled(bool isEnabled, int count)
     {
         var isOpen = true;
         var changedDateValue = 0;
@@ -100,7 +100,7 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnChange, () => changedDateValue++);
         });
 
@@ -124,7 +124,7 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         Assert.IsNull(component.Instance.Value);
@@ -145,7 +145,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.TestModel, new BitDatePickerTestModel());
         });
 
@@ -180,7 +180,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.TestModel, new BitDatePickerTestModel());
         });
 
@@ -217,7 +217,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.TestModel, new BitDatePickerTestModel());
         });
 
@@ -2319,7 +2319,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -3574,7 +3574,7 @@ public class BitDatePickerTests : BunitTestContext
             WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
             WeekNumbersHeaderTitle = "Cascaded week",
             AriaLabel = "Cascaded Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -3650,7 +3650,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(CalendarWeekRule.FirstFourDayWeek, instance.WeekNumberRule);
         Assert.AreEqual("Cascaded week", instance.WeekNumbersHeaderTitle);
         Assert.AreEqual("Cascaded Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

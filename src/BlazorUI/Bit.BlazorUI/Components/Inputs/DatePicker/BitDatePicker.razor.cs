@@ -114,7 +114,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
         set
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             if (_hourInputCount++ == 0)
             {
@@ -149,7 +149,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         get => _minute;
         set
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             // Brought into the hour here and held to the MinuteStep grid and the bounds on commit, for the
             // same reason the hour above is.
@@ -172,7 +172,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         get => _second;
         set
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             // Brought into the minute here and held to the SecondStep grid and the bounds on commit, for the
             // same reason the hour and the minute above are.
@@ -1205,7 +1205,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
@@ -1286,7 +1286,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtp-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-dtp-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1373,7 +1373,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // initial document, which the input of an interactively rendered picker is not, so the focus
                 // is placed from here instead. A standalone picker carries the value in a hidden input nobody
                 // is meant to land on, so it has nothing to focus.
-                if (AutoFocus && IsEnabled && Standalone is false)
+                if (AutoFocus && Disabled is false && Standalone is false)
                 {
                     await InputElement.FocusAsync();
                 }
@@ -1689,7 +1689,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleOnClick()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var wasOpen = IsOpen;
 
@@ -1783,7 +1783,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // both to the text: Enter submits the form it sits in and the space bar types a space.
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -1806,7 +1806,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // which is where the modal dialog pattern requires the focus to return.
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.Key is not "Escape") return;
 
         await CloseCalloutAndRestoreFocus();
@@ -1831,7 +1831,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnFocusIn()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1841,7 +1841,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnFocusOut()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
         ClassBuilder.Reset();
@@ -1851,7 +1851,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnFocus()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1861,7 +1861,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
         if (ReadOnly) return;
         if (AllowTextInput is false) return;
 
@@ -1889,7 +1889,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleOnClearButtonClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         CurrentValue = null;
 
@@ -1976,7 +1976,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task SelectDate(DateTime selectedDate)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
         if (IsDayDisabled(selectedDate)) return;
 
         // Selecting the selected day again deselects it (AllowDeselect). The callout stays open - the
@@ -2062,7 +2062,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task SelectMonth(int month)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsMonthDisabled(month)) return;
 
         var previousYear = _currentYear;
@@ -2157,7 +2157,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task SelectYear(int year)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsYearDisabled(year)) return;
 
         if (Mode == BitDatePickerMode.YearPicker)
@@ -2201,7 +2201,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void ToggleBetweenMonthAndYearPicker()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         // The year grid is the whole of a YearPicker, so there is no month grid to toggle to.
         if (Mode == BitDatePickerMode.YearPicker) return;
 
@@ -2215,7 +2215,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleMonthChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeMonth(isNext) is false) return;
 
         var previousYear = _currentYear;
@@ -2239,7 +2239,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleYearChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeYear(isNext) is false) return;
 
         var previousYear = _currentYear;
@@ -2256,7 +2256,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void HandleYearRangeChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeYearRange(isNext) is false) return;
 
         var fromYear = _yearPickerStartYear + (isNext ? +12 : -12);
@@ -2266,7 +2266,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleGoToToday()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
@@ -2581,7 +2581,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
-        if (IsEnabled is false) return true;
+        if (Disabled) return true;
 
         if (showYearPicker)
         {
@@ -2670,7 +2670,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeMonth(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (isNext)
         {
@@ -2716,7 +2716,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYear(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (isNext && _currentYear >= GetMaxCalendarYearMonth().Year) return false;
         if (isNext is false && _currentYear <= GetMinCalendarYearMonth().Year) return false;
@@ -2732,7 +2732,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYearRange(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (isNext && GetMaxCalendarYearMonth().Year < _yearPickerStartYear + 12) return false;
         if (isNext is false && GetMinCalendarYearMonth().Year >= _yearPickerStartYear) return false;
@@ -3130,7 +3130,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // PageUp/PageDown moving to the same month of the adjacent year.
     private async Task HandleMonthKeyDown(KeyboardEventArgs e, int month)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -3208,7 +3208,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // the adjacent range of years.
     private async Task HandleYearKeyDown(KeyboardEventArgs e, int year)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -3334,7 +3334,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleDayKeyDown(KeyboardEventArgs e, DateTime date)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -3473,7 +3473,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // does not count towards it.
         _hourInputCount = 0;
 
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         try
         {
@@ -3488,7 +3488,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // does not count towards it.
         _minuteInputCount = 0;
 
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         try
         {
@@ -3503,7 +3503,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // does not count towards it.
         _secondInputCount = 0;
 
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         try
         {
@@ -3515,7 +3515,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleOnAmClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
 
@@ -3527,7 +3527,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleOnPmClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // "12:-- pm" is already "12:--" in 24h, so only the hours before noon move forward -
         // otherwise clicking pm at 12:-- pm would wrap the hour around to 12:-- am.
@@ -3574,7 +3574,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleOnPointerDown(bool isNext, TimeUnit unit)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await ChangeTime(isNext, unit);
 
@@ -3597,7 +3597,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (e.Detail != 0) return;
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await ChangeTime(isNext, unit);
     }
@@ -3926,7 +3926,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // sitting still.
     private async Task HandleOnTimeInputChange(TimeUnit unit)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // A typed number is brought inside the bounds before the grid has its say: distance on a clock is
         // measured around it, so the allowed value nearest to a number below the minimum can be the one late
@@ -3963,7 +3963,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     // to them move by, so the time can be set without leaving the keyboard or the field.
     private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, TimeUnit unit)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         if (e.Key is not ("PageUp" or "PageDown")) return;
 
@@ -4047,7 +4047,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task CloseCallout()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
@@ -4128,7 +4128,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task<bool> ToggleCallout()
     {
         if (Standalone) return false;
-        if (IsEnabled is false || IsDisposed) return false;
+        if (Disabled || IsDisposed) return false;
         // The reference is created on the first render, so nothing can toggle the callout before it.
         if (_dotnetObj is null) return false;
 
@@ -4276,7 +4276,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleNowButtonClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var now = GetToday();
 

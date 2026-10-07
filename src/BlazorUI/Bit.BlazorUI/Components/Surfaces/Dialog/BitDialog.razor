@@ -91,7 +91,7 @@
                                     style="@Styles?.CloseButton"
                                     class="bit-dlg-cls @Classes?.CloseButton"
                                     type="button"
-                                    disabled="@(IsEnabled is false || _isLoading)"
+                                    disabled="@(Disabled || _isLoading)"
                                     title="@closeTitle"
                                     aria-label="@closeTitle">
                                 <span>
@@ -126,7 +126,7 @@
                                click handler refuses a second press on its own. *@
                             <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
                                     type="button"
-                                    disabled="@(IsEnabled is false || IsOkButtonEnabled is false)"
+                                    disabled="@(Disabled || IsOkButtonEnabled is false)"
                                     aria-disabled="@(_isLoading ? "true" : null)"
                                     aria-busy="@(_isLoading ? "true" : null)"
                                     aria-label="@(_isLoading ? OkText : null)"
@@ -150,7 +150,7 @@
                                an awaiter while the first one is still doing its work. *@
                             <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                     type="button"
-                                    disabled="@(IsEnabled is false || IsCancelButtonEnabled is false || _isLoading)"
+                                    disabled="@(Disabled || IsCancelButtonEnabled is false || _isLoading)"
                                     style="@Styles?.CancelButton"
                                     class="bit-dlg-cnb @Classes?.CancelButton">
                                 @CancelText
