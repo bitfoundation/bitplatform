@@ -18,7 +18,7 @@
         <div>
             The <b>Anchor</b> positions and toggles the callout; put a focusable trigger (a button) in it. <b>Content</b>
             is what it holds. <b>NoOverlay</b> leaves the page clickable while it is open, <b>DefaultIsOpen</b> sets the
-            state it starts in, and <b>IsEnabled="false"</b> turns it off entirely.
+            state it starts in, and <b>Disabled</b> turns it off entirely.
         </div>
         <br />
         <div class="example-box">
@@ -49,9 +49,9 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout IsEnabled="false">
+            <BitCallout Disabled>
                 <Anchor>
-                    <BitButton IsEnabled="false">Disabled</BitButton>
+                    <BitButton Disabled>Disabled</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">Never shown.</div>

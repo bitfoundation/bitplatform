@@ -2,7 +2,7 @@
     <div>
         Any class feeds the breadcrumb: <b>NameSelectors</b> maps its properties by selector or by name. A mapped
         <b>Href</b> makes a link; the <b>IsSelected</b> mapping marks the current page (<code>aria-current="page"</code>)
-        and <b>SelectedItemAsText</b> renders it as plain text. <b>IsEnabled</b> disables the whole trail or a single item
+        and <b>SelectedItemAsText</b> renders it as plain text. <b>Disabled</b> disables the whole trail and <b>IsDisabled</b> a single item
         (a disabled link stays a link, announced as unavailable), and a <b>Target</b> mapping opens a link elsewhere
         (with <code>rel="noopener noreferrer"</code>).
     </div>
@@ -18,7 +18,7 @@
         </div>
         <div>
             <div>Disabled</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" IsEnabled="false" />
+            <BitBreadcrumb Items="CustomBreadcrumbItems" NameSelectors="nameSelectors" Disabled />
         </div>
         <div>
             <div>Item disabled</div>

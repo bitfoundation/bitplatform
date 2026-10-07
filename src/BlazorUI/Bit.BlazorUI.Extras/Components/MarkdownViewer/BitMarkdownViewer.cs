@@ -286,7 +286,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     }
 
     // A disabled viewer keeps its checkboxes the read-only boxes a document nobody is editing shows.
-    private bool AreTasksInteractive => OnTaskChanged.HasDelegate && IsEnabled;
+    private bool AreTasksInteractive => OnTaskChanged.HasDelegate && Disabled is false;
 
     protected override async Task OnParametersSetAsync()
     {

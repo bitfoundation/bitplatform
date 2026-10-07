@@ -20,7 +20,7 @@
             <b>Placeholder</b> is the hint shown while the list is still empty; once there is a tag it would only
             compete with the chips for the width of the field, so it is dropped unless a <b>TagsPlaceholder</b>
             keeps the invitation visible. <b>ReadOnly</b> keeps the tags visible and navigable while refusing every
-            change, and <b>IsEnabled="false"</b> dims the whole field along with them.
+            change, and <b>Disabled</b> dims the whole field along with them.
         </div>
         <br />
         <div class="example-box">
@@ -29,7 +29,7 @@
                           TagsPlaceholder="add another..."
                           DefaultValue="@(new List<string> { "blazor" })" />
             <BitTagsInput Placeholder="ReadOnly" ReadOnly DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })" />
-            <BitTagsInput Placeholder="Disabled" IsEnabled="false" DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })" />
+            <BitTagsInput Placeholder="Disabled" Disabled DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })" />
         </div>
     </DemoExample>
 

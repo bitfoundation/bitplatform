@@ -297,7 +297,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
-        // timeline's own parameters (Styles, IsEnabled, ...) change, so push a re-render to each one.
+        // timeline's own parameters (Styles, Disabled, ...) change, so push a re-render to each one.
         RefreshOptions();
 
         return base.OnParametersSetAsync();
@@ -420,7 +420,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             className.Append(' ').Append(@class);
         }
 
-        if (GetIsEnabled(item) is false)
+        if (GetIsDisabled(item))
         {
             className.Append(" bit-tln-ids");
         }
@@ -470,7 +470,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         // The item renders as a div, where the disabled attribute is ineffective, so gate the handler
         // with the combined enabled state (timeline-level and item-level) to match the rendered state.
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         await OnItemClick.InvokeAsync(item);
 
@@ -593,28 +593,28 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.IsEnabled;
+            return timelineItem.IsDisabled;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.IsEnabled;
+            return timelineOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     // Joins the style of the item with the one of the Styles object, so an item that carries neither of

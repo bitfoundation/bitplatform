@@ -84,7 +84,7 @@ public partial class BitTooltip : BitComponentBase
     private bool HasContent => Template is not null || Text.HasValue();
 
     // A tooltip that cannot be shown describes nothing, so nothing is pointed at it either.
-    private bool HasAccessibleContent => HasContent && IsEnabled;
+    private bool HasAccessibleContent => HasContent && Disabled is false;
 
     // A tooltip whose shown state is handed to it and never handed back cannot be driven by anything
     // that happens on the page: the page owns it, and the triggers below leave it alone.
@@ -432,7 +432,7 @@ public partial class BitTooltip : BitComponentBase
     /// </summary>
     public async Task Show()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         CancelPendingDelays();
 
@@ -540,7 +540,7 @@ public partial class BitTooltip : BitComponentBase
         // A tooltip that is turned off while it is shown takes its content off the screen with it,
         // instead of leaving behind a surface that nothing on the page can dismiss any more. The reasons
         // it was on the screen for go with it, so turning it back on does not bring it straight back.
-        if (IsEnabled is false)
+        if (Disabled)
         {
             _isPointerOver = false;
             _isFocusWithin = false;
@@ -645,7 +645,7 @@ public partial class BitTooltip : BitComponentBase
 
     private async Task ShowAfterDelay(int delay)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         CancelPendingDelays();
 
@@ -666,7 +666,7 @@ public partial class BitTooltip : BitComponentBase
                 tokenSource.Dispose();
             }
 
-            if (IsDisposed || IsEnabled is false) return;
+            if (IsDisposed || Disabled) return;
         }
 
         await SetIsShown(true);

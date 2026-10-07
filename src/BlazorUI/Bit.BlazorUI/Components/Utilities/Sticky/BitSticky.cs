@@ -326,7 +326,7 @@ public partial class BitSticky : BitComponentBase
         // here after the component is gone, where there is nothing left to re-render - or after it
         // was disabled, where the report is of a stickiness that is already off and nothing would be
         // left to clear the state it latched.
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || Disabled) return;
 
         await SetStuckEdges((BitStickyEdges)edges);
     }
@@ -514,13 +514,13 @@ public partial class BitSticky : BitComponentBase
         // The script only earns its scroll listener where something observes the state it derives, and
         // its resize observer where the scroll padding has to follow the size of the element. A disabled
         // sticky is not sticky at all, so there is neither a state to derive nor a room to reserve.
-        var report = IsEnabled && (OnStuckChanged.HasDelegate ||
+        var report = Disabled is false && (OnStuckChanged.HasDelegate ||
                                    OnStuckEdgesChanged.HasDelegate ||
                                    StuckClass.HasValue() ||
                                    StuckStyle.HasValue() ||
                                    ElevateOnStuck);
 
-        var scrollPadding = IsEnabled && ScrollPadding;
+        var scrollPadding = Disabled is false && ScrollPadding;
 
         var shouldAttach = report || scrollPadding;
 

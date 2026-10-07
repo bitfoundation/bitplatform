@@ -28,7 +28,7 @@ public partial class HeroSection
                 ItemType = BitDropdownItemType.Normal,
                 Text = "Orange",
                 Value = "f-ora",
-                IsEnabled = false
+                IsDisabled = true
             },
             new()
             {

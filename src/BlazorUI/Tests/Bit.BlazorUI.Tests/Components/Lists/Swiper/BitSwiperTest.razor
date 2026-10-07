@@ -14,7 +14,7 @@
            AutoPlay="AutoPlay"
            Vertical="Vertical"
            OnChange="OnChange"
-           IsEnabled="IsEnabled"
+           Disabled="Disabled"
            AriaLabel="@AriaLabel"
            NoKeyboard="NoKeyboard"
            DotTemplate="DotTemplate"
@@ -64,7 +64,7 @@
     [Parameter] public BitSize? Size { get; set; }
     [Parameter] public BitColor? Color { get; set; }
     [Parameter] public BitScrollSnapAlign? SnapAlign { get; set; }
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool NoKeyboard { get; set; }
     [Parameter] public int ItemsCount { get; set; } = 3;
     [Parameter] public int DefaultItem { get; set; } = 1;

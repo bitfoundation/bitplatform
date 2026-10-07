@@ -11,7 +11,7 @@
 //   --bit-TextShimmer-repeat-delay      extra rest between two sweeps                   (default: 0ms; x the loop factor
 //                                       unless a duration is set, the same as RepeatDelay)
 //   --bit-TextShimmer-iterations        sweeps before the text comes to rest            (default: infinite)
-//   --bit-TextShimmer-disabled-opacity  opacity of a shimmer whose IsEnabled is false   (default: $opa-dis)
+//   --bit-TextShimmer-disabled-opacity  opacity of a shimmer whose Disabled is true   (default: $opa-dis)
 // A parameter written on the shimmer itself (BaseColor, GradientColor, Color, Spread, SpreadLength, Angle, Duration,
 // Delay, RepeatDelay, Iterations) wins over its variable: the variable restyles the default, not a choice. That is
 // why a Spread left unset publishes the spread it computes as a fallback only (--bit-tsh-auto-spread).

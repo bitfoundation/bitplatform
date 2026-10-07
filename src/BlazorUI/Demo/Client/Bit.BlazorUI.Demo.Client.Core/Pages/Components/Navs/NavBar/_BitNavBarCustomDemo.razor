@@ -17,13 +17,13 @@
 
 <DemoExample Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        <b>IsEnabled</b> disables the whole navbar, and the <b>IsEnabled</b> selector a single item. A disabled item
+        <b>Disabled</b> disables the whole navbar, and the <b>IsDisabled</b> selector a single item. A disabled item
         loses its link and its tab stop, and is announced as dimmed.
     </div>
     <br />
     <div>Disabled navbar:</div><br />
     <div class="container short">
-        <BitNavBar Items="basicNavBarCustoms" IsEnabled="false"
+        <BitNavBar Items="basicNavBarCustoms" Disabled
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName } })" />
     </div>
@@ -33,7 +33,7 @@
         <BitNavBar Items="basicNavBarCustomsDisabled"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.ImageName },
-                                            IsEnabled = { Selector = item => item.Disabled is false } })" />
+                                            IsDisabled = { Selector = item => item.Disabled } })" />
     </div>
 </DemoExample>
 
@@ -99,7 +99,7 @@
                                             IconName = { Selector = item => item.ImageName },
                                             Url = { Selector = item => item.Link },
                                             Match = { Selector = item => item.Matching },
-                                            IsEnabled = { Selector = item => item.Disabled is false } })" />
+                                            IsDisabled = { Selector = item => item.Disabled } })" />
     </div>
     <br /><br />
     <div>Regex:</div><br />
@@ -109,7 +109,7 @@
                                             IconName = { Selector = item => item.ImageName },
                                             Url = { Selector = item => item.Link },
                                             Match = { Selector = item => item.Matching },
-                                            IsEnabled = { Selector = item => item.Disabled is false } })" />
+                                            IsDisabled = { Selector = item => item.Disabled } })" />
     </div>
     <br /><br />
     <div>AdditionalUrls:</div><br />

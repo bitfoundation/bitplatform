@@ -384,11 +384,11 @@ public class BitTagTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitTagShouldRespectIsEnabled(bool isEnabled)
+    public void BitTagShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-tag");
@@ -471,13 +471,13 @@ public class BitTagTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitTagOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
+    public void BitTagOnClickBehaviorDependsOnDisabled(bool isEnabled)
     {
         var clicked = false;
 
         var component = RenderComponent<BitTag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
         });
 
@@ -492,7 +492,7 @@ public class BitTagTests : BunitTestContext
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
         });
 
@@ -599,7 +599,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var content = component.Find(".bit-tag-cnt");
@@ -637,7 +637,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => dismissed = true));
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var dismissBtn = component.Find(".bit-tag-cls");
@@ -665,7 +665,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => dismissed = true));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var dismissBtn = component.Find(".bit-tag-cls");
@@ -843,7 +843,7 @@ public class BitTagTests : BunitTestContext
 
         var component = RenderComponent<BitTag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => dismissed = true));
         });
 
@@ -988,7 +988,7 @@ public class BitTagTests : BunitTestContext
 
         var component = RenderComponent<BitTag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Selected, selected);
             parameters.Add(p => p.SelectedChanged, EventCallback.Factory.Create<bool>(this, (bool v) => selected = v));
         });
@@ -1513,7 +1513,7 @@ public class BitTagTests : BunitTestContext
     {
         var component = RenderComponent<BitTagPropagationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
         });
 
@@ -1949,7 +1949,7 @@ public class BitTagTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Design");
             parameters.Add(p => p.DefaultSelected, false);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find("button.bit-tag-cnt").HasAttribute("disabled"));
@@ -2097,7 +2097,7 @@ public class BitTagTests : BunitTestContext
         {
             new BitTagParams
             {
-                IsEnabled = false,
+                Disabled = true,
                 SelectedIconName = "FavoriteStarFill",
                 SecondaryIconName = "ChevronDown",
                 DismissLabelFormat = "Take {0} off",
@@ -2325,7 +2325,7 @@ public class BitTagTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Design");
             parameters.Add(p => p.TabIndex, "0");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Find(".bit-tag").HasAttribute("tabindex"));
@@ -2685,7 +2685,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Text, "Filter");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked = true));
         });
@@ -2706,7 +2706,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Text, "Filter");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
             parameters.Add(p => p.DefaultSelected, false);
         });
@@ -2740,7 +2740,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Text, "Design");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
             parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed = true));
         });
@@ -2762,7 +2762,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
         });
 
@@ -2780,7 +2780,7 @@ public class BitTagTests : BunitTestContext
         var component = RenderComponent<BitTag>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // without its href an anchor is a generic element, which aria-disabled says nothing about
@@ -2805,7 +2805,7 @@ public class BitTagTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Plain");
             parameters.Add(p => p.TabIndex, "0");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
         });
 
@@ -2956,7 +2956,7 @@ public class BitTagTests : BunitTestContext
             parameters.Add(p => p.Text, "Docs");
             parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.Target, "_blank");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var button = RenderComponent<BitTag>(parameters =>
@@ -2996,7 +2996,7 @@ public class BitTagTests : BunitTestContext
 
                 builder.OpenComponent<BitTag>(4);
                 builder.AddAttribute(5, nameof(BitTag.Text), "Filter");
-                builder.AddAttribute(6, nameof(BitTag.IsEnabled), false);
+                builder.AddAttribute(6, nameof(BitTag.Disabled), true);
                 builder.AddAttribute(7, nameof(BitTag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
                 builder.CloseComponent();
             });

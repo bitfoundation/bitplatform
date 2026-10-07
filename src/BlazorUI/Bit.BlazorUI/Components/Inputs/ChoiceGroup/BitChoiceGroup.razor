@@ -17,7 +17,7 @@
      aria-required="@(IsRequired ? "true" : null)"
      aria-invalid="@(ValueInvalid is true ? "true" : null)"
      aria-readonly="@(ReadOnly ? "true" : null)"
-     aria-disabled="@(IsEnabled ? null : "true")"
+     aria-disabled="@(Disabled ? "true" : null)"
      aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
 
     @if (HasLabel)

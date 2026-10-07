@@ -540,7 +540,7 @@ public partial class BitRatingDemo
         {
             Name = "--bit-Rating-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Color of both parts of the items, and of the label, when IsEnabled is false.",
+            Description = "Color of both parts of the items, and of the label, when Disabled is true.",
         },
         new()
         {

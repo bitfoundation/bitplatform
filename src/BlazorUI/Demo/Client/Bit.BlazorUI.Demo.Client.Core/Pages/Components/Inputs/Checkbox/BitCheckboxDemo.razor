@@ -28,9 +28,9 @@
         <br />
         <BitCheckbox Label="Hover over me" Title="The native tooltip of the checkbox" />
         <br />
-        <BitCheckbox Label="Disable checkbox" IsEnabled="false" />
+        <BitCheckbox Label="Disable checkbox" Disabled />
         <br />
-        <BitCheckbox Label="Disable checked checkbox" IsEnabled="false" Value="true" />
+        <BitCheckbox Label="Disable checked checkbox" Disabled Value="true" />
     </DemoExample>
 
     <DemoExample Title="Icons" RazorCode="@example2RazorCode" Id="example2">
@@ -51,7 +51,7 @@
         <br />
         <BitCheckbox Label="Custom indeterminate icon" Indeterminate IndeterminateIconName="@BitIconName.Remove" />
         <br />
-        <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
+        <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" Disabled />
     </DemoExample>
 
     <DemoExample Title="Label placement" RazorCode="@example3RazorCode" Id="example3">
@@ -131,7 +131,7 @@
         <br />
         <BitCheckbox Label="Indeterminate by default" DefaultIndeterminate="true" />
         <br />
-        <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate IsEnabled="false" />
+        <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate Disabled />
         <br /><br /><br />
         <div>
             The classic home of the state is a select-all checkbox that reflects a partially selected list: checked
@@ -392,8 +392,8 @@
             suppressed either way - what a disabled command in a toolbar or a menu needs:
         </div><br />
         <div class="example-box">
-            <BitCheckbox Label="Disabled and skipped" IsEnabled="false" />
-            <BitCheckbox Label="Disabled but still reachable" IsEnabled="false" AllowDisabledFocus />
+            <BitCheckbox Label="Disabled and skipped" Disabled />
+            <BitCheckbox Label="Disabled but still reachable" Disabled AllowDisabledFocus />
         </div>
         <br /><br /><br />
         <div>
@@ -587,107 +587,107 @@
             <div><b>Disabled</b>:</div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Primary" Label="Primary" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Primary" Label="Primary" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Primary" Label="Primary" Value />
+                <BitCheckbox Disabled Color="BitColor.Primary" Label="Primary" />
+                <BitCheckbox Disabled Color="BitColor.Primary" Label="Primary" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Primary" Label="Primary" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Secondary" Label="Secondary" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Secondary" Label="Secondary" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Secondary" Label="Secondary" Value />
+                <BitCheckbox Disabled Color="BitColor.Secondary" Label="Secondary" />
+                <BitCheckbox Disabled Color="BitColor.Secondary" Label="Secondary" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Secondary" Label="Secondary" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Tertiary" Label="Tertiary" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Tertiary" Label="Tertiary" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Tertiary" Label="Tertiary" Value />
+                <BitCheckbox Disabled Color="BitColor.Tertiary" Label="Tertiary" />
+                <BitCheckbox Disabled Color="BitColor.Tertiary" Label="Tertiary" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Tertiary" Label="Tertiary" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Info" Label="Info" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Info" Label="Info" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Info" Label="Info" Value />
+                <BitCheckbox Disabled Color="BitColor.Info" Label="Info" />
+                <BitCheckbox Disabled Color="BitColor.Info" Label="Info" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Info" Label="Info" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Success" Label="Success" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Success" Label="Success" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Success" Label="Success" Value />
+                <BitCheckbox Disabled Color="BitColor.Success" Label="Success" />
+                <BitCheckbox Disabled Color="BitColor.Success" Label="Success" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Success" Label="Success" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Warning" Label="Warning" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Warning" Label="Warning" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Warning" Label="Warning" Value />
+                <BitCheckbox Disabled Color="BitColor.Warning" Label="Warning" />
+                <BitCheckbox Disabled Color="BitColor.Warning" Label="Warning" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Warning" Label="Warning" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.SevereWarning" Label="SevereWarning" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.SevereWarning" Label="SevereWarning" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.SevereWarning" Label="SevereWarning" Value />
+                <BitCheckbox Disabled Color="BitColor.SevereWarning" Label="SevereWarning" />
+                <BitCheckbox Disabled Color="BitColor.SevereWarning" Label="SevereWarning" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.SevereWarning" Label="SevereWarning" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.Error" Label="Error" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Error" Label="Error" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.Error" Label="Error" Value />
+                <BitCheckbox Disabled Color="BitColor.Error" Label="Error" />
+                <BitCheckbox Disabled Color="BitColor.Error" Label="Error" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.Error" Label="Error" Value />
             </div>
             <br /><br />
             <div style="background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem">
                 <div class="example-box">
-                    <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBackground" Label="PrimaryBackground" />
-                    <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Indeterminate />
-                    <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Value />
+                    <BitCheckbox Disabled Color="BitColor.PrimaryBackground" Label="PrimaryBackground" />
+                    <BitCheckbox Disabled Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Indeterminate />
+                    <BitCheckbox Disabled Color="BitColor.PrimaryBackground" Label="PrimaryBackground" Value />
                 </div>
                 <br />
                 <div class="example-box">
-                    <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBackground" Label="SecondaryBackground" />
-                    <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Indeterminate />
-                    <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Value />
+                    <BitCheckbox Disabled Color="BitColor.SecondaryBackground" Label="SecondaryBackground" />
+                    <BitCheckbox Disabled Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Indeterminate />
+                    <BitCheckbox Disabled Color="BitColor.SecondaryBackground" Label="SecondaryBackground" Value />
                 </div>
                 <br />
                 <div class="example-box">
-                    <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBackground" Label="TertiaryBackground" />
-                    <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Indeterminate />
-                    <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Value />
+                    <BitCheckbox Disabled Color="BitColor.TertiaryBackground" Label="TertiaryBackground" />
+                    <BitCheckbox Disabled Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Indeterminate />
+                    <BitCheckbox Disabled Color="BitColor.TertiaryBackground" Label="TertiaryBackground" Value />
                 </div>
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryForeground" Label="PrimaryForeground" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Value />
+                <BitCheckbox Disabled Color="BitColor.PrimaryForeground" Label="PrimaryForeground" />
+                <BitCheckbox Disabled Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.PrimaryForeground" Label="PrimaryForeground" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryForeground" Label="SecondaryForeground" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Value />
+                <BitCheckbox Disabled Color="BitColor.SecondaryForeground" Label="SecondaryForeground" />
+                <BitCheckbox Disabled Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.SecondaryForeground" Label="SecondaryForeground" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryForeground" Label="TertiaryForeground" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Value />
+                <BitCheckbox Disabled Color="BitColor.TertiaryForeground" Label="TertiaryForeground" />
+                <BitCheckbox Disabled Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.TertiaryForeground" Label="TertiaryForeground" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBorder" Label="PrimaryBorder" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Value />
+                <BitCheckbox Disabled Color="BitColor.PrimaryBorder" Label="PrimaryBorder" />
+                <BitCheckbox Disabled Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.PrimaryBorder" Label="PrimaryBorder" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBorder" Label="SecondaryBorder" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Value />
+                <BitCheckbox Disabled Color="BitColor.SecondaryBorder" Label="SecondaryBorder" />
+                <BitCheckbox Disabled Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.SecondaryBorder" Label="SecondaryBorder" Value />
             </div>
             <br />
             <div class="example-box">
-                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBorder" Label="TertiaryBorder" />
-                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Indeterminate />
-                <BitCheckbox IsEnabled="false" Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Value />
+                <BitCheckbox Disabled Color="BitColor.TertiaryBorder" Label="TertiaryBorder" />
+                <BitCheckbox Disabled Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Indeterminate />
+                <BitCheckbox Disabled Color="BitColor.TertiaryBorder" Label="TertiaryBorder" Value />
             </div>
         </div>
     </DemoExample>
@@ -832,9 +832,9 @@
         <div dir="rtl">
             <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس راست به چپ" />
             <br />
-            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال" IsEnabled="false" />
+            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال" Disabled />
             <br />
-            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال چک شده" IsEnabled="false" Value="true" />
+            <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال چک شده" Disabled Value="true" />
         </div>
     </DemoExample>
 </DemoPage>

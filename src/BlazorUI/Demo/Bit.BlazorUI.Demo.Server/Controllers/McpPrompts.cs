@@ -14,7 +14,7 @@ namespace Bit.BlazorUI.Demo.Server.Controllers;
 /// </para>
 /// <para>
 /// What none of them spends words on is the library's six standing rules - the registrations, the
-/// styling API, the enums, IsEnabled, the binding form. Those are in the server's
+/// styling API, the enums, Disabled, the binding form. Those are in the server's
 /// <c>instructions</c>, which the client has had in context since <c>initialize</c>; a prompt that
 /// repeated them would be paying a second time for a model that had already read them once.
 /// </para>

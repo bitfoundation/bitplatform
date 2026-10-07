@@ -53,7 +53,7 @@
                     most 780px tall, shrinking with the viewport. A fit mode re-fits whenever the box resizes.
                 </div>
                 <br />
-                <BitButton IsEnabled="heightSource is null" OnClick="() => heightSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="heightSource is not null" OnClick="() => heightSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="heightSource" Height="400px" Width="min(100%, 40rem)" />
             </DemoExample>
@@ -67,7 +67,7 @@
                     yourself, and <b>MaxOpenFileSize</b> caps what it reads.
                 </div>
                 <br />
-                <BitButton IsEnabled="toolbarSource is null" OnClick="() => toolbarSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="toolbarSource is not null" OnClick="() => toolbarSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="toolbarSource" Height="400px"
                               ToolbarItems="BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.OpenFile | BitPdfToolbarItems.Fullscreen">
@@ -95,7 +95,7 @@
                     render lazily, and a panel with nothing to show keeps its toggle disabled.
                 </div>
                 <br />
-                <BitButton IsEnabled="sidebarSource is null" OnClick="() => sidebarSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="sidebarSource is not null" OnClick="() => sidebarSource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="sidebarSource" Height="450px" DefaultSidebar="BitPdfSidebar.Thumbnails" />
             </DemoExample>
@@ -108,7 +108,7 @@
                     including Ctrl+wheel and pinch, which keep the point under the cursor in place.
                 </div>
                 <br />
-                <BitButton IsEnabled="zoomSource is null" OnClick="() => zoomSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="zoomSource is not null" OnClick="() => zoomSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="zoomSource" Height="450px"
                               InitialZoomMode="BitPdfZoomMode.Automatic"
@@ -139,7 +139,7 @@
                     <BitToggle @bind-Value="panTool" Label="Pan tool" />
                 </div>
                 <br />
-                <BitButton IsEnabled="layoutSource is null" OnClick="() => layoutSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="layoutSource is not null" OnClick="() => layoutSource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="layoutSource" Height="500px"
                               ScrollMode="scrollMode"
@@ -155,9 +155,9 @@
                     <b>SetSearchOptions</b>, <b>FindNext</b> and <b>ClearSearch</b> do the same from code.
                 </div>
                 <br />
-                <BitButton IsEnabled="searchSource is null" OnClick="() => searchSource = CreateArticleSource()">Load document</BitButton>
-                <BitButton IsEnabled="searchSource is not null" OnClick="() => searchViewerRef.Search(searchTerm)">Search from code</BitButton>
-                <BitButton IsEnabled="searchSource is not null" OnClick="() => searchViewerRef.SetSearchOptions(matchCase: true, wholeWord: true)">Case + whole word</BitButton>
+                <BitButton Disabled="searchSource is not null" OnClick="() => searchSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="searchSource is null" OnClick="() => searchViewerRef.Search(searchTerm)">Search from code</BitButton>
+                <BitButton Disabled="searchSource is null" OnClick="() => searchViewerRef.SetSearchOptions(matchCase: true, wholeWord: true)">Case + whole word</BitButton>
                 <br /><br />
                 <BitTextField @bind-Value="searchTerm" Label="Term" Style="max-width:16rem" />
                 <br />
@@ -183,7 +183,7 @@
                     </BitChoiceGroup>
                 </div>
                 <br />
-                <BitButton IsEnabled="renderingSource is null" OnClick="() => renderingSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="renderingSource is not null" OnClick="() => renderingSource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="renderingSource" Height="450px" BackgroundRendering
                               RenderMode="renderMode"
@@ -197,7 +197,7 @@
                     parsed <b>Document</b> - for indexing or auditing without parsing twice.
                 </div>
                 <br />
-                <BitButton IsEnabled="infoSource is null" OnClick="() => infoSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="infoSource is not null" OnClick="() => infoSource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer @ref="infoViewerRef" Source="infoSource" Height="400px" OnDocumentLoaded="StateHasChanged" />
                 <br />
@@ -238,7 +238,7 @@
                 <br />
                 <BitButton OnClick="() => statesSource = CreateArticleSource()">Load a document</BitButton>
                 <BitButton OnClick="LoadBrokenFile">Load a broken file</BitButton>
-                <BitButton IsEnabled="statesSource is not null" OnClick="() => statesSource = null">Clear</BitButton>
+                <BitButton Disabled="statesSource is null" OnClick="() => statesSource = null">Clear</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="statesSource" Height="300px" AllowDropFile>
                     <LoadingTemplate>
@@ -263,7 +263,7 @@
                 </div>
                 <br />
                 <BitToggle @bind-Value="blockPrinting" Label="Block printing" />
-                <BitButton IsEnabled="eventsSource is null" OnClick="() => eventsSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="eventsSource is not null" OnClick="() => eventsSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="eventsSource" Height="400px"
                               OnDocumentLoaded='() => eventsLog.Add("Document loaded")'
@@ -294,7 +294,7 @@
                     events instead.
                 </div>
                 <br />
-                <BitButton IsEnabled="bindingSource is null" OnClick="() => bindingSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="bindingSource is not null" OnClick="() => bindingSource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end">
                     <BitNumberField @bind-Value="boundPage" Label="CurrentPage" Min="1" Style="max-width:9rem" />
@@ -317,7 +317,7 @@
                     <b>RenderPageHtml</b> are API-only.
                 </div>
                 <br />
-                <BitButton IsEnabled="publicApiSource is null" OnClick="() => publicApiSource = CreateArticleSource()">Load document</BitButton>
+                <BitButton Disabled="publicApiSource is not null" OnClick="() => publicApiSource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
                     <BitButton OnClick="() => pdfViewerRef.FirstPage()">First</BitButton>
@@ -358,7 +358,7 @@
                     only the ones you replace.
                 </div>
                 <br />
-                <BitButton IsEnabled="localizedSource is null" OnClick="() => localizedSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="localizedSource is not null" OnClick="() => localizedSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Source="localizedSource" Height="400px" Texts="germanTexts" />
             </DemoExample>
@@ -371,7 +371,7 @@
                     thumbnails are a listbox and the bookmarks a tree, each one tab stop moved by the arrow keys. Each page
                     is a named group whose text is read once, its links are named tab stops, and page moves are
                     announced; the dialogs trap focus and close on <kbd>Esc</kbd>. A disabled viewer
-                    (<b>IsEnabled</b>=false) keeps showing the document with its chrome inert.
+                    (<b>Disabled</b>) keeps showing the document with its chrome inert.
                 </div>
                 <br />
                 <div class="pdf-shortcuts">
@@ -385,10 +385,10 @@
                     <div><kbd>F4</kbd> toggle the sidebar, <kbd>Esc</kbd> close the find box, a dialog or presentation mode</div>
                 </div>
                 <br />
-                <BitToggle @bind-Value="a11yEnabled" Label="IsEnabled" />
-                <BitButton IsEnabled="a11ySource is null" OnClick="() => a11ySource = CreateArticleSource()">Load document</BitButton>
+                <BitToggle @bind-Value="a11yDisabled" Label="Disabled" />
+                <BitButton Disabled="a11ySource is not null" OnClick="() => a11ySource = CreateArticleSource()">Load document</BitButton>
                 <br /><br />
-                <BitPdfViewer Source="a11ySource" Height="450px" DefaultSidebar="BitPdfSidebar.Bookmarks" IsEnabled="a11yEnabled" />
+                <BitPdfViewer Source="a11ySource" Height="450px" DefaultSidebar="BitPdfSidebar.Bookmarks" Disabled="a11yDisabled" />
             </DemoExample>
 
             <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
@@ -397,7 +397,7 @@
                     for every viewer under it. A viewer's own value wins (the second keeps its own toolbar).
                 </div>
                 <br />
-                <BitButton IsEnabled="cascadeSource is null" OnClick="() => cascadeSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="cascadeSource is not null" OnClick="() => cascadeSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitParams Parameters="pdfViewerParams">
                     <BitPdfViewer Source="cascadeSource" />
@@ -413,7 +413,7 @@
                 the third one also reads in a dark mode through <b>--bit-PdfViewer-page-filter</b>.
                 </div>
                 <br />
-                <BitButton IsEnabled="styleSource is null" OnClick="() => styleSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="styleSource is not null" OnClick="() => styleSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <div>Component's Style & Class:</div>
                 <br />
@@ -438,7 +438,7 @@
                     orientation the document defines.
                 </div>
                 <br />
-                <BitButton IsEnabled="rtlSource is null" OnClick="() => rtlSource = CreateSampleSource()">Load document</BitButton>
+                <BitButton Disabled="rtlSource is not null" OnClick="() => rtlSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
                 <BitPdfViewer Dir="BitDir.Rtl" Source="rtlSource" Height="400px" />
             </DemoExample>

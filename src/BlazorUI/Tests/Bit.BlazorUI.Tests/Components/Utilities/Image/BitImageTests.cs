@@ -32,11 +32,11 @@ public class BitImageTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitImageShouldRespectIsEnabled(bool isEnabled)
+    public void BitImageShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -45,7 +45,7 @@ public class BitImageTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitImageShouldRespectIsEnabledChangingAfterRender()
+    public void BitImageShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
 
@@ -53,7 +53,7 @@ public class BitImageTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@$"<div class=""bit-img bit-dis"" id:ignore>{DefaultImage}</div>");
@@ -1008,7 +1008,7 @@ public class BitImageTests : BunitTestContext
         int clickedValue = 0;
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -1031,7 +1031,7 @@ public class BitImageTests : BunitTestContext
     {
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => { });
         });
 
@@ -1113,7 +1113,7 @@ public class BitImageTests : BunitTestContext
         var clicked = 0;
         var component = RenderComponent<BitImage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
 

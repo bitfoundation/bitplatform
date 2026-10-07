@@ -24,9 +24,9 @@ private bool expanded = true;";
     <BitButton OnClick=""() => collapseRef?.ExpandAsync()"">Expand</BitButton>
     <BitButton OnClick=""() => collapseRef?.CollapseAsync()"">Collapse</BitButton>
     <BitButton OnClick=""() => collapseRef?.ToggleAsync()"">Toggle</BitButton>
-    <BitCheckbox Label=""Enabled"" @bind-Value=""collapseEnabled"" />
+    <BitCheckbox Label=""Disabled"" @bind-Value=""collapseDisabled"" />
 </div>
-<BitCollapse @ref=""collapseRef"" DefaultExpanded IsEnabled=""collapseEnabled"" OnChange=""HandleChange"">
+<BitCollapse @ref=""collapseRef"" DefaultExpanded Disabled=""collapseDisabled"" OnChange=""HandleChange"">
     Starts open through DefaultExpanded; nothing on the page holds its state.
 </BitCollapse>
 <div>@changeLog</div>";
@@ -34,7 +34,7 @@ private bool expanded = true;";
 private bool boundExpanded = true;
 private string changeLog = string.Empty;
 private BitCollapse? collapseRef;
-private bool collapseEnabled = true;
+private bool collapseDisabled;
 
 private void HandleChange(bool value) => changeLog = $""OnChange({value.ToString().ToLower()})"";";
 

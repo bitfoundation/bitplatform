@@ -113,7 +113,7 @@
                    aria-label="@GetInputAriaLabel(index)"
                    aria-invalid="@GetAriaInvalid()"
                    tabindex="@GetTabIndex(index)"
-                   disabled="@(IsEnabled is false)" />
+                   disabled="@(Disabled)" />
         }
     </div>
 
@@ -163,6 +163,6 @@
         <input type="hidden"
                name="@Name"
                value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)" />
+               disabled="@(Disabled)" />
     }
 </div>

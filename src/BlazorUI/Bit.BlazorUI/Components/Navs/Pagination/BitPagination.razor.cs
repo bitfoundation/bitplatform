@@ -1047,13 +1047,13 @@ public partial class BitPagination : BitComponentBase
     // The first and last buttons always target a fixed page, so they are the ones the loop leaves alone. The
     // previous and next buttons only stay enabled at the ends of the range while the loop has somewhere else
     // to take them, which a range holding a single page does not.
-    private bool _IsFirstDisabled => IsEnabled is false || _SelectedPage == 1;
+    private bool _IsFirstDisabled => Disabled || _SelectedPage == 1;
 
-    private bool _IsPreviousDisabled => IsEnabled is false || (Loop ? _Count == 1 : _SelectedPage == 1);
+    private bool _IsPreviousDisabled => Disabled || (Loop ? _Count == 1 : _SelectedPage == 1);
 
-    private bool _IsNextDisabled => IsEnabled is false || (Loop ? _Count == 1 : _SelectedPage == _Count);
+    private bool _IsNextDisabled => Disabled || (Loop ? _Count == 1 : _SelectedPage == _Count);
 
-    private bool _IsLastDisabled => IsEnabled is false || _SelectedPage == _Count;
+    private bool _IsLastDisabled => Disabled || _SelectedPage == _Count;
 
     private int _PreviousPage => Loop && _SelectedPage == 1 ? _Count : _SelectedPage - 1;
 
@@ -1276,7 +1276,7 @@ public partial class BitPagination : BitComponentBase
 
     private async Task ChangePage(int page)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Every requested page lands inside the available range, so neither a wrapping navigation button nor
         // an out of range SelectedPage can ever select a page that does not exist.
@@ -1315,7 +1315,7 @@ public partial class BitPagination : BitComponentBase
 
     private async Task ChangePageFrom(FocusTarget source, int page)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var requested = Math.Clamp(page, 1, _Count);
 
@@ -1381,7 +1381,7 @@ public partial class BitPagination : BitComponentBase
 
     private async Task HandlePageSizeChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var size) is false) return;
 

@@ -885,7 +885,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnDismissPrevented, () => prevented++);
         });
 
@@ -1313,7 +1313,7 @@ public class BitDialogTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Title, "Title");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
@@ -1333,7 +1333,7 @@ public class BitDialogTests : BunitTestContext
         var component = RenderComponent<BitDialog>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnOk, () => okCount++);
             parameters.Add(p => p.OnCancel, () => cancelCount++);
             parameters.Add(p => p.OnClose, () => closeCount++);
@@ -1963,7 +1963,7 @@ public class BitDialogTests : BunitTestContext
         RenderComponent<BitDialog>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoFocusButton, button);
         });
 

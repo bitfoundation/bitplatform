@@ -8,7 +8,7 @@ public partial class BitImageDemo
           Src=""images/bit-logo-blue.png"" />
 
 <div>Disabled</div>
-<BitImage Alt=""The bit platform logo"" IsEnabled=""false"" Src=""images/bit-logo-blue.png"" />";
+<BitImage Alt=""The bit platform logo"" Disabled Src=""images/bit-logo-blue.png"" />";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -299,7 +299,7 @@ private const string placeholderDataUri = ""data:image/svg+xml,%3Csvg xmlns='htt
 <BitImage Rounded
           Width=""8rem""
           AspectRatio=""1""
-          IsEnabled=""false""
+          Disabled
           Draggable=""false""
           ImageFit=""BitImageFit.Cover""
           Alt=""Preview the photograph (disabled)""

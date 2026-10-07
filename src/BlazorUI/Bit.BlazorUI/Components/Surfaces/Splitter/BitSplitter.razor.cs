@@ -365,7 +365,7 @@ public partial class BitSplitter : BitComponentBase
     /// dragged or moved from the keyboard.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="BitComponentBase.IsEnabled"/>, which dims the whole splitter, a read-only one is a
+    /// Unlike <see cref="BitComponentBase.Disabled"/>, which dims the whole splitter, a read-only one is a
     /// layout that is simply not up for negotiation. The public methods still work in both cases.
     /// </remarks>
     [Parameter, ResetClassBuilder]
@@ -675,7 +675,7 @@ public partial class BitSplitter : BitComponentBase
 
     // A gutter nobody can move is not a control any more, so it leaves the tab order and reports itself as
     // disabled rather than standing there as a stop that answers to nothing.
-    private bool _IsInteractive => IsEnabled && ReadOnly is false;
+    private bool _IsInteractive => Disabled is false && ReadOnly is false;
 
     // The position the separator reports. It is only rendered from here once the page owns a value for it;
     // before that the setup call measures the panels and writes it onto the element itself, so a splitter

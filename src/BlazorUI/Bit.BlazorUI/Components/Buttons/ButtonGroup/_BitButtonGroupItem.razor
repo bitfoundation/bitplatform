@@ -2,13 +2,13 @@
 @typeparam TItem where TItem : class
 
 @{
-    var isEnabled = ButtonGroup.IsEnabled && ButtonGroup.GetIsEnabled(Item);
+    var isDisabled = ButtonGroup.Disabled || ButtonGroup.GetIsDisabled(Item);
     var isLoading = ButtonGroup.GetIsLoading(Item);
     // An item the Multiple mode's MaxToggles cap has taken out of reach is activated to no effect until one of
     // the toggled items is un-toggled, so it says so rather than answering a click with silence. It is not given
     // the disabled attribute, since it is not disabled but temporarily out of reach - and a disabled button is
     // not focusable, which would leave a hole in the group's keyboard navigation.
-    var isInteractive = isEnabled && isLoading is false && ButtonGroup.GetIsToggleCapped(Item) is false;
+    var isInteractive = isDisabled is false && isLoading is false && ButtonGroup.GetIsToggleCapped(Item) is false;
     var template = ButtonGroup.GetTemplate(Item);
     var href = ButtonGroup.GetHref(Item);
     // A disabled or loading link loses its href, and with it the implicit link role, so the role is put back -
@@ -24,7 +24,7 @@
             role="@ButtonGroup.GetItemRole()"
             tabindex="@ButtonGroup.GetItemTabIndex(Item)"
             autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
-            disabled="@(isEnabled is false && ButtonGroup.DisabledInteractive is false)"
+            disabled="@(isDisabled && ButtonGroup.DisabledInteractive is false)"
             aria-disabled="@(isInteractive ? null : "true")"
             aria-busy="@(isLoading ? "true" : null)"
             aria-label="@ButtonGroup.GetItemAriaLabel(Item)"

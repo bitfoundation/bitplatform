@@ -7,7 +7,7 @@ public partial class BitRatingDemo
 
 <BitRating DefaultValue=""3"" />
 
-<BitRating IsEnabled=""false"" DefaultValue=""2"" />
+<BitRating Disabled DefaultValue=""2"" />
 
 <BitRating ReadOnly DefaultValue=""3.5"" />";
 

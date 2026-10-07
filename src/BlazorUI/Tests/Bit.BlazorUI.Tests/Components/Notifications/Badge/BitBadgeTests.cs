@@ -729,7 +729,7 @@ public class BitBadgeTests : BunitTestContext
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -755,14 +755,14 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitBadgeOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
+    public void BitBadgeOnClickBehaviorDependsOnDisabled(bool isEnabled)
     {
         var clicked = false;
 
         var component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.Content, 5);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
         });
 
@@ -1719,7 +1719,7 @@ public class BitBadgeTests : BunitTestContext
         {
             parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.Href, "/inbox");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var badge = component.Find(".bit-bdg-ctn");
@@ -1742,7 +1742,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.Href, "/inbox");
             parameters.Add(p => p.Target, "_blank");
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var badge = component.Find("a.bit-bdg-ctn");
@@ -1757,7 +1757,7 @@ public class BitBadgeTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitBadgeAnchorOnClickBehaviorDependsOnIsEnabled(bool isEnabled)
+    public void BitBadgeAnchorOnClickBehaviorDependsOnDisabled(bool isEnabled)
     {
         var clicked = false;
 
@@ -1765,7 +1765,7 @@ public class BitBadgeTests : BunitTestContext
         {
             parameters.Add(p => p.Content, 5);
             parameters.Add(p => p.Href, "/inbox");
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => clicked = true));
         });
 

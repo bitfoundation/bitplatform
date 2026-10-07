@@ -3,7 +3,7 @@
 public partial class BitStickyDemo
 {
     private bool isStuck;
-    private bool isStickyEnabled = true;
+    private bool isStickyDisabled;
     private bool reservesScrollPadding = true;
     private BitStickyEdges stuckEdges;
     private BitPlacement verticalPosition = BitPlacement.TopAndBottom;

@@ -81,9 +81,9 @@ public partial class BitMenuButtonOption : IDisposable
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
-    /// Whether or not the option is enabled.
+    /// Whether or not the option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// If true, the option renders as the label of the group of options that follow it, instead of as a

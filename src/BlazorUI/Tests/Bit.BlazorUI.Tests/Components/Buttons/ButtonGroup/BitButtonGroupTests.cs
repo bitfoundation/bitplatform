@@ -337,7 +337,7 @@ public class BitButtonGroupTests : BunitTestContext
         var items = new List<BitButtonGroupItem>
         {
             new() { Text = "A" },
-            new() { Text = "B", IsEnabled = false }
+            new() { Text = "B", IsDisabled = true }
         };
 
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
@@ -775,7 +775,7 @@ public class BitButtonGroupTests : BunitTestContext
     {
         var items = new List<BitButtonGroupItem>
         {
-            new() { Text = "Gone", Href = "/components", IsEnabled = false }
+            new() { Text = "Gone", Href = "/components", IsDisabled = true }
         };
 
         var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
@@ -1078,7 +1078,7 @@ public class BitButtonGroupTests : BunitTestContext
         var items = new List<BitButtonGroupItem>
         {
             new() { Text = "A", Key = "a" },
-            new() { Text = "B", Key = "b", IsEnabled = false },
+            new() { Text = "B", Key = "b", IsDisabled = true },
             new() { Text = "C", Key = "c" }
         };
 
@@ -1287,7 +1287,7 @@ public class BitButtonGroupTests : BunitTestContext
         comp.Render(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual("true", comp.Find(".bit-btg").GetAttribute("aria-disabled"));
@@ -1299,7 +1299,7 @@ public class BitButtonGroupTests : BunitTestContext
         var items = new List<BitButtonGroupItem>
         {
             new() { Text = "A", Key = "a" },
-            new() { Text = "B", Key = "b", Href = "/b", IsEnabled = false },
+            new() { Text = "B", Key = "b", Href = "/b", IsDisabled = true },
             new() { Text = "C", Key = "c" }
         };
 
@@ -1640,7 +1640,7 @@ public class BitButtonGroupTests : BunitTestContext
             Variant = BitVariant.Outline,
             Vertical = true,
             AriaLabel = "Test Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -1677,7 +1677,7 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual(BitVariant.Outline, instance.Variant);
         Assert.IsTrue(instance.Vertical);
         Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 
@@ -1748,7 +1748,7 @@ public class BitButtonGroupTests : BunitTestContext
             {
                 AriaLabel = "Base Label",
                 Id = "test-id",
-                IsEnabled = false,
+                Disabled = true,
                 Style = "background: blue;",
                 Class = "base-class"
             }

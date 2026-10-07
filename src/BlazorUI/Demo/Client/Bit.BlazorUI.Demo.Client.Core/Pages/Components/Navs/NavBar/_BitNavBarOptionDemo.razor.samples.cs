@@ -11,7 +11,7 @@ public partial class _BitNavBarOptionDemo
 </BitNavBar>";
 
     private readonly string example2RazorCode = @"
-<BitNavBar TItem=""BitNavBarOption"" IsEnabled=""false"">
+<BitNavBar TItem=""BitNavBarOption"" Disabled>
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
@@ -21,7 +21,7 @@ public partial class _BitNavBarOptionDemo
 <BitNavBar TItem=""BitNavBarOption"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
-    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" IsDisabled />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
@@ -63,13 +63,13 @@ private string? twoWaySelectedKey;";
 </BitNavBar>
 
 <BitNavBar TItem=""BitNavBarOption"">
-    <BitNavBarOption Text=""/components/*"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" Match=""BitNavMatch.Wildcard"" IsEnabled=""false"" />
-    <BitNavBarOption Text=""/iconography/*"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography/*"" Match=""BitNavMatch.Wildcard"" IsEnabled=""false"" />
+    <BitNavBarOption Text=""/components/*"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" Match=""BitNavMatch.Wildcard"" IsDisabled />
+    <BitNavBarOption Text=""/iconography/*"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography/*"" Match=""BitNavMatch.Wildcard"" IsDisabled />
 </BitNavBar>
 
 <BitNavBar TItem=""BitNavBarOption"">
-    <BitNavBarOption Text=""^/components/navbar$"" IconName=""@BitIconName.Code"" Url=""^/components/navbar$"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
-    <BitNavBarOption Text=""^/iconography$"" IconName=""@BitIconName.Code"" Url=""^/iconography$"" Match=""BitNavMatch.Regex"" IsEnabled=""false"" />
+    <BitNavBarOption Text=""^/components/navbar$"" IconName=""@BitIconName.Code"" Url=""^/components/navbar$"" Match=""BitNavMatch.Regex"" IsDisabled />
+    <BitNavBarOption Text=""^/iconography$"" IconName=""@BitIconName.Code"" Url=""^/iconography$"" Match=""BitNavMatch.Regex"" IsDisabled />
 </BitNavBar>
 
 <BitNavBar TItem=""BitNavBarOption"">

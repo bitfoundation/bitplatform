@@ -20,7 +20,7 @@ public class BitRatingTests : BunitTestContext
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
         var bitRating = component.Find(".bit-rtg");
 
@@ -77,7 +77,7 @@ public class BitRatingTests : BunitTestContext
         {
             parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var bitRating = component.Find(".bit-rtg");
@@ -358,7 +358,7 @@ public class BitRatingTests : BunitTestContext
         var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Max, max);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -1548,7 +1548,7 @@ public class BitRatingTests : BunitTestContext
         var focusedOut = 0;
         var component = RenderComponent<BitRating>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnFocusIn, () => focusedIn++);
             parameters.Add(p => p.OnFocusOut, () => focusedOut++);
         });
@@ -2119,7 +2119,7 @@ public class BitRatingTests : BunitTestContext
         {
             parameters.Add(p => p.Label, "Quality");
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-rtg");

@@ -83,7 +83,7 @@ public partial class BitBadgeDemo
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Turns the badge into a real link to the URL. While IsEnabled is false the href is dropped and the badge leaves the tab order."
+            Description = "Turns the badge into a real link to the URL. While Disabled is true the href is dropped and the badge leaves the tab order."
         },
         new()
         {

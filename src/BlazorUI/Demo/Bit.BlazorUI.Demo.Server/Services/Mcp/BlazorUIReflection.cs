@@ -53,7 +53,7 @@ public static class BlazorUIReflection
     /// The tables above are read with <c>DeclaredOnly</c>, which is right for the hundred types
     /// whose base is <c>object</c> and wrong for the ones that have a real base: a
     /// <c>BitCalendarParams</c> answered with its own hundred properties alone says its
-    /// <c>Class</c>, <c>Style</c> and <c>IsEnabled</c> do not exist, while the component's own
+    /// <c>Class</c>, <c>Style</c> and <c>Disabled</c> do not exist, while the component's own
     /// answer counts them. So each library base is named with the members it brings and the call
     /// that documents them - the set once, not once per type that closes it.
     /// </para>

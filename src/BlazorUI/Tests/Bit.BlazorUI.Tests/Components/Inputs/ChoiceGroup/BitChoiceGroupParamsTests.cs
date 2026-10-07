@@ -148,7 +148,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             StretchItemLabel = true,
             Variant = BitVariant.Fill,
             AriaLabel = "Cascaded aria label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5",
         };
 
@@ -175,7 +175,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.IsTrue(instance.StretchItemLabel);
         Assert.AreEqual(BitVariant.Fill, instance.Variant);
         Assert.AreEqual("Cascaded aria label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

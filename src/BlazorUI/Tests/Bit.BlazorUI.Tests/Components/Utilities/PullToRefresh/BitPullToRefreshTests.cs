@@ -453,7 +453,7 @@ public class BitPullToRefreshTests : BunitTestContext
             parameters.Add(p => p.Factor, 2m);
             parameters.Add(p => p.Margin, 20);
             parameters.Add(p => p.Threshold, 10);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var setup = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.setup"].Single();
@@ -474,7 +474,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-ptr");
@@ -512,7 +512,7 @@ public class BitPullToRefreshTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPullToRefreshShouldCallJsUpdateOnIsEnabledChange()
+    public void BitPullToRefreshShouldCallJsUpdateOnDisabledChange()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
         Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
@@ -521,7 +521,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var update = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Single();
@@ -573,7 +573,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         var component = RenderComponent<BitPullToRefresh>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.Instance.RefreshAsync();
@@ -1367,7 +1367,7 @@ public class BitPullToRefreshTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual(0m, component.Instance.PullProgress);
@@ -1561,7 +1561,7 @@ public class BitPullToRefreshTests : BunitTestContext
         });
 
         component.Instance._OnMove(30m).GetAwaiter().GetResult();
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         CollectionAssert.AreEqual(new[] { BitPullToRefreshState.Pulling, BitPullToRefreshState.Idle }, states);
     }
@@ -1756,7 +1756,7 @@ public class BitPullToRefreshTests : BunitTestContext
         // Disabling drops the pull; the handler failing on that change does not fail the parameter update, it
         // reaches the error boundary the way a click handler's exception does.
         var ptr = component.Instance;
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.AreEqual(BitPullToRefreshState.Idle, ptr.State);
         Assert.AreEqual("idle failed", captured?.Message);

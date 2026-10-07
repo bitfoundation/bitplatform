@@ -147,7 +147,7 @@
             <BitToggle @bind-Value="isStatic" Text="Static" />
             <BitTextShimmer Static="isStatic" Text="Stop me and start me again" />
             <br /><br />
-            <BitTextShimmer IsEnabled="false" Text="A disabled shimmer" />
+            <BitTextShimmer Disabled Text="A disabled shimmer" />
         </DemoExample>
 
         <DemoExample Title="Thinking status" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
@@ -157,7 +157,7 @@
                 region announces it.
             </div>
             <br />
-            <BitButton OnClick="AskAsync" IsEnabled="isThinking is false">Ask a question</BitButton>
+            <BitButton OnClick="AskAsync" Disabled="isThinking">Ask a question</BitButton>
             <br /><br />
             <BitTextShimmer role="status"
                             Static="isThinking is false"

@@ -236,7 +236,7 @@ public partial class BitBadge : BitComponentBase
     /// alerts - and <see cref="OnClick"/> for one that acts on the page it is already on. The two can be set
     /// together, in which case the handler runs and the navigation still happens.
     /// <br />
-    /// While <c>IsEnabled</c> is false the href is dropped and the badge is taken out of the tab order, so a
+    /// While <c>Disabled</c> is true the href is dropped and the badge is taken out of the tab order, so a
     /// disabled link cannot be followed by either the pointer or the keyboard.
     /// </remarks>
     [Parameter]
@@ -345,7 +345,7 @@ public partial class BitBadge : BitComponentBase
     /// </summary>
     /// <remarks>
     /// While it is set the badge is focusable and can be activated with the keyboard, and it stops being so
-    /// as soon as <c>IsEnabled</c> is false. A badge with no handler and no <see cref="Href"/> never takes
+    /// as soon as <c>Disabled</c> is true. A badge with no handler and no <see cref="Href"/> never takes
     /// focus: it is a label on the element it belongs to, and that element is what a keyboard user reaches.
     /// <br />
     /// A control needs a name, so a badge that carries no text of its own - a <see cref="Dot"/> or an
@@ -582,7 +582,7 @@ public partial class BitBadge : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }

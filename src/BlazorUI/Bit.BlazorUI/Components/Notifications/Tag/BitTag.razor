@@ -41,18 +41,18 @@
        asked for, unless AllowDisabledFocus keeps it there. *@
     var tabIndexOnRoot = _isInteractive is false && OnDismiss.HasDelegate is false;
     var tabIndex = TabIndex ?? splattedTabIndex;
-    var focusable = IsEnabled || AllowDisabledFocus;
+    var focusable = Disabled is false || AllowDisabledFocus;
     var rootTabIndex = tabIndexOnRoot && focusable ? tabIndex : null;
 
     @* A disabled control that keeps its focus reports the state through aria-disabled instead of the native
        disabled attribute, which would take it out of the tab order along with the pointer. *@
-    var nativeDisabled = IsEnabled is false && AllowDisabledFocus is false;
-    var ariaDisabled = IsEnabled || nativeDisabled ? null : "true";
+    var nativeDisabled = Disabled && AllowDisabledFocus is false;
+    var ariaDisabled = Disabled is false || nativeDisabled ? null : "true";
 
     @* A natively disabled button never fires a click, but one that only says so through aria-disabled still
        does when Enter or Space presses it - and that click would bubble on to whatever holds the tag. The
        handler already ignores it; stopping it here keeps it from reaching anything else either. *@
-    var stopClick = StopPropagation || IsEnabled is false;
+    var stopClick = StopPropagation || Disabled;
 
     @* The name and the description follow the control the same way the tab index does: what the tag has of its
        own first, what came in with the attributes behind it, and both of them on the anchor or the button when
@@ -182,18 +182,18 @@
            through a tabindex of its own. *@
         <a @ref="_contentRef"
            @onclick="HandleOnClick"
-           @onclick:preventDefault="@(IsEnabled is false)"
+           @onclick:preventDefault="@(Disabled)"
            @onclick:stopPropagation="stopClick"
            @onkeydown="onKeyDown"
            style="@Styles?.Content"
            class="bit-tag-cnt bit-tag-int @Classes?.Content"
-           href="@(IsEnabled ? Href : null)"
-           role="@(IsEnabled ? null : "link")"
+           href="@(Disabled ? null : Href)"
+           role="@(Disabled ? "link" : null)"
            rel="@_rel"
            target="@Target"
            download="@Download"
-           tabindex="@(IsEnabled ? tabIndex : (AllowDisabledFocus ? tabIndex ?? "0" : "-1"))"
-           aria-disabled="@(IsEnabled ? null : "true")"
+           tabindex="@(Disabled ? (AllowDisabledFocus ? tabIndex ?? "0" : "-1") : tabIndex)"
+           aria-disabled="@(Disabled ? "true" : null)"
            aria-current="@(Selected ? _AriaCurrentMap[AriaCurrent] : null)"
            aria-label="@hint.AriaLabel"
            aria-labelledby="@hint.AriaLabelledBy"

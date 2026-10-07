@@ -5,7 +5,7 @@ public partial class BitCalendarDemo
     private readonly string example1RazorCode = @"
 <BitCalendar />
 
-<BitCalendar IsEnabled=""false"" />
+<BitCalendar Disabled />
 
 <BitCalendar ReadOnly />
 

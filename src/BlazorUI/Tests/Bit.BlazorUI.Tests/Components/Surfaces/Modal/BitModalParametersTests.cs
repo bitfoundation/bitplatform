@@ -219,7 +219,7 @@ public class BitModalParametersTests
         missing.AddRange(new[]
         {
             nameof(BitModal.AriaLabel), nameof(BitModal.Class), nameof(BitModal.Dir), nameof(BitModal.HtmlAttributes),
-            nameof(BitModal.IsEnabled), nameof(BitModal.Style), nameof(BitModal.Visibility)
+            nameof(BitModal.Disabled), nameof(BitModal.Style), nameof(BitModal.Visibility)
         }.Where(n => carried.Contains(n) is false));
 
         CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));

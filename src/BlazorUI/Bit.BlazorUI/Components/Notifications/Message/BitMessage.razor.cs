@@ -967,9 +967,9 @@ public partial class BitMessage : BitComponentBase
     // key still have something to do.
     private bool _CanDismiss => _IsDismissable || _OwnsDismissal;
 
-    private bool _HasAutoDismiss => _CanDismiss && IsEnabled && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
+    private bool _HasAutoDismiss => _CanDismiss && Disabled is false && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
 
-    private bool _HandlesEscape => DismissOnEscape && _CanDismiss && IsEnabled;
+    private bool _HandlesEscape => DismissOnEscape && _CanDismiss && Disabled is false;
 
     // There is nothing to count down where nothing is counting down, so the bar follows the countdown itself
     // rather than the parameter that asks for it.
@@ -1069,7 +1069,7 @@ public partial class BitMessage : BitComponentBase
 
     private void ArmAutoDismiss()
     {
-        var delay = (_CanDismiss && IsEnabled && Dismissed is false) ? AutoDismissTime : null;
+        var delay = (_CanDismiss && Disabled is false && Dismissed is false) ? AutoDismissTime : null;
 
         if (delay is not { } value || value <= TimeSpan.Zero)
         {
@@ -1104,7 +1104,7 @@ public partial class BitMessage : BitComponentBase
     private void RestartAutoDismiss()
     {
         if (_armedAutoDismissTime is not { } value) return;
-        if (_CanDismiss is false || IsEnabled is false || Dismissed) return;
+        if (_CanDismiss is false || Disabled || Dismissed) return;
 
         StartAutoDismiss(value, restart: true);
 
@@ -1331,14 +1331,14 @@ public partial class BitMessage : BitComponentBase
 
     private async Task ToggleExpand()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await AssignExpanded(Expanded is false);
     }
 
     private async Task HandleOnDismiss()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await DismissAsync(BitMessageDismissReason.Button);
     }

@@ -40,7 +40,7 @@ public partial class BitToggleButton : BitComponentBase
 
     /// <summary>
     /// Keeps the disabled toggle button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the toggle button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -620,7 +620,7 @@ public partial class BitToggleButton : BitComponentBase
         // user lands on something a screen reader has nothing to say about.
         if (ariaHidden) return "-1";
 
-        if (IsEnabled is false && AllowDisabledFocus is false) return "-1";
+        if (Disabled && AllowDisabledFocus is false) return "-1";
 
         return TabIndex;
     }
@@ -689,7 +689,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         // The auto-loading window opens before OnClick rather than after it. An async OnClick handler is part of
@@ -715,7 +715,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private async Task ChangeIsChecked(bool value, bool autoLoading)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         autoLoading = autoLoading && AutoLoading;
 

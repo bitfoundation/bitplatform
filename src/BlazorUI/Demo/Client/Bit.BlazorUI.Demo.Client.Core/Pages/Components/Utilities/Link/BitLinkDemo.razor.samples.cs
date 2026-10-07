@@ -5,7 +5,7 @@ public partial class BitLinkDemo
     private readonly string example1RazorCode = @"
 <div>Read the <BitLink Href=""https://github.com/bitfoundation/bitplatform"">bit platform source</BitLink> on GitHub.</div>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled link</BitLink>";
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Disabled>Disabled link</BitLink>";
 
     private readonly string example2RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Underlined on hover (default)</BitLink>
@@ -115,8 +115,8 @@ private readonly string[] checkoutSteps = [""Cart"", ""Shipping"", ""Payment""];
 </BitLink>
 
 
-<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Disabled (skipped by Tab)</BitLink>
-<BitLink IsEnabled=""false"" AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled (still focusable)</BitLink>
+<BitLink Disabled Href=""https://github.com/bitfoundation/bitplatform"">Disabled (skipped by Tab)</BitLink>
+<BitLink Disabled AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled (still focusable)</BitLink>
 
 <BitLink OnClick=""() => focusTargetRef.FocusAsync()"">Focus the link below</BitLink>
 <BitLink @ref=""focusTargetRef"" Href=""https://github.com/bitfoundation/bitplatform"">The focus lands here</BitLink>";
@@ -184,11 +184,11 @@ private readonly BitLinkParams[] linkParams =
 <BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder</BitLink>
 
 
-<BitLink IsEnabled=""false"" Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
+<BitLink Disabled Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
+<BitLink Disabled Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
+<BitLink Disabled Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
+<BitLink Disabled Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
+<BitLink Disabled Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
 
 
 <BitLink NoColor Href=""https://github.com/bitfoundation/bitplatform"">

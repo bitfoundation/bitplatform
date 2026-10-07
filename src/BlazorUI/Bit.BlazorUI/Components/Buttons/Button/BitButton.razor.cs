@@ -46,7 +46,7 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// Keeps the disabled button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -620,7 +620,7 @@ public partial class BitButton : BitComponentBase
         // splattable by its own name - and the attribute written here would otherwise overwrite that with null.
         var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             if (AllowDisabledFocus is false) return "-1";
 
@@ -647,7 +647,7 @@ public partial class BitButton : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         // The click that ends a drag is the drag's own, not a press of the button, so it is swallowed

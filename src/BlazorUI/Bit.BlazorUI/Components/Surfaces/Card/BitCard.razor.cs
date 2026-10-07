@@ -785,7 +785,7 @@ public partial class BitCard : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Only a card that is a button toggles. A linked card navigates away on the same click, and it is the
         // only kind whose pressed state is never reported - aria-pressed belongs to a button - so flipping

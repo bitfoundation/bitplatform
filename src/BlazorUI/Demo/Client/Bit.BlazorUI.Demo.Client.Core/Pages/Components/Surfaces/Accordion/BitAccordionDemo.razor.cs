@@ -742,7 +742,7 @@ public partial class BitAccordionDemo
 
     private int renameCount;
 
-    private bool bindingIsEnabled = true;
+    private bool bindingIsDisabled;
     private bool bindingIsExpanded;
     private int controlledExpandedItem = 1;
 

@@ -30,11 +30,11 @@ public class BitFileInputTests : BunitTestContext
        DataRow(true),
        DataRow(false)
     ]
-    public void BitFileInputShouldRespectIsEnabled(bool isEnabled)
+    public void BitFileInputShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitFileInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var fileInput = component.Find(".bit-fin-fi");
@@ -861,7 +861,7 @@ public class BitFileInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitFileInputRemoveFileShouldRespectIsEnabled()
+    public async Task BitFileInputRemoveFileShouldRespectDisabled()
     {
         SetupFiles([new() { Name = "file1.txt", Size = 10, FileId = "1" },
                     new() { Name = "file2.txt", Size = 20, FileId = "2" }]);
@@ -877,7 +877,7 @@ public class BitFileInputTests : BunitTestContext
 
         Assert.HasCount(2, instance.Files);
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
         await component.InvokeAsync(() => instance.RemoveFile(null));
@@ -1173,7 +1173,7 @@ public class BitFileInputTests : BunitTestContext
     {
         var component = RenderComponent<BitFileInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var button = component.Find(".bit-fin-lbl");
@@ -1219,7 +1219,7 @@ public class BitFileInputTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-fin-rbt").HasAttribute("disabled"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-fin-rbt").HasAttribute("disabled"));
     }

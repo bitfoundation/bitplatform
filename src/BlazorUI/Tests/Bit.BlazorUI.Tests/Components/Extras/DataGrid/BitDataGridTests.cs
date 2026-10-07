@@ -3274,7 +3274,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, nameCell.QuerySelectorAll(".bit-dtg-filter-input").Length, "the template replaces the built-in editor");
         Assert.AreEqual("Filter by Name", nameCell.QuerySelector(".custom-filter")!.GetAttribute("aria-label"));
         Assert.AreEqual(typeof(string), captured!.ValueType);
-        Assert.IsTrue(captured.IsEnabled);
+        Assert.IsFalse(captured.Disabled);
 
         await component.InvokeAsync(() => captured!.ApplyAsync(BitDataGridFilterOperator.In, new List<string> { "Apple", "Date" }));
         Assert.AreEqual(2, FirstCellTexts(component).Count);

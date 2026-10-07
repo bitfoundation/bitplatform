@@ -259,7 +259,7 @@
 
 <DemoExample Title="Disabled & Read-only" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        <code>IsEnabled="false"</code> greys an option out and takes it out of the tab order. <code>ReadOnly</code>
+        <code>IsDisabled</code> greys an option out and takes it out of the tab order. <code>ReadOnly</code>
         keeps it focusable and in its colors but frozen (<code>aria-disabled</code>), and still raises
         <code>OnItemClick</code>. Both work for the whole list or per option.
     </div>
@@ -271,7 +271,7 @@
         <BitAccordionListOption Key="normal" Title="General settings" Description="A live option">
             Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
         </BitAccordionListOption>
-        <BitAccordionListOption Key="disabled" Title="Users" Description="Turned off altogether" IsEnabled="false">
+        <BitAccordionListOption Key="disabled" Title="Users" Description="Turned off altogether" IsDisabled>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordionListOption>
         <BitAccordionListOption Key="locked" Title="Advanced settings" Description="Open on purpose and staying that way" ReadOnly="true">

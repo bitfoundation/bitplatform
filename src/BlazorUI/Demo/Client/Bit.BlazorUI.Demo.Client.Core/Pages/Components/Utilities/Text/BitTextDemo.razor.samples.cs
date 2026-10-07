@@ -165,8 +165,8 @@ public partial class BitTextDemo
 <div>Hidden: [<BitText Element=""span"" Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Hidden"">Hidden text</BitText>]</div>
 <div>Collapsed: [<BitText Element=""span"" Typography=""BitTypography.Inherit"" Visibility=""BitVisibility.Collapsed"">Collapsed text</BitText>]</div>
 
-<BitText IsEnabled=""false"">Disabled text</BitText>
-<BitText IsEnabled=""false"" Gradient=""linear-gradient(90deg, #7c3aed, #06b6d4)"">Disabled text, keeping its gradient</BitText>";
+<BitText Disabled>Disabled text</BitText>
+<BitText Disabled Gradient=""linear-gradient(90deg, #7c3aed, #06b6d4)"">Disabled text, keeping its gradient</BitText>";
 
     private readonly string example12RazorCode = @"
 <BitParams Parameters=""@textParams"">

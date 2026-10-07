@@ -18,7 +18,7 @@
         <div>
             <b>Min</b>, <b>Max</b> and <b>Step</b> set the scale and the distance between two values the user can
             land on - 0 to 10 stepping by 1 unless you say otherwise. Left unbound the slider keeps its own state,
-            and <b>DefaultValue</b> only picks where that state starts. <b>IsEnabled="false"</b> greys it out and
+            and <b>DefaultValue</b> only picks where that state starts. <b>Disabled</b> greys it out and
             takes it out of the tab order; <b>ReadOnly</b> keeps it at full contrast, focusable and announced, and
             refuses every change.
         </div>
@@ -39,7 +39,7 @@
             <BitSlider Label="Percentage" Min="0" Max="100" Step="10" DefaultValue="40" />
             <br />
             <div>Disabled:</div>
-            <BitSlider Label="Disabled slider" DefaultValue="5" IsEnabled="false" />
+            <BitSlider Label="Disabled slider" DefaultValue="5" Disabled />
             <br />
             <div>ReadOnly:</div>
             <BitSlider Label="ReadOnly slider" DefaultValue="6" ReadOnly />
@@ -75,7 +75,7 @@
             <BitLabel>From @ageBand.Lower to @ageBand.Upper (@ageBand.Length years wide)</BitLabel>
             <br />
             <div>Disabled:</div>
-            <BitSlider Label="Disabled range" IsRanged DefaultLowerValue="2" DefaultUpperValue="5" IsEnabled="false" />
+            <BitSlider Label="Disabled range" IsRanged DefaultLowerValue="2" DefaultUpperValue="5" Disabled />
         </div>
     </DemoExample>
 
@@ -170,7 +170,7 @@
         <div class="example-box row">
             <BitSlider Label="Basic" IsVertical DefaultValue="4" />
 
-            <BitSlider Label="Disabled" IsVertical DefaultValue="4" IsEnabled="false" />
+            <BitSlider Label="Disabled" IsVertical DefaultValue="4" Disabled />
 
             <BitSlider Label="Formatted" IsVertical DefaultValue="2" ValueFormat="0 cm" />
 

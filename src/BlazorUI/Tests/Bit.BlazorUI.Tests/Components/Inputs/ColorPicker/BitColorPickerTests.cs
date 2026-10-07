@@ -512,11 +512,11 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public async Task BitColorPickerShouldRespectIsEnabled(bool isEnabled)
+    public async Task BitColorPickerShouldRespectDisabled(bool isEnabled)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.OnChange, () => { });
@@ -883,7 +883,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowInputsModeSwitch, true);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, disabled is false);
+            parameters.Add(p => p.Disabled, disabled);
 
             if (oneWay)
             {
@@ -1503,7 +1503,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.AutoFocus, autoFocus);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         // bUnit has no focus of its own, so the request is asserted where it is made: the focus call the
@@ -2207,7 +2207,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await com.InvokeAsync(() => com.Instance.FocusAsync());

@@ -765,7 +765,7 @@ public partial class BitFlag : BitComponentBase
 
         ClassBuilder.Register(() => Grayscale ? "bit-flg-gry" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && OnClick.HasDelegate ? "bit-flg-clk" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && OnClick.HasDelegate ? "bit-flg-clk" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -886,7 +886,7 @@ public partial class BitFlag : BitComponentBase
         // A flag that has stopped answering - disabled, or handed a handler no longer there - has
         // nothing left to activate, so a Space it was already holding is forgotten rather than left
         // latched for the release that comes after.
-        if (IsEnabled is false || OnClick.HasDelegate is false)
+        if (Disabled || OnClick.HasDelegate is false)
         {
             _spacePressed = false;
         }
@@ -907,7 +907,7 @@ public partial class BitFlag : BitComponentBase
         // list on every event. A disabled flag is one of those: it activates on nothing, so a Space
         // pressed on it - it can still be focused by name - scrolls the page the way it does anywhere
         // else.
-        var interactive = IsEnabled && OnClick.HasDelegate;
+        var interactive = Disabled is false && OnClick.HasDelegate;
 
         if (interactive == _preventKeysRegistered) return;
 
@@ -1300,7 +1300,7 @@ public partial class BitFlag : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -1310,7 +1310,7 @@ public partial class BitFlag : BitComponentBase
     // listener registered in OnAfterRenderAsync.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Only the press this element saw arms the release that follows: a Space released here after
         // being pressed elsewhere - the focus moved in while the key was already down - is not an
@@ -1329,7 +1329,7 @@ public partial class BitFlag : BitComponentBase
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsSpace(e) is false) return;
 

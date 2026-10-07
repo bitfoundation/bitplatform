@@ -836,7 +836,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
@@ -896,7 +896,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     public async Task OpenCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Assigning the same state over again counts as a change, so an open that is already open would
         // report itself a second time. Every path into here has to be able to fire without checking first:
@@ -962,12 +962,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => HasFocus ? $"bit-tpc-foc {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tpc-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-tpc-req" : string.Empty);
 
         // A read-only picker is not a switched off one: the buttons of the callout carry the disabled
         // attribute there only to keep them from being pressed, and this class takes the look of one back
         // off them.
-        ClassBuilder.Register(() => IsEnabled && ReadOnly ? "bit-tpc-rdl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && ReadOnly ? "bit-tpc-rdl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1068,7 +1068,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // initial document, which the input of an interactively rendered picker is not. A standalone
             // picker carries the value in a hidden input nobody is meant to land on, so the hour input - the
             // first part that is actually on the screen - takes the focus in its place.
-            if (AutoFocus && IsEnabled)
+            if (AutoFocus && Disabled is false)
             {
                 await (Standalone ? _inputHourRef.FocusAsync() : InputElement.FocusAsync());
             }
@@ -1138,7 +1138,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocusIn()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1148,7 +1148,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocusOut()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
         ClassBuilder.Reset();
@@ -1158,7 +1158,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnFocus()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1174,7 +1174,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task CloseCallout(bool restoreFocus)
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // A close that has nothing to close must stay silent, since the keys that dismiss the picker -
         // Escape, Tab - reach here whether or not it was open at the time.
@@ -1195,7 +1195,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -1221,7 +1221,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
@@ -1232,7 +1232,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // through OpenCallout is not a click on it, so it does not raise one.
     private async Task HandleOnClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OpenCallout();
 
@@ -1241,7 +1241,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (Standalone) return;
 
         switch (e.Key)
@@ -1288,7 +1288,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     // to the field. The keydown bubbles up here from whichever part of the callout holds it.
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key == "Escape")
         {
@@ -1311,7 +1311,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             ? e.Key[0] - '0'
             : null;
 
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Closing is not a change, so it stays open to a picker that only shows its value. Alt+Up closes the
         // popup from inside it as it does from the field, and with Alt held neither arrow is a step.
@@ -1684,7 +1684,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _focusedUnit = unit;
         _typedDigitCount = 0;
 
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await _js.BitUtilsSelectText(input);
     }
@@ -2037,7 +2037,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     // Whether the picker currently accepts a change, which is what every pointer, keyboard and button path is
     // gated on so none of them has to repeat the three states that close the picker to the user.
-    private bool IsInteractive => IsEnabled && ReadOnly is false && InvalidValueBinding() is false;
+    private bool IsInteractive => Disabled is false && ReadOnly is false && InvalidValueBinding() is false;
 
     private bool HasActions => ShowNowButton || ShowClearButton;
 
@@ -2096,7 +2096,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private bool ShowsInputClearButton => ShowInputClearButton
                                        && Standalone is false
                                        && ReadOnly is false
-                                       && IsEnabled
+                                       && Disabled is false
                                        && HasValueToClear;
 
     // The format the value is written in: the one the application asked for, otherwise the pattern of the
@@ -2349,7 +2349,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         // The buttons of a read-only picker all sit in the callout, which is moved out of the root while it
         // is open, so the class that keeps them from looking disabled has to be repeated here.
-        if (IsEnabled && ReadOnly)
+        if (Disabled is false && ReadOnly)
         {
             classes.Add("bit-tpc-rdl");
         }

@@ -155,7 +155,7 @@ public class BitModalParamsTests : BunitTestContext
         var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
         {
             parameters.Add(p => p.Name, BitModalParams.ParamName);
-            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, AriaLabel = "App-wide name", IsEnabled = false });
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, AriaLabel = "App-wide name", Disabled = true });
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
             {
                 builder.OpenComponent<BitModalContainer>(0);
@@ -169,7 +169,7 @@ public class BitModalParamsTests : BunitTestContext
         {
             Dir = BitDir.Ltr,
             AriaLabel = "Shown name",
-            IsEnabled = true,
+            Disabled = false,
         });
 
         // The parameters declared on the base component follow the same precedence as the Modal's own: what one
@@ -197,7 +197,7 @@ public class BitModalParamsTests : BunitTestContext
         await modalService.Show(builder => builder.AddContent(0, "shown"), new BitModalParameters
         {
             Dir = BitDir.Rtl,
-            IsEnabled = false,
+            Disabled = true,
         });
 
         // The markers the base component puts on the root off its own parameters are put there for the values a
@@ -219,7 +219,7 @@ public class BitModalParamsTests : BunitTestContext
         var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
         {
             parameters.Add(p => p.Name, BitModalParams.ParamName);
-            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, IsEnabled = false, Visibility = BitVisibility.Hidden });
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, Disabled = true, Visibility = BitVisibility.Hidden });
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
             {
                 builder.OpenComponent<BitModalContainer>(0);
@@ -232,11 +232,11 @@ public class BitModalParamsTests : BunitTestContext
         await modalService.Show(builder => builder.AddContent(0, "shown"), new BitModalParameters
         {
             Dir = BitDir.Ltr,
-            IsEnabled = true,
+            Disabled = false,
             Visibility = BitVisibility.Visible,
         });
 
-        // The base component marks the root off its own IsEnabled, Dir and Visibility, which the app-wide default was
+        // The base component marks the root off its own Disabled, Dir and Visibility, which the app-wide default was
         // written on: none of those marks may be left on a Modal whose showing asked for the opposite - an invisible
         // Modal that still holds the keyboard and the page, first of all.
         component.WaitForAssertion(() =>
@@ -255,7 +255,7 @@ public class BitModalParamsTests : BunitTestContext
         var component = RenderComponent<CascadingValue<BitModalParams>>(parameters =>
         {
             parameters.Add(p => p.Name, BitModalParams.ParamName);
-            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, IsEnabled = false, Visibility = BitVisibility.Hidden });
+            parameters.Add(p => p.Value, new BitModalParams { Dir = BitDir.Rtl, Disabled = true, Visibility = BitVisibility.Hidden });
             parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
             {
                 builder.OpenComponent<BitModal>(0);

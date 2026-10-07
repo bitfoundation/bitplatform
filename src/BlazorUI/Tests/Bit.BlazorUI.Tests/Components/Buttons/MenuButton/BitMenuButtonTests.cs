@@ -35,7 +35,7 @@ public class BitMenuButtonTests : BunitTestContext
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Items, items);
         });
@@ -122,7 +122,7 @@ public class BitMenuButtonTests : BunitTestContext
     {
         BitMenuButtonItem? clickedItem = null;
 
-        items.Last().IsEnabled = itemIsEnabled;
+        items.Last().IsDisabled = itemIsEnabled is false;
 
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
@@ -154,7 +154,7 @@ public class BitMenuButtonTests : BunitTestContext
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitMenuButton = com.Find(".bit-mnb");
@@ -832,7 +832,7 @@ public class BitMenuButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Items, new List<BitMenuButtonItem>
             {
-                new() { Text = "Disabled", Key = "d", IsEnabled = false }
+                new() { Text = "Disabled", Key = "d", IsDisabled = true }
             });
             parameters.Add(p => p.DisabledInteractive, disabledInteractive);
         });
@@ -898,7 +898,7 @@ public class BitMenuButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         foreach (var selector in new[] { ".bit-mnb-opb", ".bit-mnb-chb" })
@@ -933,7 +933,7 @@ public class BitMenuButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DisabledInteractive, true);
         });
 
@@ -968,7 +968,7 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Split, true);
             parameters.Add(p => p.AriaHidden, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DisabledInteractive, true);
         });
 
@@ -1500,7 +1500,7 @@ public class BitMenuButtonTests : BunitTestContext
             Toggle = true,
             Variant = BitVariant.Text,
             AriaLabel = "Test Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -1553,7 +1553,7 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.IsTrue(instance.Toggle);
         Assert.AreEqual(BitVariant.Text, instance.Variant);
         Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

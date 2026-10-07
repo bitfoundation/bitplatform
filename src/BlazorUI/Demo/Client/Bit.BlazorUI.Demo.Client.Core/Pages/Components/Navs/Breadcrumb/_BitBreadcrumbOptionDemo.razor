@@ -2,7 +2,7 @@
     <div>
         The options are written as markup and render in its order. An option with an <b>Href</b> is a link;
         <b>IsSelected</b> marks the current page (<code>aria-current="page"</code>) and <b>SelectedItemAsText</b> renders it
-        as plain text. <b>IsEnabled</b> disables the whole trail or a single option (a disabled link stays a link, announced
+        as plain text. <b>Disabled</b> disables the whole trail and <b>IsDisabled</b> a single option (a disabled link stays a link, announced
         as unavailable), and <b>Target</b> opens a link elsewhere (with <code>rel="noopener noreferrer"</code>).
     </div>
     <br />
@@ -27,7 +27,7 @@
         </div>
         <div>
             <div>Disabled</div>
-            <BitBreadcrumb TItem="BitBreadcrumbOption" IsEnabled="false">
+            <BitBreadcrumb TItem="BitBreadcrumbOption" Disabled>
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
@@ -37,8 +37,8 @@
         <div>
             <div>Option disabled</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption">
-                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IsEnabled="false" />
-                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IsEnabled="false" />
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IsDisabled />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IsDisabled />
                 <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
             </BitBreadcrumb>

@@ -381,9 +381,9 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void ComponentBaseParamsShouldLeaveIsEnabledUnset()
+    public void ComponentBaseParamsShouldLeaveDisabledUnset()
     {
-        Assert.IsNull(new BitButtonParams().IsEnabled);
+        Assert.IsNull(new BitButtonParams().Disabled);
     }
 
     [TestMethod]
@@ -391,21 +391,21 @@ public class BitParamsTests : BunitTestContext
     {
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline, Class = "shared", IsEnabled = false, Dir = BitDir.Rtl }]);
+            builder.Add(p => p.Parameters, [new BitButtonParams { Variant = BitVariant.Outline, Class = "shared", Disabled = true, Dir = BitDir.Rtl }]);
             builder.AddChildContent<StaticButtonHost>();
         });
 
         var button = component.FindComponent<BitButton>().Instance;
 
         Assert.AreEqual(BitVariant.Outline, button.Variant);
-        Assert.IsFalse(button.IsEnabled);
+        Assert.IsTrue(button.Disabled);
         Assert.IsTrue(component.Find("button").ClassList.Contains("shared"));
         Assert.IsTrue(component.Find("button").ClassList.Contains("bit-rtl"));
 
         component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams { Class = "shared" }]));
 
         Assert.IsNull(button.Variant);
-        Assert.IsTrue(button.IsEnabled);
+        Assert.IsFalse(button.Disabled);
         Assert.IsNull(button.Dir);
         Assert.IsTrue(component.Find("button").ClassList.Contains("shared"), "a parameter still supplied stays");
         Assert.IsFalse(component.Find("button").ClassList.Contains("bit-dis"));
