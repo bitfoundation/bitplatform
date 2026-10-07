@@ -867,13 +867,13 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         if (_focusHelp)
         {
             _focusHelp = false;
-            await _helpRef.FocusAsync();
+            await _helpRef.FocusSafelyAsync();
         }
 
         if (_focusFind)
         {
             _focusFind = false;
-            try { await _findRef.FocusAsync(); } catch (JSException) { } // panel may already be gone
+            await _findRef.FocusSafelyAsync();
         }
 
         var config = BuildConfig();
@@ -1496,7 +1496,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     // nothing is announced when focus passes through them.
     private async Task FocusHelpClose()
     {
-        try { await _helpCloseRef.FocusAsync(); } catch (JSException) { }
+        await _helpCloseRef.FocusSafelyAsync();
     }
 
     private async Task CycleMode()

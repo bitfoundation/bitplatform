@@ -595,11 +595,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
         {
             _focusRootPending = false;
 
-            try
-            {
-                await RootElement.FocusAsync();
-            }
-            catch (JSException) { } // the list may have been taken out of the DOM in the meantime
+            await RootElement.FocusSafelyAsync();
         }
 
         // The wrapper of a LoadMoreTemplate is not a real button, so the keys a button is activated by are

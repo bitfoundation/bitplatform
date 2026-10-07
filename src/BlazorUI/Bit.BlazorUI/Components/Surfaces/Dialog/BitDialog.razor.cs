@@ -1031,6 +1031,7 @@ public partial class BitDialog : BitComponentBase
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task SetupFocusTrap()

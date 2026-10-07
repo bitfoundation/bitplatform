@@ -711,13 +711,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (_itemElements.TryGetValue(item, out var element) is false) return;
 
-        try
-        {
-            await element.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the focus call itself failed, which is nothing to tear the navbar down for
-        catch (InvalidOperationException) { } // the element is no longer in the DOM
+        await element.FocusSafelyAsync();
     }
 
     private void OnSetSelectedItem()

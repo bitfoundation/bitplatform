@@ -2282,6 +2282,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
     // move produces; a move that never happens (a disconnected circuit, an element that is no longer on
     // the page) clears it here instead, so it cannot go on to swallow the next focus the user gives.
+    // Failing to move the focus is not fatal, so it is not thrown out of the dismissal that asked for it.
     private async Task RestoreFocusToTrigger()
     {
         _suppressOpenOnFocus = true;
@@ -2293,8 +2294,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         catch
         {
             _suppressOpenOnFocus = false;
-
-            throw;
         }
     }
 
@@ -2706,7 +2705,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await _js.BitUtilsSelectText(element.Value);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no text to select
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no text to select
+        catch (JSException) { } // the input is no longer in the document, failing to select its text is not fatal
     }
 
     private void HandleComboInputFocusOut()
@@ -2720,7 +2720,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // The clear button only renders while there is a text, so activating it removes it from under
         // the focus; the focus moves to the input it emptied instead of dropping to the document body.
-        await _searchInputRef.FocusAsync();
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
@@ -2865,12 +2865,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // that went away in between has to end here rather than throw out of a discarded task.
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _searchInputRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page cannot take the focus
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task ClearComboBoxInput()
@@ -2919,7 +2914,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no value to clear
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no value to clear
+        catch (JSException) { } // the input is no longer in the document, failing to clear it is not fatal
     }
 
     private async ValueTask FocusOnComboBoxInput()
@@ -2929,7 +2925,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Combo is false) return;
         if (_isResponsiveMode) return;
 
-        await _comboBoxInputRef.FocusAsync();
+        await _comboBoxInputRef.FocusSafelyAsync();
     }
 
     // The term the items are actually filtered by. It is null until the typed text is long enough for
@@ -3468,7 +3464,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (_isResponsiveMode && MultiSelect)
         {
-            await _comboBoxInputResponsiveRef.FocusAsync();
+            await _comboBoxInputResponsiveRef.FocusSafelyAsync();
 
             return;
         }

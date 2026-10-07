@@ -988,14 +988,7 @@ public partial class BitRating : BitInputBase<double>
     {
         if (index < 1 || index > _itemRefs.Length) return;
 
-        try
-        {
-            await _itemRefs[index - 1].FocusAsync();
-        }
-        catch (InvalidOperationException)
-        {
-            // The element reference is not attached yet (or anymore), which leaves the focus where it is.
-        }
+        await _itemRefs[index - 1].FocusSafelyAsync();
     }
 
 

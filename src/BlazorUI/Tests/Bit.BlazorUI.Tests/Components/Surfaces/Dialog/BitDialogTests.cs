@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Dialog;
@@ -1930,6 +1931,25 @@ public class BitDialogTests : BunitTestContext
         });
 
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+    }
+
+    [TestMethod]
+    public void BitDialogShouldStillOpenWhenFocusingTheAutoFocusButtonFailsOnTheJsSide()
+    {
+        // A button taken out of the document before the focus call reaches it fails in the browser, which
+        // reaches .NET as a JSException: the Dialog still finishes opening, and nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var opened = 0;
+        RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoFocusButton, BitDialogButton.Cancel);
+            parameters.Add(p => p.OnOpen, () => opened++);
+        });
+
+        Assert.AreEqual(1, opened);
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]

@@ -1390,7 +1390,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         var cleared = await ClearValue();
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
 
         if (cleared)
         {
@@ -1463,7 +1463,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         RevealPassword();
 
         // Swapping the type of an input drops the caret, so the focus is handed back to it explicitly.
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

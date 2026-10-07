@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -712,6 +713,25 @@ public class BitRatingTests : BunitTestContext
         component.Find(".bit-rtg").KeyDown(key);
 
         Assert.AreEqual(expected, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldKeepTheValueWhenTheFocusFailsOnTheJsSide()
+    {
+        // An item taken out of the document before the focus follows the value fails in the browser, which
+        // reaches .NET as a JSException: the value still changes, and nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown("ArrowRight");
+
+        Assert.AreEqual(4, value);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

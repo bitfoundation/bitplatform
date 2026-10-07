@@ -638,12 +638,7 @@ public partial class BitRichTextEditor : BitComponentBase
         if (_pendingPanelFocus is null) return;
         var target = _pendingPanelFocus;
         _pendingPanelFocus = null;
-        try
-        {
-            await target().FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
-        catch (JSException) { } // interop unavailable or the element was not rendered
+        await target().FocusSafelyAsync();
     }
 
     private async Task RaiseErrorAsync(BitRichTextEditorError error)

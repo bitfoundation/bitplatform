@@ -1075,7 +1075,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (Disabled) return;
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnFocus(FocusEventArgs e)
@@ -1152,7 +1152,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         await ClearValue();
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)

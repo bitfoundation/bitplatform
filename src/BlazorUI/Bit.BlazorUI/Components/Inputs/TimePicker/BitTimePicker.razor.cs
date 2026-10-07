@@ -1069,7 +1069,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // first part that is actually on the screen - takes the focus in its place.
             if (AutoFocus && Disabled is false)
             {
-                await (Standalone ? _inputHourRef.FocusAsync() : InputElement.FocusAsync());
+                await (Standalone ? _inputHourRef : InputElement).FocusSafelyAsync();
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1496,11 +1496,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     // The time inputs are the part of an opened picker the keyboard acts on, so the first of them takes the
@@ -1509,11 +1505,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (AllowTextInput || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _inputHourRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await _inputHourRef.FocusSafelyAsync();
     }
 
     private async Task UpdateCurrentValue()
@@ -1733,11 +1725,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await input.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await input.FocusSafelyAsync();
     }
 
     private async Task HandleOnTimeInputWheel(WheelEventArgs e, TimeUnit unit)

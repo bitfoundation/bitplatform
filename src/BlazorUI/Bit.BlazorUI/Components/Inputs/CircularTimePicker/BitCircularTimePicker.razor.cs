@@ -905,7 +905,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             // that is actually on the screen - takes the focus in its place.
             if (AutoFocus && Disabled is false)
             {
-                await (Standalone ? _clockRef.FocusAsync() : InputElement.FocusAsync());
+                await (Standalone ? _clockRef : InputElement).FocusSafelyAsync();
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -2068,11 +2068,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the input
@@ -2088,11 +2084,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _clockRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await _clockRef.FocusSafelyAsync();
     }
 
     private string? GetHourButtonStyle()

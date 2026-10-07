@@ -1022,11 +1022,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsDisposed) return;
 
-        try
-        {
-            await _buttonRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await _buttonRef.FocusSafelyAsync();
     }
 
     private async Task<bool> CalloutContainsFocus()

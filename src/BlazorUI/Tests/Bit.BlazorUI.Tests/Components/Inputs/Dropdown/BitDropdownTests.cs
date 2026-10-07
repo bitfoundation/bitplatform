@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -2419,6 +2420,84 @@ public class BitDropdownTests : BunitTestContext
 
         Assert.IsTrue(component.Instance.IsOpen);
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldStayOpenWhenFocusingTheSearchBoxFailsOnTheJsSide()
+    {
+        // A search box taken out of the document before the focus call reaches it fails in the browser,
+        // which reaches .NET as a JSException: the callout still opens, and nothing is thrown.
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldClearTheSearchBoxWhenFocusingItFailsOnTheJsSide()
+    {
+        // The clear button hands the focus back to the search box it emptied; a search box that left the
+        // document in between fails that focus in the browser, which must not fail the clear itself.
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Input("ap");
+
+        component.Find(".bit-drp-sbc").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(0, component.FindAll(".bit-drp-sbc").Count);
+        Assert.IsTrue(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count > 0);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldCloseOnEscapeWhenRestoringTheFocusFailsOnTheJsSide()
+    {
+        // Dismissing the callout hands the focus back to the trigger; a trigger that is no longer in the
+        // document fails that focus in the browser, which must not fail the dismissal itself.
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OpenOnFocus, true);
+        });
+
+        component.Find(".bit-drp-wrp").FocusIn();
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // The move never happened, so there is no focus event of its own to swallow: the next focus is
+        // the user coming in, and it opens the callout.
+        component.Find(".bit-drp-wrp").FocusIn();
+        Assert.IsTrue(component.Instance.IsOpen);
     }
 
     [TestMethod]

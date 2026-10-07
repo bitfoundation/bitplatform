@@ -1559,12 +1559,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task FocusOverflowButton()
     {
-        try
-        {
-            await _overflowButtonRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
-        catch (JSException) { } // the button may already be gone with the items it collapsed
+        await _overflowButtonRef.FocusSafelyAsync();
     }
 
     private string GetItemKey(TItem item, string defaultKey)

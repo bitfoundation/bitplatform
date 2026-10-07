@@ -60,7 +60,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
     public ValueTask FocusAsync()
     {
-        return _itemRef.FocusAsync();
+        return _itemRef.FocusSafelyAsync();
     }
 
     public async Task CloseSubmenuAsync()

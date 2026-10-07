@@ -1620,11 +1620,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (Split)
         {
-            await _chevronButtonRef.FocusAsync();
+            await _chevronButtonRef.FocusSafelyAsync();
         }
         else
         {
-            await _operatorButtonRef.FocusAsync();
+            await _operatorButtonRef.FocusSafelyAsync();
         }
     }
 

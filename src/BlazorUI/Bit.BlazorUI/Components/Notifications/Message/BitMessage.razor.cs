@@ -798,7 +798,7 @@ public partial class BitMessage : BitComponentBase
 
         _autoFocusDone = true;
 
-        await RootElement.FocusAsync();
+        await RootElement.FocusSafelyAsync();
     }
 
     // Whether the single line is clipped is something only the browser can tell, so a message that can fold or

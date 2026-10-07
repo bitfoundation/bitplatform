@@ -1622,7 +1622,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // Clicking the input itself already focused it, so the interop round trip is skipped there.
         if (Disabled || HideInput || _hasFocus) return;
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     /// <summary>
@@ -1826,7 +1826,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // is then a real tab stop - takes the focus instead.
         if (HideInput)
         {
-            await (isIncrement ? _buttonIncrement : _buttonDecrement).FocusAsync();
+            await (isIncrement ? _buttonIncrement : _buttonDecrement).FocusSafelyAsync();
         }
         else
         {
@@ -1840,7 +1840,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             }
             else if (_hasFocus is false)
             {
-                await InputElement.FocusAsync();
+                await InputElement.FocusSafelyAsync();
             }
 
             // Since the press no longer moves focus out of the input, the browser no longer raises the
@@ -1932,7 +1932,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         await ClearValue();
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
 
         await OnClear.InvokeAsync();
     }

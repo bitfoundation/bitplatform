@@ -1372,7 +1372,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // is meant to land on, so it has nothing to focus.
                 if (AutoFocus && Disabled is false && Standalone is false)
                 {
-                    await InputElement.FocusAsync();
+                    await InputElement.FocusSafelyAsync();
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1394,11 +1394,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             _focusTimePickerAfterRender = false;
 
-            try
-            {
-                await _inputTimeHourRef.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _inputTimeHourRef.FocusSafelyAsync();
         }
     }
 
@@ -1819,11 +1815,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
         if (IsOpen) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnFocusIn()
@@ -1895,11 +1887,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _second = 0;
         _focusedDate = null;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
 
         await OnClear.InvokeAsync();
     }
@@ -2032,11 +2020,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             // handed back to the input - otherwise a keyboard selection drops the focus onto the body.
             if (IsOpen is false)
             {
-                try
-                {
-                    await InputElement.FocusAsync();
-                }
-                catch (JSDisconnectedException) { } // we can ignore this exception here
+                await InputElement.FocusSafelyAsync();
             }
         }
 
