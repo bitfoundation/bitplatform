@@ -4,12 +4,16 @@
 @* The library, by category. This used to be every one of the ~110 component names written out by
    hand - a list that had to be edited alongside the nav, could not be searched, and told a reader
    nothing about what any of them did. The names now live on /components, which is searchable and
-   built from the same source as the nav; this is the way in. *@
-<BitText Element="h2" Typography="BitTypography.H3">@ComponentCatalog.Items.Count components, in @ComponentCatalog.Categories.Count categories</BitText>
-<BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="categories-lead">
-    Everything an application UI is made of - and a few things it usually is not, like a pure-C# PDF
-    viewer, a native charting component and a full scheduler.
-</BitText>
+   built from the same source as the nav; this is the way in.
+   The heading pair sits in a plain div so the lead, a BitText, has an ancestor carrying this file's
+   scope attribute for its ::deep rule to reach it through. *@
+<div>
+    <BitText Element="h2" Typography="BitTypography.H3">@ComponentCatalog.Items.Count components, in @ComponentCatalog.Categories.Count categories</BitText>
+    <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="categories-lead">
+        Everything an application UI is made of - and a few things it usually is not, like a pure-C# PDF
+        viewer, a native charting component and a full scheduler.
+    </BitText>
+</div>
 
 <div class="category-grid">
     @foreach (var category in ComponentCatalog.Categories)

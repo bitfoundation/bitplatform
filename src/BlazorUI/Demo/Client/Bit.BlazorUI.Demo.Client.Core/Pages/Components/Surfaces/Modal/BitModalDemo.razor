@@ -627,38 +627,40 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenStyles = true">Styles</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => isOpenClasses = true">Classes</BitButton>
             </div>
-            <BitModal @bind-IsOpen="isOpenStyle" Style="box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;">
-                <div class="modal-content">
-                    <BitText Typography="BitTypography.H6">Styled root</BitText>
-                    <BitButton OnClick="() => isOpenStyle = false">Close</BitButton>
-                </div>
-            </BitModal>
-            <BitModal @bind-IsOpen="isOpenClass" Class="custom-class">
-                <div class="modal-content">
-                    <BitText Typography="BitTypography.H6">Classed root</BitText>
-                    <BitButton OnClick="() => isOpenClass = false">Close</BitButton>
-                </div>
-            </BitModal>
-            <BitModal @bind-IsOpen="isOpenStyles"
-                      MaxWidth="32rem"
-                      ShowCloseButton
-                      HeaderText="Styled parts"
-                      Styles="@(new() { Overlay = "background-color: #4776f433;",
-                                        Content = "box-shadow: 0 0 1rem tomato;",
-                                        Header = "color: tomato;" })">
-                <BitText>The overlay, the content and the header each take a style of their own.</BitText>
-            </BitModal>
-            <BitModal @bind-IsOpen="isOpenClasses"
-                      MaxWidth="32rem"
-                      ShowCloseButton
-                      HeaderText="Classed parts"
-                      FooterText="This is a footer text!"
-                      Classes="@(new() { Overlay = "custom-overlay",
-                                         HeaderContainer = "custom-header-container",
-                                         Body = "custom-body",
-                                         Footer = "custom-footer" })">
-                <BitText>The overlay, the header container, the body and the footer each take a class of their own.</BitText>
-            </BitModal>
+            <div>
+                <BitModal @bind-IsOpen="isOpenStyle" Style="box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;">
+                    <div class="modal-content">
+                        <BitText Typography="BitTypography.H6">Styled root</BitText>
+                        <BitButton OnClick="() => isOpenStyle = false">Close</BitButton>
+                    </div>
+                </BitModal>
+                <BitModal @bind-IsOpen="isOpenClass" Class="custom-class">
+                    <div class="modal-content">
+                        <BitText Typography="BitTypography.H6">Classed root</BitText>
+                        <BitButton OnClick="() => isOpenClass = false">Close</BitButton>
+                    </div>
+                </BitModal>
+                <BitModal @bind-IsOpen="isOpenStyles"
+                          MaxWidth="32rem"
+                          ShowCloseButton
+                          HeaderText="Styled parts"
+                          Styles="@(new() { Overlay = "background-color: #4776f433;",
+                                            Content = "box-shadow: 0 0 1rem tomato;",
+                                            Header = "color: tomato;" })">
+                    <BitText>The overlay, the content and the header each take a style of their own.</BitText>
+                </BitModal>
+                <BitModal @bind-IsOpen="isOpenClasses"
+                          MaxWidth="32rem"
+                          ShowCloseButton
+                          HeaderText="Classed parts"
+                          FooterText="This is a footer text!"
+                          Classes="@(new() { Overlay = "custom-overlay",
+                                             HeaderContainer = "custom-header-container",
+                                             Body = "custom-body",
+                                             Footer = "custom-footer" })">
+                    <BitText>The overlay, the header container, the body and the footer each take a class of their own.</BitText>
+                </BitModal>
+            </div>
             <br /><br />
             <div>
                 The public <b>--bit-Modal-*</b> variables (listed under CSS variables below) inherit, so one set on

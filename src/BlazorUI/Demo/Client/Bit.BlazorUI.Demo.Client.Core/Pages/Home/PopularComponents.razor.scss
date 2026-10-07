@@ -13,7 +13,9 @@
     }
 }
 
-.showcase-lead {
+// A BitText, whose root does not carry this file's scope attribute - so ::deep, reached through the
+// .showcase-picker div around it.
+::deep .showcase-lead {
     margin-top: $doc-space-2xs;
 }
 
