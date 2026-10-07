@@ -117,6 +117,29 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task TheCertificatePrompt_Should_ComeBeforeTheLongInstalls()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("aspire");
+        host.Runner.On("dotnet", "dev-certs https --check", 1);
+        var needs = new ToolNeeds { Aspire = true };
+        var context = new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner));
+        var checks = (await CheckAsync(host, needs)).Where(c => c.Tool.Id is "aspire" or "dev-cert").ToList();
+
+        var first = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, first).InstallAsync(checks, context, CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "dev-cert", "aspire" }, first.Reports.Select(r => r.Id).ToArray());
+
+        var sdk = new ToolCheck(ToolCatalog.Find("dotnet-sdk")!, ToolStatus.Missing(), true, "", new ToolAction { ToolId = "dotnet-sdk", Title = "Install the .NET SDK", Commands = [new ProcessSpec { FileName = "dotnet-install" }] }, null);
+        var afterSdk = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, afterSdk).InstallAsync([sdk, .. checks], context, CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "dotnet-sdk", "aspire", "dev-cert" }, afterSdk.Reports.Select(r => r.Id).ToArray());
+    }
+
+    [TestMethod]
     public async Task NuGetOrg_Should_BeAddedOrEnabledWhenItIsNotUsable()
     {
         using var host = new TestHost(HostOs.Linux);

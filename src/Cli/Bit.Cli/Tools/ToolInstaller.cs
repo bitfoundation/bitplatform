@@ -21,6 +21,12 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         if (withActions.Count == 0)
             return;
 
+        if (withActions.FirstOrDefault(c => c.Tool.Id is "dev-cert") is { } certificate && withActions.Any(c => c.Tool.Id is "dotnet-sdk") is false)
+        {
+            await RunActionAsync(certificate.Action!, useSudo: false, cancellationToken);
+            withActions.Remove(certificate);
+        }
+
         if (cli.Environment.IsWindows)
         {
             var adminActions = withActions.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Admin).ToList();
