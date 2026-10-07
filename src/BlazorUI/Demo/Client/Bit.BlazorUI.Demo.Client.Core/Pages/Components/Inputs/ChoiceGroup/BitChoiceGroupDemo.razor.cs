@@ -145,12 +145,12 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it; Start also aligns the items to the end of the group. Items rendered as image or icon tiles lay their own content out and ignore this parameter.",
+            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it; Start also aligns the items to the end of the group. Items rendered as image or icon tiles lay their own content out and ignore this parameter. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -241,7 +241,7 @@ public partial class BitChoiceGroupDemo
             Name = "StretchItemLabel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stretches the label of each item over the full width of its row and spreads its content, which puts the circle at the far edge of the row instead of right beside the item text. Combined with FullWidth and LabelPosition.Start it produces the text-at-the-start, circle-at-the-end list found in settings pages."
+            Description = "Stretches the label of each item over the full width of its row and spreads its content, which puts the circle at the far edge of the row instead of right beside the item text. Combined with FullWidth and LabelPlacement.Start it produces the text-at-the-start, circle-at-the-end list found in settings pages."
         },
         new()
         {
@@ -504,7 +504,7 @@ public partial class BitChoiceGroupDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitLabelPosition("Defines where the content of an item is rendered relative to its radio circle."),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize(),
         new()
         {
@@ -573,10 +573,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether the BitChoiceGroup item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether the BitChoiceGroup item is disabled.",
                },
                new()
                {
@@ -723,10 +723,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether the BitChoiceGroup option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether the BitChoiceGroup option is disabled.",
                },
                new()
                {
@@ -873,10 +873,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.IsEnabled))",
-                   Description = "Whether the BitChoiceGroup option is enabled.",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class.",
                },
                new()
                {

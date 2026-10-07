@@ -129,7 +129,7 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        foreach (var expected in new[] { "Class", "Style", "Id", "IsEnabled", "Dir", "Visibility", "HtmlAttributes", "AriaLabel" })
+        foreach (var expected in new[] { "Class", "Style", "Id", "Disabled", "Dir", "Visibility", "HtmlAttributes", "AriaLabel" })
         {
             CollectionAssert.Contains(parameters, expected, $"BitComponentBase no longer documents {expected}.");
         }
@@ -383,7 +383,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitNavPanel", "BitNavPanelParams")]
     [DataRow("BitVirtualize", "BitVirtualizeParams")]
     [DataRow("BitPhoneInput", "BitPhoneInputParams")]
-    [DataRow("BitTextField", "BitTextFieldParams")]
+    [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitFlag", "BitFlagParams")]
     [DataRow("BitMessageBox", "BitMessageBoxParams")]
@@ -391,6 +391,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitErrorBoundary", "BitErrorBoundaryParams")]
     [DataRow("BitChart", "BitChartParams")]
     [DataRow("BitMap", "BitMapParams")]
+    [DataRow("BitToggle", "BitToggleParams")]
     public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
@@ -408,7 +409,7 @@ public class ComponentCatalogTests : McpTestBase
 
         // The line is only worth its cost where it is true: a component with no params class of its
         // own must not carry it.
-        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitToggle" });
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitThemeSwitcher" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
     }
@@ -507,7 +508,7 @@ public class ComponentCatalogTests : McpTestBase
     /// <summary>
     /// The members a params object takes from <c>BitComponentBaseParams</c>, which its own answer
     /// would otherwise leave out: the tables are read with <c>DeclaredOnly</c>, so a type whose base
-    /// is a real class answers as if <c>Class</c>, <c>Style</c> and <c>IsEnabled</c> were not on it
+    /// is a real class answers as if <c>Class</c>, <c>Style</c> and <c>Disabled</c> were not on it
     /// - while the component's own answer counts them in the total it quotes.
     /// </summary>
     [TestMethod]
@@ -520,7 +521,7 @@ public class ComponentCatalogTests : McpTestBase
         using var scope = Assert.Scope();
 
         StringAssert.Contains(answer, "Inherited from `BitComponentBaseParams`", $"{paramsType} does not name the base it takes members from.");
-        StringAssert.Contains(answer, "`IsEnabled`", $"{paramsType} answers without the inherited members.");
+        StringAssert.Contains(answer, "`Disabled`", $"{paramsType} answers without the inherited members.");
         StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitComponentBaseParams\")", $"{paramsType} does not say where the inherited members are documented.");
     }
 

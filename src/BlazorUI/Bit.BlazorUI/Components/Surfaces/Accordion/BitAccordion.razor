@@ -33,9 +33,9 @@
                     aria-describedby="@(_DescribesByDescription ? _DescriptionId : null)"
                     aria-expanded="@(IsExpanded ? "true" : "false")"
                     aria-controls="@_ContentId"
-                    aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
+                    aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"
                     aria-busy="@(_IsBusy ? "true" : null)"
-                    tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")">
+                    tabindex="@(Disabled ? "-1" : (TabIndex ?? "0"))">
                 @if (HeaderTemplate is not null)
                 {
                     @HeaderTemplate(IsExpanded)

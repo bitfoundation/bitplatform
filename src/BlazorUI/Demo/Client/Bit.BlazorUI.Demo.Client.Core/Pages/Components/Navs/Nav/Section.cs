@@ -6,7 +6,7 @@ public class Section
     public string? ImageName { get; set; }
     public BitIconInfo? Icon { get; set; }
     public string? Url { get; set; }
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
     public bool IsExpanded { get; set; }
     public bool IsDivider { get; set; }
     public List<Section> Links { get; set; } = [];

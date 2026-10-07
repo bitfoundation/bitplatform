@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitVirtualizeStylesheetTests
     [TestMethod]
     public void BitVirtualizeShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Virtualize-* variable is declared, which stops it inheriting.");
     }
@@ -56,26 +54,26 @@ public partial class BitVirtualizeStylesheetTests
     public void BitVirtualizeShouldRingTheListAndItsItemsInsideTheirBox()
     {
         var stylesheet = ReadStylesheet();
-        var ring = Block(stylesheet, "\n@mixin vir-ring {");
+        var ring = SourceFiles.GetScssBlock(stylesheet, "\n@mixin vir-ring {");
 
         // The list clips what overflows it and the items are flush with each other, so the ring is drawn inside, as an
         // outline that is painted above the content of the item.
-        StringAssert.Contains(Block(stylesheet, "\n@mixin vir-focus-ring {"), "&:focus-visible {");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@mixin vir-focus-ring {"), "&:focus-visible {");
         StringAssert.Contains(ring, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
         Assert.IsFalse(ring.Contains("box-shadow"), "The ring is a box-shadow, which the content of an item covers.");
 
         // The forced palette turns the ring into the system's own focus color.
         StringAssert.Contains(ring, "outline: #{$shp-focus-ring-width} solid Highlight;");
 
-        StringAssert.Contains(Block(stylesheet, "\n.bit-vir {"), "@include vir-focus-ring;");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-vir-itm {"), "@include vir-focus-ring;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir {"), "@include vir-focus-ring;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir-itm {"), "@include vir-focus-ring;");
     }
 
     [TestMethod]
     public void BitVirtualizeStickyItemShouldShowTheRingOfTheFocusedItemItCovers()
     {
         // The pinned copy sits above the real item, so the ring of the item would be hidden under it.
-        var copy = Block(ReadStylesheet(), "\n.bit-vir-spc:has(> .bit-vir-blk > .bit-vir-itm[tabindex=\"0\"]:focus-visible) > .bit-vir-sac {");
+        var copy = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-vir-spc:has(> .bit-vir-blk > .bit-vir-itm[tabindex=\"0\"]:focus-visible) > .bit-vir-sac {");
 
         StringAssert.Contains(copy, "@include vir-ring;");
     }
@@ -83,21 +81,9 @@ public partial class BitVirtualizeStylesheetTests
     [TestMethod]
     public void BitVirtualizeStickyItemShouldHideTheItemsScrollingUnderIt()
     {
-        var sticky = Block(ReadStylesheet(), "\n.bit-vir-stk {");
+        var sticky = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-vir-stk {");
 
         StringAssert.Contains(sticky, "background: var(--bit-Virtualize-sticky-background, #{$clr-bg-pri});");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
     }
 
     private static string[] DocumentedVariables(string stylesheet)
@@ -105,21 +91,7 @@ public partial class BitVirtualizeStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what is not a comment is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "Virtualize", "BitVirtualize.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Virtualize", "BitVirtualize.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Virtualize-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

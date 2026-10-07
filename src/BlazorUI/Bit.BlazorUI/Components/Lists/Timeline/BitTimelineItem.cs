@@ -48,9 +48,9 @@ public class BitTimelineItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the timeline item is enabled.
+    /// Whether or not the timeline item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the timeline item.
@@ -60,7 +60,7 @@ public class BitTimelineItem
     /// <summary>
     /// The way the connecting line of the timeline item is painted, overriding the line variant of the timeline.
     /// </summary>
-    public BitTimelineLineVariant? LineVariant { get; set; }
+    public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Click event handler of the timeline item.

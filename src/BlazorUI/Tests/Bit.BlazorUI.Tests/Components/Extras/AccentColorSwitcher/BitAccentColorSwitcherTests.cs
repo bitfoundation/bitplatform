@@ -84,13 +84,13 @@ public class BitAccentColorSwitcherTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitAccentColorSwitcherShouldRespectIsEnabled(bool isEnabled)
+    public void BitAccentColorSwitcherShouldRespectDisabled(bool isEnabled)
     {
         RegisterServices();
 
         var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-acs");

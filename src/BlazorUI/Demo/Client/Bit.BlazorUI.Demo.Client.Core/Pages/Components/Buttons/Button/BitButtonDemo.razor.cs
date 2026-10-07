@@ -9,7 +9,7 @@ public partial class BitButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when IsEnabled is false, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
+            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when Disabled is true, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
         },
         new()
         {
@@ -172,12 +172,12 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content. The default value is Start.",
+            Description = "Gets or sets the position of the icon relative to the component's content. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -209,12 +209,12 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading Label in regards to the spinner icon.",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "The position of the loading Label in regards to the spinner icon. Only Top, Bottom, Start and End are honoured; any other value falls back to the default.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -442,8 +442,7 @@ public partial class BitButtonDemo
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitButtonType(),
-        DemoSharedEnums.BitIconPosition(),
-        DemoSharedEnums.BitLabelPosition(),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitPosition(),
     ];

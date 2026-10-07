@@ -12,8 +12,8 @@ public partial class _BitNavOptionDemo
                 <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
-            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
         </BitNavOption>
         <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
@@ -37,8 +37,8 @@ public partial class _BitNavOptionDemo
                 <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
-            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
         </BitNavOption>
         <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
@@ -169,7 +169,7 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     </BitNavOption>
     <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" />
     <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" />
-    <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+    <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsDisabled />
     <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" />
 </BitNav>";
     private readonly string example5CsharpCode = @"
@@ -208,8 +208,8 @@ private bool iconOnly;";
                 <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
-            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
         </BitNavOption>
         <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
@@ -417,13 +417,13 @@ private BitNavOption SelectedOption = default!;";
 @* The URL of a Wildcard or Regex option is a pattern rather than a route, so these options are
    disabled: they still light up on a match, but a click cannot navigate to a URL no page answers. *@
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Wildcard"" FitWidth>
-    <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" IsEnabled=""false"" />
-    <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" IsEnabled=""false"" />
+    <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" IsDisabled />
+    <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" IsDisabled />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Regex"" FitWidth>
-    <BitNavOption Text=""Nav or NavBar (^/components/nav(bar)?$)"" IconName=""@BitIconName.GlobalNavButton"" Url=""^/components/nav(bar)?$"" IsEnabled=""false"" />
-    <BitNavOption Text=""A page starting with P (^/components/p)"" IconName=""@BitIconName.Page"" Url=""^/components/p"" IsEnabled=""false"" />
+    <BitNavOption Text=""Nav or NavBar (^/components/nav(bar)?$)"" IconName=""@BitIconName.GlobalNavButton"" Url=""^/components/nav(bar)?$"" IsDisabled />
+    <BitNavOption Text=""A page starting with P (^/components/p)"" IconName=""@BitIconName.Page"" Url=""^/components/p"" IsDisabled />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Exact"" FitWidth>
@@ -635,8 +635,8 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
                     <BitNavOption Text=""نمونه ی AdminPanel"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
                 </BitNavOption>
                 <BitNavOption Text=""رابط کاربری Blazor"" IconName=""@BitIconName.F12DevTools"" Url=""https://blazorui.bitplatform.dev/"" Target=""_blank"" />
-                <BitNavOption Text=""راه های هاست ابری"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
-                <BitNavOption Text=""آکادمی بیت"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+                <BitNavOption Text=""راه های هاست ابری"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
+                <BitNavOption Text=""آکادمی بیت"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
             </BitNavOption>
             <BitNavOption Text=""قیمت"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
             <BitNavOption Text=""درباره ما"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />

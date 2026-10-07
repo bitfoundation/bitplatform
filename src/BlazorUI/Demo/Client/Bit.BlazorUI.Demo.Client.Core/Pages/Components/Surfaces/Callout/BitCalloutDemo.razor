@@ -18,7 +18,7 @@
         <div>
             The <b>Anchor</b> positions and toggles the callout; put a focusable trigger (a button) in it. <b>Content</b>
             is what it holds. <b>NoOverlay</b> leaves the page clickable while it is open, <b>DefaultIsOpen</b> sets the
-            state it starts in, and <b>IsEnabled="false"</b> turns it off entirely.
+            state it starts in, and <b>Disabled</b> turns it off entirely.
         </div>
         <br />
         <div class="example-box">
@@ -49,9 +49,9 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout IsEnabled="false">
+            <BitCallout Disabled>
                 <Anchor>
-                    <BitButton IsEnabled="false">Disabled</BitButton>
+                    <BitButton Disabled>Disabled</BitButton>
                 </Anchor>
                 <Content>
                     <div class="callout-content">Never shown.</div>
@@ -217,8 +217,8 @@
 
     <DemoExample Title="Placement" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            <b>Side</b> asks for a side and flips to the opposite one when there is no room, unless <b>NoFlip</b>; without
-            a Side, <b>Direction</b> picks among top and bottom (the default) or <b>All</b> sides. <b>Alignment</b> lines
+            <b>Placement</b> asks for a side and flips to the opposite one when there is no room, unless <b>NoFlip</b>; without
+            a Placement, <b>Direction</b> picks among top and bottom (the default) or <b>All</b> sides. <b>Alignment</b> lines
             it up across that side, <b>AlignmentOffset</b> slides it inwards, <b>Gap</b> spaces it from the anchor and
             <b>CollisionPadding</b> from the screen edges.
         </div>
@@ -236,10 +236,10 @@
                 <BitChoiceGroupOption Text="Start" Value="@("Start")" />
                 <BitChoiceGroupOption Text="End" Value="@("End")" />
             </BitChoiceGroup>
-            <BitChoiceGroup Horizontal Label="Alignment" TItem="BitChoiceGroupOption<BitCalloutAlignment>" TValue="BitCalloutAlignment" @bind-Value="placementAlignment">
-                <BitChoiceGroupOption Text="Start" Value="BitCalloutAlignment.Start" />
-                <BitChoiceGroupOption Text="Center" Value="BitCalloutAlignment.Center" />
-                <BitChoiceGroupOption Text="End" Value="BitCalloutAlignment.End" />
+            <BitChoiceGroup Horizontal Label="Alignment" TItem="BitChoiceGroupOption<BitPlacement>" TValue="BitPlacement" @bind-Value="placementAlignment">
+                <BitChoiceGroupOption Text="Start" Value="BitPlacement.Start" />
+                <BitChoiceGroupOption Text="Center" Value="BitPlacement.Center" />
+                <BitChoiceGroupOption Text="End" Value="BitPlacement.End" />
             </BitChoiceGroup>
             <BitNumberField Label="Gap" @bind-Value="placementGap" Min="0" Max="64" Style="max-width:8rem" />
             <BitNumberField Label="AlignmentOffset" @bind-Value="placementOffset" Min="0" Max="64" Style="max-width:8rem" />
@@ -247,7 +247,7 @@
         </div>
         <br />
         <div class="example-box">
-            <BitCallout Side="PlacementSide" Alignment="placementAlignment" Gap="placementGap" AlignmentOffset="placementOffset" NoFlip="placementNoFlip">
+            <BitCallout Placement="PlacementSide" Alignment="placementAlignment" Gap="placementGap" AlignmentOffset="placementOffset" NoFlip="placementNoFlip">
                 <Anchor>
                     <BitButton>A wide anchor to place against</BitButton>
                 </Anchor>
@@ -286,7 +286,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout @ref="callout4" Side="BitCalloutSide.Top" Gap="8">
+            <BitCallout @ref="callout4" Placement="BitPlacement.Top" Gap="8">
                 <Anchor>
                     <BitButton Variant="BitVariant.Outline">Reposition</BitButton>
                 </Anchor>
@@ -357,7 +357,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout ShowArrow Gap="8" Side="BitCalloutSide.End" Border="BitColorKind.Secondary" Background="BitColorKind.Secondary">
+            <BitCallout ShowArrow Gap="8" Placement="BitPlacement.End" Border="BitColorKind.Secondary" Background="BitColorKind.Secondary">
                 <Anchor>
                     <BitButton Variant="BitVariant.Outline">Beside, with a border</BitButton>
                 </Anchor>
@@ -501,11 +501,11 @@
     <DemoExample Title="Responsive" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>ResponsiveMode</b> turns the callout into a swipeable panel under 600px: <b>Panel</b> slides in from the
-            <b>PanelPosition</b> edge, while <b>Top</b> and <b>Bottom</b> are sheets. Resize the window to see it.
+            <b>PanelPlacement</b> edge, while <b>Top</b> and <b>Bottom</b> are sheets. Resize the window to see it.
         </div>
         <br />
         <div class="example-box">
-            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPosition="BitPanelPosition.End">
+            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPlacement="BitPlacement.End">
                 <Anchor>
                     <BitButton>End panel</BitButton>
                 </Anchor>
@@ -520,7 +520,7 @@
                 </Content>
             </BitCallout>
 
-            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPosition="BitPanelPosition.Start">
+            <BitCallout ResponsiveMode="BitResponsiveMode.Panel" PanelPlacement="BitPlacement.Start">
                 <Anchor>
                     <BitButton>Start panel</BitButton>
                 </Anchor>
@@ -648,7 +648,7 @@
                             <BitCheckbox Label="Active" />
                             <BitCheckbox Label="Archived" />
 
-                            <BitCallout ShowArrow Gap="8" Side="BitCalloutSide.End">
+                            <BitCallout ShowArrow Gap="8" Placement="BitPlacement.End">
                                 <Anchor>
                                     <BitButton Variant="BitVariant.Outline">More options</BitButton>
                                 </Anchor>
@@ -657,7 +657,7 @@
                                         <BitStack Gap="0.25rem">
                                             <BitText>The panel behind is still open.</BitText>
 
-                                            <BitCallout ShowArrow Gap="8" AutoClose Side="BitCalloutSide.End">
+                                            <BitCallout ShowArrow Gap="8" AutoClose Placement="BitPlacement.End">
                                                 <Anchor>
                                                     <BitButton Variant="BitVariant.Text">One more level</BitButton>
                                                 </Anchor>
@@ -753,9 +753,9 @@
                     </Content>
                 </BitCallout>
 
-                <BitCallout Side="BitCalloutSide.Bottom" ShowArrow="false">
+                <BitCallout Placement="BitPlacement.Bottom" ShowArrow="false">
                     <Anchor>
-                        <BitButton Variant="BitVariant.Text">Own Side, no arrow</BitButton>
+                        <BitButton Variant="BitVariant.Text">Own Placement, no arrow</BitButton>
                     </Anchor>
                     <Content>
                         <div class="callout-content">Its own values win.</div>

@@ -34,7 +34,7 @@ public partial class BitShimmerDemo
             Name = "Circle",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the shimmer as a circle. Short form of Shape=\"BitShimmerShape.Circle\", which wins over it."
+            Description = "Renders the shimmer as a circle. Short form of Shape=\"BitShape.Circle\", which wins over it."
         },
         new()
         {
@@ -178,7 +178,7 @@ public partial class BitShimmerDemo
         new()
         {
             Name = "Shape",
-            Type = "BitShimmerShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
             Description = "The shape of the placeholder: Rounded, Square, Pill or Circle.",
             LinkType = LinkType.Link,
@@ -372,39 +372,7 @@ public partial class BitShimmerDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitShimmerShape",
-            Description = "Determines the shape of the placeholder the BitShimmer draws.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Rounded",
-                    Description="A rectangle with the surface corner radius of the theme, which is what a line of text or a block of content reads as.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Square",
-                    Description="A rectangle with no corner radius at all, for content that meets its container edge to edge.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Pill",
-                    Description="A rectangle with fully rounded ends, which is what a button, a tag or a chip reads as.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Circle",
-                    Description="A circle, which is what an avatar or a round icon reads as. It takes its diameter from whichever of the height and the width is set, and ignores Lines.",
-                    Value="3",
-                }
-            ]
-        },
+        DemoSharedEnums.BitShape(),
         DemoSharedEnums.BitSize(description: "Determines the default height of a line and the default diameter of a circle."),
         DemoSharedEnums.BitPoliteness(),
         DemoSharedEnums.BitColor(),

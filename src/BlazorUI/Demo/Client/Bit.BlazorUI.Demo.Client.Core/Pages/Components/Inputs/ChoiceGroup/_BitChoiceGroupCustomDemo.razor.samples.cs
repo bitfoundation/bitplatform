@@ -30,7 +30,7 @@ private readonly List<Order> basicCustoms =
 
     private readonly string example2RazorCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
-                IsEnabled=""false""
+                Disabled
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
@@ -40,7 +40,7 @@ private readonly List<Order> basicCustoms =
                 DefaultValue=""@(""A"")""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
-                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />
+                                         IsDisabled = { Selector = i => i.IsDisabled } })"" />
 
 <BitChoiceGroup Label=""ReadOnly""
                 ReadOnly
@@ -90,7 +90,7 @@ private readonly List<Order> disabledCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
                                          IconName = { Selector = i => i.IconName },
-                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />
+                                         IsDisabled = { Selector = i => i.IsDisabled } })"" />
 
 
 <BitChoiceGroup Label=""Image Customs""
@@ -111,7 +111,7 @@ private readonly List<Order> disabledCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
                                          IconName = { Selector = i => i.IconName },
-                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />";
+                                         IsDisabled = { Selector = i => i.IsDisabled } })"" />";
     private readonly string example3CsharpCode = @"
 public class Order
 {
@@ -185,7 +185,7 @@ private readonly List<Order> iconCustoms =
 
 <BitChoiceGroup Label=""Disabled""
                 Horizontal
-                IsEnabled=""false""
+                Disabled
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />
@@ -208,7 +208,7 @@ private readonly List<Order> iconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
                                          IconName = { Selector = i => i.IconName },
-                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />";
+                                         IsDisabled = { Selector = i => i.IsDisabled } })"" />";
     private readonly string example4CsharpCode = @"
 public class Order
 {
@@ -261,25 +261,25 @@ private readonly List<Order> iconCustoms =
 
     private readonly string example5RazorCode = @"
 <BitChoiceGroup Label=""End (default)""
-                LabelPosition=""BitLabelPosition.End"" Horizontal
+                LabelPlacement=""BitPlacement.End"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Start""
-                LabelPosition=""BitLabelPosition.Start"" Horizontal
+                LabelPlacement=""BitPlacement.Start"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Top""
-                LabelPosition=""BitLabelPosition.Top"" Horizontal
+                LabelPlacement=""BitPlacement.Top"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""Bottom""
-                LabelPosition=""BitLabelPosition.Bottom"" Horizontal
+                LabelPlacement=""BitPlacement.Bottom"" Horizontal
                 DefaultValue=""@(""A"")""
                 Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />";
@@ -817,17 +817,17 @@ private readonly List<Order> deploymentCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)""
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start (items at the far edge)""
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start"" FullWidth
+                LabelPlacement=""BitPlacement.Start"" FullWidth
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + StretchItemLabel (settings list)""
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start + StretchItemLabel (settings list)""
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start"" FullWidth StretchItemLabel
+                LabelPlacement=""BitPlacement.Start"" FullWidth StretchItemLabel
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />";
     private readonly string example16CsharpCode = @"
@@ -910,7 +910,7 @@ private readonly List<Order> basicCustoms =
                 Variant=""BitVariant.Fill""
                 Items=""descriptionCustoms""
                 DefaultValue=""@(""Daily"")""
-                LabelPosition=""BitLabelPosition.Start""
+                LabelPlacement=""BitPlacement.Start""
                 FullWidth
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) },
@@ -925,7 +925,7 @@ private readonly List<Order> basicCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) },
                                          IconName = { Name = nameof(Order.IconName) },
-                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />";
+                                         IsDisabled = { Selector = i => i.IsDisabled } })"" />";
     private readonly string example19CsharpCode = @"
 public class Order
 {
@@ -1173,7 +1173,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[1].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Primary""
                 Label=""Primary""
                 Horizontal
@@ -1181,7 +1181,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Secondary""
                 Label=""Secondary""
                 Horizontal
@@ -1189,7 +1189,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Tertiary""
                 Label=""Tertiary""
                 Horizontal
@@ -1197,7 +1197,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Info""
                 Label=""Info""
                 Horizontal
@@ -1205,7 +1205,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Success""
                 Label=""Success""
                 Horizontal
@@ -1213,7 +1213,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Warning""
                 Label=""Warning""
                 Horizontal
@@ -1221,7 +1221,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.SevereWarning""
                 Label=""SevereWarning""
                 Horizontal
@@ -1229,7 +1229,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.Error""
                 Label=""Error""
                 Horizontal
@@ -1238,7 +1238,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
 <div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
-    <BitChoiceGroup IsEnabled=""false""
+    <BitChoiceGroup Disabled
                     Color=""BitColor.PrimaryBackground""
                     Label=""PrimaryBackground""
                     Horizontal
@@ -1246,7 +1246,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                     DefaultValue=""basicCustoms[0].ItemValue""
                     NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-    <BitChoiceGroup IsEnabled=""false""
+    <BitChoiceGroup Disabled
                     Color=""BitColor.SecondaryBackground""
                     Label=""SecondaryBackground""
                     Horizontal
@@ -1254,7 +1254,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                     DefaultValue=""basicCustoms[0].ItemValue""
                     NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-    <BitChoiceGroup IsEnabled=""false""
+    <BitChoiceGroup Disabled
                     Color=""BitColor.TertiaryBackground""
                     Label=""TertiaryBackground""
                     Horizontal
@@ -1263,7 +1263,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                     NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 </div>
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.PrimaryForeground""
                 Label=""PrimaryForeground""
                 Horizontal
@@ -1271,7 +1271,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.SecondaryForeground""
                 Label=""SecondaryForeground""
                 Horizontal
@@ -1279,7 +1279,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.TertiaryForeground""
                 Label=""TertiaryForeground""
                 Horizontal
@@ -1287,7 +1287,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.PrimaryBorder""
                 Label=""PrimaryBorder""
                 Horizontal
@@ -1295,7 +1295,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.SecondaryBorder""
                 Label=""SecondaryBorder""
                 Horizontal
@@ -1303,7 +1303,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
+<BitChoiceGroup Disabled
                 Color=""BitColor.TertiaryBorder""
                 Label=""TertiaryBorder""
                 Horizontal
@@ -1390,7 +1390,7 @@ private readonly List<Order> externalIconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
-                                          IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal Inline />
+                                          IsDisabled = { Selector = i => i.IsDisabled } })"" Horizontal Inline />
 
 <BitChoiceGroup Size=""BitSize.Medium""
                 Label=""Medium""
@@ -1399,7 +1399,7 @@ private readonly List<Order> externalIconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
-                                          IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal Inline />
+                                          IsDisabled = { Selector = i => i.IsDisabled } })"" Horizontal Inline />
 
 <BitChoiceGroup Size=""BitSize.Large""
                 Label=""Large""
@@ -1408,7 +1408,7 @@ private readonly List<Order> externalIconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
-                                          IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal Inline />
+                                          IsDisabled = { Selector = i => i.IsDisabled } })"" Horizontal Inline />
 
 <BitChoiceGroup Size=""BitSize.Small""
                 Label=""Small""
@@ -1417,7 +1417,7 @@ private readonly List<Order> externalIconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
-                                          IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal />
+                                          IsDisabled = { Selector = i => i.IsDisabled } })"" Horizontal />
 
 <BitChoiceGroup Size=""BitSize.Medium""
                 Label=""Medium""
@@ -1426,7 +1426,7 @@ private readonly List<Order> externalIconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
-                                          IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal />
+                                          IsDisabled = { Selector = i => i.IsDisabled } })"" Horizontal />
 
 <BitChoiceGroup Size=""BitSize.Large""
                 Label=""Large""
@@ -1435,7 +1435,7 @@ private readonly List<Order> externalIconCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
-                                          IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal />";
+                                          IsDisabled = { Selector = i => i.IsDisabled } })"" Horizontal />";
     private readonly string example24CsharpCode = @"
 public class Order
 {
@@ -1603,7 +1603,7 @@ private readonly List<Order> itemStyleClassCustoms =
 
 <BitChoiceGroup Label=""ØºÛŒØ±ÙØ¹Ø§Ù„""
                 Dir=""BitDir.Rtl""
-                IsEnabled=""false""
+                Disabled
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />";

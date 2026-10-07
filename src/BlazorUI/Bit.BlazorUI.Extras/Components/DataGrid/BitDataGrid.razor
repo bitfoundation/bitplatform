@@ -19,7 +19,7 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      data-bit-dtg-copy="@(ClipboardCopy ? "true" : null)"
-     data-bit-dtg-select-all="@(IsEnabled && SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)">
+     data-bit-dtg-select-all="@(Disabled is false && SelectionMode == BitSelectionMode.Multiple ? "true" : null)">
 
     @* Announces sort/filter/page changes to screen readers; these are otherwise silent view mutations. *@
     <div class="bit-dtg-visually-hidden" role="status" aria-live="polite">@_srAnnouncement</div>
@@ -32,7 +32,7 @@
                 @ToolbarTemplate
                 @if (Editable && NewItemFactory is not null)
                 {
-                    <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">@Strings.AddRowText</button>
+                    <button disabled="@(Disabled)" type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">@Strings.AddRowText</button>
                 }
                 @if (SearchActive)
                 {
@@ -43,14 +43,14 @@
                         @* The term is applied as the user types, debounced by SearchDebounce, so the
                            grid answers a keystroke instead of waiting for Enter or a blur - while a
                            burst of typing still issues a single search. *@
-                        <input disabled="@(!IsEnabled)" type="search" class="bit-dtg-search-input"
+                        <input disabled="@(Disabled)" type="search" class="bit-dtg-search-input"
                                placeholder="@Strings.SearchPlaceholder"
                                aria-label="@Strings.SearchLabel"
                                value="@(_searchBoxText ?? _search)"
                                @oninput="e => DebouncedSearchAsync((string?)e.Value)" />
                         @if (!string.IsNullOrEmpty(_search))
                         {
-                            <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-icon-btn bit-dtg-search-clear"
+                            <button disabled="@(Disabled)" type="button" class="bit-dtg-icon-btn bit-dtg-search-clear"
                                     title="@Strings.ClearSearchLabel"
                                     aria-label="@Strings.ClearSearchLabel"
                                     @onclick="ClearSearchFromButtonAsync">✕</button>
@@ -61,22 +61,22 @@
             <div class="bit-dtg-toolbar-end">
                 @if (_filters.Count > 0)
                 {
-                    <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-btn" @onclick="ClearFiltersFromToolbarAsync">@Strings.ClearFiltersText</button>
+                    <button disabled="@(Disabled)" type="button" class="bit-dtg-btn" @onclick="ClearFiltersFromToolbarAsync">@Strings.ClearFiltersText</button>
                 }
                 @if (ShowCsvExport)
                 {
-                    <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
+                    <button disabled="@(Disabled)" type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
                 }
                 @if (ShowExcelExport)
                 {
-                    <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
+                    <button disabled="@(Disabled)" type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
                 }
                 @if (ShowColumnChooser)
                 {
                     @* A disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid, so
                        aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. The
                        dropdown arrow is decorative; aria-label keeps it out of the accessible name. *@
-                    <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
+                    <button disabled="@(Disabled)" type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
                             @ref="_columnChooserButton"
                             aria-expanded="@(_showColumnChooserPanel ? "true" : "false")"
                             aria-controls="@_columnChooserPanelId"
@@ -100,7 +100,7 @@
                 @* Keyed, so an item follows its column when the column moves rather than being re-used for its neighbour. *@
                 <div @key="col" class="bit-dtg-chooser-item" data-col-id="@col.Id">
                     <label class="bit-dtg-chooser-label">
-                        <input type="checkbox" checked="@col.Visible" disabled="@(!IsEnabled || !CanHideColumn(col))"
+                        <input type="checkbox" checked="@col.Visible" disabled="@(Disabled || !CanHideColumn(col))"
                                @onchange="e => SetColumnVisibility(col, (bool)e.Value!)" />
                         @col.DisplayTitle
                     </label>
@@ -123,7 +123,7 @@
         </div>
     }
 
-    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Top or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPlacement is BitPlacement.Top or BitPlacement.TopAndBottom))
     {
         @RenderPager
     }
@@ -144,9 +144,9 @@
              aria-labelledby="@AriaLabelledBy"
              aria-describedby="@AriaDescribedBy"
              aria-rowcount="@ComputeAriaRowCount()" aria-colcount="@TotalColumnSpan"
-             aria-multiselectable="@(SelectionMode == BitDataGridSelectionMode.Multiple ? "true" : null)"
+             aria-multiselectable="@(SelectionMode == BitSelectionMode.Multiple ? "true" : null)"
              aria-busy="@(Loading || InfiniteLoading ? "true" : null)"
-             aria-disabled="@(IsEnabled ? null : "true")"
+             aria-disabled="@(Disabled ? "true" : null)"
              style="--bit-dtg-template:@BuildGridTemplate();">
 
             @if (ShowHeader)
@@ -206,7 +206,7 @@
                         {
                             headerColIndex++;
                             <div class="bit-dtg-hcell bit-dtg-sticky bit-dtg-center" style="@SelectStickyStyle" role="columnheader" aria-colindex="@headerColIndex">
-                                <input disabled="@(!IsEnabled)" type="checkbox" checked="@PageSelectionState.All" @ref="_selectAllCheckbox"
+                                <input disabled="@(Disabled)" type="checkbox" checked="@PageSelectionState.All" @ref="_selectAllCheckbox"
                                        @onchange="e => ToggleSelectAllAsync((bool)e.Value!)" aria-label="@Strings.SelectAllLabel" />
                             </div>
                         }
@@ -285,7 +285,7 @@
                                     var grouped = IsGrouped(column);
                                     var groupClass = grouped ? "bit-dtg-icon-btn bit-dtg-group-btn bit-dtg-active" : "bit-dtg-icon-btn bit-dtg-group-btn";
                                     var groupLabel = string.Format(grouped ? Strings.UngroupByFormat : Strings.GroupByFormat, column.DisplayTitle);
-                                    <button disabled="@(!IsEnabled)" type="button" class="@groupClass"
+                                    <button disabled="@(Disabled)" type="button" class="@groupClass"
                                             title="@groupLabel"
                                             aria-label="@groupLabel"
                                             aria-pressed="@(grouped ? "true" : "false")"
@@ -504,7 +504,7 @@
         </div>
     </div>
 
-    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Bottom or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPlacement is not BitPlacement.Top))
     {
         @RenderPager
     }
@@ -570,7 +570,7 @@
         var collapsed = IsGroupCollapsed(group);
         <div class="bit-dtg-row bit-dtg-group-row" role="row" aria-rowindex="@GroupAriaRowIndex(group)" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;">
             <div class="bit-dtg-group-cell @Classes?.GroupRow" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.GroupRow">
-                <button disabled="@(!IsEnabled)" type="button" class="bit-dtg-icon-btn"
+                <button disabled="@(Disabled)" type="button" class="bit-dtg-icon-btn"
                         aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, group.KeyText))"
                         aria-expanded="@(collapsed ? "false" : "true")"
                         @onclick="() => ToggleGroup(group)">
@@ -623,7 +623,7 @@
         {
             var current = EffectiveFilterOperator(column);
             <div class="bit-dtg-filter-wrap">
-                <select disabled="@(!IsEnabled)" class="bit-dtg-filter-op@(IsValuelessOperator(current) ? " bit-dtg-filter-op-only" : "")"
+                <select disabled="@(Disabled)" class="bit-dtg-filter-op@(IsValuelessOperator(current) ? " bit-dtg-filter-op-only" : "")"
                         aria-label="@string.Format(Strings.FilterOperatorLabel, column.DisplayTitle)"
                         value="@current.ToString()"
                         @onchange="e => SetFilterOperatorAsync(column, (string?)e.Value)">
@@ -747,7 +747,7 @@
 
         if (type is BitDataGridColumnDataType.Text or BitDataGridColumnDataType.Number && IsSetOperator(EffectiveFilterOperator(column)))
         {
-            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" placeholder="@Strings.FilterListPlaceholder" aria-label="@filterLabel"
+            <input disabled="@(Disabled)" class="bit-dtg-filter-input" placeholder="@Strings.FilterListPlaceholder" aria-label="@filterLabel"
                    inputmode="@(type is BitDataGridColumnDataType.Number ? "decimal" : null)"
                    value="@EditorText(column, FormatFilterRaw(current))"
                    @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
@@ -757,20 +757,20 @@
         {
             @* A text box, not type="number": a number input reports what it cannot parse yet ("-", "12.") as an empty
                value, and the render that follows a keystroke would write that empty value back over the typing. *@
-            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" type="text" inputmode="decimal" autocomplete="off" placeholder="=" aria-label="@filterLabel"
+            <input disabled="@(Disabled)" class="bit-dtg-filter-input" type="text" inputmode="decimal" autocomplete="off" placeholder="=" aria-label="@filterLabel"
                    value="@EditorText(column, FormatFilterNumber(current))"
                    @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
                    @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Date or BitDataGridColumnDataType.DateTime or BitDataGridColumnDataType.DateTimeOffset)
         {
-            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" type="date" aria-label="@filterLabel"
+            <input disabled="@(Disabled)" class="bit-dtg-filter-input" type="date" aria-label="@filterLabel"
                    value="@FormatFilterDate(current)"
                    @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Boolean)
         {
-            <select disabled="@(!IsEnabled)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString()?.ToLowerInvariant())"
+            <select disabled="@(Disabled)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString()?.ToLowerInvariant())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">@Strings.FilterAllText</option>
                 <option value="true">@Strings.BooleanTrueText</option>
@@ -779,7 +779,7 @@
         }
         else if (type is BitDataGridColumnDataType.Enum)
         {
-            <select disabled="@(!IsEnabled)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString())"
+            <select disabled="@(Disabled)" class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">@Strings.FilterAllText</option>
                 @foreach (var name in EnumNames(column))
@@ -790,7 +790,7 @@
         }
         else
         {
-            <input disabled="@(!IsEnabled)" class="bit-dtg-filter-input" placeholder="@Strings.FilterPlaceholder" aria-label="@filterLabel"
+            <input disabled="@(Disabled)" class="bit-dtg-filter-input" placeholder="@Strings.FilterPlaceholder" aria-label="@filterLabel"
                    value="@EditorText(column, current?.ToString())"
                    @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
                    @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
@@ -925,7 +925,7 @@
                column.DisplayTitle,
                string.Format(Strings.FilterByFormat, column.DisplayTitle),
                column.Accessor?.UnderlyingType,
-               IsEnabled,
+               Disabled,
                _filters.Where(f => f.ColumnId == column.Id).ToList(),
                (op, value) => SetFilterAsync(column, op, value),
                (from, toExclusive) => SetRangeFilterAsync(column, from, toExclusive),
@@ -1006,7 +1006,7 @@
                 var to = Math.Min(CurrentPage * _effectivePageSize, TotalCount);
             }
             <span>@string.Format(Strings.PagerRangeFormat, from, to, TotalCount)</span>
-            <select disabled="@(!IsEnabled)" class="bit-dtg-page-size" aria-label="@Strings.RowsPerPageLabel" @onchange="e => { if (int.TryParse((string?)e.Value, out var ps)) return SetPageSizeAsync(ps); return Task.CompletedTask; }">
+            <select disabled="@(Disabled)" class="bit-dtg-page-size" aria-label="@Strings.RowsPerPageLabel" @onchange="e => { if (int.TryParse((string?)e.Value, out var ps)) return SetPageSizeAsync(ps); return Task.CompletedTask; }">
                 @foreach (var size in EffectivePageSizeOptions)
                 {
                     <option value="@size" selected="@(size == _effectivePageSize)">@string.Format(Strings.PerPageFormat, size)</option>
@@ -1015,11 +1015,11 @@
         </div>
         <div class="bit-dtg-pager-buttons">
             @* The arrows are bidi-mirrored characters, so a right-to-left grid already points them the way its pages run. *@
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.FirstPageLabel" disabled="@(!IsEnabled || CurrentPage <= 1)" @onclick="() => GoToPageAsync(1)"><span aria-hidden="true">«</span></button>
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.PreviousPageLabel" disabled="@(!IsEnabled || CurrentPage <= 1)" @onclick="() => GoToPageAsync(CurrentPage - 1)"><span aria-hidden="true">‹</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.FirstPageLabel" disabled="@(Disabled || CurrentPage <= 1)" @onclick="() => GoToPageAsync(1)"><span aria-hidden="true">«</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.PreviousPageLabel" disabled="@(Disabled || CurrentPage <= 1)" @onclick="() => GoToPageAsync(CurrentPage - 1)"><span aria-hidden="true">‹</span></button>
             <span class="bit-dtg-pager-current">@string.Format(Strings.PagerPageFormat, CurrentPage, TotalPages)</span>
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.NextPageLabel" disabled="@(!IsEnabled || CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(CurrentPage + 1)"><span aria-hidden="true">›</span></button>
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.LastPageLabel" disabled="@(!IsEnabled || CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(TotalPages)"><span aria-hidden="true">»</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.NextPageLabel" disabled="@(Disabled || CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(CurrentPage + 1)"><span aria-hidden="true">›</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.LastPageLabel" disabled="@(Disabled || CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(TotalPages)"><span aria-hidden="true">»</span></button>
         </div>
     </div>;
 }

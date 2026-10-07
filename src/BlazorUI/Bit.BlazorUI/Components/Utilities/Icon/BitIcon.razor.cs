@@ -454,7 +454,7 @@ public partial class BitIcon : BitComponentBase
         // An icon that has stopped answering - disabled, or handed a handler no longer there - has
         // nothing left to activate, so a Space it was already holding is forgotten rather than left
         // latched for the release that comes after.
-        if (IsEnabled is false || OnClick.HasDelegate is false)
+        if (Disabled || OnClick.HasDelegate is false)
         {
             _spacePressed = false;
         }
@@ -518,7 +518,7 @@ public partial class BitIcon : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -531,7 +531,7 @@ public partial class BitIcon : BitComponentBase
     /// </summary>
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The release is what activates the icon, so the press is remembered rather than acted on: a
         // Space released here that was never pressed here - the pointer moved the focus onto the icon
@@ -550,7 +550,7 @@ public partial class BitIcon : BitComponentBase
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsSpace(e) is false) return;
 

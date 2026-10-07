@@ -175,7 +175,7 @@ public class BitChartTests : BunitTestContext
         var disabled = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
         });
         Assert.AreEqual("img", disabled.Find("svg").GetAttribute("role"));
         Assert.AreEqual("-1", disabled.Find("svg").GetAttribute("tabindex"));
@@ -575,7 +575,7 @@ public class BitChartTests : BunitTestContext
             Plugins =
             {
                 Title = { Display = true, Text = "Main" },
-                Subtitle = { Display = true, Text = "Sub", Position = BitChartPosition.Bottom }
+                Subtitle = { Display = true, Text = "Sub", Placement = BitPlacement.Bottom }
             }
         };
         var component = RenderChart(options: options);
@@ -662,7 +662,7 @@ public class BitChartTests : BunitTestContext
             {
                 ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "Month" } },
                 ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Title = new() { Display = true, Text = "Revenue" } },
-                ["y2"] = new BitChartScaleOptions { Id = "y2", Type = BitChartScaleType.Linear, Position = BitChartPosition.Right, Title = new() { Display = true, Text = "Margin %" } }
+                ["y2"] = new BitChartScaleOptions { Id = "y2", Type = BitChartScaleType.Linear, Placement = BitPlacement.Right, Title = new() { Display = true, Text = "Margin %" } }
             }
         };
         var component = RenderChart(BitChartType.Scatter, data, options);
@@ -865,7 +865,7 @@ public class BitChartTests : BunitTestContext
     {
         var options = new BitChartOptions
         {
-            Plugins = { Title = { Display = true, Text = "Down the side", Position = BitChartPosition.Left } }
+            Plugins = { Title = { Display = true, Text = "Down the side", Placement = BitPlacement.Left } }
         };
         var component = RenderChart(options: options);
 
@@ -874,17 +874,81 @@ public class BitChartTests : BunitTestContext
         StringAssert.Contains(title.TextContent, "Down the side");
     }
 
+    // A subtitle goes wherever a title can - beside the plot it sits between the title and the plot, on either
+    // side - and the ones on the left are the ones turned over, by a class of their own rather than by being the
+    // first child, which only the outermost of them is.
+    [DataTestMethod]
+    [DataRow(BitPlacement.Left, true)]
+    [DataRow(BitPlacement.Right, false)]
+    public void ASideSubtitleShouldRenderBesideThePlot(BitPlacement placement, bool turnedOver)
+    {
+        var options = new BitChartOptions
+        {
+            Plugins =
+            {
+                Title = { Display = true, Text = "Title", Placement = placement },
+                Subtitle = { Display = true, Text = "Sub", Placement = placement }
+            }
+        };
+        var component = RenderChart(options: options);
+
+        var title = component.Find(".bit-cht-mid > .bit-cht-ttl");
+        var subtitle = component.Find(".bit-cht-mid > .bit-cht-sub");
+        Assert.IsTrue(subtitle.ClassList.Contains("bit-cht-ttl-v"));
+        Assert.AreEqual("Sub", subtitle.TextContent.Trim());
+        Assert.AreEqual(turnedOver, title.ClassList.Contains("bit-cht-ttl-l"));
+        Assert.AreEqual(turnedOver, subtitle.ClassList.Contains("bit-cht-ttl-l"));
+
+        var order = component.Find(".bit-cht-mid").Children
+                             .Select(c => c.ClassList.Contains("bit-cht-plot") ? "plot" : c.ClassList.Contains("bit-cht-sub") ? "sub" : "title")
+                             .ToArray();
+        CollectionAssert.AreEqual(turnedOver ? new[] { "title", "sub", "plot" } : new[] { "plot", "sub", "title" }, order);
+    }
+
     [TestMethod]
     public void ATitleWithNowhereToGoShouldRenderAtTheTop()
     {
         var options = new BitChartOptions
         {
-            Plugins = { Title = { Display = true, Text = "Fallback", Position = BitChartPosition.Chart } }
+            Plugins = { Title = { Display = true, Text = "Fallback", Placement = BitPlacement.Center } }
         };
         var component = RenderChart(options: options);
 
         Assert.AreEqual(0, component.FindAll(".bit-cht-mid > .bit-cht-ttl").Count);
         StringAssert.Contains(component.Find(".bit-cht > .bit-cht-ttl").TextContent, "Fallback");
+    }
+
+    // ---- legend placement ----
+
+    private IRenderedComponent<BitChart> RenderLegendAt(BitPlacement placement)
+        => RenderChart(options: new BitChartOptions { Plugins = { Legend = { Placement = placement } } });
+
+    [TestMethod]
+    [DataRow(BitPlacement.Left)]
+    [DataRow(BitPlacement.Right)]
+    public void AnInlineLegendShouldRenderBesideThePlotAndStackItsItems(BitPlacement placement)
+    {
+        var legend = RenderLegendAt(placement).Find(".bit-cht-mid > .bit-cht-lgd");
+
+        Assert.IsTrue(legend.ClassList.Contains("bit-cht-lgd-v"));
+    }
+
+    [TestMethod]
+    [DataRow(BitPlacement.Top)]
+    [DataRow(BitPlacement.Bottom)]
+    // A chart is laid out physically, so the logical pair, the two combined values and Center have no edge of
+    // their own here: they leave the legend where an unset placement would, at the top, rather than dropping it.
+    [DataRow(BitPlacement.Start)]
+    [DataRow(BitPlacement.End)]
+    [DataRow(BitPlacement.Center)]
+    [DataRow(BitPlacement.TopAndBottom)]
+    [DataRow(BitPlacement.StartAndEnd)]
+    public void ABlockLegendShouldRenderAboveOrBelowThePlotInARow(BitPlacement placement)
+    {
+        var component = RenderLegendAt(placement);
+
+        Assert.AreEqual(0, component.FindAll(".bit-cht-mid > .bit-cht-lgd").Count);
+        Assert.IsTrue(component.Find(".bit-cht > .bit-cht-lgd").ClassList.Contains("bit-cht-lgd-h"));
     }
 
     // ---- crosshair ----
@@ -1612,7 +1676,7 @@ public class BitChartTests : BunitTestContext
         {
             p.Add(c => c.Type, BitChartType.Bar);
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
             p.Add(c => c.OnElementClick, (_) => clicks++);
             p.Add(c => c.OnLegendItemClick, (BitChartLegendItemModel i) => legendClicked = i);
         });
@@ -1639,7 +1703,7 @@ public class BitChartTests : BunitTestContext
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         Assert.AreEqual(1, component.FindAll(".bit-cht-tt").Count);
 
-        component.Render(p => p.Add(c => c.IsEnabled, false));
+        component.Render(p => p.Add(c => c.Disabled, true));
 
         Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
         Assert.AreEqual(0, component.FindAll(".bit-cht-focus-ring").Count);
@@ -1902,7 +1966,7 @@ public class BitChartTests : BunitTestContext
         component.Render(p =>
         {
             if (loading) p.Add(c => c.IsLoading, true);
-            else p.Add(c => c.IsEnabled, false);
+            else p.Add(c => c.Disabled, true);
         });
         Assert.AreEqual(0, component.FindAll(".bit-cht-dim").Count);
 
@@ -1994,7 +2058,7 @@ public class BitChartTests : BunitTestContext
         {
             p.Add(c => c.Data, TwoSeries());
             p.Add(c => c.Description, "Flat.");
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
         });
 
         var svg = component.Find("svg");
@@ -2040,7 +2104,7 @@ public class BitChartTests : BunitTestContext
     {
         var component = RenderChart(options: new BitChartOptions
         {
-            Plugins = new BitChartPluginOptions { Title = new BitChartTitleOptions { Display = true, Text = "T", Align = BitChartAlign.Start } }
+            Plugins = new BitChartPluginOptions { Title = new BitChartTitleOptions { Display = true, Text = "T", Align = BitPlacement.Start } }
         });
 
         StringAssert.Contains(component.Find(".bit-cht-ttl > div").GetAttribute("style"), "text-align:start");

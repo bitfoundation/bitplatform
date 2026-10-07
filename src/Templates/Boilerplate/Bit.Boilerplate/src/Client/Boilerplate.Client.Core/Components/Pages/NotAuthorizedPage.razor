@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @attribute [Route(PageUrls.NotAuthorized)]
 @attribute [Route("{culture?}" + PageUrls.NotAuthorized)]
 @inherits AppPageBase
@@ -21,6 +22,17 @@ else
                     </BitText>
 
                     <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@context.User.GetDisplayName()</b></BitText>
+
+                    @*#if (multitenant == true)*@
+                    @if (lacksSelectedTenant)
+                    {
+                        <BitText Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.SelectTenantMessage)]</BitText>
+
+                        <BitButton Style="width:300px" Href="@PageUrls.ManageMyTenants">
+                            @Localizer[nameof(AppStrings.ManageMyTenants)]
+                        </BitButton>
+                    }
+                    @*#endif*@
 
                     @if (lacksValidPrivilege)
                     {

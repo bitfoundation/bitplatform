@@ -175,6 +175,13 @@
     <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
     <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
+  <Folder Name="/Cli/">
+    <File Path="Cli/README.md" />
+    <Project Path="Cli/Bit.Cli/Bit.Cli.csproj" />
+  </Folder>
+  <Folder Name="/Cli/Tests/">
+    <Project Path="Cli/Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
+  </Folder>
   <Folder Name="/CodeAnalyzers/">
     <File Path="CodeAnalyzers/README.md" />
     <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
@@ -182,15 +189,11 @@
   <Folder Name="/Minifier/">
     <File Path="Minifier/README.md" />
     <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
-    <Project Path="Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj" />
   </Folder>
   <Folder Name="/Minifier/Tests/">
     <Project Path="Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
     <Project Path="Minifier/Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
     <Project Path="Minifier/Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
-  </Folder>
-  <Folder Name="/ResxTranslator/">
-    <Project Path="ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj" />
   </Folder>
   <Folder Name="/SourceGenerators/">
     <File Path="SourceGenerators/README.md" />

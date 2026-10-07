@@ -426,10 +426,10 @@ public partial class BitNavBarDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the navbar item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the navbar item is disabled.",
                },
                new()
                {
@@ -598,10 +598,10 @@ public partial class BitNavBarDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the navbar option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the navbar option is disabled.",
                },
                new()
                {
@@ -768,10 +768,10 @@ public partial class BitNavBarDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitNavBarItem.IsEnabled))",
-                   Description = "The IsEnabled field name and selector of the custom input class."
+                   DefaultValue = "new(nameof(BitNavBarItem.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class."
                },
                new()
                {

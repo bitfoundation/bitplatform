@@ -162,7 +162,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -634,7 +634,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -830,7 +830,7 @@ public class BitNavPanelTests : BunitTestContext
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // The button keeps its tab stop and reports the state through aria-disabled (AllowDisabledFocus).
@@ -1395,14 +1395,19 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitNavPanelPosition.Start, false)]
-    [DataRow(BitNavPanelPosition.End, true)]
-    public void BitNavPanelShouldDockTheDrawerToThePositionItIsGiven(BitNavPanelPosition position, bool isEnd)
+    [DataRow(null, false)]
+    [DataRow(BitPlacement.Start, false)]
+    [DataRow(BitPlacement.End, true)]
+    // The values that name no edge the drawer is docked to render the default Start.
+    [DataRow(BitPlacement.Left, false)]
+    [DataRow(BitPlacement.Right, false)]
+    [DataRow(BitPlacement.Center, false)]
+    public void BitNavPanelShouldDockTheDrawerToThePlacementItIsGiven(BitPlacement? placement, bool isEnd)
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
         {
             parameters.Add(p => p.Items, Items);
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, placement);
         });
 
         Assert.AreEqual(isEnd, component.Find(".bit-npn").ClassList.Contains("bit-npn-end"));

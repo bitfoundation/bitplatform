@@ -6,6 +6,15 @@ public partial class BitTooltipDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.Center",
+            Description = "Where along Placement the tooltip lines up with its anchor: an edge value puts the tooltip's edge on the same edge of the anchor and lets it grow away from there, as BitCallout does. Start, Center and End are honoured on either axis (Start and End follow the reading direction across, and read top to bottom down); Left and Right only above or below the anchor, Top and Bottom only beside it. Anything else centers it.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum"
+        },
+        new()
+        {
             Name = "Anchor",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -115,13 +124,6 @@ public partial class BitTooltipDemo
         },
         new()
         {
-            Name = "MirrorInRtl",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Swaps the horizontal side of Position while Dir is Rtl."
-        },
-        new()
-        {
             Name = "NoAnimation",
             Type = "bool",
             DefaultValue = "false",
@@ -171,12 +173,12 @@ public partial class BitTooltipDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitTooltipPosition",
-            DefaultValue = "BitTooltipPosition.Top",
-            Description = "The position of the tooltip around its anchor.",
+            Name = "Placement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.Top",
+            Description = "The side of the anchor the tooltip is placed on. Only Top, Bottom, Start, End, Left and Right are honoured: Start and End follow the reading direction, Left and Right stay on the same side of the screen. Anything else leaves it above the anchor.",
             LinkType = LinkType.Link,
-            Href = "#tooltip-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -300,87 +302,7 @@ public partial class BitTooltipDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "tooltip-position-enum",
-            Name = "BitTooltipPosition",
-            Description = "Where the tooltip is placed around its anchor. The sides are screen sides; MirrorInRtl swaps left and right in RTL.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "Above the anchor, centered on it."
-                },
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "1",
-                    Description = "Above the anchor, off its left corner."
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2",
-                    Description = "Above the anchor, off its right corner."
-                },
-                new()
-                {
-                    Name = "RightTop",
-                    Value = "3",
-                    Description = "Right of the anchor, off its top corner."
-                },
-                new()
-                {
-                    Name = "Right",
-                    Value = "4",
-                    Description = "Right of the anchor, centered on it."
-                },
-                new()
-                {
-                    Name = "RightBottom",
-                    Value = "5",
-                    Description = "Right of the anchor, off its bottom corner."
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "6",
-                    Description = "Below the anchor, off its right corner."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "7",
-                    Description = "Below the anchor, centered on it."
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "8",
-                    Description = "Below the anchor, off its left corner."
-                },
-                new()
-                {
-                    Name = "LeftBottom",
-                    Value = "9",
-                    Description = "Left of the anchor, off its bottom corner."
-                },
-                new()
-                {
-                    Name = "Left",
-                    Value = "10",
-                    Description = "Left of the anchor, centered on it."
-                },
-                new()
-                {
-                    Name = "LeftTop",
-                    Value = "11",
-                    Description = "Left of the anchor, off its top corner."
-                }
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "tooltip-relationship-enum",
@@ -587,19 +509,29 @@ public partial class BitTooltipDemo
         new()
         {
             Relationship = BitTooltipRelationship.Label,
-            Position = BitTooltipPosition.Bottom,
+            Placement = BitPlacement.Bottom,
             Color = BitColor.PrimaryForeground,
             ShowDelay = 400,
         }
     ];
 
-    private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList = Enum.GetValues<BitTooltipPosition>()
-        .Select(enumValue => new BitDropdownItem<BitTooltipPosition>
-        {
-            Value = enumValue,
-            Text = enumValue.ToString()
-        })
-        .ToList();
+    // The twelve placements of the Placement & alignment example, as the pairs the two parameters take. The four
+    // sides are named logically, so the grid reads the same way round in both directions.
+    private readonly (BitPlacement Placement, BitPlacement Alignment, string Text)[] tooltipPlacements =
+    [
+        (BitPlacement.Top, BitPlacement.Start, "Top / Start"),
+        (BitPlacement.Top, BitPlacement.Center, "Top"),
+        (BitPlacement.Top, BitPlacement.End, "Top / End"),
+        (BitPlacement.End, BitPlacement.Start, "End / Start"),
+        (BitPlacement.End, BitPlacement.Center, "End"),
+        (BitPlacement.End, BitPlacement.End, "End / End"),
+        (BitPlacement.Bottom, BitPlacement.Start, "Bottom / Start"),
+        (BitPlacement.Bottom, BitPlacement.Center, "Bottom"),
+        (BitPlacement.Bottom, BitPlacement.End, "Bottom / End"),
+        (BitPlacement.Start, BitPlacement.Start, "Start / Start"),
+        (BitPlacement.Start, BitPlacement.Center, "Start"),
+        (BitPlacement.Start, BitPlacement.End, "Start / End"),
+    ];
 
     private bool isShown;
 

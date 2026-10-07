@@ -16,13 +16,13 @@
 
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            A <b>label</b> element at the weight and size of the labels the inputs render of their own. <b>IsEnabled</b> false
+            A <b>label</b> element at the weight and size of the labels the inputs render of their own. <b>Disabled</b>
             only dims it: the label still names its control, so disable the control itself.
         </div>
         <br />
         <div class="example-content">
             <BitLabel>I'm a Label</BitLabel>
-            <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
+            <BitLabel Disabled>I'm a disabled Label</BitLabel>
         </div>
     </DemoExample>
 
@@ -61,7 +61,7 @@
                     <BitIcon IconName="@BitIconName.Important" Color="BitColor.Error" Size="BitSize.Small" />
                 </RequiredTemplate>
             </BitLabel>
-            <BitLabel Required IsEnabled="false">A disabled Label dims its mark too</BitLabel>
+            <BitLabel Required Disabled>A disabled Label dims its mark too</BitLabel>
             <BitLabel Optional>I'm an optional Label</BitLabel>
             <BitLabel Optional OptionalText="- if you have one">Its own optional text</BitLabel>
             <BitLabel Optional>

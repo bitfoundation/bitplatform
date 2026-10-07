@@ -52,7 +52,7 @@ public partial class _BitAccordionListItemDemo
     private readonly List<BitAccordionListItem> stateItems =
     [
         new() { Key = "normal", Title = "General settings", Description = "A live item", Body = BodyFor(Story1) },
-        new() { Key = "disabled", Title = "Users", Description = "Turned off altogether", IsEnabled = false, Body = BodyFor(Story2) },
+        new() { Key = "disabled", Title = "Users", Description = "Turned off altogether", IsDisabled = true, Body = BodyFor(Story2) },
         new() { Key = "locked", Title = "Advanced settings", Description = "Open on purpose and staying that way", ReadOnly = true, Body = BodyFor(Story3) },
     ];
 

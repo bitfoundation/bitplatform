@@ -178,12 +178,12 @@ public partial class BitCheckboxDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label in regards to the checkbox box. Takes precedence over Reversed when both are set.",
+            Description = "The position of the label in regards to the checkbox box. Takes precedence over Reversed when both are set. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -456,13 +456,13 @@ public partial class BitCheckboxDemo
         {
             Name = "--bit-Checkbox-disabled-color",
             DefaultValue = "The Color role's disabled color",
-            Description = "Stroke and fill of the box when IsEnabled is false; also the focus ring color of a disabled checkbox kept focusable with AllowDisabledFocus.",
+            Description = "Stroke and fill of the box when Disabled is true; also the focus ring color of a disabled checkbox kept focusable with AllowDisabledFocus.",
         },
         new()
         {
             Name = "--bit-Checkbox-disabled-text-color",
             DefaultValue = "The Color role's disabled text color",
-            Description = "Color of the label, the description and the glyph when IsEnabled is false.",
+            Description = "Color of the label, the description and the glyph when Disabled is true.",
         },
         new()
         {
@@ -601,7 +601,7 @@ public partial class BitCheckboxDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitLabelPosition("The position of the label in regards to the checkbox box."),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize()
     ];
 

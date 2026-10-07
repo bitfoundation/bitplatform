@@ -7,7 +7,7 @@ public partial class BitRatingDemo
 
 <BitRating DefaultValue=""3"" />
 
-<BitRating IsEnabled=""false"" DefaultValue=""2"" />
+<BitRating Disabled DefaultValue=""2"" />
 
 <BitRating ReadOnly DefaultValue=""3.5"" />";
 
@@ -18,7 +18,7 @@ public partial class BitRatingDemo
            ItemTitles=""@([""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""])""
            @bind-Value=""labelValue"" />
 
-<BitRating Label=""Cleanliness"" LabelPosition=""BitLabelPosition.Start"" DefaultValue=""4"" />
+<BitRating Label=""Cleanliness"" LabelPlacement=""BitPlacement.Start"" DefaultValue=""4"" />
 
 <BitRating Label=""Staff"" DefaultValue=""4"">
     <DescriptionTemplate>
@@ -26,7 +26,7 @@ public partial class BitRatingDemo
     </DescriptionTemplate>
 </BitRating>
 
-<BitRating LabelPosition=""BitLabelPosition.Bottom"" @bind-Value=""labelTemplateValue"">
+<BitRating LabelPlacement=""BitPlacement.Bottom"" @bind-Value=""labelTemplateValue"">
     <LabelTemplate>
         <BitText Typography=""BitTypography.Caption1"">@ratingWords[(int)labelTemplateValue]</BitText>
     </LabelTemplate>
@@ -103,7 +103,7 @@ private double allowClearValue = 3;";
 private double highlightValue = 3;";
 
     private readonly string example8RazorCode = @"
-<BitRating LabelPosition=""BitLabelPosition.Bottom""
+<BitRating LabelPlacement=""BitPlacement.Bottom""
            @bind-Value=""hoverBoundValue""
            OnHoverChange=""v => hoverPreviewValue = v"">
     <LabelTemplate>
@@ -357,7 +357,7 @@ private readonly BitRatingParams[] ratingParams =
         Color = BitColor.Warning,
         SelectedIconName = BitIconName.HeartFill,
         UnselectedIconName = BitIconName.Heart,
-        LabelPosition = BitLabelPosition.Start
+        LabelPlacement = BitPlacement.Start
     }
 ];";
 
@@ -428,8 +428,8 @@ private readonly BitRatingParams[] ratingParams =
 
 
 <div style=""--bit-Rating-color: crimson; --bit-Rating-unselected-color: pink; --bit-Rating-label-color: crimson;"">
-    <BitRating Label=""Story"" LabelPosition=""BitLabelPosition.Start"" ReadOnly DefaultValue=""4.5"" />
-    <BitRating Label=""Music"" LabelPosition=""BitLabelPosition.Start"" ReadOnly DefaultValue=""3"" />
+    <BitRating Label=""Story"" LabelPlacement=""BitPlacement.Start"" ReadOnly DefaultValue=""4.5"" />
+    <BitRating Label=""Music"" LabelPlacement=""BitPlacement.Start"" ReadOnly DefaultValue=""3"" />
 </div>";
     private readonly string example21CsharpCode = @"
 private double currentItemValue = 3.5;";
@@ -471,5 +471,5 @@ private double currentItemValue = 3.5;";
 
 <BitRating Dir=""BitDir.Rtl"" Precision=""0.5"" DefaultValue=""3.5"" />
 
-<BitRating Dir=""BitDir.Rtl"" Label=""امتیاز شما"" LabelPosition=""BitLabelPosition.Start"" DefaultValue=""4"" />";
+<BitRating Dir=""BitDir.Rtl"" Label=""امتیاز شما"" LabelPlacement=""BitPlacement.Start"" DefaultValue=""4"" />";
 }

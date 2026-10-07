@@ -1652,7 +1652,7 @@ public partial class BitPdfViewerDemo
     private double boundZoom = 1;
     private int boundRotation;
     private bool panTool;
-    private bool a11yEnabled = true;
+    private bool a11yDisabled;
     private bool blockPrinting;
     private BitPdfScrollMode scrollMode = BitPdfScrollMode.Vertical;
     private BitPdfSpreadMode spreadMode = BitPdfSpreadMode.None;

@@ -3,6 +3,8 @@ name: Sales module demo CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
+  # Lets the About page show the run, the commit and the attestations of the build.
+  ShowBuildProvenance: true
   SERVER_ADDRESS: 'https://sales.bitplatform.dev'
   R2_BUCKET: 'sales'
   OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
@@ -46,6 +48,11 @@ jobs:
     name: build api + blazor web
     if: inputs.server
     runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
 
     steps:
     
@@ -59,22 +66,17 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
       with:
         project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
-    - name: Create project from Boilerplate
-      run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION}}" --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -88,9 +90,6 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
-
     - name: Configure bswup
       run: |
           sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'AlwaysPrerender'/g" SalesModule/src/Client/SalesModule.Client.Web/wwwroot/service-worker.published.js
@@ -98,11 +97,6 @@ jobs:
     - name: Configure text embedding
       run: |
           sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' SalesModule/src/Server/SalesModule.Server.Api/Infrastructure/Data/AppDbContext.cs
-
-    - name: Generate CSS/JS files
-      run: |
-          dotnet build SalesModule/src/Client/SalesModule.Client.Core/SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-          dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     - name: Publish
       run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
@@ -123,11 +117,18 @@ jobs:
           ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
 
     - name: Upload server artifact
+      id: server_artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: SalesModule
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
+
+    - name: Attest server artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: SalesModule
+        subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
 
   deploy_server_web:
     name: deploy server web
@@ -161,6 +162,12 @@ jobs:
     name: build blazor hybrid (windows)
     if: inputs.windows
     runs-on: windows-2025
+    environment: code-signing
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
   
     steps:
      
@@ -174,22 +181,17 @@ jobs:
       with:
         global-json-file: src\global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Use prerelease packages
       if: inputs.prerelease_packages
       uses: ./.github/actions/use-prerelease-packages
       with:
         project-folder: src/Templates/Boilerplate/Bit.Boilerplate
 
-    - name: Create project from Boilerplate
-      run: |
-        cd src\Templates\Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-browsers --no-format --no-migration --no-trust
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -202,29 +204,59 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-sales.bitplatform.dev
 
-    - name: Use Bit.ResxTranslator
+    - name: Translate .resx files
       run: |
             cd SalesModule
-            dnx Bit.ResxTranslator --prerelease
+            bit translate
 
-    - name: Generate CSS/JS files
-      run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+    - name: Install vpk
+      shell: pwsh
+      run: |
+        dotnet tool install vpk --version 1.2.161 --tool-path "$env:RUNNER_TEMP/vpk"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/vpk"
 
     # Needed for delta packages. Fails on the first run, when the bucket is empty.
     - name: Download previous releases from R2
       continue-on-error: true
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
-          dnx vpk@1.2.161 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+
+    - name: Log in to Azure for code signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+      with:
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+    # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+    # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
+    # the az login above is left.
+    # '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls gain nothing from a signature.
+    - name: Sign the executables with Artifact Signing
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      run: |
+          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
+          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
+          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
 
     - name: Publish
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
           dotnet publish SalesModule.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          dnx vpk@1.2.161 -- pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
+          vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
+
+    - name: Attest the installer and packages
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          SalesModule/src/Client/SalesModule.Client.Windows/Releases/*-Setup.exe
+          SalesModule/src/Client/SalesModule.Client.Windows/Releases/*-Portable.zip
+          SalesModule/src/Client/SalesModule.Client.Windows/Releases/*-${{ vars.APP_VERSION }}-*.nupkg
 
     # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
-          dnx vpk@1.2.161 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10

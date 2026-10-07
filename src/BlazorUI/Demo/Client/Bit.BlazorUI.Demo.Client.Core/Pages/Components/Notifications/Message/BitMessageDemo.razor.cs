@@ -783,7 +783,7 @@ public partial class BitMessageDemo
     private BitMessage? focusableMessage;
     private bool isAutoFocusDismissed = true;
 
-    private bool isMessageEnabled = true;
+    private bool isMessageDisabled;
     private bool isDisabledSampleDismissed;
 
     private double elevation = 7;

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -42,18 +41,12 @@ public sealed class BitTagsInputBridgeContractTests
 
     private static string ReadTypeScript()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "ts-sources", "BitTagsInput.ts");
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure BitTagsInput.ts is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TagsInput", "BitTagsInput.ts");
     }
 
     private static string ReadCSharp(string fileName)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "cs-sources", fileName);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure {fileName} is copied to output by the test csproj.");
-
-        return File.ReadAllText(path);
+        return SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TagsInput", fileName);
     }
 
     /// <summary>

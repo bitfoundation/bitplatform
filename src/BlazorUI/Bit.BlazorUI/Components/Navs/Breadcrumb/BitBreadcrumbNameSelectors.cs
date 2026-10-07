@@ -28,14 +28,14 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitBreadcrumbItem.IconName));
 
     /// <summary>
-    /// The IconPosition field name and selector of the custom input class.
+    /// The IconPlacement field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, BitIconPosition?> IconPosition { get; set; } = new(nameof(BitBreadcrumbItem.IconPosition));
+    public BitNameSelectorPair<TItem, BitPlacement?> IconPlacement { get; set; } = new(nameof(BitBreadcrumbItem.IconPlacement));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class.
+    /// The IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitBreadcrumbItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitBreadcrumbItem.IsDisabled));
 
     /// <summary>
     /// The IsSelected field name and selector of the custom input class.

@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Lists.Swiper;
@@ -137,11 +138,11 @@ public class BitSwiperTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitSwiperShouldRespectIsEnabled(bool isEnabled)
+    public void BitSwiperShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-swp");
@@ -338,14 +339,14 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitSwiperSnap.Start, "bit-swp-sns"),
-        DataRow(BitSwiperSnap.Center, "bit-swp-snc"),
-        DataRow(BitSwiperSnap.End, "bit-swp-sne")]
-    public void BitSwiperShouldRespectSnap(BitSwiperSnap snap, string expectedClass)
+        DataRow(BitScrollSnapAlign.Start, "bit-swp-sns"),
+        DataRow(BitScrollSnapAlign.Center, "bit-swp-snc"),
+        DataRow(BitScrollSnapAlign.End, "bit-swp-sne")]
+    public void BitSwiperShouldRespectSnap(BitScrollSnapAlign snap, string expectedClass)
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.Snap, snap);
+            parameters.Add(p => p.SnapAlign, snap);
         });
 
         var root = component.Find(".bit-swp");
@@ -823,6 +824,82 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldNotAutoPlayInAPageThatIsAlreadyHidden()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Services.AddSingleton(visibility);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+
+        // No visibilitychange is coming for a tab that was already in the background when the swiper started.
+        Assert.IsFalse(swiper.IsPlaying);
+        Assert.IsFalse(swiper.IsPaused);
+
+        await component.InvokeAsync(() => visibility._VisibilityChanged(false));
+
+        Assert.IsTrue(swiper.IsPlaying);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldAutoPlayAsUsualWhenThePageVisibilityScriptFails()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Services.AddSingleton(visibility);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        Assert.IsTrue(component.Instance.Swiper.IsPlaying);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        Services.AddSingleton(new BitPageVisibility(js));
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+
+        Assert.IsTrue(swiper.IsPlaying);
+
+        // The script has loaded by the time the utility asks again on its own, and the hidden page it then reads
+        // reaches the swiper as a change: nothing has to render it again, and no render polls the page.
+        js.Failure = null;
+
+        component.WaitForAssertion(() => Assert.IsFalse(swiper.IsPlaying), TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual(2, js.InitCount);
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 40000));
+
+        Assert.AreEqual(2, js.InitCount);
+    }
+
+    [TestMethod]
     public async Task BitSwiperShouldStopOnInteractionWhenRequested()
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
@@ -989,7 +1066,7 @@ public class BitSwiperTests : BunitTestContext
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(component.Instance.Swiper.GoNext);
@@ -1266,7 +1343,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.NoDrag, true);
             parameters.Add(p => p.Wheel, true);
-            parameters.Add(p => p.Snap, BitSwiperSnap.Center);
+            parameters.Add(p => p.SnapAlign, BitScrollSnapAlign.Center);
             parameters.Add(p => p.DefaultItem, 3);
             parameters.Add(p => p.DragThreshold, 12);
             parameters.Add(p => p.ScrollItemsCount, 2);

@@ -17,7 +17,7 @@ public partial class BitAccordionDemo
 <BitAccordion Title=""ExpanderIconName"" ExpanderIconName=""@BitIconName.ChevronDown"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""ExpanderIconPosition Start"" IconName=""@BitIconName.Settings"" ExpanderIconPosition=""BitIconPosition.Start"">
+<BitAccordion Title=""ExpanderIconPlacement Start"" IconName=""@BitIconName.Settings"" ExpanderIconPlacement=""BitPlacement.Start"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 <BitAccordion Title=""HideExpanderIcon"" HideExpanderIcon>
@@ -44,9 +44,9 @@ public partial class BitAccordionDemo
 private int renameCount;";
 
     private readonly string example4RazorCode = @"
-<BitToggle @bind-Value=""bindingIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" />
+<BitToggle @bind-Value=""bindingIsDisabled"" OnText=""Disabled"" OffText=""Enabled"" />
 <BitToggle @bind-Value=""bindingIsExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
-<BitAccordion Title=""Bound"" IsEnabled=""bindingIsEnabled"" @bind-IsExpanded=""bindingIsExpanded"">
+<BitAccordion Title=""Bound"" Disabled=""bindingIsDisabled"" @bind-IsExpanded=""bindingIsExpanded"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
@@ -67,7 +67,7 @@ private int renameCount;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example4CsharpCode = @"
-private bool bindingIsEnabled = true;
+private bool bindingIsDisabled;
 private bool bindingIsExpanded;
 private int controlledExpandedItem = 1;";
 
@@ -224,7 +224,7 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
               DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Disabled"" IsEnabled=""false"" DefaultIsExpanded>
+<BitAccordion Title=""Disabled"" Disabled DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example11CsharpCode = @"
@@ -256,7 +256,7 @@ private int readOnlyClickCount;";
     <BitAccordion Title=""Also takes the cascade"" Description=""Searchable while closed"">
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>
-    <BitAccordion Title=""Sets its own ExpanderIconPosition"" ExpanderIconPosition=""BitIconPosition.End"">
+    <BitAccordion Title=""Sets its own ExpanderIconPlacement"" ExpanderIconPlacement=""BitPlacement.End"">
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
     </BitAccordion>
 </BitParams>";
@@ -268,7 +268,7 @@ private readonly BitAccordionParams[] accordionParams =
         HiddenUntilFound = true,
         ExpanderIconName = BitIconName.Add,
         ExpandedExpanderIconName = BitIconName.Remove,
-        ExpanderIconPosition = BitIconPosition.Start,
+        ExpanderIconPlacement = BitPlacement.Start,
     }
 ];";
 

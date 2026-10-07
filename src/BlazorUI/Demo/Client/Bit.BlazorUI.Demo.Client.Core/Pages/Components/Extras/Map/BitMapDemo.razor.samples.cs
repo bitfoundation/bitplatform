@@ -489,17 +489,17 @@ private async Task ReadView()
 <BitToggle Value=""interDragging"" ValueChanged=""v => { interDragging = v; BuildInteractionProvider(); }"" Text=""Dragging"" />
 <BitToggle Value=""interScaleBar"" ValueChanged=""v => { interScaleBar = v; BuildInteractionProvider(); }"" Text=""Scale bar"" />
 <BitToggle Value=""interMaxBounds"" ValueChanged=""v => { interMaxBounds = v; BuildInteractionProvider(); }"" Text=""Keep inside London"" />
-<BitToggle @bind-Value=""interEnabled"" Text=""Enabled"" />
+<BitToggle @bind-Value=""interDisabled"" Text=""Disabled"" />
 
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitLeafletMapProvider"" Provider=""@interProvider"" IsEnabled=""interEnabled"" />
+    <BitMap TMapProvider=""BitLeafletMapProvider"" Provider=""@interProvider"" Disabled=""interDisabled"" />
 </div>";
     private readonly string example10CsharpCode = @"
 private bool interScrollWheel = true;
 private bool interDragging = true;
 private bool interScaleBar = true;
 private bool interMaxBounds;
-private bool interEnabled = true;
+private bool interDisabled;
 private BitLeafletMapProvider interProvider = new() { Center = new(51.5074, -0.1278), Zoom = 10, ShowScaleControl = true };
 
 private void BuildInteractionProvider()

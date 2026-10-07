@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// The items are laid out side by side inside a scrolling box, so the swiper scrolls freely through them
 /// instead of paging like a <see cref="BitCarousel"/> does: the items keep whatever size they were given
 /// (or take one from <see cref="VisibleItemsCount"/>), and the swiper comes to rest wherever it was left,
-/// unless <see cref="Snap"/> asks it to settle on an item. It can be driven with its own next/prev
+/// unless <see cref="SnapAlign"/> asks it to settle on an item. It can be driven with its own next/prev
 /// buttons, with the dots below it, by dragging it, with the keyboard, with the mouse wheel, from
 /// application code through <see cref="GoNext"/>/<see cref="GoPrev"/>/<see cref="GoTo(int)"/>, or on its
 /// own with <see cref="AutoPlay"/>.
@@ -36,6 +36,7 @@ public partial class BitSwiper : BitComponentBase
     private bool _keysOwnedByContent;
     private bool _isPaused;
     private bool _pageHidden;
+    private bool _pageVisibilityPending;
     private bool _needsSetup;
     private bool _needsRefresh;
     private bool _afterFirstRender;
@@ -463,14 +464,14 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The value chooses where the item it settles on comes to rest: at the start of the swiper, in its
-    /// middle, or at its end. Without it the swiper scrolls freely, which is what a rail of items that are
-    /// read side by side wants.
+    /// middle, or at its end. Leaving it unset - or setting it to <see cref="BitScrollSnapAlign.None"/> -
+    /// lets the swiper scroll freely, which is what a rail of items that are read side by side wants.
     /// <br />
     /// The snapping itself is the browser's (CSS scroll snapping), so a touch swipe settles the same way a
     /// navigation does.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitSwiperSnap? Snap { get; set; }
+    public BitScrollSnapAlign? SnapAlign { get; set; }
 
     /// <summary>
     /// Stops the auto scrolling as soon as the swiper is navigated through one of its own controls.
@@ -639,7 +640,7 @@ public partial class BitSwiper : BitComponentBase
     /// </param>
     public async Task GoTo(int number)
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false || _allItems.Count == 0) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false || _allItems.Count == 0) return;
 
         var index = Math.Clamp(number - 1, 0, _allItems.Count - 1);
 
@@ -655,7 +656,7 @@ public partial class BitSwiper : BitComponentBase
     /// </param>
     public async Task GoToPage(int number)
     {
-        if (IsDisposed || IsEnabled is false || _pagesCount < 1) return;
+        if (IsDisposed || Disabled || _pagesCount < 1) return;
 
         await _js.BitSwiperGoToPage(_Id, Math.Clamp(number - 1, 0, _pagesCount - 1));
     }
@@ -665,7 +666,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToStart()
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, false);
     }
@@ -675,7 +676,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToEnd()
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, true);
     }
@@ -869,13 +870,13 @@ public partial class BitSwiper : BitComponentBase
 
         ClassBuilder.Register(() => ShowScrollbar ? "bit-swp-scb" : string.Empty);
 
-        ClassBuilder.Register(() => (NoDrag || IsEnabled is false) ? "bit-swp-ndr" : string.Empty);
+        ClassBuilder.Register(() => (NoDrag || Disabled) ? "bit-swp-ndr" : string.Empty);
 
-        ClassBuilder.Register(() => Snap switch
+        ClassBuilder.Register(() => SnapAlign switch
         {
-            BitSwiperSnap.Start => "bit-swp-snp bit-swp-sns",
-            BitSwiperSnap.Center => "bit-swp-snp bit-swp-snc",
-            BitSwiperSnap.End => "bit-swp-snp bit-swp-sne",
+            BitScrollSnapAlign.Start => "bit-swp-snp bit-swp-sns",
+            BitScrollSnapAlign.Center => "bit-swp-snp bit-swp-snc",
+            BitScrollSnapAlign.End => "bit-swp-snp bit-swp-sne",
             _ => string.Empty
         });
 
@@ -946,7 +947,10 @@ public partial class BitSwiper : BitComponentBase
 
     protected override void OnInitialized()
     {
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and whatever it learns later - the answer to the first call, or to one it retried - comes as a change.
         _pageVisibility.OnChange += PageVisibilityChange;
+        _pageHidden = _pageVisibility.IsHidden;
 
         base.OnInitialized();
     }
@@ -991,11 +995,22 @@ public partial class BitSwiper : BitComponentBase
             _needsSetup = false;
             _laidOutItemsCount = _allItems.Count;
 
+            // The page is asked whether it is hidden alongside the setup, since neither answer depends on the other,
+            // and the setup is still the first call to reach the browser, ahead of any dispose. The state the setup
+            // reports back is what first starts the timer, so the rotation is held until the page has answered: it
+            // never starts in a page nobody is looking at. A call that failed is retried by the utility itself,
+            // whose answer reaches PageVisibilityChange, so nothing waits for it beyond this first one.
+            _pageVisibilityPending = true;
+
+            var pageVisibilityInit = _pageVisibility.Init();
+
             await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
             await RegisterPreventKeysAsync();
 
-            await _pageVisibility.Init();
+            await pageVisibilityInit;
+
+            _pageVisibilityPending = false;
 
             UpdateAutoPlayTimer();
         }
@@ -1045,12 +1060,14 @@ public partial class BitSwiper : BitComponentBase
             Vertical = Vertical,
             NoDrag = NoDrag,
             Wheel = Wheel,
-            Enabled = IsEnabled,
-            Snap = Snap is not null,
-            Align = Snap switch
+            Enabled = Disabled is false,
+            // None is the snap type that says "do not snap", so it has to read the same way an unset SnapAlign
+            // does - the class builder above already leaves both of them without the snapping classes.
+            Snap = SnapAlign is not null and not BitScrollSnapAlign.None,
+            Align = SnapAlign switch
             {
-                BitSwiperSnap.Center => 0.5,
-                BitSwiperSnap.End => 1,
+                BitScrollSnapAlign.Center => 0.5,
+                BitScrollSnapAlign.End => 1,
                 _ => 0
             },
             Duration = Math.Max(0, AnimationDuration),
@@ -1067,12 +1084,12 @@ public partial class BitSwiper : BitComponentBase
     private string ComputeOptionsSignature()
     {
         return FormattableString.Invariant(
-            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{Snap}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}|{Rewind}");
+            $"{Vertical}|{NoDrag}|{Wheel}|{Disabled}|{SnapAlign}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}|{Rewind}");
     }
 
     private async Task RegisterPreventKeysAsync()
     {
-        var keys = (NoKeyboard || IsEnabled is false) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
+        var keys = (NoKeyboard || Disabled) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
 
         await _js.BitUtilsRegisterPreventKeys(RootElement, keys);
     }
@@ -1133,7 +1150,7 @@ public partial class BitSwiper : BitComponentBase
 
     private async Task Go(bool forward, int? count = null)
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         if (Rewind && _scrollable && (forward ? _atEnd : _atStart))
         {
@@ -1174,7 +1191,7 @@ public partial class BitSwiper : BitComponentBase
     {
         HandleInteraction();
 
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || Disabled) return;
 
         await _js.BitSwiperGoToPage(_Id, index);
     }
@@ -1182,7 +1199,7 @@ public partial class BitSwiper : BitComponentBase
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (NoKeyboard) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_keysOwnedByContent) return;
 
         // A swiper that swallowed a modified arrow key would take the browser shortcuts of the page with
@@ -1267,9 +1284,9 @@ public partial class BitSwiper : BitComponentBase
     private bool ShouldAutoPlay()
     {
         if (AutoPlay is false) return false;
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
         if (_isPaused || _stopped) return false;
-        if (_pageHidden) return false;
+        if (_pageHidden || _pageVisibilityPending) return false;
         if (PauseOnHover && _hovered) return false;
         if (PauseOnFocus && _focused) return false;
 
@@ -1372,13 +1389,16 @@ public partial class BitSwiper : BitComponentBase
         }
     }
 
+    // The answer to an init the utility retried on its own comes from a timer rather than from the browser, so the
+    // change is brought onto the renderer's dispatcher before it touches the timer or asks for a render.
     private Task PageVisibilityChange(bool hidden)
     {
-        _pageHidden = hidden;
+        return InvokeAsync(() =>
+        {
+            _pageHidden = hidden;
 
-        UpdateAutoPlayTimer();
-
-        return Task.CompletedTask;
+            UpdateAutoPlayTimer();
+        });
     }
 
 

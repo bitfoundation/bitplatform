@@ -105,12 +105,12 @@ public class BitLinkTests : BunitTestContext
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
     ]
-    public void BitLinkShouldRespectIsEnabled(string href)
+    public void BitLinkShouldRespectDisabled(string href)
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // This test specifically checks the disabled state of the component.
@@ -132,7 +132,7 @@ public class BitLinkTests : BunitTestContext
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
     ]
-    public void BitLinkShouldRespectIsEnabledChangingAfterRender(string href)
+    public void BitLinkShouldRespectDisabledChangingAfterRender(string href)
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
@@ -143,7 +143,7 @@ public class BitLinkTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         if (href.HasValue())
@@ -551,7 +551,7 @@ public class BitLinkTests : BunitTestContext
         var currentCount = 0;
         var component = RenderComponent<BitLink>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => currentCount++);
         });
 
@@ -570,7 +570,7 @@ public class BitLinkTests : BunitTestContext
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Href, "#go-to-section");
         });
 
@@ -809,7 +809,7 @@ public class BitLinkTests : BunitTestContext
         var component = RenderComponent<BitLink>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
         });
 
@@ -929,7 +929,7 @@ public class BitLinkTests : BunitTestContext
             Assert.IsFalse(root.HasAttribute("download"));
         }
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         // A disabled link cannot be navigated, so it must not offer a download either.
         Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("download"));
@@ -947,7 +947,7 @@ public class BitLinkTests : BunitTestContext
         var component = RenderComponent<BitLink>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => currentCount++);
         });
 
@@ -1006,7 +1006,7 @@ public class BitLinkTests : BunitTestContext
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.IconName, "Link");
-            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconPlacement, BitPlacement.End);
             parameters.AddChildContent("bit");
         });
 
@@ -1172,7 +1172,7 @@ public class BitLinkTests : BunitTestContext
         var disabledLink = RenderComponent<BitLink>(parameters =>
         {
             parameters.Add(p => p.Target, "_blank");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
 
@@ -1380,7 +1380,7 @@ public class BitLinkTests : BunitTestContext
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Rel, BitLinkRels.License);
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
@@ -1801,7 +1801,7 @@ public class BitLinkTests : BunitTestContext
         {
             parameters.Add(p => p.Href, href);
             parameters.Add(p => p.AutoFocus, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 

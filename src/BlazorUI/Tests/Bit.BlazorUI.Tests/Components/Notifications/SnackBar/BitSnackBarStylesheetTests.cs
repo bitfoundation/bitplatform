@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -82,13 +80,13 @@ public class BitSnackBarStylesheetTests
     }
 
     [TestMethod]
-    public void BitSnackBarUnfilledVariantsShouldReadBackgroundAndBorderRolesWithTheirOnColor()
+    public void BitSnackBarUnfilledVariantsShouldReadEveryRoleThroughTheSharedForeground()
     {
         var rules = GetRules(ReadStylesheet());
 
-        // The fg of a background or border role is that surface or border color itself, invisible as text on the
-        // page surface the unfilled variants sit on; only the foreground roles are read as they are.
-        StringAssert.Contains(rules, "@if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {\n            --bit-snb-clr-txt: #{role($tokens, on)};");
+        // The shared map already gives a background or border role its on color as fg (BitColorRoleMapsTests), so the
+        // snack bar reads the same slot as every other component instead of special-casing those roles itself.
+        Assert.IsFalse(rules.Contains("--bit-snb-clr-txt: #{role($tokens, on)};"), "The snack bar special-cases the text of a role.");
     }
 
     [TestMethod,
@@ -116,6 +114,31 @@ public class BitSnackBarStylesheetTests
         StringAssert.Contains(rules, "--bit-snb-off-left: calc(var(--bit-snb-off-inline) + env(safe-area-inset-left, 0px));");
         StringAssert.Contains(rules, "--bit-snb-off-right: calc(var(--bit-snb-off-inline) + env(safe-area-inset-right, 0px));");
         StringAssert.Contains(rules, "max-width: calc(100% - var(--bit-snb-off-left) - var(--bit-snb-off-right));");
+    }
+
+    [TestMethod,
+        DataRow("tlf", "top: var(--bit-snb-off-top);", "left: var(--bit-snb-off-left);"),
+        DataRow("trg", "top: var(--bit-snb-off-top);", "right: var(--bit-snb-off-right);"),
+        DataRow("blf", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);"),
+        DataRow("brg", "bottom: var(--bit-snb-off-bottom);", "right: var(--bit-snb-off-right);"),
+        DataRow("clf", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);"),
+        DataRow("crg", "bottom: var(--bit-snb-off-bottom);", "right: var(--bit-snb-off-right);"),
+        DataRow("cst", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);"),
+        DataRow("cen", "bottom: var(--bit-snb-off-bottom);", "right: var(--bit-snb-off-right);"),
+        DataRow("ctr", "bottom: var(--bit-snb-off-bottom);", "left: var(--bit-snb-off-left);")
+    ]
+    public void BitSnackBarCornerAndCenteredPositionsShouldClearTheSafeArea(string position, string blockDeclaration, string inlineDeclaration)
+    {
+        var rule = GetRule(GetRules(ReadStylesheet()), position);
+
+        StringAssert.Contains(rule, blockDeclaration);
+        StringAssert.Contains(rule, inlineDeclaration);
+
+        // Pinned by the raw offsets, a stack ignores the notch; centered by a translate, it is centered on the
+        // whole screen rather than on the part of it that is safe to draw on.
+        Assert.IsFalse(rule.Contains("var(--bit-snb-off-block)"), $"{position} ignores the safe area of the block axis.");
+        Assert.IsFalse(rule.Contains("var(--bit-snb-off-inline)"), $"{position} ignores the safe area of the inline axis.");
+        Assert.IsFalse(rule.Contains("translate"), $"{position} is centered on the whole screen.");
     }
 
     [TestMethod]
@@ -147,13 +170,5 @@ public class BitSnackBarStylesheetTests
 
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-snb {")];
 
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Notifications", "SnackBar", "BitSnackBar.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "SnackBar", "BitSnackBar.scss");
 }

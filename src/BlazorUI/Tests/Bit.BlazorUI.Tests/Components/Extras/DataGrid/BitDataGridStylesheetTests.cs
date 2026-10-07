@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -44,7 +42,7 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldReadEveryPublicVariableWithoutDeclaringIt()
     {
-        var stylesheet = ReadFile("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+        var stylesheet = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-DataGrid-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
@@ -60,7 +58,7 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldListEveryPublicVariableOnItsDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "DataGrid", "BitDataGridDemo.razor.params.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "DataGrid", "BitDataGridDemo.razor.params.cs");
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-DataGrid-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -70,10 +68,9 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldResetItsRowStateOnEveryRoot()
     {
-        var stylesheet = ReadFile("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+        var stylesheet = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
-        var root = stylesheet[stylesheet.IndexOf("\n.bit-dtg {", System.StringComparison.Ordinal)..];
-        root = root[..root.IndexOf("\n}", System.StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-dtg {");
 
         // A grid nested in another one's template must not inherit the state of the row it sits in.
         foreach (var property in new[] { "--bit-dtg-rbg", "--bit-dtg-cbg", "--bit-dtg-tint", "--bit-dtg-stripe-bg", "--bit-dtg-hover-bg" })
@@ -85,29 +82,16 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldGiveEveryControlAFocusIndicator()
     {
-        var stylesheet = ReadFile("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+        var stylesheet = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         // The library resets `button { outline: none }`, so each button family draws its own indicator.
         foreach (var selector in new[] { "button.bit-dtg-htext", ".bit-dtg-btn", ".bit-dtg-icon-btn", ".bit-dtg-drag-handle" })
         {
-            var start = stylesheet.IndexOf($"\n{selector} {{", System.StringComparison.Ordinal);
-            Assert.IsTrue(start >= 0, selector);
-            var block = stylesheet[start..stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal)];
+            var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
             StringAssert.Contains(block, "&:focus-visible", selector);
         }
 
         StringAssert.Contains(stylesheet, ".bit-dtg-resizer:focus-visible");
         StringAssert.Contains(stylesheet, "@media (forced-colors: active)");
-    }
-
-    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
-
-    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
     }
 }

@@ -66,9 +66,9 @@ public class BitMenuButtonItem
     public bool IsChecked { get; set; }
 
     /// <summary>
-    /// Whether or not the item is enabled.
+    /// Whether or not the item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// If true, the item renders as the label of the group of items that follow it, instead of as a clickable

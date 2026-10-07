@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -43,7 +41,7 @@ public class BitNavStylesheetTests
     [TestMethod]
     public void BitNavShouldLetAGroupHeaderGrowWithItsDescription()
     {
-        var header = GetBlock(ReadStylesheet(), "\n.bit-nav-gcb {");
+        var header = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-nav-gcb {");
 
         // A header with a description stacks two lines, which a fixed height would let spill over the rule under it.
         StringAssert.Contains(header, "min-height: var(--bit-Nav-header-min-height");
@@ -55,7 +53,7 @@ public class BitNavStylesheetTests
     {
         // A childless sibling makes up for the chevron with IndentPadding alone, so a gap here would push the text of
         // a parent out of line with it.
-        var row = GetBlock(ReadStylesheet(), "\n.bit-nav-mct {");
+        var row = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-nav-mct {");
 
         Assert.IsFalse(row.Contains("gap"), "The row of an item puts a gap between its chevron and its content.");
     }
@@ -63,7 +61,7 @@ public class BitNavStylesheetTests
     [TestMethod]
     public void BitNavShouldGiveAPressedItemFeedbackOnEveryPointer()
     {
-        var item = GetBlock(ReadStylesheet(), "\n.bit-nav-ict {");
+        var item = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-nav-ict {");
 
         var hover = item.IndexOf("@media (hover: hover)", StringComparison.Ordinal);
         var active = item.IndexOf("&:active {", StringComparison.Ordinal);
@@ -74,23 +72,5 @@ public class BitNavStylesheetTests
         StringAssert.Contains(item[active..], "var(--bit-Nav-pressed-background");
     }
 
-    private static string GetBlock(string stylesheet, string selector)
-    {
-        var start = stylesheet.IndexOf(selector, StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf("\n}", start, StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Navs", "Nav", "BitNav.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Nav", "BitNav.scss");
 }

@@ -490,12 +490,12 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "Determines the location of the DateRangePicker's icon.",
+            Name = "IconPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "Determines the side of the input the DateRangePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -1441,10 +1441,10 @@ public partial class BitDateRangePickerDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "bool",
-                    DefaultValue = "true",
-                    Description = "Whether the preset's button is enabled.",
+                    DefaultValue = "false",
+                    Description = "Whether the preset's button is disabled.",
                 },
                 new()
                 {
@@ -2288,7 +2288,7 @@ public partial class BitDateRangePickerDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitIconLocation(),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitTimeFormat()
     ];
 
@@ -2339,7 +2339,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Text = "Coming soon",
-            IsEnabled = false,
+            IsDisabled = true,
             Title = "This preset is not available yet"
         },
     ];

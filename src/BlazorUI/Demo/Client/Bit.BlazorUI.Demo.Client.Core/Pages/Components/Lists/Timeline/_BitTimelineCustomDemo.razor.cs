@@ -9,7 +9,7 @@ public partial class _BitTimelineCustomDemo
     {
         PrimaryText = { Selector = i => i.FirstText },
         SecondaryText = { Selector = i => i.SecondText },
-        IsEnabled = { Selector = i => i.Disabled is false },
+        IsDisabled = { Selector = i => i.Disabled },
         IconName = { Selector = i => i.Icon },
         DotTemplate = { Selector = i => i.DotContent },
         PrimaryContent = { Selector = i => i.FirstContent },
@@ -18,7 +18,7 @@ public partial class _BitTimelineCustomDemo
         Color = { Selector = i => i.DotColor },
         Size = { Selector = i => i.DotSize },
         Variant = { Selector = i => i.DotVariant },
-        LineVariant = { Selector = i => i.LineStyle },
+        LineStyle = { Selector = i => i.LineStyle },
         HideDot = { Selector = i => i.NoDot },
         Template = { Selector = i => i.Content },
         OnClick = { Selector = i => i.OnSelect },
@@ -75,8 +75,8 @@ public partial class _BitTimelineCustomDemo
     private List<Event> lineVariantCustoms =
     [
         new() { FirstText = "Ordered", Icon = BitIconName.Accept, DotColor = BitColor.Success },
-        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed },
-        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed }
+        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
     ];
 
     private List<Event> customizedCustoms =
@@ -97,8 +97,8 @@ public partial class _BitTimelineCustomDemo
     private List<Event> a11yCustoms =
     [
         new() { FirstText = "Ordered", Icon = BitIconName.Accept, DotColor = BitColor.Success, Label = "Ordered, done", Tooltip = "Done on 3 March" },
-        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed, Label = "Shipped, done", Tooltip = "Done on 4 March" },
-        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed, Label = "Delivered, pending", Tooltip = "Expected on 7 March" }
+        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitLineStyle.Dashed, Label = "Shipped, done", Tooltip = "Done on 4 March" },
+        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed, Label = "Delivered, pending", Tooltip = "Expected on 7 March" }
     ];
 
     private List<Event> cssVarCustoms =

@@ -90,7 +90,7 @@
        single thing. A root the app made a control through a role of its own is reachable by the keyboard without
        being asked, and a disabled card of any kind leaves the tab order altogether - a stop the keyboard can
        still land on but nothing answers on is worse than no stop at all. *@
-    var rootTabIndex = _HasStretchedControl || IsEnabled is false ? null : (_IsRootControl ? (tabIndex ?? "0") : tabIndex);
+    var rootTabIndex = _HasStretchedControl || Disabled ? null : (_IsRootControl ? (tabIndex ?? "0") : tabIndex);
 
     @* The keys a root made a control answers - Enter as it goes down, Space as it comes back up, neither one
        scrolling the page - are wired up in the browser (see OnAfterRenderAsync), where they turn into this same
@@ -112,7 +112,7 @@
      aria-selected="@(selectedRole ? selectedState : null)"
      aria-checked="@(checkedRole ? selectedState : null)"
      aria-busy="@(Loading ? "true" : null)"
-     aria-disabled="@(role is not null && IsEnabled is false ? "true" : null)"
+     aria-disabled="@(role is not null && Disabled ? "true" : null)"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
@@ -129,15 +129,15 @@
         <a @ref="_stretchedRef"
            style="@Styles?.Link"
            class="bit-crd-lnk @Classes?.Link"
-           href="@(IsEnabled ? Href : null)"
+           href="@(Disabled ? null : Href)"
            rel="@_rel"
            target="@Target"
            download="@Download"
-           tabindex="@(IsEnabled ? tabIndex : "-1")"
-           aria-disabled="@(IsEnabled ? null : "true")"
+           tabindex="@(Disabled ? "-1" : tabIndex)"
+           aria-disabled="@(Disabled ? "true" : null)"
            aria-labelledby="@stretchedLabelledBy"
            aria-describedby="@stretchedDescribedBy"
-           role="@(IsEnabled ? null : "link")"
+           role="@(Disabled ? "link" : null)"
            aria-label="@label"></a>
     }
     else if (_IsStretchedButton)
@@ -156,7 +156,7 @@
                 type="button"
                 style="@Styles?.Link"
                 class="bit-crd-lnk @Classes?.Link"
-                disabled="@(IsEnabled is false)"
+                disabled="@(Disabled)"
                 tabindex="@tabIndex"
                 aria-pressed="@selectedState"
                 aria-labelledby="@stretchedLabelledBy"

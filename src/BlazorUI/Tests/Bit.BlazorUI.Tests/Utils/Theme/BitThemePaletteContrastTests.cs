@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -34,10 +33,7 @@ public sealed class BitThemePaletteContrastTests
     [DataRow("Cupertino", "colors.cupertino-dark.scss")]
     public void RoleOnColorsMeetTheUiContrastFloor(string paletteFolder, string paletteFile)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", paletteFolder, paletteFile);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-
-        var scss = File.ReadAllText(path);
+        var scss = SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
 
         string? token(string name)
         {

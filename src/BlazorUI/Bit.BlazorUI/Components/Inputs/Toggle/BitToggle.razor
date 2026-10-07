@@ -6,7 +6,7 @@
 
     @* Autofocus must not pull the focus onto a control that cannot take it: a disabled toggle is out of the
        tab order altogether unless AllowDisabledFocus keeps it in. *@
-    var autoFocus = AutoFocus && (IsEnabled || AllowDisabledFocus);
+    var autoFocus = AutoFocus && (Disabled is false || AllowDisabledFocus);
 }
 
 @* stopping propagation on the root covers both the button click and the click a label forwards to it *@
@@ -60,7 +60,7 @@
                 tabindex="@TabIndex"
                 data-ktp-target="true"
                 data-is-focusable="true"
-                disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+                disabled="@(Disabled && AllowDisabledFocus is false)"
                 aria-label="@AriaLabel"
                 aria-checked="@_ariaChecked"
                 aria-controls="@AriaControls"
@@ -70,7 +70,7 @@
                 aria-labelledby="@(_labelledById.HasValue() ? _labelledById : null)"
                 aria-describedby="@(_describedById.HasValue() ? _describedById : null)"
                 aria-invalid="@(IsInvalid ? "true" : null)"
-                aria-disabled="@(IsEnabled is false || IsLoading ? "true" : null)">
+                aria-disabled="@(Disabled || IsLoading ? "true" : null)">
 
             @* The knob is taken out of the flow and slid between the two ends of the track, while the lane it
                would have taken is held open by the padding of the track, which swaps sides with the state.
@@ -181,5 +181,5 @@
            class="bit-input-hidden"
            checked="@CurrentValue"
            value="@CurrentValueAsString"
-           disabled="@(IsEnabled is false)" />
+           disabled="@(Disabled)" />
 </div>

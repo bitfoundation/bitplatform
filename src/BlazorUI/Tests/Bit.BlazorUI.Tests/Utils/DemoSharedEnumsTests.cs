@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Bit.BlazorUI.Demo.Client.Core.Models;
@@ -211,14 +210,14 @@ public partial class DemoSharedEnumsTests
     // Every table a demo page writes out itself, read from the pages where they sit in the source tree.
     private static IEnumerable<(string Page, string Id, string Name)> PageOwnTables()
     {
-        var pages = DemoPagesDirectory();
+        var pages = SourceFiles.GetDirectory("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components");
         var files = Directory.GetFiles(pages, "*.razor.cs", SearchOption.AllDirectories);
 
         Assert.IsTrue(files.Length > 0, "No demo page was found.");
 
         foreach (var file in files)
         {
-            foreach (var (id, name) in ReadTables(File.ReadAllText(file)))
+            foreach (var (id, name) in ReadTables(SourceFiles.ReadFullPath(file)))
             {
                 yield return (Path.GetFileName(file), id, name);
             }
@@ -272,16 +271,6 @@ public partial class DemoSharedEnumsTests
                 }
             }
         }
-    }
-
-    private static string DemoPagesDirectory([CallerFilePath] string thisFile = "")
-    {
-        var dir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..",
-                                                "Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components"));
-
-        Assert.IsTrue(Directory.Exists(dir), $"Missing {dir}; this test reads the demo pages from a source checkout.");
-
-        return dir;
     }
 
     [GeneratedRegex(@"List<ComponentSubEnum>\s+\w+\s*=\s*\[")]

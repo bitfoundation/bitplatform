@@ -106,7 +106,7 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownEditorShouldDisableItsTextAreaWhenDisabled()
     {
-        var component = RenderComponent<BitMarkdownEditor>(parameters => parameters.Add(p => p.IsEnabled, false));
+        var component = RenderComponent<BitMarkdownEditor>(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-mde-txa").HasAttribute("disabled"));
     }

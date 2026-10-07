@@ -54,9 +54,9 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the timeline option is enabled.
+    /// Whether or not the timeline option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// A unique value to use as a key of the timeline option
@@ -66,7 +66,7 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The way the connecting line of the timeline option is painted, overriding the line variant of the timeline.
     /// </summary>
-    [Parameter] public BitTimelineLineVariant? LineVariant { get; set; }
+    [Parameter] public BitLineStyle? LineStyle { get; set; }
 
     /// <summary>
     /// Click event handler of the timeline option.

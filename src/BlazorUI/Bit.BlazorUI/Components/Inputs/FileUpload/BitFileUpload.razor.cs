@@ -376,8 +376,12 @@ public partial class BitFileUpload : BitComponentBase
     /// The position of the icon of the browse button relative to its text: before it (the default) or after it.
     /// In the <see cref="ShowDropArea"/> mode the icon is stacked above or below the text instead.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? LabelIconPosition { get; set; }
+    public BitPlacement? LabelIconPlacement { get; set; }
 
     /// <summary>
     /// Custom Razor template rendered in place of the browse button, which also replaces the built-in
@@ -1075,7 +1079,7 @@ public partial class BitFileUpload : BitComponentBase
     /// </summary>
     public async Task Browse()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (AutoReset)
         {
@@ -1261,7 +1265,7 @@ public partial class BitFileUpload : BitComponentBase
 
         ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);
 
-        ClassBuilder.Register(() => LabelIconPosition is BitIconPosition.End ? "bit-upl-eni" : string.Empty);
+        ClassBuilder.Register(() => LabelIconPlacement is BitPlacement.End ? "bit-upl-eni" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1507,7 +1511,7 @@ public partial class BitFileUpload : BitComponentBase
 
             if (fallbackId is not null && _itemRefs.TryGetValue(fallbackId, out var neighbor) && await neighbor.TryFocus(target)) return;
 
-            if (_ShowLabelButton && IsEnabled)
+            if (_ShowLabelButton && Disabled is false)
             {
                 await _labelRef.FocusAsync();
             }

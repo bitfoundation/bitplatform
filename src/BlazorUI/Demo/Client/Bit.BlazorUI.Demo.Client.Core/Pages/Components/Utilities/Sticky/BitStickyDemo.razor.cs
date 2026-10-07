@@ -3,11 +3,11 @@
 public partial class BitStickyDemo
 {
     private bool isStuck;
-    private bool isStickyEnabled = true;
+    private bool isStickyDisabled;
     private bool reservesScrollPadding = true;
     private BitStickyEdges stuckEdges;
-    private BitStickyPosition verticalPosition = BitStickyPosition.TopAndBottom;
-    private BitStickyPosition horizontalPosition = BitStickyPosition.StartAndEnd;
+    private BitPlacement verticalPosition = BitPlacement.TopAndBottom;
+    private BitPlacement horizontalPosition = BitPlacement.StartAndEnd;
 
     private record Person(string Name, string Role, string KnownFor, int Born);
 
@@ -83,11 +83,11 @@ public partial class BitStickyDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitStickyPosition?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The edge of the scrolling container the element pins to. Start and End follow the reading direction. When neither a Position nor any offset is set, the component sticks to the top.",
-            Href = "#sticky-position-enum",
+            Description = "The edge of the scrolling container the element pins to. Start and End follow the reading direction. Left, Right and Center are not honoured and fall back to the default: when neither a Placement nor any offset is set, the component sticks to the top.",
+            Href = "#placement-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -146,7 +146,7 @@ public partial class BitStickyDemo
         {
             Name = "--bit-Sticky-offset-top",
             DefaultValue = "0",
-            Description = "Gap a Top or TopAndBottom sticky (and one with no Position or offset) keeps from the top edge - e.g. the height of a fixed app bar above the container. The Top parameter wins over it.",
+            Description = "Gap a Top or TopAndBottom sticky (and one with no Placement or offset) keeps from the top edge - e.g. the height of a fixed app bar above the container. The Top parameter wins over it.",
         },
         new()
         {
@@ -227,51 +227,7 @@ public partial class BitStickyDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "sticky-position-enum",
-            Name = "BitStickyPosition",
-            Description = "The edges of the scrolling container a BitSticky pins itself to.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Top",
-                    Value = "0",
-                    Description = "Sticks to the top edge while the container scrolls vertically."
-                },
-                new()
-                {
-                    Name = "Bottom",
-                    Value = "1",
-                    Description = "Sticks to the bottom edge while the container scrolls vertically."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "2",
-                    Description = "Sticks to whichever vertical edge the scroll carries it to: the top while scrolling down past it, the bottom while it is still below the fold."
-                },
-                new()
-                {
-                    Name = "Start",
-                    Value = "3",
-                    Description = "Sticks to the start edge while the container scrolls horizontally - the left edge in LTR, the right edge in RTL."
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "4",
-                    Description = "Sticks to the end edge while the container scrolls horizontally - the right edge in LTR, the left edge in RTL."
-                },
-                new()
-                {
-                    Name = "StartAndEnd",
-                    Value = "5",
-                    Description = "Sticks to whichever horizontal edge the scroll carries it to, following the reading direction the way Start and End do."
-                }
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "sticky-edges-enum",

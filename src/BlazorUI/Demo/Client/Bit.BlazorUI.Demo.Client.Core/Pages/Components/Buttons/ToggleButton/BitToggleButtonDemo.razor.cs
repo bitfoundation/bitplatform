@@ -152,12 +152,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the icon relative to the content of the toggle button. The default value is Start.",
+            Description = "The position of the icon relative to the content of the toggle button. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -189,12 +189,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading label in regards to the spinner icon.",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "The position of the loading label in regards to the spinner icon. Only Top, Bottom, Start and End are honoured; any other value falls back to the default.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -544,19 +544,19 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-disabled-color",
             DefaultValue = "The Color role's disabled text color",
-            Description = "Foreground when IsEnabled is false; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
+            Description = "Foreground when Disabled is true; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-background",
             DefaultValue = "Per Variant: the role's disabled color (Fill), transparent (Outline, Text)",
-            Description = "Background when IsEnabled is false.",
+            Description = "Background when Disabled is true.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-border-color",
             DefaultValue = "--bit-ToggleButton-disabled-background, then per Variant",
-            Description = "Border color when IsEnabled is false.",
+            Description = "Border color when Disabled is true.",
         },
         new()
         {
@@ -778,8 +778,7 @@ public partial class BitToggleButtonDemo
             ]
         },
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitIconPosition(),
-        DemoSharedEnums.BitLabelPosition("Determines the position of the loading label in regards to the spinner icon."),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant()
     ];

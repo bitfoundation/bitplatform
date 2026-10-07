@@ -188,15 +188,15 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Vertical & DotsPosition" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Vertical & DotsPlacement" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <b>Vertical</b> scrolls up and down: the buttons move to the top and bottom edges and the up/down arrow keys
-            navigate. Give it a height. <b>DotsPosition</b> places the dots at the Bottom (default), Top, or in a column at the
+            navigate. Give it a height. <b>DotsPlacement</b> places the dots at the Bottom (default), Top, or in a column at the
             Start or End.
         </div>
         <br />
         <div>
-            <BitCarousel Vertical Style="height: 200px" InfiniteScrolling DotsPosition="BitCarouselDotsPosition.End">
+            <BitCarousel Vertical Style="height: 200px" InfiniteScrolling DotsPlacement="BitPlacement.End">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
@@ -215,7 +215,7 @@
                 </BitCarouselItem>
             </BitCarousel>
             <br /><br />
-            <BitCarousel Style="height: 100px" InfiniteScrolling DotsPosition="BitCarouselDotsPosition.Top">
+            <BitCarousel Style="height: 100px" InfiniteScrolling DotsPlacement="BitPlacement.Top">
                 <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
                 <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
                 <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>

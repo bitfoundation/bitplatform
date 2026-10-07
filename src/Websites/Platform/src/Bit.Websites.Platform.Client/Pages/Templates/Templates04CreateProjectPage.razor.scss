@@ -43,6 +43,82 @@
     color: $bit-color-primary;
 }
 
+.how-it-works {
+    margin-top: 0;
+
+    li {
+        margin-bottom: rem2(6px);
+    }
+}
+
+.assistant {
+    display: flex;
+    flex-direction: column;
+    gap: rem2(10px);
+}
+
+.real-project {
+    flex: 1 1 20rem;
+    display: flex;
+    flex-direction: column;
+    gap: rem2(2px);
+    min-width: 0;
+}
+
+::deep .real-project-hint,
+::deep .github-repo-hint {
+    color: $bit-color-foreground-secondary;
+    padding-inline-start: rem2(28px);
+}
+
+.github-repo {
+    display: flex;
+    flex-direction: column;
+    gap: rem2(2px);
+    margin-top: rem2(16px);
+}
+
+::deep .github-repo-hint code {
+    white-space: nowrap;
+}
+
+::deep .assistant-user-message {
+    align-self: flex-end;
+    max-width: 85%;
+
+    pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: inherit;
+    }
+}
+
+::deep .assistant-ready {
+    gap: rem2(10px);
+}
+
+.command-bar {
+    display: flex;
+    gap: rem2(8px);
+    align-items: center;
+
+    .command {
+        flex: 1;
+        min-width: 0;
+    }
+
+    ::deep .code-box-content {
+        margin-bottom: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding-right: rem2(16px);
+    }
+}
+
+::deep .command-hint {
+    margin-top: rem2(6px);
+}
+
 .image-container {
     img {
         width: 80%;
@@ -71,7 +147,6 @@
     .grid-item {
         overflow: auto;
         width: rem2(550px);
-        min-height: 21rem;
         position: relative;
         padding: rem2(28px);
         word-wrap: break-word;
@@ -79,34 +154,6 @@
         background-clip: padding-box;
         box-shadow: $bit-box-shadow-callout;
         background-color: $bit-color-background-primary;
-
-        &.md {
-            min-height: 24rem;
-        }
-
-        &.lg {
-            min-height: 28rem;
-        }
-
-        @include lt-xl {
-            &.md {
-                min-height: 27rem;
-            }
-
-            &.lg {
-                min-height: 33rem;
-            }
-        }
-
-        @include lt-lg {
-            &.md {
-                min-height: 30rem;
-            }
-
-            &.lg {
-                min-height: 37rem;
-            }
-        }
     }
 
     .video-container {

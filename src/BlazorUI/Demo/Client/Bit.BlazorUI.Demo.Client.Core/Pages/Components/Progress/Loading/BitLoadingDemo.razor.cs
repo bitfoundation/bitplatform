@@ -26,7 +26,7 @@ public partial class BitLoadingDemo
         {
             Thickness = 3,
             Speed = 1.5,
-            LabelPosition = BitLabelPosition.End
+            LabelPlacement = BitPlacement.End
         }
     ];
 
@@ -96,12 +96,12 @@ public partial class BitLoadingDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "The side of the drawing the label sits on: Top by default, End for an Inline loader. Start and End follow the writing direction.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -208,7 +208,7 @@ public partial class BitLoadingDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitLabelPosition("Defines where the label of a loading component sits relative to its animation."),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "size-enum",

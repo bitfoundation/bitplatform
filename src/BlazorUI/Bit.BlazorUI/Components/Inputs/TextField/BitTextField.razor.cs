@@ -281,7 +281,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public string? IconAriaLabel { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown inside the text field, at the end <see cref="IconPosition"/> puts it
+    /// The icon name for the icon shown inside the text field, at the end <see cref="IconPlacement"/> puts it
     /// at, from the built-in Fluent UI icons.
     /// </summary>
     /// <remarks>
@@ -291,12 +291,12 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     /// <summary>
     /// Which end of the field the icon sits at, inside the frame. The default is
-    /// <see cref="BitIconPosition.End"/>, past the clear and reveal buttons;
-    /// <see cref="BitIconPosition.Start"/> puts it in front of the input instead, which is where the glyph
+    /// <see cref="BitPlacement.End"/>, past the clear and reveal buttons;
+    /// <see cref="BitPlacement.Start"/> puts it in front of the input instead, which is where the glyph
     /// that says what a field is for - a magnifier, an envelope, a currency mark - belongs. It follows the
     /// reading direction rather than the screen, so it mirrors itself in a right-to-left page.
     /// </summary>
-    [Parameter] public BitIconPosition? IconPosition { get; set; }
+    [Parameter] public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The html title of the icon shown inside the text field, which the browser shows as its tooltip.
@@ -331,8 +331,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes
     /// with: above the input in the default one, and next to it in the <see cref="Underlined"/> one.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Shows the custom label for text field.
@@ -650,7 +654,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     [JSInvokable("OnGhostTextAccepted")]
     public async Task _NotifyGhostTextAccepted(string? acceptedText)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await OnGhostTextAccepted.InvokeAsync(acceptedText);
     }
@@ -664,7 +668,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// </summary>
     public Task ClearAsync() => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var cleared = await ClearValue();
 
@@ -726,7 +730,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => IsMultilineElement && AutoHeight ? "bit-tfl-mla" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-tfl-req" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
 
@@ -738,16 +742,16 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => _hasFocus ? Classes?.Focused : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && HasLabel is false ? "bit-tfl-rnl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && HasLabel is false ? "bit-tfl-rnl" : string.Empty);
 
         // Leaving the position unset renders no class at all, so each variant keeps the layout it comes
         // with instead of every field suddenly being laid out by the same rule.
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-tfl-ltp",
-            BitLabelPosition.Bottom => "bit-tfl-lbt",
-            BitLabelPosition.Start => "bit-tfl-lst",
-            BitLabelPosition.End => "bit-tfl-led",
+            BitPlacement.Top => "bit-tfl-ltp",
+            BitPlacement.Bottom => "bit-tfl-lbt",
+            BitPlacement.Start => "bit-tfl-lst",
+            BitPlacement.End => "bit-tfl-led",
             _ => string.Empty
         });
 
@@ -1029,7 +1033,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         UpdateCharCount(e.Value?.ToString());
 
@@ -1277,7 +1281,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(true);
         await OnFocusIn.InvokeAsync(e);
@@ -1285,7 +1289,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(false);
         await OnFocusOut.InvokeAsync(e);
@@ -1293,7 +1297,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(true);
         await OnFocus.InvokeAsync(e);
@@ -1301,7 +1305,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnBlur(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(false);
         await OnBlur.InvokeAsync(e);
@@ -1309,7 +1313,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyDown.InvokeAsync(e);
 
@@ -1332,7 +1336,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyUp.InvokeAsync(e);
     }
@@ -1342,14 +1346,14 @@ public partial class BitTextField : BitTextInputBase<string?>
     // stands for - copying the value, opening what it points at - is not an edit.
     private async Task HandleOnIconClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnIconClick.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -1392,7 +1396,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnClearButtonClick()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var cleared = await ClearValue();
 

@@ -147,7 +147,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.
@@ -172,7 +172,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the loading label in regards to the spinner icon.
     /// </summary>
-    public BitLabelPosition? LoadingLabelPosition { get; set; }
+    public BitPlacement? LoadingLabelPlacement { get; set; }
 
     /// <summary>
     /// Keeps each line of the button's text on a single line and ends it with an ellipsis where it does not fit.
@@ -381,9 +381,9 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.ClassBuilder.Reset();
         }
 
-        if (IconPosition.HasValue && bitButton.HasNotBeenSet(nameof(IconPosition)))
+        if (IconPlacement.HasValue && bitButton.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitButton.IconPosition = IconPosition.Value;
+            bitButton.IconPlacement = IconPlacement.Value;
 
             bitButton.ClassBuilder.Reset();
         }
@@ -410,9 +410,9 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.LoadingLabel = LoadingLabel;
         }
 
-        if (LoadingLabelPosition.HasValue && bitButton.HasNotBeenSet(nameof(LoadingLabelPosition)))
+        if (LoadingLabelPlacement.HasValue && bitButton.HasNotBeenSet(nameof(LoadingLabelPlacement)))
         {
-            bitButton.LoadingLabelPosition = LoadingLabelPosition.Value;
+            bitButton.LoadingLabelPlacement = LoadingLabelPlacement.Value;
         }
 
         if (NoWrap.HasValue && bitButton.HasNotBeenSet(nameof(NoWrap)))

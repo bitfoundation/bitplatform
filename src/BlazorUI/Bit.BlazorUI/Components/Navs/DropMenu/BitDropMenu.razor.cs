@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -65,7 +65,13 @@ public partial class BitDropMenu : BitComponentBase
     /// centered on it, or with its end edge - which is what keeps the callout of a drop menu at the end of a toolbar
     /// or a header under the button rather than hanging past it.
     /// </summary>
-    [Parameter] public BitCalloutAlignment? Alignment { get; set; }
+    /// <remarks>
+    /// Start and End are logical on the horizontal axis, so they follow the reading direction there, while the
+    /// vertical axis reads top to bottom in both. Each axis's physical pair - Left and Right above or below the
+    /// button, Top and Bottom beside it - names a side of the screen and only means anything on its own axis; used
+    /// off its axis it falls back to Start, as do the two combined values, exactly as leaving this unset does.
+    /// </remarks>
+    [Parameter] public BitPlacement? Alignment { get; set; }
 
     /// <summary>
     /// The description of the drop menu for the benefit of screen readers. It is rendered as visually hidden text
@@ -294,7 +300,12 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The position of the responsive panel to show on the screen.
     /// </summary>
-    [Parameter] public BitPanelPosition? PanelPosition { get; set; }
+    /// <remarks>
+    /// Left and Right are the physical edges, so they stay where they are named in both directions, whether the
+    /// direction is set on the component or inherited from the page; Center and the two combined values name no
+    /// edge and fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
     /// Renders the drop menu in responsive mode on small screens.
@@ -311,7 +322,12 @@ public partial class BitDropMenu : BitComponentBase
     /// a bottom bar, End for one in a side bar. It is a preference: a callout that does not fit there is placed
     /// on the opposite side, and leaving it unset leaves the choice to <see cref="DropDirection"/> alone.
     /// </summary>
-    [Parameter] public BitCalloutSide? Side { get; set; }
+    /// <remarks>
+    /// Start and End follow the reading direction, while Left and Right stay on the side of the screen they
+    /// name in both directions. Center and the two combined values name no side of the button and leave the
+    /// choice to DropDirection, exactly as leaving this unset does.
+    /// </remarks>
+    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The size of the button of the drop menu.
@@ -458,7 +474,7 @@ public partial class BitDropMenu : BitComponentBase
         // Escape pressed inside the callout - or anywhere outside it, for a callout opened by hovering - which the
         // JS side only reports while no callout opened from inside this one is open: a dropdown in the content
         // closes its own list on that key, not the whole panel (see Utils.setupEscape).
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         // A focus inside the callout is handed back to the trigger by the closing itself, and one elsewhere in
         // the page is left where it is.
@@ -671,7 +687,7 @@ public partial class BitDropMenu : BitComponentBase
         var focusCallout = _focusCalloutOnClick;
         _focusCalloutOnClick = false;
 
-        if (IsEnabled is false || IsLoading) return;
+        if (Disabled || IsLoading) return;
 
         // A click on the trigger while the callout is open usually lands on the overlay above it, but a
         // keyboard activation always arrives here, as does a click when an ancestor stacking context
@@ -703,7 +719,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task HandleOnButtonKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsLoading) return;
+        if (Disabled || IsLoading) return;
 
         // Escape dismisses the callout, and so does tabbing off the trigger: the callout is relocated to the
         // end of the body while it is open, so the tab sequence runs from the trigger on into the page
@@ -749,7 +765,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task HandleOnCalloutClick()
     {
-        if (AutoClose is false || IsEnabled is false || IsOpen is false) return;
+        if (AutoClose is false || Disabled || IsOpen is false) return;
 
         await CloseCallout();
 
@@ -768,7 +784,7 @@ public partial class BitDropMenu : BitComponentBase
         // button scheduled, and coming back to the button cancels the close leaving the callout scheduled.
         CancelHover();
 
-        if (IsEnabled is false || IsLoading || IsOpen) return;
+        if (Disabled || IsLoading || IsOpen) return;
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
@@ -785,7 +801,7 @@ public partial class BitDropMenu : BitComponentBase
 
         CancelHover();
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (await DelayHover(HoverCloseDelay) is false) return;
 
@@ -802,7 +818,7 @@ public partial class BitDropMenu : BitComponentBase
         // A drop menu the user cannot reach must not be opened by the Open and Toggle methods either,
         // since the callout would then hang over the page with a disabled trigger under it. An IsOpen
         // the parent sets itself is left alone: the state is the parent's to own there.
-        if (IsOpen || IsEnabled is false || IsLoading) return;
+        if (IsOpen || Disabled || IsLoading) return;
 
         // Assigning IsOpen runs OnSetIsOpen, which is the entry point for the open state changing from
         // the outside and toggles the callout on its own. Here the toggling is done below instead, once
@@ -848,7 +864,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsOpen is false) return;
 
-        if (IsEnabled && IsLoading is false) return;
+        if (Disabled is false && IsLoading is false) return;
 
         if (IsRendered)
         {
@@ -936,20 +952,8 @@ public partial class BitDropMenu : BitComponentBase
                 fixedCalloutWidth: false,
                 maxWindowWidth: 0,
                 gap: Gap,
-                preferredSide: Side switch
-                {
-                    BitCalloutSide.Top => "top",
-                    BitCalloutSide.Bottom => "bottom",
-                    BitCalloutSide.Start => "start",
-                    BitCalloutSide.End => "end",
-                    _ => ""
-                },
-                alignment: Alignment switch
-                {
-                    BitCalloutAlignment.Center => "center",
-                    BitCalloutAlignment.End => "end",
-                    _ => ""
-                });
+                preferredSide: Placement.ToEdgeName(fallback: ""),
+                alignment: Alignment.ToAlignmentName());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1187,10 +1191,13 @@ public partial class BitDropMenu : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // The edge the responsive panel slides in from; every consumer of PanelPlacement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide();
+
     // The geometry the swipe gestures were registered with, or null when there are none to register.
     private string? GetSwipesKey()
     {
-        return Responsive is false ? null : $"{PanelPosition}|{Dir}|{ScrollContainerId}";
+        return Responsive is false ? null : $"{EffectivePanelPosition}|{Dir}|{ScrollContainerId}";
     }
 
     private async Task SetupSwipes()
@@ -1208,14 +1215,9 @@ public partial class BitDropMenu : BitComponentBase
             await _js.BitSwipesSetup(
                 id: _calloutId,
                 trigger: 0.25m,
-                position: PanelPosition ?? BitPanelPosition.End,
+                position: EffectivePanelPosition,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what
-                // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
-                // the finger while the page scrolls out from under it at the same time.
-                orientationLock: PanelPosition is BitPanelPosition.Top or BitPanelPosition.Bottom
-                                    ? BitSwipeOrientation.Vertical
-                                    : BitSwipeOrientation.Horizontal,
+                orientationLock: EffectivePanelPosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,
                 scrollContainerId: ScrollContainerId ?? "");
@@ -1383,11 +1385,13 @@ public partial class BitDropMenu : BitComponentBase
         {
             classes.Add("bit-drm-res");
 
-            classes.Add(PanelPosition switch
+            classes.Add(EffectivePanelPosition switch
             {
-                BitPanelPosition.Start => "bit-drm-sta",
-                BitPanelPosition.Top => "bit-drm-top",
-                BitPanelPosition.Bottom => "bit-drm-btm",
+                BitPlacement.Start => "bit-drm-sta",
+                BitPlacement.Left => "bit-drm-lft",
+                BitPlacement.Right => "bit-drm-rgt",
+                BitPlacement.Top => "bit-drm-top",
+                BitPlacement.Bottom => "bit-drm-btm",
                 _ => "bit-drm-end"
             });
         }

@@ -7,7 +7,7 @@ public partial class BitOtpInputDemo
 
 <BitOtpInput Length=""4"" />
 
-<BitOtpInput IsEnabled=""false"" DefaultValue=""12345"" />
+<BitOtpInput Disabled DefaultValue=""12345"" />
 
 <BitOtpInput ReadOnly DefaultValue=""12345"" />
 

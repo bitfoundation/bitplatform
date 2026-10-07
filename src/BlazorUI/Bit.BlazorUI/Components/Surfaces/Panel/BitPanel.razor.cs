@@ -435,7 +435,12 @@ public partial class BitPanel : BitComponentBase
     /// The edge of the screen the panel slides in from. Start and End are the logical edges, so they follow
     /// the direction of the panel. It defaults to End.
     /// </summary>
-    [Parameter] public BitPanelPosition? Position { get; set; }
+    /// <remarks>
+    /// Left and Right are the physical edges, so they stay where they are named in both directions, whether the
+    /// direction is set on the component or inherited from the page; Center and the two combined values name no
+    /// edge and fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The ARIA role the panel reports itself under, which takes over from the <c>dialog</c> it is announced
@@ -539,7 +544,7 @@ public partial class BitPanel : BitComponentBase
     /// </summary>
     public async Task Open()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsOpen) return;
 
@@ -832,7 +837,7 @@ public partial class BitPanel : BitComponentBase
 
         // A disabled panel takes nothing from the user, but the code that owns it can always close it: a
         // panel disabled while it was open would otherwise be left on the screen with no way off it.
-        if (IsEnabled is false && reason is not BitPanelDismissReason.Programmatic) return false;
+        if (Disabled && reason is not BitPanelDismissReason.Programmatic) return false;
 
         if (OnDismissing.HasDelegate)
         {
@@ -861,7 +866,7 @@ public partial class BitPanel : BitComponentBase
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         await OnOverlayClick.InvokeAsync(e);
 
@@ -886,7 +891,7 @@ public partial class BitPanel : BitComponentBase
         var foreign = _foreignEscape;
         _foreignEscape = false;
 
-        if (IsOpen is false || IsEnabled is false) return;
+        if (IsOpen is false || Disabled) return;
 
         // An Escape that closes an open popup of the content - a dropdown's list, a date picker's calendar -
         // is that popup's, not the panel's, and neither is one a handler inside already claimed, one that
@@ -908,7 +913,7 @@ public partial class BitPanel : BitComponentBase
     // than carrying on up to whatever the panel was opened from. A panel that refuses the key lets every key
     // through to the handlers of the page around it; one opened from inside another panel still keeps an
     // Escape it refuses from that one, which the escape guard tells to leave it alone.
-    private bool DismissesOnEscape => IsOpen && IsEnabled && NoDismissOnEscape is false;
+    private bool DismissesOnEscape => IsOpen && Disabled is false && NoDismissOnEscape is false;
 
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
     // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own
@@ -961,9 +966,10 @@ public partial class BitPanel : BitComponentBase
                                         && AbsolutePosition is false
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
-    // Whether the panel slides in along the horizontal axis, which is what decides both the axis the swipe
-    // gesture is locked to and which of the two coordinates the swipe callbacks are given.
-    private bool IsHorizontal => (Position ?? BitPanelPosition.End) is BitPanelPosition.Start or BitPanelPosition.End;
+    // The edge the panel actually slides in from; every consumer of Placement goes through it (see ToPanelSide).
+    private BitPlacement EffectivePosition => Placement.ToPanelSide();
+
+    private bool IsHorizontal => EffectivePosition.IsInlineSide();
 
     // Whether the content of the panel is in the page. It goes in on the first opening and comes back out
     // once the panel has finished sliding away, so every opening starts over; a KeepMounted panel keeps it
@@ -1054,12 +1060,13 @@ public partial class BitPanel : BitComponentBase
     {
         List<string> classes = ["bit-pnl-cnt"];
 
-        classes.Add(Position switch
+        classes.Add(EffectivePosition switch
         {
-            BitPanelPosition.Start => "bit-pnl-start",
-            BitPanelPosition.End => "bit-pnl-end",
-            BitPanelPosition.Top => "bit-pnl-top",
-            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            BitPlacement.Start => "bit-pnl-start",
+            BitPlacement.Left => "bit-pnl-left",
+            BitPlacement.Right => "bit-pnl-right",
+            BitPlacement.Top => "bit-pnl-top",
+            BitPlacement.Bottom => "bit-pnl-bottom",
             _ => "bit-pnl-end"
         });
 
@@ -1093,7 +1100,7 @@ public partial class BitPanel : BitComponentBase
     // The geometry the swipe gesture was registered with, or null when there is no gesture to register.
     private string? GetSwipesKey()
     {
-        return NoSwipe ? null : $"{Position ?? BitPanelPosition.End}|{Dir}|{GetSwipeTrigger()}";
+        return NoSwipe ? null : $"{EffectivePosition}|{Dir}|{GetSwipeTrigger()}";
     }
 
     // A trigger outside of the range it can mean - a fraction of the size of the panel, so greater than zero
@@ -1109,7 +1116,7 @@ public partial class BitPanel : BitComponentBase
 
         _swipesKey = GetSwipesKey();
 
-        var position = Position ?? BitPanelPosition.End;
+        var position = EffectivePosition;
 
         // Swipes.dispose releases the .NET reference it was handed, so a re-registration gets one of its own
         // rather than reusing a reference that has already been released.
@@ -1125,10 +1132,7 @@ public partial class BitPanel : BitComponentBase
                 // way its content resolves it to, so for both the script reads that off the layout rather
                 // than being told a left-to-right it may not be.
                 isRtl: Dir switch { BitDir.Rtl => true, BitDir.Ltr => false, _ => null },
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what takes
-                // that axis from the page: a top or bottom panel dragged with the wrong lock follows the finger
-                // while the page scrolls out from under it at the same time.
-                orientationLock: IsHorizontal ? BitSwipeOrientation.Horizontal : BitSwipeOrientation.Vertical,
+                orientationLock: position.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: false);
         }

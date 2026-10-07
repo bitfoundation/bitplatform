@@ -308,12 +308,12 @@ public partial class BitPivotDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitPivotPosition?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Position of the pivot header (default: Top).",
+            Description = "Placement of the pivot header (default: Top).",
             LinkType = LinkType.Link,
-            Href = "#pivotPosition-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -1040,39 +1040,7 @@ public partial class BitPivotDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "pivotPosition-enum",
-            Name = "BitPivotPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="Display header at the top.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="Display header at the Bottom.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="Display header at the start (Left for LTR and Right for RTL).",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Display header at the end (Right for LTR and Left for RTL).",
-                    Value="3",
-                },
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitColor(),
     ];
 

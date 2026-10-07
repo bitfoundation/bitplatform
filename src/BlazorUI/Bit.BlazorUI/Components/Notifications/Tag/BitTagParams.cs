@@ -158,7 +158,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The corner shape of the tag.
     /// </summary>
-    public BitTagShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// The size of the tag.

@@ -11,7 +11,19 @@ public class BitPageVisibility(IJSRuntime js) : IDisposable, IAsyncDisposable
     // mode), so each instance registers itself under an id of its own and takes only itself back out.
     private readonly string _id = Guid.NewGuid().ToString("N");
 
-    private Task? _initTask;
+    // A script that is still loading answers a moment later, so a failed call is made again on its own, a little
+    // later each time, rather than waiting for a caller that may never come back (a message that never renders
+    // again). A script that is missing for good is given up on once the attempts run out.
+    private static readonly TimeSpan InitTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan FirstRetryDelay = TimeSpan.FromSeconds(1);
+    private const int MaxRetries = 5;
+
+    private readonly CancellationTokenSource _disposeCts = new();
+
+    private Task<bool>? _initTask;
+    private int _retries;
+    private bool _isRetryScheduled;
+    private bool _isDisposed;
     private bool _isHiddenReported;
     private bool _isWindowBlurredReported;
     private DotNetObjectReference<BitPageVisibility>? _dotnetObj;
@@ -49,40 +61,98 @@ public class BitPageVisibility(IJSRuntime js) : IDisposable, IAsyncDisposable
     /// Initializes the js api of the page visibility utility, and reads the state the page is already in into
     /// <see cref="IsHidden"/> and <see cref="IsWindowBlurred"/>, since no event is coming for it.
     /// </summary>
-    public async Task Init()
+    /// <returns>
+    /// <c>true</c> once the browser is reporting to this instance; <c>false</c> when it could not be asked - the
+    /// script is not loaded, the runtime is not ready, the circuit is gone or the call timed out.
+    /// </returns>
+    /// <remarks>
+    /// A failure is answered rather than thrown, so a caller has nothing to catch: until the browser answers, the
+    /// page is simply taken to be visible and focused, which is no reason to fail a render. A failed call is made
+    /// again on its own a few times, and a state other than visible and focused that it then reads is raised
+    /// through <see cref="OnChange"/> and <see cref="OnWindowFocusChange"/> like any later change, so a subscriber
+    /// never has to ask again.
+    /// </remarks>
+    public async Task<bool> Init()
     {
-        if (_initTask is not null)
-        {
-            // A later caller only waits for the state the first one asked for; a failure is the first caller's.
-            try { await _initTask; } catch { }
-            return;
-        }
+        if (_isDisposed) return false;
 
-        _initTask = InitCore();
+        // Every caller waits for the one call already on its way rather than asking the page again.
+        var initTask = _initTask ??= InitCore();
 
+        bool initialized;
         try
         {
-            await _initTask;
+            initialized = await initTask;
         }
         catch
         {
-            // A failed call wired nothing up, so the next caller is let to try again.
-            _initTask = null;
-            throw;
+            // Whatever the call failed with, it wired nothing up; the reason is no business of a render.
+            initialized = false;
         }
+
+        // A failed call is not kept, so the next attempt asks the page again - unless one already has.
+        if (initialized is false && ReferenceEquals(_initTask, initTask))
+        {
+            _initTask = null;
+
+            ScheduleRetry();
+        }
+
+        return initialized;
     }
 
-    private async Task InitCore()
+    private async Task<bool> InitCore()
     {
         _dotnetObj ??= DotNetObjectReference.Create(this);
 
-        var state = await js.Invoke<BitPageVisibilityState?>("BitBlazorUI.PageVisibility.init", _id, _dotnetObj);
-        if (state is null) return;
+        // The bit Invoke skips the call, and answers with nothing, while the runtime cannot be used (prerendering, a
+        // circuit not connected yet): nothing was registered then, which is a failure rather than an answer.
+        var state = await js.Invoke<BitPageVisibilityState?>("BitBlazorUI.PageVisibility.init", InitTimeout, _id, _dotnetObj);
+        if (state is null) return false;
 
         // The listeners are live from the moment the script registered them, so a change can be reported before
         // this continuation runs; the snapshot is older than such a report and does not overwrite it.
-        if (_isHiddenReported is false) IsHidden = state.Hidden;
-        if (_isWindowBlurredReported is false) IsWindowBlurred = state.Blurred;
+        var hiddenChanged = _isHiddenReported is false && IsHidden != state.Hidden;
+        var blurredChanged = _isWindowBlurredReported is false && IsWindowBlurred != state.Blurred;
+
+        if (hiddenChanged) IsHidden = state.Hidden;
+        if (blurredChanged) IsWindowBlurred = state.Blurred;
+
+        // Whoever subscribed before the answer (or before a retry got one) took the page to be visible and focused,
+        // so a state other than that is handed to them the same way a change is.
+        if (hiddenChanged) await RaiseAsync(OnChange, IsHidden);
+        if (blurredChanged) await RaiseAsync(OnWindowFocusChange, IsWindowBlurred);
+
+        return true;
+    }
+
+    private void ScheduleRetry()
+    {
+        if (_isDisposed || _isRetryScheduled || _retries >= MaxRetries) return;
+
+        var delay = FirstRetryDelay * (1 << _retries++);
+
+        _isRetryScheduled = true;
+
+        _ = RetryAsync(delay);
+    }
+
+    private async Task RetryAsync(TimeSpan delay)
+    {
+        try
+        {
+            await Task.Delay(delay, _disposeCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        finally
+        {
+            _isRetryScheduled = false;
+        }
+
+        await Init();
     }
 
 
@@ -109,6 +179,14 @@ public class BitPageVisibility(IJSRuntime js) : IDisposable, IAsyncDisposable
 
     public void Dispose()
     {
+        if (_isDisposed is false)
+        {
+            _isDisposed = true;
+
+            _disposeCts.Cancel();
+            _disposeCts.Dispose();
+        }
+
         _dotnetObj?.Dispose();
         _dotnetObj = null;
 

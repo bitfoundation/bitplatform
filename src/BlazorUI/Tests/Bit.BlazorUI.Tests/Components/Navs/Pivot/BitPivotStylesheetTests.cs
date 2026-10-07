@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -40,7 +38,7 @@ public class BitPivotStylesheetTests
     {
         var (documented, _) = SplitStylesheet();
 
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Navs", "Pivot", "BitPivotDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Navs", "Pivot", "BitPivotDemo.razor.cs");
 
         var published = Regex.Matches(demo, @"Name\s*=\s*""(--bit-Pivot-[a-z-]+)""").Select(m => m.Groups[1].Value).ToList();
 
@@ -64,13 +62,13 @@ public class BitPivotStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The Gap parameter is written inline on the root, and a custom property inherits: every pivot resets it.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt {"), "--bit-pvt-gap: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt {"), "--bit-pvt-gap: initial;");
 
         // The size is a step declared on each root rather than a rule reaching into the header of a pivot, which
         // would reach the header of a pivot nested in its panel as well.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-fs:");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-fs:");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-fs:");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-fs:");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-fs:");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-fs:");
     }
 
     [TestMethod]
@@ -79,12 +77,12 @@ public class BitPivotStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // A Small header that is as tall as a Medium one is not a size at all.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-ih: calc(#{$siz-tab} * 0.75);");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-ih: #{$siz-tab};");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-ih: calc(#{$siz-tab} * 1.25);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-ih: calc(#{$siz-tab} * 0.75);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-ih: #{$siz-tab};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-ih: calc(#{$siz-tab} * 1.25);");
 
         // The public variable still wins over every size.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvti {"), "height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvti {"), "height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));");
     }
 
     [TestMethod]
@@ -93,22 +91,22 @@ public class BitPivotStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The rows of a popup list are one of the size families of the design system, per size like the items.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-mh: #{$siz-item-sm};");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-mh: #{$siz-item-md};");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-mh: #{$siz-item-lg};");
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-mni {"), "min-height: var(--bit-pvt-mh, #{$siz-item-md});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-sm {"), "--bit-pvt-mh: #{$siz-item-sm};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-mh: #{$siz-item-md};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-mh: #{$siz-item-lg};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "min-height: var(--bit-pvt-mh, #{$siz-item-md});");
 
         // A popup enters on the decelerating curve, like every other callout of the library.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-mnc {"), "animation-timing-function: $mot-easing-decelerate;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mnc {"), "animation-timing-function: $mot-easing-decelerate;");
 
         // The menu scrolls, so a ring drawn around the outside of a row would be clipped to one edge of it.
-        StringAssert.Contains(GetBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
     }
 
     [TestMethod]
     public void BitPivotOutlineShouldAlwaysDrawTheRuleItsSelectedTabOpensOnto()
     {
-        var block = GetBlock(ReadStylesheet(), "\n.bit-pvt-oln {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-oln {");
 
         // Fluent's tab divider is none, and an outlined tab opening onto nothing is a floating box.
         StringAssert.Contains(block, "height: var(--bit-Pivot-divider-thickness, #{$shp-border-width});");
@@ -124,7 +122,7 @@ public class BitPivotStylesheetTests
     [TestMethod]
     public void BitPivotSlideHeaderShouldStayScrollableForTouch()
     {
-        var block = GetBlock(ReadStylesheet(), "\n.bit-pvt-sld {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-sld {");
 
         // Clipped (overflow: hidden) the header would move with the buttons only, never with a swipe.
         StringAssert.Contains(block, "overflow-x: auto;");
@@ -134,7 +132,7 @@ public class BitPivotStylesheetTests
     [TestMethod]
     public void BitPivotDismissButtonShouldMeetTheMinimumTargetSize()
     {
-        var block = GetBlock(ReadStylesheet(), "\n.bit-pvti-dbt {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvti-dbt {");
 
         // spacing(3) is 24px at the default scaling, the floor of WCAG 2.2 SC 2.5.8 for a target inside another one.
         StringAssert.Contains(block, "width: var(--bit-Pivot-dismiss-size, #{spacing(3)});");
@@ -152,42 +150,16 @@ public class BitPivotStylesheetTests
         // child combinators only (the in-header / in-tablist paths, or & and >).
         var (_, body) = SplitStylesheet();
 
-        // Comments and interpolations carry characters of their own that would read as selectors or blocks.
-        var source = Regex.Replace(body, @"//[^\n]*", "");
-        source = Regex.Replace(source, @"#\{[^}]*\}", "INTERPOLATION");
-
-        var stack = new System.Collections.Generic.Stack<string>();
         var leaks = new System.Collections.Generic.List<string>();
-        var start = 0;
 
-        for (var i = 0; i < source.Length; i++)
+        foreach (var rule in SourceFiles.GetScssRules(body).Where(r => r.Header.StartsWith('@') is false))
         {
-            var c = source[i];
+            var parent = rule.Ancestors.LastOrDefault(s => s.StartsWith('@') is false);
+            if (parent is null) continue;
 
-            if (c == ';')
+            foreach (var part in rule.Header.Split(',').Select(p => p.Trim()))
             {
-                start = i + 1;
-            }
-            else if (c == '{')
-            {
-                var selector = source[start..i].Trim();
-
-                var parent = stack.FirstOrDefault(s => s.StartsWith('@') is false);
-                if (parent is not null && selector.StartsWith('@') is false)
-                {
-                    foreach (var part in selector.Split(',').Select(p => p.Trim()))
-                    {
-                        if (part.StartsWith('.')) leaks.Add($"{parent} {{ {part} }}");
-                    }
-                }
-
-                stack.Push(selector);
-                start = i + 1;
-            }
-            else if (c == '}')
-            {
-                if (stack.Count > 0) stack.Pop();
-                start = i + 1;
+                if (part.StartsWith('.')) leaks.Add($"{parent} {{ {part} }}");
             }
         }
 
@@ -198,7 +170,7 @@ public class BitPivotStylesheetTests
     public void BitPivotShouldDrawTheFocusRingInsideATabTheHeaderClips()
     {
         // The Menu, Slide and Scroll headers clip what overflows them, which would cut an outer ring off.
-        var block = GetBlock(ReadStylesheet(), "\n.bit-pvt-mnu,\n.bit-pvt-sld,\n.bit-pvt-scr {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-mnu,\n.bit-pvt-sld,\n.bit-pvt-scr {");
 
         StringAssert.Contains(block, "#{$tab}:focus-visible");
         StringAssert.Contains(block, "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
@@ -208,7 +180,7 @@ public class BitPivotStylesheetTests
     [TestMethod]
     public void BitPivotShouldDrawTheDividerFromTheThemeToken()
     {
-        var block = GetBlock(ReadStylesheet(), "\n.bit-pvt-hwr {");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-hwr {");
 
         StringAssert.Contains(block, "height: var(--bit-Pivot-divider-thickness, #{$siz-tab-divider});");
         StringAssert.Contains(block, "background-color: var(--bit-Pivot-divider-color, #{$clr-brd-sec});");
@@ -237,27 +209,5 @@ public class BitPivotStylesheetTests
         return (documented, body);
     }
 
-    private static string GetBlock(string stylesheet, string selector)
-    {
-        var start = stylesheet.IndexOf(selector, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"{selector.Trim()} was not found in the stylesheet.");
-
-        var end = stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
-    }
-
-    private static string ReadStylesheet() => ReadFile("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
-
-    private static string ReadFile(params string[] parts) => ReadFileFrom(parts);
-
-    private static string ReadFileFrom(string[] parts, [CallerFilePath] string thisFile = "")
-    {
-        var root = Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..");
-        var path = Path.GetFullPath(Path.Combine([root, .. parts]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
 }

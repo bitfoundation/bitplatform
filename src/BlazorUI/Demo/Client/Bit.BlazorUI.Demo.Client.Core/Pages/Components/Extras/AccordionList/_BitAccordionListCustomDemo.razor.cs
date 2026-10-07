@@ -25,7 +25,7 @@ public partial class _BitAccordionListCustomDemo
         Key = { Selector = i => i.Id },
         Title = { Selector = i => i.Name },
         Description = { Selector = i => i.Info },
-        IsEnabled = { Selector = i => i.IsEnabled },
+        IsDisabled = { Selector = i => i.IsDisabled },
         ReadOnly = { Selector = i => i.Locked },
         ExpanderIconName = { Selector = i => i.Image },
         IconName = { Selector = i => i.Glyph },
@@ -69,7 +69,7 @@ public partial class _BitAccordionListCustomDemo
     private readonly List<Section> stateItems =
     [
         new() { Id = "normal", Name = "General settings", Info = "A live item", Content = BodyFor(Story1) },
-        new() { Id = "disabled", Name = "Users", Info = "Turned off altogether", IsEnabled = false, Content = BodyFor(Story2) },
+        new() { Id = "disabled", Name = "Users", Info = "Turned off altogether", IsDisabled = true, Content = BodyFor(Story2) },
         new() { Id = "locked", Name = "Advanced settings", Info = "Open on purpose and staying that way", Locked = true, Content = BodyFor(Story3) },
     ];
 

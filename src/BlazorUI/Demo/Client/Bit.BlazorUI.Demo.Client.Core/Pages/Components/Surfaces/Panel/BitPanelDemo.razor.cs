@@ -245,11 +245,11 @@ public partial class BitPanelDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitPanelPosition?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The edge the panel slides in from; Start and End follow the text direction. Defaults to End.",
-            Href = "#panel-position-enum",
+            Description = "The edge the panel slides in from; Start and End follow the text direction, Left and Right stay where they are named in both. Center and the two combined values fall back to End. Defaults to End.",
+            Href = "#placement-enum",
             LinkType = LinkType.Link,
         },
         new()
@@ -285,7 +285,7 @@ public partial class BitPanelDemo
             Name = "Size",
             Type = "double?",
             DefaultValue = "null",
-            Description = "The size in pixels along the axis the panel slides on (the width at Start/End, the height at Top/Bottom). Unset, the panel fits its content; other units go through --bit-Panel-size or Styles.Container.",
+            Description = "The size in pixels along the axis the panel slides on (the width at Start/End/Left/Right, the height at Top/Bottom). Unset, the panel fits its content; other units go through --bit-Panel-size or Styles.Container.",
         },
         new()
         {
@@ -544,7 +544,7 @@ public partial class BitPanelDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        DemoSharedEnums.BitPanelPosition(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "dismiss-reason-enum",
@@ -569,7 +569,7 @@ public partial class BitPanelDemo
     private bool isHeaderTextPanelOpen;
     private bool isTemplatePanelOpen;
 
-    private BitPanelPosition panelPosition = BitPanelPosition.End;
+    private BitPlacement panelPosition = BitPlacement.End;
     private double panelSize = 300;
     private bool panelFullSize;
     private bool isPositionPanelOpen;
@@ -626,7 +626,7 @@ public partial class BitPanelDemo
     [
         new()
         {
-            Position = BitPanelPosition.Start,
+            Placement = BitPlacement.Start,
             Size = 320,
             ModeFull = true,
             ShowCloseButton = true,

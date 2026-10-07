@@ -411,7 +411,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldDisableASingleItem()
     {
         var items = UrlItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items);
 
@@ -431,7 +431,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldDisableAButtonItemNatively()
     {
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items);
 
@@ -447,7 +447,7 @@ public class BitNavBarTests : BunitTestContext
     [TestMethod]
     public void BitNavBarShouldDisableEveryItemWhenTheNavBarIsDisabled()
     {
-        var component = RenderNavBar(UrlItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNavBar(UrlItems(), p => p.Add(c => c.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("bit-dis"));
 
@@ -464,7 +464,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldNotSelectADisabledItemOnClick()
     {
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
         var clicked = 0;
 
         var component = RenderNavBar(items, p =>
@@ -486,7 +486,7 @@ public class BitNavBarTests : BunitTestContext
 
         var component = RenderNavBar(BasicItems(), p =>
         {
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
             p.Add(c => c.Mode, BitNavMode.Manual);
             p.Add(c => c.OnItemClick, (BitNavBarItem _) => clicked++);
         });
@@ -1497,7 +1497,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldWrapOntoAnEnabledItemOnly()
     {
         var items = BasicItems();
-        items[2].IsEnabled = false;
+        items[2].IsDisabled = true;
 
         var component = RenderNavBar(items, p => p.Add(c => c.WrapNavigation, true));
 
@@ -1512,7 +1512,7 @@ public class BitNavBarTests : BunitTestContext
         // A disabled item renders as a native disabled button, which takes no focus at all, so walking onto
         // one would leave the focus where it was while the navbar believes it has moved.
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items);
 
@@ -1524,7 +1524,7 @@ public class BitNavBarTests : BunitTestContext
     [TestMethod]
     public void BitNavBarShouldNotHandleTheArrowKeysWhileDisabled()
     {
-        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNavBar(BasicItems(), p => p.Add(c => c.Disabled, true));
 
         component.FindAll(".bit-nbr-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
@@ -1609,7 +1609,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldKeepTheSingleTabStopOffADisabledFocusedItem()
     {
         var items = BasicItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderNavBar(items, p =>
         {
@@ -1861,7 +1861,7 @@ public class BitNavBarTests : BunitTestContext
                 SelectedIcon = { Selector = i => i.SelectedGlyphInfo },
                 SelectedIconName = { Selector = i => i.SelectedGlyph },
                 Dot = { Selector = i => i.Marker },
-                IsEnabled = { Selector = i => i.Disabled is false },
+                IsDisabled = { Selector = i => i.Disabled },
                 Class = { Selector = i => i.CssClass },
                 Style = { Selector = i => i.CssStyle },
                 Title = { Selector = i => i.Tooltip },
@@ -2702,7 +2702,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderNavBar(BasicItems(), p =>
         {
-            p.Add(c => c.IsEnabled, false);
+            p.Add(c => c.Disabled, true);
             p.Add(c => c.Mode, BitNavMode.Manual);
             p.Add(c => c.SelectOnFocus, true);
         });
@@ -2716,7 +2716,7 @@ public class BitNavBarTests : BunitTestContext
     public void BitNavBarShouldNotSelectADisabledItemOnFocus()
     {
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNavBar(items, p =>
         {

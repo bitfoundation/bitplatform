@@ -44,9 +44,9 @@
                 </div>
             }
 
-            @* The icon is written once and placed on whichever end IconPosition asks for, so a leading and a
+            @* The icon is written once and placed on whichever end IconPlacement asks for, so a leading and a
                trailing one are the same mark with the same name rather than two pieces of markup drifting apart. *@
-            @if (HasIcon && IconPosition is BitIconPosition.Start)
+            @if (HasIcon && IconPlacement is BitPlacement.Start)
             {
                 @IconFragment
             }
@@ -78,7 +78,7 @@
                               placeholder="@Placeholder"
                               autocomplete="@AutoComplete"
                               value="@CurrentValueAsString"
-                              disabled=@(IsEnabled is false)
+                              disabled=@(Disabled)
                               class="bit-tfl-inp @Classes?.Input"
                               enterkeyhint="@EnterKeyHint"
                               autocapitalize="@AutoCapitalize"
@@ -118,7 +118,7 @@
                            placeholder="@Placeholder"
                            autocomplete="@AutoComplete"
                            value="@CurrentValueAsString"
-                           disabled=@(IsEnabled is false)
+                           disabled=@(Disabled)
                            class="bit-tfl-inp @Classes?.Input"
                            enterkeyhint="@EnterKeyHint"
                            autocapitalize="@AutoCapitalize"
@@ -166,7 +166,7 @@
                         style="@Styles?.ClearButton"
                         class="bit-tfl-cbt @Classes?.ClearButton"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear text")"
-                        disabled="@(IsEnabled is false || ReadOnly)">
+                        disabled="@(Disabled || ReadOnly)">
                     @if (ClearButtonTemplate is not null)
                     {
                         @ClearButtonTemplate
@@ -187,7 +187,7 @@
                         type="button"
                         tabindex="@TabIndex"
                         style="@Styles?.RevealPassword"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         class="bit-tfl-rpb @Classes?.RevealPassword"
                         aria-label="@(RevealPasswordAriaLabel ?? "Reveal password")"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
@@ -210,7 +210,7 @@
                 </button>
             }
 
-            @if (HasIcon && IconPosition is not BitIconPosition.Start)
+            @if (HasIcon && IconPlacement is not BitPlacement.Start)
             {
                 @IconFragment
             }
@@ -335,7 +335,7 @@
                     tabindex="@TabIndex"
                     style="@Styles?.IconButton"
                     aria-label="@IconButtonAriaLabel"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     class="bit-tfl-icb @Classes?.IconButton">
                 <i aria-hidden="true"
                    style="@Styles?.Icon"

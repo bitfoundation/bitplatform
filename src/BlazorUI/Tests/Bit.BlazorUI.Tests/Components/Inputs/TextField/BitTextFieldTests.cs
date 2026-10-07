@@ -22,7 +22,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.Required, required);
         });
@@ -123,7 +123,7 @@ public class BitTextFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Type, BitInputType.Password);
             parameters.Add(p => p.CanRevealPassword, true);
         });
@@ -170,7 +170,7 @@ public class BitTextFieldTests : BunitTestContext
         int currentCount = 0;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.OnClick, () => currentCount++);
         });
@@ -195,7 +195,7 @@ public class BitTextFieldTests : BunitTestContext
         int focusedOutValue = 0;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.OnFocus, () => focusedValue++);
             parameters.Add(p => p.OnFocusIn, () => focusedInValue++);
@@ -226,7 +226,7 @@ public class BitTextFieldTests : BunitTestContext
         string? keyDownedValue = null;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.OnKeyUp, (KeyboardEventArgs e) => keyUppedValue = e.Key);
             parameters.Add(p => p.OnKeyDown, (KeyboardEventArgs e) => keyDownedValue = e.Key);
@@ -252,7 +252,7 @@ public class BitTextFieldTests : BunitTestContext
         int currentCount = 0;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.OnChange, () => currentCount++);
         });
@@ -450,7 +450,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isValid = value == "test@bit.com";
@@ -489,7 +489,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Multiline, true);
         });
 
@@ -529,7 +529,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isInvalid = value != "test@bit.com";
@@ -569,7 +569,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Multiline, true);
         });
 
@@ -608,7 +608,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitTextFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isInvalid = value != "test@bit.com";
@@ -780,7 +780,7 @@ public class BitTextFieldTests : BunitTestContext
         string? acceptedGhost = null;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.GhostText, ghostText);
@@ -1210,7 +1210,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.ShowClearButton, true);
             parameters.Add(p => p.DefaultValue, "hello");
         });
@@ -1420,7 +1420,7 @@ public class BitTextFieldTests : BunitTestContext
         var enterCount = 0;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnEnter, () => enterCount++);
         });
 
@@ -1439,7 +1439,7 @@ public class BitTextFieldTests : BunitTestContext
         var enterCount = 0;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnEnter, () => enterCount++);
             parameters.Add(p => p.OnEscape, () => escapeCount++);
         });
@@ -1774,7 +1774,7 @@ public class BitTextFieldTests : BunitTestContext
         var blurCount = 0;
         var component = RenderComponent<BitTextField>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Multiline, multiline);
             parameters.Add(p => p.OnBlur, () => blurCount++);
         });
@@ -1950,7 +1950,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.DefaultValue, "hello");
             parameters.Add(p => p.OnClear, () => clearCount++);
         });
@@ -1986,7 +1986,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-rnl"));
@@ -2116,17 +2116,17 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-tfl-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-tfl-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-tfl-lst"),
-        DataRow(BitLabelPosition.End, "bit-tfl-led"),
+        DataRow(BitPlacement.Top, "bit-tfl-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-tfl-lbt"),
+        DataRow(BitPlacement.Start, "bit-tfl-lst"),
+        DataRow(BitPlacement.End, "bit-tfl-led"),
     ]
-    public void BitTextFieldLabelPositionTest(BitLabelPosition labelPosition, string expectedClass)
+    public void BitTextFieldLabelPositionTest(BitPlacement labelPosition, string expectedClass)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Label, "a label");
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(expectedClass));
@@ -2155,14 +2155,14 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Label, "a label");
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.Top);
+            parameters.Add(p => p.LabelPlacement, BitPlacement.Top);
         });
 
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-ltp"));
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.Start);
+            parameters.Add(p => p.LabelPlacement, BitPlacement.Start);
         });
 
         var bitTextField = component.Find(".bit-tfl");
@@ -3169,7 +3169,7 @@ public class BitTextFieldTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.ReadOnly, false);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".bit-tfl-inp").Input("h");
@@ -3554,14 +3554,14 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow(BitIconPosition.Start, true),
-     DataRow(BitIconPosition.End, false)]
-    public void BitTextFieldIconPositionShouldDecideWhichEndTheIconSitsAt(BitIconPosition position, bool beforeTheInput)
+     DataRow(BitPlacement.Start, true),
+     DataRow(BitPlacement.End, false)]
+    public void BitTextFieldIconPositionShouldDecideWhichEndTheIconSitsAt(BitPlacement position, bool beforeTheInput)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.IconName, "Calendar");
-            parameters.Add(p => p.IconPosition, position);
+            parameters.Add(p => p.IconPlacement, position);
         });
 
         var (iconIndex, inputWrapperIndex) = IndexOfIconAndInput(component);
@@ -3578,7 +3578,7 @@ public class BitTextFieldTests : BunitTestContext
         {
             parameters.Add(p => p.IconName, "Lock");
             parameters.Add(p => p.IconAriaLabel, "Encrypted");
-            parameters.Add(p => p.IconPosition, BitIconPosition.Start);
+            parameters.Add(p => p.IconPlacement, BitPlacement.Start);
         });
 
         var icon = component.Find(".bit-tfl-ico");
@@ -3741,7 +3741,7 @@ public class BitTextFieldTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-tfl-icb").HasAttribute("disabled"));

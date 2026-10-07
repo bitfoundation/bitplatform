@@ -570,19 +570,19 @@ public partial class BitOtpInputDemo
         {
             Name = "--bit-OtpInput-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Character, placeholder, label, helper text, separator and loading bar when IsEnabled is false.",
+            Description = "Character, placeholder, label, helper text, separator and loading bar when Disabled is true.",
         },
         new()
         {
             Name = "--bit-OtpInput-disabled-background",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "Input background when IsEnabled is false.",
+            Description = "Input background when Disabled is true.",
         },
         new()
         {
             Name = "--bit-OtpInput-disabled-border-color",
             DefaultValue = "--bit-clr-brd-dis",
-            Description = "Input rule when IsEnabled is false.",
+            Description = "Input rule when Disabled is true.",
         },
         new()
         {

@@ -337,7 +337,7 @@ public partial class BitDialog : BitComponentBase
     /// The default value is <strong>true</strong>.
     /// </summary>
     /// <remarks>
-    /// This is the Cancel button on its own, unlike <see cref="BitComponentBase.IsEnabled"/>, which turns
+    /// This is the Cancel button on its own, unlike <see cref="BitComponentBase.Disabled"/>, which turns
     /// the whole Dialog off. Turning it off leaves every other way out of the Dialog open, so a Dialog whose
     /// Cancel is disabled is still not a Dialog that cannot be left.
     /// </remarks>
@@ -372,7 +372,7 @@ public partial class BitDialog : BitComponentBase
     /// The answer a Dialog is asking for is not always available the moment it opens: a consent that has to
     /// be ticked, a name that has to be typed, a code that has to be six digits long. This holds the Ok
     /// button shut until it is, without turning the rest of the Dialog off the way
-    /// <see cref="BitComponentBase.IsEnabled"/> would - the Cancel and close buttons, the Escape key and a
+    /// <see cref="BitComponentBase.Disabled"/> would - the Cancel and close buttons, the Escape key and a
     /// click on the overlay all keep working, so the Dialog can still be walked away from.
     /// </remarks>
     [Parameter] public bool IsOkButtonEnabled { get; set; } = true;
@@ -533,9 +533,9 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public EventCallback OnOpen { get; set; }
 
     /// <summary>
-    /// Position of the Dialog on the screen.
+    /// Position of the Dialog on the screen. Centered both ways by default.
     /// </summary>
-    [Parameter] public BitDialogPosition Position { get; set; }
+    [Parameter] public BitPosition Position { get; set; } = BitPosition.Center;
 
     /// <summary>
     /// Hands the focus back to whatever held it when the Dialog opened, once the Dialog closes.
@@ -1009,7 +1009,7 @@ public partial class BitDialog : BitComponentBase
         // not being shown and one that cannot be pressed fall back the same way. Each arm asks exactly what
         // the markup asks when it decides whether to disable that button, since anything less names a button
         // the browser will not take.
-        var pressable = IsEnabled && _isLoading is false;
+        var pressable = Disabled is false && _isLoading is false;
 
         var target = AutoFocusButton switch
         {
@@ -1234,7 +1234,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnOverlayClick.InvokeAsync(e);
 
@@ -1262,7 +1262,7 @@ public partial class BitDialog : BitComponentBase
         // any of those would throw away the very field the user was still working in.
         // Nothing is awaited before these are read, so an Ok callback that started after the key was pressed
         // holds the Dialog shut as surely as one that was already running.
-        if (IsEnabled is false || IsOpen is false || _isLoading || _isDismissing) return;
+        if (Disabled || IsOpen is false || _isLoading || _isDismissing) return;
 
         // A blocking Dialog can only be answered with its buttons, which is as true of the keyboard as
         // it is of a click on the overlay.
@@ -1280,7 +1280,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || _isLoading || _isDismissing) return;
+        if (Disabled || _isLoading || _isDismissing) return;
 
         await OnClose.InvokeAsync(e);
 
@@ -1289,7 +1289,7 @@ public partial class BitDialog : BitComponentBase
 
     private async Task HandleOnCancelClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || IsCancelButtonEnabled is false || _isLoading || _isDismissing) return;
+        if (Disabled || IsCancelButtonEnabled is false || _isLoading || _isDismissing) return;
 
         // The answer is in place before the callback runs, so a callback that closes the Dialog itself
         // still reports the answer it was given - and is taken back again when the callback throws, which
@@ -1313,7 +1313,7 @@ public partial class BitDialog : BitComponentBase
     {
         // A second click while the first one is still being awaited would run the callback twice and
         // resolve the showing twice over, so the Ok button answers only once per showing.
-        if (IsEnabled is false || IsOkButtonEnabled is false || _isLoading || _isDismissing) return;
+        if (Disabled || IsOkButtonEnabled is false || _isLoading || _isDismissing) return;
 
         Result = BitDialogResult.Ok;
 
@@ -1396,21 +1396,21 @@ public partial class BitDialog : BitComponentBase
 
     private string GetPositionClass() => Position switch
     {
-        BitDialogPosition.Center => "bit-dlg-ctr",
-        BitDialogPosition.TopLeft => "bit-dlg-tl",
-        BitDialogPosition.TopCenter => "bit-dlg-tc",
-        BitDialogPosition.TopRight => "bit-dlg-tr",
-        BitDialogPosition.CenterLeft => "bit-dlg-cl",
-        BitDialogPosition.CenterRight => "bit-dlg-cr",
-        BitDialogPosition.BottomLeft => "bit-dlg-bl",
-        BitDialogPosition.BottomCenter => "bit-dlg-bc",
-        BitDialogPosition.BottomRight => "bit-dlg-br",
-        BitDialogPosition.TopStart => "bit-dlg-ts",
-        BitDialogPosition.TopEnd => "bit-dlg-te",
-        BitDialogPosition.CenterStart => "bit-dlg-cs",
-        BitDialogPosition.CenterEnd => "bit-dlg-ce",
-        BitDialogPosition.BottomStart => "bit-dlg-bs",
-        BitDialogPosition.BottomEnd => "bit-dlg-be",
+        BitPosition.Center => "bit-dlg-ctr",
+        BitPosition.TopLeft => "bit-dlg-tl",
+        BitPosition.TopCenter => "bit-dlg-tc",
+        BitPosition.TopRight => "bit-dlg-tr",
+        BitPosition.CenterLeft => "bit-dlg-cl",
+        BitPosition.CenterRight => "bit-dlg-cr",
+        BitPosition.BottomLeft => "bit-dlg-bl",
+        BitPosition.BottomCenter => "bit-dlg-bc",
+        BitPosition.BottomRight => "bit-dlg-br",
+        BitPosition.TopStart => "bit-dlg-ts",
+        BitPosition.TopEnd => "bit-dlg-te",
+        BitPosition.CenterStart => "bit-dlg-cs",
+        BitPosition.CenterEnd => "bit-dlg-ce",
+        BitPosition.BottomStart => "bit-dlg-bs",
+        BitPosition.BottomEnd => "bit-dlg-be",
         _ => "bit-dlg-ctr",
     };
 

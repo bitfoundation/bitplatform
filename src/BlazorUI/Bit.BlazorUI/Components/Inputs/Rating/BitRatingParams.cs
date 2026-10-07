@@ -112,7 +112,7 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
     /// <summary>
     /// Where the label sits relative to the items.
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Maximum rating, which is also the number of rendered items. Values below 1 are treated as 1.
@@ -271,9 +271,9 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.Label = Label;
         }
 
-        if (LabelPosition.HasValue && bitRating.HasNotBeenSet(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitRating.HasNotBeenSet(nameof(LabelPlacement)))
         {
-            bitRating.LabelPosition = LabelPosition.Value;
+            bitRating.LabelPlacement = LabelPlacement.Value;
 
             bitRating.ClassBuilder.Reset();
         }

@@ -173,14 +173,14 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona Shape=""BitPersonaShape.Rounded""
+<BitPersona Shape=""BitShape.Rounded""
             PrimaryText=""Xafan Salina""
             SecondaryText=""Rounded""
             Presence=""BitPersonaPresence.Online""
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona Shape=""BitPersonaShape.Square""
+<BitPersona Shape=""BitShape.Square""
             PrimaryText=""Design Team""
             SecondaryText=""Square""
             CoinIconName=""@BitIconName.Group""
@@ -302,20 +302,20 @@ private int actionClickCount = 0;";
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
             Size=""BitPersonaSize.Size72""
-            IsEnabled=""false""
+            Disabled
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Saleh Khafan""
             SecondaryText=""Clickable, disabled""
             Size=""BitPersonaSize.Size72""
             OnImageClick=""() => {}""
-            IsEnabled=""false"" />
+            Disabled />
 
 <BitPersona Href=""/components/persona""
             PrimaryText=""Xafan Salina""
             SecondaryText=""Link, disabled""
             Size=""BitPersonaSize.Size72""
-            IsEnabled=""false""
+            Disabled
             ImageUrl=""/images/persona/persona-female.png"" />";
 
     private readonly string example10RazorCode = @"
@@ -497,7 +497,7 @@ private readonly BitPersonaParams[] personaParams =
     {
         Size = BitPersonaSize.Size40,
         AutoCoinColor = true,
-        Shape = BitPersonaShape.Rounded,
+        Shape = BitShape.Rounded,
         ShowDefaultPresenceIcons = true,
         PresenceTitles = new()
         {

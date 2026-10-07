@@ -5,7 +5,7 @@ public partial class BitNumberFieldDemo
     private readonly string example1RazorCode = @"
 <BitNumberField Label=""Basic"" TValue=""int?"" />
 
-<BitNumberField Label=""Disabled & DefaultValue"" DefaultValue=""1363"" IsEnabled=""false"" />
+<BitNumberField Label=""Disabled & DefaultValue"" DefaultValue=""1363"" Disabled />
 
 <BitNumberField Label=""Placeholder"" TValue=""int?"" Placeholder=""Enter a number..."" />
 
@@ -123,11 +123,11 @@ private int signedValue = -5;";
     private readonly string example7RazorCode = @"
 <BitNumberField Label=""Top (default)"" TValue=""int"" />
 
-<BitNumberField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" TValue=""int"" />
+<BitNumberField Label=""Start"" LabelPlacement=""BitPlacement.Start"" TValue=""int"" />
 
-<BitNumberField Label=""End"" LabelPosition=""BitLabelPosition.End"" TValue=""int"" />
+<BitNumberField Label=""End"" LabelPlacement=""BitPlacement.End"" TValue=""int"" />
 
-<BitNumberField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" TValue=""int"" />
+<BitNumberField Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" TValue=""int"" />
 
 <BitNumberField TValue=""int"">
     <LabelTemplate>
@@ -160,7 +160,7 @@ private int signedValue = -5;";
 </BitNumberField>
 
 <BitNumberField Label=""Label on the side"" TValue=""int""
-                LabelPosition=""BitLabelPosition.Start""
+                LabelPlacement=""BitPlacement.Start""
                 Description=""The hint wraps onto a line of its own."" />";
     private readonly string example8CsharpCode = @"
 private int seatsValue = 2;
@@ -182,7 +182,7 @@ private bool loadingValue;";
 
 <BitNumberField TValue=""int"" Label=""Prefix & Suffix"" Prefix=""Distance:"" Suffix=""km"" Mode=""BitSpinButtonMode.Compact"" />
 
-<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />
+<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" Disabled />
 
 <BitNumberField TValue=""double"" Label=""Price"" Mode=""BitSpinButtonMode.Compact"" Step=""0.5"">
     <PrefixTemplate>
@@ -673,7 +673,7 @@ private int? classesValue;";
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />
 
-    <BitNumberField Label=""برچسب در کنار"" TValue=""int"" LabelPosition=""BitLabelPosition.Start"" />
+    <BitNumberField Label=""برچسب در کنار"" TValue=""int"" LabelPlacement=""BitPlacement.Start"" />
 
     <BitNumberField TValue=""int"" Required />
 

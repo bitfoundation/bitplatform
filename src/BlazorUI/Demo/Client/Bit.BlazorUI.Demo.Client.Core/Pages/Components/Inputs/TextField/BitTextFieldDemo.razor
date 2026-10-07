@@ -20,7 +20,7 @@
             The everyday configurations of a text field. <b>Label</b> renders the caption above the input and is what a screen
             reader announces, so it is preferred over relying on <b>Placeholder</b> alone: a placeholder disappears the moment
             the first character is typed. <b>Description</b> adds a permanent hint under the field and is wired to the input
-            through <code>aria-describedby</code>. <b>IsEnabled="false"</b> takes the field out of the tab order entirely,
+            through <code>aria-describedby</code>. <b>Disabled</b> takes the field out of the tab order entirely,
             while <b>ReadOnly</b> keeps it focusable and copyable but refuses edits. <b>Required</b> renders the html
             <code>required</code> attribute and marks the label with an asterisk, <b>MaxLength</b> and <b>MinLength</b> map to
             the html length constraints, <b>AutoFocus</b> puts the caret in the field on the first render, and <b>FullWidth</b>
@@ -32,7 +32,7 @@
             <br />
             <BitTextField Label="Placeholder" Placeholder="Enter a text..." />
             <br />
-            <BitTextField Label="Disabled" IsEnabled="false" />
+            <BitTextField Label="Disabled" Disabled />
             <br />
             <BitTextField Label="ReadOnly" ReadOnly DefaultValue="This is ReadOnly" />
             <br />
@@ -70,9 +70,9 @@
             <br />
             <BitTextField Label="NoBorder + Required" NoBorder Required />
             <br />
-            <BitTextField Label="Underlined + Disabled" Underlined IsEnabled="false" DefaultValue="Not editable" />
+            <BitTextField Label="Underlined + Disabled" Underlined Disabled DefaultValue="Not editable" />
             <br />
-            <BitTextField Label="NoBorder + Disabled" NoBorder IsEnabled="false" DefaultValue="Not editable" />
+            <BitTextField Label="NoBorder + Disabled" NoBorder Disabled DefaultValue="Not editable" />
         </div>
     </DemoExample>
 
@@ -162,7 +162,7 @@
         <div>
             An icon and the two affixes - a prefix and a suffix - sit inside the frame beside the input.
             <b>IconName</b> renders a glyph of the built-in Fluent UI set,
-            and <b>IconPosition</b> decides which end it takes: <b>End</b> by default, past the clear and reveal buttons, or
+            and <b>IconPlacement</b> decides which end it takes: <b>End</b> by default, past the clear and reveal buttons, or
             <b>Start</b> in front of the input, where the mark that says what a field is for belongs. <b>Prefix</b> and
             <b>Suffix</b> are static pieces of text on either side and are <b>not part of the value</b> - a field with an
             <code>https://</code> prefix still binds only what was typed - so keep a descriptive label on the field, since a
@@ -184,7 +184,7 @@
         <div class="example-box">
             <BitTextField Label="Trailing icon (the default)" IconName="@BitIconName.EditMail" />
             <br />
-            <BitTextField Label="Leading icon" IconName="@BitIconName.Search" IconPosition="BitIconPosition.Start" Placeholder="Search..." />
+            <BitTextField Label="Leading icon" IconName="@BitIconName.Search" IconPlacement="BitPlacement.Start" Placeholder="Search..." />
             <br />
             <BitTextField Label="Prefix" Prefix="https://" />
             <br />
@@ -197,9 +197,9 @@
                           Suffix="USD"
                           DefaultValue="1,250.00"
                           IconName="@BitIconName.Calculator"
-                          IconPosition="BitIconPosition.Start" />
+                          IconPlacement="BitPlacement.Start" />
             <br />
-            <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IconName="@BitIconName.Globe" IsEnabled="false" />
+            <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IconName="@BitIconName.Globe" Disabled />
             <br />
             <BitTextField Label="Clickable icon"
                           Placeholder="Press the magnifier..."
@@ -625,7 +625,7 @@
 
     <DemoExample Title="Label position" RazorCode="@example14RazorCode" Id="example14">
         <div>
-            <b>LabelPosition</b> moves the label around the input: <b>Top</b> is the classic form layout, <b>Bottom</b> puts the
+            <b>LabelPlacement</b> moves the label around the input: <b>Top</b> is the classic form layout, <b>Bottom</b> puts the
             caption under the field, and <b>Start</b> and <b>End</b> lay the two out on one line, which is what a compact
             settings row or a filter bar wants. The two row layouts follow the reading direction rather than the screen, so they
             mirror themselves in a right-to-left page. Leaving the parameter unset keeps the layout each variant comes with -
@@ -634,24 +634,24 @@
         </div>
         <br />
         <div class="example-box">
-            <BitTextField Label="Top" LabelPosition="BitLabelPosition.Top" Placeholder="Enter a text..." />
+            <BitTextField Label="Top" LabelPlacement="BitPlacement.Top" Placeholder="Enter a text..." />
             <br />
-            <BitTextField Label="Bottom" LabelPosition="BitLabelPosition.Bottom" Placeholder="Enter a text..." />
+            <BitTextField Label="Bottom" LabelPlacement="BitPlacement.Bottom" Placeholder="Enter a text..." />
             <br />
-            <BitTextField Label="Start" LabelPosition="BitLabelPosition.Start" Placeholder="Enter a text..." />
+            <BitTextField Label="Start" LabelPlacement="BitPlacement.Start" Placeholder="Enter a text..." />
             <br />
-            <BitTextField Label="End" LabelPosition="BitLabelPosition.End" Placeholder="Enter a text..." />
+            <BitTextField Label="End" LabelPlacement="BitPlacement.End" Placeholder="Enter a text..." />
             <br />
             <BitTextField Label="Start + Required + a counter"
                           Required
                           ShowCount
                           MaxLength="20"
-                          LabelPosition="BitLabelPosition.Start"
+                          LabelPlacement="BitPlacement.Start"
                           Description="The footer keeps its own line under the whole row." />
             <br />
             <BitTextField Label="Underlined + Top"
                           Underlined
-                          LabelPosition="BitLabelPosition.Top"
+                          LabelPlacement="BitPlacement.Top"
                           Placeholder="Enter a text..."
                           Description="The underlined variant lays its label out in a row of its own, and an explicit position takes that row apart." />
         </div>

@@ -48,11 +48,11 @@ public partial class BitTimelineDemo
         new()
         {
             Name = "DotAlignment",
-            Type = "BitTimelineDotAlignment?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the dot of each item sits along its item, with the contents aligned to it. Start pins the dot to the first line of multi-line contents.",
+            Description = "Where the dot of each item sits along its item, with the contents aligned to it: at its middle (Center, the default), its Start (the top in a vertical timeline) or its End (the bottom in a vertical timeline). Start pins the dot to the first line of multi-line contents. Only Center, Start and End are honoured; every other value renders the default Center.",
             LinkType = LinkType.Link,
-            Href = "#dot-alignment-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -79,21 +79,21 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "LineVariant",
-            Type = "BitTimelineLineVariant?",
+            Name = "LineStyle",
+            Type = "BitLineStyle?",
             DefaultValue = "null",
-            Description = "The way the connecting line of the timeline is painted, which the items can override one by one.",
+            Description = "The way the connecting line of the timeline is painted, which the items can override one by one. Only Solid, Dashed and Dotted are drawn: the connector is a hairline, which leaves Double no room for its two strokes, so it is drawn solid.",
             LinkType = LinkType.Link,
-            Href = "#line-variant-enum",
+            Href = "#line-style-enum",
         },
         new()
         {
-            Name = "LinePosition",
-            Type = "BitTimelineLinePosition?",
+            Name = "LinePlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the connecting line runs: through the middle (Center), or along the Start or End edge with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line.",
+            Description = "Where the connecting line runs: through the middle (Center, the default), with the primary contents on one side of it and the secondary ones on the other, or along the Start edge (the top in a horizontal timeline) or the End edge (the bottom in a horizontal timeline), with the contents of each item stacked beside it. Reversed and Alternate only apply to the centered line. Only Center, Start and End are honoured; every other value renders the default Center.",
             LinkType = LinkType.Link,
-            Href = "#line-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -229,7 +229,7 @@ public partial class BitTimelineDemo
         {
             Name = "--bit-Timeline-line-color",
             DefaultValue = "--bit-clr-brd-sec",
-            Description = "Color of the connecting line, whatever its LineVariant.",
+            Description = "Color of the connecting line, whatever its LineStyle.",
         },
         new()
         {
@@ -332,10 +332,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the item is disabled.",
                },
                new()
                {
@@ -346,12 +346,12 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the item is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the item is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -497,10 +497,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the option is disabled.",
                },
                new()
                {
@@ -511,12 +511,12 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "LineVariant",
-                   Type = "BitTimelineLineVariant?",
+                   Name = "LineStyle",
+                   Type = "BitLineStyle?",
                    DefaultValue = "null",
-                   Description = "The way the connecting line of the option is painted, overriding the line variant of the timeline.",
+                   Description = "The way the connecting line of the option is painted, overriding the line style of the timeline. Only Solid, Dashed and Dotted are drawn; Double is drawn solid.",
                    LinkType = LinkType.Link,
-                   Href = "#line-variant-enum",
+                   Href = "#line-style-enum",
                },
                new()
                {
@@ -672,10 +672,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "BitNameSelectorPair<TItem, bool>",
-                    DefaultValue = "new(nameof(BitTimelineItem.IsEnabled))",
-                    Description = "IsEnabled field name and selector of the custom input class.",
+                    DefaultValue = "new(nameof(BitTimelineItem.IsDisabled))",
+                    Description = "IsDisabled field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -690,10 +690,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "LineVariant",
-                    Type = "BitNameSelectorPair<TItem, BitTimelineLineVariant?>",
-                    DefaultValue = "new(nameof(BitTimelineItem.LineVariant))",
-                    Description = "LineVariant field name and selector of the custom input class.",
+                    Name = "LineStyle",
+                    Type = "BitNameSelectorPair<TItem, BitLineStyle?>",
+                    DefaultValue = "new(nameof(BitTimelineItem.LineStyle))",
+                    Description = "LineStyle field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -925,87 +925,8 @@ public partial class BitTimelineDemo
         DemoSharedEnums.BitVariant(),
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitSize(description: "Determines the size of the dots and the font of the timeline."),
-        new()
-        {
-            Id = "line-variant-enum",
-            Name = "BitTimelineLineVariant",
-            Description = "Determines how the connecting line of the timeline is painted.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Solid",
-                    Description="An uninterrupted line.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Dashed",
-                    Description="A line drawn as a series of dashes, which usually marks a stretch of the timeline as pending or estimated.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Dotted",
-                    Description="A line drawn as a series of dots, a lighter version of the dashed line.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "line-position-enum",
-            Name = "BitTimelineLinePosition",
-            Description = "Determines where the connecting line of the timeline runs across its items.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Center",
-                    Description="The line runs through the middle, with the primary contents on one side of it and the secondary ones on the other.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The line runs along the start edge (the top in a horizontal timeline), with the contents of each item stacked after it.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The line runs along the end edge (the bottom in a horizontal timeline), with the contents of each item stacked before it.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "dot-alignment-enum",
-            Name = "BitTimelineDotAlignment",
-            Description = "Determines where the dot of each item sits along its item, with the contents aligned to it.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Center",
-                    Description="The dot sits at the middle of its item.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The dot sits at the start of its item (the top in a vertical timeline), next to the first line of the contents.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The dot sits at the end of its item (the bottom in a vertical timeline).",
-                    Value="2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitLineStyle(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "truncate-line-enum",

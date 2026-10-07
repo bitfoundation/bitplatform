@@ -7,11 +7,11 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "Alignment",
-            Type = "BitCalloutAlignment?",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "How the callout is lined up with the button across the side it opens on: Start (the default), Center or End.",
+            Description = "How the callout is lined up with the button across the side it opens on: Start (the default), Center or End, which follow the reading direction; Left and Right are honoured above or below the button, Top and Bottom beside it. Anything else falls back to Start.",
             LinkType = LinkType.Link,
-            Href = "#callout-alignment-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -264,12 +264,12 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "PanelPosition",
-            Type = "BitPanelPosition?",
+            Name = "PanelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the responsive panel to show on the screen.",
+            Description = "The position of the responsive panel to show on the screen. Start and End follow the text direction, Left and Right stay where they are named in both; Center and the two combined values fall back to End.",
             LinkType = LinkType.Link,
-            Href = "#panel-position-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -287,12 +287,12 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "Side",
-            Type = "BitCalloutSide?",
+            Name = "Placement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Unset leaves the choice to DropDirection.",
+            Description = "The side of the button the callout opens on when there is room for it there; it falls back to the opposite side when there is not. Top, Bottom, Left and Right are honoured as they are named, Start and End against the reading direction; Center, the two combined values, or none leave the choice to DropDirection.",
             LinkType = LinkType.Link,
-            Href = "#callout-side-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -707,35 +707,10 @@ public partial class BitDropMenuDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "callout-alignment-enum",
-            Name = "BitCalloutAlignment",
-            Description = "How a callout is lined up with its anchor along the axis it is not placed on.",
-            Items =
-            [
-                new() { Name = "Start", Description = "Lined up with the edge the anchor starts at. This is the default.", Value = "0" },
-                new() { Name = "Center", Description = "Centered on the anchor.", Value = "1" },
-                new() { Name = "End", Description = "Lined up with the edge the anchor ends at.", Value = "2" },
-            ]
-        },
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitColorKind(),
         DemoSharedEnums.BitDropDirection(),
-        DemoSharedEnums.BitPanelPosition(description: "Determines the edge the responsive panel slides in from."),
-        new()
-        {
-            Id = "callout-side-enum",
-            Name = "BitCalloutSide",
-            Description = "The side of the button the callout is placed on when there is room for it there.",
-            Items =
-            [
-                new() { Name = "Top", Description = "Above the button.", Value = "0" },
-                new() { Name = "Bottom", Description = "Below the button.", Value = "1" },
-                new() { Name = "Start", Description = "Beside the button, on its start side (left in LTR).", Value = "2" },
-                new() { Name = "End", Description = "Beside the button, on its end side (right in LTR).", Value = "3" },
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant()
     ];
@@ -753,9 +728,9 @@ public partial class BitDropMenuDemo
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
-    private BitCalloutAlignment alignment = BitCalloutAlignment.Start;
-    private BitCalloutSide side = BitCalloutSide.End;
-    private BitPanelPosition panelPosition = BitPanelPosition.End;
+    private BitPlacement alignment = BitPlacement.Start;
+    private BitPlacement side = BitPlacement.End;
+    private BitPlacement panelPosition = BitPlacement.End;
 
     private readonly BitDropMenuParams[] toolbarDropMenuParams =
     [

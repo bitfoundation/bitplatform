@@ -458,12 +458,12 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "Determines the location of the DatePicker's icon.",
+            Name = "IconPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "Determines the side of the input the DatePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
-            Href = "#icon-location-enum"
+            Href = "#placement-enum"
         },
         new()
         {
@@ -1883,7 +1883,7 @@ public partial class BitDatePickerDemo
     [
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitSize(),
-        DemoSharedEnums.BitIconLocation(),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitTimeFormat(),
         DemoSharedEnums.BitDropDirection(),
         new()

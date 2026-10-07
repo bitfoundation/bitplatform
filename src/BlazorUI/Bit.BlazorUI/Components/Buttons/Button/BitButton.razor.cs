@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -46,7 +46,7 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// Keeps the disabled button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -214,8 +214,13 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.
@@ -255,7 +260,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The position of the loading Label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement LoadingLabelPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The custom template used to replace the default spinner and loading label inside the button in the loading state.
@@ -455,7 +464,7 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-md"
         });
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-btn-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-btn-eni" : string.Empty);
 
         ClassBuilder.Register(() => Rounded ? "bit-btn-rnd" : string.Empty);
 
@@ -629,7 +638,7 @@ public partial class BitButton : BitComponentBase
         // splattable by its own name - and the attribute written here would otherwise overwrite that with null.
         var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             if (AllowDisabledFocus is false) return "-1";
 
@@ -645,18 +654,18 @@ public partial class BitButton : BitComponentBase
     }
 
     private string GetLabelPositionClass()
-        => LoadingLabelPosition switch
+        => LoadingLabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.Start => "bit-btn-srt",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
+            BitPlacement.Top => "bit-btn-top",
+            BitPlacement.Start => "bit-btn-srt",
+            BitPlacement.End => "bit-btn-end",
+            BitPlacement.Bottom => "bit-btn-btm",
             _ => "bit-btn-end"
         };
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         // The click that ends a drag is the drag's own, not a press of the button, so it is swallowed

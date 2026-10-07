@@ -381,15 +381,15 @@ private bool isOpenFocusSelector;";
            Message=""Do you want to send this message without a subject?"" />";
     private readonly string example10CsharpCode = @"
 private bool isOpenPosition;
-private BitDialogPosition position;
-private readonly BitDialogPosition[] dialogPositions =
+private BitPosition position;
+private readonly BitPosition[] dialogPositions =
 [
-    BitDialogPosition.TopLeft, BitDialogPosition.TopCenter, BitDialogPosition.TopRight,
-    BitDialogPosition.CenterLeft, BitDialogPosition.Center, BitDialogPosition.CenterRight,
-    BitDialogPosition.BottomLeft, BitDialogPosition.BottomCenter, BitDialogPosition.BottomRight,
+    BitPosition.TopLeft, BitPosition.TopCenter, BitPosition.TopRight,
+    BitPosition.CenterLeft, BitPosition.Center, BitPosition.CenterRight,
+    BitPosition.BottomLeft, BitPosition.BottomCenter, BitPosition.BottomRight,
 ];
 
-private void OpenDialogInPosition(BitDialogPosition value)
+private void OpenDialogInPosition(BitPosition value)
 {
     position = value;
     isOpenPosition = true;
@@ -650,7 +650,7 @@ private readonly BitDialogParams[] dialogParams =
         ShowCloseButton = false,
         CloseOnOverlayClick = false,
         AutoFocusButton = BitDialogButton.Cancel,
-        Position = BitDialogPosition.TopCenter,
+        Position = BitPosition.TopCenter,
     }
 ];";
 
@@ -796,7 +796,7 @@ private bool isOpenIconCss;";
 </BitDialog>
 
 <BitDialog FullWidth
-           Position=""BitDialogPosition.BottomCenter""
+           Position=""BitPosition.BottomCenter""
            @bind-IsOpen=""isOpenFullWidth""
            Title=""Full width""
            Message=""Stretched across the screen, at the bottom."" />
@@ -916,7 +916,7 @@ private bool isOpenCssVariables;";
 
 <BitDialog @bind-IsOpen=""isOpenRtlStart""
            Dir=""BitDir.Rtl""
-           Position=""BitDialogPosition.TopStart""
+           Position=""BitPosition.TopStart""
            Title=""TopStart""
            OkText=""تایید""
            CancelText=""انصراف""
@@ -924,7 +924,7 @@ private bool isOpenCssVariables;";
 
 <BitDialog @bind-IsOpen=""isOpenRtlLeft""
            Dir=""BitDir.Rtl""
-           Position=""BitDialogPosition.TopLeft""
+           Position=""BitPosition.TopLeft""
            Title=""TopLeft""
            OkText=""تایید""
            CancelText=""انصراف""

@@ -188,6 +188,20 @@
     }
 }
 
+@keyframes bit-snb-ent-l {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(-1.5));
+    }
+}
+
+@keyframes bit-snb-ent-r {
+    from {
+        opacity: 0;
+        transform: translateX(spacing(1.5));
+    }
+}
+
 @keyframes bit-snb-exi {
     to {
         opacity: 0;
@@ -386,15 +400,9 @@
 
         // The unfilled variants put the role's color on the page surface as text, and a role's main color is
         // picked to be a fill (a Warning yellow on white is well under 4.5:1): the text reads the role's
-        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3). A background
-        // or border role has no such shade - its fg is the surface or border color itself, which as text on the
-        // page surface would be invisible - so it is read with its on color, the text that role is paired with.
-        @if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {
-            --bit-snb-clr-txt: #{role($tokens, on)};
-        }
-        @else {
-            --bit-snb-clr-txt: #{role($tokens, fg)};
-        }
+        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3) - for a
+        // background or border role, which would vanish as text on the page, that is its on color.
+        --bit-snb-clr-txt: #{role($tokens, fg)};
     }
 }
 
@@ -528,4 +536,130 @@
     left: var(--bit-snb-off-left);
     right: var(--bit-snb-off-right);
     align-items: flex-end;
+}
+
+// The physical corners and the vertically centred stacks. A physical stack cannot span the screen and let
+// align-items pick its side the way the logical ones do - flex-start is the right edge in RTL - so it is
+// pinned by the physical property and shrunk to its content instead, which keeps it on the same side of the
+// screen in both reading directions. max-width on .bit-snb still caps how wide it may grow. Which side its
+// items sit on within it is settled at the end of the block, by a margin rather than by align-items, for the
+// same reason. Like the logical ones, every edge it is pinned to is measured from the safe area.
+.bit-snb-tlf {
+    width: auto;
+    right: auto;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-trg {
+    width: auto;
+    left: auto;
+    top: var(--bit-snb-off-top);
+    right: var(--bit-snb-off-right);
+    --bit-snb-ent: bit-snb-ent-t;
+}
+
+.bit-snb-blf {
+    width: auto;
+    right: auto;
+    left: var(--bit-snb-off-left);
+    bottom: var(--bit-snb-off-bottom);
+}
+
+.bit-snb-brg {
+    width: auto;
+    left: auto;
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+}
+
+// The centred stacks span the whole safe band of the block axis and center their items in it with
+// justify-content, rather than being pinned at 50% of the screen and pulled back by a translate: the band is
+// what is left once the notch and the home indicator are cleared, so its middle is the middle of the part
+// that is safe to draw on. The stack lets the pointer through (.bit-snb), so spanning the band covers nothing.
+// A stack pinned to a side slides its items in from that side; the logical pair names the side by the reading
+// direction, so it turns its animation around with it, and the one centred on the screen, pinned to no edge, keeps
+// the default rise from below.
+.bit-snb-cst {
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-cen {
+    align-items: flex-end;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+// Kept apart like the slider's, so a browser without :dir() drops only the rule it cannot parse and still gets
+// the turn from the class the component sets itself.
+.bit-rtl.bit-snb-cst {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-rtl.bit-snb-cen {
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-cst:dir(rtl) {
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-cen:dir(rtl) {
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-clf {
+    width: auto;
+    right: auto;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-l;
+}
+
+.bit-snb-crg {
+    width: auto;
+    left: auto;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+    --bit-snb-ent: bit-snb-ent-r;
+}
+
+.bit-snb-ctr {
+    align-items: center;
+    justify-content: center;
+    top: var(--bit-snb-off-top);
+    left: var(--bit-snb-off-left);
+    right: var(--bit-snb-off-right);
+    bottom: var(--bit-snb-off-bottom);
+}
+
+// A stack shrunk to its content is only as wide as its widest item, so a shorter one has room to slide inside
+// it, and align-items would hand that room to the reading direction - the very flip these positions are named
+// to avoid. The cross axis takes no left/right (that pair is justify-* only), so the item is pushed against the
+// edge the stack is pinned to by the physical margin opposite it, which absorbs the free space before any
+// alignment is applied. The logical stacks keep align-items: they are the ones meant to turn around.
+.bit-snb-tlf > .bit-snb-itm,
+.bit-snb-blf > .bit-snb-itm,
+.bit-snb-clf > .bit-snb-itm {
+    margin-right: auto;
+}
+
+.bit-snb-trg > .bit-snb-itm,
+.bit-snb-brg > .bit-snb-itm,
+.bit-snb-crg > .bit-snb-itm {
+    margin-left: auto;
 }

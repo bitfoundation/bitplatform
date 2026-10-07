@@ -275,19 +275,19 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label in regards to the field (Top by default).",
+            Description = "The position of the label in regards to the field (Top by default). Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.",
+            Description = "Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.",
         },
         new()
         {
@@ -826,7 +826,7 @@ public partial class BitNumberFieldDemo
     ];
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        DemoSharedEnums.BitLabelPosition(),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitInputMode(),
         new()
         {

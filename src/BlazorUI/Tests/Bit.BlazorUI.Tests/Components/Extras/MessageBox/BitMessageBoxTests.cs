@@ -78,11 +78,11 @@ public class BitMessageBoxTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMessageBoxShouldRespectIsEnabled(bool isEnabled)
+    public void BitMessageBoxShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-msb");
@@ -102,7 +102,7 @@ public class BitMessageBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
@@ -120,7 +120,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnResult, r => results.Add(r));
         });
 
@@ -871,7 +871,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnResult, r => results.Add(r));
         });
 
@@ -990,7 +990,7 @@ public class BitMessageBoxTests : BunitTestContext
 
         var component = RenderComponent<BitMessageBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnBeforeResult, (BitMessageBoxBeforeResultArgs _) => asked++);
         });
 

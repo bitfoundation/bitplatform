@@ -752,19 +752,19 @@ public partial class BitFileInputDemo
         {
             Name = "--bit-FileInput-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Foreground when IsEnabled is false.",
+            Description = "Foreground when Disabled is true.",
         },
         new()
         {
             Name = "--bit-FileInput-disabled-background",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "Background of the browse button and of the remove buttons when IsEnabled is false.",
+            Description = "Background of the browse button and of the remove buttons when Disabled is true.",
         },
         new()
         {
             Name = "--bit-FileInput-disabled-border-color",
             DefaultValue = "--bit-clr-brd-dis",
-            Description = "Border color of the browse button when IsEnabled is false.",
+            Description = "Border color of the browse button when Disabled is true.",
         },
         new()
         {

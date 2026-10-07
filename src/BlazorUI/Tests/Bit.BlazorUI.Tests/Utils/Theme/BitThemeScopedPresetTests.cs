@@ -59,9 +59,7 @@ public sealed class BitThemeScopedPresetTests
 
     private static string ReadStylesFile(string relativePath)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", relativePath);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-        return File.ReadAllText(path);
+        return SourceFiles.ReadThemeStylesheet(relativePath);
     }
 
     [TestMethod]
@@ -185,7 +183,7 @@ public sealed class BitThemeScopedPresetTests
             "block that aliases the -full tokens, and once inside the prefers-reduced-motion query so the " +
             "collapse reaches a scoped preset region as well.");
 
-        var reducedMotion = scss[scss.IndexOf("prefers-reduced-motion", StringComparison.Ordinal)..];
+        var reducedMotion = SourceFiles.GetScssBlock(scss, "@media (prefers-reduced-motion: reduce) {");
         Assert.IsTrue(reducedMotion.Contains(":where(:root [bit-theme])", StringComparison.Ordinal),
             "The prefers-reduced-motion block must carry the scoped twin too, or a scoped preset region " +
             "would keep its unreduced durations.");

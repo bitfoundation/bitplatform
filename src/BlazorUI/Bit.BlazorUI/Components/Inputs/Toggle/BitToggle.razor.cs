@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -194,8 +194,12 @@ public partial class BitToggle : BitInputBase<bool>
     /// The position of the label in regards to the knob of the toggle.
     /// Takes precedence over <see cref="Inline"/> and <see cref="Reversed"/> when set.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Custom label of the toggle.
@@ -429,12 +433,12 @@ public partial class BitToggle : BitInputBase<bool>
 
         ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-tgl-ltp",
-            BitLabelPosition.Bottom => "bit-tgl-lbt",
-            BitLabelPosition.Start => "bit-tgl-lst",
-            BitLabelPosition.End => "bit-tgl-lnd",
+            BitPlacement.Top => "bit-tgl-ltp",
+            BitPlacement.Bottom => "bit-tgl-lbt",
+            BitPlacement.Start => "bit-tgl-lst",
+            BitPlacement.End => "bit-tgl-lnd",
             _ => string.Empty
         });
 
@@ -450,7 +454,7 @@ public partial class BitToggle : BitInputBase<bool>
         // wrapping on through a class of its own rather than by widening what the description class means.
         ClassBuilder.Register(() => HasErrorMessage ? "bit-tgl-her" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-tgl-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
         // state that has one, so that toggling never resizes the toggle underneath the pointer.
@@ -605,7 +609,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// A change that is still running its awaited callbacks also closes the toggle to further clicks, so a
     /// second click landing while the first one is in flight cannot start a competing change.
     /// </remarks>
-    private bool IsInteractive => IsEnabled && ReadOnly is false && IsLoading is false && _isChanging is false;
+    private bool IsInteractive => Disabled is false && ReadOnly is false && IsLoading is false && _isChanging is false;
 
     private BitIconInfo? GetStateIcon()
     {
@@ -698,7 +702,7 @@ public partial class BitToggle : BitInputBase<bool>
 
     private async Task ChangeValueAsync(bool newValue)
     {
-        if (IsEnabled is false || newValue == CurrentValue) return;
+        if (Disabled || newValue == CurrentValue) return;
 
         // A Value passed one way with nothing to write back through dictates the state, so the change cannot
         // land at all. It is dropped here rather than deeper down, so a change that is going nowhere never

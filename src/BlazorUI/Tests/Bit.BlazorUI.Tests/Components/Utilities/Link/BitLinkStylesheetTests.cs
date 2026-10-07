@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-Link-* variable is declared, which stops it inheriting.");
     }
@@ -55,7 +53,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldLetTheVariablesWinOverTheColorAndTheSize()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
 
         // The Color and the Size classes only set the private fallbacks the public variables are read over.
         StringAssert.Contains(root, "color: var(--bit-Link-color, var(--bit-lnk-clr));");
@@ -68,7 +66,7 @@ public partial class BitLinkStylesheetTests
         DataRow("lg", "md")]
     public void BitLinkShouldSizeFromTheTypeRamp(string size, string step)
     {
-        var block = Block(ReadStylesheet(), $"\n.bit-lnk-{size} {{");
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n.bit-lnk-{size} {{");
 
         StringAssert.Contains(block, $"--bit-lnk-fs: #{{$tg-fs-{step}}};");
     }
@@ -76,7 +74,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldInheritTheTypeOfTheSentenceItSitsIn()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
 
         // A link rendered as a button is talked out of everything the browser gives a button of its own.
         foreach (var property in new[] { "line-height", "text-align", "word-spacing", "letter-spacing", "text-transform" })
@@ -90,7 +88,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldDrawTheUnderlineThroughItsLonghands()
     {
-        var rules = RulesOf(ReadStylesheet());
+        var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
         // The shorthand resets the color, the thickness and the offset of the underline every time a state turns it on.
         Assert.IsFalse(Regex.IsMatch(rules, @"(^|\s)text-decoration:\s"), "The text-decoration shorthand is used.");
@@ -104,7 +102,7 @@ public partial class BitLinkStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var hover = Block(stylesheet, "\n    @media (hover: hover) {");
+        var hover = SourceFiles.GetScssBlock(stylesheet, "\n    @media (hover: hover) {");
 
         StringAssert.Contains(hover, "&:hover {");
         StringAssert.Contains(hover, "text-decoration-line: var(--bit-lnk-deco-hover, underline);");
@@ -113,7 +111,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldChangeOnTheKeyboardFocusOnly()
     {
-        var rules = RulesOf(ReadStylesheet());
+        var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
         // A link left in its hover color after a mouse click reads as stuck, so only :focus-visible is styled.
         Assert.IsFalse(Regex.IsMatch(rules, @"&:focus\b(?!-visible)"), "A bare :focus is styled.");
@@ -123,7 +121,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldStyleVisitedAheadOfTheInteractiveStates()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
 
         var visited = root.IndexOf("&:visited {", System.StringComparison.Ordinal);
         var hover = root.IndexOf("&:hover {", System.StringComparison.Ordinal);
@@ -137,7 +135,7 @@ public partial class BitLinkStylesheetTests
     public void BitLinkShouldDrawTheCurrentLinkWithoutOutrankingItsStates()
     {
         var stylesheet = ReadStylesheet();
-        var root = Block(stylesheet, "\n.bit-lnk {");
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk {");
 
         // The page a current link points at is visited by definition, so the current color covers :visited too,
         // and :where() keeps it below the pointer, the press, the focus, NoColor and the disabled state.
@@ -149,7 +147,7 @@ public partial class BitLinkStylesheetTests
         StringAssert.Contains(root, "color: var(--bit-Link-current-color, var(--bit-Link-color, var(--bit-lnk-clr)));");
 
         // Color alone must not be what tells the current link apart, and NoUnderline still takes the underline off.
-        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-lnk-cur {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-lnk-nun {", System.StringComparison.Ordinal),
                       "NoUnderline is declared ahead of the current link, which would win over it.");
     }
@@ -157,7 +155,7 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldKeepADisabledLinkInTheDisabledColor()
     {
-        var disabled = Block(ReadStylesheet(), "\n    &.bit-dis {");
+        var disabled = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
         StringAssert.Contains(disabled, "color: var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis));");
         StringAssert.Contains(disabled, "@include focus-ring(var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis)));");
@@ -168,20 +166,24 @@ public partial class BitLinkStylesheetTests
     [TestMethod]
     public void BitLinkShouldPaintAccentColorsInTheirReadableForeground()
     {
-        var roles = Block(ReadStylesheet(), "\n    .bit-lnk-#{$role} {");
+        var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-lnk-#{$role} {");
 
         // A secondary or a warning main is picked to fill a surface and falls under the contrast of body text,
-        // while the primary main is the brand's own link color and a surface role is a page color already.
+        // while the primary main is the brand's own link color and a foreground role is a text color already.
         StringAssert.Contains(roles, "@if role($tokens, kind) == semantic and $role != pri {");
         StringAssert.Contains(roles, "--bit-lnk-clr: #{role($tokens, fg)};");
         StringAssert.Contains(roles, "--bit-lnk-clr: #{role($tokens, main)};");
+
+        // A background or border main is the page's own color or a hairline's, invisible or far under 4.5:1 as text,
+        // so those roles read their foreground - the body text - with that text color's own states.
+        StringAssert.Contains(roles, "@else if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {\n            --bit-lnk-clr: #{role($tokens, fg)};\n            --bit-lnk-clr-hover: #{$clr-fg-pri-hover};\n            --bit-lnk-clr-active: #{$clr-fg-pri-active};");
         StringAssert.Contains(roles, "--bit-lnk-clr-dis: #{role($tokens, dis-text)};");
     }
 
     [TestMethod]
     public void BitLinkShouldReadAsALinkAndAsDisabledInForcedColors()
     {
-        var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "color: LinkText;");
         StringAssert.Contains(forced, ".bit-lnk.bit-dis,");
@@ -193,19 +195,8 @@ public partial class BitLinkStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-sic {"), "margin-inline-end: var(--bit-Link-icon-gap, ");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-lnk-eic {"), "margin-inline-start: var(--bit-Link-icon-gap, ");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-sic {"), "margin-inline-end: var(--bit-Link-icon-gap, ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-eic {"), "margin-inline-start: var(--bit-Link-icon-gap, ");
     }
 
     private static string[] DocumentedVariables(string stylesheet)
@@ -213,21 +204,7 @@ public partial class BitLinkStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what follows it is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI", "Components", "Utilities", "Link", "BitLink.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Link", "BitLink.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Link-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

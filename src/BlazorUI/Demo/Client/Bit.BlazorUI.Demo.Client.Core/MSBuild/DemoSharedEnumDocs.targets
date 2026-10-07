@@ -10,9 +10,10 @@
 
     <ItemGroup>
         <DemoSharedEnum Include="BitAlignment;BitButtonType;BitColor;BitColorKind;BitDropDirection;BitEnterKeyHint" />
-        <DemoSharedEnum Include="BitIconLocation;BitIconPosition;BitImageLoading;BitInputMode;BitInputType;BitLabelPosition" />
+        <DemoSharedEnum Include="BitImageLoading;BitInputMode;BitInputType;BitLineStyle" />
         <DemoSharedEnum Include="BitLinkRels;BitNavAriaCurrent;BitNavItemTemplateRenderMode;BitNavMatch;BitNavMode" />
-        <DemoSharedEnum Include="BitNavRenderType;BitPanelPosition;BitPoliteness;BitPosition;BitSize;BitTimeFormat;BitVariant" />
+        <DemoSharedEnum Include="BitNavRenderType;BitPlacement;BitPoliteness;BitPosition;BitSelectionMode;BitShape;BitSize" />
+        <DemoSharedEnum Include="BitTimeFormat;BitVariant" />
     </ItemGroup>
 
     <UsingTask TaskName="GenerateDemoSharedEnumDocs" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
@@ -25,9 +26,11 @@
          compiled against is swapped in later), and its XML documentation sits beside it. -->
     <Target Name="_FindDemoSharedEnumDocumentation" DependsOnTargets="ResolveAssemblyReferences">
         <!-- Set here rather than at the top level, where a project importing this file before the SDK's
-             targets would read IntermediateOutputPath before it has been given a value. -->
+             targets would read IntermediateOutputPath before it has been given a value. NormalizePath
+             combines rather than concatenates, since a build may give an absolute IntermediateOutputPath
+             (the MCP tests build the demo into an obj folder of their own). -->
         <PropertyGroup>
-            <_DemoSharedEnumDocsFile>$(MSBuildProjectDirectory)/$(IntermediateOutputPath)DemoSharedEnums.Docs.g.cs</_DemoSharedEnumDocsFile>
+            <_DemoSharedEnumDocsFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'DemoSharedEnums.Docs.g.cs'))</_DemoSharedEnumDocsFile>
         </PropertyGroup>
         <ItemGroup>
             <_DemoSharedEnumDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition=" '%(Filename)' == 'Bit.BlazorUI' " />

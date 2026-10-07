@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bunit;
@@ -32,10 +31,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
     private static (string Alias, string Target)[] ScssAliasPairs()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
-
-        return FamilyDeclaration.Matches(File.ReadAllText(scssPath))
+        return FamilyDeclaration.Matches(SourceFiles.ReadThemeStylesheet("family-tokens.scss"))
             .Select(m => (Alias: m.Groups[1].Value, Target: m.Groups[2].Value))
             .Distinct()
             .ToArray();
@@ -53,10 +49,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
     private static (string Alias, string Value)[] ScssRoleForegrounds()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
-
-        return RoleForegroundDeclaration.Matches(File.ReadAllText(scssPath))
+        return RoleForegroundDeclaration.Matches(SourceFiles.ReadThemeStylesheet("family-tokens.scss"))
             .Select(m => (Alias: m.Groups[1].Value, Value: m.Groups[2].Value))
             .Distinct()
             .ToArray();
@@ -73,10 +66,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
     private static (string Alias, string Value)[] ScssRoleTints()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "family-tokens.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
-
-        return RoleTintDeclaration.Matches(File.ReadAllText(scssPath))
+        return RoleTintDeclaration.Matches(SourceFiles.ReadThemeStylesheet("family-tokens.scss"))
             .Select(m => (Alias: m.Groups[1].Value, Value: m.Groups[2].Value))
             .Distinct()
             .ToArray();

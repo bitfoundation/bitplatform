@@ -136,7 +136,7 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Where the pager renders: above, below or on both sides of the rows.
     /// </summary>
-    public BitDataGridPagerPosition? PagerPosition { get; set; }
+    public BitPlacement? PagerPlacement { get; set; }
 
     /// <summary>
     /// Lets the columns be reordered by dragging their headers.
@@ -368,9 +368,9 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
             bitDataGrid.Pageable = Pageable.Value;
         }
 
-        if (PagerPosition.HasValue && bitDataGrid.HasNotBeenSet(nameof(PagerPosition)))
+        if (PagerPlacement.HasValue && bitDataGrid.HasNotBeenSet(nameof(PagerPlacement)))
         {
-            bitDataGrid.PagerPosition = PagerPosition.Value;
+            bitDataGrid.PagerPlacement = PagerPlacement.Value;
         }
 
         if (Reorderable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Reorderable)))

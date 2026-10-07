@@ -23,7 +23,7 @@
 
     // A read-only field cannot be spun either, so the buttons say so instead of looking operable and
     // then doing nothing - the same reasoning that keeps the clear button hidden while read-only.
-    var spinDisabled = IsEnabled is false || ReadOnly;
+    var spinDisabled = Disabled || ReadOnly;
 
     // A value sitting on an explicit bound cannot be spun any further in that direction. The button is
     // marked aria-disabled (and styled accordingly) rather than given the disabled attribute, so that it
@@ -134,7 +134,7 @@
                    name="@Name"
                    id="@_inputId"
                    value="@CurrentValueAsString"
-                   disabled="@(IsEnabled is false)"
+                   disabled="@(Disabled)"
                    type="hidden" />
         }
         else
@@ -169,7 +169,7 @@
                    aria-setsize="@AriaSetSize"
                    aria-posinset="@AriaPositionInSet"
                    aria-labelledby="@LabelledBy"
-                   disabled="@(IsEnabled is false)"
+                   disabled="@(Disabled)"
                    class="bit-nfl-inp@(EffectiveMode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
                    autocomplete="@(AutoComplete ?? "off")"
                    type="text"
@@ -197,7 +197,7 @@
                         type="button"
                         tabindex="-1"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
-                        disabled="@(IsEnabled is false)">
+                        disabled="@(Disabled)">
                     @if (ClearButtonTemplate is not null)
                     {
                         @ClearButtonTemplate

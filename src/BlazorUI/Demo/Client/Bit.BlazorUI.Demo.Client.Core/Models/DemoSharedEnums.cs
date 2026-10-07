@@ -50,21 +50,13 @@ public static partial class DemoSharedEnums
 
     public static ComponentSubEnum BitEnterKeyHint(string? description = null) => Table<Library.BitEnterKeyHint>("enter-key-hint-enum", description);
 
-    public static ComponentSubEnum BitIconLocation(string? description = null) => Table<Library.BitIconLocation>("icon-location-enum", description);
-
-    /// <remarks>
-    /// Which end is the default differs from one component to the next, so the members do not say;
-    /// the parameter table does.
-    /// </remarks>
-    public static ComponentSubEnum BitIconPosition(string? description = null) => Table<Library.BitIconPosition>("icon-position-enum", description);
-
     public static ComponentSubEnum BitImageLoading(string? description = null) => Table<Library.BitImageLoading>("image-loading-enum", description);
 
     public static ComponentSubEnum BitInputMode(string? description = null) => Table<Library.BitInputMode>("input-mode-enum", description);
 
     public static ComponentSubEnum BitInputType(string? description = null) => Table<Library.BitInputType>("input-type-enum", description);
 
-    public static ComponentSubEnum BitLabelPosition(string? description = null) => Table<Library.BitLabelPosition>("label-position-enum", description);
+    public static ComponentSubEnum BitLineStyle(string? description = null) => Table<Library.BitLineStyle>("line-style-enum", description);
 
     public static ComponentSubEnum BitLinkRels(string? description = null) => Table<Library.BitLinkRels>("link-rels-enum", description);
 
@@ -78,11 +70,15 @@ public static partial class DemoSharedEnums
 
     public static ComponentSubEnum BitNavRenderType(string? description = null) => Table<Library.BitNavRenderType>("nav-render-type-enum", description);
 
-    public static ComponentSubEnum BitPanelPosition(string? description = null) => Table<Library.BitPanelPosition>("panel-position-enum", description);
+    public static ComponentSubEnum BitPlacement(string? description = null) => Table<Library.BitPlacement>("placement-enum", description);
 
     public static ComponentSubEnum BitPoliteness(string? description = null) => Table<Library.BitPoliteness>("politeness-enum", description);
 
     public static ComponentSubEnum BitPosition(string? description = null) => Table<Library.BitPosition>("position-enum", description);
+
+    public static ComponentSubEnum BitSelectionMode(string? description = null) => Table<Library.BitSelectionMode>("selection-mode-enum", description);
+
+    public static ComponentSubEnum BitShape(string? description = null) => Table<Library.BitShape>("shape-enum", description);
 
     public static ComponentSubEnum BitSize(string? description = null) => Table<Library.BitSize>("size-enum", description);
 

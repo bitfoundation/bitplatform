@@ -61,7 +61,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
                 Color = BitColor.Success,
                 Size = BitSize.Large,
                 Variant = BitVariant.Outline,
-                LabelPosition = BitLabelPosition.Start,
+                LabelPlacement = BitPlacement.Start,
                 Horizontal = true,
                 FullWidth = true,
                 Inline = true,
@@ -142,13 +142,13 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             Horizontal = true,
             Inline = true,
             Label = "Cascaded label",
-            LabelPosition = BitLabelPosition.Start,
+            LabelPlacement = BitPlacement.Start,
             NoCircle = true,
             Size = BitSize.Small,
             StretchItemLabel = true,
             Variant = BitVariant.Fill,
             AriaLabel = "Cascaded aria label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5",
         };
 
@@ -169,13 +169,13 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.IsTrue(instance.Horizontal);
         Assert.IsTrue(instance.Inline);
         Assert.AreEqual("Cascaded label", instance.Label);
-        Assert.AreEqual(BitLabelPosition.Start, instance.LabelPosition);
+        Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
         Assert.IsTrue(instance.NoCircle);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.StretchItemLabel);
         Assert.AreEqual(BitVariant.Fill, instance.Variant);
         Assert.AreEqual("Cascaded aria label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 

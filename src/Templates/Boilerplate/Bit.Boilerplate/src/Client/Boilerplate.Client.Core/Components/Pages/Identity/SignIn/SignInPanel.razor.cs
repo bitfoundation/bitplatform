@@ -71,7 +71,10 @@ public partial class SignInPanel
                 // panel is in its password/magic-link layout, so anything left here would be invisible to the
                 // user and would still make the next submit an OTP sign-in: the server picks the credential
                 // type from this field alone (IdentityController.SignIn -> isOtpSignIn).
-                model.Otp = null;
+                if (requiresTwoFactor is false)
+                {
+                    model.Otp = null;
+                }
             }
         }
 

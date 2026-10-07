@@ -4,7 +4,7 @@
 /// The set of parameters used to customize a <see cref="BitModal"/> that is shown using the <see cref="BitModalService"/>.
 /// </summary>
 /// <remarks>
-/// BREAKING CHANGE: the boolean members (<see cref="IsEnabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
+/// BREAKING CHANGE: the boolean members (<see cref="Disabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
 /// <see cref="FullHeight"/>, <see cref="FullWidth"/>) are nullable (<c>bool?</c>)
 /// instead of <c>bool</c>. A <c>null</c> value means "not set" and the corresponding <see cref="BitModal"/> default
 /// is used (or the cascaded value, when merged). Code that read these members as non-nullable <c>bool</c> must be updated.
@@ -12,9 +12,9 @@
 public class BitModalParameters
 {
     /// <summary>
-    /// Whether or not the Modal is enabled. <c>null</c> means not set (defaults to enabled).
+    /// Whether or not the Modal is disabled. <c>null</c> means not set (defaults to not disabled).
     /// </summary>
-    public bool? IsEnabled { get; set; }
+    public bool? Disabled { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the Modal's parameters.
@@ -334,7 +334,7 @@ public class BitModalParameters
 
         return new BitModalParameters
         {
-            IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
+            Disabled = params1.Disabled ?? params2.Disabled,
             HtmlAttributes = MergeHtmlAttributes(params2.HtmlAttributes, params1.HtmlAttributes),
             AbsolutePosition = params1.AbsolutePosition ?? params2.AbsolutePosition,
             Dir = params1.Dir ?? params2.Dir,

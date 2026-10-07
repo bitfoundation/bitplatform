@@ -236,7 +236,7 @@ public partial class BitBadge : BitComponentBase
     /// alerts - and <see cref="OnClick"/> for one that acts on the page it is already on. The two can be set
     /// together, in which case the handler runs and the navigation still happens.
     /// <br />
-    /// While <c>IsEnabled</c> is false the href is dropped and the badge is taken out of the tab order, so a
+    /// While <c>Disabled</c> is true the href is dropped and the badge is taken out of the tab order, so a
     /// disabled link cannot be followed by either the pointer or the keyboard.
     /// </remarks>
     [Parameter]
@@ -345,7 +345,7 @@ public partial class BitBadge : BitComponentBase
     /// </summary>
     /// <remarks>
     /// While it is set the badge is focusable and can be activated with the keyboard, and it stops being so
-    /// as soon as <c>IsEnabled</c> is false. A badge with no handler and no <see cref="Href"/> never takes
+    /// as soon as <c>Disabled</c> is true. A badge with no handler and no <see cref="Href"/> never takes
     /// focus: it is a label on the element it belongs to, and that element is what a keyboard user reaches.
     /// <br />
     /// A control needs a name, so a badge that carries no text of its own - a <see cref="Dot"/> or an
@@ -411,10 +411,16 @@ public partial class BitBadge : BitComponentBase
     public bool Reversed { get; set; }
 
     /// <summary>
-    /// The corner shape of the badge.
+    /// The corner shape of the badge (default is fully rounded).
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitShape.Pill"/>, <see cref="BitShape.Rounded"/> and <see cref="BitShape.Square"/> mean
+    /// anything here; a badge takes its box from its own content, so <see cref="BitShape.Circle"/> has no
+    /// dimension to build a circle from and leaves the badge fully rounded. A fully rounded badge is a circle
+    /// while it holds a single digit and a pill once the label grows past one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitBadgeShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// Renders the badge when its content is the number zero.
@@ -539,9 +545,9 @@ public partial class BitBadge : BitComponentBase
 
         ClassBuilder.Register(() => Shape switch
         {
-            BitBadgeShape.Circular => "bit-bdg-cir",
-            BitBadgeShape.Rounded => "bit-bdg-rnd",
-            BitBadgeShape.Square => "bit-bdg-sqr",
+            BitShape.Pill => "bit-bdg-cir",
+            BitShape.Rounded => "bit-bdg-rnd",
+            BitShape.Square => "bit-bdg-sqr",
             _ => "bit-bdg-cir"
         });
 
@@ -575,7 +581,7 @@ public partial class BitBadge : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }

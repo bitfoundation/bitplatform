@@ -4,7 +4,7 @@ public partial class BitDatePickerDemo
 {
     private readonly string example1RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" />
-<BitDatePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitDatePicker Label=""Disabled"" Disabled />
 <BitDatePicker Label=""Required"" Required />
 <BitDatePicker Label=""PlaceHolder"" Placeholder=""Select a date"" />
 <BitDatePicker Label=""Week numbers"" ShowWeekNumbers />
@@ -226,7 +226,7 @@ private DateTimeOffset? timeZoneDate2;";
 
     private readonly string example12RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" Standalone />
-<BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitDatePicker Label=""Disabled"" Disabled Standalone />
 
 <BitDatePicker Label=""Week numbers, highlighted months and a time picker""
                Standalone
@@ -518,7 +518,7 @@ private BitDatePicker? programmaticPicker;";
 
 <BitDatePicker Label=""HasBorder (false)"" HasBorder=""false"" />
 
-<BitDatePicker Label=""IconLocation (Left)"" IconLocation=""BitIconLocation.Left"" />
+<BitDatePicker Label=""IconPlacement (Start)"" IconPlacement=""BitPlacement.Start"" />
 
 <BitDatePicker Label=""IconName"" IconName=""@BitIconName.Calendar"" />
 

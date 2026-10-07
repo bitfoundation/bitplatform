@@ -151,7 +151,7 @@ public partial class BitTextShimmerDemo
         new() { Name = "--bit-TextShimmer-delay", DefaultValue = "0ms", Description = "Pause before the first sweep. Delay wins over it." },
         new() { Name = "--bit-TextShimmer-repeat-delay", DefaultValue = "0ms", Description = "Extra rest between two sweeps, stretched by the loop factor along with the default sweep unless a duration is set. RepeatDelay wins over it." },
         new() { Name = "--bit-TextShimmer-iterations", DefaultValue = "infinite", Description = "Number of sweeps before the text comes to rest. Iterations wins over it." },
-        new() { Name = "--bit-TextShimmer-disabled-opacity", DefaultValue = "var(--bit-opa-dis)", Description = "Opacity of a shimmer whose IsEnabled is false." },
+        new() { Name = "--bit-TextShimmer-disabled-opacity", DefaultValue = "var(--bit-opa-dis)", Description = "Opacity of a shimmer whose Disabled is true." },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =

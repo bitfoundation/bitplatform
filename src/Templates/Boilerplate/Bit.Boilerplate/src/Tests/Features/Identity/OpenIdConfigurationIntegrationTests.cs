@@ -251,7 +251,7 @@ public class OpenIdConfigurationIntegrationTests
         {
             Issuer = source.Issuer,
             Audience = source.Audiences.Single(),
-            Expires = DateTime.UtcNow.AddMinutes(5),
+            Expires = DateTimeOffset.UtcNow.AddMinutes(5).UtcDateTime,
             Subject = new ClaimsIdentity(source.Claims.Where(claim => registeredClaims.Contains(claim.Type) is false)),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature)
         });

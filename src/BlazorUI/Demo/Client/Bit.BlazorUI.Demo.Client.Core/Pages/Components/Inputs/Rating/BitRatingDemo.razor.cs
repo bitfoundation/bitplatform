@@ -128,12 +128,12 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the label sits relative to the items: above them by default, and beside them with Start or End for the compact single-line row.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -449,7 +449,7 @@ public partial class BitRatingDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitSize(description: "Determines the size of the rating items."),
-        DemoSharedEnums.BitLabelPosition("Determines where the label of the rating sits relative to its items."),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitColor()
     ];
 
@@ -489,7 +489,7 @@ public partial class BitRatingDemo
         {
             Name = "--bit-Rating-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Color of both parts of the items, and of the label, when IsEnabled is false.",
+            Description = "Color of both parts of the items, and of the label, when Disabled is true.",
         },
         new()
         {
@@ -643,7 +643,7 @@ public partial class BitRatingDemo
             Color = BitColor.Warning,
             SelectedIconName = BitIconName.HeartFill,
             UnselectedIconName = BitIconName.Heart,
-            LabelPosition = BitLabelPosition.Start
+            LabelPlacement = BitPlacement.Start
         }
     ];
 

@@ -278,9 +278,9 @@ public partial class BitTagDemo
         new()
         {
             Name = "Shape",
-            Type = "BitTagShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the tag.",
+            Description = "The corner shape of the tag. A tag takes its box from its own content, so Circle has no proportions to impose and rounds the ends fully, the same as Pill.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -510,33 +510,7 @@ public partial class BitTagDemo
     [
         DemoSharedEnums.BitNavAriaCurrent(),
         DemoSharedEnums.BitColor(),
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitTagShape",
-            Description = "Determines the corner shape of the BitTag.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Rounded",
-                    Description="Takes the chip corner of the current theme, which is a pill in Cupertino and a small radius in Fluent and Material.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Circular",
-                    Description="Rounds the corner fully, so the tag is always a pill whatever the theme says.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Square",
-                    Description="Drops the corner altogether, so the tag is a rectangle.",
-                    Value="2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitShape(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant(),
         DemoSharedEnums.BitLinkRels(),
@@ -726,7 +700,7 @@ public partial class BitTagDemo
         {
             Color = BitColor.Info,
             Variant = BitVariant.Outline,
-            Shape = BitTagShape.Circular,
+            Shape = BitShape.Pill,
             IconName = BitIconName.Filter,
             DismissLabelFormat = "Remove the {0} filter",
         }

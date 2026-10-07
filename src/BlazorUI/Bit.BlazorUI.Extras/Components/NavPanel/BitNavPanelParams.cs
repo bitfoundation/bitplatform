@@ -262,9 +262,10 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoToggle { get; set; }
 
     /// <summary>
-    /// The edge the off-canvas drawer of a small screen comes from.
+    /// The edge the off-canvas drawer of a small screen comes from. Start and End are the honoured values;
+    /// they follow the reading direction, and every other value renders the default Start.
     /// </summary>
-    public BitNavPanelPosition? Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The way to render nav items.
@@ -638,9 +639,9 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.NoToggle = NoToggle.Value;
         }
 
-        if (Position.HasValue && bitNavPanel.HasNotBeenSet(nameof(Position)) && bitNavPanel.Position != Position.Value)
+        if (Placement.HasValue && bitNavPanel.HasNotBeenSet(nameof(Placement)) && bitNavPanel.Placement != Placement.Value)
         {
-            bitNavPanel.Position = Position.Value;
+            bitNavPanel.Placement = Placement.Value;
 
             bitNavPanel.ClassBuilder.Reset();
         }

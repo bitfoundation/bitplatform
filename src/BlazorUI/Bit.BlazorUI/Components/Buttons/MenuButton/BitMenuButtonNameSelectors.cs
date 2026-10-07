@@ -44,9 +44,9 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> IsChecked { get; set; } = new(nameof(BitMenuButtonItem.IsChecked));
 
     /// <summary>
-    /// IsEnabled field name and selector of the custom input class.
+    /// IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitMenuButtonItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitMenuButtonItem.IsDisabled));
 
     /// <summary>
     /// IsHeader field name and selector of the custom input class.

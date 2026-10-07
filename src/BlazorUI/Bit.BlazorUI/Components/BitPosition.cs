@@ -1,82 +1,88 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Defines where the content is placed. Start and End follow the text direction; Left and Right stay on their side.
+/// A point on the three-by-three grid of the area a component is positioned in, used wherever a
+/// component sits somewhere inside a box rather than against one of its edges.
 /// </summary>
+/// <remarks>
+/// The Start and End values are logical and are what a component following the reading direction of its
+/// content wants: Start is the left in an LTR context and the right in an RTL one. The Left and Right
+/// values are physical and stay on the same side of the screen in both reading directions.
+/// </remarks>
 public enum BitPosition
 {
     /// <summary>
-    /// At the top, against the left edge.
+    /// The top left corner, in both reading directions.
     /// </summary>
     TopLeft,
 
     /// <summary>
-    /// At the top, centered horizontally.
+    /// The top edge, centered horizontally.
     /// </summary>
     TopCenter,
 
     /// <summary>
-    /// At the top, against the right edge.
+    /// The top right corner, in both reading directions.
     /// </summary>
     TopRight,
 
     /// <summary>
-    /// At the top, against the start edge (the left in left-to-right).
+    /// The top edge, on the side the reading direction starts from.
     /// </summary>
     TopStart,
 
     /// <summary>
-    /// At the top, against the end edge (the right in left-to-right).
+    /// The top edge, on the side the reading direction ends at.
     /// </summary>
     TopEnd,
 
     /// <summary>
-    /// Centered vertically, against the left edge.
+    /// The left edge, centered vertically, in both reading directions.
     /// </summary>
     CenterLeft,
 
     /// <summary>
-    /// Centered on both axes.
+    /// Centered both ways.
     /// </summary>
     Center,
 
     /// <summary>
-    /// Centered vertically, against the right edge.
+    /// The right edge, centered vertically, in both reading directions.
     /// </summary>
     CenterRight,
 
     /// <summary>
-    /// Centered vertically, against the start edge (the left in left-to-right).
+    /// Centered vertically, on the side the reading direction starts from.
     /// </summary>
     CenterStart,
 
     /// <summary>
-    /// Centered vertically, against the end edge (the right in left-to-right).
+    /// Centered vertically, on the side the reading direction ends at.
     /// </summary>
     CenterEnd,
 
     /// <summary>
-    /// At the bottom, against the left edge.
+    /// The bottom left corner, in both reading directions.
     /// </summary>
     BottomLeft,
 
     /// <summary>
-    /// At the bottom, centered horizontally.
+    /// The bottom edge, centered horizontally.
     /// </summary>
     BottomCenter,
 
     /// <summary>
-    /// At the bottom, against the right edge.
+    /// The bottom right corner, in both reading directions.
     /// </summary>
     BottomRight,
 
     /// <summary>
-    /// At the bottom, against the start edge (the left in left-to-right).
+    /// The bottom edge, on the side the reading direction starts from.
     /// </summary>
     BottomStart,
 
     /// <summary>
-    /// At the bottom, against the end edge (the right in left-to-right).
+    /// The bottom edge, on the side the reading direction ends at.
     /// </summary>
     BottomEnd
 }

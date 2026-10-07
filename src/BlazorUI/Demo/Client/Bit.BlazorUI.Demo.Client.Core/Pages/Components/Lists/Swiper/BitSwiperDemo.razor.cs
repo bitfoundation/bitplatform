@@ -324,12 +324,12 @@ public partial class BitSwiperDemo
         },
         new()
         {
-            Name = "Snap",
-            Type = "BitSwiperSnap?",
+            Name = "SnapAlign",
+            Type = "BitScrollSnapAlign?",
             DefaultValue = "null",
             Description = "Settles the swiper on an item instead of leaving it wherever the scrolling ran out, and chooses where that item comes to rest.",
             LinkType = LinkType.Link,
-            Href = "#snap-enum",
+            Href = "#scroll-snap-align-enum",
         },
         new()
         {
@@ -479,14 +479,35 @@ public partial class BitSwiperDemo
     [
         new()
         {
-            Id = "snap-enum",
-            Name = "BitSwiperSnap",
+            Id = "scroll-snap-align-enum",
+            Name = "BitScrollSnapAlign",
             Description = "The place an item of a BitSwiper comes to rest at when the swiper snaps.",
             Items =
             [
-                new() { Name = "Start", Description = "The item settles with its leading edge at the start of the swiper.", Value = "0" },
-                new() { Name = "Center", Description = "The item settles in the middle of the swiper.", Value = "1" },
-                new() { Name = "End", Description = "The item settles with its trailing edge at the end of the swiper.", Value = "2" },
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "The children carry no snap position of their own."
+                },
+                new()
+                {
+                    Name = "Start",
+                    Value = "1",
+                    Description = "Each child comes to rest at the start of the pane."
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "2",
+                    Description = "Each child comes to rest in the middle of the pane."
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "3",
+                    Description = "Each child comes to rest at the end of the pane."
+                }
             ]
         },
         DemoSharedEnums.BitColorKind(),
@@ -642,12 +663,12 @@ public partial class BitSwiperDemo
             Rewind = true,
             Gap = "0.5rem",
             VisibleItemsCount = 4,
-            Snap = BitSwiperSnap.Start,
+            SnapAlign = BitScrollSnapAlign.Start,
             ScrollItemsCount = 2,
         }
     ];
 
-    private BitSwiperSnap snap = BitSwiperSnap.Center;
+    private BitScrollSnapAlign snap = BitScrollSnapAlign.Center;
     private int number = 1;
     private int loadedCount = 8;
     private bool isLoading;

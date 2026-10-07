@@ -83,7 +83,7 @@ public partial class BitBadgeDemo
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Turns the badge into a real link to the URL. While IsEnabled is false the href is dropped and the badge leaves the tab order."
+            Description = "Turns the badge into a real link to the URL. While Disabled is true the href is dropped and the badge leaves the tab order."
         },
         new()
         {
@@ -187,9 +187,9 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "Shape",
-            Type = "BitBadgeShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the badge.",
+            Description = "The corner shape of the badge. Only Pill, Rounded and Square are honoured: a badge takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -247,33 +247,7 @@ public partial class BitBadgeDemo
     [
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitSize(),
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitBadgeShape",
-            Description = "Determines the corner shape of the BitBadge.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Circular",
-                    Description="Fully rounded corners, so a counter reads as a circle and a longer label as a pill.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Rounded",
-                    Description="The corner radius the current theme gives to its controls.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Square",
-                    Description="Square corners with no radius at all.",
-                    Value="2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitShape(),
         DemoSharedEnums.BitPosition(),
         DemoSharedEnums.BitVariant(),
         DemoSharedEnums.BitLinkRels(),
@@ -534,7 +508,7 @@ public partial class BitBadgeDemo
         {
             Max = 99,
             Bordered = true,
-            Shape = BitBadgeShape.Rounded,
+            Shape = BitShape.Rounded,
             Variant = BitVariant.Outline,
         }
     ];

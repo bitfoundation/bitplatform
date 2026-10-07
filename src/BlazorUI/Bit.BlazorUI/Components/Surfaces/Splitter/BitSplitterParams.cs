@@ -241,9 +241,9 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
             bitSplitter.TakeFromCascade(nameof(Id), Id, static s => s.Id, static (s, v) => s.Id = v);
         }
 
-        if (IsEnabled.HasValue)
+        if (Disabled.HasValue)
         {
-            bitSplitter.TakeFromCascade(nameof(IsEnabled), IsEnabled.Value, static s => s.IsEnabled, static (s, v) => s.IsEnabled = v);
+            bitSplitter.TakeFromCascade(nameof(Disabled), Disabled.Value, static s => s.Disabled, static (s, v) => s.Disabled = v);
         }
 
         if (Style.HasValue())

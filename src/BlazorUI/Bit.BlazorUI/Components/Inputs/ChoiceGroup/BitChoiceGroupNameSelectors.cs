@@ -23,9 +23,9 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, string?> Id { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Id));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class.
+    /// The IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.IsDisabled));
 
     /// <summary>
     /// The Icon field name and selector of the custom input class.

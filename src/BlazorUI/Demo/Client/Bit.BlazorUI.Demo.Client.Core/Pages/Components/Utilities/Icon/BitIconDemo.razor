@@ -18,7 +18,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             <b>IconName</b> names a glyph of the built-in set (all of them are on the <BitLink Href="/iconography">iconography page</BitLink>).
-            <b>IsEnabled</b> false draws it in the disabled color.
+            <b>Disabled</b> draws it in the disabled color.
         </div>
         <br /><br />
         <div class="example-content">
@@ -28,9 +28,9 @@
         </div>
         <br />
         <div class="example-content">
-            <BitIcon IconName="@BitIconName.Accept" IsEnabled="false" />
-            <BitIcon IconName="@BitIconName.Bus" IsEnabled="false" />
-            <BitIcon IconName="@BitIconName.Pinned" IsEnabled="false" />
+            <BitIcon IconName="@BitIconName.Accept" Disabled />
+            <BitIcon IconName="@BitIconName.Bus" Disabled />
+            <BitIcon IconName="@BitIconName.Pinned" Disabled />
         </div>
     </DemoExample>
 
@@ -49,11 +49,11 @@
         </div>
         <br />
         <div class="example-content">
-            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" IsEnabled="false" />
-            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" IsEnabled="false" />
-            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" IsEnabled="false" />
-            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Circular IsEnabled="false" />
-            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Circular IsEnabled="false" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" Disabled />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Disabled />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Disabled />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Circular Disabled />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Circular Disabled />
         </div>
     </DemoExample>
 
@@ -177,7 +177,7 @@
             <BitIcon IconName="@BitIconName.Delete"
                      Variant="BitVariant.Fill"
                      Title="Deleting is unavailable here"
-                     IsEnabled="false"
+                     Disabled
                      OnClick="() => clickCount++" />
         </div>
         <br />
@@ -275,7 +275,7 @@
                     <BitIcon IconName="@BitIconName.Accept" Color="color" />
                     <BitIcon IconName="@BitIconName.Accept" Color="color" Variant="BitVariant.Outline" />
                     <BitIcon IconName="@BitIconName.Accept" Color="color" Variant="BitVariant.Fill" />
-                    <BitIcon IconName="@BitIconName.Accept" Color="color" Variant="BitVariant.Fill" IsEnabled="false" />
+                    <BitIcon IconName="@BitIconName.Accept" Color="color" Variant="BitVariant.Fill" Disabled />
                     <span>@color</span>
                 </div>
             }

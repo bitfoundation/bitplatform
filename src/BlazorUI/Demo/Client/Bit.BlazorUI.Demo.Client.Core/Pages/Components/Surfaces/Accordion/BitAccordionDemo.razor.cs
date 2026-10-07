@@ -103,12 +103,12 @@ public partial class BitAccordionDemo
         },
         new()
         {
-            Name = "ExpanderIconPosition",
-            Type = "BitIconPosition?",
+            Name = "ExpanderIconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the side of the header the expander icon sits on. The default value is End.",
+            Description = "Gets or sets the side of the header the expander icon sits on. The default value is End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon at the end.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -333,7 +333,7 @@ public partial class BitAccordionDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColorKind(),
-        DemoSharedEnums.BitIconPosition(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "accordion-toggle-reason-enum",
@@ -684,7 +684,7 @@ public partial class BitAccordionDemo
 
     private int renameCount;
 
-    private bool bindingIsEnabled = true;
+    private bool bindingIsDisabled;
     private bool bindingIsExpanded;
     private int controlledExpandedItem = 1;
 
@@ -722,7 +722,7 @@ public partial class BitAccordionDemo
             HiddenUntilFound = true,
             ExpanderIconName = BitIconName.Add,
             ExpandedExpanderIconName = BitIconName.Remove,
-            ExpanderIconPosition = BitIconPosition.Start,
+            ExpanderIconPlacement = BitPlacement.Start,
         }
     ];
 

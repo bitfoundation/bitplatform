@@ -184,7 +184,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var button = component.Find(".bit-drm-btn");
@@ -595,42 +595,49 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitPanelPosition.Start, "bit-drm-sta")]
-    [DataRow(BitPanelPosition.End, "bit-drm-end")]
-    [DataRow(BitPanelPosition.Top, "bit-drm-top")]
-    [DataRow(BitPanelPosition.Bottom, "bit-drm-btm")]
-    public void BitDropMenuShouldAddPanelPositionClass(BitPanelPosition position, string expectedClass)
+    [DataRow(BitPlacement.Start, "bit-drm-sta")]
+    [DataRow(BitPlacement.End, "bit-drm-end")]
+    [DataRow(BitPlacement.Top, "bit-drm-top")]
+    [DataRow(BitPlacement.Bottom, "bit-drm-btm")]
+    [DataRow(BitPlacement.Left, "bit-drm-lft")]
+    [DataRow(BitPlacement.Right, "bit-drm-rgt")]
+    public void BitDropMenuShouldAddPanelPositionClass(BitPlacement position, string expectedClass)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.Responsive, true);
-            parameters.Add(p => p.PanelPosition, position);
+            parameters.Add(p => p.PanelPlacement, position);
         });
 
         Assert.IsTrue(component.Find(".bit-drm-cal").ClassList.Contains(expectedClass));
     }
 
     [TestMethod]
-    [DataRow(BitPanelPosition.Start, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPanelPosition.End, BitSwipeOrientation.Horizontal)]
-    [DataRow(BitPanelPosition.Top, BitSwipeOrientation.Vertical)]
-    [DataRow(BitPanelPosition.Bottom, BitSwipeOrientation.Vertical)]
-    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPanelPosition position, BitSwipeOrientation expected)
+    [DataRow(BitPlacement.Start, "start", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.End, "end", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Top, "top", BitSwipeOrientation.Vertical)]
+    [DataRow(BitPlacement.Bottom, "bottom", BitSwipeOrientation.Vertical)]
+    [DataRow(BitPlacement.Left, "left", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Right, "right", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Center, "end", BitSwipeOrientation.Horizontal)]
+    public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPlacement position, string edge, BitSwipeOrientation expected)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.Responsive, true);
-            parameters.Add(p => p.PanelPosition, position);
+            parameters.Add(p => p.PanelPlacement, position);
         });
 
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
 
         // The arguments of Swipes.setup, in order: id, trigger, position, isRtl, orientationLock,
-        // dotnetObj, isResponsive, scrollContainerId.
+        // dotnetObj, isResponsive, scrollContainerId. The position crosses by name; a physical side crosses as
+        // itself, since the direction it would be read against is the page's, and a side that names no edge is
+        // resolved to the default end before it does.
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
-        Assert.AreEqual(position, setup.Arguments[2]);
+        Assert.AreEqual(edge, setup.Arguments[2]);
         Assert.AreEqual(expected, setup.Arguments[4]);
     }
 
@@ -836,7 +843,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicks++);
         });
 
@@ -1658,7 +1665,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.OpenOnHover, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".bit-drm").MouseEnter();
@@ -1790,7 +1797,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
@@ -1832,7 +1839,7 @@ public class BitDropMenuTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -1873,7 +1880,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultIsOpen, true);
         });
 
@@ -2056,7 +2063,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.AutoClose, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.Body, (RenderFragment)(b => b.AddMarkupContent(0, @"<button class=""item"">Item</button>")));
         });
@@ -2267,7 +2274,7 @@ public class BitDropMenuTests : BunitTestContext
 
         var @params = new BitDropMenuParams
         {
-            Alignment = BitCalloutAlignment.End,
+            Alignment = BitPlacement.End,
             AriaDescription = "Description",
             AriaHidden = true,
             AutoClose = true,
@@ -2294,9 +2301,9 @@ public class BitDropMenuTests : BunitTestContext
             NoChevron = true,
             NoShadow = true,
             OpenOnHover = true,
-            PanelPosition = BitPanelPosition.Bottom,
+            PanelPlacement = BitPlacement.Bottom,
             Responsive = true,
-            Side = BitCalloutSide.Top,
+            Placement = BitPlacement.Top,
             Size = BitSize.Small,
             Styles = styles,
             Title = "Title",
@@ -2320,7 +2327,7 @@ public class BitDropMenuTests : BunitTestContext
 
         var instance = component.FindComponent<BitDropMenu>().Instance;
 
-        Assert.AreEqual(BitCalloutAlignment.End, instance.Alignment);
+        Assert.AreEqual(BitPlacement.End, instance.Alignment);
         Assert.AreEqual("Description", instance.AriaDescription);
         Assert.IsTrue(instance.AriaHidden);
         Assert.IsTrue(instance.AutoClose);
@@ -2333,7 +2340,7 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
         Assert.AreEqual(6, instance.Gap);
-        Assert.AreEqual(BitCalloutSide.Top, instance.Side);
+        Assert.AreEqual(BitPlacement.Top, instance.Placement);
         Assert.IsTrue(instance.FullWidth);
         Assert.AreEqual(300, instance.HoverCloseDelay);
         Assert.AreEqual(200, instance.HoverOpenDelay);
@@ -2348,7 +2355,7 @@ public class BitDropMenuTests : BunitTestContext
         Assert.IsTrue(instance.NoChevron);
         Assert.IsTrue(instance.NoShadow);
         Assert.IsTrue(instance.OpenOnHover);
-        Assert.AreEqual(BitPanelPosition.Bottom, instance.PanelPosition);
+        Assert.AreEqual(BitPlacement.Bottom, instance.PanelPlacement);
         Assert.IsTrue(instance.Responsive);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreSame(styles, instance.Styles);
@@ -2545,10 +2552,10 @@ public class BitDropMenuTests : BunitTestContext
 
     [TestMethod]
     [DataRow(null, "")]
-    [DataRow(BitCalloutAlignment.Start, "")]
-    [DataRow(BitCalloutAlignment.Center, "center")]
-    [DataRow(BitCalloutAlignment.End, "end")]
-    public void BitDropMenuShouldHandTheAlignmentToThePositioningCode(BitCalloutAlignment? alignment, string expected)
+    [DataRow(BitPlacement.Start, "")]
+    [DataRow(BitPlacement.Center, "center")]
+    [DataRow(BitPlacement.End, "end")]
+    public void BitDropMenuShouldHandTheAlignmentToThePositioningCode(BitPlacement? alignment, string expected)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -2566,16 +2573,16 @@ public class BitDropMenuTests : BunitTestContext
 
     [TestMethod]
     [DataRow(null, "")]
-    [DataRow(BitCalloutSide.Top, "top")]
-    [DataRow(BitCalloutSide.Bottom, "bottom")]
-    [DataRow(BitCalloutSide.Start, "start")]
-    [DataRow(BitCalloutSide.End, "end")]
-    public void BitDropMenuShouldHandTheSideAndTheGapToThePositioningCode(BitCalloutSide? side, string expected)
+    [DataRow(BitPlacement.Top, "top")]
+    [DataRow(BitPlacement.Bottom, "bottom")]
+    [DataRow(BitPlacement.Start, "start")]
+    [DataRow(BitPlacement.End, "end")]
+    public void BitDropMenuShouldHandTheSideAndTheGapToThePositioningCode(BitPlacement? side, string expected)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.Side, side);
+            parameters.Add(p => p.Placement, side);
             parameters.Add(p => p.Gap, 8);
         });
 

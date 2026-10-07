@@ -58,11 +58,11 @@ public class BitStackTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectIsEnabled(bool isEnabled)
+    public void BitStackShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -71,7 +71,7 @@ public class BitStackTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitStackShouldRespectIsEnabledChangingAfterRender()
+    public void BitStackShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
 
@@ -79,7 +79,7 @@ public class BitStackTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@$"<div class=""bit-stc bit-dis"" style=""{STYLE}"" id:ignore></div>");

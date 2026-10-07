@@ -24,11 +24,11 @@ public class BitSwipeTrapTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitSwipeTrapShouldRespectIsEnabled(bool isEnabled)
+    public void BitSwipeTrapShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-stp");
@@ -452,15 +452,15 @@ public class BitSwipeTrapTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(10, 2, BitSwipeDirection.Right),
-        DataRow(-5, 1, BitSwipeDirection.Left),
-        DataRow(2, 9, BitSwipeDirection.Bottom),
-        DataRow(3, -7, BitSwipeDirection.Top),
-        DataRow(5, 5, BitSwipeDirection.Right),
-        DataRow(-5, -5, BitSwipeDirection.Left),
-        DataRow(5, -5, BitSwipeDirection.Right),
-        DataRow(-5, 5, BitSwipeDirection.Left)]
-    public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitSwipeDirection expectedDirection)
+        DataRow(10, 2, BitPlacement.Right),
+        DataRow(-5, 1, BitPlacement.Left),
+        DataRow(2, 9, BitPlacement.Bottom),
+        DataRow(3, -7, BitPlacement.Top),
+        DataRow(5, 5, BitPlacement.Right),
+        DataRow(-5, -5, BitPlacement.Left),
+        DataRow(5, -5, BitPlacement.Right),
+        DataRow(-5, 5, BitPlacement.Left)]
+    public async Task BitSwipeTrapShouldInvokeOnTrigger(int diffX, int diffY, BitPlacement expectedDirection)
     {
         BitSwipeTrapTriggerArgs? triggerArgs = null;
 
@@ -737,7 +737,7 @@ public class BitSwipeTrapTests : BunitTestContext
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
             parameters.Add(p => p.KeyboardTrigger, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-stp");
@@ -746,11 +746,11 @@ public class BitSwipeTrapTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitSwipeDirection.Right),
-        DataRow(BitSwipeDirection.Left),
-        DataRow(BitSwipeDirection.Top),
-        DataRow(BitSwipeDirection.Bottom)]
-    public async Task BitSwipeTrapShouldInvokeOnTriggerForAKey(BitSwipeDirection direction)
+        DataRow("right", BitPlacement.Right),
+        DataRow("left", BitPlacement.Left),
+        DataRow("top", BitPlacement.Top),
+        DataRow("bottom", BitPlacement.Bottom)]
+    public async Task BitSwipeTrapShouldInvokeOnTriggerForAKey(string name, BitPlacement direction)
     {
         BitSwipeTrapTriggerArgs? triggerArgs = null;
 
@@ -760,7 +760,7 @@ public class BitSwipeTrapTests : BunitTestContext
             parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggerArgs = args);
         });
 
-        await component.Instance._OnKeyTrigger(direction);
+        await component.Instance._OnKeyTrigger(name);
 
         Assert.IsNotNull(triggerArgs);
         Assert.AreEqual(direction, triggerArgs!.Direction);
@@ -780,11 +780,31 @@ public class BitSwipeTrapTests : BunitTestContext
         var component = RenderComponent<BitSwipeTrap>(parameters =>
         {
             parameters.Add(p => p.KeyboardTrigger, keyboardTrigger);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
         });
 
-        await component.Instance._OnKeyTrigger(BitSwipeDirection.Right);
+        await component.Instance._OnKeyTrigger("right");
+
+        Assert.IsFalse(triggered);
+    }
+
+    [TestMethod,
+        DataRow("start"),
+        DataRow("Right"),
+        DataRow("5"),
+        DataRow("")]
+    public async Task BitSwipeTrapShouldNotInvokeOnTriggerForAnUnknownKeyDirection(string name)
+    {
+        var triggered = false;
+
+        var component = RenderComponent<BitSwipeTrap>(parameters =>
+        {
+            parameters.Add(p => p.KeyboardTrigger, true);
+            parameters.Add(p => p.OnTrigger, (BitSwipeTrapTriggerArgs args) => triggered = true);
+        });
+
+        await component.Instance._OnKeyTrigger(name);
 
         Assert.IsFalse(triggered);
     }

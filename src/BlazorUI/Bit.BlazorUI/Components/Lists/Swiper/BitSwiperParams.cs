@@ -215,7 +215,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Settles the swiper on an item, at its start, its center or its end, instead of wherever the scrolling ran out.
     /// </summary>
-    public BitSwiperSnap? Snap { get; set; }
+    public BitScrollSnapAlign? SnapAlign { get; set; }
 
     /// <summary>
     /// Stops the auto scrolling as soon as the swiper is navigated through one of its own controls.
@@ -497,9 +497,9 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.ClassBuilder.Reset();
         }
 
-        if (Snap.HasValue && bitSwiper.HasNotBeenSet(nameof(Snap)))
+        if (SnapAlign.HasValue && bitSwiper.HasNotBeenSet(nameof(SnapAlign)))
         {
-            bitSwiper.Snap = Snap.Value;
+            bitSwiper.SnapAlign = SnapAlign.Value;
 
             bitSwiper.ClassBuilder.Reset();
         }

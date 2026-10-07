@@ -31,7 +31,7 @@ private async Task OnBasicFileChange(InputFileChangeEventArgs e)
 }";
 
     private readonly string example2RazorCode = @"
-<BitButton IsEnabled=""heightSource is null""
+<BitButton Disabled=""heightSource is not null""
            OnClick='() => heightSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""heightSource"" Height=""400px"" Width=""min(100%, 40rem)"" />";
@@ -39,7 +39,7 @@ private async Task OnBasicFileChange(InputFileChangeEventArgs e)
 private BitPdfSource? heightSource;";
 
     private readonly string example3RazorCode = @"
-<BitButton IsEnabled=""toolbarSource is null""
+<BitButton Disabled=""toolbarSource is not null""
            OnClick='() => toolbarSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""toolbarSource"" Height=""400px""
@@ -73,7 +73,7 @@ private void Share(BitPdfViewer viewer)
 }";
 
     private readonly string example4RazorCode = @"
-<BitButton IsEnabled=""sidebarSource is null""
+<BitButton Disabled=""sidebarSource is not null""
            OnClick='() => sidebarSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""sidebarSource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Thumbnails"" />";
@@ -81,7 +81,7 @@ private void Share(BitPdfViewer viewer)
 private BitPdfSource? sidebarSource;";
 
     private readonly string example5RazorCode = @"
-<BitButton IsEnabled=""zoomSource is null""
+<BitButton Disabled=""zoomSource is not null""
            OnClick='() => zoomSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""zoomSource"" Height=""450px""
@@ -110,7 +110,7 @@ private readonly double[] zoomPresets = [0.5, 1, 1.5, 2];";
 </BitDropdown>
 <BitToggle @bind-Value=""panTool"" Label=""Pan tool"" />
 
-<BitButton IsEnabled=""layoutSource is null""
+<BitButton Disabled=""layoutSource is not null""
            OnClick='() => layoutSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""layoutSource"" Height=""500px""
@@ -125,11 +125,11 @@ private BitPdfScrollMode scrollMode = BitPdfScrollMode.Vertical;
 private BitPdfSpreadMode spreadMode = BitPdfSpreadMode.None;";
 
     private readonly string example7RazorCode = @"
-<BitButton IsEnabled=""searchSource is null""
+<BitButton Disabled=""searchSource is not null""
            OnClick='() => searchSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
-<BitButton IsEnabled=""searchSource is not null""
+<BitButton Disabled=""searchSource is null""
            OnClick=""() => searchViewerRef.Search(searchTerm)"">Search from code</BitButton>
-<BitButton IsEnabled=""searchSource is not null""
+<BitButton Disabled=""searchSource is null""
            OnClick=""() => searchViewerRef.SetSearchOptions(matchCase: true, wholeWord: true)"">Case + whole word</BitButton>
 
 <BitTextField @bind-Value=""searchTerm"" Label=""Term"" />
@@ -159,7 +159,7 @@ private BitPdfViewer searchViewerRef = default!;
     <BitChoiceGroupOption Text=""Compact"" Value=""BitPdfTextCoalescing.Compact"" />
 </BitChoiceGroup>
 
-<BitButton IsEnabled=""renderingSource is null""
+<BitButton Disabled=""renderingSource is not null""
            OnClick='() => renderingSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 @* BackgroundRendering is a safe no-op on single-threaded WebAssembly. *@
@@ -173,7 +173,7 @@ private BitPdfRenderMode renderMode = BitPdfRenderMode.Html;
 private BitPdfTextCoalescing textCoalescing = BitPdfTextCoalescing.Exact;";
 
     private readonly string example9RazorCode = @"
-<BitButton IsEnabled=""infoSource is null""
+<BitButton Disabled=""infoSource is not null""
            OnClick='() => infoSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer @ref=""infoViewerRef"" Source=""infoSource"" Height=""400px"" OnDocumentLoaded=""StateHasChanged"" />
@@ -225,7 +225,7 @@ private async Task OnPasswordFileChange(InputFileChangeEventArgs e)
     private readonly string example11RazorCode = @"
 <BitButton OnClick='() => statesSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load a document</BitButton>
 <BitButton OnClick=""LoadBrokenFile"">Load a broken file</BitButton>
-<BitButton IsEnabled=""statesSource is not null"" OnClick=""() => statesSource = null"">Clear</BitButton>
+<BitButton Disabled=""statesSource is null"" OnClick=""() => statesSource = null"">Clear</BitButton>
 
 <BitPdfViewer Source=""statesSource"" Height=""300px"" AllowDropFile>
     <LoadingTemplate>
@@ -247,7 +247,7 @@ private void LoadBrokenFile()
 
     private readonly string example12RazorCode = @"
 <BitToggle @bind-Value=""blockPrinting"" Label=""Block printing"" />
-<BitButton IsEnabled=""eventsSource is null""
+<BitButton Disabled=""eventsSource is not null""
            OnClick='() => eventsSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""eventsSource"" Height=""400px""
@@ -289,7 +289,7 @@ private void HandlePrinting(BitPdfPrintArgs args)
 }";
 
     private readonly string example13RazorCode = @"
-<BitButton IsEnabled=""bindingSource is null""
+<BitButton Disabled=""bindingSource is not null""
            OnClick='() => bindingSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitNumberField @bind-Value=""boundPage"" Label=""CurrentPage"" Min=""1"" />
@@ -308,7 +308,7 @@ private double boundZoom = 1;
 private int boundRotation;";
 
     private readonly string example14RazorCode = @"
-<BitButton IsEnabled=""publicApiSource is null""
+<BitButton Disabled=""publicApiSource is not null""
            OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitButton OnClick=""() => pdfViewerRef.FirstPage()"">First</BitButton>
@@ -366,7 +366,7 @@ private async Task ShowSelectedText()
 // string html = pdfViewerRef.RenderPageHtml(1);";
 
     private readonly string example15RazorCode = @"
-<BitButton IsEnabled=""localizedSource is null""
+<BitButton Disabled=""localizedSource is not null""
            OnClick='() => localizedSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""localizedSource"" Height=""400px"" Texts=""germanTexts"" />";
@@ -424,18 +424,18 @@ private readonly BitPdfViewerTexts germanTexts = new()
 };";
 
     private readonly string example16RazorCode = @"
-<BitToggle @bind-Value=""a11yEnabled"" Label=""IsEnabled"" />
-<BitButton IsEnabled=""a11ySource is null""
+<BitToggle @bind-Value=""a11yDisabled"" Label=""Disabled"" />
+<BitButton Disabled=""a11ySource is not null""
            OnClick='() => a11ySource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 @* EnableKeyboardShortcuts=""false"" hands every key back to the page. *@
-<BitPdfViewer Source=""a11ySource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Bookmarks"" IsEnabled=""a11yEnabled"" />";
+<BitPdfViewer Source=""a11ySource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Bookmarks"" Disabled=""a11yDisabled"" />";
     private readonly string example16CsharpCode = @"
 private BitPdfSource? a11ySource;
-private bool a11yEnabled = true;";
+private bool a11yDisabled;";
 
     private readonly string example17RazorCode = @"
-<BitButton IsEnabled=""cascadeSource is null""
+<BitButton Disabled=""cascadeSource is not null""
            OnClick='() => cascadeSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitParams Parameters=""pdfViewerParams"">
@@ -467,7 +467,7 @@ private readonly BitPdfViewerParams[] pdfViewerParams =
     }
 </style>
 
-<BitButton IsEnabled=""styleSource is null""
+<BitButton Disabled=""styleSource is not null""
            OnClick='() => styleSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""styleSource"" Height=""300px"" Style=""border-color:tomato"" Class=""custom-class"" />
@@ -493,7 +493,7 @@ private const string cssVariablesStyle = ""--bit-PdfViewer-border-radius:1rem;""
                                          ""--bit-PdfViewer-search-match-background:gold;"";";
 
     private readonly string example19RazorCode = @"
-<BitButton IsEnabled=""rtlSource is null""
+<BitButton Disabled=""rtlSource is not null""
            OnClick='() => rtlSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Dir=""BitDir.Rtl"" Source=""rtlSource"" Height=""400px"" />";

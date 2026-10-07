@@ -104,7 +104,7 @@
                     @onclick="() => FileUpload.HandleItemUpload(Item)"
                     type="button"
                     title="@uploadTitle"
-                    disabled="@(FileUpload.IsEnabled is false)"
+                    disabled="@(FileUpload.Disabled)"
                     aria-label="@($"{uploadTitle} {Item.Name}")"
                     style="@FileUpload.Styles?.UploadButton"
                     class="bit-upl-usi @FileUpload.Classes?.UploadButton">
@@ -121,7 +121,7 @@
                     @onclick="() => FileUpload.HandleItemPause(Item)"
                     type="button"
                     title="@pauseTitle"
-                    disabled="@(FileUpload.IsEnabled is false)"
+                    disabled="@(FileUpload.Disabled)"
                     aria-label="@($"{pauseTitle} {Item.Name}")"
                     style="@FileUpload.Styles?.PauseButton"
                     class="bit-upl-usi @FileUpload.Classes?.PauseButton">
@@ -140,7 +140,7 @@
                     @onclick="() => FileUpload.HandleItemCancel(Item)"
                     type="button"
                     title="@cancelTitle"
-                    disabled="@(FileUpload.IsEnabled is false)"
+                    disabled="@(FileUpload.Disabled)"
                     aria-label="@($"{cancelTitle} {Item.Name}")"
                     style="@FileUpload.Styles?.CancelButton"
                     class="bit-upl-usi @FileUpload.Classes?.CancelButton">
@@ -168,7 +168,7 @@
                         @onclick="() => FileUpload.HandleItemRemove(Item)"
                         type="button"
                         title="@removeTitle"
-                        disabled="@(FileUpload.IsEnabled is false)"
+                        disabled="@(FileUpload.Disabled)"
                         aria-label="@($"{removeTitle} {Item.Name}")"
                         style="@FileUpload.Styles?.RemoveButton"
                         class="bit-upl-usi @FileUpload.Classes?.RemoveButton">

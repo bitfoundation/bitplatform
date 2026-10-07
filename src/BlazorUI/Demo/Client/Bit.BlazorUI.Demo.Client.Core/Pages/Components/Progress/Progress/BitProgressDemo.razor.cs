@@ -101,11 +101,11 @@ public partial class BitProgressDemo
         },
         new()
         {
-            Name = "GapPosition",
-            Type = "BitProgressGapPosition",
+            Name = "GapPlacement",
+            Type = "BitPlacement",
             LinkType = LinkType.Link,
-            Href = "#gap-position-enum",
-            DefaultValue = "BitProgressGapPosition.Bottom",
+            Href = "#placement-enum",
+            DefaultValue = "BitPlacement.Bottom",
             Description = "Where the gauge gap sits. Reversed swaps Start and End.",
         },
         new()
@@ -474,19 +474,7 @@ public partial class BitProgressDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        new()
-        {
-            Id = "gap-position-enum",
-            Name = "BitProgressGapPosition",
-            Description = "Where the gap of a gauge-shaped BitProgress sits, which is also where its stroke begins and ends.",
-            Items =
-            [
-                new() { Name = "Bottom", Description = "At the bottom of the ring, which is where a gauge is normally opened. This is the default.", Value = "0" },
-                new() { Name = "Top", Description = "At the top of the ring.", Value = "1" },
-                new() { Name = "Start", Description = "At the starting side of the ring - the left in a left-to-right context, the right in a right-to-left one.", Value = "2" },
-                new() { Name = "End", Description = "At the ending side of the ring - the right in a left-to-right context, the left in a right-to-left one.", Value = "3" }
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "percent-position-enum",

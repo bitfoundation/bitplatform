@@ -22,7 +22,7 @@ public class BitOtpInputTests : BunitTestContext
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitOtpInput = com.Find(".bit-otp");
@@ -1765,7 +1765,7 @@ public class BitOtpInputTests : BunitTestContext
         {
             parameters.Add(p => p.Length, 2);
             parameters.Add(p => p.Name, "otp");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, "12");
         });
 
@@ -1789,7 +1789,7 @@ public class BitOtpInputTests : BunitTestContext
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 4);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, "1234");
         });
 
@@ -1937,7 +1937,7 @@ public class BitOtpInputTests : BunitTestContext
         com.Render(parameters =>
         {
             parameters.Add(p => p.Length, 2);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual(2, invocations.Count);

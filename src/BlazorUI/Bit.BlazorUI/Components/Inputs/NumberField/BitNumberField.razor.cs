@@ -365,11 +365,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// The position of the label in regards to the field (Top by default).
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
-    /// Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.
+    /// Descriptive label for the number field, rendered next to it (per LabelPlacement) and read by screen readers.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? Label { get; set; }
@@ -705,7 +709,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     public Task ClearAsync() => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await ClearValue();
 
@@ -734,7 +738,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private Task SpinAsync(bool isIncrement) => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
 
         if (IsSpinBlocked(isIncrement)) return;
 
@@ -751,17 +755,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Bottom => "bit-nfl-lbt",
-            BitLabelPosition.Start => "bit-nfl-lst",
-            BitLabelPosition.End => "bit-nfl-led",
+            BitPlacement.Bottom => "bit-nfl-lbt",
+            BitPlacement.Start => "bit-nfl-lst",
+            BitPlacement.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         });
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-nfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-nfl-fwd" : string.Empty);
 
@@ -909,7 +913,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (IsDisposed) return;
 
-        var interactive = IsEnabled && ReadOnly is false && HideInput is false;
+        var interactive = Disabled is false && ReadOnly is false && HideInput is false;
 
         List<string> keys = [];
         if (interactive)
@@ -1370,7 +1374,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string? AriaRequired => Required ? "true" : GetInputAttribute("aria-required");
 
-    private string? AriaDisabled => IsEnabled is false ? "true" : GetInputAttribute("aria-disabled");
+    private string? AriaDisabled => Disabled ? "true" : GetInputAttribute("aria-disabled");
 
     // The parameter is the hint of the component, but the attribute is one a consumer may just as well have
     // splatted in through InputHtmlAttributes; an unset parameter reads theirs back rather than erasing it.
@@ -1458,7 +1462,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The consumer callback is invoked for every key (even the ones handled below as value
         // commands) and before the internal handling, so that it observes the same key sequence a
@@ -1605,14 +1609,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyUp.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -1625,7 +1629,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnInputContainerClick()
     {
         // Clicking the input itself already focused it, so the interop round trip is skipped there.
-        if (IsEnabled is false || HideInput || _hasFocus) return;
+        if (Disabled || HideInput || _hasFocus) return;
 
         await InputElement.FocusAsync();
     }
@@ -1644,7 +1648,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (e.Detail != 0) return;
 
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
 
         if (IsSpinBlocked(isIncrement)) return;
 
@@ -1758,14 +1762,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnBlur(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnBlur.InvokeAsync(e);
     }
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         _announceValue = false;
@@ -1778,7 +1782,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
 
@@ -1798,7 +1802,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1814,7 +1818,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnPointerDown(PointerEventArgs e, bool isIncrement)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || InvalidValueBinding()) return;
 
         // The release is what ends the press, and it can arrive before this handler is done: everything
         // below awaits at least one interop round trip, and the pointerup event is dispatched in that
@@ -1904,7 +1908,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnMouseWheel(WheelEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || NoMouseWheel || InvalidValueBinding()) return;
+        if (Disabled || ReadOnly || NoMouseWheel || InvalidValueBinding()) return;
         if (e.ShiftKey is false) return;
         // The wheel only spins the value of the field the user is actually editing. Reacting to a
         // merely hovered field would silently change data while the user is scrolling the page.
@@ -1933,7 +1937,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnClearButtonClick()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await ClearValue();
 

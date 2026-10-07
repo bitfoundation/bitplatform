@@ -21,7 +21,7 @@ public class Section
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Info { get; set; }
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
     public bool? Locked { get; set; }
     public string? Class { get; set; }
     public string? Style { get; set; }
@@ -38,7 +38,7 @@ private readonly BitAccordionListNameSelectors<Section> nameSelectors = new()
     Key = { Selector = i => i.Id },
     Title = { Selector = i => i.Name },
     Description = { Selector = i => i.Info },
-    IsEnabled = { Selector = i => i.IsEnabled },
+    IsDisabled = { Selector = i => i.IsDisabled },
     ReadOnly = { Selector = i => i.Locked },
     ExpanderIconName = { Selector = i => i.Image },
     IconName = { Selector = i => i.Glyph },
@@ -82,7 +82,7 @@ private readonly List<Section> templateItems =
 private readonly List<Section> stateItems =
 [
     new() { Id = ""normal"", Name = ""General settings"", Info = ""A live item"", Content = BodyFor(""Once upon a time, ..."") },
-    new() { Id = ""disabled"", Name = ""Users"", Info = ""Turned off altogether"", IsEnabled = false, Content = BodyFor(""Every story starts with a blank canvas, ..."") },
+    new() { Id = ""disabled"", Name = ""Users"", Info = ""Turned off altogether"", IsDisabled = true, Content = BodyFor(""Every story starts with a blank canvas, ..."") },
     new() { Id = ""locked"", Name = ""Advanced settings"", Info = ""Open on purpose and staying that way"", Locked = true, Content = BodyFor(""In the beginning, there is silence, ..."") },
 ];
 ";
@@ -203,7 +203,7 @@ private readonly List<Section> rtlItems =
                   TItem=""Section""
                   NameSelectors=""nameSelectors"" />
 
-<BitAccordionList ExpanderIconPosition=""BitIconPosition.Start""
+<BitAccordionList ExpanderIconPlacement=""BitPlacement.Start""
                   Items=""basicItems""
                   TItem=""Section""
                   NameSelectors=""nameSelectors"" />

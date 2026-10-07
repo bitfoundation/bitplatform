@@ -18,13 +18,13 @@
 
 <DemoExample Title="Disabled" RazorCode="@example2RazorCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        <b>IsEnabled</b> disables the whole navbar or a single option. A disabled option loses its link and its tab
+        <b>Disabled</b> disables the whole navbar and <b>IsDisabled</b> a single option. A disabled option loses its link and its tab
         stop, and is announced as dimmed.
     </div>
     <br />
     <div>Disabled navbar:</div><br />
     <div class="container short">
-        <BitNavBar TItem="BitNavBarOption" IsEnabled="false">
+        <BitNavBar TItem="BitNavBarOption" Disabled>
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
             <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
             <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
@@ -37,7 +37,7 @@
         <BitNavBar TItem="BitNavBarOption">
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
             <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
-            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" IsDisabled />
             <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
         </BitNavBar>
     </div>
@@ -107,16 +107,16 @@
     <div>Wildcard:</div><br />
     <div class="container short">
         <BitNavBar TItem="BitNavBarOption">
-            <BitNavBarOption Text="/components/*" IconName="@BitIconName.F12DevTools" Url="/components/*" Match="BitNavMatch.Wildcard" IsEnabled="false" />
-            <BitNavBarOption Text="/iconography/*" IconName="@BitIconName.AppIconDefault" Url="/iconography/*" Match="BitNavMatch.Wildcard" IsEnabled="false" />
+            <BitNavBarOption Text="/components/*" IconName="@BitIconName.F12DevTools" Url="/components/*" Match="BitNavMatch.Wildcard" IsDisabled />
+            <BitNavBarOption Text="/iconography/*" IconName="@BitIconName.AppIconDefault" Url="/iconography/*" Match="BitNavMatch.Wildcard" IsDisabled />
         </BitNavBar>
     </div>
     <br /><br />
     <div>Regex:</div><br />
     <div class="container short">
         <BitNavBar TItem="BitNavBarOption">
-            <BitNavBarOption Text="^/components/navbar$" IconName="@BitIconName.Code" Url="^/components/navbar$" Match="BitNavMatch.Regex" IsEnabled="false" />
-            <BitNavBarOption Text="^/iconography$" IconName="@BitIconName.Code" Url="^/iconography$" Match="BitNavMatch.Regex" IsEnabled="false" />
+            <BitNavBarOption Text="^/components/navbar$" IconName="@BitIconName.Code" Url="^/components/navbar$" Match="BitNavMatch.Regex" IsDisabled />
+            <BitNavBarOption Text="^/iconography$" IconName="@BitIconName.Code" Url="^/iconography$" Match="BitNavMatch.Regex" IsDisabled />
         </BitNavBar>
     </div>
     <br /><br />

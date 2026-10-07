@@ -30,7 +30,7 @@
     z-index: var(--bit-Sticky-z-index, var(--bit-stk-zin, 1));
 
     // A disabled sticky steps back into the normal flow: a static position ignores every inset, so the element
-    // scrolls away with its content like any other box - which is what makes IsEnabled the switch that turns the
+    // scrolls away with its content like any other box - which is what makes Disabled the switch that turns the
     // stickiness itself off.
     &.bit-dis {
         position: static;

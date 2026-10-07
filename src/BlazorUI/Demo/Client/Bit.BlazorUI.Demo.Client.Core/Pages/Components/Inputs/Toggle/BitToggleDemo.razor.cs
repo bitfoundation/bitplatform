@@ -129,12 +129,12 @@ public partial class BitToggleDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitLabelPosition?",
+            Name = "LabelPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set.",
+            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -482,7 +482,7 @@ public partial class BitToggleDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitLabelPosition("The position of the label in regards to the knob of the toggle."),
+        DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize()
     ];
 
@@ -754,7 +754,7 @@ public partial class BitToggleDemo
             FullWidth = true,
             OnText = "On",
             OffText = "Off",
-            LabelPosition = BitLabelPosition.Start
+            LabelPlacement = BitPlacement.Start
         }
     ];
 
