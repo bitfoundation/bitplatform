@@ -77,4 +77,21 @@
     code {
         font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
     }
+
+    :not(pre) > code {
+        font-size: 0.875em;
+        padding: 0.125em 0.375em;
+        border-radius: 0.25rem;
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-secondary;
+        border: 1px solid $bit-color-border-secondary;
+        white-space: nowrap;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+
+        @include sm {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    }
 }

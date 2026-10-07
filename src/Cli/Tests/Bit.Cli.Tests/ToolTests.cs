@@ -1,0 +1,470 @@
+﻿using Bit.Cli.Infrastructure;
+using Bit.Cli.Templates;
+using Bit.Cli.Tests.Infrastructure;
+using Bit.Cli.Tools;
+
+namespace Bit.Cli.Tests;
+
+[TestClass]
+public class ToolTests
+{
+    [TestMethod]
+    public async Task InstalledTools_Should_NotBeOffered()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        var checks = await CheckAsync(host, new ToolNeeds { Aspire = true });
+
+        Assert.IsTrue(checks.All(c => c.Status.IsSatisfied), string.Join(", ", checks.Where(c => c.Status.IsSatisfied is false).Select(c => c.Tool.Id)));
+    }
+
+    [TestMethod]
+    public async Task NodeVersions_Should_BeJudgedByMajor()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        host.Runner.On("node", "--version", 0, "v18.19.0");
+        var old = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "node");
+        Assert.AreEqual(ToolState.Outdated, old.Status.State);
+
+        host.Runner.NotFound("node");
+        var missing = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "node");
+        Assert.AreEqual(ToolState.Missing, missing.Status.State);
+        Assert.IsTrue(missing.Needed);
+    }
+
+    [TestMethod]
+    public async Task NodeJs_Should_FollowTheVersionTheTemplateAsksFor()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+
+        var node = (await CheckAsync(host, new ToolNeeds { NodeMajor = 24 })).Single(c => c.Tool.Id == "node");
+
+        Assert.AreEqual(ToolState.Outdated, node.Status.State);
+        Assert.AreEqual("24 or later is needed", node.Status.Detail);
+        Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, new ToolNeeds { NodeMajor = 22 })).Single(c => c.Tool.Id == "node").Status.State);
+    }
+
+    [TestMethod]
+    public async Task AnOlderAspireCli_Should_BeUpdatedToTheAppHostsVersion()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 0) };
+
+        host.Runner.On("aspire", "--version", 0, "13.5.2+5b4c1f0");
+        var older = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        Assert.AreEqual(ToolState.Outdated, older.Status.State);
+        Assert.IsTrue(older.Needed);
+        Assert.AreEqual("Update the Aspire CLI to 13.6.0", older.Action!.Title);
+        CollectionAssert.AreEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, older.Action.Commands[0].Arguments.ToArray());
+
+        host.Runner.NotFound("aspire");
+        var missing = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        CollectionAssert.AreEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action!.Commands[0].Arguments.ToArray());
+
+        host.Runner.On("aspire", "--version", 0, "13.7.0+1a2b3c4");
+        Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Status.State);
+    }
+
+    [TestMethod]
+    public async Task Docker_Should_TellNotRunningFromMissing()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        host.Runner.On("docker", "version", 1, "Cannot connect to the Docker daemon");
+        var notRunning = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
+        Assert.AreEqual(ToolState.NotRunning, notRunning.Status.State);
+        Assert.AreEqual("Start Docker", notRunning.Action!.Title);
+
+        host.Runner.NotFound("docker");
+        var missing = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
+        Assert.AreEqual(ToolState.Missing, missing.Status.State);
+    }
+
+    [TestMethod]
+    public async Task DockerAndTheAspireCli_Should_BeNeededOnlyWithAspire()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("docker");
+        host.Runner.NotFound("aspire");
+
+        var withAspire = await CheckAsync(host, new ToolNeeds { Aspire = true });
+        Assert.IsTrue(withAspire.Single(c => c.Tool.Id == "docker").Needed);
+        Assert.IsTrue(withAspire.Any(c => c.Tool.Id == "aspire"));
+
+        var withoutAspire = await CheckAsync(host, new ToolNeeds { Aspire = false });
+        Assert.IsFalse(withoutAspire.Single(c => c.Tool.Id == "docker").Needed);
+        Assert.IsFalse(withoutAspire.Any(c => c.Tool.Id == "aspire"));
+    }
+
+    [TestMethod]
+    public async Task WindowsOnlyTools_Should_NotShowUpElsewhere()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("wsl.exe");
+
+        var checks = await CheckAsync(host, new ToolNeeds { Aspire = true, Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
+
+        Assert.IsFalse(checks.Any(c => c.Tool.Id is "long-paths" or "wsl" or "visual-studio" or "xcode" or "homebrew"));
+    }
+
+    [TestMethod]
+    public async Task Wsl_Should_OnlyBeOfferedWhenDockerIsMissingToo()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("wsl", "--status", 1);
+
+        var dockerInstalled = await CheckAsync(host, new ToolNeeds { Aspire = true });
+        Assert.IsFalse(dockerInstalled.Any(c => c.Tool.Id == "wsl"));
+
+        host.Runner.NotFound("docker");
+        var dockerMissing = await CheckAsync(host, new ToolNeeds { Aspire = true });
+        Assert.IsTrue(dockerMissing.Single(c => c.Tool.Id == "wsl").Needed);
+    }
+
+    [TestMethod]
+    public async Task TheDotnetSdk_Should_MatchTheFeatureBandOfGlobalJson()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Sdk = new SdkRequirement(new Version(10, 0, 100), Preview: false) };
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "9.0.300 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
+        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
+        Assert.AreEqual("10.0.401", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    }
+
+    [TestMethod]
+    public async Task APreviewGlobalJson_Should_StillRequireItsSdk()
+    {
+        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"latestFeature\" } }");
+
+        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true), sdk);
+
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
+
+        Assert.AreEqual("11.0.100", (await CheckAsync(host, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    }
+
+    [TestMethod]
+    public async Task ADisabledRollForward_Should_RequireTheExactSdk()
+    {
+        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"disable\" } }");
+
+        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128"), sdk);
+
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Sdk = sdk };
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]");
+        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
+        Assert.AreEqual("11.0.100-rc.1.26425.128", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    }
+
+    [TestMethod]
+    public async Task LinuxInstalls_Should_UseTheDistributionsPackageManagerWithSudo()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("node");
+        host.Runner.NotFound("git");
+
+        var checks = await CheckAsync(host, new ToolNeeds());
+        var node = checks.Single(c => c.Tool.Id == "node").Action!;
+        var git = checks.Single(c => c.Tool.Id == "git").Action!;
+
+        Assert.AreEqual(Elevation.Sudo, node.Elevation);
+        StringAssert.Contains(node.Commands[0].CommandLine, "deb.nodesource.com");
+        Assert.AreEqual("apt-get install -y git", git.Commands[1].CommandLine);
+    }
+
+    [TestMethod]
+    public async Task WindowsInstalls_Should_UseWinget()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["winget"] = @"C:\winget.exe";
+        host.Runner.NotFound("node");
+        host.Runner.NotFound("docker");
+
+        var checks = await CheckAsync(host, new ToolNeeds { Aspire = true });
+        var node = checks.Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual(Elevation.Admin, node.Elevation);
+        CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
+        Assert.AreEqual("Install Docker Desktop", checks.Single(c => c.Tool.Id == "docker").Action!.Title);
+
+        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [C:\\Program Files\\dotnet\\sdk]");
+        var stable = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: false) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+        var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        var exact = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        CollectionAssert.Contains(stable.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.11");
+        CollectionAssert.DoesNotContain(stable.Commands[0].Arguments.ToArray(), "--version");
+        CollectionAssert.Contains(preview.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.Preview");
+        CollectionAssert.IsSubsetOf(new[] { "--id", "Microsoft.DotNet.SDK.Preview", "--version", "11.0.100-rc.1.26425.128" }, exact.Commands[0].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public void TheAdministratorScript_Should_QuoteEverythingAndReportEachTool()
+    {
+        var actions = new[]
+        {
+            new ToolAction
+            {
+                ToolId = "long-paths",
+                Title = "Enable Windows long paths",
+                Elevation = Elevation.Admin,
+                Commands = [new ProcessSpec { FileName = "reg.exe", Arguments = ["add", @"HKLM\SYSTEM\x", "/d", "it's 1"] }]
+            },
+            new ToolAction
+            {
+                ToolId = "node",
+                Title = "Install Node.js LTS",
+                Elevation = Elevation.Admin,
+                SuccessExitCodes = [0, 3010],
+                Commands = [new ProcessSpec { FileName = "winget", Arguments = ["install", "--id", "OpenJS.NodeJS.LTS"] }]
+            }
+        };
+
+        var script = ToolInstaller.BuildWindowsScript(actions, @"C:\Temp\install.log", @"C:\Temp\results.json");
+
+        StringAssert.Contains(script, "& 'reg.exe' 'add' 'HKLM\\SYSTEM\\x' '/d' 'it''s 1'");
+        StringAssert.Contains(script, "$results['long-paths'] = $code");
+        StringAssert.Contains(script, "$results['node'] = $code");
+        StringAssert.Contains(script, "@(0, 3010) -contains $code");
+        StringAssert.Contains(script, "Set-Content -LiteralPath 'C:\\Temp\\results.json'");
+    }
+
+    [TestMethod]
+    public async Task TheHypervisorPlatform_Should_BeCheckedOnWindowsForTheAndroidEmulator()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        var android = new ToolNeeds { Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } };
+
+        host.Runner.On("powershell", "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature", 0, "2\r\n");
+        var hypervisor = (await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform");
+        Assert.IsTrue(hypervisor.Needed);
+        Assert.AreEqual(Elevation.Admin, hypervisor.Action!.Elevation);
+        CollectionAssert.Contains(hypervisor.Action.Commands[0].Arguments.ToArray(), "/featurename:HypervisorPlatform");
+
+        host.Runner.On("powershell", "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature", 0, "1\r\n");
+        Assert.IsTrue((await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform").Status.IsSatisfied);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "hypervisor-platform"));
+    }
+
+    [TestMethod]
+    public async Task DeveloperMode_Should_BeOfferedForMauiWithoutBeingNeeded()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+
+        var maui = await CheckAsync(host, new ToolNeeds { Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
+        Assert.IsFalse(maui.Single(c => c.Tool.Id == "developer-mode").Needed);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "developer-mode"));
+    }
+
+    [TestMethod]
+    public async Task Python_Should_BeNeededOnLinuxForTheNativeWebAssemblyBuild()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.NotFound("python3");
+
+        var python = (await CheckAsync(host, new ToolNeeds { NativeWebAssembly = true })).Single(c => c.Tool.Id == "python");
+        Assert.IsTrue(python.Needed);
+        Assert.AreEqual("apt-get install -y python3", python.Action!.Commands[1].CommandLine);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "python"));
+    }
+
+    [TestMethod]
+    public async Task VsCode_Should_BeNeededUnlessAnotherIdeIsChosenOrItRunsInCiOrADevContainer()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed);
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Ide = IdeLocator.Rider })).Single(c => c.Tool.Id == "vscode").Needed);
+
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        AllInstalled(ci.Runner);
+
+        Assert.IsFalse((await CheckAsync(ci, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed);
+
+        foreach (var variable in new[] { "REMOTE_CONTAINERS", "CODESPACES", "DEVCONTAINER" })
+        {
+            using var container = new TestHost(HostOs.Linux, new Dictionary<string, string> { [variable] = "true" });
+            AllInstalled(container.Runner);
+
+            Assert.IsFalse((await CheckAsync(container, new ToolNeeds())).Single(c => c.Tool.Id == "vscode").Needed, variable);
+        }
+    }
+
+    [TestMethod]
+    public async Task Ci_Should_LeaveDockerWslAndTheAspireCliAloneButTrustTheCertificateOnLinux()
+    {
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        AllInstalled(ci.Runner);
+        ci.Runner.NotFound("docker");
+        ci.Runner.NotFound("aspire");
+        ci.Runner.On("dotnet", "dev-certs", 1);
+
+        var inCi = await CheckAsync(ci, new ToolNeeds { Aspire = true });
+
+        Assert.IsFalse(inCi.Any(c => c.Tool.Id is "docker" or "aspire" or "wsl"), string.Join(", ", inCi.Select(c => c.Tool.Id)));
+        Assert.IsTrue(inCi.Single(c => c.Tool.Id == "dev-cert").Needed);
+
+        using var local = new TestHost(HostOs.Linux);
+        AllInstalled(local.Runner);
+        local.Runner.NotFound("docker");
+        local.Runner.On("dotnet", "dev-certs", 1);
+
+        var onLinux = await CheckAsync(local, new ToolNeeds { Aspire = true });
+
+        Assert.IsTrue(onLinux.Single(c => c.Tool.Id == "docker").Needed);
+        Assert.IsTrue(onLinux.Single(c => c.Tool.Id == "dev-cert").Action!.Optional);
+
+        using var windowsCi = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        AllInstalled(windowsCi.Runner);
+        windowsCi.Runner.On("dotnet", "dev-certs", 1);
+
+        Assert.IsFalse((await CheckAsync(windowsCi, new ToolNeeds { Aspire = true })).Any(c => c.Tool.Id is "dev-cert" or "docker" or "wsl" or "aspire"));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubCli_Should_OnlyBeCheckedForAGitHubRepository()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("gh");
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "gh"));
+
+        var gh = (await CheckAsync(host, new ToolNeeds { GitHubRepo = true })).Single(c => c.Tool.Id == "gh");
+
+        Assert.IsTrue(gh.Needed);
+        CollectionAssert.Contains(gh.Action!.Commands.Select(c => c.CommandLine).ToList(), "apt-get install -y gh");
+    }
+
+    [TestMethod]
+    public void DescribeTool_Should_SayWhyAndHow()
+    {
+        var check = new ToolCheck(ToolCatalog.Find("node")!, new ToolStatus(ToolState.Outdated, "18.0.0", "20 or later is needed"), true, "the build runs npm",
+            new ToolAction { ToolId = "node", Title = "Update Node.js to the LTS version", Elevation = Elevation.Sudo, Commands = [] }, null);
+
+        Assert.AreEqual("Update Node.js to the LTS version (found 18.0.0, 20 or later is needed): the build runs npm, needs sudo", Projects.NewWorkflow.DescribeTool(check));
+    }
+
+    [TestMethod]
+    public async Task TheDevelopmentCertificate_Should_BeNeededWithOrWithoutAspire()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "dev-certs", 1);
+
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds { Aspire = false })).Single(c => c.Tool.Id == "dev-cert").Needed);
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "dev-cert").Needed);
+    }
+
+    [TestMethod]
+    public async Task WindowsLongPaths_Should_BeNeededForEveryProject()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "long-paths").Needed);
+    }
+
+    [TestMethod]
+    public async Task AnOptionalToolThatFails_Should_OnlyWarn()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "dev-certs https --check", 1);
+        host.Runner.On("dotnet", "dev-certs https --trust", 1, "There was an error trusting the HTTPS developer certificate.");
+        var needs = new ToolNeeds { Aspire = true };
+        var devCert = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dev-cert");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([devCert], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, steps.Reports.Single().Result.Status);
+        Assert.IsFalse(steps.AnyFailed);
+    }
+
+    [TestMethod]
+    public async Task ACertificateTrustedForSomeClientsOnLinux_Should_SucceedWithANote()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "dev-certs https --check", 1);
+        host.Runner.On("dotnet", "dev-certs https --trust", 4, "There was an error trusting the HTTPS developer certificate. It will be trusted by some clients but not by others.");
+        var needs = new ToolNeeds { Aspire = true };
+        var devCert = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dev-cert");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([devCert], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single().Result;
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        Assert.AreEqual("for some clients", result.Detail);
+        Assert.IsNull(result.FollowUp);
+        StringAssert.Contains(host.Output, "SSL_CERT_DIR");
+    }
+
+    private static async Task<IReadOnlyList<ToolCheck>> CheckAsync(TestHost host, ToolNeeds needs)
+    {
+        var context = new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner));
+        return await ToolCatalog.CheckAsync(context, CancellationToken.None);
+    }
+
+    private static void AllInstalled(FakeProcessRunner runner)
+    {
+        runner.On("git", "--version", 0, "git version 2.47.1");
+        runner.On("node", "--version", 0, "v24.9.0");
+        runner.On("docker", "version", 0, "28.5.1");
+        runner.On("docker", "--version", 0, "Docker version 28.5.1");
+        runner.On("aspire", "--version", 0, "13.6.0+abc");
+        runner.On("dotnet", "dev-certs", 0);
+        runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
+        runner.On("wsl", "--status", 0);
+        runner.On("xcodebuild", "-version", 0, "Xcode 26.0");
+        runner.Executables["code"] = typeof(ToolTests).Assembly.Location;
+        runner.Executables["brew"] = "/opt/homebrew/bin/brew";
+    }
+}

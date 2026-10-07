@@ -8,7 +8,7 @@ using System.Xml.Linq;
 namespace Boilerplate.Tests.Features.Culture;
 
 /// <summary>
-/// The ten locales of each resource family are not written by hand. <c>Bit.ResxTranslator</c> fills the nine
+/// The ten locales of each resource family are not written by hand. <c>bit translate</c> fills the nine
 /// translations from the neutral file with an LLM, and the four CD pipelines run it on every deploy. That is the
 /// whole reason these assertions exist: the failure mode of a machine translator is not a compile error, it is a
 /// value that is subtly wrong in exactly one language, in a resource nobody on the team reads.

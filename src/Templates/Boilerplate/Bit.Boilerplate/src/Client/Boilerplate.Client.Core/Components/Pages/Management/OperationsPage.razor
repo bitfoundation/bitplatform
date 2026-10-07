@@ -167,9 +167,9 @@
                                      OnClick="WrapHandled(() => ShowOnly(filter))"
                                      AriaLabel="@($"{count} {label}, show them")">
                                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.6rem">
-                                    <BitIcon IconName="@ToneIcon(tone)" Color="ToneColor(tone)" />
+                                    <BitIcon IconName="@ToneIcon(tone)" Color="@(count is 0 ? BitColor.SecondaryForeground : ToneColor(tone))" />
                                     <BitStack Gap="0">
-                                        <BitText Typography="BitTypography.H5" Numeric>@count</BitText>
+                                        <BitText Typography="BitTypography.H5" Numeric Color="@(count is 0 ? BitColor.SecondaryForeground : null)">@count</BitText>
                                         <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@label</BitText>
                                     </BitStack>
                                 </BitStack>
@@ -295,7 +295,8 @@
                                                 <BitSpacer />
                                                 @if (check.VerifiedAt is { } verifiedAt)
                                                 {
-                                                    <BitTooltip Text="@($"A healthy result is reused for {check.CacheDuration?.TotalMinutes:N0} min, so probes don't turn into paid calls. A failure is checked again on every probe.")">
+                                                    <BitTooltip Classes="@(new() { Tooltip = "tip-end" })"
+                                                                Text="@($"A healthy result is reused for {check.CacheDuration?.TotalMinutes:N0} min, so probes don't turn into paid calls. A failure is checked again on every probe.")">
                                                         <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Center" Gap="0.25rem">
                                                             <BitIcon IconName="@BitIconName.History" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
                                                             <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">Verified @Ago(verifiedAt)</BitText>
@@ -360,13 +361,14 @@
                                             <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.3rem">
                                                 @if (check.IsCritical)
                                                 {
-                                                    <BitTooltip Text="If this fails, /health answers 503 and load balancers stop sending traffic to this instance.">
+                                                    <BitTooltip Classes="@(new() { Tooltip = "tip-start" })"
+                                                                Text="If this fails, /health answers 503 and load balancers stop sending traffic to this instance.">
                                                         <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Health" Text="Readiness" />
                                                     </BitTooltip>
                                                 }
                                                 @if (check.IsLiveness)
                                                 {
-                                                    <BitTooltip Text="Also runs on /alive, the liveness probe.">
+                                                    <BitTooltip Classes="@(new() { Tooltip = "tip-start" })" Text="Also runs on /alive, the liveness probe.">
                                                         <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Heart" Text="Liveness" />
                                                     </BitTooltip>
                                                 }

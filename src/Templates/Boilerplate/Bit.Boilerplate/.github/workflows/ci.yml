@@ -35,18 +35,17 @@ jobs:
       with:
         global-json-file: global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
-
     - name: Verify formatting
       run: dotnet format whitespace --folder . --verify-no-changes
 
-    - name: Workload restore
-      run: dotnet workload restore
+    - name: Install the bit CLI
+      shell: pwsh
+      run: |
+        dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
-    - name: Build
-      run: dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true
+    - name: Set up and build with bit setup
+      run: bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
 
   test:
     name: test
@@ -64,19 +63,14 @@ jobs:
       with:
         global-json-file: global.json
 
-    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-      with:
-        node-version: 24
+    - name: Install the bit CLI
+      shell: pwsh
+      run: |
+        dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
-    - name: Build
-      run: dotnet build Boilerplate.Web.slnf
-
-    - name: Install Playwright
-      run: pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps
-
-    - name: Trust dotnet cert
-      continue-on-error: true
-      run: dotnet dev-certs https --trust # Necessary for aspire related resources
+    - name: Prepare this machine and build with bit setup
+      run: bit setup --yes
 
     - name: Test
       id: test

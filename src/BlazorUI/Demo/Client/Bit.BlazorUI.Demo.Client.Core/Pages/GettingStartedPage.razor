@@ -412,13 +412,14 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                 <BitText Element="h3" Typography="BitTypography.Subtitle1">bit Boilerplate</BitText>
                 <BitText Element="p">
                     The same wiring plus what a real product needs on day one - identity, an API, a
-                    database, localization, and the Android, iOS, macOS and Windows heads of one codebase:
+                    database, localization, and the Android, iOS, macOS and Windows heads of one codebase.
+                    The bit CLI creates it and installs whatever this machine is missing to run it:
                 </BitText>
-                <CodeBox>dotnet new install Bit.Boilerplate
-dotnet new bit-bp -n MyBitProject</CodeBox>
+                <CodeBox>dotnet tool install --global Bit.Cli --prerelease
+bit new MyBitProject</CodeBox>
 
                 <BitText Element="p">
-                    Both are <code>dotnet new</code> templates rather than dependencies: what they produce
+                    Both are templates rather than dependencies: what they produce
                     is your source, with no runtime tie back to them.
                 </BitText>
             </DocSection>
