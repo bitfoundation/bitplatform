@@ -355,6 +355,19 @@ public class ToolTests
     }
 
     [TestMethod]
+    public void TheAdministratorLog_Should_TellWhichStepRunsAndWhatAFailedOneSaid()
+    {
+        var log = "== Install Git\r\nFound Git [Git.Git]\r\n  -\b\\\b|\r\nSuccessfully installed\n== Install WSL\nDownloading: 10%\r Downloading: 55%\n";
+
+        Assert.AreEqual("2 of 7: Install WSL · Downloading: 55%", ToolInstaller.AdministratorProgress(log, 7));
+        Assert.AreEqual("1 of 3: Install Git", ToolInstaller.AdministratorProgress("== Install Git\n", 3));
+        Assert.IsNull(ToolInstaller.AdministratorProgress("", 3));
+        Assert.AreEqual("Successfully installed", ToolInstaller.AdministratorOutput(log, "Install Git"));
+        Assert.AreEqual("Downloading: 55%", ToolInstaller.AdministratorOutput(log, "Install WSL"));
+        Assert.IsNull(ToolInstaller.AdministratorOutput(log, "Install Docker Desktop"));
+    }
+
+    [TestMethod]
     public void TheAdministratorScript_Should_QuoteEverythingAndReportEachTool()
     {
         var actions = new[]
