@@ -144,9 +144,13 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         var scriptPath = Path.Combine(directory, "install.ps1");
         var logPath = Path.Combine(directory, "install.log");
         var resultPath = Path.Combine(directory, "results.json");
+        var cancelPath = Path.Combine(directory, "cancel");
+        var script = Encoding.UTF8.GetBytes(BuildWindowsScript(actions, logPath, resultPath, cancelPath));
 
-        File.WriteAllText(scriptPath, BuildWindowsScript(actions, logPath, resultPath), new UTF8Encoding(true));
-        cli.Log.Write($"Administrator script {scriptPath}:{Environment.NewLine}{File.ReadAllText(scriptPath)}");
+        File.WriteAllBytes(scriptPath, script);
+        cli.Log.Write($"Administrator script {scriptPath}:{Environment.NewLine}{Encoding.UTF8.GetString(script)}");
+
+        var arguments = $"-NoProfile -NonInteractive -EncodedCommand {EncodeBootstrap(scriptPath, script)}";
 
         var declined = false;
         var title = cli.Environment.IsElevated
@@ -164,15 +168,19 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             return;
         }
 
+        var timeout = TimeSpan.FromTicks(actions.Sum(a => a.Commands.Sum(c => (c.Timeout ?? TimeSpan.FromMinutes(30)).Ticks))) + TimeSpan.FromMinutes(5);
+
         await cli.Console.RunWithStatusAsync(title, async progress =>
         {
+            using var tail = new CancellationTokenSource();
+            var tailing = TailAsync(logPath, progress, tail.Token);
+            using var cancelled = cancellationToken.Register(() => TryWriteCancel(cancelPath));
+
             try
             {
-                using var tail = StartTail(logPath, progress);
-
                 if (cli.Environment.IsElevated)
                 {
-                    await cli.Runner.RunAsync(new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", scriptPath], Timeout = TimeSpan.FromHours(2) }, cancellationToken);
+                    await cli.Runner.RunAsync(new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodeBootstrap(scriptPath, script)], Timeout = timeout }, cancellationToken);
                 }
                 else
                 {
@@ -180,19 +188,42 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     {
                         UseShellExecute = true,
                         Verb = "runas",
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\""
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        Arguments = arguments
                     });
 
                     if (process is not null)
                     {
-                        await process.WaitForExitAsync(cancellationToken);
+                        try
+                        {
+                            await process.WaitForExitAsync(cancellationToken).WaitAsync(timeout, cancellationToken);
+                        }
+                        catch (Exception exp) when (exp is OperationCanceledException or TimeoutException)
+                        {
+                            TryWriteCancel(cancelPath);
+
+                            try
+                            {
+                                await process.WaitForExitAsync(CancellationToken.None).WaitAsync(TimeSpan.FromMinutes(1), CancellationToken.None);
+                            }
+                            catch (TimeoutException)
+                            {
+                            }
+
+                            if (exp is OperationCanceledException)
+                                throw;
+                        }
                     }
                 }
             }
             catch (Win32Exception exp) when (exp.NativeErrorCode == 1223)
             {
                 declined = true;
+            }
+            finally
+            {
+                await tail.CancelAsync();
+                await tailing;
             }
 
             return 0;
@@ -204,6 +235,14 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         }
 
         var exitCodes = ReadResults(resultPath);
+
+        try
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
 
         foreach (var action in actions)
         {
@@ -222,12 +261,20 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             }
             else
             {
-                steps.Add(action.ToolId, StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", exitCodes.TryGetValue(action.ToolId, out var code) ? $"exit code {code}" : "it didn't run", followUp));
+                var detail = exitCodes.TryGetValue(action.ToolId, out var code)
+                    ? code switch { TimedOutCode => "it took too long and was stopped", CancelledCode => "it was cancelled", _ => $"exit code {code}" }
+                    : "it didn't run";
+
+                steps.Add(action.ToolId, StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp));
             }
         }
     }
 
-    public static string BuildWindowsScript(IReadOnlyList<ToolAction> actions, string logPath, string resultPath)
+    public const int TimedOutCode = -2;
+
+    public const int CancelledCode = -3;
+
+    public static string BuildWindowsScript(IReadOnlyList<ToolAction> actions, string logPath, string resultPath, string cancelPath)
     {
         static string Quote(string value) => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'";
 
@@ -235,20 +282,39 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         script.AppendLine("$ErrorActionPreference = 'Continue'");
         script.AppendLine("$ProgressPreference = 'SilentlyContinue'");
         script.AppendLine("$results = [ordered]@{}");
+        script.AppendLine($"$cancelPath = {Quote(cancelPath)}");
+        script.AppendLine($"$stoppedPath = {Quote(cancelPath + ".stopped")}");
         script.AppendLine($"function Write-BitLog([string]$text) {{ Add-Content -LiteralPath {Quote(logPath)} -Value $text -Encoding UTF8 }}");
+        script.AppendLine("function Start-BitWatchdog([int]$Seconds) {");
+        script.AppendLine("    Start-Job -ArgumentList $PID, $Seconds, $cancelPath, $stoppedPath -ScriptBlock {");
+        script.AppendLine("        param($ParentId, $Seconds, $CancelPath, $StoppedPath)");
+        script.AppendLine("        $deadline = (Get-Date).AddSeconds($Seconds)");
+        script.AppendLine("        while ((Get-Date) -lt $deadline -and -not (Test-Path -LiteralPath $CancelPath)) { Start-Sleep -Milliseconds 500 }");
+        script.AppendLine("        Set-Content -LiteralPath $StoppedPath -Value $(if (Test-Path -LiteralPath $CancelPath) { 'cancelled' } else { 'timed out' })");
+        script.AppendLine("        Get-CimInstance Win32_Process -Filter \"ParentProcessId=$ParentId\" | Where-Object { $_.ProcessId -ne $PID -and $_.Name -ne 'conhost.exe' } | ForEach-Object { & taskkill.exe /T /F /PID $_.ProcessId | Out-Null }");
+        script.AppendLine("    }");
+        script.AppendLine("}");
 
         foreach (var action in actions)
         {
             var successCodes = string.Join(", ", action.SuccessExitCodes);
             script.AppendLine($"Write-BitLog {Quote("== " + action.Title)}");
-            script.AppendLine("$code = 0");
+            script.AppendLine($"$code = if (Test-Path -LiteralPath $cancelPath) {{ {CancelledCode} }} else {{ 0 }}");
             script.AppendLine("try {");
 
             foreach (var command in action.Commands)
             {
+                var seconds = (int)(command.Timeout ?? TimeSpan.FromMinutes(30)).TotalSeconds;
+
                 script.AppendLine($"    if (@({successCodes}) -contains $code) {{");
+                script.AppendLine($"        $watchdog = Start-BitWatchdog {seconds}");
                 script.AppendLine($"        & {Quote(command.FileName)} {string.Join(' ', command.Arguments.Select(Quote))} 2>&1 | ForEach-Object {{ Write-BitLog \"$_\" }}");
                 script.AppendLine("        $code = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }");
+                script.AppendLine("        Stop-Job $watchdog; Remove-Job $watchdog -Force");
+                script.AppendLine("        if (Test-Path -LiteralPath $stoppedPath) {");
+                script.AppendLine("            $why = (Get-Content -LiteralPath $stoppedPath -Raw).Trim(); Remove-Item -LiteralPath $stoppedPath");
+                script.AppendLine($"            Write-BitLog \"stopped: $why\"; $code = if ($why -eq 'cancelled') {{ {CancelledCode} }} else {{ {TimedOutCode} }}");
+                script.AppendLine("        }");
                 script.AppendLine("    }");
             }
 
@@ -258,6 +324,27 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
         script.AppendLine($"$results | ConvertTo-Json | Set-Content -LiteralPath {Quote(resultPath)} -Encoding UTF8");
         return script.ToString();
+    }
+
+    public static string EncodeBootstrap(string scriptPath, byte[] script)
+    {
+        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(script));
+        var bootstrap = $"$b = [IO.File]::ReadAllBytes('{scriptPath.Replace("'", "''", StringComparison.Ordinal)}'); " +
+            $"if ([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b)).Replace('-', '') -ne '{hash}') {{ exit 87 }}; " +
+            "& ([scriptblock]::Create([Text.Encoding]::UTF8.GetString($b)))";
+
+        return Convert.ToBase64String(Encoding.Unicode.GetBytes(bootstrap));
+    }
+
+    private static void TryWriteCancel(string cancelPath)
+    {
+        try
+        {
+            File.WriteAllText(cancelPath, "cancel");
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 
     private static Dictionary<string, int> ReadResults(string resultPath)
@@ -278,42 +365,39 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         }
     }
 
-    private static IDisposable StartTail(string path, Action<string> progress)
+    private static async Task TailAsync(string path, Action<string> progress, CancellationToken cancellationToken)
     {
-        var cancellation = new CancellationTokenSource();
+        long position = 0;
 
-        _ = Task.Run(async () =>
+        while (cancellationToken.IsCancellationRequested is false)
         {
-            long position = 0;
-
-            while (cancellation.IsCancellationRequested is false)
+            try
             {
-                try
+                if (File.Exists(path))
                 {
-                    if (File.Exists(path))
-                    {
-                        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-                        stream.Seek(position, SeekOrigin.Begin);
-                        using var reader = new StreamReader(stream);
-                        var text = await reader.ReadToEndAsync();
-                        position = stream.Position;
+                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                    stream.Seek(position, SeekOrigin.Begin);
+                    using var reader = new StreamReader(stream);
+                    var text = await reader.ReadToEndAsync(CancellationToken.None);
+                    position = stream.Position;
 
-                        var last = text.Split('\n').Select(l => l.Trim()).LastOrDefault(l => l.Length > 0);
-                        if (last is not null)
-                        {
-                            progress(last);
-                        }
+                    var last = text.Split('\n').Select(l => l.Trim()).LastOrDefault(l => l.Length > 0);
+                    if (last is not null)
+                    {
+                        progress(last);
                     }
                 }
-                catch (IOException)
-                {
-                }
 
-                await Task.Delay(500);
+                await Task.Delay(500, cancellationToken);
             }
-        });
-
-        return cancellation;
+            catch (IOException)
+            {
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
     }
 
     private void RefreshPath()

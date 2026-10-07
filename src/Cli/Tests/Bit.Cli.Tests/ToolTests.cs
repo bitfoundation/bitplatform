@@ -294,13 +294,83 @@ public class ToolTests
             }
         };
 
-        var script = ToolInstaller.BuildWindowsScript(actions, @"C:\Temp\install.log", @"C:\Temp\results.json");
+        var script = ToolInstaller.BuildWindowsScript(actions, @"C:\Temp\install.log", @"C:\Temp\results.json", @"C:\Temp\cancel");
 
         StringAssert.Contains(script, "& 'reg.exe' 'add' 'HKLM\\SYSTEM\\x' '/d' 'it''s 1'");
         StringAssert.Contains(script, "$results['long-paths'] = $code");
         StringAssert.Contains(script, "$results['node'] = $code");
         StringAssert.Contains(script, "@(0, 3010) -contains $code");
+        StringAssert.Contains(script, "Start-BitWatchdog 1800");
+        StringAssert.Contains(script, "$cancelPath = 'C:\\Temp\\cancel'");
         StringAssert.Contains(script, "Set-Content -LiteralPath 'C:\\Temp\\results.json'");
+    }
+
+    [TestMethod]
+    public async Task TheAdministratorScript_Should_StopACommandAtItsTimeoutAndHonorCancel()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var directory = Directory.CreateTempSubdirectory("bit-cli-admin-").FullName;
+        var log = Path.Combine(directory, "install.log");
+        var results = Path.Combine(directory, "results.json");
+        var cancel = Path.Combine(directory, "cancel");
+        var scriptPath = Path.Combine(directory, "install.ps1");
+
+        ToolAction Action(string id, string arguments, int seconds) => new()
+        {
+            ToolId = id,
+            Title = id,
+            Elevation = Elevation.Admin,
+            Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/d", "/c", arguments], Timeout = TimeSpan.FromSeconds(seconds) }]
+        };
+
+        async Task<string> RunAsync(params ToolAction[] actions)
+        {
+            var script = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript(actions, log, results, cancel));
+            File.WriteAllBytes(scriptPath, script);
+
+            using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {ToolInstaller.EncodeBootstrap(scriptPath, script)}") { UseShellExecute = false, CreateNoWindow = true })!;
+            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(2));
+            return File.ReadAllText(results);
+        }
+
+        var timed = await RunAsync(Action("quick", "exit 0", 60), Action("slow", "ping -n 60 127.0.0.1 >nul", 3));
+
+        StringAssert.Contains(timed, "\"quick\":  0");
+        StringAssert.Contains(timed, $"\"slow\":  {ToolInstaller.TimedOutCode}");
+
+        File.WriteAllText(cancel, "cancel");
+        var cancelled = await RunAsync(Action("skipped", "exit 0", 60));
+
+        StringAssert.Contains(cancelled, $"\"skipped\":  {ToolInstaller.CancelledCode}");
+
+        var original = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript([Action("quick", "exit 0", 60)], log, results, cancel));
+        File.WriteAllBytes(scriptPath, original);
+        var bootstrap = ToolInstaller.EncodeBootstrap(scriptPath, original);
+        var marker = Path.Combine(directory, "tampered");
+        File.WriteAllText(scriptPath, $"Set-Content -LiteralPath '{marker}' -Value 'ran'");
+
+        using (var tampered = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {bootstrap}") { UseShellExecute = false, CreateNoWindow = true })!)
+        {
+            await tampered.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(1));
+            Assert.AreEqual(87, tampered.ExitCode);
+        }
+
+        Assert.IsFalse(File.Exists(marker));
+        Directory.Delete(directory, recursive: true);
+    }
+
+    [TestMethod]
+    public void TheBootstrap_Should_RunOnlyTheScriptItWasMadeFor()
+    {
+        var script = System.Text.Encoding.UTF8.GetBytes("Write-Output 'hi'");
+        var bootstrap = System.Text.Encoding.Unicode.GetString(Convert.FromBase64String(ToolInstaller.EncodeBootstrap(@"C:\Temp\it's\install.ps1", script)));
+
+        StringAssert.Contains(bootstrap, @"[IO.File]::ReadAllBytes('C:\Temp\it''s\install.ps1')");
+        StringAssert.Contains(bootstrap, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(script)));
+        StringAssert.Contains(bootstrap, "exit 87");
+        Assert.DoesNotContain("ExecutionPolicy", bootstrap);
     }
 
     [TestMethod]
