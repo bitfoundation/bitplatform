@@ -41,6 +41,10 @@
 //   --bit-TextField-icon-color              color of the icon at rest                       (default: $clr-fg-pri)
 //   --bit-TextField-icon-size               size of the icon and of the glyphs of the
 //                                           clear and reveal buttons                        (default: per Size, $siz-icon-*)
+//   --bit-TextField-spinner-size            diameter of the default busy spinner            (default: the icon size)
+//   --bit-TextField-spinner-color           the spinner's moving arc                        (default: the busy indicator's color,
+//                                                                                            see --bit-TextField-accent-color)
+//   --bit-TextField-spinner-track-color     the ring the arc travels on                     (default: the arc color at 25%)
 //   --bit-TextField-button-width            width of the clear, reveal and icon buttons     (default: per Size, $siz-ctrl-*)
 //   --bit-TextField-button-color            glyph color of the clear and reveal buttons     (default: $clr-fg-sec for the clear one,
 //                                                                                            the accent for the reveal one; an icon
@@ -504,6 +508,28 @@
     padding-inline: spacing(0.5);
     color: var(--bit-TextField-accent-color, var(--bit-tfl-clr));
     min-height: var(--bit-tfl-inp-min-height);
+}
+
+// The field's own spinner rather than a BitSpinnerLoading: a component re-skinned on its own would otherwise
+// re-skin this one too. The arc and its track are painted from the color of the slot, so the spinner follows
+// the accent and the disabled state, and it turns with the spinner tokens like every other one in the library.
+.bit-tfl-spn {
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-style: $shp-border-style;
+    border-width: $siz-spinner-stroke;
+    border-color: var(--bit-TextField-spinner-track-color, #{translucent(var(--bit-TextField-spinner-color, currentcolor), 25%)});
+    border-block-start-color: var(--bit-TextField-spinner-color, currentcolor);
+    width: var(--bit-TextField-spinner-size, var(--bit-TextField-icon-size, var(--bit-tfl-icon-font-size)));
+    height: var(--bit-TextField-spinner-size, var(--bit-TextField-icon-size, var(--bit-tfl-icon-font-size)));
+    animation: bit-tfl-spn-anm $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-tfl-spn-anm {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .bit-tfl-ico {
@@ -1073,6 +1099,13 @@
     // it would read as something that has already been accepted.
     .bit-tfl-gho {
         color: GrayText;
+    }
+
+    // Every side of the spinner would come back in the one system color, turning a ring that visibly spins into
+    // a still circle; the arc is set apart from its track again with a second system color.
+    .bit-tfl-spn {
+        border-color: GrayText;
+        border-block-start-color: CanvasText;
     }
 
     // A frame the author took away - NoBorder, or a Transparent border kind - leaves nothing but the system

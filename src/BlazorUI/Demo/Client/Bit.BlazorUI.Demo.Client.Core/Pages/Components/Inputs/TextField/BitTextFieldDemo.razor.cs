@@ -672,6 +672,13 @@ public partial class BitTextFieldDemo : IDisposable
                 },
                 new()
                 {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's default busy spinner, drawn when no LoadingTemplate is set."
+                },
+                new()
+                {
                     Name = "RevealPassword",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1334,6 +1341,24 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "--bit-TextField-icon-size",
             DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
             Description = "Size of the icon and of the glyphs of the clear and reveal password buttons.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-spinner-size",
+            DefaultValue = "The icon size",
+            Description = "Diameter of the default busy spinner.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-spinner-color",
+            DefaultValue = "The busy indicator's color (see --bit-TextField-accent-color)",
+            Description = "Color of the moving arc of the default busy spinner.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-spinner-track-color",
+            DefaultValue = "The arc color at 25%",
+            Description = "Color of the ring the arc of the default busy spinner travels on.",
         },
         new()
         {

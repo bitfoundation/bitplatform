@@ -40,6 +40,33 @@ never
      aria-label="@TagName(tag)">
 ```
 
+## Core components never render each other
+
+A component in the core `Bit.BlazorUI` project draws everything it shows with its own markup and its own
+SCSS; it never renders another public component of the library (no `<BitSpinnerLoading>` for a busy
+state, no `<BitShimmer>` for a skeleton, no `<BitButton>` for an action). Every component is re-skinned on
+its own - its `--bit-<Component>-*` variables, its `BitParams` cascade, its `Styles` / `Classes` - so one
+rendered inside another would carry an app's restyle of the first into the second, and couple the two
+components' markup, defaults and accessibility behaviour as well.
+
+- **Draw the part locally**, under the component's own class prefix, reading the global tokens: an inline
+  busy spinner is a ring with `$siz-spinner-stroke` turning on `$mot-duration-spinner` /
+  `$mot-easing-spinner` (see `.bit-btn-spn`, `.bit-srb-spn`, `.bit-tfl-spn`); a skeleton is a few bars
+  of its own (`.bit-crd-skb`). Offer a `...Template` parameter for an app that wants a library component
+  there instead - rendering one is the app's choice, never the component's default.
+- **A part drawn locally is a part of the component's public surface**, since what it replaces was
+  restylable through its own API: give it a `<Component>ClassStyles` member applied as
+  `style="@Styles?.X" class="bit-xxx-yyy @Classes?.X"` (`Spinner`, `Skeleton` / `SkeletonBar`), the public
+  `--bit-<Component>-*` variables an app would reach for (`spinner-size` / `-color` / `-track-color`,
+  `skeleton-background` / `-color`) in the stylesheet's header, and both in the demo page's
+  `componentSubClasses` and `componentCssVariables` tables, which `BitComponentCssVariablesContractTests`
+  pins to the stylesheet.
+- **Not covered**: a family's own internal shell (`BitLoading`, which every `Bit*Loading` renders its
+  drawing into), plumbing that is not a visual component (`BitCascadingValueProvider`), and a service
+  whose job is to render the component it serves (`BitModalService` opening a `BitModal`).
+- **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
+  renders a BitTextField), which is exactly what keeps the core ones from having to be.
+
 ## Demo pages
 
 A component's demo page is

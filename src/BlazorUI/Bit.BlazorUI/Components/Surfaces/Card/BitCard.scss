@@ -41,6 +41,8 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 //   --bit-Card-cover-width           width of the cover of a Horizontal card        (default: 33%)
 //   --bit-Card-scrim                 layer painted over a CoverOverlay picture,
 //                                    under the content                              (default: none)
+//   --bit-Card-skeleton-background   resting color of the bars of a loading card    (default: the text color at 10%)
+//   --bit-Card-skeleton-color        the wave that sweeps across those bars         (default: the text color at 10%)
 //
 // A parameter set on the card itself wins over them - Background, Border, Color, Elevation, NoShadow, Outlined,
 // Square, NoPadding, CoverWidth - since it is the more specific ask (a Fill card also keeps the hover and pressed
@@ -319,6 +321,59 @@ i.bit-crd-hic {
     display: flex;
     flex-direction: column;
     gap: var(--bit-crd-htx-gap);
+}
+
+// A bar is a wash of the card's own text color, so it reads against whatever surface the card was given - the
+// default one, a role fill or a variable - instead of matching it and disappearing. The last bar is shortened,
+// which is most of what makes a stack of bars read as text rather than as a table.
+.bit-crd-skb {
+    overflow: hidden;
+    position: relative;
+    height: spacing(1.5);
+    border-radius: $shp-radius-surface;
+    background-color: var(--bit-Card-skeleton-background, #{translucent(currentcolor, 10%)});
+
+    &:nth-child(2) {
+        width: 90%;
+    }
+
+    &:last-child {
+        width: 60%;
+    }
+
+    // The wave sweeping across the bar. It loops, so it keeps a literal pace scaled by the loop factor rather
+    // than the --bit-mot-duration* tokens, which collapse under reduced motion and would render as flicker.
+    &::after {
+        content: "";
+        inset: 0;
+        position: absolute;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, var(--bit-Card-skeleton-color, #{translucent(currentcolor, 10%)}), transparent);
+        animation: bit-crd-skb-anm calc(1.6s * #{$mot-loop-factor}) linear calc(0.5s * #{$mot-loop-factor}) infinite;
+    }
+}
+
+// The wave sweeps with the reading direction: on a right-to-left card it comes in from the right.
+.bit-crd.bit-rtl .bit-crd-skb::after {
+    animation-direction: reverse;
+}
+
+// A placeholder rather than the signal that work is in progress - the bars themselves already say that - so
+// reduced motion stops the wave outright, the way BitShimmer does, unless ForceAnimation asks for it back.
+@media (prefers-reduced-motion: reduce) {
+    .bit-crd-skb:not(.bit-fam *)::after {
+        animation: none;
+    }
+}
+
+@keyframes bit-crd-skb-anm {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .bit-crd-ftr {
@@ -719,5 +774,16 @@ button.bit-crd-lnk {
     .bit-crd:focus-visible,
     .bit-crd-lnk:focus-visible {
         outline-color: Highlight;
+    }
+
+    // The washes of the loading bars are stripped with every other background, so each bar is outlined in the
+    // system color for text that is not content instead, and the wave, with nothing left to paint, is taken out.
+    .bit-crd-skb {
+        outline: $shp-border-width $shp-border-style GrayText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+
+        &::after {
+            display: none;
+        }
     }
 }

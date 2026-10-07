@@ -37,6 +37,9 @@
 //                                               button                                       (default: per Size and Mode)
 //   --bit-NumberField-button-icon-size          size of the glyph inside those buttons       (default: per Size, from the type ramp)
 //   --bit-NumberField-loading-color             color of the busy indicator                  (default: the Accent)
+//   --bit-NumberField-spinner-size              diameter of the default busy spinner         (default: the icon size)
+//   --bit-NumberField-spinner-color             the spinner's moving arc                     (default: the busy indicator's color)
+//   --bit-NumberField-spinner-track-color       the ring the arc travels on                  (default: the arc color at 25%)
 //   --bit-NumberField-disabled-color            text, label, hint and glyph color of a
 //                                               disabled field                               (default: $clr-fg-dis)
 //   --bit-NumberField-disabled-background       fill of a disabled field                     (default: $clr-bg-dis)
@@ -348,6 +351,36 @@
     justify-content: center;
     padding-inline: spacing(0.5);
     color: var(--bit-NumberField-loading-color, var(--bit-nfl-clr));
+}
+
+// The field's own spinner rather than a BitSpinnerLoading: a component re-skinned on its own would otherwise
+// re-skin this one too. The arc and its track are painted from the color of the slot, so the spinner follows
+// the loading color and the disabled state, and it turns with the spinner tokens like every other one in the
+// library. It is drawn at the size of the field's icon, so it grows and shrinks with the field.
+.bit-nfl-spn {
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-style: $shp-border-style;
+    border-width: $siz-spinner-stroke;
+    border-color: var(--bit-NumberField-spinner-track-color, #{translucent(var(--bit-NumberField-spinner-color, currentcolor), 25%)});
+    border-block-start-color: var(--bit-NumberField-spinner-color, currentcolor);
+    width: var(--bit-NumberField-spinner-size, var(--bit-NumberField-icon-size, var(--bit-nfl-icon-size)));
+    height: var(--bit-NumberField-spinner-size, var(--bit-NumberField-icon-size, var(--bit-nfl-icon-size)));
+    animation: bit-nfl-spn-anm $mot-duration-spinner $mot-easing-spinner infinite;
+
+    // Every side would come back in the one system color, turning a ring that visibly spins into a still
+    // circle; the arc is set apart from its track again with a second system color.
+    @media (forced-colors: active) {
+        border-color: GrayText;
+        border-block-start-color: CanvasText;
+    }
+}
+
+@keyframes bit-nfl-spn-anm {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .bit-nfl-cin {

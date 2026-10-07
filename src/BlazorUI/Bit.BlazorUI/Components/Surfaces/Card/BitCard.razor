@@ -272,10 +272,13 @@
                         }
                         else
                         {
-                            <div class="bit-crd-skl">
-                                <BitShimmer Width="100%" Height="0.75rem" />
-                                <BitShimmer Width="90%" Height="0.75rem" />
-                                <BitShimmer Width="60%" Height="0.75rem" />
+                            @* The card's own bars rather than BitShimmers: a shimmer re-skinned on its own would otherwise
+                               re-skin this placeholder too. They carry nothing to read - the aria-busy of the root already
+                               says the content is on its way - so they are hidden from assistive technologies. *@
+                            <div style="@Styles?.Skeleton" class="bit-crd-skl @Classes?.Skeleton" aria-hidden="true">
+                                <div style="@Styles?.SkeletonBar" class="bit-crd-skb @Classes?.SkeletonBar"></div>
+                                <div style="@Styles?.SkeletonBar" class="bit-crd-skb @Classes?.SkeletonBar"></div>
+                                <div style="@Styles?.SkeletonBar" class="bit-crd-skb @Classes?.SkeletonBar"></div>
                             </div>
                         }
                     </div>
