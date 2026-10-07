@@ -16,9 +16,12 @@
            before anything is painted, so prerendered and cached markup rings the visitor's accent
            instead of ringing the default until hydration. Until then the C# accent state is the
            prerender's, i.e. possibly some other visitor's, so the class marking stays off; it takes
-           over once this instance is interactive and the real accent has been restored. *@
+           over once this instance is interactive and the real accent has been restored. The hand-off
+           is whole: the tokens come off with it, so the marker CSS - whose selectors outrank a single
+           class - stops matching and cannot paint over Classes.ActiveSwatch / Styles.ActiveSwatch. *@
         var cssMarked = _config?.FirstPaintStrategy is not (null or BitAccentColorFirstPaintStrategy.None);
         var classMarked = cssMarked is false || _hydrated;
+        var tokenMarked = cssMarked && classMarked is false;
     }
     @foreach (var item in _config?.Accents ?? DefaultAccents)
     {
@@ -29,7 +32,7 @@
                 type="button"
                 title="@item.Name"
                 disabled="@(Disabled)"
-                bit-accent-swatch="@(cssMarked ? token : null)"
+                bit-accent-swatch="@(tokenMarked ? token : null)"
                 class="@GetSwatchClass(isActive, classMarked)"
                 style="@GetSwatchStyle(item, isActive, classMarked)"
                 aria-pressed="@(isActive ? "true" : "false")"
