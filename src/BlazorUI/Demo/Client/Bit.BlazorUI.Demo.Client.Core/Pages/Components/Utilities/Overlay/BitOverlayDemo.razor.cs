@@ -136,7 +136,7 @@ public partial class BitOverlayDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        SharedSubEnums.BitPosition,
+        DemoSharedEnums.BitPosition(description: "Where the content sits on the layer. Start and End follow the text direction; Left and Right stay on their side."),
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =

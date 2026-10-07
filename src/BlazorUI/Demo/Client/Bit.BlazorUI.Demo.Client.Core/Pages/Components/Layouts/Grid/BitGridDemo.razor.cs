@@ -626,55 +626,7 @@ public partial class BitGridDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "alignment-enum",
-            Name = "BitAlignment",
-            Description = "Start, End, Center and the three space distributions apply to the horizontal axis, while Start, End, Center, Baseline and Stretch apply to the vertical one.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "SpaceBetween",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "SpaceAround",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "SpaceEvenly",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "Baseline",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Stretch",
-                    Value = "7",
-                }
-            ]
-        }
+        DemoSharedEnums.BitAlignment(description: "Start, End, Center and the three space distributions apply to the horizontal axis, while Start, End, Center, Baseline and Stretch apply to the vertical one.")
     ];
 
 

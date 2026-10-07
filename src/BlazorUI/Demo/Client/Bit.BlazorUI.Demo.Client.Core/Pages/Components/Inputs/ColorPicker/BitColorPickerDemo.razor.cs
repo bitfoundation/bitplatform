@@ -441,18 +441,7 @@ public partial class BitColorPickerDemo
                 new() { Name = "Hsv", Description = "Hue in degrees, saturation and brightness as percentages - the model the picker itself is driven in.", Value = "4" },
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Determines the size of the color picker.",
-            Items =
-            [
-                new() { Name = "Small", Description = "Display the color picker using small size.", Value = "0" },
-                new() { Name = "Medium", Description = "Display the color picker using medium size.", Value = "1" },
-                new() { Name = "Large", Description = "Display the color picker using large size.", Value = "2" },
-            ]
-        }
+        DemoSharedEnums.BitSize(description: "Determines the size of the color picker.")
     ];
 
 

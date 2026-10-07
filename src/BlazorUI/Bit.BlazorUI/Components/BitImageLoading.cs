@@ -1,13 +1,15 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Represents the img loading attribute values explained here:
-/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading"/>
+/// Represents the values of the
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading">loading attribute</see>
+/// of an img element.
 /// </summary>
 public enum BitImageLoading
 {
     /// <summary>
-    /// The default behavior, eager tells the browser to load the image as soon as the img element is processed.
+    /// Tells the browser to load the image as soon as the img element is processed, which is what a browser does with
+    /// an img that has no loading attribute.
     /// </summary>
     Eager,
 

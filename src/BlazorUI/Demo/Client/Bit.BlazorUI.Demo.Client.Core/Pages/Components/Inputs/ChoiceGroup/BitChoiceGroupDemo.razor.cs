@@ -148,7 +148,7 @@ public partial class BitChoiceGroupDemo
             Name = "LabelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it. Items rendered as image or icon tiles lay their own content out and ignore this parameter. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
+            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it; Start also aligns the items to the end of the group. Items rendered as image or icon tiles lay their own content out and ignore this parameter. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
@@ -503,150 +503,14 @@ public partial class BitChoiceGroupDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        SharedSubEnums.BitPlacement,
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size choice group.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size choice group.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size choice group.",
-                    Value="2",
-                }
-            ]
-        },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitSize(),
         new()
         {
             Id = "variant-enum",
             Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Description = "Determines how each item of the ChoiceGroup is drawn: as a bare radio row or as a selectable card.",
             Items =
             [
                 new()
@@ -664,7 +528,7 @@ public partial class BitChoiceGroupDemo
                 new()
                 {
                     Name= "Text",
-                    Description="Each item is a bare radio row with no surface of its own. The default.",
+                    Description="Each item is a bare radio row with no surface of its own.",
                     Value="2",
                 }
             ]

@@ -301,7 +301,7 @@ public partial class BitSwipeTrapDemo
                 },
             ]
         },
-        SharedSubEnums.BitPlacement
+        DemoSharedEnums.BitPlacement()
     ];
 
 

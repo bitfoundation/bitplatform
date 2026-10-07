@@ -55,7 +55,7 @@ public partial class BitImageDemo
             DefaultValue = "null",
             Description = "How the shape of the image compares to its frame, which the CenterCover and CenterContain fits scale by. No other fit reads it.",
             LinkType = LinkType.Link,
-            Href = "#image-cover-style"
+            Href = "#image-cover-enum"
         },
         new()
         {
@@ -140,7 +140,7 @@ public partial class BitImageDemo
             DefaultValue = "null",
             Description = "Used to determine how the image is scaled and cropped to fit the frame.",
             LinkType = LinkType.Link,
-            Href = "#image-fit"
+            Href = "#image-fit-enum"
         },
         new()
         {
@@ -156,7 +156,7 @@ public partial class BitImageDemo
             DefaultValue = "null",
             Description = "Allows for browser-level image loading (lazy or eager).",
             LinkType = LinkType.Link,
-            Href = "#image-loading"
+            Href = "#image-loading-enum"
         },
         new()
         {
@@ -438,7 +438,7 @@ public partial class BitImageDemo
     [
         new()
         {
-            Id = "image-fit",
+            Id = "image-fit-enum",
             Name = "BitImageFit",
             Description = "",
             Items =
@@ -495,7 +495,7 @@ public partial class BitImageDemo
         },
         new()
         {
-            Id = "image-cover-style",
+            Id = "image-cover-enum",
             Name = "BitImageCover",
             Description = "The shape of the image relative to its frame: the two shapes compared, not the shape of either one.",
             Items =
@@ -541,27 +541,7 @@ public partial class BitImageDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "image-loading",
-            Name = "BitImageLoading",
-            Description = "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
-            Items =
-            [
-                new()
-                {
-                    Name= "Eager",
-                    Description="The default behavior, eager tells the browser to load the image as soon as the img element is processed.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Lazy",
-                    Description="Tells the user agent to hold off on loading the image until the browser estimates that it will be needed imminently.",
-                    Value="1",
-                }
-            ]
-        },
+        DemoSharedEnums.BitImageLoading(),
         new()
         {
             Id = "image-decoding",

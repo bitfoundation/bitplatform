@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Determines the allowed drop directions of the callout.
+/// </summary>
 public enum BitDropDirection
 {
     /// <summary>
