@@ -214,7 +214,7 @@ Without a map, the newest `obj/**/bit-minifier.map` under the current folder is 
 - **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones, with `code --install-extension`.
 - **Playwright's Chromium**, in Playwright's own browser folder, with the driver the project's tests were built with.
 - **Container images** the project's AppHost uses, which Docker pulls during the first Aspire start and keeps.
-- **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. On macOS and Linux, `sudo` asks for your password once.
+- **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. It runs only the script bit wrote, checked by its hash, gives each command a time limit, and Ctrl+C stops it. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
