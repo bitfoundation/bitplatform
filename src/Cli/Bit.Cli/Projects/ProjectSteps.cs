@@ -628,6 +628,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> GitHubSignInAsync(Action<string> progress, CancellationToken cancellationToken)
     {
+        await Gh(["auth", "setup-git", "--hostname", "github.com", "--force"], cancellationToken);
+
         var login = await Runner.RunAsync(new ProcessSpec
         {
             FileName = "gh",

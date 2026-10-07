@@ -655,6 +655,20 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task GitHubSignIn_Should_SetUpGitFirstSoGhAsksNothingButTheCode()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+
+        var result = await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --git-protocol https --hostname github.com" },
+            host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
+    }
+
+    [TestMethod]
     public async Task GitHubSignIn_Should_NeedATerminalButNotPrompts()
     {
         using var host = new TestHost(prompter: new ScriptedPrompter());
