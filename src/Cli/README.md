@@ -79,7 +79,7 @@ And these of its own:
 | `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
 | `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up. Any native app means building the whole solution, which adds several GB of build tools and minutes of build, so it can wait for `bit setup`. iOS and macOS need a Mac, Windows needs Windows. |
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
-| `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. |
+| `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. bit installs and sets up VS Code only; Visual Studio and Rider are opened when they're already installed. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
 | `--template-package <nupkg or folder>` | Create from a local Bit.Boilerplate package, or from the template's folder in a bitplatform checkout, the way this repository's CI does. |
 | `--github-repo` | Create a private GitHub repository for the project and push to it. Needs the GitHub pipeline, the default. |

@@ -113,7 +113,7 @@ public class ToolTests
 
         var checks = await CheckAsync(host, new ToolNeeds { Aspire = true, Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
 
-        Assert.IsFalse(checks.Any(c => c.Tool.Id is "long-paths" or "wsl" or "visual-studio" or "xcode" or "homebrew"));
+        Assert.IsFalse(checks.Any(c => c.Tool.Id is "long-paths" or "wsl" or "xcode" or "homebrew"));
     }
 
     [TestMethod]

@@ -24,8 +24,7 @@ public static partial class ToolCatalog
         new DeveloperModeTool(),
         new PythonTool(),
         new XcodeTool(),
-        new VsCodeTool(),
-        new VisualStudioTool()
+        new VsCodeTool()
     ];
 
     public static Tool? Find(string id) => All.FirstOrDefault(t => string.Equals(t.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -862,42 +861,5 @@ public static partial class ToolCatalog
         };
 
         public override string? ManualInstructions(ToolContext context) => "https://code.visualstudio.com/download";
-    }
-
-    private sealed class VisualStudioTool : Tool
-    {
-        public override string Id => "visual-studio";
-
-        public override string Name => "Visual Studio";
-
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows;
-
-        public override string Why(ToolContext context) => "a full IDE; large download, free for individuals and small teams under its license";
-
-        public override bool IsNeeded(ToolContext context) => context.Needs.Ide is IdeLocator.VisualStudio;
-
-        public override Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(IdeLocator.FindVisualStudio(context.Environment, context.Runner) is null ? ToolStatus.Missing() : ToolStatus.Installed());
-        }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
-        {
-            var action = context.PackageManagers.WingetInstall(Id, "Install Visual Studio Community", "Microsoft.VisualStudio.Community");
-
-            return action is null ? null : action with
-            {
-                Commands =
-                [
-                    action.Commands[0] with
-                    {
-                        Arguments = [.. action.Commands[0].Arguments, "--override", "--passive --wait --add Microsoft.VisualStudio.Workload.NetWeb --add Microsoft.VisualStudio.Workload.NetCrossPlat --includeRecommended"],
-                        Timeout = TimeSpan.FromHours(2)
-                    }
-                ]
-            };
-        }
-
-        public override string? ManualInstructions(ToolContext context) => "https://visualstudio.microsoft.com/downloads/";
     }
 }

@@ -577,7 +577,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var found = IdeLocator.Find(ide, cli.Environment, Runner);
 
         if (found is null)
-            return StepResult.Warning("Didn't open an IDE", $"{ide} wasn't found");
+            return StepResult.Warning("Didn't open an IDE", $"{IdeLocator.Title(ide)} isn't installed");
 
         ProcessSpec spec = ide switch
         {
