@@ -140,11 +140,6 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
         }
 
-        if (sdkReady && StartsAspireOnce(cli, selection.Aspire, request.NoBuild))
-        {
-            await RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
-        }
-
         if (request.GitHubRepo)
         {
             if (context.Exists && context.GitReady && await projectSteps.CanSignInToGitHubAsync(cancellationToken))
@@ -163,6 +158,11 @@ public sealed class NewWorkflow(CliServices cli)
         if (ide is IdeLocator.VsCode)
         {
             await RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
+        }
+
+        if (sdkReady && StartsAspireOnce(cli, selection.Aspire, request.NoBuild))
+        {
+            await RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
         }
 
         if (ide is not IdeLocator.None)
@@ -463,10 +463,10 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
-        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild)) stepsList.Add("a first Aspire start");
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
+        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild)) stepsList.Add("a first Aspire start");
         if (ide is not IdeLocator.None) stepsList.Add($"open in {IdeLocator.Title(ide)}");
         Row("Then", string.Join(", ", stepsList));
 

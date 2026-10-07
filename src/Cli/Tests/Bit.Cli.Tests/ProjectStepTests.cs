@@ -206,7 +206,76 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         var aspire = host.Runner.Calls.Where(c => c.FileName is "aspire").Select(c => string.Join(' ', c.Arguments.Take(2))).ToArray();
-        CollectionAssert.AreEqual(new[] { "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+        CollectionAssert.AreEqual(new[] { "doctor --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StartNothingWhenAspireCantUseDocker()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "doctor", 1, """{"checks":[{"category":"sdk","name":"dotnet-sdk","status":"pass"},{"category":"container","name":"docker","status":"fail","message":"Docker is running in Windows container mode","fix":"Switch Docker Desktop to Linux containers mode"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Docker is running in Windows container mode", result.Detail);
+        Assert.AreEqual("Switch Docker Desktop to Linux containers mode", result.Hint);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "docker" || c.Arguments.FirstOrDefault() is "start"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_GiveUpWhenDockerCantRunTheContainers()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "wait serverweb", 17, "Timed out waiting for resource 'serverweb' to become healthy.");
+        host.Runner.On("aspire", "describe", 0, """{"resources":[{"name":"postgres","displayName":"postgres","state":"RuntimeUnhealthy"},{"name":"serverweb","displayName":"serverweb","state":"Waiting"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Docker can't run postgres: Aspire reports its container runtime as unhealthy", result.Detail);
+        Assert.AreEqual(4, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "wait"));
+        Assert.AreEqual("stop", host.Runner.Calls.Last().Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StopWaitingOnceAResourceFailsToStart()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "wait serverweb", 17);
+        host.Runner.On("aspire", "describe", 0, """{"resources":[{"name":"keycloak","displayName":"keycloak","state":"FailedToStart"},{"name":"serverweb","displayName":"serverweb","state":"Waiting"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual("keycloak failed to start", result.Detail);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "wait"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_ShowWhatItIsWaitingFor()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var waits = 0;
+        host.Runner.On("aspire", "wait serverweb", _ => new ProcessResult { ExitCode = ++waits < 3 ? 17 : 0 });
+        host.Runner.On("aspire", "describe", 0, """{"resources":[{"name":"postgres","displayName":"postgres","state":"Running","healthStatus":"Unhealthy"},{"name":"mailpit","displayName":"mailpit","state":"Running","healthStatus":"Healthy"},{"name":"serverweb","displayName":"serverweb","state":"Waiting"}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        var progress = new List<string>();
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(progress.Add, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        CollectionAssert.Contains(progress, "Waiting for serverweb: postgres Running (Unhealthy), serverweb Waiting");
     }
 
     [TestMethod]
@@ -222,7 +291,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Docker isn't running", result.Detail);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "aspire"));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start"));
     }
 
     [TestMethod]
