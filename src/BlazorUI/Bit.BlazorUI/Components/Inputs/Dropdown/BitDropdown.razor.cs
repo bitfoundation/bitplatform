@@ -1571,7 +1571,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     internal bool GetIsHidden(TItem item)

@@ -252,15 +252,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                // IsEnabled became the Disabled flag, with the opposite meaning (#5527). Left in markup it is no
-                // longer a parameter, so it would land in HtmlAttributes as a plain attribute and the component
-                // would quietly render enabled: refused instead, with what to write.
-                case var key when string.Equals(key, "IsEnabled", StringComparison.OrdinalIgnoreCase):
-                    throw new InvalidOperationException(
-                        $"{GetType().Name} has no '{key}' parameter: the enabled state is now the 'Disabled' flag, with the opposite " +
-                        "meaning. Write Disabled instead of IsEnabled=\"false\", Disabled=\"condition is false\" instead of " +
-                        "IsEnabled=\"condition\", and remove IsEnabled=\"true\".");
-
                 default:
                     HtmlAttributes.Add(parameter.Key, parameter.Value);
                     break;

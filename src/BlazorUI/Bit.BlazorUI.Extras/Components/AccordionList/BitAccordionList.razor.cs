@@ -1977,7 +1977,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetIsDisabledFromProperty(NameSelectors.IsDisabled.Name);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private bool GetIsExpanded(TItem? item)
