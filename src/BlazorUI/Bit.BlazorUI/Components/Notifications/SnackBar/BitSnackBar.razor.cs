@@ -26,6 +26,7 @@ public partial class BitSnackBar : BitComponentBase
     private readonly Dictionary<Guid, ElementReference> _dismissButtons = [];
 
     private BitPageVisibility? _pageVisibility;
+    private bool _pageVisibilityPending;
     private BitSnackBarService? _service;
     private NavigationManager? _navigationManager;
     private bool _pageHidden;
@@ -1060,7 +1061,15 @@ public partial class BitSnackBar : BitComponentBase
 
         await SyncSwipeAsync();
 
-        if ((PauseOnPageHidden || PauseOnWindowBlur) is false || _pageVisibility is not null) return;
+        await SyncPageVisibilityAsync();
+    }
+
+    // Subscribed the first time a pause asks for it, and kept until the snack bar is disposed. Only the first call is
+    // waited for: one that failed (the script not loaded yet, a round trip that timed out) is retried by the utility
+    // itself, whose answer arrives as a change like any other, and until then the countdowns are simply not held.
+    private async Task SyncPageVisibilityAsync()
+    {
+        if (_pageVisibility is not null || (PauseOnPageHidden || PauseOnWindowBlur) is false) return;
 
         // The utility is a scoped service of the library, so it is only there in an app that registered them.
         // Nothing else about the snack bar depends on it, which is why its absence turns this one feature off
@@ -1071,7 +1080,38 @@ public partial class BitSnackBar : BitComponentBase
         _pageVisibility.OnChange += HandlePageVisibilityChange;
         _pageVisibility.OnWindowFocusChange += HandleWindowFocusChange;
 
-        await _pageVisibility.Init();
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and what the page answers once it arrives.
+        await ApplyPageVisibilityAsync();
+
+        // Until the page has answered, a countdown handed out now could be running down in a tab that is already
+        // hidden, so new ones start held back; once the first call settles, the hold is re-evaluated below and they
+        // run unless the page is in fact hidden (or blurred). The call is bounded by the utility's own timeout, and
+        // a failed one settles as not held - the retries that follow it hold nothing back.
+        _pageVisibilityPending = true;
+
+        try
+        {
+            await _pageVisibility.Init();
+        }
+        finally
+        {
+            _pageVisibilityPending = false;
+        }
+
+        await ApplyPageVisibilityAsync();
+    }
+
+    // No event is coming for the state the page is already in - a tab that was in the background before the snack
+    // bar subscribed, or a window that had already lost the focus - so it is read rather than waited for.
+    private Task ApplyPageVisibilityAsync()
+    {
+        if (IsDisposed || _pageVisibility is null) return Task.CompletedTask;
+
+        _pageHidden = _pageVisibility.IsHidden;
+        _windowBlurred = _pageVisibility.IsWindowBlurred;
+
+        return _items.Exists(i => i._paused) || _PageHeld ? SyncPageHoldAsync() : Task.CompletedTask;
     }
 
     // The shortcut is registered from the rendered id rather than from a parameter setter, so it follows a Hotkey
@@ -1884,12 +1924,15 @@ public partial class BitSnackBar : BitComponentBase
     // view does not let go of an item the pointer is still inside, the pointer leaving does not let go of one the
     // keyboard focus is still inside or one the code asked to hold, and none of them lets go of an item whose page
     // is still hidden.
-    private bool IsHeldBack(BitSnackBarItem item) => _PageHeld || item._hovered || item._focused || item._held;
+    private bool IsHeldBack(BitSnackBarItem item) => _PageHeld || _PagePending || item._hovered || item._focused || item._held;
 
     // The page-level reasons to hold a countdown back are read through the parameters that asked for them rather
     // than from the flags alone: the subscription is never taken down once it is made, so a snack bar whose
     // PauseOnPageHidden was turned off again would otherwise still be stopped by a hidden tab.
     private bool _PageHeld => (PauseOnPageHidden && _pageHidden) || (PauseOnWindowBlur && _windowBlurred);
+
+    // Whether the page is still being asked if it is hidden, for a snack bar that asked for either page-level hold.
+    private bool _PagePending => _pageVisibilityPending && (PauseOnPageHidden || PauseOnWindowBlur);
 
     private bool PauseItem(BitSnackBarItem item)
     {
