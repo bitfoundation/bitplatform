@@ -42,9 +42,24 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
 
         Assert.AreEqual("The first option", link.GetAttribute("title"));
         Assert.AreEqual("_blank", link.GetAttribute("target"));
-        Assert.AreEqual("Go to the first option", link.GetAttribute("aria-label"));
+        Assert.AreEqual("Go to the first option (opens in a new tab)", link.GetAttribute("aria-label"));
         // A link opening a new browsing context does not hand it a reference back to this one.
-        Assert.AreEqual("noopener noreferrer", link.GetAttribute("rel"));
+        Assert.AreEqual("noopener", link.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbOptionShouldRenderItsRel()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbOption>>(parameters =>
+        {
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p
+                .Add(o => o.Text, "Option 1")
+                .Add(o => o.Href, "/option-1")
+                .Add(o => o.Target, "_blank")
+                .Add(o => o.Rel, BitLinkRels.NoFollow | BitLinkRels.NoReferrer));
+        });
+
+        Assert.AreEqual("nofollow noreferrer", component.Find(".bit-brc-itm").GetAttribute("rel"));
     }
 
     [TestMethod]

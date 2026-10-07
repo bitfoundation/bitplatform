@@ -148,9 +148,33 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
     /// Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item.
     /// </summary>
     [Parameter] public bool NoCollapse { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
     /// Callback invoked when an item is clicked.

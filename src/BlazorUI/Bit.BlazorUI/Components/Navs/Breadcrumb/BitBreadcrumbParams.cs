@@ -91,6 +91,17 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
     public string? MaxItemWidth { get; set; }
 
     /// <summary>
+    /// The text the items opening a new tab are announced with. The default is "(opens in a new tab)"; an empty
+    /// value takes the announcement off.
+    /// </summary>
+    public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    public bool? NoNewTabHint { get; set; }
+
+    /// <summary>
     /// Aria label for the overflow button.
     /// </summary>
     public string? OverflowAriaLabel { get; set; }
@@ -228,6 +239,18 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.MaxItemWidth = MaxItemWidth;
 
             bitBreadcrumb.StyleBuilder.Reset();
+        }
+
+        // an empty hint is a value of its own - the one that takes the announcement off - so only null is
+        // what leaves the component to its default.
+        if (NewTabHint is not null && bitBreadcrumb.HasNotBeenSet(nameof(NewTabHint)))
+        {
+            bitBreadcrumb.NewTabHint = NewTabHint;
+        }
+
+        if (NoNewTabHint.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(NoNewTabHint)))
+        {
+            bitBreadcrumb.NoNewTabHint = NoNewTabHint.Value;
         }
 
         if (OverflowAriaLabel.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(OverflowAriaLabel)))

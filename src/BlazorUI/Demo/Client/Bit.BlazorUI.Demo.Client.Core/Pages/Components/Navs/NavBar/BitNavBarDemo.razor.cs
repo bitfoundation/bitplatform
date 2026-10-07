@@ -192,6 +192,20 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Replaces the visually hidden \"(opens in a new tab)\" an item whose Target is _blank is announced with, e.g. to translate it. An empty value removes it.",
+        },
+        new()
+        {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the items whose Target is _blank from announcing that they open a new tab - only for where a visible label or heading already says so.",
+        },
+        new()
+        {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when an item is clicked."
@@ -465,6 +479,13 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the navbar item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -637,6 +658,13 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the navbar option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -804,6 +832,13 @@ public partial class BitNavBarDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavBarItem.SelectedIconName))",
                    Description = "The SelectedIconName field name and selector of the custom input class. Maps to SelectedIconName for built-in Fluent UI icons."
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.Rel))",
+                   Description = "The Rel field name and selector of the custom input class."
                },
                new()
                {

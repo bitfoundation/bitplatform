@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace Bit.BlazorUI;
 
 public partial class _BitNavChild<TItem> : IDisposable where TItem : class
@@ -233,15 +231,6 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
 
         return string.Join(";", styles);
     }
-
-    // rel="noopener noreferrer" only protects against a cross-origin target, so it is only added to the
-    // links that actually leave the app: the ones carrying a scheme (https://, mailto:, ...) or a
-    // protocol-relative host (//host/path).
-    private static readonly Regex _AbsoluteUrlRegex = new("^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|//)", RegexOptions.Compiled);
-
-    private static bool IsRelativeUrl(string? url) => url.HasNoValue() || _AbsoluteUrlRegex.IsMatch(url!) is false;
-
-
 
     private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {

@@ -63,17 +63,9 @@
        the aria-label, and stays with the root only where there is no control to carry it. *@
     var controlLabelledBy = labelOnRoot ? null : splattedLabelledBy;
 
-    @* The new-tab sentence has to land wherever the name of the anchor comes from, since a name given from
-       somewhere else replaces the content rather than adding to it. An aria-labelledby is the one that wins,
-       and it points at elements rather than holding text, so the sentence is rendered as an element of its
-       own and its id appended to the list; an aria-label holds the text itself, so the sentence is appended
-       to it; an anchor named by nothing but its own content gets the sentence as hidden text inside it. *@
-    var newTabHint = _newTabHint;
-    var hintId = $"{_Id}-nth";
-    var labelledByHint = newTabHint is not null && controlLabelledBy.HasValue();
-    var linkLabelledBy = labelledByHint ? $"{controlLabelledBy} {hintId}" : controlLabelledBy;
-    var linkLabel = label.HasValue() && newTabHint is not null && labelledByHint is false ? $"{label} {newTabHint}" : label;
-    var hintText = label.HasValue() && labelledByHint is false ? null : newTabHint;
+    @* The new-tab sentence lands wherever the name of the anchor comes from, the same way it does on every
+       BitLink of the page - see BitNewTabUtils.PlaceHint. *@
+    var hint = BitNewTabUtils.PlaceHint(_newTabHint, label, controlLabelledBy, $"{_Id}-nth");
 
     @* ARIA forbids naming an element with no role of its own, and most screen readers ignore an aria-label
        put there anyway, so a static tag never carries one: its name is text no one can see instead, and what
@@ -203,14 +195,14 @@
            tabindex="@(Disabled ? (AllowDisabledFocus ? tabIndex ?? "0" : "-1") : tabIndex)"
            aria-disabled="@(Disabled ? "true" : null)"
            aria-current="@(Selected ? _AriaCurrentMap[AriaCurrent] : null)"
-           aria-label="@linkLabel"
-           aria-labelledby="@linkLabelledBy"
+           aria-label="@hint.AriaLabel"
+           aria-labelledby="@hint.AriaLabelledBy"
            aria-describedby="@describedBy">
             @content
 
-            @if (hintText is not null)
+            @if (hint.HintText is not null)
             {
-                <span id="@(labelledByHint ? hintId : null)" class="bit-tag-vhd">@hintText</span>
+                <span id="@hint.HintId" class="bit-tag-vhd">@hint.HintText</span>
             }
         </a>
     }

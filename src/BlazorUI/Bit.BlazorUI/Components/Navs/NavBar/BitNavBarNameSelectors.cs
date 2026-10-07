@@ -77,6 +77,11 @@ public class BitNavBarNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> SelectedIconName { get; set; } = new(nameof(BitNavBarItem.SelectedIconName));
 
     /// <summary>
+    /// The Rel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitNavBarItem.Rel));
+
+    /// <summary>
     /// The Style field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitNavBarItem.Style));

@@ -58,6 +58,11 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> OverflowTemplate { get; set; } = new(nameof(BitBreadcrumbItem.OverflowTemplate));
 
     /// <summary>
+    /// The Rel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitBreadcrumbItem.Rel));
+
+    /// <summary>
     /// The CSS Style field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitBreadcrumbItem.Style));
