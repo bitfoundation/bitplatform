@@ -211,15 +211,17 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public string DotsAriaLabel { get; set; } = "Choose slide to display";
 
     /// <summary>
-    /// Where the dots (and the play/pause button) are placed around the slides (the default value is Bottom).
+    /// Where the dots (and the play/pause button) are placed around the slides: Bottom, Top, Start or End. It
+    /// defaults to Bottom.
     /// </summary>
     /// <remarks>
     /// Start and End place them in a column beside the slides, at the start and end of the reading direction,
-    /// which suits a <see cref="Vertical"/> carousel. The space between the slides and the dots is the
-    /// <c>--bit-Carousel-dots-margin</c> CSS variable.
+    /// so they follow the direction of the carousel; that suits a <see cref="Vertical"/> carousel. Every other
+    /// value (Left, Right, Center and the two combined values) renders the default. The space between the
+    /// slides and the dots is the <c>--bit-Carousel-dots-margin</c> CSS variable.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitCarouselDotsPosition? DotsPosition { get; set; }
+    public BitPlacement? DotsPlacement { get; set; }
 
     /// <summary>
     /// The custom content of a dot of the carousel, receiving the zero based index of the page the dot
@@ -756,11 +758,11 @@ public partial class BitCarousel : BitComponentBase
 
         ClassBuilder.Register(() => Vertical ? "bit-csl-vrt" : string.Empty);
 
-        ClassBuilder.Register(() => DotsPosition switch
+        ClassBuilder.Register(() => DotsPlacement switch
         {
-            BitCarouselDotsPosition.Top => "bit-csl-dtop",
-            BitCarouselDotsPosition.Start => "bit-csl-dstr",
-            BitCarouselDotsPosition.End => "bit-csl-dend",
+            BitPlacement.Top => "bit-csl-dtop",
+            BitPlacement.Start => "bit-csl-dstr",
+            BitPlacement.End => "bit-csl-dend",
             _ => string.Empty
         });
 

@@ -40,6 +40,11 @@
             let bcr = element.getBoundingClientRect();
             const isTouchDevice = Utils.isTouchDevice();
 
+            // The physical edge the surface is pinned to: the logical pair is read against the direction it is
+            // laid out in, the physical pair stays where it is named in both.
+            const onLeftEdge = () => position === 'left' || (!rtl && position === 'start') || (rtl && position === 'end');
+            const onRightEdge = () => position === 'right' || (!rtl && position === 'end') || (rtl && position === 'start');
+
             const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
             const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
@@ -102,7 +107,7 @@
                     cancel();
                 }
 
-                if ((!rtl && position === BitSwipePosition.Start) || (rtl && position === BitSwipePosition.End)) {
+                if (onLeftEdge()) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -110,7 +115,7 @@
                     }
                 }
 
-                if ((!rtl && position === BitSwipePosition.End) || (rtl && position === BitSwipePosition.Start)) {
+                if (onRightEdge()) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -118,7 +123,7 @@
                     }
                 }
 
-                if (position === BitSwipePosition.Top) {
+                if (position === 'top') {
                     if (diffY < 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -126,7 +131,7 @@
                     }
                 }
 
-                if (position === BitSwipePosition.Bottom) {
+                if (position === 'bottom') {
                     if (diffY > 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -144,7 +149,7 @@
                     const scrollable = element!.scrollHeight - element!.clientHeight;
                     if (scrollable <= 1) return false;
 
-                    return position === BitSwipePosition.Bottom
+                    return position === 'bottom'
                         ? element!.scrollTop > 1
                         : element!.scrollTop < scrollable - 1;
                 }
@@ -172,13 +177,13 @@
                 startX = startY = -1;
                 element.style.transitionDuration = '';
                 try {
-                    if (((!rtl && position === BitSwipePosition.Start) || (rtl && position === BitSwipePosition.End)) && diffX < 0) {
+                    if (onLeftEdge() && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (((!rtl && position === BitSwipePosition.End) || (rtl && position === BitSwipePosition.Start)) && diffX > 0) {
+                    if (onRightEdge() && diffX > 0) {
                         if ((diffX / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
@@ -188,17 +193,17 @@
                     // itself was checked against, so a gesture that only scrolled the surface never ends by
                     // throwing it away.
                     const scrollable = element.scrollHeight - element.clientHeight;
-                    const scrolled = scrollable > 1 && (position === BitSwipePosition.Bottom
+                    const scrolled = scrollable > 1 && (position === 'bottom'
                         ? element.scrollTop > 1
                         : element.scrollTop < scrollable - 1);
 
-                    if (position === BitSwipePosition.Top && diffY < 0 && !scrolled) {
+                    if (position === 'top' && diffY < 0 && !scrolled) {
                         if ((Math.abs(diffY) / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (position === BitSwipePosition.Bottom && diffY > 0 && !scrolled) {
+                    if (position === 'bottom' && diffY > 0 && !scrolled) {
                         if ((diffY / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
@@ -252,10 +257,18 @@
                     scrollContainer.addEventListener('touchstart', e => {
                         touchOnScrollContainer = true;
 
+                        // This runs before the surface's own touchstart, so the direction is read here as well.
+                        rtl = isRtl ?? getComputedStyle(element).direction === 'rtl';
+
+                        // The two flags are the start and the end of the scroll (scrollLeft is 0 at the start in
+                        // both directions), while the gesture that dismisses the surface runs toward the physical
+                        // edge it is pinned to. A drag toward the right asks the content to scroll to its left,
+                        // which is the start left to right and the end right to left, so it is the surface's to
+                        // take once the content has no further to go that way; a drag toward the left mirrors it.
                         const [isScrollAtLeft, isScrollAtRight] = calcScrolls();
 
-                        if (position === BitSwipePosition.End && isScrollAtLeft) return;
-                        if (position === BitSwipePosition.Start && isScrollAtRight) return;
+                        if (onRightEdge() && (rtl ? isScrollAtRight : isScrollAtLeft)) return;
+                        if (onLeftEdge() && (rtl ? isScrollAtLeft : isScrollAtRight)) return;
 
                         e.stopPropagation();
                     });
@@ -327,12 +340,11 @@
         }
     }
 
-    enum BitSwipePosition {
-        Start = 0,
-        End = 1,
-        Top = 2,
-        Bottom = 3,
-    }
+    // The edge a swipeable surface is pinned to, handed over by name (SwipesJsRuntimeExtensions.BitSwipesSetup)
+    // rather than as the ordinal of the C# BitPlacement, so the order of that library-wide enum is no contract
+    // with this file. The placements a swipe can never be set up for - Center and the two combined values - have
+    // no name here: the C# side resolves its placement to one of these six first (ToPanelSide).
+    type BitSwipePosition = 'top' | 'bottom' | 'start' | 'end' | 'left' | 'right';
 
     enum BitSwipeOrientation {
         None,

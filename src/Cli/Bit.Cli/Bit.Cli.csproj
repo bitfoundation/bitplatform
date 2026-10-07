@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RollForward>Major</RollForward>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Bit.Cli</RootNamespace>
+        <AssemblyName>bit</AssemblyName>
+        <IsAotCompatible>false</IsAotCompatible>
+        <SignAssembly>false</SignAssembly>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <DocumentationFile></DocumentationFile>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
+        <PackAsTool>true</PackAsTool>
+        <PackageId>Bit.Cli</PackageId>
+        <ToolCommandName>bit</ToolCommandName>
+        <Title>bit CLI</Title>
+        <PackageDescription>Creates bit platform projects that are ready to run on Windows, macOS and Linux, translates .resx files with an LLM and decodes stack traces minified by Bit.Minifier.</PackageDescription>
+        <PackageTags>$(PackageTags);bit;cli;Blazor;MAUI;Aspire;template;resx;translation</PackageTags>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.12" />
+        <PackageReference Include="Spectre.Console" Version="0.57.2" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="10.10.0" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+        <PackageReference Include="Tomlyn" Version="2.10.1" />
+        <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.9.0" />
+        <PackageReference Include="OpenTelemetry" Version="1.19.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="../../Minifier/Bit.Minifier/MapDecoder.cs;../../Minifier/Bit.Minifier/Decode.cs" LinkBase="Decoding/Bit.Minifier" />
+        <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/.template.config/template.json" LogicalName="Bit.Cli.template.json" Link="Templates/template.json" />
+        <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json" LogicalName="Bit.Cli.package.json" Link="Templates/package.json" />
+        <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" LogicalName="Bit.Cli.AppHost.csproj" Link="Templates/AppHost.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.Cli.Tests" />
+        <AssemblyMetadata Include="BitCliVersion" Value="$(PackageVersion)" />
+        <AssemblyMetadata Include="BitCliBuildRunUrl" Value="$(BitCliBuildRunUrl)" />
+        <AssemblyMetadata Include="BitCliTelemetryConnectionString" Value="$(BitCliTelemetryConnectionString)" />
+    </ItemGroup>
+
+</Project>

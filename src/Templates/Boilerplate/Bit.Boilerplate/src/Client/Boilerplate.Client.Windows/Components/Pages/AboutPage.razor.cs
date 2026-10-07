@@ -1,4 +1,5 @@
 using System.Reflection;
+using Boilerplate.Client.Windows.Infrastructure.Services;
 
 namespace Boilerplate.Client.Windows.Components.Pages;
 
@@ -12,6 +13,7 @@ public partial class AboutPage
     private string platform = default!;
     private string webView = default!;
     private string processId = default!;
+    private string? signer;
 
 
     protected override async Task OnInitAsync()
@@ -24,5 +26,6 @@ public partial class AboutPage
         platform = telemetryContext.Platform!;
         webView = telemetryContext.WebView!;
         processId = Environment.ProcessId.ToString();
+        signer = Environment.ProcessPath is { } processPath ? WindowsCodeSignature.GetVerifiedSigner(processPath) : null;
     }
 }

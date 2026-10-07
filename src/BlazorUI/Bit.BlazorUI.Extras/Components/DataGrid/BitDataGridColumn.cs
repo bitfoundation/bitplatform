@@ -171,8 +171,24 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public bool RowHeader { get; set; }
 
-    /// <summary>The horizontal alignment of the column's header and cells.</summary>
-    [Parameter] public BitDataGridColumnAlign Align { get; set; } = BitDataGridColumnAlign.Left;
+    /// <summary>
+    /// How the content of the column's header and cells is aligned across their width (default is the leading edge).
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitTextAlign.Start"/>, <see cref="BitTextAlign.Center"/>,
+    /// <see cref="BitTextAlign.End"/>, <see cref="BitTextAlign.Left"/> and <see cref="BitTextAlign.Right"/>
+    /// mean anything here; a cell is a flex box rather than a run of prose, so the justification and cascade
+    /// keywords have nothing to do and leave the column aligned to its leading edge.
+    /// <br />
+    /// Start and End follow the reading direction, so a numeric column set to End sits against the trailing
+    /// edge of an LTR and of an RTL grid alike. Left and Right name a side of the screen and stay there in
+    /// both.
+    /// <br />
+    /// Migrating from <c>BitDataGridColumnAlign</c>: its Left and Right were the leading and the trailing edge,
+    /// so they become <see cref="BitTextAlign.Start"/> and <see cref="BitTextAlign.End"/>. Renamed to Left and
+    /// Right instead, a column keeps rendering the same in an LTR grid but moves to the other side in an RTL one.
+    /// </remarks>
+    [Parameter] public BitTextAlign Align { get; set; } = BitTextAlign.Start;
 
     /// <summary>A .NET format string applied to the value (e.g. "C2", "yyyy-MM-dd").</summary>
     [Parameter] public string? Format { get; set; }

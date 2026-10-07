@@ -3,8 +3,6 @@
 
 section {
     width: 100%;
-    // A hidden BitTooltip still takes room, so one near the right edge scrolls the page sideways.
-    overflow-x: clip;
 }
 
 ::deep {
@@ -67,12 +65,24 @@ section {
         }
 
         &.empty {
-            opacity: 0.55;
+            --tone: #{$bit-color-foreground-secondary};
         }
     }
 
     .no-wrap {
         white-space: nowrap;
+    }
+
+    .tip-start {
+        left: auto;
+        transform: none;
+        inset-inline-start: 0;
+    }
+
+    .tip-end {
+        left: auto;
+        transform: none;
+        inset-inline-end: 0;
     }
 
     .search-box {

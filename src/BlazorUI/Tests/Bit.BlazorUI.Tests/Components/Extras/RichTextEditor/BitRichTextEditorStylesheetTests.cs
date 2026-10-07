@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-RichTextEditor-* variable is declared, which stops it inheriting.");
     }
@@ -55,7 +53,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorShouldNotHardCodeWhatTheThemeDecides()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(HexColor().IsMatch(body), "A literal color is hard-coded instead of read from a theme token.");
         Assert.IsFalse(body.Contains("Consolas"), "A literal monospace stack is used instead of $tg-font-family-mono.");
@@ -66,7 +64,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorShouldOnlyUseLogicalSidesSoItMirrorsInRtl()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(PhysicalSide().IsMatch(body), "A physical left/right property keeps the layout from mirroring in RTL.");
     }
@@ -74,7 +72,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorRootShouldClipWithoutBecomingAScrollContainer()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-rte {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte {");
 
         // Clip cuts the corners like hidden but makes no scroll container, which is what lets a StickyToolbar stick
         // to the page rather than to this frame.
@@ -84,7 +82,7 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorStickyToolbarShouldPinBelowTheOffset()
     {
-        var sticky = Block(ReadStylesheet(), "\n.bit-rte-stk > .bit-rte-tlb {");
+        var sticky = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-stk > .bit-rte-tlb {");
 
         StringAssert.Contains(sticky, "position: sticky;");
         StringAssert.Contains(sticky, "top: var(--bit-RichTextEditor-toolbar-sticky-offset, 0);");
@@ -93,16 +91,16 @@ public partial class BitRichTextEditorStylesheetTests
     [TestMethod]
     public void BitRichTextEditorFullScreenShouldLiftTheSizeCaps()
     {
-        var fullScreen = Block(ReadStylesheet(), "\n.bit-rte-fsc .bit-rte-edt,");
+        var fullScreen = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-fsc .bit-rte-edt,");
 
         StringAssert.Contains(fullScreen, "max-height: none;");
-        StringAssert.Contains(Block(ReadStylesheet(), "\n.bit-rte-fsc {"), "z-index: $zindex-modal;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-fsc {"), "z-index: $zindex-modal;");
     }
 
     [TestMethod]
     public void BitRichTextEditorShouldKeepItsStatesInForcedColors()
     {
-        var forced = Block(ReadStylesheet(), "\n@media (forced-colors: active) {");
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         StringAssert.Contains(forced, "background: Highlight;");
         StringAssert.Contains(forced, "background: Mark;");
@@ -115,30 +113,18 @@ public partial class BitRichTextEditorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(stylesheet, "$rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-rte-btn {"), "@include focus-ring($rte-focus);");
-        StringAssert.Contains(Block(stylesheet, "\n.bit-rte-edt {"), "@include rte-inset-ring;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-btn {"), "@include focus-ring($rte-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-edt {"), "@include rte-inset-ring;");
     }
 
     [TestMethod]
     public void BitRichTextEditorResizeHandleShouldBeStyledByTheStylesheet()
     {
-        var handle = Block(ReadStylesheet(), "\n.bit-rte-resize-handle {");
+        var handle = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-rte-resize-handle {");
 
         StringAssert.Contains(handle, "background: $clr-pri;");
         StringAssert.Contains(handle, "touch-action: none;");
         StringAssert.Contains(handle, "z-index: calc(#{$zindex-modal} + 1);");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
     }
 
     private static string[] DocumentedVariables(string stylesheet)
@@ -146,24 +132,7 @@ public partial class BitRichTextEditorStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The comments are where the variables are documented and the decisions explained, so only what is not a comment
-    // is searched for declarations and literals.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n')
-                                           .Where(line => line.TrimStart().StartsWith("//") is false)
-                                           .Select(line => line.Contains(" // ") ? line[..line.IndexOf(" // ", System.StringComparison.Ordinal)] : line));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-RichTextEditor-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

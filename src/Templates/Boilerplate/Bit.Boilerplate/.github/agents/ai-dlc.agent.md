@@ -5,19 +5,6 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 
 # AI-Driven Development Lifecycle (AI-DLC)
 
-## 0. Prerequisites
-
-Verify these before phase 1 and offer to fix whatever is missing - they are one-time setup steps, not per-feature work. **Once a prerequisite holds, delete its bullet from this file** (and the whole section once the last one is gone), so later runs don't re-check it.
-
-- **Formatted solution**: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016` has been run once. BL0016's code fix wraps every JS interop call it flags in an empty `catch (Exception) { }`, silently swallowing its failures.
-- **Source control**: the project is a git repository with a remote, and the working tree is clean before a feature starts. Without it there is no safe point to roll an implementation back to.
-- **Branches**: both `develop` and `main` exist and match the pipelines this project ships - CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD triggers on `main` (`.github/workflows/cd-production.yml`) and test CD on `test` (`cd-test.yml`). Feature work goes on a branch off `develop` and reaches `main` through a PR, never a direct push. Protect `main` and `test` with a required status check on `ci.yml`, otherwise nothing tests a deploy: the CD workflows never run the suite. See `.docs/16- CI-CD Pipeline and Environments.md`.
-- **A green baseline**: the test suite passes on an untouched checkout (`dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests). Phase 5 can only tell you what *your* feature broke if you know what was passing before it. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`.
-- **EF Core migrations**: the project starts out on `Database.EnsureCreatedAsync()`, which creates a schema once and can never evolve it - the first entity change after that silently stops reaching the database. Switch to migrations *before* the first feature, while dropping the dev database is still free: follow `.docs/01- Entity Framework Core.md` (replace every `EnsureCreatedAsync()` call site with `MigrateAsync()`, delete the existing database, then `dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data/Migrations`).
-<!--#if (aspire == true)-->
-- **Persistent containers**: in `src/Server/Boilerplate.Server.AppHost/Program.cs`, remove the `IsDedicatedEnvironment` `if` and leave a bare `builder.UsePersistentContainers();`. Otherwise every `aspire start` and every test run rebuilds the database container from scratch, which makes the implement/validate loop of phases 4-5 needlessly slow. See `.docs/20- .NET Aspire.md`.
-<!--#endif-->
-
 ## Workflow Phases
 
 ### 1. Requirements Elaboration
@@ -41,13 +28,17 @@ Verify these before phase 1 and offer to fix whatever is missing - they are one-
 - Flag any trade-offs or risks
 
 ### 4. Implementation
+- Work on a branch off `develop`; it reaches `main` through a PR, never a direct push
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
 - Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
-- Run build and tests after completing all tasks
+- Run build and tests after completing all tasks: `dotnet test` in `src/Tests`, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
+<!--#if (aspire == true && realProject != true)-->
+- If repeated test runs are slow because every run rebuilds the database container, offer to make `src/Server/Boilerplate.Server.AppHost/Program.cs` call a bare `builder.UsePersistentContainers();` instead of only inside the `IsDedicatedEnvironment` `if`. See `.docs/20- .NET Aspire.md`
+<!--#endif-->
 - Invoke the **review** skill (`.github/agents/review.agent.md`) on the resulting changes
 - Confirm acceptance criteria are met
 - Against a deployment, read its real state through **dev-mcp** (below) rather than guessing
@@ -107,7 +98,8 @@ When the user asks for one of these, or you conclude the task needs it:
 <!--#endif-->
 
 ## Rules
-- Run phase 0 before phase 1; each satisfied prerequisite is deleted from this file, so on later runs there is little or nothing left to check
+- This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016 DateTimeOffsetInsteadOfDateTimeAnalyzer`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
+- CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD on `main` and test CD on `test`; protect `main` and `test` with a required status check on `ci.yml`, because the CD workflows never run the tests. See `.docs/16- CI-CD Pipeline and Environments.md`
 - Always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work

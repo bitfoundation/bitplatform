@@ -138,7 +138,7 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
     /// The position of the label in regards to the checkbox box.
     /// Takes precedence over <see cref="Reversed"/> when both are set.
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Turns the checkbox busy while the change it has just accepted is still being carried out.
@@ -340,9 +340,9 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (LabelPosition.HasValue && bitCheckbox.HasNotBeenSet(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitCheckbox.HasNotBeenSet(nameof(LabelPlacement)))
         {
-            bitCheckbox.LabelPosition = LabelPosition.Value;
+            bitCheckbox.LabelPlacement = LabelPlacement.Value;
 
             bitCheckbox.ClassBuilder.Reset();
         }

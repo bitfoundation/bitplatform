@@ -180,7 +180,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
     /// <summary>
     /// Which end of the field the icon sits at, inside the frame.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The html title of the icon, rendered while an OnIconClick handler makes the icon a button.
@@ -206,7 +206,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
     /// <summary>
     /// Where the label sits relative to the input.
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Shows the custom label for text field.
@@ -559,9 +559,9 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.IconName = IconName;
         }
 
-        if (IconPosition.HasValue && bitTextField.HasNotBeenSet(nameof(IconPosition)))
+        if (IconPlacement.HasValue && bitTextField.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitTextField.IconPosition = IconPosition.Value;
+            bitTextField.IconPlacement = IconPlacement.Value;
         }
 
         if (IconTitle.HasValue() && bitTextField.HasNotBeenSet(nameof(IconTitle)))
@@ -588,9 +588,9 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (LabelPosition.HasValue && bitTextField.HasNotBeenSet(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitTextField.HasNotBeenSet(nameof(LabelPlacement)))
         {
-            bitTextField.LabelPosition = LabelPosition.Value;
+            bitTextField.LabelPlacement = LabelPlacement.Value;
 
             bitTextField.ClassBuilder.Reset();
         }

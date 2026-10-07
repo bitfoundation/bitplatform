@@ -67,7 +67,7 @@
                                                           Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
                                                 <LabelTemplate>
                                                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                                                        <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                                        <BitText Element="span" Typography="BitTypography.Inherit">@Localizer[nameof(AppStrings.Password)]</BitText>
                                                         <BitSpacer />
                                                         <BitLink Href="@($"{PageUrls.ForgotPassword}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
                                                     </BitStack>

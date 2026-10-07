@@ -27,7 +27,7 @@
     <DemoExample Title="Label & description" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
         <div>
             <b>LabelIconName</b> (or <b>LabelIcon</b> for an external library) adds an icon to the browse button,
-            placed by <b>LabelIconPosition</b>. <b>Description</b> - or <b>DescriptionTemplate</b> for markup - puts
+            placed by <b>LabelIconPlacement</b>. <b>Description</b> - or <b>DescriptionTemplate</b> for markup - puts
             a hint under the button and wires it through aria-describedby, the place to state the limits up front.
         </div>
         <br />
@@ -36,7 +36,7 @@
                        Description="PDF or DOCX, up to 5 MB." />
         <br />
         <BitFileUpload Label="Browse for an image" UploadUrl="@UploadUrl" LabelIconName="ChevronRight"
-                       LabelIconPosition="BitIconPosition.End" Accept="image/*" MaxSize="1024 * 1024 * 2">
+                       LabelIconPlacement="BitPlacement.End" Accept="image/*" MaxSize="1024 * 1024 * 2">
             <DescriptionTemplate>
                 <i class="bit-icon bit-icon--Info" />
                 <span>Images only. Up to <b>2 MB</b>.</span>

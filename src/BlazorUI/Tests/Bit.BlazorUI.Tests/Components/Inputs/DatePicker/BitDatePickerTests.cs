@@ -3534,7 +3534,7 @@ public class BitDatePickerTests : BunitTestContext
             HighlightSelectedMonth = true,
             HighlightToday = false,
             HourStep = 2,
-            IconLocation = BitIconLocation.Left,
+            IconPlacement = BitPlacement.Start,
             AllowedHours = h => h != 13,
             AllowedMinutes = m => m % 5 == 0,
             AllowedSeconds = sec => sec % 10 == 0,
@@ -3610,7 +3610,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsTrue(instance.HighlightSelectedMonth);
         Assert.IsFalse(instance.HighlightToday);
         Assert.AreEqual(2, instance.HourStep);
-        Assert.AreEqual(BitIconLocation.Left, instance.IconLocation);
+        Assert.AreEqual(BitPlacement.Start, instance.IconPlacement);
         Assert.IsNotNull(instance.AllowedHours);
         Assert.IsNotNull(instance.AllowedMinutes);
         Assert.IsNotNull(instance.AllowedSeconds);

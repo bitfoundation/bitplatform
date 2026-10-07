@@ -577,24 +577,16 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Includes advanced automated tests (e.g. the Blazor WebAssembly offline sync test) that add extra infrastructure not needed by a typical project."
+        },
+        "realProject": {
+            "displayName": "Real project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "A real project rather than a quick test. Aspire keeps its containers between runs, so starting and debugging the project are fast."
         }
     },
     "postActions": [
-        {
-            "description": "restore project dependencies",
-            "manualInstructions": [
-                {
-                    "text": "Run 'dotnet restore'"
-                }
-            ],
-            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
-            "args": {
-                "files": [
-                    "Boilerplate.Web.slnf"
-                ]
-            },
-            "continueOnError": true
-        },
         {
             "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
             "description": "Opens README.md in the editor",
@@ -801,6 +793,7 @@
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs",
                         "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnElevatedAccessTests.cs",
                         "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
@@ -1099,7 +1092,8 @@
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
-                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs"
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
+                        "src/Tests/Features/Identity/NotAuthorizedPageTests.cs"
                     ]
                 },
                 {

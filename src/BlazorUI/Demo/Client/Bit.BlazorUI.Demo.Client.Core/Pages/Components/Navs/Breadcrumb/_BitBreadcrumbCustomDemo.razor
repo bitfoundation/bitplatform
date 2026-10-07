@@ -134,7 +134,7 @@
 
 <DemoExample Title="Icons & Divider" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>
-        The <b>IconName</b> mapping adds an icon to an item and <b>IconPosition</b> <code>End</code> puts it after the text. An icon-only
+        The <b>IconName</b> mapping adds an icon to an item and <b>IconPlacement</b> <code>End</code> puts it after the text. An icon-only
         item needs an <b>AriaLabel</b> mapping. <b>DividerIconName</b>, <b>DividerText</b> and <b>OverflowIconName</b>
         replace the default glyphs; dividers are always hidden from screen readers.
     </div>
@@ -150,8 +150,8 @@
                            OverflowIndex="2" />
         </div>
         <div>
-            <div>IconPosition End</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" IconPosition="BitIconPosition.End" />
+            <div>IconPlacement End</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" IconPlacement="BitPlacement.End" />
         </div>
         <div>
             <div>Icon-only root with an AriaLabel & DividerText</div>

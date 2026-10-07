@@ -14,17 +14,88 @@
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitText>
     <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>How it works</BitText>
+        <ol class="how-it-works">
+            <li>Tell the assistant about your app, or pick the options below. Either way, the command stays ready to copy.</li>
+            <li>Copy it and paste it into a terminal. If something needs installing with administrator rights, Windows asks once.</li>
+            <li>The <code>bit new</code> command installs what this machine is missing, creates the project, adds its first EF Core migration, trusts the folder, installs the VS Code extensions the project recommends and opens it in VS Code.</li>
+            <li>Use any AI assistant you like: the project comes fully configured for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor.</li>
+        </ol>
+        <BitText Typography="BitTypography.Body2">
+            The platforms you tick only decide what is set up on this machine now; every project has the web, Android, iOS, Windows and macOS apps.
+            New to the bit CLI? <a href="/templates/getting-started">Getting started</a> shows how to install it with the .NET SDK.
+        </BitText>
+    </section>
+    <br />
+
+    <section class="section-card assistant">
+        <BitText Typography="BitTypography.H5" Gutter>Describe your project</BitText>
+        <BitText Typography="BitTypography.Body2" Gutter>
+            Tell the assistant what you're building, in your own words. It fills in the options below and asks a question or two so the project fits better.
+            You don't have to answer them: copy the command whenever you like, and go on with your day.
+        </BitText>
+        @foreach (var message in assistantMessages)
+        {
+            if (message.FromUser)
+            {
+                <BitCard Background="BitColorKind.Tertiary" Class="assistant-user-message">
+                    <BitText Element="pre">@message.Text</BitText>
+                </BitCard>
+            }
+            else
+            {
+                <BitMarkdownViewer Markdown="@message.Text" />
+            }
+        }
+        @if (isAssistantBusy)
+        {
+            <BitEllipsisLoading Size="BitSize.Small" />
+        }
+        else if (assistantMessages.Count > 0)
+        {
+            <BitStack Horizontal HorizontalAlign="BitAlignment.Start" VerticalAlign="BitAlignment.Center" Wrap Class="assistant-ready">
+                <BitText Typography="BitTypography.Body2">The command is ready.</BitText>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="Copy" OnClick="WrapHandled(CopyCommand)">@CopyButtonText</BitButton>
+            </BitStack>
+        }
+        <BitTextField Multiline
+                      Rows="4"
+                      Immediate
+                      MaxLength="4000"
+                      @bind-Value="assistantInput"
+                      Placeholder="@(assistantMessages.Count == 0 ? "e.g. A booking app for my clinic: patients book on the web and on Android, the staff manage the calendar." : "Answer, or tell it anything else that matters.")" />
+        <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Start" Wrap Class="assistant-actions">
+            <div class="real-project">
+                <BitCheckbox Label="This isn't a test project, I'm creating my real one" Value="realProject.Value" ValueChanged="(bool value) => SetRealProject(value)" />
+                <BitText Typography="BitTypography.Body2" Class="real-project-hint">Adds <code>--realProject</code>, which keeps the project's containers running between runs so debugging starts fast, and switches to PostgreSQL, S3, Redis and SignalR (AI Chatbot) wherever you haven't picked something else.</BitText>
+            </div>
+            <BitButton IsEnabled="@(isAssistantBusy is false && string.IsNullOrWhiteSpace(assistantInput) is false)" OnClick="WrapHandled(SendToAssistant)">Send</BitButton>
+        </BitStack>
+    </section>
+    <br />
+
     <BitSticky Top="64px">
-        <CodeBox>
-            @GetFinalCommand()
-        </CodeBox>
+        <div class="command-bar">
+            <div class="command">
+                <CodeBox HideCopyButton>
+                    @GetFinalCommand()
+                </CodeBox>
+            </div>
+            <BitButton IconName="Copy" OnClick="WrapHandled(CopyCommand)">@CopyButtonText</BitButton>
+        </div>
     </BitSticky>
+    <BitText Typography="BitTypography.Body2" Class="command-hint">
+        Paste it into a terminal, then go on with your day. No bit CLI yet? Run <code>dotnet tool install --global Bit.Cli --prerelease</code> first, or put <code>dnx Bit.Cli --prerelease --</code> in place of <code>bit</code>.
+    </BitText>
     <br />
 
     <BitGrid Columns="2"
              VerticalSpacing="1rem"
-             HorizontalSpacing="1rem">
-        <BitGridItem Class="grid-item md">
+             HorizontalSpacing="1rem"
+             VerticalAlign="BitAlignment.Stretch">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
                 <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
@@ -37,7 +108,43 @@
             It is required to specify a name for your project.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Platforms to set up on this machine now</BitText>
+            </div>
+            <BitStack Horizontal HorizontalAlign="BitAlignment.Start" Wrap AutoHeight>
+                <BitCheckbox Label="Android" @bind-Value="android" />
+                <BitCheckbox Label="iOS" @bind-Value="ios" />
+                <BitCheckbox Label="macOS" @bind-Value="macOS" />
+                <BitCheckbox Label="Windows" @bind-Value="windows" />
+            </BitStack>
+            <br />
+            <CodeBox>
+                @GetPlatformsCommand()
+            </CodeBox>
+            <BitMessage Color="BitColor.Info" Multiline>
+                This only decides what <code>bit new</code> installs and builds on this machine right now.
+                Every project has the web, Android, iOS, Windows and macOS apps.
+            </BitMessage>
+            <br />
+            The web app is always set up. Ticking any native app builds the whole solution, which needs several GB of extra build tools and makes the first build minutes longer.
+            Add one any time later from the project folder, e.g. <code>bit setup --platforms android</code>.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Open in</BitText>
+                <BitDropdown Placeholder="Choose an IDE" Items="@ide.Items" @bind-Value="@ide.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetIdeCommand()
+            </CodeBox>
+            By default <code>bit new</code> opens the project in VS Code, installs the extensions the project recommends (C# Dev Kit, Copilot, Claude Code and more), and trusts the folder,
+            so it opens without prompts. If VS Code is missing, it's installed for you.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
@@ -59,6 +166,13 @@
                         For the default SQLite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank" rel="noopener">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank" rel="noopener">Visual Studio Code</a>.
                     </div>
                     break;
+                case "SqlServer" when aspire.Value:
+                case "PostgreSQL" when aspire.Value:
+                case "MySql" when aspire.Value:
+                    <div>
+                        With Aspire, @database.Value runs in a container for you, so there's nothing to install besides Docker, which <code>bit new</code> offers when it's missing.
+                    </div>
+                    break;
                 case "SqlServer":
                     <div>
                         You can use Sql Server LocalDb 2025 for development purposes.
@@ -75,7 +189,7 @@
                         <CodeBox>winget install --id=PostgreSQL.PostgreSQL.18</CodeBox>
                     </div>
                     break;
-                case "MySQL":
+                case "MySql":
                     <div>
                         Download and install @database.Value <a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener">here</a>.
                     </div>
@@ -88,7 +202,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Multi-tenancy</BitText>
                 <BitToggle @bind-Value="multiTenant.Value" OnText="true" OffText="false" />
@@ -107,7 +221,7 @@
             </BitText>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
@@ -146,7 +260,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
                 <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
@@ -175,9 +289,16 @@
                     </div>
                     break;
             }
+            @if (pipeline.Value is "GitHub")
+            {
+                <div class="github-repo">
+                    <BitCheckbox Label="Create a private GitHub repository and push the project to it" @bind-Value="githubRepo" />
+                    <BitText Typography="BitTypography.Body2" Class="github-repo-hint">Adds <code>--github-repo</code>. The <code>bit new</code> command installs the GitHub CLI if it's missing, and opens GitHub in your browser when you need to sign in.</BitText>
+                </div>
+            }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Redis</BitText>
                 <BitToggle @bind-Value="redis.Value" OnText="true" OffText="false" />
@@ -203,7 +324,7 @@
             </BitText>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Aspire</BitText>
                 <BitToggle @bind-Value="aspire.Value" OnText="true" OffText="false" />
@@ -219,12 +340,11 @@
             </CodeBox>
             <BitText Typography="BitTypography.Body2">
                 Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank" rel="noopener">ASP.NET Core Aspire</a>.
-                <CodeBox>dotnet tool install -g Aspire.Cli</CodeBox>
-                Aspire requires Docker Desktop to be installed and running. Download and install Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">here</a>.
+                It runs those resources in containers, so <code>bit new</code> installs the Aspire CLI, and offers Docker, when they're missing.
             </BitText>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>API</BitText>
                 <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
@@ -259,7 +379,7 @@
 
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Module</BitText>
                 <BitDropdown Placeholder="Choose module" Items="@module.Items" @bind-Value="@module.Value" />
@@ -272,7 +392,7 @@
             The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank" rel="noopener">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank" rel="noopener">Sales</a>.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
@@ -293,13 +413,13 @@
                 {
                     <div>
                         To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank" rel="noopener">reCAPTCHA</a> into
-                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank" rel="noopener">Live demo</a>
+                        the app, include <code>--captcha reCaptcha</code> in the <code>bit new</code> command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank" rel="noopener">Live demo</a>
                     </div>
                 }
             </div>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
                 <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
@@ -311,7 +431,7 @@
             Setting this parameter to True enables native push notification using firebase and APN for Androiod, iOS and macOS apps alongside with Web Push for Web Browsers.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
                 <BitToggle @bind-Value="sample.Value" OnText="true" OffText="false" />
@@ -324,7 +444,7 @@
             Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank" rel="noopener">Todo</a>.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sentry</BitText>
                 <BitToggle @bind-Value="sentry.Value" OnText="true" OffText="false" />
@@ -333,11 +453,11 @@
             <CodeBox>
                 @GetSentryCommand()
             </CodeBox>
-            Adding --sentry true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            Adding <code>--sentry</code> to the <code>bit new</code> command allows you to capture errors, crashes, and analytics data
             seamlessly across all supported platforms.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
                 <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
@@ -351,7 +471,7 @@
             errors and informational messages.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
                 <BitToggle @bind-Value="signalR.Value" OnText="true" OffText="false" />
@@ -368,7 +488,7 @@
             Disabling this feature will affect AI Chatbot features.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
@@ -384,7 +504,7 @@
             Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Cloudflare</BitText>
                 <BitToggle @bind-Value="cloudflare.Value" OnText="true" OffText="false" />
@@ -396,7 +516,7 @@
             Integrating Cloudflare and placing your backend behind the Cloudflare CDN will significantly enhance the app's performance while reducing server load.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md">
+        <BitGridItem Class="grid-item">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Google Ads</BitText>
                 <BitToggle @bind-Value="googleAds.Value" OnText="true" OffText="false" />
@@ -408,7 +528,7 @@
             Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank" rel="noopener">Demo</a>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>bit Brouter</BitText>
                 <BitToggle @bind-Value="brouter.Value" OnText="true" OffText="false" />
@@ -423,7 +543,7 @@
             It stays a drop-in replacement, so your existing <b>@@page</b> routes, layouts and authorization keep working unchanged while you opt into the advanced features where you need them.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Theme</BitText>
                 <BitDropdown Placeholder="Choose theme" Items="@theme.Items" @bind-Value="@theme.Value" />
@@ -445,28 +565,6 @@
         </BitGridItem>
 
     </BitGrid>
-    <br />
-    <br />
-    <section class="section-card">
-        <BitText Typography="BitTypography.H5" Gutter>Visual Studio</BitText>
-        <br />
-        <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="5000">
-            <BitCarouselItem>
-                <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-1.webp" alt="Create a new project dialog in Visual Studio" loading="lazy" />
-                </div>
-            </BitCarouselItem>
-            <BitCarouselItem>
-                <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-2.webp" alt="Configure the Boilerplate project options in Visual Studio" loading="lazy" />
-                </div>
-            </BitCarouselItem>
-        </BitCarousel>
-        <br />
-        <div class="section-card-txt">
-            <b>Note</b>: In second window of create new project modal, make sure to check <b>Place solution and project in the same directory</b> checkbox.
-        </div>
-    </section>
 </div>
 
-<NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" Next="Run project" NextUrl="/templates/run-project" />
+<NavigationButtons Prev="Getting started" PrevUrl="/templates/getting-started" Next="Project structure" NextUrl="/templates/project-structure" />

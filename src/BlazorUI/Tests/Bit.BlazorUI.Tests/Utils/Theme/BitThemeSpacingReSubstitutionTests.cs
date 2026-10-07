@@ -41,11 +41,8 @@ public sealed class BitThemeSpacingReSubstitutionTests : BunitTestContext
     [TestMethod]
     public void EveryPresetDeclaresTheCardInsetsAsTheReSubstitutedExpression()
     {
-        var stylesDir = Path.Combine(AppContext.BaseDirectory, "theme-styles");
-        Assert.IsTrue(Directory.Exists(stylesDir), $"Missing {stylesDir}; ensure the library Styles folder is copied to output.");
-
-        var declarations = Directory.EnumerateFiles(stylesDir, "*.scss", SearchOption.AllDirectories)
-            .SelectMany(file => CardInsetDeclaration.Matches(File.ReadAllText(file))
+        var declarations = SourceFiles.EnumerateThemeStylesheets()
+            .SelectMany(file => CardInsetDeclaration.Matches(SourceFiles.ReadFullPath(file))
                 .Select(m => (File: Path.GetFileName(file), Inset: m.Groups[1].Value, Value: m.Groups[2].Value.Trim())))
             .ToArray();
 

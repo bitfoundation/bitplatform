@@ -201,7 +201,7 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
 
 <BitCircularTimePicker Label=""No border"" HasBorder=""false"" Placeholder=""Select a time"" />
 
-<BitCircularTimePicker Label=""Icon on the left"" IconLocation=""BitIconLocation.Left"" Placeholder=""Select a time"" />";
+<BitCircularTimePicker Label=""Icon on the left"" IconPlacement=""BitPlacement.Start"" Placeholder=""Select a time"" />";
 
     private readonly string example15RazorCode = @"
 <BitCircularTimePicker @ref=""circularTimePicker"">
@@ -211,7 +211,7 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
 </BitCircularTimePicker>
 
 <BitCircularTimePicker Label=""Custom left-handed icon""
-                       IconLocation=""BitIconLocation.Left""
+                       IconPlacement=""BitPlacement.Start""
                        Placeholder=""Select a time"">
     <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />

@@ -61,7 +61,7 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The side of the header the expander icon sits on.
     /// </summary>
-    public BitIconPosition? ExpanderIconPosition { get; set; }
+    public BitPlacement? ExpanderIconPlacement { get; set; }
 
     /// <summary>
     /// Opens the panel of the accordion while the page is being printed.
@@ -195,9 +195,9 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             bitAccordion.ExpanderIconName = ExpanderIconName;
         }
 
-        if (ExpanderIconPosition.HasValue && bitAccordion.HasNotBeenSet(nameof(ExpanderIconPosition)) && bitAccordion.ExpanderIconPosition != ExpanderIconPosition)
+        if (ExpanderIconPlacement.HasValue && bitAccordion.HasNotBeenSet(nameof(ExpanderIconPlacement)) && bitAccordion.ExpanderIconPlacement != ExpanderIconPlacement)
         {
-            bitAccordion.ExpanderIconPosition = ExpanderIconPosition.Value;
+            bitAccordion.ExpanderIconPlacement = ExpanderIconPlacement.Value;
 
             bitAccordion.ClassBuilder.Reset();
         }

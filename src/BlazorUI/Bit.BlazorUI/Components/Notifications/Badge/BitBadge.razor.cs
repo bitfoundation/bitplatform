@@ -411,10 +411,16 @@ public partial class BitBadge : BitComponentBase
     public bool Reversed { get; set; }
 
     /// <summary>
-    /// The corner shape of the badge.
+    /// The corner shape of the badge (default is fully rounded).
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitShape.Pill"/>, <see cref="BitShape.Rounded"/> and <see cref="BitShape.Square"/> mean
+    /// anything here; a badge takes its box from its own content, so <see cref="BitShape.Circle"/> has no
+    /// dimension to build a circle from and leaves the badge fully rounded. A fully rounded badge is a circle
+    /// while it holds a single digit and a pill once the label grows past one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitBadgeShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// Renders the badge when its content is the number zero.
@@ -539,9 +545,9 @@ public partial class BitBadge : BitComponentBase
 
         ClassBuilder.Register(() => Shape switch
         {
-            BitBadgeShape.Circular => "bit-bdg-cir",
-            BitBadgeShape.Rounded => "bit-bdg-rnd",
-            BitBadgeShape.Square => "bit-bdg-sqr",
+            BitShape.Pill => "bit-bdg-cir",
+            BitShape.Rounded => "bit-bdg-rnd",
+            BitShape.Square => "bit-bdg-sqr",
             _ => "bit-bdg-cir"
         });
 

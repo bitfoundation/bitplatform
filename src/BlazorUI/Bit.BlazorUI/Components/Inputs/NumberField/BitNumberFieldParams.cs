@@ -203,7 +203,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the label in regards to the field (Top by default).
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// What a screen reader announces while the field shows its busy indicator, in place of the
@@ -523,9 +523,9 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.IsInputReadOnly = IsInputReadOnly.Value;
         }
 
-        if (LabelPosition.HasValue && bitNumberField.HasNotBeenSet(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitNumberField.HasNotBeenSet(nameof(LabelPlacement)))
         {
-            bitNumberField.LabelPosition = LabelPosition.Value;
+            bitNumberField.LabelPlacement = LabelPlacement.Value;
 
             bitNumberField.ClassBuilder.Reset();
         }

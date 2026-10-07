@@ -319,6 +319,19 @@
             transform: translateX(calc(var(--bit-clo-transform-factor) * 100%));
         }
 
+        // The physical pair stays on the side it is named for in both reading directions.
+        &.bit-clo-lft {
+            left: 0;
+            inset-block: 0;
+            transform: translateX(-100%);
+        }
+
+        &.bit-clo-rgt {
+            right: 0;
+            inset-block: 0;
+            transform: translateX(100%);
+        }
+
         // A panel that comes down from the top or up from the bottom is a sheet as tall as its content,
         // unlike the side ones, which run the full height of the screen: the full height the rule above
         // gives them all would leave a sheet covering the page it is meant to sit over. The positioning

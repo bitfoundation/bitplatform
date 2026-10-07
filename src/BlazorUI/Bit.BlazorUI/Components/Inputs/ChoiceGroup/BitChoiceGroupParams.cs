@@ -97,10 +97,10 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// The position of the content of each item relative to its radio circle. The default is
-    /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
+    /// <see cref="BitPlacement.End"/>, which renders the circle first and the content after it.
     /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
     /// </summary>
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Custom RenderFragment for the label of the ChoiceGroup.
@@ -225,9 +225,9 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
             bitChoiceGroup.Label = Label;
         }
 
-        if (LabelPosition.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(LabelPosition)))
+        if (LabelPlacement.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(LabelPlacement)))
         {
-            bitChoiceGroup.LabelPosition = LabelPosition.Value;
+            bitChoiceGroup.LabelPlacement = LabelPlacement.Value;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }

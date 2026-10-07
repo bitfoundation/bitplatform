@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -54,7 +51,7 @@ public class BitErrorBoundaryStylesheetTests
     [TestMethod]
     public void BitErrorBoundaryShouldListEveryPublicVariableOnItsDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "ErrorBoundary", "BitErrorBoundaryDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Extras", "ErrorBoundary", "BitErrorBoundaryDemo.razor.cs");
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-ErrorBoundary-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -68,8 +65,7 @@ public class BitErrorBoundaryStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var block = stylesheet[stylesheet.IndexOf("\n.bit-erb-exp {", StringComparison.Ordinal)..];
-        block = block[..block.IndexOf("\n}", StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-erb-exp {");
 
         StringAssert.Contains(block, "&:focus-visible {");
         StringAssert.Contains(block, "@include focus-ring;");
@@ -82,8 +78,7 @@ public class BitErrorBoundaryStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var block = stylesheet[stylesheet.IndexOf("\n.bit-erb {", StringComparison.Ordinal)..];
-        block = block[..block.IndexOf("\n}", StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-erb {");
 
         StringAssert.Contains(block, "&.bit-erb-anc {");
         StringAssert.Contains(block, "@include focus-anchor;");
@@ -100,8 +95,7 @@ public class BitErrorBoundaryStylesheetTests
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, $@"\S[ \t]+\.{part}\b"), $".{part} is styled through a descendant selector.");
 
-        var block = stylesheet[stylesheet.IndexOf($"\n.{part} {{", StringComparison.Ordinal)..];
-        block = block[..block.IndexOf("\n}", StringComparison.Ordinal)];
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n.{part} {{");
 
         StringAssert.Contains(block, $"--bit-Text-color: var({variable}, ");
         Assert.IsFalse(Regex.IsMatch(block, @"^\s*color\s*:", RegexOptions.Multiline), $".{part} sets the color BitText sets.");
@@ -119,16 +113,5 @@ public class BitErrorBoundaryStylesheetTests
 
 
 
-    private static string ReadStylesheet() => ReadFile("Bit.BlazorUI.Extras", "Components", "ErrorBoundary", "BitErrorBoundary.scss");
-
-    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
-
-    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "ErrorBoundary", "BitErrorBoundary.scss");
 }

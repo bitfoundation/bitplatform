@@ -660,7 +660,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var items = new List<BitBreadcrumbItem>
         {
             new() { Text = "Folder 1", IconName = "Home" },
-            new() { Text = "Folder 2", IconName = "Folder", IconPosition = BitIconPosition.End }
+            new() { Text = "Folder 2", IconName = "Folder", IconPlacement = BitPlacement.End }
         };
 
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
@@ -857,7 +857,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
         {
             parameters.Add(p => p.Items, GetCustomItems());
-            parameters.Add(p => p.IconPosition, atEnd ? BitIconPosition.End : BitIconPosition.Start);
+            parameters.Add(p => p.IconPlacement, atEnd ? BitPlacement.End : BitPlacement.Start);
         });
 
         Assert.AreEqual(atEnd, component.FindAll(".bit-brc-nii")[0].ClassList.Contains("bit-brc-eni"));
@@ -949,7 +949,7 @@ public class BitBreadcrumbTests : BunitTestContext
                 Icon = { Selector = i => i.GlyphInfo },
                 IconName = { Selector = i => i.Glyph },
                 AriaLabel = { Selector = i => i.Label },
-                IconPosition = { Selector = i => i.IconLast == true ? BitIconPosition.End : null },
+                IconPlacement = { Selector = i => i.IconLast == true ? BitPlacement.End : null },
                 Template = { Selector = i => i.Fragment },
                 OverflowTemplate = { Selector = i => i.OverflowFragment },
             });
@@ -1877,7 +1877,7 @@ public class BitBreadcrumbTests : BunitTestContext
             OverflowIconName = "ChevronDown",
             OverflowIconTemplate = overflowTemplate,
             OverflowIndex = 1,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             Scrollable = true,
             SelectedItemAsText = true,
             Size = BitSize.Small,
@@ -1912,7 +1912,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual("ChevronDown", instance.OverflowIconName);
         Assert.AreEqual(overflowTemplate, instance.OverflowIconTemplate);
         Assert.AreEqual(1u, instance.OverflowIndex);
-        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
         Assert.IsTrue(instance.Scrollable);
         Assert.IsTrue(instance.SelectedItemAsText);
         Assert.AreEqual(BitSize.Small, instance.Size);

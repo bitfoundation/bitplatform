@@ -35,8 +35,8 @@ public partial class BitToggleButtonDemo
 <BitToggleButton OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
 
-<BitToggleButton IconPosition=""BitIconPosition.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton IconPosition=""BitIconPosition.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconPlacement=""BitPlacement.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconPlacement=""BitPlacement.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
 
 <BitToggleButton AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton AriaLabel=""Mute""
@@ -196,10 +196,10 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange"" Text=""No delay"" />
 <BitToggleButton AutoLoading LoadingDelay=""700"" OnChange=""HandleAutoLoadingChange"" Text=""700ms delay"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.End"" Text=""End"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Start"" Text=""Start"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Top"" Text=""Top"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Bottom"" Text=""Bottom"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
 
 <BitToggleButton IsLoading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
 

@@ -212,10 +212,10 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 
 <BitChoiceGroup @bind-Value=""alignment"" Horizontal
                 Label=""Alignment""
-                TItem=""BitChoiceGroupOption<BitCalloutAlignment>"" TValue=""BitCalloutAlignment"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitCalloutAlignment.Start"" />
-    <BitChoiceGroupOption Text=""Center"" Value=""BitCalloutAlignment.Center"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitCalloutAlignment.End"" />
+                TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitPlacement.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitPlacement.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitPlacement.End"" />
 </BitChoiceGroup>
 
 <BitDropMenu Text=""Account"" IconName=""@BitIconName.Contact"" Alignment=""alignment"" FullWidth>
@@ -226,15 +226,15 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 </BitDropMenu>
 
 <BitChoiceGroup @bind-Value=""side"" Horizontal
-                Label=""Side""
-                TItem=""BitChoiceGroupOption<BitCalloutSide>"" TValue=""BitCalloutSide"">
-    <BitChoiceGroupOption Text=""Top"" Value=""BitCalloutSide.Top"" />
-    <BitChoiceGroupOption Text=""Bottom"" Value=""BitCalloutSide.Bottom"" />
-    <BitChoiceGroupOption Text=""Start"" Value=""BitCalloutSide.Start"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitCalloutSide.End"" />
+                Label=""Placement""
+                TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"">
+    <BitChoiceGroupOption Text=""Top"" Value=""BitPlacement.Top"" />
+    <BitChoiceGroupOption Text=""Bottom"" Value=""BitPlacement.Bottom"" />
+    <BitChoiceGroupOption Text=""Start"" Value=""BitPlacement.Start"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitPlacement.End"" />
 </BitChoiceGroup>
 
-<BitDropMenu Text=""Share"" IconName=""@BitIconName.Share"" Side=""side"" Gap=""8"">
+<BitDropMenu Text=""Share"" IconName=""@BitIconName.Share"" Placement=""side"" Gap=""8"">
     <BitStack Gap=""0.25rem"" Style=""padding:0.5rem"">
         <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Mail"">Send by email</BitButton>
         <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Link"">Copy link</BitButton>
@@ -242,20 +242,20 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 </BitDropMenu>";
     private readonly string example8CsharpCode = @"
 private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
-private BitCalloutAlignment alignment = BitCalloutAlignment.Start;
-private BitCalloutSide side = BitCalloutSide.End;";
+private BitPlacement alignment = BitPlacement.Start;
+private BitPlacement side = BitPlacement.End;";
 
     private readonly string example9RazorCode = @"
 <BitChoiceGroup @bind-Value=""panelPosition"" Horizontal
-                Label=""PanelPosition""
-                TItem=""BitChoiceGroupOption<BitPanelPosition>"" TValue=""BitPanelPosition"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitPanelPosition.Start"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitPanelPosition.End"" />
-    <BitChoiceGroupOption Text=""Top"" Value=""BitPanelPosition.Top"" />
-    <BitChoiceGroupOption Text=""Bottom"" Value=""BitPanelPosition.Bottom"" />
+                Label=""PanelPlacement""
+                TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitPlacement.Start"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitPlacement.End"" />
+    <BitChoiceGroupOption Text=""Top"" Value=""BitPlacement.Top"" />
+    <BitChoiceGroupOption Text=""Bottom"" Value=""BitPlacement.Bottom"" />
 </BitChoiceGroup>
 
-<BitDropMenu Text=""Responsive"" Responsive PanelPosition=""panelPosition"" ScrollContainerId=""responsive-list"">
+<BitDropMenu Text=""Responsive"" Responsive PanelPlacement=""panelPosition"" ScrollContainerId=""responsive-list"">
     <div id=""responsive-list"" style=""max-height:60vh;overflow:auto"">
         <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
             <BitText Typography=""BitTypography.Subtitle1"">Swipe to dismiss</BitText>
@@ -268,7 +268,7 @@ private BitCalloutSide side = BitCalloutSide.End;";
     </div>
 </BitDropMenu>";
     private readonly string example9CsharpCode = @"
-private BitPanelPosition panelPosition = BitPanelPosition.End;";
+private BitPlacement panelPosition = BitPlacement.End;";
 
     private readonly string example10RazorCode = @"
 <BitStack Horizontal Wrap Gap=""1rem"" FitHeight>
@@ -627,7 +627,7 @@ private BitColor color = BitColor.Primary;";
                 <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.SignOut"">خروج</BitButton>
             </BitStack>
         </BitDropMenu>
-        <BitDropMenu Text=""ریسپانسیو"" Dir=""BitDir.Rtl"" Responsive PanelPosition=""BitPanelPosition.Start"">
+        <BitDropMenu Text=""ریسپانسیو"" Dir=""BitDir.Rtl"" Responsive PanelPlacement=""BitPlacement.Start"">
             <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
                 <BitText Typography=""BitTypography.Subtitle1"">پنل از ابتدا</BitText>
                 <BitCheckbox Label=""فعال"" />

@@ -340,7 +340,7 @@ private readonly List<CustomNavItem> customNavItems =
                  Items=""drawerNavItems""
                  AutoFocus
                  ShowCloseButton
-                 Position=""BitNavPanelPosition.End"" />
+                 Placement=""BitPlacement.End"" />
 </div>
 
 <div style=""width:222px"">

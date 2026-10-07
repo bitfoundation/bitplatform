@@ -44,7 +44,7 @@ Use OpenSSL to generate the required certificate files:
 openssl genrsa -out AppCertificate.key 3072
 
 # 2. Generate a self-signed X.509 certificate (valid for 1 year)
-openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate" -sha256
+openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/OU=Production/CN=AppCertificate" -sha256
 ```
 
 > **⚠ `AppCertificate.key` is a production secret. Do not commit the one you generate.**
@@ -54,6 +54,11 @@ openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365
 > key ring; there is no key id, no revocation list and no server-side state that would stop them. Deliver the key out
 > of band instead (a CI/CD secret, Azure Key Vault, AWS Secrets Manager, the OS certificate store - see *Why PEM over
 > PFX* below), and keep it out of the repository, e.g. `git rm --cached AppCertificate.key` plus a `.gitignore` entry.
+
+The certificate the template ships has the subject `CN=AppCertificate, OU=Development`, and so does the one `bit new`
+generates for each project on the developer's machine. Both are development certificates: outside the Development
+environment the app refuses to start while any certificate with `OU=Development` is loaded. Production needs one
+generated as above, with `OU=Production`, and delivered out of band.
 
 ## Rotating the Certificate
 
@@ -76,7 +81,7 @@ mv AppCertificate.key AppCertificate.old.key
 
 # 2. Generate the new pair under the active name (see "Generating Certificates" above).
 openssl genrsa -out AppCertificate.key 3072
-openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate" -sha256
+openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/OU=Production/CN=AppCertificate" -sha256
 ```
 
 Deploy. From that moment new tokens are signed with the new key, tokens already in the wild keep validating against
@@ -128,7 +133,7 @@ By default, the system uses **PEM files** (`.crt` and `.key`) instead of the bun
 
 #### How to generate PFX files (Optional):
 ```powershell
-$cert = New-SelfSignedCertificate -Subject "AppCertificate" -KeyLength 3072 -HashAlgorithm "SHA256" -NotAfter (Get-Date).AddYears(1)
+$cert = New-SelfSignedCertificate -Subject "CN=AppCertificate, OU=Production" -KeyLength 3072 -HashAlgorithm "SHA256" -NotAfter (Get-Date).AddYears(1)
 Export-PfxCertificate -cert $cert.PSPath -FilePath "AppCertificate.pfx" -Password (ConvertTo-SecureString -String "USE_STRONG_P@SSW0RD_HERE" -Force -AsPlainText)
 ```
 

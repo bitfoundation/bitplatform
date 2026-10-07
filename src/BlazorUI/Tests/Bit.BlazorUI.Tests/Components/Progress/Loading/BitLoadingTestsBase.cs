@@ -161,15 +161,15 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
     [TestMethod,
         DataRow(null, "bit-ldn-ltp"),
-        DataRow(BitLabelPosition.Top, "bit-ldn-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-ldn-lbm"),
-        DataRow(BitLabelPosition.Start, "bit-ldn-lst"),
-        DataRow(BitLabelPosition.End, "bit-ldn-led")]
-    public void ShouldRespectLabelPosition(BitLabelPosition? position, string expectedClass)
+        DataRow(BitPlacement.Top, "bit-ldn-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-ldn-lbm"),
+        DataRow(BitPlacement.Start, "bit-ldn-lst"),
+        DataRow(BitPlacement.End, "bit-ldn-led")]
+    public void ShouldRespectLabelPosition(BitPlacement? position, string expectedClass)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, position);
+            parameters.Add(p => p.LabelPlacement, position);
         });
 
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains(expectedClass));
@@ -177,14 +177,14 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
     [TestMethod,
         DataRow(null, "bit-ldn-led"),
-        DataRow(BitLabelPosition.Top, "bit-ldn-ltp"),
-        DataRow(BitLabelPosition.Start, "bit-ldn-lst")]
-    public void ShouldKeepTheLabelOfAnInlineLoadingOnItsLine(BitLabelPosition? position, string expectedClass)
+        DataRow(BitPlacement.Top, "bit-ldn-ltp"),
+        DataRow(BitPlacement.Start, "bit-ldn-lst")]
+    public void ShouldKeepTheLabelOfAnInlineLoadingOnItsLine(BitPlacement? position, string expectedClass)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
             parameters.Add(p => p.Inline, true);
-            parameters.Add(p => p.LabelPosition, position);
+            parameters.Add(p => p.LabelPlacement, position);
         });
 
         var root = component.Find(".bit-ldn");
@@ -934,7 +934,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         {
             parameters.Add(p => p.Color, BitColor.Success);
             parameters.Add(p => p.Size, BitSize.Large);
-            parameters.Add(p => p.LabelPosition, BitLabelPosition.End);
+            parameters.Add(p => p.LabelPlacement, BitPlacement.End);
         });
 
         StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-suc)");
@@ -968,7 +968,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
                     Color = BitColor.Error,
                     Size = BitSize.Large,
                     Label = "Cascaded",
-                    LabelPosition = BitLabelPosition.End,
+                    LabelPlacement = BitPlacement.End,
                     Inline = true,
                     Paused = true,
                     Speed = 2,

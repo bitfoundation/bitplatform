@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -47,7 +45,7 @@ public partial class BitAppShellStylesheetTests
     [TestMethod]
     public void BitAppShellShouldNeverDeclareAPublicVariable()
     {
-        var body = RulesOf(ReadStylesheet());
+        var body = SourceFiles.StripScssComments(ReadStylesheet());
 
         Assert.IsFalse(DeclaredVariable().IsMatch(body), "A public --bit-AppShell-* variable is declared, which stops it inheriting.");
     }
@@ -57,11 +55,11 @@ public partial class BitAppShellStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var root = Block(stylesheet, "\n.bit-ash {");
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {");
         StringAssert.Contains(root, "--bit-ash-inset-top: var(--bit-AppShell-safe-area-top, #{$bit-env-inset-top});");
         StringAssert.Contains(root, "--bit-ash-inset-start: var(--bit-AppShell-safe-area-start, #{$bit-env-inset-inline-start});");
 
-        var stable = Block(stylesheet, "\n.bit-ash-sin {");
+        var stable = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash-sin {");
         StringAssert.Contains(stable, "--bit-ash-inset-bottom: var(--bit-AppShell-safe-area-bottom, #{$bit-env-max-inset-bottom});");
         StringAssert.Contains(stable, "--bit-ash-inset-end: var(--bit-AppShell-safe-area-end, #{$bit-env-max-inset-inline-end});");
 
@@ -75,14 +73,14 @@ public partial class BitAppShellStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(Block(stylesheet, "\n.bit-ash {"), "background-color: var(--bit-AppShell-background, #{$clr-bg-pri});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {"), "background-color: var(--bit-AppShell-background, #{$clr-bg-pri});");
 
         // The foreground comes with the background, so the text is never left to a page color that does not read on it.
-        StringAssert.Contains(Block(stylesheet, "\n.bit-ash {"), "color: var(--bit-AppShell-color, #{$clr-fg-pri});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ash {"), "color: var(--bit-AppShell-color, #{$clr-fg-pri});");
 
         foreach (var (rule, edge) in new[] { ("top", "top"), ("bottom", "bottom"), ("left", "start"), ("right", "end") })
         {
-            StringAssert.Contains(Block(stylesheet, $"\n.bit-ash-{rule} {{"),
+            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-ash-{rule} {{"),
                                   $"background-color: var(--bit-AppShell-inset-{edge}-background, var(--bit-AppShell-inset-background, var(--bit-AppShell-background, #{{$clr-bg-pri}})));");
         }
     }
@@ -90,40 +88,28 @@ public partial class BitAppShellStylesheetTests
     [TestMethod]
     public void BitAppShellShouldPrintAtTheLengthOfItsContent()
     {
-        var print = Block(ReadStylesheet(), "\n@media print {");
+        var print = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media print {");
 
-        StringAssert.Contains(Block(print, "\n    .bit-ash {"), "height: auto;");
-        StringAssert.Contains(Block(print, "\n    .bit-ash {"), "--bit-ash-inset-top: 0px;");
-        StringAssert.Contains(Block(print, "\n    .bit-ash-fsc {"), "position: static;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "height: auto;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "--bit-ash-inset-top: 0px;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash-fsc {"), "position: static;");
         StringAssert.Contains(print, ".bit-ash-main {\n        overflow: visible !important;");
         StringAssert.Contains(print, "display: none;");
 
         // The theme's colors go back to the page on paper: a dark theme's foreground is near-white, and a printout
         // leaves the background it was chosen against out by default.
-        StringAssert.Contains(Block(print, "\n    .bit-ash {"), "color: inherit;");
-        StringAssert.Contains(Block(print, "\n    .bit-ash {"), "background-color: transparent;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "color: inherit;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(print, "\n    .bit-ash {"), "background-color: transparent;");
     }
 
     [TestMethod]
     public void BitAppShellShouldStopTheLandscapeTextInflationWithoutBlockingTheReadersTextSize()
     {
-        var root = Block(ReadStylesheet(), "\n.bit-ash {");
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-ash {");
 
         // 100%, never none: none also takes away the reader's own text size and zoom in some engines.
         StringAssert.Contains(root, "-webkit-text-size-adjust: 100%;");
         StringAssert.Contains(root, "\n    text-size-adjust: 100%;");
-    }
-
-    private static string Block(string stylesheet, string opening)
-    {
-        var start = stylesheet.IndexOf(opening, System.StringComparison.Ordinal);
-
-        Assert.IsTrue(start >= 0, $"No rule opens with {opening.Trim()}.");
-
-        var indent = opening[1..].Length - opening[1..].TrimStart().Length;
-        var end = stylesheet.IndexOf("\n" + new string(' ', indent) + "}", start + opening.Length, System.StringComparison.Ordinal);
-
-        return stylesheet[start..end];
     }
 
     private static string[] DocumentedVariables(string stylesheet)
@@ -131,21 +117,7 @@ public partial class BitAppShellStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    // The header comment is where the variables are documented, so only what is not a comment is searched for declarations.
-    private static string RulesOf(string stylesheet)
-    {
-        return string.Join('\n', stylesheet.Split('\n').Where(line => line.TrimStart().StartsWith("//") is false));
-    }
-
-    private static string ReadStylesheet([CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..",
-                                                 "Bit.BlazorUI.Extras", "Components", "AppShell", "BitAppShell.scss"));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "AppShell", "BitAppShell.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-AppShell-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

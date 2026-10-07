@@ -143,11 +143,11 @@ private double segmentedPercent = 45;";
 
 <div style=""display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;"">
     <BitProgress Circular Rounded AriaLabel=""Gap at the top"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
-                 GapPosition=""BitProgressGapPosition.Top"" />
+                 GapPlacement=""BitPlacement.Top"" />
     <BitProgress Circular Rounded AriaLabel=""Gap at the start"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
-                 GapPosition=""BitProgressGapPosition.Start"" />
+                 GapPlacement=""BitPlacement.Start"" />
     <BitProgress Circular Rounded AriaLabel=""Gap at the end"" GapDegree=""120"" Diameter=""80"" Thickness=""8"" Percent=""gaugeValue""
-                 GapPosition=""BitProgressGapPosition.End"" />
+                 GapPlacement=""BitPlacement.End"" />
 </div>";
     private readonly string example10CsharpCode = @"
 private double gaugeValue = 65;";

@@ -187,9 +187,9 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "Shape",
-            Type = "BitBadgeShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the badge.",
+            Description = "The corner shape of the badge. Only Pill, Rounded and Square are honoured: a badge takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -383,117 +383,8 @@ public partial class BitBadgeDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitBadgeShape",
-            Description = "Determines the corner shape of the BitBadge.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Circular",
-                    Description="Fully rounded corners, so a counter reads as a circle and a longer label as a pill.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Rounded",
-                    Description="The corner radius the current theme gives to its controls.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Square",
-                    Description="Square corners with no radius at all.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "position-enum",
-            Name = "BitPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "TopLeft",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "TopCenter",
-                    Value = "1"
-                },
-                new()
-                {
-                    Name = "TopRight",
-                    Value = "2"
-                },
-                new()
-                {
-                    Name = "TopStart",
-                    Value = "3"
-                },
-                new()
-                {
-                    Name = "TopEnd",
-                    Value = "4"
-                },
-                new()
-                {
-                    Name = "CenterLeft",
-                    Value = "5"
-                },
-                new()
-                {
-                    Name = "Center",
-                    Value = "6"
-                },
-                new()
-                {
-                    Name = "CenterRight",
-                    Value = "7"
-                },
-                new()
-                {
-                    Name = "CenterStart",
-                    Value = "8"
-                },
-                new()
-                {
-                    Name = "CenterEnd",
-                    Value = "9"
-                },
-                new()
-                {
-                    Name = "BottomLeft",
-                    Value = "10"
-                },
-                new()
-                {
-                    Name = "BottomCenter",
-                    Value = "11"
-                },
-                new()
-                {
-                    Name = "BottomRight",
-                    Value = "12"
-                },
-                new()
-                {
-                    Name = "BottomStart",
-                    Value = "13"
-                },
-                new()
-                {
-                    Name = "BottomEnd",
-                    Value = "14"
-                }
-            ]
-        },
+        SharedSubEnums.BitShape,
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "variant-enum",
@@ -901,7 +792,7 @@ public partial class BitBadgeDemo
         {
             Max = 99,
             Bordered = true,
-            Shape = BitBadgeShape.Rounded,
+            Shape = BitShape.Rounded,
             Variant = BitVariant.Outline,
         }
     ];

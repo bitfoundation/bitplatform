@@ -1,4 +1,7 @@
 {
+    "engines": {
+        "node": ">=24"
+    },
     "devDependencies": {
         "esbuild": "0.28.2",
         "sass": "1.105.1",

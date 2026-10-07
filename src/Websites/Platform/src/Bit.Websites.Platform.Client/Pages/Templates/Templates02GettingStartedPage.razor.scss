@@ -27,10 +27,6 @@
     @include ImageContainer;
 }
 
-.row {
-    display: flex;
-}
-
 .image {
     @include Image;
     width: rem2(500px);
@@ -42,20 +38,8 @@
     justify-content: center;
 }
 
-::deep .plt-drp{
-    width: rem2(150px);
-    margin-left: rem2(20px);
-}
-
 ::deep {
     a {
         color: $bit-color-primary;
-    }
-
-    .link-btn {
-        padding: 0;
-        width: 2rem;
-        height: 2rem;
-        padding-top: 2px;
     }
 }
