@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
@@ -13,7 +13,7 @@ public partial class BitNumberFieldDemo
             DefaultValue = "null",
             Description = "The general color of the number field, used for its focus indicator and for the icon, prefix and suffix while the field is focused (Primary by default).",
             LinkType = LinkType.Link,
-            Href = "#bit-color",
+            Href = "#color-enum",
         },
         new()
         {
@@ -57,7 +57,7 @@ public partial class BitNumberFieldDemo
             DefaultValue = "null",
             Description = "The color kind of the number field background (Primary by default).",
             LinkType = LinkType.Link,
-            Href = "#bit-color-kind",
+            Href = "#color-kind-enum",
         },
         new()
         {
@@ -66,7 +66,7 @@ public partial class BitNumberFieldDemo
             DefaultValue = "null",
             Description = "The color kind of the number field border (Primary by default).",
             LinkType = LinkType.Link,
-            Href = "#bit-color-kind",
+            Href = "#color-kind-enum",
         },
         new()
         {
@@ -250,7 +250,7 @@ public partial class BitNumberFieldDemo
             DefaultValue = "null",
             Description = "Overrides the virtual keyboard the browser shows for the input. By default it is Numeric for the integral types and Decimal for the fractional ones (float, double and decimal). Since neither of those keypads offers a minus sign on every platform, a field that has to accept negative values on touch devices is better served by Text, which brings up the full keyboard.",
             LinkType = LinkType.Link,
-            Href = "#inputMode-enum",
+            Href = "#input-mode-enum",
         },
         new()
         {
@@ -833,64 +833,8 @@ public partial class BitNumberFieldDemo
     ];
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        SharedSubEnums.BitPlacement,
-        new()
-        {
-            Id = "inputMode-enum",
-            Name = "BitInputMode",
-            Description = "This allows a browser to display an appropriate virtual keyboard.",
-            Items =
-            [
-                new()
-                {
-                    Name= "None",
-                    Description="No virtual keyboard. For when the page implements its own keyboard input control.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Standard input keyboard for the user's current locale.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Decimal",
-                    Description="Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Numeric",
-                    Description="Numeric input keyboard, but only requires the digits 0–9.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Tel",
-                    Description="A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Search",
-                    Description="A virtual keyboard optimized for search input.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "Email",
-                    Description="A virtual keyboard optimized for entering email addresses.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Url",
-                    Description="A keypad optimized for entering URLs.",
-                    Value="7",
-                }
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitInputMode(),
         new()
         {
             Id = "spinMode-enum",
@@ -918,57 +862,9 @@ public partial class BitNumberFieldDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" }
-            ]
-        },
-        new()
-        {
-            Id = "bit-color",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name= "Primary", Description="Primary general color.", Value="0" },
-                new() { Name= "Secondary", Description="Secondary general color.", Value="1" },
-                new() { Name= "Tertiary", Description="Tertiary general color.", Value="2" },
-                new() { Name= "Info", Description="Info general color.", Value="3" },
-                new() { Name= "Success", Description="Success general color.", Value="4" },
-                new() { Name= "Warning", Description="Warning general color.", Value="5" },
-                new() { Name= "SevereWarning", Description="SevereWarning general color.", Value="6" },
-                new() { Name= "Error", Description="Error general color.", Value="7" },
-                new() { Name= "PrimaryBackground", Description="Primary background color.", Value="8" },
-                new() { Name= "SecondaryBackground", Description="Secondary background color.", Value="9" },
-                new() { Name= "TertiaryBackground", Description="Tertiary background color.", Value="10" },
-                new() { Name= "PrimaryForeground", Description="Primary foreground color.", Value="11" },
-                new() { Name= "SecondaryForeground", Description="Secondary foreground color.", Value="12" },
-                new() { Name= "TertiaryForeground", Description="Tertiary foreground color.", Value="13" },
-                new() { Name= "PrimaryBorder", Description="Primary border color.", Value="14" },
-                new() { Name= "SecondaryBorder", Description="Secondary border color.", Value="15" },
-                new() { Name= "TertiaryBorder", Description="Tertiary border color.", Value="16" }
-            ]
-        },
-        new()
-        {
-            Id = "bit-color-kind",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name= "Primary", Description="Primary color kind.", Value="0" },
-                new() { Name= "Secondary", Description="Secondary color kind.", Value="1" },
-                new() { Name= "Tertiary", Description="Tertiary color kind.", Value="2" },
-                new() { Name= "Transparent", Description="Transparent color kind.", Value="3" }
-            ]
-        },
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitColorKind(),
     ];
     private readonly List<ComponentParameter> componentPublicMembers =
     [

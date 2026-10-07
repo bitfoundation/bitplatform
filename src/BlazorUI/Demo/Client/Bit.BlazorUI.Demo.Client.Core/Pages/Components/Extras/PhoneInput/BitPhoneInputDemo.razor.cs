@@ -645,68 +645,10 @@ public partial class BitPhoneInputDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Value = "0" },
-                new() { Name = "Secondary", Value = "1" },
-                new() { Name = "Tertiary", Value = "2" },
-                new() { Name = "Info", Value = "3" },
-                new() { Name = "Success", Value = "4" },
-                new() { Name = "Warning", Value = "5" },
-                new() { Name = "SevereWarning", Value = "6" },
-                new() { Name = "Error", Value = "7" },
-                new() { Name = "PrimaryBackground", Value = "8" },
-                new() { Name = "SecondaryBackground", Value = "9" },
-                new() { Name = "TertiaryBackground", Value = "10" },
-                new() { Name = "PrimaryForeground", Value = "11" },
-                new() { Name = "SecondaryForeground", Value = "12" },
-                new() { Name = "TertiaryForeground", Value = "13" },
-                new() { Name = "PrimaryBorder", Value = "14" },
-                new() { Name = "SecondaryBorder", Value = "15" },
-                new() { Name = "TertiaryBorder", Value = "16" },
-            ]
-        },
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Value = "0" },
-                new() { Name = "Secondary", Value = "1" },
-                new() { Name = "Tertiary", Value = "2" },
-                new() { Name = "Transparent", Value = "3" },
-            ]
-        },
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "Determines the allowed drop directions of a callout.",
-            Items =
-            [
-                new() { Name = "All", Value = "0" },
-                new() { Name = "TopAndBottom", Value = "1" },
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Value = "0" },
-                new() { Name = "Medium", Value = "1" },
-                new() { Name = "Large", Value = "2" },
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitSize(),
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =

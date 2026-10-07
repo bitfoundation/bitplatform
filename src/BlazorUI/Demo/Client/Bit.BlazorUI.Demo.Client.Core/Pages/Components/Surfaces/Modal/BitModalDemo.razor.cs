@@ -469,7 +469,7 @@ public partial class BitModalDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        SharedSubEnums.BitPosition
+        DemoSharedEnums.BitPosition(description: "Where the Modal sits inside the area it covers. Start and End follow the text direction; Left and Right stay on their side.")
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =
