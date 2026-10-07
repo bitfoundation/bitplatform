@@ -847,774 +847,714 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
         // back off whatever month the user had navigated to.
         var rebuildView = false;
 
-        if (AllowTextInput.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(AllowTextInput)))
+        if (AllowTextInput.HasValue)
         {
-            bitDateRangePicker.AllowTextInput = AllowTextInput.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(AllowTextInput), AllowTextInput.Value, static d => d.AllowTextInput, static (d, v) => d.AllowTextInput = v);
         }
 
-        if (ApplyButtonText.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(ApplyButtonText)))
+        if (ApplyButtonText.HasValue())
         {
-            bitDateRangePicker.ApplyButtonText = ApplyButtonText!;
+            bitDateRangePicker.TakeFromCascade(nameof(ApplyButtonText), ApplyButtonText!, static d => d.ApplyButtonText, static (d, v) => d.ApplyButtonText = v);
         }
 
-        if (AutoApply.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(AutoApply)))
+        if (AutoApply.HasValue)
         {
-            bitDateRangePicker.AutoApply = AutoApply.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(AutoApply), AutoApply.Value, static d => d.AutoApply, static (d, v) => d.AutoApply = v);
         }
 
-        if (AutoClose.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(AutoClose)))
+        if (AutoClose.HasValue)
         {
-            bitDateRangePicker.AutoClose = AutoClose.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(AutoClose), AutoClose.Value, static d => d.AutoClose, static (d, v) => d.AutoClose = v);
         }
 
-        if (AutoFocus.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitDateRangePicker.AutoFocus = AutoFocus.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static d => d.AutoFocus, static (d, v) => d.AutoFocus = v);
         }
 
-        if (CalloutAriaLabel.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(CalloutAriaLabel)))
+        if (CalloutAriaLabel.HasValue())
         {
-            bitDateRangePicker.CalloutAriaLabel = CalloutAriaLabel!;
+            bitDateRangePicker.TakeFromCascade(nameof(CalloutAriaLabel), CalloutAriaLabel!, static d => d.CalloutAriaLabel, static (d, v) => d.CalloutAriaLabel = v);
         }
 
-        if (CalloutFooterTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(CalloutFooterTemplate)))
+        if (CalloutFooterTemplate is not null)
         {
-            bitDateRangePicker.CalloutFooterTemplate = CalloutFooterTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(CalloutFooterTemplate), CalloutFooterTemplate, static d => d.CalloutFooterTemplate, static (d, v) => d.CalloutFooterTemplate = v);
         }
 
-        if (CalloutHeaderTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(CalloutHeaderTemplate)))
+        if (CalloutHeaderTemplate is not null)
         {
-            bitDateRangePicker.CalloutHeaderTemplate = CalloutHeaderTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(CalloutHeaderTemplate), CalloutHeaderTemplate, static d => d.CalloutHeaderTemplate, static (d, v) => d.CalloutHeaderTemplate = v);
         }
 
-        if (CalloutHtmlAttributes is not null && bitDateRangePicker.HasNotBeenSet(nameof(CalloutHtmlAttributes)))
+        if (CalloutHtmlAttributes is not null)
         {
-            bitDateRangePicker.CalloutHtmlAttributes = CalloutHtmlAttributes;
+            bitDateRangePicker.TakeFromCascade(nameof(CalloutHtmlAttributes), CalloutHtmlAttributes, static d => d.CalloutHtmlAttributes, static (d, v) => d.CalloutHtmlAttributes = v);
         }
 
-        if (CancelButtonText.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(CancelButtonText)))
+        if (CancelButtonText.HasValue())
         {
-            bitDateRangePicker.CancelButtonText = CancelButtonText!;
+            bitDateRangePicker.TakeFromCascade(nameof(CancelButtonText), CancelButtonText!, static d => d.CancelButtonText, static (d, v) => d.CancelButtonText = v);
         }
 
-        if (Classes is not null && bitDateRangePicker.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitDateRangePicker.Classes = Classes;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
-        if (ClearButtonIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitDateRangePicker.ClearButtonIcon = ClearButtonIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitDateRangePicker.ClearButtonIconName = ClearButtonIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static d => d.ClearButtonIconName, static (d, v) => d.ClearButtonIconName = v);
         }
 
-        if (ClearButtonTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(ClearButtonTitle)))
+        if (ClearButtonTitle.HasValue())
         {
-            bitDateRangePicker.ClearButtonTitle = ClearButtonTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(ClearButtonTitle), ClearButtonTitle!, static d => d.ClearButtonTitle, static (d, v) => d.ClearButtonTitle = v);
         }
 
-        if (CloseButtonIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(CloseButtonIcon)))
+        if (CloseButtonIcon is not null)
         {
-            bitDateRangePicker.CloseButtonIcon = CloseButtonIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static d => d.CloseButtonIcon, static (d, v) => d.CloseButtonIcon = v);
         }
 
-        if (CloseButtonIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(CloseButtonIconName)))
+        if (CloseButtonIconName.HasValue())
         {
-            bitDateRangePicker.CloseButtonIconName = CloseButtonIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static d => d.CloseButtonIconName, static (d, v) => d.CloseButtonIconName = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitDateRangePicker.CloseButtonTitle = CloseButtonTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle!, static d => d.CloseButtonTitle, static (d, v) => d.CloseButtonTitle = v);
         }
 
-        if (Color.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitDateRangePicker.Color = Color;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(Color), Color, static d => d.Color, static (d, v) => d.Color = v);
         }
 
-        if (ContinuousSpinDelay.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ContinuousSpinDelay)))
+        if (ContinuousSpinDelay.HasValue)
         {
-            bitDateRangePicker.ContinuousSpinDelay = ContinuousSpinDelay.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ContinuousSpinDelay), ContinuousSpinDelay.Value, static d => d.ContinuousSpinDelay, static (d, v) => d.ContinuousSpinDelay = v);
         }
 
-        if (ContinuousSpinInterval.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ContinuousSpinInterval)))
+        if (ContinuousSpinInterval.HasValue)
         {
-            bitDateRangePicker.ContinuousSpinInterval = ContinuousSpinInterval.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ContinuousSpinInterval), ContinuousSpinInterval.Value, static d => d.ContinuousSpinInterval, static (d, v) => d.ContinuousSpinInterval = v);
         }
 
-        if (Culture is not null && bitDateRangePicker.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null && bitDateRangePicker.TakeFromCascade(nameof(Culture), Culture, static d => d.Culture, static (d, v) => d.Culture = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.Culture, Culture) is false;
-
-            bitDateRangePicker.Culture = Culture;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            rebuildView = true;
         }
 
-        if (DateFormat.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(DateFormat)))
+        if (DateFormat.HasValue())
         {
-            bitDateRangePicker.DateFormat = DateFormat;
+            bitDateRangePicker.TakeFromCascade(nameof(DateFormat), DateFormat, static d => d.DateFormat, static (d, v) => d.DateFormat = v);
         }
 
-        if (DayCellTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(DayCellTemplate)))
+        if (DayCellTemplate is not null)
         {
-            bitDateRangePicker.DayCellTemplate = DayCellTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(DayCellTemplate), DayCellTemplate, static d => d.DayCellTemplate, static (d, v) => d.DayCellTemplate = v);
         }
 
-        if (DisableFuture.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(DisableFuture)))
+        if (DisableFuture.HasValue && bitDateRangePicker.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static d => d.DisableFuture, static (d, v) => d.DisableFuture = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.DisableFuture != DisableFuture.Value;
-
-            bitDateRangePicker.DisableFuture = DisableFuture.Value;
+            rebuildView = true;
         }
 
-        if (DisablePast.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(DisablePast)))
+        if (DisablePast.HasValue && bitDateRangePicker.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static d => d.DisablePast, static (d, v) => d.DisablePast = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.DisablePast != DisablePast.Value;
-
-            bitDateRangePicker.DisablePast = DisablePast.Value;
+            rebuildView = true;
         }
 
-        if (DisabledDateErrorMessage.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(DisabledDateErrorMessage)))
+        if (DisabledDateErrorMessage.HasValue())
         {
-            bitDateRangePicker.DisabledDateErrorMessage = DisabledDateErrorMessage;
+            bitDateRangePicker.TakeFromCascade(nameof(DisabledDateErrorMessage), DisabledDateErrorMessage, static d => d.DisabledDateErrorMessage, static (d, v) => d.DisabledDateErrorMessage = v);
         }
 
-        if (DisabledDates is not null && bitDateRangePicker.HasNotBeenSet(nameof(DisabledDates)))
+        if (DisabledDates is not null && bitDateRangePicker.TakeFromCascade(nameof(DisabledDates), DisabledDates, static d => d.DisabledDates, static (d, v) => d.DisabledDates = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.DisabledDates, DisabledDates) is false;
-
-            bitDateRangePicker.DisabledDates = DisabledDates;
+            rebuildView = true;
         }
 
-        if (DisabledDaysOfWeek is not null && bitDateRangePicker.HasNotBeenSet(nameof(DisabledDaysOfWeek)))
+        if (DisabledDaysOfWeek is not null && bitDateRangePicker.TakeFromCascade(nameof(DisabledDaysOfWeek), DisabledDaysOfWeek, static d => d.DisabledDaysOfWeek, static (d, v) => d.DisabledDaysOfWeek = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.DisabledDaysOfWeek, DisabledDaysOfWeek) is false;
-
-            bitDateRangePicker.DisabledDaysOfWeek = DisabledDaysOfWeek;
+            rebuildView = true;
         }
 
-        if (DropDirection.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitDateRangePicker.DropDirection = DropDirection.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static d => d.DropDirection, static (d, v) => d.DropDirection = v);
         }
 
-        if (EndTimeDecreaseHourIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeDecreaseHourIcon)))
+        if (EndTimeDecreaseHourIcon is not null)
         {
-            bitDateRangePicker.EndTimeDecreaseHourIcon = EndTimeDecreaseHourIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeDecreaseHourIcon), EndTimeDecreaseHourIcon, static d => d.EndTimeDecreaseHourIcon, static (d, v) => d.EndTimeDecreaseHourIcon = v);
         }
 
-        if (EndTimeDecreaseHourIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeDecreaseHourIconName)))
+        if (EndTimeDecreaseHourIconName.HasValue())
         {
-            bitDateRangePicker.EndTimeDecreaseHourIconName = EndTimeDecreaseHourIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeDecreaseHourIconName), EndTimeDecreaseHourIconName, static d => d.EndTimeDecreaseHourIconName, static (d, v) => d.EndTimeDecreaseHourIconName = v);
         }
 
-        if (EndTimeDecreaseHourTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeDecreaseHourTitle)))
+        if (EndTimeDecreaseHourTitle.HasValue())
         {
-            bitDateRangePicker.EndTimeDecreaseHourTitle = EndTimeDecreaseHourTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeDecreaseHourTitle), EndTimeDecreaseHourTitle!, static d => d.EndTimeDecreaseHourTitle, static (d, v) => d.EndTimeDecreaseHourTitle = v);
         }
 
-        if (EndTimeDecreaseMinuteIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeDecreaseMinuteIcon)))
+        if (EndTimeDecreaseMinuteIcon is not null)
         {
-            bitDateRangePicker.EndTimeDecreaseMinuteIcon = EndTimeDecreaseMinuteIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeDecreaseMinuteIcon), EndTimeDecreaseMinuteIcon, static d => d.EndTimeDecreaseMinuteIcon, static (d, v) => d.EndTimeDecreaseMinuteIcon = v);
         }
 
-        if (EndTimeDecreaseMinuteIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeDecreaseMinuteIconName)))
+        if (EndTimeDecreaseMinuteIconName.HasValue())
         {
-            bitDateRangePicker.EndTimeDecreaseMinuteIconName = EndTimeDecreaseMinuteIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeDecreaseMinuteIconName), EndTimeDecreaseMinuteIconName, static d => d.EndTimeDecreaseMinuteIconName, static (d, v) => d.EndTimeDecreaseMinuteIconName = v);
         }
 
-        if (EndTimeDecreaseMinuteTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeDecreaseMinuteTitle)))
+        if (EndTimeDecreaseMinuteTitle.HasValue())
         {
-            bitDateRangePicker.EndTimeDecreaseMinuteTitle = EndTimeDecreaseMinuteTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeDecreaseMinuteTitle), EndTimeDecreaseMinuteTitle!, static d => d.EndTimeDecreaseMinuteTitle, static (d, v) => d.EndTimeDecreaseMinuteTitle = v);
         }
 
-        if (EndTimeHourInputAriaLabel.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeHourInputAriaLabel)))
+        if (EndTimeHourInputAriaLabel.HasValue())
         {
-            bitDateRangePicker.EndTimeHourInputAriaLabel = EndTimeHourInputAriaLabel!;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeHourInputAriaLabel), EndTimeHourInputAriaLabel!, static d => d.EndTimeHourInputAriaLabel, static (d, v) => d.EndTimeHourInputAriaLabel = v);
         }
 
-        if (EndTimeIncreaseHourIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeIncreaseHourIcon)))
+        if (EndTimeIncreaseHourIcon is not null)
         {
-            bitDateRangePicker.EndTimeIncreaseHourIcon = EndTimeIncreaseHourIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeIncreaseHourIcon), EndTimeIncreaseHourIcon, static d => d.EndTimeIncreaseHourIcon, static (d, v) => d.EndTimeIncreaseHourIcon = v);
         }
 
-        if (EndTimeIncreaseHourIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeIncreaseHourIconName)))
+        if (EndTimeIncreaseHourIconName.HasValue())
         {
-            bitDateRangePicker.EndTimeIncreaseHourIconName = EndTimeIncreaseHourIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeIncreaseHourIconName), EndTimeIncreaseHourIconName, static d => d.EndTimeIncreaseHourIconName, static (d, v) => d.EndTimeIncreaseHourIconName = v);
         }
 
-        if (EndTimeIncreaseHourTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeIncreaseHourTitle)))
+        if (EndTimeIncreaseHourTitle.HasValue())
         {
-            bitDateRangePicker.EndTimeIncreaseHourTitle = EndTimeIncreaseHourTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeIncreaseHourTitle), EndTimeIncreaseHourTitle!, static d => d.EndTimeIncreaseHourTitle, static (d, v) => d.EndTimeIncreaseHourTitle = v);
         }
 
-        if (EndTimeIncreaseMinuteIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeIncreaseMinuteIcon)))
+        if (EndTimeIncreaseMinuteIcon is not null)
         {
-            bitDateRangePicker.EndTimeIncreaseMinuteIcon = EndTimeIncreaseMinuteIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeIncreaseMinuteIcon), EndTimeIncreaseMinuteIcon, static d => d.EndTimeIncreaseMinuteIcon, static (d, v) => d.EndTimeIncreaseMinuteIcon = v);
         }
 
-        if (EndTimeIncreaseMinuteIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeIncreaseMinuteIconName)))
+        if (EndTimeIncreaseMinuteIconName.HasValue())
         {
-            bitDateRangePicker.EndTimeIncreaseMinuteIconName = EndTimeIncreaseMinuteIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeIncreaseMinuteIconName), EndTimeIncreaseMinuteIconName, static d => d.EndTimeIncreaseMinuteIconName, static (d, v) => d.EndTimeIncreaseMinuteIconName = v);
         }
 
-        if (EndTimeIncreaseMinuteTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeIncreaseMinuteTitle)))
+        if (EndTimeIncreaseMinuteTitle.HasValue())
         {
-            bitDateRangePicker.EndTimeIncreaseMinuteTitle = EndTimeIncreaseMinuteTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeIncreaseMinuteTitle), EndTimeIncreaseMinuteTitle!, static d => d.EndTimeIncreaseMinuteTitle, static (d, v) => d.EndTimeIncreaseMinuteTitle = v);
         }
 
-        if (EndTimeMinuteInputAriaLabel.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(EndTimeMinuteInputAriaLabel)))
+        if (EndTimeMinuteInputAriaLabel.HasValue())
         {
-            bitDateRangePicker.EndTimeMinuteInputAriaLabel = EndTimeMinuteInputAriaLabel!;
+            bitDateRangePicker.TakeFromCascade(nameof(EndTimeMinuteInputAriaLabel), EndTimeMinuteInputAriaLabel!, static d => d.EndTimeMinuteInputAriaLabel, static (d, v) => d.EndTimeMinuteInputAriaLabel = v);
         }
 
-        if (ExcludeDisabledDates.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ExcludeDisabledDates)))
+        if (ExcludeDisabledDates.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ExcludeDisabledDates), ExcludeDisabledDates.Value, static d => d.ExcludeDisabledDates, static (d, v) => d.ExcludeDisabledDates = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.ExcludeDisabledDates != ExcludeDisabledDates.Value;
-
-            bitDateRangePicker.ExcludeDisabledDates = ExcludeDisabledDates.Value;
+            rebuildView = true;
         }
 
-        if (FirstDayOfWeek.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(FirstDayOfWeek)))
+        if (FirstDayOfWeek.HasValue && bitDateRangePicker.TakeFromCascade(nameof(FirstDayOfWeek), FirstDayOfWeek, static d => d.FirstDayOfWeek, static (d, v) => d.FirstDayOfWeek = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.FirstDayOfWeek != FirstDayOfWeek;
-
-            bitDateRangePicker.FirstDayOfWeek = FirstDayOfWeek;
+            rebuildView = true;
         }
 
-        if (FixedWeeks.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(FixedWeeks)))
+        if (FixedWeeks.HasValue && bitDateRangePicker.TakeFromCascade(nameof(FixedWeeks), FixedWeeks.Value, static d => d.FixedWeeks, static (d, v) => d.FixedWeeks = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.FixedWeeks != FixedWeeks.Value;
-
-            bitDateRangePicker.FixedWeeks = FixedWeeks.Value;
+            rebuildView = true;
         }
 
-        if (GetDayClass is not null && bitDateRangePicker.HasNotBeenSet(nameof(GetDayClass)))
+        if (GetDayClass is not null)
         {
-            bitDateRangePicker.GetDayClass = GetDayClass;
+            bitDateRangePicker.TakeFromCascade(nameof(GetDayClass), GetDayClass, static d => d.GetDayClass, static (d, v) => d.GetDayClass = v);
         }
 
-        if (GoToNextMonthTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToNextMonthTitle)))
+        if (GoToNextMonthTitle.HasValue())
         {
-            bitDateRangePicker.GoToNextMonthTitle = GoToNextMonthTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToNextMonthTitle), GoToNextMonthTitle!, static d => d.GoToNextMonthTitle, static (d, v) => d.GoToNextMonthTitle = v);
         }
 
-        if (GoToNextYearRangeTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToNextYearRangeTitle)))
+        if (GoToNextYearRangeTitle.HasValue())
         {
-            bitDateRangePicker.GoToNextYearRangeTitle = GoToNextYearRangeTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToNextYearRangeTitle), GoToNextYearRangeTitle!, static d => d.GoToNextYearRangeTitle, static (d, v) => d.GoToNextYearRangeTitle = v);
         }
 
-        if (GoToNextYearTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToNextYearTitle)))
+        if (GoToNextYearTitle.HasValue())
         {
-            bitDateRangePicker.GoToNextYearTitle = GoToNextYearTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToNextYearTitle), GoToNextYearTitle!, static d => d.GoToNextYearTitle, static (d, v) => d.GoToNextYearTitle = v);
         }
 
-        if (GoToPrevMonthTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToPrevMonthTitle)))
+        if (GoToPrevMonthTitle.HasValue())
         {
-            bitDateRangePicker.GoToPrevMonthTitle = GoToPrevMonthTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToPrevMonthTitle), GoToPrevMonthTitle!, static d => d.GoToPrevMonthTitle, static (d, v) => d.GoToPrevMonthTitle = v);
         }
 
-        if (GoToPrevYearRangeTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToPrevYearRangeTitle)))
+        if (GoToPrevYearRangeTitle.HasValue())
         {
-            bitDateRangePicker.GoToPrevYearRangeTitle = GoToPrevYearRangeTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToPrevYearRangeTitle), GoToPrevYearRangeTitle!, static d => d.GoToPrevYearRangeTitle, static (d, v) => d.GoToPrevYearRangeTitle = v);
         }
 
-        if (GoToPrevYearTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToPrevYearTitle)))
+        if (GoToPrevYearTitle.HasValue())
         {
-            bitDateRangePicker.GoToPrevYearTitle = GoToPrevYearTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToPrevYearTitle), GoToPrevYearTitle!, static d => d.GoToPrevYearTitle, static (d, v) => d.GoToPrevYearTitle = v);
         }
 
-        if (GoToTodayIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(GoToTodayIcon)))
+        if (GoToTodayIcon is not null)
         {
-            bitDateRangePicker.GoToTodayIcon = GoToTodayIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToTodayIcon), GoToTodayIcon, static d => d.GoToTodayIcon, static (d, v) => d.GoToTodayIcon = v);
         }
 
-        if (GoToTodayIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToTodayIconName)))
+        if (GoToTodayIconName.HasValue())
         {
-            bitDateRangePicker.GoToTodayIconName = GoToTodayIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToTodayIconName), GoToTodayIconName, static d => d.GoToTodayIconName, static (d, v) => d.GoToTodayIconName = v);
         }
 
-        if (GoToTodayTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(GoToTodayTitle)))
+        if (GoToTodayTitle.HasValue())
         {
-            bitDateRangePicker.GoToTodayTitle = GoToTodayTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(GoToTodayTitle), GoToTodayTitle!, static d => d.GoToTodayTitle, static (d, v) => d.GoToTodayTitle = v);
         }
 
-        if (HasBorder.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HasBorder)))
+        if (HasBorder.HasValue)
         {
-            bitDateRangePicker.HasBorder = HasBorder.Value;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(HasBorder), HasBorder.Value, static d => d.HasBorder, static (d, v) => d.HasBorder = v);
         }
 
-        if (HideTimePickerIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(HideTimePickerIcon)))
+        if (HideTimePickerIcon is not null)
         {
-            bitDateRangePicker.HideTimePickerIcon = HideTimePickerIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(HideTimePickerIcon), HideTimePickerIcon, static d => d.HideTimePickerIcon, static (d, v) => d.HideTimePickerIcon = v);
         }
 
-        if (HideTimePickerIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(HideTimePickerIconName)))
+        if (HideTimePickerIconName.HasValue())
         {
-            bitDateRangePicker.HideTimePickerIconName = HideTimePickerIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(HideTimePickerIconName), HideTimePickerIconName, static d => d.HideTimePickerIconName, static (d, v) => d.HideTimePickerIconName = v);
         }
 
-        if (HideTimePickerTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(HideTimePickerTitle)))
+        if (HideTimePickerTitle.HasValue())
         {
-            bitDateRangePicker.HideTimePickerTitle = HideTimePickerTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(HideTimePickerTitle), HideTimePickerTitle!, static d => d.HideTimePickerTitle, static (d, v) => d.HideTimePickerTitle = v);
         }
 
-        if (HighlightCurrentMonth.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HighlightCurrentMonth)))
+        if (HighlightCurrentMonth.HasValue)
         {
-            bitDateRangePicker.HighlightCurrentMonth = HighlightCurrentMonth.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(HighlightCurrentMonth), HighlightCurrentMonth.Value, static d => d.HighlightCurrentMonth, static (d, v) => d.HighlightCurrentMonth = v);
         }
 
-        if (HighlightSelectedMonth.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HighlightSelectedMonth)))
+        if (HighlightSelectedMonth.HasValue)
         {
-            bitDateRangePicker.HighlightSelectedMonth = HighlightSelectedMonth.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(HighlightSelectedMonth), HighlightSelectedMonth.Value, static d => d.HighlightSelectedMonth, static (d, v) => d.HighlightSelectedMonth = v);
         }
 
-        if (HighlightToday.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HighlightToday)))
+        if (HighlightToday.HasValue)
         {
-            bitDateRangePicker.HighlightToday = HighlightToday.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(HighlightToday), HighlightToday.Value, static d => d.HighlightToday, static (d, v) => d.HighlightToday = v);
         }
 
-        if (HighlightedDates is not null && bitDateRangePicker.HasNotBeenSet(nameof(HighlightedDates)))
+        if (HighlightedDates is not null && bitDateRangePicker.TakeFromCascade(nameof(HighlightedDates), HighlightedDates, static d => d.HighlightedDates, static (d, v) => d.HighlightedDates = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.HighlightedDates, HighlightedDates) is false;
-
-            bitDateRangePicker.HighlightedDates = HighlightedDates;
+            rebuildView = true;
         }
 
-        if (HourStep.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HourStep)))
+        if (HourStep.HasValue)
         {
-            bitDateRangePicker.HourStep = HourStep.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static d => d.HourStep, static (d, v) => d.HourStep = v);
         }
 
-        if (Icon is not null && bitDateRangePicker.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitDateRangePicker.Icon = Icon;
+            bitDateRangePicker.TakeFromCascade(nameof(Icon), Icon, static d => d.Icon, static (d, v) => d.Icon = v);
         }
 
-        if (IconPlacement.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue)
         {
-            bitDateRangePicker.IconPlacement = IconPlacement.Value;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static d => d.IconPlacement, static (d, v) => d.IconPlacement = v);
         }
 
-        if (IconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitDateRangePicker.IconName = IconName;
+            bitDateRangePicker.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v);
         }
 
-        if (IconTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(IconTemplate)))
+        if (IconTemplate is not null)
         {
-            bitDateRangePicker.IconTemplate = IconTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(IconTemplate), IconTemplate, static d => d.IconTemplate, static (d, v) => d.IconTemplate = v);
         }
 
-        if (InvalidErrorMessage.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(InvalidErrorMessage)))
+        if (InvalidErrorMessage.HasValue())
         {
-            bitDateRangePicker.InvalidErrorMessage = InvalidErrorMessage;
+            bitDateRangePicker.TakeFromCascade(nameof(InvalidErrorMessage), InvalidErrorMessage, static d => d.InvalidErrorMessage, static (d, v) => d.InvalidErrorMessage = v);
         }
 
-        if (IsDateDisabled is not null && bitDateRangePicker.HasNotBeenSet(nameof(IsDateDisabled)))
+        if (IsDateDisabled is not null && bitDateRangePicker.TakeFromCascade(nameof(IsDateDisabled), IsDateDisabled, static d => d.IsDateDisabled, static (d, v) => d.IsDateDisabled = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.IsDateDisabled, IsDateDisabled) is false;
-
-            bitDateRangePicker.IsDateDisabled = IsDateDisabled;
+            rebuildView = true;
         }
 
-        if (IsMonthPickerVisible.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(IsMonthPickerVisible)))
+        if (IsMonthPickerVisible.HasValue && bitDateRangePicker.TakeFromCascade(nameof(IsMonthPickerVisible), IsMonthPickerVisible.Value, static d => d.IsMonthPickerVisible, static (d, v) => d.IsMonthPickerVisible = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.IsMonthPickerVisible != IsMonthPickerVisible.Value;
-
-            bitDateRangePicker.IsMonthPickerVisible = IsMonthPickerVisible.Value;
+            rebuildView = true;
         }
 
-        if (Label.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitDateRangePicker.Label = Label;
+            bitDateRangePicker.TakeFromCascade(nameof(Label), Label, static d => d.Label, static (d, v) => d.Label = v);
         }
 
-        if (LabelTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null)
         {
-            bitDateRangePicker.LabelTemplate = LabelTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static d => d.LabelTemplate, static (d, v) => d.LabelTemplate = v);
         }
 
-        if (MaxDate.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(MaxDate)))
+        if (MaxDate.HasValue && bitDateRangePicker.TakeFromCascade(nameof(MaxDate), MaxDate, static d => d.MaxDate, static (d, v) => d.MaxDate = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.MaxDate != MaxDate;
-
-            bitDateRangePicker.MaxDate = MaxDate;
+            rebuildView = true;
         }
 
-        if (MaxRange.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(MaxRange)))
+        if (MaxRange.HasValue)
         {
-            bitDateRangePicker.MaxRange = MaxRange;
+            bitDateRangePicker.TakeFromCascade(nameof(MaxRange), MaxRange, static d => d.MaxRange, static (d, v) => d.MaxRange = v);
         }
 
-        if (MinDate.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(MinDate)))
+        if (MinDate.HasValue && bitDateRangePicker.TakeFromCascade(nameof(MinDate), MinDate, static d => d.MinDate, static (d, v) => d.MinDate = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.MinDate != MinDate;
-
-            bitDateRangePicker.MinDate = MinDate;
+            rebuildView = true;
         }
 
-        if (MinRange.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(MinRange)))
+        if (MinRange.HasValue)
         {
-            bitDateRangePicker.MinRange = MinRange;
+            bitDateRangePicker.TakeFromCascade(nameof(MinRange), MinRange, static d => d.MinRange, static (d, v) => d.MinRange = v);
         }
 
-        if (MinuteStep.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(MinuteStep)))
+        if (MinuteStep.HasValue)
         {
-            bitDateRangePicker.MinuteStep = MinuteStep.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(MinuteStep), MinuteStep.Value, static d => d.MinuteStep, static (d, v) => d.MinuteStep = v);
         }
 
-        if (MonthCellTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(MonthCellTemplate)))
+        if (MonthCellTemplate is not null)
         {
-            bitDateRangePicker.MonthCellTemplate = MonthCellTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(MonthCellTemplate), MonthCellTemplate, static d => d.MonthCellTemplate, static (d, v) => d.MonthCellTemplate = v);
         }
 
-        if (MonthCount.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(MonthCount)))
+        if (MonthCount.HasValue && bitDateRangePicker.TakeFromCascade(nameof(MonthCount), MonthCount.Value, static d => d.MonthCount, static (d, v) => d.MonthCount = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.MonthCount != MonthCount.Value;
-
-            bitDateRangePicker.MonthCount = MonthCount.Value;
+            rebuildView = true;
         }
 
-        if (MonthPickerToggleTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(MonthPickerToggleTitle)))
+        if (MonthPickerToggleTitle.HasValue())
         {
-            bitDateRangePicker.MonthPickerToggleTitle = MonthPickerToggleTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(MonthPickerToggleTitle), MonthPickerToggleTitle!, static d => d.MonthPickerToggleTitle, static (d, v) => d.MonthPickerToggleTitle = v);
         }
 
-        if (NextMonthNavIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(NextMonthNavIcon)))
+        if (NextMonthNavIcon is not null)
         {
-            bitDateRangePicker.NextMonthNavIcon = NextMonthNavIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(NextMonthNavIcon), NextMonthNavIcon, static d => d.NextMonthNavIcon, static (d, v) => d.NextMonthNavIcon = v);
         }
 
-        if (NextMonthNavIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(NextMonthNavIconName)))
+        if (NextMonthNavIconName.HasValue())
         {
-            bitDateRangePicker.NextMonthNavIconName = NextMonthNavIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(NextMonthNavIconName), NextMonthNavIconName, static d => d.NextMonthNavIconName, static (d, v) => d.NextMonthNavIconName = v);
         }
 
-        if (NextYearNavIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(NextYearNavIcon)))
+        if (NextYearNavIcon is not null)
         {
-            bitDateRangePicker.NextYearNavIcon = NextYearNavIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(NextYearNavIcon), NextYearNavIcon, static d => d.NextYearNavIcon, static (d, v) => d.NextYearNavIcon = v);
         }
 
-        if (NextYearNavIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(NextYearNavIconName)))
+        if (NextYearNavIconName.HasValue())
         {
-            bitDateRangePicker.NextYearNavIconName = NextYearNavIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(NextYearNavIconName), NextYearNavIconName, static d => d.NextYearNavIconName, static (d, v) => d.NextYearNavIconName = v);
         }
 
-        if (NextYearRangeNavIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(NextYearRangeNavIcon)))
+        if (NextYearRangeNavIcon is not null)
         {
-            bitDateRangePicker.NextYearRangeNavIcon = NextYearRangeNavIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(NextYearRangeNavIcon), NextYearRangeNavIcon, static d => d.NextYearRangeNavIcon, static (d, v) => d.NextYearRangeNavIcon = v);
         }
 
-        if (NextYearRangeNavIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(NextYearRangeNavIconName)))
+        if (NextYearRangeNavIconName.HasValue())
         {
-            bitDateRangePicker.NextYearRangeNavIconName = NextYearRangeNavIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(NextYearRangeNavIconName), NextYearRangeNavIconName, static d => d.NextYearRangeNavIconName, static (d, v) => d.NextYearRangeNavIconName = v);
         }
 
-        if (NoDateText.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(NoDateText)))
+        if (NoDateText.HasValue())
         {
-            bitDateRangePicker.NoDateText = NoDateText!;
+            bitDateRangePicker.TakeFromCascade(nameof(NoDateText), NoDateText!, static d => d.NoDateText, static (d, v) => d.NoDateText = v);
         }
 
-        if (OutOfRangeErrorMessage.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(OutOfRangeErrorMessage)))
+        if (OutOfRangeErrorMessage.HasValue())
         {
-            bitDateRangePicker.OutOfRangeErrorMessage = OutOfRangeErrorMessage;
+            bitDateRangePicker.TakeFromCascade(nameof(OutOfRangeErrorMessage), OutOfRangeErrorMessage, static d => d.OutOfRangeErrorMessage, static (d, v) => d.OutOfRangeErrorMessage = v);
         }
 
-        if (PagedNavigation.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(PagedNavigation)))
+        if (PagedNavigation.HasValue)
         {
-            bitDateRangePicker.PagedNavigation = PagedNavigation.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(PagedNavigation), PagedNavigation.Value, static d => d.PagedNavigation, static (d, v) => d.PagedNavigation = v);
         }
 
-        if (Placeholder.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitDateRangePicker.Placeholder = Placeholder!;
+            bitDateRangePicker.TakeFromCascade(nameof(Placeholder), Placeholder!, static d => d.Placeholder, static (d, v) => d.Placeholder = v);
         }
 
-        if (Presets is not null && bitDateRangePicker.HasNotBeenSet(nameof(Presets)))
+        if (Presets is not null)
         {
-            bitDateRangePicker.Presets = Presets;
+            bitDateRangePicker.TakeFromCascade(nameof(Presets), Presets, static d => d.Presets, static (d, v) => d.Presets = v);
         }
 
-        if (PresetsAriaLabel.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(PresetsAriaLabel)))
+        if (PresetsAriaLabel.HasValue())
         {
-            bitDateRangePicker.PresetsAriaLabel = PresetsAriaLabel!;
+            bitDateRangePicker.TakeFromCascade(nameof(PresetsAriaLabel), PresetsAriaLabel!, static d => d.PresetsAriaLabel, static (d, v) => d.PresetsAriaLabel = v);
         }
 
-        if (PrevMonthNavIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(PrevMonthNavIcon)))
+        if (PrevMonthNavIcon is not null)
         {
-            bitDateRangePicker.PrevMonthNavIcon = PrevMonthNavIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(PrevMonthNavIcon), PrevMonthNavIcon, static d => d.PrevMonthNavIcon, static (d, v) => d.PrevMonthNavIcon = v);
         }
 
-        if (PrevMonthNavIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(PrevMonthNavIconName)))
+        if (PrevMonthNavIconName.HasValue())
         {
-            bitDateRangePicker.PrevMonthNavIconName = PrevMonthNavIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(PrevMonthNavIconName), PrevMonthNavIconName, static d => d.PrevMonthNavIconName, static (d, v) => d.PrevMonthNavIconName = v);
         }
 
-        if (PrevYearNavIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(PrevYearNavIcon)))
+        if (PrevYearNavIcon is not null)
         {
-            bitDateRangePicker.PrevYearNavIcon = PrevYearNavIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(PrevYearNavIcon), PrevYearNavIcon, static d => d.PrevYearNavIcon, static (d, v) => d.PrevYearNavIcon = v);
         }
 
-        if (PrevYearNavIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(PrevYearNavIconName)))
+        if (PrevYearNavIconName.HasValue())
         {
-            bitDateRangePicker.PrevYearNavIconName = PrevYearNavIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(PrevYearNavIconName), PrevYearNavIconName, static d => d.PrevYearNavIconName, static (d, v) => d.PrevYearNavIconName = v);
         }
 
-        if (PrevYearRangeNavIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(PrevYearRangeNavIcon)))
+        if (PrevYearRangeNavIcon is not null)
         {
-            bitDateRangePicker.PrevYearRangeNavIcon = PrevYearRangeNavIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(PrevYearRangeNavIcon), PrevYearRangeNavIcon, static d => d.PrevYearRangeNavIcon, static (d, v) => d.PrevYearRangeNavIcon = v);
         }
 
-        if (PrevYearRangeNavIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(PrevYearRangeNavIconName)))
+        if (PrevYearRangeNavIconName.HasValue())
         {
-            bitDateRangePicker.PrevYearRangeNavIconName = PrevYearRangeNavIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(PrevYearRangeNavIconName), PrevYearRangeNavIconName, static d => d.PrevYearRangeNavIconName, static (d, v) => d.PrevYearRangeNavIconName = v);
         }
 
-        if (Responsive.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue)
         {
-            bitDateRangePicker.Responsive = Responsive.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(Responsive), Responsive.Value, static d => d.Responsive, static (d, v) => d.Responsive = v);
         }
 
-        if (SelectedDateAriaAtomic.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(SelectedDateAriaAtomic)))
+        if (SelectedDateAriaAtomic.HasValue())
         {
-            bitDateRangePicker.SelectedDateAriaAtomic = SelectedDateAriaAtomic!;
+            bitDateRangePicker.TakeFromCascade(nameof(SelectedDateAriaAtomic), SelectedDateAriaAtomic!, static d => d.SelectedDateAriaAtomic, static (d, v) => d.SelectedDateAriaAtomic = v);
         }
 
-        if (ShowClearButton.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitDateRangePicker.ShowClearButton = ShowClearButton.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static d => d.ShowClearButton, static (d, v) => d.ShowClearButton = v);
         }
 
-        if (ShowCloseButton.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitDateRangePicker.ShowCloseButton = ShowCloseButton.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static d => d.ShowCloseButton, static (d, v) => d.ShowCloseButton = v);
         }
 
-        if (ShowGoToToday.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowGoToToday)))
+        if (ShowGoToToday.HasValue)
         {
-            bitDateRangePicker.ShowGoToToday = ShowGoToToday.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowGoToToday), ShowGoToToday.Value, static d => d.ShowGoToToday, static (d, v) => d.ShowGoToToday = v);
         }
 
-        if (ShowMonthPickerAsOverlay.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowMonthPickerAsOverlay)))
+        if (ShowMonthPickerAsOverlay.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ShowMonthPickerAsOverlay), ShowMonthPickerAsOverlay.Value, static d => d.ShowMonthPickerAsOverlay, static (d, v) => d.ShowMonthPickerAsOverlay = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.ShowMonthPickerAsOverlay != ShowMonthPickerAsOverlay.Value;
-
-            bitDateRangePicker.ShowMonthPickerAsOverlay = ShowMonthPickerAsOverlay.Value;
+            rebuildView = true;
         }
 
-        if (ShowOutsideDays.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowOutsideDays)))
+        if (ShowOutsideDays.HasValue)
         {
-            bitDateRangePicker.ShowOutsideDays = ShowOutsideDays.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowOutsideDays), ShowOutsideDays.Value, static d => d.ShowOutsideDays, static (d, v) => d.ShowOutsideDays = v);
         }
 
-        if (ShowTimePicker.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowTimePicker)))
+        if (ShowTimePicker.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ShowTimePicker), ShowTimePicker.Value, static d => d.ShowTimePicker, static (d, v) => d.ShowTimePicker = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.ShowTimePicker != ShowTimePicker.Value;
-
-            bitDateRangePicker.ShowTimePicker = ShowTimePicker.Value;
+            rebuildView = true;
         }
 
-        if (ShowTimePickerAsOverlay.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowTimePickerAsOverlay)))
+        if (ShowTimePickerAsOverlay.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static d => d.ShowTimePickerAsOverlay, static (d, v) => d.ShowTimePickerAsOverlay = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.ShowTimePickerAsOverlay != ShowTimePickerAsOverlay.Value;
-
-            bitDateRangePicker.ShowTimePickerAsOverlay = ShowTimePickerAsOverlay.Value;
+            rebuildView = true;
         }
 
-        if (ShowTimePickerIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(ShowTimePickerIcon)))
+        if (ShowTimePickerIcon is not null)
         {
-            bitDateRangePicker.ShowTimePickerIcon = ShowTimePickerIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerIcon), ShowTimePickerIcon, static d => d.ShowTimePickerIcon, static (d, v) => d.ShowTimePickerIcon = v);
         }
 
-        if (ShowTimePickerIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(ShowTimePickerIconName)))
+        if (ShowTimePickerIconName.HasValue())
         {
-            bitDateRangePicker.ShowTimePickerIconName = ShowTimePickerIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerIconName), ShowTimePickerIconName, static d => d.ShowTimePickerIconName, static (d, v) => d.ShowTimePickerIconName = v);
         }
 
-        if (ShowTimePickerTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(ShowTimePickerTitle)))
+        if (ShowTimePickerTitle.HasValue())
         {
-            bitDateRangePicker.ShowTimePickerTitle = ShowTimePickerTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerTitle), ShowTimePickerTitle!, static d => d.ShowTimePickerTitle, static (d, v) => d.ShowTimePickerTitle = v);
         }
 
-        if (ShowWeekNumbers.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(ShowWeekNumbers)))
+        if (ShowWeekNumbers.HasValue)
         {
-            bitDateRangePicker.ShowWeekNumbers = ShowWeekNumbers.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowWeekNumbers), ShowWeekNumbers.Value, static d => d.ShowWeekNumbers, static (d, v) => d.ShowWeekNumbers = v);
         }
 
-        if (Size.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitDateRangePicker.Size = Size;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(Size), Size, static d => d.Size, static (d, v) => d.Size = v);
         }
 
-        if (Standalone.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Standalone)))
+        if (Standalone.HasValue && bitDateRangePicker.TakeFromCascade(nameof(Standalone), Standalone.Value, static d => d.Standalone, static (d, v) => d.Standalone = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.Standalone != Standalone.Value;
-
-            bitDateRangePicker.Standalone = Standalone.Value;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            rebuildView = true;
         }
 
-        if (StartTimeDecreaseHourIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeDecreaseHourIcon)))
+        if (StartTimeDecreaseHourIcon is not null)
         {
-            bitDateRangePicker.StartTimeDecreaseHourIcon = StartTimeDecreaseHourIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeDecreaseHourIcon), StartTimeDecreaseHourIcon, static d => d.StartTimeDecreaseHourIcon, static (d, v) => d.StartTimeDecreaseHourIcon = v);
         }
 
-        if (StartTimeDecreaseHourIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeDecreaseHourIconName)))
+        if (StartTimeDecreaseHourIconName.HasValue())
         {
-            bitDateRangePicker.StartTimeDecreaseHourIconName = StartTimeDecreaseHourIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeDecreaseHourIconName), StartTimeDecreaseHourIconName, static d => d.StartTimeDecreaseHourIconName, static (d, v) => d.StartTimeDecreaseHourIconName = v);
         }
 
-        if (StartTimeDecreaseHourTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeDecreaseHourTitle)))
+        if (StartTimeDecreaseHourTitle.HasValue())
         {
-            bitDateRangePicker.StartTimeDecreaseHourTitle = StartTimeDecreaseHourTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeDecreaseHourTitle), StartTimeDecreaseHourTitle!, static d => d.StartTimeDecreaseHourTitle, static (d, v) => d.StartTimeDecreaseHourTitle = v);
         }
 
-        if (StartTimeDecreaseMinuteIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeDecreaseMinuteIcon)))
+        if (StartTimeDecreaseMinuteIcon is not null)
         {
-            bitDateRangePicker.StartTimeDecreaseMinuteIcon = StartTimeDecreaseMinuteIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeDecreaseMinuteIcon), StartTimeDecreaseMinuteIcon, static d => d.StartTimeDecreaseMinuteIcon, static (d, v) => d.StartTimeDecreaseMinuteIcon = v);
         }
 
-        if (StartTimeDecreaseMinuteIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeDecreaseMinuteIconName)))
+        if (StartTimeDecreaseMinuteIconName.HasValue())
         {
-            bitDateRangePicker.StartTimeDecreaseMinuteIconName = StartTimeDecreaseMinuteIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeDecreaseMinuteIconName), StartTimeDecreaseMinuteIconName, static d => d.StartTimeDecreaseMinuteIconName, static (d, v) => d.StartTimeDecreaseMinuteIconName = v);
         }
 
-        if (StartTimeDecreaseMinuteTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeDecreaseMinuteTitle)))
+        if (StartTimeDecreaseMinuteTitle.HasValue())
         {
-            bitDateRangePicker.StartTimeDecreaseMinuteTitle = StartTimeDecreaseMinuteTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeDecreaseMinuteTitle), StartTimeDecreaseMinuteTitle!, static d => d.StartTimeDecreaseMinuteTitle, static (d, v) => d.StartTimeDecreaseMinuteTitle = v);
         }
 
-        if (StartTimeHourInputAriaLabel.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeHourInputAriaLabel)))
+        if (StartTimeHourInputAriaLabel.HasValue())
         {
-            bitDateRangePicker.StartTimeHourInputAriaLabel = StartTimeHourInputAriaLabel!;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeHourInputAriaLabel), StartTimeHourInputAriaLabel!, static d => d.StartTimeHourInputAriaLabel, static (d, v) => d.StartTimeHourInputAriaLabel = v);
         }
 
-        if (StartTimeIncreaseHourIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeIncreaseHourIcon)))
+        if (StartTimeIncreaseHourIcon is not null)
         {
-            bitDateRangePicker.StartTimeIncreaseHourIcon = StartTimeIncreaseHourIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeIncreaseHourIcon), StartTimeIncreaseHourIcon, static d => d.StartTimeIncreaseHourIcon, static (d, v) => d.StartTimeIncreaseHourIcon = v);
         }
 
-        if (StartTimeIncreaseHourIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeIncreaseHourIconName)))
+        if (StartTimeIncreaseHourIconName.HasValue())
         {
-            bitDateRangePicker.StartTimeIncreaseHourIconName = StartTimeIncreaseHourIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeIncreaseHourIconName), StartTimeIncreaseHourIconName, static d => d.StartTimeIncreaseHourIconName, static (d, v) => d.StartTimeIncreaseHourIconName = v);
         }
 
-        if (StartTimeIncreaseHourTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeIncreaseHourTitle)))
+        if (StartTimeIncreaseHourTitle.HasValue())
         {
-            bitDateRangePicker.StartTimeIncreaseHourTitle = StartTimeIncreaseHourTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeIncreaseHourTitle), StartTimeIncreaseHourTitle!, static d => d.StartTimeIncreaseHourTitle, static (d, v) => d.StartTimeIncreaseHourTitle = v);
         }
 
-        if (StartTimeIncreaseMinuteIcon is not null && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeIncreaseMinuteIcon)))
+        if (StartTimeIncreaseMinuteIcon is not null)
         {
-            bitDateRangePicker.StartTimeIncreaseMinuteIcon = StartTimeIncreaseMinuteIcon;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeIncreaseMinuteIcon), StartTimeIncreaseMinuteIcon, static d => d.StartTimeIncreaseMinuteIcon, static (d, v) => d.StartTimeIncreaseMinuteIcon = v);
         }
 
-        if (StartTimeIncreaseMinuteIconName.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeIncreaseMinuteIconName)))
+        if (StartTimeIncreaseMinuteIconName.HasValue())
         {
-            bitDateRangePicker.StartTimeIncreaseMinuteIconName = StartTimeIncreaseMinuteIconName;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeIncreaseMinuteIconName), StartTimeIncreaseMinuteIconName, static d => d.StartTimeIncreaseMinuteIconName, static (d, v) => d.StartTimeIncreaseMinuteIconName = v);
         }
 
-        if (StartTimeIncreaseMinuteTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeIncreaseMinuteTitle)))
+        if (StartTimeIncreaseMinuteTitle.HasValue())
         {
-            bitDateRangePicker.StartTimeIncreaseMinuteTitle = StartTimeIncreaseMinuteTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeIncreaseMinuteTitle), StartTimeIncreaseMinuteTitle!, static d => d.StartTimeIncreaseMinuteTitle, static (d, v) => d.StartTimeIncreaseMinuteTitle = v);
         }
 
-        if (StartTimeMinuteInputAriaLabel.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(StartTimeMinuteInputAriaLabel)))
+        if (StartTimeMinuteInputAriaLabel.HasValue())
         {
-            bitDateRangePicker.StartTimeMinuteInputAriaLabel = StartTimeMinuteInputAriaLabel!;
+            bitDateRangePicker.TakeFromCascade(nameof(StartTimeMinuteInputAriaLabel), StartTimeMinuteInputAriaLabel!, static d => d.StartTimeMinuteInputAriaLabel, static (d, v) => d.StartTimeMinuteInputAriaLabel = v);
         }
 
-        if (StartingValue is not null && bitDateRangePicker.HasNotBeenSet(nameof(StartingValue)))
+        if (StartingValue is not null && bitDateRangePicker.TakeFromCascade(nameof(StartingValue), StartingValue, static d => d.StartingValue, static (d, v) => d.StartingValue = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.StartingValue, StartingValue) is false;
-
-            bitDateRangePicker.StartingValue = StartingValue;
+            rebuildView = true;
         }
 
-        if (Styles is not null && bitDateRangePicker.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitDateRangePicker.Styles = Styles;
-
-            bitDateRangePicker.StyleBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(Styles), Styles, static d => d.Styles, static (d, v) => d.Styles = v);
         }
 
-        if (TimeFormat.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(TimeFormat)))
+        if (TimeFormat.HasValue)
         {
-            bitDateRangePicker.TimeFormat = TimeFormat.Value;
+            bitDateRangePicker.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static d => d.TimeFormat, static (d, v) => d.TimeFormat = v);
         }
 
-        if (TimeZone is not null && bitDateRangePicker.HasNotBeenSet(nameof(TimeZone)))
+        if (TimeZone is not null && bitDateRangePicker.TakeFromCascade(nameof(TimeZone), TimeZone, static d => d.TimeZone, static (d, v) => d.TimeZone = v))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.TimeZone, TimeZone) is false;
-
-            bitDateRangePicker.TimeZone = TimeZone;
+            rebuildView = true;
         }
 
-        if (Today.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Today)))
+        if (Today.HasValue && bitDateRangePicker.TakeFromCascade(nameof(Today), Today, static d => d.Today, static (d, v) => d.Today = v))
         {
-            rebuildView = rebuildView || bitDateRangePicker.Today != Today;
-
-            bitDateRangePicker.Today = Today;
+            rebuildView = true;
         }
 
-        if (Underlined.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue)
         {
-            bitDateRangePicker.Underlined = Underlined.Value;
-
-            bitDateRangePicker.ClassBuilder.Reset();
+            bitDateRangePicker.TakeFromCascade(nameof(Underlined), Underlined.Value, static d => d.Underlined, static (d, v) => d.Underlined = v);
         }
 
-        if (ValueFormat.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(ValueFormat)))
+        if (ValueFormat.HasValue())
         {
-            bitDateRangePicker.ValueFormat = ValueFormat!;
+            bitDateRangePicker.TakeFromCascade(nameof(ValueFormat), ValueFormat!, static d => d.ValueFormat, static (d, v) => d.ValueFormat = v);
         }
 
-        if (WeekNumberRule.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(WeekNumberRule)))
+        if (WeekNumberRule.HasValue)
         {
-            bitDateRangePicker.WeekNumberRule = WeekNumberRule;
+            bitDateRangePicker.TakeFromCascade(nameof(WeekNumberRule), WeekNumberRule, static d => d.WeekNumberRule, static (d, v) => d.WeekNumberRule = v);
         }
 
-        if (WeekNumberTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(WeekNumberTitle)))
+        if (WeekNumberTitle.HasValue())
         {
-            bitDateRangePicker.WeekNumberTitle = WeekNumberTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(WeekNumberTitle), WeekNumberTitle!, static d => d.WeekNumberTitle, static (d, v) => d.WeekNumberTitle = v);
         }
 
-        if (WeekNumbersHeaderTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(WeekNumbersHeaderTitle)))
+        if (WeekNumbersHeaderTitle.HasValue())
         {
-            bitDateRangePicker.WeekNumbersHeaderTitle = WeekNumbersHeaderTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(WeekNumbersHeaderTitle), WeekNumbersHeaderTitle!, static d => d.WeekNumbersHeaderTitle, static (d, v) => d.WeekNumbersHeaderTitle = v);
         }
 
-        if (YearCellTemplate is not null && bitDateRangePicker.HasNotBeenSet(nameof(YearCellTemplate)))
+        if (YearCellTemplate is not null)
         {
-            bitDateRangePicker.YearCellTemplate = YearCellTemplate;
+            bitDateRangePicker.TakeFromCascade(nameof(YearCellTemplate), YearCellTemplate, static d => d.YearCellTemplate, static (d, v) => d.YearCellTemplate = v);
         }
 
-        if (YearPickerToggleTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(YearPickerToggleTitle)))
+        if (YearPickerToggleTitle.HasValue())
         {
-            bitDateRangePicker.YearPickerToggleTitle = YearPickerToggleTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(YearPickerToggleTitle), YearPickerToggleTitle!, static d => d.YearPickerToggleTitle, static (d, v) => d.YearPickerToggleTitle = v);
         }
 
-        if (YearRangePickerToggleTitle.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(YearRangePickerToggleTitle)))
+        if (YearRangePickerToggleTitle.HasValue())
         {
-            bitDateRangePicker.YearRangePickerToggleTitle = YearRangePickerToggleTitle!;
+            bitDateRangePicker.TakeFromCascade(nameof(YearRangePickerToggleTitle), YearRangePickerToggleTitle!, static d => d.YearRangePickerToggleTitle, static (d, v) => d.YearRangePickerToggleTitle = v);
         }
 
         if (rebuildView)

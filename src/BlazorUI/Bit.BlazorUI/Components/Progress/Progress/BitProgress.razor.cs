@@ -14,7 +14,6 @@ public partial class BitProgress : BitComponentBase
     private double? _lastAnnouncedStep;
     private string? _announcement;
     private int _announcementGeneration;
-    private bool _cascadeChanged;
     private bool _delayDecided;
     private bool _isDelaying;
     private bool _holdsForInteractivity;
@@ -380,7 +379,7 @@ public partial class BitProgress : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitProgressParams))]
     protected override void OnParametersSet()
     {
-        ApplyCascade();
+        CascadingParameters?.UpdateParameters(this);
 
         UpdateDelay();
 
@@ -412,37 +411,6 @@ public partial class BitProgress : BitComponentBase
         }
 
         await base.DisposeAsync(disposing);
-    }
-
-    /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
-    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
-    /// </summary>
-    internal void TakeFromCascade<T>(string name, T value, Func<BitProgress, T> get, Action<BitProgress, T> set)
-    {
-        if (IsSetByMarkup(name)) return;
-
-        // A value the cascade supplies again unchanged is no change: the class and style strings built from it the
-        // last time still hold, so they are only rebuilt when something the cascade gives actually moves.
-        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
-
-        set(this, value);
-
-        _cascadeChanged = true;
-    }
-
-    private void ApplyCascade()
-    {
-        if (CascadingParameters is null) return;
-
-        _cascadeChanged = false;
-
-        CascadingParameters.UpdateParameters(this);
-
-        if (_cascadeChanged is false) return;
-
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
     }
 
 

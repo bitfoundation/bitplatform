@@ -313,59 +313,59 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTimePicker);
 
-        if (AllowTextInput.HasValue && bitTimePicker.HasNotBeenSet(nameof(AllowTextInput)))
+        if (AllowTextInput.HasValue)
         {
-            bitTimePicker.AllowTextInput = AllowTextInput.Value;
+            bitTimePicker.TakeFromCascade(nameof(AllowTextInput), AllowTextInput.Value, static t => t.AllowTextInput, static (t, v) => t.AllowTextInput = v);
         }
 
-        if (AllowedHours is not null && bitTimePicker.HasNotBeenSet(nameof(AllowedHours)))
+        if (AllowedHours is not null)
         {
-            bitTimePicker.AllowedHours = AllowedHours;
+            bitTimePicker.TakeFromCascade(nameof(AllowedHours), AllowedHours, static t => t.AllowedHours, static (t, v) => t.AllowedHours = v);
         }
 
-        if (AllowedMinutes is not null && bitTimePicker.HasNotBeenSet(nameof(AllowedMinutes)))
+        if (AllowedMinutes is not null)
         {
-            bitTimePicker.AllowedMinutes = AllowedMinutes;
+            bitTimePicker.TakeFromCascade(nameof(AllowedMinutes), AllowedMinutes, static t => t.AllowedMinutes, static (t, v) => t.AllowedMinutes = v);
         }
 
-        if (AllowedSeconds is not null && bitTimePicker.HasNotBeenSet(nameof(AllowedSeconds)))
+        if (AllowedSeconds is not null)
         {
-            bitTimePicker.AllowedSeconds = AllowedSeconds;
+            bitTimePicker.TakeFromCascade(nameof(AllowedSeconds), AllowedSeconds, static t => t.AllowedSeconds, static (t, v) => t.AllowedSeconds = v);
         }
 
-        if (AriaDescription.HasValue() && bitTimePicker.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitTimePicker.AriaDescription = AriaDescription;
+            bitTimePicker.TakeFromCascade(nameof(AriaDescription), AriaDescription, static t => t.AriaDescription, static (t, v) => t.AriaDescription = v);
         }
 
-        if (AutoAdvance.HasValue && bitTimePicker.HasNotBeenSet(nameof(AutoAdvance)))
+        if (AutoAdvance.HasValue)
         {
-            bitTimePicker.AutoAdvance = AutoAdvance.Value;
+            bitTimePicker.TakeFromCascade(nameof(AutoAdvance), AutoAdvance.Value, static t => t.AutoAdvance, static (t, v) => t.AutoAdvance = v);
         }
 
-        if (AutoClose.HasValue && bitTimePicker.HasNotBeenSet(nameof(AutoClose)))
+        if (AutoClose.HasValue)
         {
-            bitTimePicker.AutoClose = AutoClose.Value;
+            bitTimePicker.TakeFromCascade(nameof(AutoClose), AutoClose.Value, static t => t.AutoClose, static (t, v) => t.AutoClose = v);
         }
 
-        if (AutoFocus.HasValue && bitTimePicker.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitTimePicker.AutoFocus = AutoFocus.Value;
+            bitTimePicker.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static t => t.AutoFocus, static (t, v) => t.AutoFocus = v);
         }
 
-        if (CalloutAriaLabel.HasValue() && bitTimePicker.HasNotBeenSet(nameof(CalloutAriaLabel)))
+        if (CalloutAriaLabel.HasValue())
         {
-            bitTimePicker.CalloutAriaLabel = CalloutAriaLabel!;
+            bitTimePicker.TakeFromCascade(nameof(CalloutAriaLabel), CalloutAriaLabel!, static t => t.CalloutAriaLabel, static (t, v) => t.CalloutAriaLabel = v);
         }
 
-        if (CalloutFooterTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(CalloutFooterTemplate)))
+        if (CalloutFooterTemplate is not null)
         {
-            bitTimePicker.CalloutFooterTemplate = CalloutFooterTemplate;
+            bitTimePicker.TakeFromCascade(nameof(CalloutFooterTemplate), CalloutFooterTemplate, static t => t.CalloutFooterTemplate, static (t, v) => t.CalloutFooterTemplate = v);
         }
 
-        if (CalloutHeaderTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(CalloutHeaderTemplate)))
+        if (CalloutHeaderTemplate is not null)
         {
-            bitTimePicker.CalloutHeaderTemplate = CalloutHeaderTemplate;
+            bitTimePicker.TakeFromCascade(nameof(CalloutHeaderTemplate), CalloutHeaderTemplate, static t => t.CalloutHeaderTemplate, static (t, v) => t.CalloutHeaderTemplate = v);
         }
 
         if (CalloutHtmlAttributes is not null)
@@ -378,63 +378,59 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             }
         }
 
-        if (Classes is not null && bitTimePicker.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitTimePicker.Classes = Classes;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (ClearButtonIcon is not null && bitTimePicker.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitTimePicker.ClearButtonIcon = ClearButtonIcon;
+            bitTimePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitTimePicker.ClearButtonIconName = ClearButtonIconName;
+            bitTimePicker.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v);
         }
 
-        if (ClearButtonText.HasValue() && bitTimePicker.HasNotBeenSet(nameof(ClearButtonText)))
+        if (ClearButtonText.HasValue())
         {
-            bitTimePicker.ClearButtonText = ClearButtonText!;
+            bitTimePicker.TakeFromCascade(nameof(ClearButtonText), ClearButtonText!, static t => t.ClearButtonText, static (t, v) => t.ClearButtonText = v);
         }
 
-        if (ClearButtonTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(ClearButtonTitle)))
+        if (ClearButtonTitle.HasValue())
         {
-            bitTimePicker.ClearButtonTitle = ClearButtonTitle!;
+            bitTimePicker.TakeFromCascade(nameof(ClearButtonTitle), ClearButtonTitle!, static t => t.ClearButtonTitle, static (t, v) => t.ClearButtonTitle = v);
         }
 
-        if (CloseButtonIcon is not null && bitTimePicker.HasNotBeenSet(nameof(CloseButtonIcon)))
+        if (CloseButtonIcon is not null)
         {
-            bitTimePicker.CloseButtonIcon = CloseButtonIcon;
+            bitTimePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static t => t.CloseButtonIcon, static (t, v) => t.CloseButtonIcon = v);
         }
 
-        if (CloseButtonIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(CloseButtonIconName)))
+        if (CloseButtonIconName.HasValue())
         {
-            bitTimePicker.CloseButtonIconName = CloseButtonIconName;
+            bitTimePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static t => t.CloseButtonIconName, static (t, v) => t.CloseButtonIconName = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitTimePicker.CloseButtonTitle = CloseButtonTitle!;
+            bitTimePicker.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle!, static t => t.CloseButtonTitle, static (t, v) => t.CloseButtonTitle = v);
         }
 
-        if (Color.HasValue && bitTimePicker.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitTimePicker.Color = Color.Value;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (ContinuousSpinDelay.HasValue && bitTimePicker.HasNotBeenSet(nameof(ContinuousSpinDelay)))
+        if (ContinuousSpinDelay.HasValue)
         {
-            bitTimePicker.ContinuousSpinDelay = ContinuousSpinDelay.Value;
+            bitTimePicker.TakeFromCascade(nameof(ContinuousSpinDelay), ContinuousSpinDelay.Value, static t => t.ContinuousSpinDelay, static (t, v) => t.ContinuousSpinDelay = v);
         }
 
-        if (ContinuousSpinInterval.HasValue && bitTimePicker.HasNotBeenSet(nameof(ContinuousSpinInterval)))
+        if (ContinuousSpinInterval.HasValue)
         {
-            bitTimePicker.ContinuousSpinInterval = ContinuousSpinInterval.Value;
+            bitTimePicker.TakeFromCascade(nameof(ContinuousSpinInterval), ContinuousSpinInterval.Value, static t => t.ContinuousSpinInterval, static (t, v) => t.ContinuousSpinInterval = v);
         }
 
         // The culture decides how the value is written, how a typed one is read, and which way the picker
@@ -442,343 +438,329 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         // time this cascade reaches it - so the hook is run once more below.
         var recomputeCulture = false;
 
-        if (Culture is not null && bitTimePicker.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null && bitTimePicker.TakeFromCascade(nameof(Culture), Culture, static t => t.Culture, static (t, v) => t.Culture = v))
         {
-            bitTimePicker.Culture = Culture;
-
             recomputeCulture = true;
         }
 
-        if (DecreaseHourIcon is not null && bitTimePicker.HasNotBeenSet(nameof(DecreaseHourIcon)))
+        if (DecreaseHourIcon is not null)
         {
-            bitTimePicker.DecreaseHourIcon = DecreaseHourIcon;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseHourIcon), DecreaseHourIcon, static t => t.DecreaseHourIcon, static (t, v) => t.DecreaseHourIcon = v);
         }
 
-        if (DecreaseHourIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DecreaseHourIconName)))
+        if (DecreaseHourIconName.HasValue())
         {
-            bitTimePicker.DecreaseHourIconName = DecreaseHourIconName;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseHourIconName), DecreaseHourIconName, static t => t.DecreaseHourIconName, static (t, v) => t.DecreaseHourIconName = v);
         }
 
-        if (DecreaseHourTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DecreaseHourTitle)))
+        if (DecreaseHourTitle.HasValue())
         {
-            bitTimePicker.DecreaseHourTitle = DecreaseHourTitle!;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseHourTitle), DecreaseHourTitle!, static t => t.DecreaseHourTitle, static (t, v) => t.DecreaseHourTitle = v);
         }
 
-        if (DecreaseMinuteIcon is not null && bitTimePicker.HasNotBeenSet(nameof(DecreaseMinuteIcon)))
+        if (DecreaseMinuteIcon is not null)
         {
-            bitTimePicker.DecreaseMinuteIcon = DecreaseMinuteIcon;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteIcon), DecreaseMinuteIcon, static t => t.DecreaseMinuteIcon, static (t, v) => t.DecreaseMinuteIcon = v);
         }
 
-        if (DecreaseMinuteIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DecreaseMinuteIconName)))
+        if (DecreaseMinuteIconName.HasValue())
         {
-            bitTimePicker.DecreaseMinuteIconName = DecreaseMinuteIconName;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteIconName), DecreaseMinuteIconName, static t => t.DecreaseMinuteIconName, static (t, v) => t.DecreaseMinuteIconName = v);
         }
 
-        if (DecreaseMinuteTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DecreaseMinuteTitle)))
+        if (DecreaseMinuteTitle.HasValue())
         {
-            bitTimePicker.DecreaseMinuteTitle = DecreaseMinuteTitle!;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteTitle), DecreaseMinuteTitle!, static t => t.DecreaseMinuteTitle, static (t, v) => t.DecreaseMinuteTitle = v);
         }
 
-        if (DecreaseSecondIcon is not null && bitTimePicker.HasNotBeenSet(nameof(DecreaseSecondIcon)))
+        if (DecreaseSecondIcon is not null)
         {
-            bitTimePicker.DecreaseSecondIcon = DecreaseSecondIcon;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondIcon), DecreaseSecondIcon, static t => t.DecreaseSecondIcon, static (t, v) => t.DecreaseSecondIcon = v);
         }
 
-        if (DecreaseSecondIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DecreaseSecondIconName)))
+        if (DecreaseSecondIconName.HasValue())
         {
-            bitTimePicker.DecreaseSecondIconName = DecreaseSecondIconName;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondIconName), DecreaseSecondIconName, static t => t.DecreaseSecondIconName, static (t, v) => t.DecreaseSecondIconName = v);
         }
 
-        if (DecreaseSecondTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DecreaseSecondTitle)))
+        if (DecreaseSecondTitle.HasValue())
         {
-            bitTimePicker.DecreaseSecondTitle = DecreaseSecondTitle!;
+            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondTitle), DecreaseSecondTitle!, static t => t.DecreaseSecondTitle, static (t, v) => t.DecreaseSecondTitle = v);
         }
 
-        if (Description.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitTimePicker.Description = Description;
+            bitTimePicker.TakeFromCascade(nameof(Description), Description, static t => t.Description, static (t, v) => t.Description = v);
         }
 
-        if (DescriptionTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(DescriptionTemplate)))
+        if (DescriptionTemplate is not null)
         {
-            bitTimePicker.DescriptionTemplate = DescriptionTemplate;
+            bitTimePicker.TakeFromCascade(nameof(DescriptionTemplate), DescriptionTemplate, static t => t.DescriptionTemplate, static (t, v) => t.DescriptionTemplate = v);
         }
 
-        if (DisallowedTimeErrorMessage.HasValue() && bitTimePicker.HasNotBeenSet(nameof(DisallowedTimeErrorMessage)))
+        if (DisallowedTimeErrorMessage.HasValue())
         {
-            bitTimePicker.DisallowedTimeErrorMessage = DisallowedTimeErrorMessage;
+            bitTimePicker.TakeFromCascade(nameof(DisallowedTimeErrorMessage), DisallowedTimeErrorMessage, static t => t.DisallowedTimeErrorMessage, static (t, v) => t.DisallowedTimeErrorMessage = v);
         }
 
-        if (DisableFuture.HasValue && bitTimePicker.HasNotBeenSet(nameof(DisableFuture)))
+        if (DisableFuture.HasValue)
         {
-            bitTimePicker.DisableFuture = DisableFuture.Value;
+            bitTimePicker.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static t => t.DisableFuture, static (t, v) => t.DisableFuture = v);
         }
 
-        if (DisablePast.HasValue && bitTimePicker.HasNotBeenSet(nameof(DisablePast)))
+        if (DisablePast.HasValue)
         {
-            bitTimePicker.DisablePast = DisablePast.Value;
+            bitTimePicker.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static t => t.DisablePast, static (t, v) => t.DisablePast = v);
         }
 
-        if (DropDirection.HasValue && bitTimePicker.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitTimePicker.DropDirection = DropDirection.Value;
+            bitTimePicker.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static t => t.DropDirection, static (t, v) => t.DropDirection = v);
         }
 
-        if (HasBorder.HasValue && bitTimePicker.HasNotBeenSet(nameof(HasBorder)))
+        if (HasBorder.HasValue)
         {
-            bitTimePicker.HasBorder = HasBorder.Value;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(HasBorder), HasBorder.Value, static t => t.HasBorder, static (t, v) => t.HasBorder = v);
         }
 
-        if (HourInputAriaLabel.HasValue() && bitTimePicker.HasNotBeenSet(nameof(HourInputAriaLabel)))
+        if (HourInputAriaLabel.HasValue())
         {
-            bitTimePicker.HourInputAriaLabel = HourInputAriaLabel!;
+            bitTimePicker.TakeFromCascade(nameof(HourInputAriaLabel), HourInputAriaLabel!, static t => t.HourInputAriaLabel, static (t, v) => t.HourInputAriaLabel = v);
         }
 
-        if (HourStep.HasValue && bitTimePicker.HasNotBeenSet(nameof(HourStep)))
+        if (HourStep.HasValue)
         {
-            bitTimePicker.HourStep = HourStep.Value;
+            bitTimePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static t => t.HourStep, static (t, v) => t.HourStep = v);
         }
 
-        if (Icon is not null && bitTimePicker.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitTimePicker.Icon = Icon;
+            bitTimePicker.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
         }
 
-        if (IconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitTimePicker.IconName = IconName;
+            bitTimePicker.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
         }
 
-        if (IconPlacement.HasValue && bitTimePicker.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue)
         {
-            bitTimePicker.IconPlacement = IconPlacement.Value;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static t => t.IconPlacement, static (t, v) => t.IconPlacement = v);
         }
 
-        if (IconTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(IconTemplate)))
+        if (IconTemplate is not null)
         {
-            bitTimePicker.IconTemplate = IconTemplate;
+            bitTimePicker.TakeFromCascade(nameof(IconTemplate), IconTemplate, static t => t.IconTemplate, static (t, v) => t.IconTemplate = v);
         }
 
-        if (IncreaseHourIcon is not null && bitTimePicker.HasNotBeenSet(nameof(IncreaseHourIcon)))
+        if (IncreaseHourIcon is not null)
         {
-            bitTimePicker.IncreaseHourIcon = IncreaseHourIcon;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseHourIcon), IncreaseHourIcon, static t => t.IncreaseHourIcon, static (t, v) => t.IncreaseHourIcon = v);
         }
 
-        if (IncreaseHourIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IncreaseHourIconName)))
+        if (IncreaseHourIconName.HasValue())
         {
-            bitTimePicker.IncreaseHourIconName = IncreaseHourIconName;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseHourIconName), IncreaseHourIconName, static t => t.IncreaseHourIconName, static (t, v) => t.IncreaseHourIconName = v);
         }
 
-        if (IncreaseHourTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IncreaseHourTitle)))
+        if (IncreaseHourTitle.HasValue())
         {
-            bitTimePicker.IncreaseHourTitle = IncreaseHourTitle!;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseHourTitle), IncreaseHourTitle!, static t => t.IncreaseHourTitle, static (t, v) => t.IncreaseHourTitle = v);
         }
 
-        if (IncreaseMinuteIcon is not null && bitTimePicker.HasNotBeenSet(nameof(IncreaseMinuteIcon)))
+        if (IncreaseMinuteIcon is not null)
         {
-            bitTimePicker.IncreaseMinuteIcon = IncreaseMinuteIcon;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteIcon), IncreaseMinuteIcon, static t => t.IncreaseMinuteIcon, static (t, v) => t.IncreaseMinuteIcon = v);
         }
 
-        if (IncreaseMinuteIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IncreaseMinuteIconName)))
+        if (IncreaseMinuteIconName.HasValue())
         {
-            bitTimePicker.IncreaseMinuteIconName = IncreaseMinuteIconName;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteIconName), IncreaseMinuteIconName, static t => t.IncreaseMinuteIconName, static (t, v) => t.IncreaseMinuteIconName = v);
         }
 
-        if (IncreaseMinuteTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IncreaseMinuteTitle)))
+        if (IncreaseMinuteTitle.HasValue())
         {
-            bitTimePicker.IncreaseMinuteTitle = IncreaseMinuteTitle!;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteTitle), IncreaseMinuteTitle!, static t => t.IncreaseMinuteTitle, static (t, v) => t.IncreaseMinuteTitle = v);
         }
 
-        if (IncreaseSecondIcon is not null && bitTimePicker.HasNotBeenSet(nameof(IncreaseSecondIcon)))
+        if (IncreaseSecondIcon is not null)
         {
-            bitTimePicker.IncreaseSecondIcon = IncreaseSecondIcon;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondIcon), IncreaseSecondIcon, static t => t.IncreaseSecondIcon, static (t, v) => t.IncreaseSecondIcon = v);
         }
 
-        if (IncreaseSecondIconName.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IncreaseSecondIconName)))
+        if (IncreaseSecondIconName.HasValue())
         {
-            bitTimePicker.IncreaseSecondIconName = IncreaseSecondIconName;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondIconName), IncreaseSecondIconName, static t => t.IncreaseSecondIconName, static (t, v) => t.IncreaseSecondIconName = v);
         }
 
-        if (IncreaseSecondTitle.HasValue() && bitTimePicker.HasNotBeenSet(nameof(IncreaseSecondTitle)))
+        if (IncreaseSecondTitle.HasValue())
         {
-            bitTimePicker.IncreaseSecondTitle = IncreaseSecondTitle!;
+            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondTitle), IncreaseSecondTitle!, static t => t.IncreaseSecondTitle, static (t, v) => t.IncreaseSecondTitle = v);
         }
 
-        if (InvalidErrorMessage.HasValue() && bitTimePicker.HasNotBeenSet(nameof(InvalidErrorMessage)))
+        if (InvalidErrorMessage.HasValue())
         {
-            bitTimePicker.InvalidErrorMessage = InvalidErrorMessage;
+            bitTimePicker.TakeFromCascade(nameof(InvalidErrorMessage), InvalidErrorMessage, static t => t.InvalidErrorMessage, static (t, v) => t.InvalidErrorMessage = v);
         }
 
-        if (InvertMouseWheel.HasValue && bitTimePicker.HasNotBeenSet(nameof(InvertMouseWheel)))
+        if (InvertMouseWheel.HasValue)
         {
-            bitTimePicker.InvertMouseWheel = InvertMouseWheel.Value;
+            bitTimePicker.TakeFromCascade(nameof(InvertMouseWheel), InvertMouseWheel.Value, static t => t.InvertMouseWheel, static (t, v) => t.InvertMouseWheel = v);
         }
 
-        if (Label.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitTimePicker.Label = Label;
+            bitTimePicker.TakeFromCascade(nameof(Label), Label, static t => t.Label, static (t, v) => t.Label = v);
         }
 
-        if (LabelTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null)
         {
-            bitTimePicker.LabelTemplate = LabelTemplate;
+            bitTimePicker.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static t => t.LabelTemplate, static (t, v) => t.LabelTemplate = v);
         }
 
-        if (MaxTime.HasValue && bitTimePicker.HasNotBeenSet(nameof(MaxTime)))
+        if (MaxTime.HasValue)
         {
-            bitTimePicker.MaxTime = MaxTime.Value;
+            bitTimePicker.TakeFromCascade(nameof(MaxTime), MaxTime.Value, static t => t.MaxTime, static (t, v) => t.MaxTime = v);
         }
 
-        if (MinTime.HasValue && bitTimePicker.HasNotBeenSet(nameof(MinTime)))
+        if (MinTime.HasValue)
         {
-            bitTimePicker.MinTime = MinTime.Value;
+            bitTimePicker.TakeFromCascade(nameof(MinTime), MinTime.Value, static t => t.MinTime, static (t, v) => t.MinTime = v);
         }
 
-        if (MinuteInputAriaLabel.HasValue() && bitTimePicker.HasNotBeenSet(nameof(MinuteInputAriaLabel)))
+        if (MinuteInputAriaLabel.HasValue())
         {
-            bitTimePicker.MinuteInputAriaLabel = MinuteInputAriaLabel!;
+            bitTimePicker.TakeFromCascade(nameof(MinuteInputAriaLabel), MinuteInputAriaLabel!, static t => t.MinuteInputAriaLabel, static (t, v) => t.MinuteInputAriaLabel = v);
         }
 
-        if (MinuteStep.HasValue && bitTimePicker.HasNotBeenSet(nameof(MinuteStep)))
+        if (MinuteStep.HasValue)
         {
-            bitTimePicker.MinuteStep = MinuteStep.Value;
+            bitTimePicker.TakeFromCascade(nameof(MinuteStep), MinuteStep.Value, static t => t.MinuteStep, static (t, v) => t.MinuteStep = v);
         }
 
-        if (NoMouseWheel.HasValue && bitTimePicker.HasNotBeenSet(nameof(NoMouseWheel)))
+        if (NoMouseWheel.HasValue)
         {
-            bitTimePicker.NoMouseWheel = NoMouseWheel.Value;
+            bitTimePicker.TakeFromCascade(nameof(NoMouseWheel), NoMouseWheel.Value, static t => t.NoMouseWheel, static (t, v) => t.NoMouseWheel = v);
         }
 
-        if (Now.HasValue && bitTimePicker.HasNotBeenSet(nameof(Now)))
+        if (Now.HasValue)
         {
-            bitTimePicker.Now = Now.Value;
+            bitTimePicker.TakeFromCascade(nameof(Now), Now.Value, static t => t.Now, static (t, v) => t.Now = v);
         }
 
-        if (NowButtonText.HasValue() && bitTimePicker.HasNotBeenSet(nameof(NowButtonText)))
+        if (NowButtonText.HasValue())
         {
-            bitTimePicker.NowButtonText = NowButtonText!;
+            bitTimePicker.TakeFromCascade(nameof(NowButtonText), NowButtonText!, static t => t.NowButtonText, static (t, v) => t.NowButtonText = v);
         }
 
-        if (OutOfRangeErrorMessage.HasValue() && bitTimePicker.HasNotBeenSet(nameof(OutOfRangeErrorMessage)))
+        if (OutOfRangeErrorMessage.HasValue())
         {
-            bitTimePicker.OutOfRangeErrorMessage = OutOfRangeErrorMessage;
+            bitTimePicker.TakeFromCascade(nameof(OutOfRangeErrorMessage), OutOfRangeErrorMessage, static t => t.OutOfRangeErrorMessage, static (t, v) => t.OutOfRangeErrorMessage = v);
         }
 
-        if (Placeholder.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitTimePicker.Placeholder = Placeholder;
+            bitTimePicker.TakeFromCascade(nameof(Placeholder), Placeholder, static t => t.Placeholder, static (t, v) => t.Placeholder = v);
         }
 
-        if (Prefix.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Prefix)))
+        if (Prefix.HasValue())
         {
-            bitTimePicker.Prefix = Prefix;
+            bitTimePicker.TakeFromCascade(nameof(Prefix), Prefix, static t => t.Prefix, static (t, v) => t.Prefix = v);
         }
 
-        if (PrefixTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(PrefixTemplate)))
+        if (PrefixTemplate is not null)
         {
-            bitTimePicker.PrefixTemplate = PrefixTemplate;
+            bitTimePicker.TakeFromCascade(nameof(PrefixTemplate), PrefixTemplate, static t => t.PrefixTemplate, static (t, v) => t.PrefixTemplate = v);
         }
 
-        if (Responsive.HasValue && bitTimePicker.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue)
         {
-            bitTimePicker.Responsive = Responsive.Value;
+            bitTimePicker.TakeFromCascade(nameof(Responsive), Responsive.Value, static t => t.Responsive, static (t, v) => t.Responsive = v);
         }
 
-        if (SecondInputAriaLabel.HasValue() && bitTimePicker.HasNotBeenSet(nameof(SecondInputAriaLabel)))
+        if (SecondInputAriaLabel.HasValue())
         {
-            bitTimePicker.SecondInputAriaLabel = SecondInputAriaLabel!;
+            bitTimePicker.TakeFromCascade(nameof(SecondInputAriaLabel), SecondInputAriaLabel!, static t => t.SecondInputAriaLabel, static (t, v) => t.SecondInputAriaLabel = v);
         }
 
-        if (SecondStep.HasValue && bitTimePicker.HasNotBeenSet(nameof(SecondStep)))
+        if (SecondStep.HasValue)
         {
-            bitTimePicker.SecondStep = SecondStep.Value;
+            bitTimePicker.TakeFromCascade(nameof(SecondStep), SecondStep.Value, static t => t.SecondStep, static (t, v) => t.SecondStep = v);
         }
 
-        if (ShowClearButton.HasValue && bitTimePicker.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitTimePicker.ShowClearButton = ShowClearButton.Value;
+            bitTimePicker.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static t => t.ShowClearButton, static (t, v) => t.ShowClearButton = v);
         }
 
-        if (ShowCloseButton.HasValue && bitTimePicker.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitTimePicker.ShowCloseButton = ShowCloseButton.Value;
+            bitTimePicker.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static t => t.ShowCloseButton, static (t, v) => t.ShowCloseButton = v);
         }
 
-        if (ShowInputClearButton.HasValue && bitTimePicker.HasNotBeenSet(nameof(ShowInputClearButton)))
+        if (ShowInputClearButton.HasValue)
         {
-            bitTimePicker.ShowInputClearButton = ShowInputClearButton.Value;
+            bitTimePicker.TakeFromCascade(nameof(ShowInputClearButton), ShowInputClearButton.Value, static t => t.ShowInputClearButton, static (t, v) => t.ShowInputClearButton = v);
         }
 
-        if (ShowNowButton.HasValue && bitTimePicker.HasNotBeenSet(nameof(ShowNowButton)))
+        if (ShowNowButton.HasValue)
         {
-            bitTimePicker.ShowNowButton = ShowNowButton.Value;
+            bitTimePicker.TakeFromCascade(nameof(ShowNowButton), ShowNowButton.Value, static t => t.ShowNowButton, static (t, v) => t.ShowNowButton = v);
         }
 
-        if (ShowSeconds.HasValue && bitTimePicker.HasNotBeenSet(nameof(ShowSeconds)))
+        if (ShowSeconds.HasValue)
         {
-            bitTimePicker.ShowSeconds = ShowSeconds.Value;
+            bitTimePicker.TakeFromCascade(nameof(ShowSeconds), ShowSeconds.Value, static t => t.ShowSeconds, static (t, v) => t.ShowSeconds = v);
         }
 
-        if (Size.HasValue && bitTimePicker.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitTimePicker.Size = Size.Value;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (Standalone.HasValue && bitTimePicker.HasNotBeenSet(nameof(Standalone)))
+        if (Standalone.HasValue)
         {
-            bitTimePicker.Standalone = Standalone.Value;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(Standalone), Standalone.Value, static t => t.Standalone, static (t, v) => t.Standalone = v);
         }
 
-        if (StartingValue.HasValue && bitTimePicker.HasNotBeenSet(nameof(StartingValue)))
+        if (StartingValue.HasValue)
         {
-            bitTimePicker.StartingValue = StartingValue.Value;
+            bitTimePicker.TakeFromCascade(nameof(StartingValue), StartingValue.Value, static t => t.StartingValue, static (t, v) => t.StartingValue = v);
         }
 
-        if (Styles is not null && bitTimePicker.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitTimePicker.Styles = Styles;
-
-            bitTimePicker.StyleBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Suffix.HasValue() && bitTimePicker.HasNotBeenSet(nameof(Suffix)))
+        if (Suffix.HasValue())
         {
-            bitTimePicker.Suffix = Suffix;
+            bitTimePicker.TakeFromCascade(nameof(Suffix), Suffix, static t => t.Suffix, static (t, v) => t.Suffix = v);
         }
 
-        if (SuffixTemplate is not null && bitTimePicker.HasNotBeenSet(nameof(SuffixTemplate)))
+        if (SuffixTemplate is not null)
         {
-            bitTimePicker.SuffixTemplate = SuffixTemplate;
+            bitTimePicker.TakeFromCascade(nameof(SuffixTemplate), SuffixTemplate, static t => t.SuffixTemplate, static (t, v) => t.SuffixTemplate = v);
         }
 
-        if (TimeFormat.HasValue && bitTimePicker.HasNotBeenSet(nameof(TimeFormat)))
+        if (TimeFormat.HasValue)
         {
-            bitTimePicker.TimeFormat = TimeFormat.Value;
+            bitTimePicker.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static t => t.TimeFormat, static (t, v) => t.TimeFormat = v);
         }
 
-        if (TimeZone is not null && bitTimePicker.HasNotBeenSet(nameof(TimeZone)))
+        if (TimeZone is not null)
         {
-            bitTimePicker.TimeZone = TimeZone;
+            bitTimePicker.TakeFromCascade(nameof(TimeZone), TimeZone, static t => t.TimeZone, static (t, v) => t.TimeZone = v);
         }
 
-        if (Underlined.HasValue && bitTimePicker.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue)
         {
-            bitTimePicker.Underlined = Underlined.Value;
-
-            bitTimePicker.ClassBuilder.Reset();
+            bitTimePicker.TakeFromCascade(nameof(Underlined), Underlined.Value, static t => t.Underlined, static (t, v) => t.Underlined = v);
         }
 
-        if (ValueFormat.HasValue() && bitTimePicker.HasNotBeenSet(nameof(ValueFormat)))
+        if (ValueFormat.HasValue())
         {
-            bitTimePicker.ValueFormat = ValueFormat;
+            bitTimePicker.TakeFromCascade(nameof(ValueFormat), ValueFormat, static t => t.ValueFormat, static (t, v) => t.ValueFormat = v);
         }
 
         if (recomputeCulture)

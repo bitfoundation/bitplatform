@@ -400,375 +400,335 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
 
         UpdateInputBaseParameters(bitTextField);
 
-        if (Accent.HasValue && bitTextField.HasNotBeenSet(nameof(Accent)))
+        if (Accent.HasValue)
         {
-            bitTextField.Accent = Accent.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Accent), Accent.Value, static t => t.Accent, static (t, v) => t.Accent = v);
         }
 
-        if (AriaDescription.HasValue() && bitTextField.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitTextField.AriaDescription = AriaDescription;
+            bitTextField.TakeFromCascade(nameof(AriaDescription), AriaDescription, static t => t.AriaDescription, static (t, v) => t.AriaDescription = v);
         }
 
-        if (AutoCapitalize.HasValue() && bitTextField.HasNotBeenSet(nameof(AutoCapitalize)))
+        if (AutoCapitalize.HasValue())
         {
-            bitTextField.AutoCapitalize = AutoCapitalize;
+            bitTextField.TakeFromCascade(nameof(AutoCapitalize), AutoCapitalize, static t => t.AutoCapitalize, static (t, v) => t.AutoCapitalize = v);
         }
 
-        if (AutoComplete.HasValue() && bitTextField.HasNotBeenSet(nameof(AutoComplete)))
+        if (AutoComplete.HasValue())
         {
-            bitTextField.AutoComplete = AutoComplete;
+            bitTextField.TakeFromCascade(nameof(AutoComplete), AutoComplete, static t => t.AutoComplete, static (t, v) => t.AutoComplete = v);
         }
 
-        if (AutoCorrect.HasValue && bitTextField.HasNotBeenSet(nameof(AutoCorrect)))
+        if (AutoCorrect.HasValue)
         {
-            bitTextField.AutoCorrect = AutoCorrect.Value;
+            bitTextField.TakeFromCascade(nameof(AutoCorrect), AutoCorrect.Value, static t => t.AutoCorrect, static (t, v) => t.AutoCorrect = v);
         }
 
-        if (AutoHeight.HasValue && bitTextField.HasNotBeenSet(nameof(AutoHeight)))
+        if (AutoHeight.HasValue)
         {
-            bitTextField.AutoHeight = AutoHeight.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(AutoHeight), AutoHeight.Value, static t => t.AutoHeight, static (t, v) => t.AutoHeight = v);
         }
 
-        if (Background.HasValue && bitTextField.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitTextField.Background = Background.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Background), Background.Value, static t => t.Background, static (t, v) => t.Background = v);
         }
 
-        if (Border.HasValue && bitTextField.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue)
         {
-            bitTextField.Border = Border.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Border), Border.Value, static t => t.Border, static (t, v) => t.Border = v);
         }
 
         bool elementTypeChanged = false;
 
-        if (CanRevealPassword.HasValue && bitTextField.HasNotBeenSet(nameof(CanRevealPassword)))
+        if (CanRevealPassword.HasValue && bitTextField.TakeFromCascade(nameof(CanRevealPassword), CanRevealPassword.Value, static t => t.CanRevealPassword, static (t, v) => t.CanRevealPassword = v))
         {
-            bitTextField.CanRevealPassword = CanRevealPassword.Value;
-
             elementTypeChanged = true;
         }
 
-        if (Classes is not null && bitTextField.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitTextField.Classes = Classes;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (ClearButtonAriaLabel.HasValue() && bitTextField.HasNotBeenSet(nameof(ClearButtonAriaLabel)))
+        if (ClearButtonAriaLabel.HasValue())
         {
-            bitTextField.ClearButtonAriaLabel = ClearButtonAriaLabel;
+            bitTextField.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static t => t.ClearButtonAriaLabel, static (t, v) => t.ClearButtonAriaLabel = v);
         }
 
-        if (ClearButtonIcon is not null && bitTextField.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitTextField.ClearButtonIcon = ClearButtonIcon;
+            bitTextField.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitTextField.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitTextField.ClearButtonIconName = ClearButtonIconName;
+            bitTextField.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v);
         }
 
-        if (ClearButtonTemplate is not null && bitTextField.HasNotBeenSet(nameof(ClearButtonTemplate)))
+        if (ClearButtonTemplate is not null)
         {
-            bitTextField.ClearButtonTemplate = ClearButtonTemplate;
+            bitTextField.TakeFromCascade(nameof(ClearButtonTemplate), ClearButtonTemplate, static t => t.ClearButtonTemplate, static (t, v) => t.ClearButtonTemplate = v);
         }
 
-        if (ClearedAnnouncement is not null && bitTextField.HasNotBeenSet(nameof(ClearedAnnouncement)))
+        if (ClearedAnnouncement is not null)
         {
-            bitTextField.ClearedAnnouncement = ClearedAnnouncement;
+            bitTextField.TakeFromCascade(nameof(ClearedAnnouncement), ClearedAnnouncement, static t => t.ClearedAnnouncement, static (t, v) => t.ClearedAnnouncement = v);
         }
 
-        if (ClearOnEscape.HasValue && bitTextField.HasNotBeenSet(nameof(ClearOnEscape)))
+        if (ClearOnEscape.HasValue)
         {
-            bitTextField.ClearOnEscape = ClearOnEscape.Value;
+            bitTextField.TakeFromCascade(nameof(ClearOnEscape), ClearOnEscape.Value, static t => t.ClearOnEscape, static (t, v) => t.ClearOnEscape = v);
         }
 
-        if (CountStrategy is not null && bitTextField.HasNotBeenSet(nameof(CountStrategy)))
+        if (CountStrategy is not null)
         {
-            bitTextField.CountStrategy = CountStrategy;
+            bitTextField.TakeFromCascade(nameof(CountStrategy), CountStrategy, static t => t.CountStrategy, static (t, v) => t.CountStrategy = v);
         }
 
-        if (CountTemplate is not null && bitTextField.HasNotBeenSet(nameof(CountTemplate)))
+        if (CountTemplate is not null)
         {
-            bitTextField.CountTemplate = CountTemplate;
+            bitTextField.TakeFromCascade(nameof(CountTemplate), CountTemplate, static t => t.CountTemplate, static (t, v) => t.CountTemplate = v);
         }
 
-        if (DebounceTime.HasValue && bitTextField.HasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue)
         {
-            bitTextField.DebounceTime = DebounceTime.Value;
+            bitTextField.TakeFromCascade(nameof(DebounceTime), DebounceTime.Value, static t => t.DebounceTime, static (t, v) => t.DebounceTime = v);
         }
 
-        if (Description.HasValue() && bitTextField.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitTextField.Description = Description;
+            bitTextField.TakeFromCascade(nameof(Description), Description, static t => t.Description, static (t, v) => t.Description = v);
         }
 
-        if (DescriptionTemplate is not null && bitTextField.HasNotBeenSet(nameof(DescriptionTemplate)))
+        if (DescriptionTemplate is not null)
         {
-            bitTextField.DescriptionTemplate = DescriptionTemplate;
+            bitTextField.TakeFromCascade(nameof(DescriptionTemplate), DescriptionTemplate, static t => t.DescriptionTemplate, static (t, v) => t.DescriptionTemplate = v);
         }
 
-        if (EnterKeyHint.HasValue() && bitTextField.HasNotBeenSet(nameof(EnterKeyHint)))
+        if (EnterKeyHint.HasValue())
         {
-            bitTextField.EnterKeyHint = EnterKeyHint;
+            bitTextField.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint, static t => t.EnterKeyHint, static (t, v) => t.EnterKeyHint = v);
         }
 
-        if (FullWidth.HasValue && bitTextField.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitTextField.FullWidth = FullWidth.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
-        if (HidePasswordIcon is not null && bitTextField.HasNotBeenSet(nameof(HidePasswordIcon)))
+        if (HidePasswordIcon is not null)
         {
-            bitTextField.HidePasswordIcon = HidePasswordIcon;
+            bitTextField.TakeFromCascade(nameof(HidePasswordIcon), HidePasswordIcon, static t => t.HidePasswordIcon, static (t, v) => t.HidePasswordIcon = v);
         }
 
-        if (HidePasswordIconName.HasValue() && bitTextField.HasNotBeenSet(nameof(HidePasswordIconName)))
+        if (HidePasswordIconName.HasValue())
         {
-            bitTextField.HidePasswordIconName = HidePasswordIconName;
+            bitTextField.TakeFromCascade(nameof(HidePasswordIconName), HidePasswordIconName, static t => t.HidePasswordIconName, static (t, v) => t.HidePasswordIconName = v);
         }
 
-        if (Icon is not null && bitTextField.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitTextField.Icon = Icon;
+            bitTextField.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
         }
 
-        if (IconAriaLabel.HasValue() && bitTextField.HasNotBeenSet(nameof(IconAriaLabel)))
+        if (IconAriaLabel.HasValue())
         {
-            bitTextField.IconAriaLabel = IconAriaLabel;
+            bitTextField.TakeFromCascade(nameof(IconAriaLabel), IconAriaLabel, static t => t.IconAriaLabel, static (t, v) => t.IconAriaLabel = v);
         }
 
-        if (IconName.HasValue() && bitTextField.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitTextField.IconName = IconName;
+            bitTextField.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
         }
 
-        if (IconPlacement.HasValue && bitTextField.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue)
         {
-            bitTextField.IconPlacement = IconPlacement.Value;
+            bitTextField.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static t => t.IconPlacement, static (t, v) => t.IconPlacement = v);
         }
 
-        if (IconTitle.HasValue() && bitTextField.HasNotBeenSet(nameof(IconTitle)))
+        if (IconTitle.HasValue())
         {
-            bitTextField.IconTitle = IconTitle;
+            bitTextField.TakeFromCascade(nameof(IconTitle), IconTitle, static t => t.IconTitle, static (t, v) => t.IconTitle = v);
         }
 
-        if (Immediate.HasValue && bitTextField.HasNotBeenSet(nameof(Immediate)))
+        if (Immediate.HasValue)
         {
-            bitTextField.Immediate = Immediate.Value;
+            bitTextField.TakeFromCascade(nameof(Immediate), Immediate.Value, static t => t.Immediate, static (t, v) => t.Immediate = v);
         }
 
-        if (InputMode.HasValue && bitTextField.HasNotBeenSet(nameof(InputMode)))
+        if (InputMode.HasValue && bitTextField.TakeFromCascade(nameof(InputMode), InputMode.Value, static t => t.InputMode, static (t, v) => t.InputMode = v))
         {
-            bitTextField.InputMode = InputMode.Value;
-
             bitTextField.SetInputMode();
         }
 
-        if (Label.HasValue() && bitTextField.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitTextField.Label = Label;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Label), Label, static t => t.Label, static (t, v) => t.Label = v);
         }
 
-        if (LabelPlacement.HasValue && bitTextField.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue)
         {
-            bitTextField.LabelPlacement = LabelPlacement.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static t => t.LabelPlacement, static (t, v) => t.LabelPlacement = v);
         }
 
-        if (LabelTemplate is not null && bitTextField.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null)
         {
-            bitTextField.LabelTemplate = LabelTemplate;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static t => t.LabelTemplate, static (t, v) => t.LabelTemplate = v);
         }
 
-        if (LoadingAriaLabel.HasValue() && bitTextField.HasNotBeenSet(nameof(LoadingAriaLabel)))
+        if (LoadingAriaLabel.HasValue())
         {
-            bitTextField.LoadingAriaLabel = LoadingAriaLabel;
+            bitTextField.TakeFromCascade(nameof(LoadingAriaLabel), LoadingAriaLabel, static t => t.LoadingAriaLabel, static (t, v) => t.LoadingAriaLabel = v);
         }
 
-        if (LoadingTemplate is not null && bitTextField.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitTextField.LoadingTemplate = LoadingTemplate;
+            bitTextField.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static t => t.LoadingTemplate, static (t, v) => t.LoadingTemplate = v);
         }
 
-        if (MaxLength.HasValue && bitTextField.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitTextField.MaxLength = MaxLength.Value;
+            bitTextField.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static t => t.MaxLength, static (t, v) => t.MaxLength = v);
         }
 
-        if (MaxRows.HasValue && bitTextField.HasNotBeenSet(nameof(MaxRows)))
+        if (MaxRows.HasValue)
         {
-            bitTextField.MaxRows = MaxRows.Value;
+            bitTextField.TakeFromCascade(nameof(MaxRows), MaxRows.Value, static t => t.MaxRows, static (t, v) => t.MaxRows = v);
         }
 
-        if (MinLength.HasValue && bitTextField.HasNotBeenSet(nameof(MinLength)))
+        if (MinLength.HasValue)
         {
-            bitTextField.MinLength = MinLength.Value;
+            bitTextField.TakeFromCascade(nameof(MinLength), MinLength.Value, static t => t.MinLength, static (t, v) => t.MinLength = v);
         }
 
-        if (Multiline.HasValue && bitTextField.HasNotBeenSet(nameof(Multiline)))
+        if (Multiline.HasValue)
         {
-            bitTextField.Multiline = Multiline.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Multiline), Multiline.Value, static t => t.Multiline, static (t, v) => t.Multiline = v);
         }
 
-        if (NoBorder.HasValue && bitTextField.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue)
         {
-            bitTextField.NoBorder = NoBorder.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static t => t.NoBorder, static (t, v) => t.NoBorder = v);
         }
 
-        if (Pattern.HasValue() && bitTextField.HasNotBeenSet(nameof(Pattern)))
+        if (Pattern.HasValue())
         {
-            bitTextField.Pattern = Pattern;
+            bitTextField.TakeFromCascade(nameof(Pattern), Pattern, static t => t.Pattern, static (t, v) => t.Pattern = v);
         }
 
-        if (PermanentGhost.HasValue && bitTextField.HasNotBeenSet(nameof(PermanentGhost)))
+        if (PermanentGhost.HasValue)
         {
-            bitTextField.PermanentGhost = PermanentGhost.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(PermanentGhost), PermanentGhost.Value, static t => t.PermanentGhost, static (t, v) => t.PermanentGhost = v);
         }
 
-        if (Placeholder.HasValue() && bitTextField.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitTextField.Placeholder = Placeholder;
+            bitTextField.TakeFromCascade(nameof(Placeholder), Placeholder, static t => t.Placeholder, static (t, v) => t.Placeholder = v);
         }
 
-        if (Prefix.HasValue() && bitTextField.HasNotBeenSet(nameof(Prefix)))
+        if (Prefix.HasValue())
         {
-            bitTextField.Prefix = Prefix;
+            bitTextField.TakeFromCascade(nameof(Prefix), Prefix, static t => t.Prefix, static (t, v) => t.Prefix = v);
         }
 
-        if (PrefixTemplate is not null && bitTextField.HasNotBeenSet(nameof(PrefixTemplate)))
+        if (PrefixTemplate is not null)
         {
-            bitTextField.PrefixTemplate = PrefixTemplate;
+            bitTextField.TakeFromCascade(nameof(PrefixTemplate), PrefixTemplate, static t => t.PrefixTemplate, static (t, v) => t.PrefixTemplate = v);
         }
 
-        if (PreventEnter.HasValue && bitTextField.HasNotBeenSet(nameof(PreventEnter)))
+        if (PreventEnter.HasValue)
         {
-            bitTextField.PreventEnter = PreventEnter.Value;
+            bitTextField.TakeFromCascade(nameof(PreventEnter), PreventEnter.Value, static t => t.PreventEnter, static (t, v) => t.PreventEnter = v);
         }
 
-        if (Resizable.HasValue && bitTextField.HasNotBeenSet(nameof(Resizable)))
+        if (Resizable.HasValue)
         {
-            bitTextField.Resizable = Resizable.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Resizable), Resizable.Value, static t => t.Resizable, static (t, v) => t.Resizable = v);
         }
 
-        if (RevealPasswordAriaLabel.HasValue() && bitTextField.HasNotBeenSet(nameof(RevealPasswordAriaLabel)))
+        if (RevealPasswordAriaLabel.HasValue())
         {
-            bitTextField.RevealPasswordAriaLabel = RevealPasswordAriaLabel;
+            bitTextField.TakeFromCascade(nameof(RevealPasswordAriaLabel), RevealPasswordAriaLabel, static t => t.RevealPasswordAriaLabel, static (t, v) => t.RevealPasswordAriaLabel = v);
         }
 
-        if (RevealPasswordIcon is not null && bitTextField.HasNotBeenSet(nameof(RevealPasswordIcon)))
+        if (RevealPasswordIcon is not null)
         {
-            bitTextField.RevealPasswordIcon = RevealPasswordIcon;
+            bitTextField.TakeFromCascade(nameof(RevealPasswordIcon), RevealPasswordIcon, static t => t.RevealPasswordIcon, static (t, v) => t.RevealPasswordIcon = v);
         }
 
-        if (RevealPasswordIconName.HasValue() && bitTextField.HasNotBeenSet(nameof(RevealPasswordIconName)))
+        if (RevealPasswordIconName.HasValue())
         {
-            bitTextField.RevealPasswordIconName = RevealPasswordIconName;
+            bitTextField.TakeFromCascade(nameof(RevealPasswordIconName), RevealPasswordIconName, static t => t.RevealPasswordIconName, static (t, v) => t.RevealPasswordIconName = v);
         }
 
-        if (RevealPasswordTemplate is not null && bitTextField.HasNotBeenSet(nameof(RevealPasswordTemplate)))
+        if (RevealPasswordTemplate is not null)
         {
-            bitTextField.RevealPasswordTemplate = RevealPasswordTemplate;
+            bitTextField.TakeFromCascade(nameof(RevealPasswordTemplate), RevealPasswordTemplate, static t => t.RevealPasswordTemplate, static (t, v) => t.RevealPasswordTemplate = v);
         }
 
-        if (Rows.HasValue && bitTextField.HasNotBeenSet(nameof(Rows)))
+        if (Rows.HasValue)
         {
-            bitTextField.Rows = Rows.Value;
+            bitTextField.TakeFromCascade(nameof(Rows), Rows.Value, static t => t.Rows, static (t, v) => t.Rows = v);
         }
 
-        if (SelectOnFocus.HasValue && bitTextField.HasNotBeenSet(nameof(SelectOnFocus)))
+        if (SelectOnFocus.HasValue)
         {
-            bitTextField.SelectOnFocus = SelectOnFocus.Value;
+            bitTextField.TakeFromCascade(nameof(SelectOnFocus), SelectOnFocus.Value, static t => t.SelectOnFocus, static (t, v) => t.SelectOnFocus = v);
         }
 
-        if (ShowClearButton.HasValue && bitTextField.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitTextField.ShowClearButton = ShowClearButton.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static t => t.ShowClearButton, static (t, v) => t.ShowClearButton = v);
         }
 
-        if (ShowCount.HasValue && bitTextField.HasNotBeenSet(nameof(ShowCount)))
+        if (ShowCount.HasValue)
         {
-            bitTextField.ShowCount = ShowCount.Value;
+            bitTextField.TakeFromCascade(nameof(ShowCount), ShowCount.Value, static t => t.ShowCount, static (t, v) => t.ShowCount = v);
         }
 
-        if (Size.HasValue && bitTextField.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitTextField.Size = Size.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (SpellCheck.HasValue && bitTextField.HasNotBeenSet(nameof(SpellCheck)))
+        if (SpellCheck.HasValue)
         {
-            bitTextField.SpellCheck = SpellCheck.Value;
+            bitTextField.TakeFromCascade(nameof(SpellCheck), SpellCheck.Value, static t => t.SpellCheck, static (t, v) => t.SpellCheck = v);
         }
 
-        if (Styles is not null && bitTextField.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitTextField.Styles = Styles;
-
-            bitTextField.StyleBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Suffix.HasValue() && bitTextField.HasNotBeenSet(nameof(Suffix)))
+        if (Suffix.HasValue())
         {
-            bitTextField.Suffix = Suffix;
+            bitTextField.TakeFromCascade(nameof(Suffix), Suffix, static t => t.Suffix, static (t, v) => t.Suffix = v);
         }
 
-        if (SuffixTemplate is not null && bitTextField.HasNotBeenSet(nameof(SuffixTemplate)))
+        if (SuffixTemplate is not null)
         {
-            bitTextField.SuffixTemplate = SuffixTemplate;
+            bitTextField.TakeFromCascade(nameof(SuffixTemplate), SuffixTemplate, static t => t.SuffixTemplate, static (t, v) => t.SuffixTemplate = v);
         }
 
-        if (ThrottleTime.HasValue && bitTextField.HasNotBeenSet(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue)
         {
-            bitTextField.ThrottleTime = ThrottleTime.Value;
+            bitTextField.TakeFromCascade(nameof(ThrottleTime), ThrottleTime.Value, static t => t.ThrottleTime, static (t, v) => t.ThrottleTime = v);
         }
 
-        if (Title.HasValue() && bitTextField.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitTextField.Title = Title;
+            bitTextField.TakeFromCascade(nameof(Title), Title, static t => t.Title, static (t, v) => t.Title = v);
         }
 
-        if (Trim.HasValue && bitTextField.HasNotBeenSet(nameof(Trim)))
+        if (Trim.HasValue)
         {
-            bitTextField.Trim = Trim.Value;
+            bitTextField.TakeFromCascade(nameof(Trim), Trim.Value, static t => t.Trim, static (t, v) => t.Trim = v);
         }
 
-        if (Type.HasValue && bitTextField.HasNotBeenSet(nameof(Type)))
+        if (Type.HasValue && bitTextField.TakeFromCascade(nameof(Type), Type.Value, static t => t.Type, static (t, v) => t.Type = v))
         {
-            bitTextField.Type = Type.Value;
-
-            bitTextField.ClassBuilder.Reset();
-
             elementTypeChanged = true;
         }
 
@@ -779,16 +739,14 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.SetElementType();
         }
 
-        if (Underlined.HasValue && bitTextField.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue)
         {
-            bitTextField.Underlined = Underlined.Value;
-
-            bitTextField.ClassBuilder.Reset();
+            bitTextField.TakeFromCascade(nameof(Underlined), Underlined.Value, static t => t.Underlined, static (t, v) => t.Underlined = v);
         }
 
-        if (Wrap.HasValue() && bitTextField.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue())
         {
-            bitTextField.Wrap = Wrap;
+            bitTextField.TakeFromCascade(nameof(Wrap), Wrap, static t => t.Wrap, static (t, v) => t.Wrap = v);
         }
     }
 }

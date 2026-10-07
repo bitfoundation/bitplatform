@@ -205,159 +205,159 @@ public class BitModalParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitModal);
 
-        if (AbsolutePosition.HasValue && bitModal.HasNotBeenSet(nameof(AbsolutePosition)))
+        if (AbsolutePosition.HasValue)
         {
-            bitModal.AbsolutePosition = AbsolutePosition.Value;
+            bitModal.TakeFromCascade(nameof(AbsolutePosition), AbsolutePosition.Value, static m => m.AbsolutePosition, static (m, v) => m.AbsolutePosition = v);
         }
 
-        if (AriaModal.HasValue && bitModal.HasNotBeenSet(nameof(AriaModal)))
+        if (AriaModal.HasValue)
         {
-            bitModal.AriaModal = AriaModal.Value;
+            bitModal.TakeFromCascade(nameof(AriaModal), AriaModal.Value, static m => m.AriaModal, static (m, v) => m.AriaModal = v);
         }
 
-        if (AutoToggleScroll.HasValue && bitModal.HasNotBeenSet(nameof(AutoToggleScroll)))
+        if (AutoToggleScroll.HasValue)
         {
-            bitModal.AutoToggleScroll = AutoToggleScroll.Value;
+            bitModal.TakeFromCascade(nameof(AutoToggleScroll), AutoToggleScroll.Value, static m => m.AutoToggleScroll, static (m, v) => m.AutoToggleScroll = v);
         }
 
-        if (Blocking.HasValue && bitModal.HasNotBeenSet(nameof(Blocking)))
+        if (Blocking.HasValue)
         {
-            bitModal.Blocking = Blocking.Value;
+            bitModal.TakeFromCascade(nameof(Blocking), Blocking.Value, static m => m.Blocking, static (m, v) => m.Blocking = v);
         }
 
-        if (Classes is not null && bitModal.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitModal.Classes = Classes;
+            bitModal.TakeFromCascade(nameof(Classes), Classes, static m => m.Classes, static (m, v) => m.Classes = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitModal.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitModal.CloseButtonTitle = CloseButtonTitle;
+            bitModal.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static m => m.CloseButtonTitle, static (m, v) => m.CloseButtonTitle = v);
         }
 
-        if (CloseIcon is not null && bitModal.HasNotBeenSet(nameof(CloseIcon)))
+        if (CloseIcon is not null)
         {
-            bitModal.CloseIcon = CloseIcon;
+            bitModal.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v);
         }
 
-        if (CloseIconName.HasValue() && bitModal.HasNotBeenSet(nameof(CloseIconName)))
+        if (CloseIconName.HasValue())
         {
-            bitModal.CloseIconName = CloseIconName;
+            bitModal.TakeFromCascade(nameof(CloseIconName), CloseIconName, static m => m.CloseIconName, static (m, v) => m.CloseIconName = v);
         }
 
-        if (DragElementSelector.HasValue() && bitModal.HasNotBeenSet(nameof(DragElementSelector)))
+        if (DragElementSelector.HasValue())
         {
-            bitModal.DragElementSelector = DragElementSelector;
+            bitModal.TakeFromCascade(nameof(DragElementSelector), DragElementSelector, static m => m.DragElementSelector, static (m, v) => m.DragElementSelector = v);
         }
 
-        if (Draggable.HasValue && bitModal.HasNotBeenSet(nameof(Draggable)))
+        if (Draggable.HasValue)
         {
-            bitModal.Draggable = Draggable.Value;
+            bitModal.TakeFromCascade(nameof(Draggable), Draggable.Value, static m => m.Draggable, static (m, v) => m.Draggable = v);
         }
 
-        if (FullHeight.HasValue && bitModal.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue)
         {
-            bitModal.FullHeight = FullHeight.Value;
+            bitModal.TakeFromCascade(nameof(FullHeight), FullHeight.Value, static m => m.FullHeight, static (m, v) => m.FullHeight = v);
         }
 
-        if (FullSize.HasValue && bitModal.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue)
         {
-            bitModal.FullSize = FullSize.Value;
+            bitModal.TakeFromCascade(nameof(FullSize), FullSize.Value, static m => m.FullSize, static (m, v) => m.FullSize = v);
         }
 
-        if (FullWidth.HasValue && bitModal.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitModal.FullWidth = FullWidth.Value;
+            bitModal.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static m => m.FullWidth, static (m, v) => m.FullWidth = v);
         }
 
-        if (Height.HasValue() && bitModal.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue())
         {
-            bitModal.Height = Height;
+            bitModal.TakeFromCascade(nameof(Height), Height, static m => m.Height, static (m, v) => m.Height = v);
         }
 
-        if (IsAlert.HasValue && bitModal.HasNotBeenSet(nameof(IsAlert)))
+        if (IsAlert.HasValue)
         {
-            bitModal.IsAlert = IsAlert.Value;
+            bitModal.TakeFromCascade(nameof(IsAlert), IsAlert.Value, static m => m.IsAlert, static (m, v) => m.IsAlert = v);
         }
 
-        if (KeepMounted.HasValue && bitModal.HasNotBeenSet(nameof(KeepMounted)))
+        if (KeepMounted.HasValue)
         {
-            bitModal.KeepMounted = KeepMounted.Value;
+            bitModal.TakeFromCascade(nameof(KeepMounted), KeepMounted.Value, static m => m.KeepMounted, static (m, v) => m.KeepMounted = v);
         }
 
-        if (MaxHeight.HasValue() && bitModal.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue())
         {
-            bitModal.MaxHeight = MaxHeight;
+            bitModal.TakeFromCascade(nameof(MaxHeight), MaxHeight, static m => m.MaxHeight, static (m, v) => m.MaxHeight = v);
         }
 
-        if (MaxWidth.HasValue() && bitModal.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue())
         {
-            bitModal.MaxWidth = MaxWidth;
+            bitModal.TakeFromCascade(nameof(MaxWidth), MaxWidth, static m => m.MaxWidth, static (m, v) => m.MaxWidth = v);
         }
 
-        if (ModeFull.HasValue && bitModal.HasNotBeenSet(nameof(ModeFull)))
+        if (ModeFull.HasValue)
         {
-            bitModal.ModeFull = ModeFull.Value;
+            bitModal.TakeFromCascade(nameof(ModeFull), ModeFull.Value, static m => m.ModeFull, static (m, v) => m.ModeFull = v);
         }
 
-        if (Modeless.HasValue && bitModal.HasNotBeenSet(nameof(Modeless)))
+        if (Modeless.HasValue)
         {
-            bitModal.Modeless = Modeless.Value;
+            bitModal.TakeFromCascade(nameof(Modeless), Modeless.Value, static m => m.Modeless, static (m, v) => m.Modeless = v);
         }
 
-        if (NoAutoFocus.HasValue && bitModal.HasNotBeenSet(nameof(NoAutoFocus)))
+        if (NoAutoFocus.HasValue)
         {
-            bitModal.NoAutoFocus = NoAutoFocus.Value;
+            bitModal.TakeFromCascade(nameof(NoAutoFocus), NoAutoFocus.Value, static m => m.NoAutoFocus, static (m, v) => m.NoAutoFocus = v);
         }
 
-        if (NoBorder.HasValue && bitModal.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue)
         {
-            bitModal.NoBorder = NoBorder.Value;
+            bitModal.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static m => m.NoBorder, static (m, v) => m.NoBorder = v);
         }
 
-        if (NoDismissOnEscape.HasValue && bitModal.HasNotBeenSet(nameof(NoDismissOnEscape)))
+        if (NoDismissOnEscape.HasValue)
         {
-            bitModal.NoDismissOnEscape = NoDismissOnEscape.Value;
+            bitModal.TakeFromCascade(nameof(NoDismissOnEscape), NoDismissOnEscape.Value, static m => m.NoDismissOnEscape, static (m, v) => m.NoDismissOnEscape = v);
         }
 
-        if (NoFocusTrap.HasValue && bitModal.HasNotBeenSet(nameof(NoFocusTrap)))
+        if (NoFocusTrap.HasValue)
         {
-            bitModal.NoFocusTrap = NoFocusTrap.Value;
+            bitModal.TakeFromCascade(nameof(NoFocusTrap), NoFocusTrap.Value, static m => m.NoFocusTrap, static (m, v) => m.NoFocusTrap = v);
         }
 
-        if (NoRestoreFocus.HasValue && bitModal.HasNotBeenSet(nameof(NoRestoreFocus)))
+        if (NoRestoreFocus.HasValue)
         {
-            bitModal.NoRestoreFocus = NoRestoreFocus.Value;
+            bitModal.TakeFromCascade(nameof(NoRestoreFocus), NoRestoreFocus.Value, static m => m.NoRestoreFocus, static (m, v) => m.NoRestoreFocus = v);
         }
 
-        if (NoScrollLock.HasValue && bitModal.HasNotBeenSet(nameof(NoScrollLock)))
+        if (NoScrollLock.HasValue)
         {
-            bitModal.NoScrollLock = NoScrollLock.Value;
+            bitModal.TakeFromCascade(nameof(NoScrollLock), NoScrollLock.Value, static m => m.NoScrollLock, static (m, v) => m.NoScrollLock = v);
         }
 
-        if (Position.HasValue && bitModal.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue)
         {
-            bitModal.Position = Position.Value;
+            bitModal.TakeFromCascade(nameof(Position), Position.Value, static m => m.Position, static (m, v) => m.Position = v);
         }
 
-        if (ScrollerSelector.HasValue() && bitModal.HasNotBeenSet(nameof(ScrollerSelector)))
+        if (ScrollerSelector.HasValue())
         {
-            bitModal.ScrollerSelector = ScrollerSelector;
+            bitModal.TakeFromCascade(nameof(ScrollerSelector), ScrollerSelector, static m => m.ScrollerSelector, static (m, v) => m.ScrollerSelector = v);
         }
 
-        if (ShowCloseButton.HasValue && bitModal.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitModal.ShowCloseButton = ShowCloseButton.Value;
+            bitModal.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static m => m.ShowCloseButton, static (m, v) => m.ShowCloseButton = v);
         }
 
-        if (Styles is not null && bitModal.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitModal.Styles = Styles;
+            bitModal.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
-        if (Width.HasValue() && bitModal.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue())
         {
-            bitModal.Width = Width;
+            bitModal.TakeFromCascade(nameof(Width), Width, static m => m.Width, static (m, v) => m.Width = v);
         }
     }
 }

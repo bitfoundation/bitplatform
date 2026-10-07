@@ -618,6 +618,84 @@ public class BitParamsTests : BunitTestContext
         Assert.IsNull(button.Color);
     }
 
+    [TestMethod]
+    public void AParameterOfTheComponentsOwnShouldGoBackOnceTheParamsObjectStopsSupplyingIt()
+    {
+        var component = RenderBadge(new BitBadgeParams { Color = BitColor.Error }, "first");
+
+        var badge = component.FindComponent<BitBadge>().Instance;
+
+        Assert.AreEqual(BitColor.Error, badge.Color);
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-err"));
+
+        // BitParams cascades its values as fixed, so the badge only reads the new ones when it renders for a reason
+        // of its own - here a new Title.
+        RenderBadge(component, new BitBadgeParams(), "second");
+
+        Assert.AreEqual(new BitBadge().Color, badge.Color);
+        Assert.IsFalse(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-err"));
+    }
+
+    [TestMethod]
+    public void AnUnchangedParamsObjectShouldNotRebuildTheClassString()
+    {
+        var component = RenderBadge(new BitBadgeParams { Color = BitColor.Error, Class = "shared", Dir = BitDir.Rtl }, "first");
+
+        var badge = component.FindComponent<BitBadge>().Instance;
+        var classes = badge.ClassBuilder.Value;
+
+        // An equal params object is no change: BitParams keeps handing down the one it built, and the badge, rendered
+        // again for a Title of its own, writes nothing it already holds and so keeps the class string it has.
+        RenderBadge(component, new BitBadgeParams { Color = BitColor.Error, Class = "shared", Dir = BitDir.Rtl }, "second");
+
+        Assert.AreEqual("second", badge.Title);
+        Assert.AreSame(classes, badge.ClassBuilder.Value);
+    }
+
+    [TestMethod]
+    public void AChangedParamsObjectShouldOnlyRewriteWhatChanged()
+    {
+        var component = RenderBadge(new BitBadgeParams { Color = BitColor.Error, Class = "shared" }, "first");
+
+        var badge = component.FindComponent<BitBadge>().Instance;
+
+        RenderBadge(component, new BitBadgeParams { Color = BitColor.Success, Class = "shared" }, "second");
+
+        Assert.AreEqual(BitColor.Success, badge.Color);
+        Assert.AreEqual("shared", badge.Class);
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-suc"));
+        Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("shared"));
+        Assert.IsFalse(component.Find(".bit-bdg").ClassList.Contains("bit-bdg-err"));
+    }
+
+
+
+    private IRenderedComponent<BitParams> RenderBadge(BitBadgeParams badgeParams, string title)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [badgeParams]);
+            parameters.AddChildContent(BadgeContent(title));
+        });
+    }
+
+    private static void RenderBadge(IRenderedComponent<BitParams> component, BitBadgeParams badgeParams, string title)
+    {
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [badgeParams]);
+            parameters.AddChildContent(BadgeContent(title));
+        });
+    }
+
+    private static RenderFragment BadgeContent(string title) => builder =>
+    {
+        builder.OpenComponent<BitBadge>(0);
+        builder.AddComponentParameter(1, nameof(BitBadge.Content), 3);
+        builder.AddComponentParameter(2, nameof(BitBadge.Title), title);
+        builder.CloseComponent();
+    };
+
 
 
     private sealed class StaticNestedHost : ComponentBase

@@ -54,12 +54,20 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
 
         if (map is null) return Task.CompletedTask;
 
-        var restored = (_cascadeTracker ??= new()).RestoreDropped(this, map, current);
+        var restored = (_cascadeTracker ??= new()).RestoreDropped(this, map, current, out var paramsChanged);
+
+        // A params object supplied again unchanged writes nothing (TakeFromCascade compares every value), so neither
+        // does it reset the builders. But BitParams copies its params objects shallowly: a ClassStyles changed in
+        // place reaches the component as the very object it already holds, inside a new params object. So a new
+        // params object, which BitParams only hands down when something it carries has changed, rebuilds the class
+        // and style strings once, whatever its values compare as.
+        if (paramsChanged || restored is not null)
+        {
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+        }
 
         if (restored is null) return Task.CompletedTask;
-
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
 
         return BitCascadeTracker.RunSetupHooks(this, restored);
     }

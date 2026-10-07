@@ -26,9 +26,15 @@ internal sealed class BitCascadeTracker
     /// newly supplied one replaces. Called once every parameter is assigned and before the params object is applied,
     /// which is when a parameter still holds the value it had before the cascade.
     /// </summary>
+    /// <param name="component">The component the params object is cascaded to.</param>
+    /// <param name="map">The parameters the params object can supply to the component.</param>
+    /// <param name="current">The params object cascaded to the component on this render, if any.</param>
+    /// <param name="paramsChanged">Whether that is another params object than the one cascaded on the last render.</param>
     /// <returns>The parameters put back, or null when there were none.</returns>
-    public List<BitCascadeMap.BitCascadeParameter>? RestoreDropped(IBitCascadeTarget component, BitCascadeMap map, IBitComponentParams? current)
+    public List<BitCascadeMap.BitCascadeParameter>? RestoreDropped(IBitCascadeTarget component, BitCascadeMap map, IBitComponentParams? current, out bool paramsChanged)
     {
+        paramsChanged = false;
+
         // Nothing supplied now and nothing before, which is where a component stays once a params object has gone.
         if (current is null && _cascadedParams is null) return null;
 
@@ -38,6 +44,8 @@ internal sealed class BitCascadeTracker
         // parameters, and only what the markup took over or let go of since is left to keep track of.
         if (ReferenceEquals(current, _cascadedParams) is false)
         {
+            paramsChanged = true;
+
             _cascadedParams = current;
 
             if (_cascadeOriginals is { Count: > 0 })

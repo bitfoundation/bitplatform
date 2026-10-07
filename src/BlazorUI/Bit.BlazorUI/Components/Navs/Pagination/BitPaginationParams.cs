@@ -286,275 +286,239 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPagination);
 
-        if (Alignment.HasValue && bitPagination.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue)
         {
-            if (bitPagination.Alignment != Alignment.Value)
-            {
-                bitPagination.Alignment = Alignment.Value;
-
-                bitPagination.ClassBuilder.Reset();
-                bitPagination.StyleBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Alignment), Alignment.Value, static p => p.Alignment, static (p, v) => p.Alignment = v);
         }
 
-        if (BoundaryCount.HasValue && bitPagination.HasNotBeenSet(nameof(BoundaryCount)))
+        if (BoundaryCount.HasValue)
         {
-            bitPagination.BoundaryCount = BoundaryCount.Value;
+            bitPagination.TakeFromCascade(nameof(BoundaryCount), BoundaryCount.Value, static p => p.BoundaryCount, static (p, v) => p.BoundaryCount = v);
         }
 
-        if (Classes is not null && bitPagination.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            if (bitPagination.Classes != Classes)
-            {
-                bitPagination.Classes = Classes;
-
-                bitPagination.ClassBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (ClickableEllipsis.HasValue && bitPagination.HasNotBeenSet(nameof(ClickableEllipsis)))
+        if (ClickableEllipsis.HasValue)
         {
-            bitPagination.ClickableEllipsis = ClickableEllipsis.Value;
+            bitPagination.TakeFromCascade(nameof(ClickableEllipsis), ClickableEllipsis.Value, static p => p.ClickableEllipsis, static (p, v) => p.ClickableEllipsis = v);
         }
 
-        if (Color.HasValue && bitPagination.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            if (bitPagination.Color != Color.Value)
-            {
-                bitPagination.Color = Color.Value;
-
-                bitPagination.ClassBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Color), Color.Value, static p => p.Color, static (p, v) => p.Color = v);
         }
 
-        if (EllipsisAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(EllipsisAriaLabel)))
+        if (EllipsisAriaLabel is not null)
         {
-            bitPagination.EllipsisAriaLabel = EllipsisAriaLabel;
+            bitPagination.TakeFromCascade(nameof(EllipsisAriaLabel), EllipsisAriaLabel, static p => p.EllipsisAriaLabel, static (p, v) => p.EllipsisAriaLabel = v);
         }
 
-        if (EllipsisText is not null && bitPagination.HasNotBeenSet(nameof(EllipsisText)))
+        if (EllipsisText is not null)
         {
-            bitPagination.EllipsisText = EllipsisText;
+            bitPagination.TakeFromCascade(nameof(EllipsisText), EllipsisText, static p => p.EllipsisText, static (p, v) => p.EllipsisText = v);
         }
 
-        if (FirstButtonAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(FirstButtonAriaLabel)))
+        if (FirstButtonAriaLabel is not null)
         {
-            bitPagination.FirstButtonAriaLabel = FirstButtonAriaLabel;
+            bitPagination.TakeFromCascade(nameof(FirstButtonAriaLabel), FirstButtonAriaLabel, static p => p.FirstButtonAriaLabel, static (p, v) => p.FirstButtonAriaLabel = v);
         }
 
-        if (FirstButtonIcon is not null && bitPagination.HasNotBeenSet(nameof(FirstButtonIcon)))
+        if (FirstButtonIcon is not null)
         {
-            bitPagination.FirstButtonIcon = FirstButtonIcon;
+            bitPagination.TakeFromCascade(nameof(FirstButtonIcon), FirstButtonIcon, static p => p.FirstButtonIcon, static (p, v) => p.FirstButtonIcon = v);
         }
 
-        if (FirstButtonIconName.HasValue() && bitPagination.HasNotBeenSet(nameof(FirstButtonIconName)))
+        if (FirstButtonIconName.HasValue())
         {
-            bitPagination.FirstButtonIconName = FirstButtonIconName;
+            bitPagination.TakeFromCascade(nameof(FirstButtonIconName), FirstButtonIconName, static p => p.FirstButtonIconName, static (p, v) => p.FirstButtonIconName = v);
         }
 
-        if (FirstButtonText is not null && bitPagination.HasNotBeenSet(nameof(FirstButtonText)))
+        if (FirstButtonText is not null)
         {
-            bitPagination.FirstButtonText = FirstButtonText;
+            bitPagination.TakeFromCascade(nameof(FirstButtonText), FirstButtonText, static p => p.FirstButtonText, static (p, v) => p.FirstButtonText = v);
         }
 
-        if (GetItemsSummary is not null && bitPagination.HasNotBeenSet(nameof(GetItemsSummary)))
+        if (GetItemsSummary is not null)
         {
-            bitPagination.GetItemsSummary = GetItemsSummary;
+            bitPagination.TakeFromCascade(nameof(GetItemsSummary), GetItemsSummary, static p => p.GetItemsSummary, static (p, v) => p.GetItemsSummary = v);
         }
 
-        if (GetPageAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(GetPageAriaLabel)))
+        if (GetPageAriaLabel is not null)
         {
-            bitPagination.GetPageAriaLabel = GetPageAriaLabel;
+            bitPagination.TakeFromCascade(nameof(GetPageAriaLabel), GetPageAriaLabel, static p => p.GetPageAriaLabel, static (p, v) => p.GetPageAriaLabel = v);
         }
 
-        if (GetPageHref is not null && bitPagination.HasNotBeenSet(nameof(GetPageHref)))
+        if (GetPageHref is not null)
         {
-            bitPagination.GetPageHref = GetPageHref;
+            bitPagination.TakeFromCascade(nameof(GetPageHref), GetPageHref, static p => p.GetPageHref, static (p, v) => p.GetPageHref = v);
         }
 
-        if (GetSummary is not null && bitPagination.HasNotBeenSet(nameof(GetSummary)))
+        if (GetSummary is not null)
         {
-            bitPagination.GetSummary = GetSummary;
+            bitPagination.TakeFromCascade(nameof(GetSummary), GetSummary, static p => p.GetSummary, static (p, v) => p.GetSummary = v);
         }
 
-        if (GoToPageAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(GoToPageAriaLabel)))
+        if (GoToPageAriaLabel is not null)
         {
-            bitPagination.GoToPageAriaLabel = GoToPageAriaLabel;
+            bitPagination.TakeFromCascade(nameof(GoToPageAriaLabel), GoToPageAriaLabel, static p => p.GoToPageAriaLabel, static (p, v) => p.GoToPageAriaLabel = v);
         }
 
-        if (GoToPageText is not null && bitPagination.HasNotBeenSet(nameof(GoToPageText)))
+        if (GoToPageText is not null)
         {
-            bitPagination.GoToPageText = GoToPageText;
+            bitPagination.TakeFromCascade(nameof(GoToPageText), GoToPageText, static p => p.GoToPageText, static (p, v) => p.GoToPageText = v);
         }
 
-        if (HideOnSinglePage.HasValue && bitPagination.HasNotBeenSet(nameof(HideOnSinglePage)))
+        if (HideOnSinglePage.HasValue)
         {
-            bitPagination.HideOnSinglePage = HideOnSinglePage.Value;
+            bitPagination.TakeFromCascade(nameof(HideOnSinglePage), HideOnSinglePage.Value, static p => p.HideOnSinglePage, static (p, v) => p.HideOnSinglePage = v);
         }
 
-        if (LastButtonAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(LastButtonAriaLabel)))
+        if (LastButtonAriaLabel is not null)
         {
-            bitPagination.LastButtonAriaLabel = LastButtonAriaLabel;
+            bitPagination.TakeFromCascade(nameof(LastButtonAriaLabel), LastButtonAriaLabel, static p => p.LastButtonAriaLabel, static (p, v) => p.LastButtonAriaLabel = v);
         }
 
-        if (LastButtonIcon is not null && bitPagination.HasNotBeenSet(nameof(LastButtonIcon)))
+        if (LastButtonIcon is not null)
         {
-            bitPagination.LastButtonIcon = LastButtonIcon;
+            bitPagination.TakeFromCascade(nameof(LastButtonIcon), LastButtonIcon, static p => p.LastButtonIcon, static (p, v) => p.LastButtonIcon = v);
         }
 
-        if (LastButtonIconName.HasValue() && bitPagination.HasNotBeenSet(nameof(LastButtonIconName)))
+        if (LastButtonIconName.HasValue())
         {
-            bitPagination.LastButtonIconName = LastButtonIconName;
+            bitPagination.TakeFromCascade(nameof(LastButtonIconName), LastButtonIconName, static p => p.LastButtonIconName, static (p, v) => p.LastButtonIconName = v);
         }
 
-        if (LastButtonText is not null && bitPagination.HasNotBeenSet(nameof(LastButtonText)))
+        if (LastButtonText is not null)
         {
-            bitPagination.LastButtonText = LastButtonText;
+            bitPagination.TakeFromCascade(nameof(LastButtonText), LastButtonText, static p => p.LastButtonText, static (p, v) => p.LastButtonText = v);
         }
 
-        if (Loop.HasValue && bitPagination.HasNotBeenSet(nameof(Loop)))
+        if (Loop.HasValue)
         {
-            bitPagination.Loop = Loop.Value;
+            bitPagination.TakeFromCascade(nameof(Loop), Loop.Value, static p => p.Loop, static (p, v) => p.Loop = v);
         }
 
-        if (MiddleCount.HasValue && bitPagination.HasNotBeenSet(nameof(MiddleCount)))
+        if (MiddleCount.HasValue)
         {
-            bitPagination.MiddleCount = MiddleCount.Value;
+            bitPagination.TakeFromCascade(nameof(MiddleCount), MiddleCount.Value, static p => p.MiddleCount, static (p, v) => p.MiddleCount = v);
         }
 
-        if (NextButtonAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(NextButtonAriaLabel)))
+        if (NextButtonAriaLabel is not null)
         {
-            bitPagination.NextButtonAriaLabel = NextButtonAriaLabel;
+            bitPagination.TakeFromCascade(nameof(NextButtonAriaLabel), NextButtonAriaLabel, static p => p.NextButtonAriaLabel, static (p, v) => p.NextButtonAriaLabel = v);
         }
 
-        if (NextButtonIcon is not null && bitPagination.HasNotBeenSet(nameof(NextButtonIcon)))
+        if (NextButtonIcon is not null)
         {
-            bitPagination.NextButtonIcon = NextButtonIcon;
+            bitPagination.TakeFromCascade(nameof(NextButtonIcon), NextButtonIcon, static p => p.NextButtonIcon, static (p, v) => p.NextButtonIcon = v);
         }
 
-        if (NextButtonIconName.HasValue() && bitPagination.HasNotBeenSet(nameof(NextButtonIconName)))
+        if (NextButtonIconName.HasValue())
         {
-            bitPagination.NextButtonIconName = NextButtonIconName;
+            bitPagination.TakeFromCascade(nameof(NextButtonIconName), NextButtonIconName, static p => p.NextButtonIconName, static (p, v) => p.NextButtonIconName = v);
         }
 
-        if (NextButtonText is not null && bitPagination.HasNotBeenSet(nameof(NextButtonText)))
+        if (NextButtonText is not null)
         {
-            bitPagination.NextButtonText = NextButtonText;
+            bitPagination.TakeFromCascade(nameof(NextButtonText), NextButtonText, static p => p.NextButtonText, static (p, v) => p.NextButtonText = v);
         }
 
-        if (PageSizeAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(PageSizeAriaLabel)))
+        if (PageSizeAriaLabel is not null)
         {
-            bitPagination.PageSizeAriaLabel = PageSizeAriaLabel;
+            bitPagination.TakeFromCascade(nameof(PageSizeAriaLabel), PageSizeAriaLabel, static p => p.PageSizeAriaLabel, static (p, v) => p.PageSizeAriaLabel = v);
         }
 
-        if (PageSizeOptions is not null && bitPagination.HasNotBeenSet(nameof(PageSizeOptions)))
+        if (PageSizeOptions is not null)
         {
-            bitPagination.PageSizeOptions = PageSizeOptions;
+            bitPagination.TakeFromCascade(nameof(PageSizeOptions), PageSizeOptions, static p => p.PageSizeOptions, static (p, v) => p.PageSizeOptions = v);
         }
 
-        if (PageSizeText is not null && bitPagination.HasNotBeenSet(nameof(PageSizeText)))
+        if (PageSizeText is not null)
         {
-            bitPagination.PageSizeText = PageSizeText;
+            bitPagination.TakeFromCascade(nameof(PageSizeText), PageSizeText, static p => p.PageSizeText, static (p, v) => p.PageSizeText = v);
         }
 
-        if (PreviousButtonAriaLabel is not null && bitPagination.HasNotBeenSet(nameof(PreviousButtonAriaLabel)))
+        if (PreviousButtonAriaLabel is not null)
         {
-            bitPagination.PreviousButtonAriaLabel = PreviousButtonAriaLabel;
+            bitPagination.TakeFromCascade(nameof(PreviousButtonAriaLabel), PreviousButtonAriaLabel, static p => p.PreviousButtonAriaLabel, static (p, v) => p.PreviousButtonAriaLabel = v);
         }
 
-        if (PreviousButtonIcon is not null && bitPagination.HasNotBeenSet(nameof(PreviousButtonIcon)))
+        if (PreviousButtonIcon is not null)
         {
-            bitPagination.PreviousButtonIcon = PreviousButtonIcon;
+            bitPagination.TakeFromCascade(nameof(PreviousButtonIcon), PreviousButtonIcon, static p => p.PreviousButtonIcon, static (p, v) => p.PreviousButtonIcon = v);
         }
 
-        if (PreviousButtonIconName.HasValue() && bitPagination.HasNotBeenSet(nameof(PreviousButtonIconName)))
+        if (PreviousButtonIconName.HasValue())
         {
-            bitPagination.PreviousButtonIconName = PreviousButtonIconName;
+            bitPagination.TakeFromCascade(nameof(PreviousButtonIconName), PreviousButtonIconName, static p => p.PreviousButtonIconName, static (p, v) => p.PreviousButtonIconName = v);
         }
 
-        if (PreviousButtonText is not null && bitPagination.HasNotBeenSet(nameof(PreviousButtonText)))
+        if (PreviousButtonText is not null)
         {
-            bitPagination.PreviousButtonText = PreviousButtonText;
+            bitPagination.TakeFromCascade(nameof(PreviousButtonText), PreviousButtonText, static p => p.PreviousButtonText, static (p, v) => p.PreviousButtonText = v);
         }
 
-        if (Rounded.HasValue && bitPagination.HasNotBeenSet(nameof(Rounded)))
+        if (Rounded.HasValue)
         {
-            if (bitPagination.Rounded != Rounded.Value)
-            {
-                bitPagination.Rounded = Rounded.Value;
-
-                bitPagination.ClassBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Rounded), Rounded.Value, static p => p.Rounded, static (p, v) => p.Rounded = v);
         }
 
-        if (ShowFirstButton.HasValue && bitPagination.HasNotBeenSet(nameof(ShowFirstButton)))
+        if (ShowFirstButton.HasValue)
         {
-            bitPagination.ShowFirstButton = ShowFirstButton.Value;
+            bitPagination.TakeFromCascade(nameof(ShowFirstButton), ShowFirstButton.Value, static p => p.ShowFirstButton, static (p, v) => p.ShowFirstButton = v);
         }
 
-        if (ShowGoToPage.HasValue && bitPagination.HasNotBeenSet(nameof(ShowGoToPage)))
+        if (ShowGoToPage.HasValue)
         {
-            bitPagination.ShowGoToPage = ShowGoToPage.Value;
+            bitPagination.TakeFromCascade(nameof(ShowGoToPage), ShowGoToPage.Value, static p => p.ShowGoToPage, static (p, v) => p.ShowGoToPage = v);
         }
 
-        if (ShowLastButton.HasValue && bitPagination.HasNotBeenSet(nameof(ShowLastButton)))
+        if (ShowLastButton.HasValue)
         {
-            bitPagination.ShowLastButton = ShowLastButton.Value;
+            bitPagination.TakeFromCascade(nameof(ShowLastButton), ShowLastButton.Value, static p => p.ShowLastButton, static (p, v) => p.ShowLastButton = v);
         }
 
-        if (ShowNextButton.HasValue && bitPagination.HasNotBeenSet(nameof(ShowNextButton)))
+        if (ShowNextButton.HasValue)
         {
-            bitPagination.ShowNextButton = ShowNextButton.Value;
+            bitPagination.TakeFromCascade(nameof(ShowNextButton), ShowNextButton.Value, static p => p.ShowNextButton, static (p, v) => p.ShowNextButton = v);
         }
 
-        if (ShowPageButtons.HasValue && bitPagination.HasNotBeenSet(nameof(ShowPageButtons)))
+        if (ShowPageButtons.HasValue)
         {
-            bitPagination.ShowPageButtons = ShowPageButtons.Value;
+            bitPagination.TakeFromCascade(nameof(ShowPageButtons), ShowPageButtons.Value, static p => p.ShowPageButtons, static (p, v) => p.ShowPageButtons = v);
         }
 
-        if (ShowPageSizeSelector.HasValue && bitPagination.HasNotBeenSet(nameof(ShowPageSizeSelector)))
+        if (ShowPageSizeSelector.HasValue)
         {
-            bitPagination.ShowPageSizeSelector = ShowPageSizeSelector.Value;
+            bitPagination.TakeFromCascade(nameof(ShowPageSizeSelector), ShowPageSizeSelector.Value, static p => p.ShowPageSizeSelector, static (p, v) => p.ShowPageSizeSelector = v);
         }
 
-        if (ShowPreviousButton.HasValue && bitPagination.HasNotBeenSet(nameof(ShowPreviousButton)))
+        if (ShowPreviousButton.HasValue)
         {
-            bitPagination.ShowPreviousButton = ShowPreviousButton.Value;
+            bitPagination.TakeFromCascade(nameof(ShowPreviousButton), ShowPreviousButton.Value, static p => p.ShowPreviousButton, static (p, v) => p.ShowPreviousButton = v);
         }
 
-        if (ShowSummary.HasValue && bitPagination.HasNotBeenSet(nameof(ShowSummary)))
+        if (ShowSummary.HasValue)
         {
-            bitPagination.ShowSummary = ShowSummary.Value;
+            bitPagination.TakeFromCascade(nameof(ShowSummary), ShowSummary.Value, static p => p.ShowSummary, static (p, v) => p.ShowSummary = v);
         }
 
-        if (Size.HasValue && bitPagination.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            if (bitPagination.Size != Size.Value)
-            {
-                bitPagination.Size = Size.Value;
-
-                bitPagination.ClassBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Size), Size.Value, static p => p.Size, static (p, v) => p.Size = v);
         }
 
-        if (Styles is not null && bitPagination.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            if (bitPagination.Styles != Styles)
-            {
-                bitPagination.Styles = Styles;
-
-                bitPagination.StyleBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (Variant.HasValue && bitPagination.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            if (bitPagination.Variant != Variant.Value)
-            {
-                bitPagination.Variant = Variant.Value;
-
-                bitPagination.ClassBuilder.Reset();
-            }
+            bitPagination.TakeFromCascade(nameof(Variant), Variant.Value, static p => p.Variant, static (p, v) => p.Variant = v);
         }
     }
 }

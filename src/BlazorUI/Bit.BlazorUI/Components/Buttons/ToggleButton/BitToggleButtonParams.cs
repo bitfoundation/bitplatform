@@ -301,281 +301,239 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitToggleButton);
 
-        if (AllowDisabledFocus.HasValue && bitToggleButton.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        if (AllowDisabledFocus.HasValue)
         {
-            bitToggleButton.AllowDisabledFocus = AllowDisabledFocus.Value;
+            bitToggleButton.TakeFromCascade(nameof(AllowDisabledFocus), AllowDisabledFocus.Value, static t => t.AllowDisabledFocus, static (t, v) => t.AllowDisabledFocus = v);
         }
 
-        if (AriaControls.HasValue() && bitToggleButton.HasNotBeenSet(nameof(AriaControls)))
+        if (AriaControls.HasValue())
         {
-            bitToggleButton.AriaControls = AriaControls;
+            bitToggleButton.TakeFromCascade(nameof(AriaControls), AriaControls, static t => t.AriaControls, static (t, v) => t.AriaControls = v);
         }
 
-        if (AriaDescription.HasValue() && bitToggleButton.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitToggleButton.AriaDescription = AriaDescription;
+            bitToggleButton.TakeFromCascade(nameof(AriaDescription), AriaDescription, static t => t.AriaDescription, static (t, v) => t.AriaDescription = v);
         }
 
-        if (AriaHidden.HasValue && bitToggleButton.HasNotBeenSet(nameof(AriaHidden)))
+        if (AriaHidden.HasValue)
         {
-            bitToggleButton.AriaHidden = AriaHidden.Value;
+            bitToggleButton.TakeFromCascade(nameof(AriaHidden), AriaHidden.Value, static t => t.AriaHidden, static (t, v) => t.AriaHidden = v);
         }
 
-        if (AriaLabelledBy.HasValue() && bitToggleButton.HasNotBeenSet(nameof(AriaLabelledBy)))
+        if (AriaLabelledBy.HasValue())
         {
-            bitToggleButton.AriaLabelledBy = AriaLabelledBy;
+            bitToggleButton.TakeFromCascade(nameof(AriaLabelledBy), AriaLabelledBy, static t => t.AriaLabelledBy, static (t, v) => t.AriaLabelledBy = v);
         }
 
-        if (AriaMode.HasValue && bitToggleButton.HasNotBeenSet(nameof(AriaMode)))
+        if (AriaMode.HasValue)
         {
-            bitToggleButton.AriaMode = AriaMode.Value;
+            bitToggleButton.TakeFromCascade(nameof(AriaMode), AriaMode.Value, static t => t.AriaMode, static (t, v) => t.AriaMode = v);
         }
 
-        if (AutoFocus.HasValue && bitToggleButton.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitToggleButton.AutoFocus = AutoFocus.Value;
+            bitToggleButton.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static t => t.AutoFocus, static (t, v) => t.AutoFocus = v);
         }
 
-        if (AutoLoading.HasValue && bitToggleButton.HasNotBeenSet(nameof(AutoLoading)))
+        if (AutoLoading.HasValue)
         {
-            bitToggleButton.AutoLoading = AutoLoading.Value;
+            bitToggleButton.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static t => t.AutoLoading, static (t, v) => t.AutoLoading = v);
         }
 
-        if (CheckMarkIcon is not null && bitToggleButton.HasNotBeenSet(nameof(CheckMarkIcon)))
+        if (CheckMarkIcon is not null)
         {
-            bitToggleButton.CheckMarkIcon = CheckMarkIcon;
+            bitToggleButton.TakeFromCascade(nameof(CheckMarkIcon), CheckMarkIcon, static t => t.CheckMarkIcon, static (t, v) => t.CheckMarkIcon = v);
         }
 
-        if (CheckMarkIconName.HasValue() && bitToggleButton.HasNotBeenSet(nameof(CheckMarkIconName)))
+        if (CheckMarkIconName.HasValue())
         {
-            bitToggleButton.CheckMarkIconName = CheckMarkIconName;
+            bitToggleButton.TakeFromCascade(nameof(CheckMarkIconName), CheckMarkIconName, static t => t.CheckMarkIconName, static (t, v) => t.CheckMarkIconName = v);
         }
 
-        if (Classes is not null && bitToggleButton.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitToggleButton.Classes = Classes;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (Color.HasValue && bitToggleButton.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitToggleButton.Color = Color.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (DefaultIsChecked.HasValue && bitToggleButton.HasNotBeenSet(nameof(DefaultIsChecked)))
+        if (DefaultIsChecked.HasValue)
         {
-            bitToggleButton.DefaultIsChecked = DefaultIsChecked.Value;
+            bitToggleButton.TakeFromCascade(nameof(DefaultIsChecked), DefaultIsChecked.Value, static t => t.DefaultIsChecked, static (t, v) => t.DefaultIsChecked = v);
         }
 
-        if (FixedCheckMark.HasValue && bitToggleButton.HasNotBeenSet(nameof(FixedCheckMark)))
+        if (FixedCheckMark.HasValue)
         {
-            bitToggleButton.FixedCheckMark = FixedCheckMark.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(FixedCheckMark), FixedCheckMark.Value, static t => t.FixedCheckMark, static (t, v) => t.FixedCheckMark = v);
         }
 
-        if (FixedColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(FixedColor)))
+        if (FixedColor.HasValue)
         {
-            bitToggleButton.FixedColor = FixedColor.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(FixedColor), FixedColor.Value, static t => t.FixedColor, static (t, v) => t.FixedColor = v);
         }
 
-        if (FullWidth.HasValue && bitToggleButton.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitToggleButton.FullWidth = FullWidth.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
-        if (Icon is not null && bitToggleButton.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitToggleButton.Icon = Icon;
+            bitToggleButton.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
         }
 
-        if (IconName.HasValue() && bitToggleButton.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitToggleButton.IconName = IconName;
+            bitToggleButton.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
         }
 
-        if (IconOnly.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue)
         {
-            bitToggleButton.IconOnly = IconOnly.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static t => t.IconOnly, static (t, v) => t.IconOnly = v);
         }
 
-        if (IconPlacement.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue)
         {
-            bitToggleButton.IconPlacement = IconPlacement.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static t => t.IconPlacement, static (t, v) => t.IconPlacement = v);
         }
 
-        if (IsLoading.HasValue && bitToggleButton.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue)
         {
-            bitToggleButton.IsLoading = IsLoading.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static t => t.IsLoading, static (t, v) => t.IsLoading = v);
         }
 
-        if (LoadingDelay.HasValue && bitToggleButton.HasNotBeenSet(nameof(LoadingDelay)))
+        if (LoadingDelay.HasValue)
         {
-            bitToggleButton.LoadingDelay = LoadingDelay.Value;
+            bitToggleButton.TakeFromCascade(nameof(LoadingDelay), LoadingDelay.Value, static t => t.LoadingDelay, static (t, v) => t.LoadingDelay = v);
         }
 
-        if (LoadingLabel.HasValue() && bitToggleButton.HasNotBeenSet(nameof(LoadingLabel)))
+        if (LoadingLabel.HasValue())
         {
-            bitToggleButton.LoadingLabel = LoadingLabel;
+            bitToggleButton.TakeFromCascade(nameof(LoadingLabel), LoadingLabel, static t => t.LoadingLabel, static (t, v) => t.LoadingLabel = v);
         }
 
-        if (LoadingLabelPlacement.HasValue && bitToggleButton.HasNotBeenSet(nameof(LoadingLabelPlacement)))
+        if (LoadingLabelPlacement.HasValue)
         {
-            bitToggleButton.LoadingLabelPlacement = LoadingLabelPlacement.Value;
+            bitToggleButton.TakeFromCascade(nameof(LoadingLabelPlacement), LoadingLabelPlacement.Value, static t => t.LoadingLabelPlacement, static (t, v) => t.LoadingLabelPlacement = v);
         }
 
-        if (NoWrap.HasValue && bitToggleButton.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue)
         {
-            bitToggleButton.NoWrap = NoWrap.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static t => t.NoWrap, static (t, v) => t.NoWrap = v);
         }
 
-        if (OffAriaLabel.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OffAriaLabel)))
+        if (OffAriaLabel.HasValue())
         {
-            bitToggleButton.OffAriaLabel = OffAriaLabel;
+            bitToggleButton.TakeFromCascade(nameof(OffAriaLabel), OffAriaLabel, static t => t.OffAriaLabel, static (t, v) => t.OffAriaLabel = v);
         }
 
-        if (OffColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(OffColor)))
+        if (OffColor.HasValue)
         {
-            bitToggleButton.OffColor = OffColor.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(OffColor), OffColor.Value, static t => t.OffColor, static (t, v) => t.OffColor = v);
         }
 
-        if (OffIcon is not null && bitToggleButton.HasNotBeenSet(nameof(OffIcon)))
+        if (OffIcon is not null)
         {
-            bitToggleButton.OffIcon = OffIcon;
+            bitToggleButton.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v);
         }
 
-        if (OffIconName.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OffIconName)))
+        if (OffIconName.HasValue())
         {
-            bitToggleButton.OffIconName = OffIconName;
+            bitToggleButton.TakeFromCascade(nameof(OffIconName), OffIconName, static t => t.OffIconName, static (t, v) => t.OffIconName = v);
         }
 
-        if (OffText.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OffText)))
+        if (OffText.HasValue())
         {
-            bitToggleButton.OffText = OffText;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(OffText), OffText, static t => t.OffText, static (t, v) => t.OffText = v);
         }
 
-        if (OffTitle.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OffTitle)))
+        if (OffTitle.HasValue())
         {
-            bitToggleButton.OffTitle = OffTitle;
+            bitToggleButton.TakeFromCascade(nameof(OffTitle), OffTitle, static t => t.OffTitle, static (t, v) => t.OffTitle = v);
         }
 
-        if (OffVariant.HasValue && bitToggleButton.HasNotBeenSet(nameof(OffVariant)))
+        if (OffVariant.HasValue)
         {
-            bitToggleButton.OffVariant = OffVariant.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(OffVariant), OffVariant.Value, static t => t.OffVariant, static (t, v) => t.OffVariant = v);
         }
 
-        if (OnAriaLabel.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OnAriaLabel)))
+        if (OnAriaLabel.HasValue())
         {
-            bitToggleButton.OnAriaLabel = OnAriaLabel;
+            bitToggleButton.TakeFromCascade(nameof(OnAriaLabel), OnAriaLabel, static t => t.OnAriaLabel, static (t, v) => t.OnAriaLabel = v);
         }
 
-        if (OnColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(OnColor)))
+        if (OnColor.HasValue)
         {
-            bitToggleButton.OnColor = OnColor.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(OnColor), OnColor.Value, static t => t.OnColor, static (t, v) => t.OnColor = v);
         }
 
-        if (OnIcon is not null && bitToggleButton.HasNotBeenSet(nameof(OnIcon)))
+        if (OnIcon is not null)
         {
-            bitToggleButton.OnIcon = OnIcon;
+            bitToggleButton.TakeFromCascade(nameof(OnIcon), OnIcon, static t => t.OnIcon, static (t, v) => t.OnIcon = v);
         }
 
-        if (OnIconName.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OnIconName)))
+        if (OnIconName.HasValue())
         {
-            bitToggleButton.OnIconName = OnIconName;
+            bitToggleButton.TakeFromCascade(nameof(OnIconName), OnIconName, static t => t.OnIconName, static (t, v) => t.OnIconName = v);
         }
 
-        if (OnText.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OnText)))
+        if (OnText.HasValue())
         {
-            bitToggleButton.OnText = OnText;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(OnText), OnText, static t => t.OnText, static (t, v) => t.OnText = v);
         }
 
-        if (OnTitle.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OnTitle)))
+        if (OnTitle.HasValue())
         {
-            bitToggleButton.OnTitle = OnTitle;
+            bitToggleButton.TakeFromCascade(nameof(OnTitle), OnTitle, static t => t.OnTitle, static (t, v) => t.OnTitle = v);
         }
 
-        if (OnVariant.HasValue && bitToggleButton.HasNotBeenSet(nameof(OnVariant)))
+        if (OnVariant.HasValue)
         {
-            bitToggleButton.OnVariant = OnVariant.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(OnVariant), OnVariant.Value, static t => t.OnVariant, static (t, v) => t.OnVariant = v);
         }
 
-        if (Reclickable.HasValue && bitToggleButton.HasNotBeenSet(nameof(Reclickable)))
+        if (Reclickable.HasValue)
         {
-            bitToggleButton.Reclickable = Reclickable.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static t => t.Reclickable, static (t, v) => t.Reclickable = v);
         }
 
-        if (ShowCheckMark.HasValue && bitToggleButton.HasNotBeenSet(nameof(ShowCheckMark)))
+        if (ShowCheckMark.HasValue)
         {
-            bitToggleButton.ShowCheckMark = ShowCheckMark.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(ShowCheckMark), ShowCheckMark.Value, static t => t.ShowCheckMark, static (t, v) => t.ShowCheckMark = v);
         }
 
-        if (Size.HasValue && bitToggleButton.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitToggleButton.Size = Size.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (StopPropagation.HasValue && bitToggleButton.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitToggleButton.StopPropagation = StopPropagation.Value;
+            bitToggleButton.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static t => t.StopPropagation, static (t, v) => t.StopPropagation = v);
         }
 
-        if (Styles is not null && bitToggleButton.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitToggleButton.Styles = Styles;
-
-            bitToggleButton.StyleBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Text.HasValue() && bitToggleButton.HasNotBeenSet(nameof(Text)))
+        if (Text.HasValue())
         {
-            bitToggleButton.Text = Text;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Text), Text, static t => t.Text, static (t, v) => t.Text = v);
         }
 
-        if (Title.HasValue() && bitToggleButton.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitToggleButton.Title = Title;
+            bitToggleButton.TakeFromCascade(nameof(Title), Title, static t => t.Title, static (t, v) => t.Title = v);
         }
 
-        if (Variant.HasValue && bitToggleButton.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            bitToggleButton.Variant = Variant.Value;
-
-            bitToggleButton.ClassBuilder.Reset();
+            bitToggleButton.TakeFromCascade(nameof(Variant), Variant.Value, static t => t.Variant, static (t, v) => t.Variant = v);
         }
     }
 }

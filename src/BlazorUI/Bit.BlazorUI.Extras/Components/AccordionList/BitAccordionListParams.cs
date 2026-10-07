@@ -205,180 +205,162 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
 
         UpdateBaseParameters(bitAccordionList);
 
-        // This runs on every render of every list under the BitParams, so a value that drives the class or the style
-        // of the root is only assigned - and the builder only reset - when it differs from the one the list already
-        // holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (Background.HasValue && bitAccordionList.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitAccordionList.Background = Background.Value;
+            bitAccordionList.TakeFromCascade(nameof(Background), Background.Value, static a => a.Background, static (a, v) => a.Background = v);
         }
 
-        if (Border.HasValue && bitAccordionList.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue)
         {
-            bitAccordionList.Border = Border.Value;
+            bitAccordionList.TakeFromCascade(nameof(Border), Border.Value, static a => a.Border, static (a, v) => a.Border = v);
         }
 
-        if (Classes is not null && bitAccordionList.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitAccordionList.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitAccordionList.Classes = Classes;
-
-            bitAccordionList.ClassBuilder.Reset();
+            bitAccordionList.TakeFromCascade(nameof(Classes), Classes, static a => a.Classes, static (a, v) => a.Classes = v);
         }
 
-        if (Collapsible.HasValue && bitAccordionList.HasNotBeenSet(nameof(Collapsible)))
+        if (Collapsible.HasValue)
         {
-            bitAccordionList.Collapsible = Collapsible.Value;
+            bitAccordionList.TakeFromCascade(nameof(Collapsible), Collapsible.Value, static a => a.Collapsible, static (a, v) => a.Collapsible = v);
         }
 
-        if (EmptyContent is not null && bitAccordionList.HasNotBeenSet(nameof(EmptyContent)))
+        if (EmptyContent is not null)
         {
-            bitAccordionList.EmptyContent = EmptyContent;
+            bitAccordionList.TakeFromCascade(nameof(EmptyContent), EmptyContent, static a => a.EmptyContent, static (a, v) => a.EmptyContent = v);
         }
 
         // The icon takes precedence over the icon name, so a cascaded icon is only a default for a list that has
         // set neither: applied over a list's own ExpandedExpanderIconName it would override it rather than default it.
-        if (ExpandedExpanderIcon is not null &&
-            bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIcon)) &&
-            bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
+        if (ExpandedExpanderIcon is not null && bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
         {
-            bitAccordionList.ExpandedExpanderIcon = ExpandedExpanderIcon;
+            bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIcon), ExpandedExpanderIcon, static a => a.ExpandedExpanderIcon, static (a, v) => a.ExpandedExpanderIcon = v);
         }
 
-        if (ExpandedExpanderIconName.HasValue() && bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
+        if (ExpandedExpanderIconName.HasValue())
         {
-            bitAccordionList.ExpandedExpanderIconName = ExpandedExpanderIconName;
+            bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIconName), ExpandedExpanderIconName, static a => a.ExpandedExpanderIconName, static (a, v) => a.ExpandedExpanderIconName = v);
         }
 
         // Likewise for the collapsed expander icon and the list's own ExpanderIconName.
-        if (ExpanderIcon is not null &&
-            bitAccordionList.HasNotBeenSet(nameof(ExpanderIcon)) &&
-            bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))
+        if (ExpanderIcon is not null && bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))
         {
-            bitAccordionList.ExpanderIcon = ExpanderIcon;
+            bitAccordionList.TakeFromCascade(nameof(ExpanderIcon), ExpanderIcon, static a => a.ExpanderIcon, static (a, v) => a.ExpanderIcon = v);
         }
 
-        if (ExpanderIconName.HasValue() && bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))
+        if (ExpanderIconName.HasValue())
         {
-            bitAccordionList.ExpanderIconName = ExpanderIconName;
+            bitAccordionList.TakeFromCascade(nameof(ExpanderIconName), ExpanderIconName, static a => a.ExpanderIconName, static (a, v) => a.ExpanderIconName = v);
         }
 
-        if (ExpanderIconPlacement.HasValue && bitAccordionList.HasNotBeenSet(nameof(ExpanderIconPlacement)))
+        if (ExpanderIconPlacement.HasValue)
         {
-            bitAccordionList.ExpanderIconPlacement = ExpanderIconPlacement.Value;
+            bitAccordionList.TakeFromCascade(nameof(ExpanderIconPlacement), ExpanderIconPlacement.Value, static a => a.ExpanderIconPlacement, static (a, v) => a.ExpanderIconPlacement = v);
         }
 
-        if (ExpandOnPrint.HasValue && bitAccordionList.HasNotBeenSet(nameof(ExpandOnPrint)))
+        if (ExpandOnPrint.HasValue)
         {
-            bitAccordionList.ExpandOnPrint = ExpandOnPrint.Value;
+            bitAccordionList.TakeFromCascade(nameof(ExpandOnPrint), ExpandOnPrint.Value, static a => a.ExpandOnPrint, static (a, v) => a.ExpandOnPrint = v);
         }
 
-        if (Gap.HasValue && bitAccordionList.HasNotBeenSet(nameof(Gap)) && bitAccordionList.Gap != Gap)
+        if (Gap.HasValue)
         {
-            bitAccordionList.Gap = Gap.Value;
-
-            bitAccordionList.StyleBuilder.Reset();
+            bitAccordionList.TakeFromCascade(nameof(Gap), Gap.Value, static a => a.Gap, static (a, v) => a.Gap = v);
         }
 
-        if (HeadingLevel.HasValue && bitAccordionList.HasNotBeenSet(nameof(HeadingLevel)))
+        if (HeadingLevel.HasValue)
         {
-            bitAccordionList.HeadingLevel = HeadingLevel.Value;
+            bitAccordionList.TakeFromCascade(nameof(HeadingLevel), HeadingLevel.Value, static a => a.HeadingLevel, static (a, v) => a.HeadingLevel = v);
         }
 
-        if (HiddenUntilFound.HasValue && bitAccordionList.HasNotBeenSet(nameof(HiddenUntilFound)))
+        if (HiddenUntilFound.HasValue)
         {
-            bitAccordionList.HiddenUntilFound = HiddenUntilFound.Value;
+            bitAccordionList.TakeFromCascade(nameof(HiddenUntilFound), HiddenUntilFound.Value, static a => a.HiddenUntilFound, static (a, v) => a.HiddenUntilFound = v);
         }
 
-        if (HideExpanderIcon.HasValue && bitAccordionList.HasNotBeenSet(nameof(HideExpanderIcon)))
+        if (HideExpanderIcon.HasValue)
         {
-            bitAccordionList.HideExpanderIcon = HideExpanderIcon.Value;
+            bitAccordionList.TakeFromCascade(nameof(HideExpanderIcon), HideExpanderIcon.Value, static a => a.HideExpanderIcon, static (a, v) => a.HideExpanderIcon = v);
         }
 
-        if (Joined.HasValue && bitAccordionList.HasNotBeenSet(nameof(Joined)) && bitAccordionList.Joined != Joined.Value)
+        if (Joined.HasValue)
         {
-            bitAccordionList.Joined = Joined.Value;
-
-            bitAccordionList.ClassBuilder.Reset();
-            bitAccordionList.StyleBuilder.Reset();
+            bitAccordionList.TakeFromCascade(nameof(Joined), Joined.Value, static a => a.Joined, static (a, v) => a.Joined = v);
         }
 
-        if (LazyContent.HasValue && bitAccordionList.HasNotBeenSet(nameof(LazyContent)))
+        if (LazyContent.HasValue)
         {
-            bitAccordionList.LazyContent = LazyContent.Value;
+            bitAccordionList.TakeFromCascade(nameof(LazyContent), LazyContent.Value, static a => a.LazyContent, static (a, v) => a.LazyContent = v);
         }
 
-        if (MaxExpanded.HasValue && bitAccordionList.HasNotBeenSet(nameof(MaxExpanded)))
+        if (MaxExpanded.HasValue)
         {
-            bitAccordionList.MaxExpanded = MaxExpanded.Value;
+            bitAccordionList.TakeFromCascade(nameof(MaxExpanded), MaxExpanded.Value, static a => a.MaxExpanded, static (a, v) => a.MaxExpanded = v);
         }
 
-        if (MaxHeight.HasValue() && bitAccordionList.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue())
         {
-            bitAccordionList.MaxHeight = MaxHeight;
+            bitAccordionList.TakeFromCascade(nameof(MaxHeight), MaxHeight, static a => a.MaxHeight, static (a, v) => a.MaxHeight = v);
         }
 
-        if (Multiple.HasValue && bitAccordionList.HasNotBeenSet(nameof(Multiple)) && bitAccordionList.Multiple != Multiple.Value)
+        if (Multiple.HasValue)
         {
-            bitAccordionList.Multiple = Multiple.Value;
-
-            bitAccordionList.ClassBuilder.Reset();
+            bitAccordionList.TakeFromCascade(nameof(Multiple), Multiple.Value, static a => a.Multiple, static (a, v) => a.Multiple = v);
         }
 
-        if (Navigable.HasValue && bitAccordionList.HasNotBeenSet(nameof(Navigable)))
+        if (Navigable.HasValue)
         {
-            bitAccordionList.Navigable = Navigable.Value;
+            bitAccordionList.TakeFromCascade(nameof(Navigable), Navigable.Value, static a => a.Navigable, static (a, v) => a.Navigable = v);
         }
 
-        if (NoBorder.HasValue && bitAccordionList.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue)
         {
-            bitAccordionList.NoBorder = NoBorder.Value;
+            bitAccordionList.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static a => a.NoBorder, static (a, v) => a.NoBorder = v);
         }
 
-        if (NoContentRegion.HasValue && bitAccordionList.HasNotBeenSet(nameof(NoContentRegion)))
+        if (NoContentRegion.HasValue)
         {
-            bitAccordionList.NoContentRegion = NoContentRegion.Value;
+            bitAccordionList.TakeFromCascade(nameof(NoContentRegion), NoContentRegion.Value, static a => a.NoContentRegion, static (a, v) => a.NoContentRegion = v);
         }
 
-        if (NoExpanderRotation.HasValue && bitAccordionList.HasNotBeenSet(nameof(NoExpanderRotation)))
+        if (NoExpanderRotation.HasValue)
         {
-            bitAccordionList.NoExpanderRotation = NoExpanderRotation.Value;
+            bitAccordionList.TakeFromCascade(nameof(NoExpanderRotation), NoExpanderRotation.Value, static a => a.NoExpanderRotation, static (a, v) => a.NoExpanderRotation = v);
         }
 
-        if (NoNavigationLoop.HasValue && bitAccordionList.HasNotBeenSet(nameof(NoNavigationLoop)))
+        if (NoNavigationLoop.HasValue)
         {
-            bitAccordionList.NoNavigationLoop = NoNavigationLoop.Value;
+            bitAccordionList.TakeFromCascade(nameof(NoNavigationLoop), NoNavigationLoop.Value, static a => a.NoNavigationLoop, static (a, v) => a.NoNavigationLoop = v);
         }
 
-        if (ReadOnly.HasValue && bitAccordionList.HasNotBeenSet(nameof(ReadOnly)))
+        if (ReadOnly.HasValue)
         {
-            bitAccordionList.ReadOnly = ReadOnly.Value;
+            bitAccordionList.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static a => a.ReadOnly, static (a, v) => a.ReadOnly = v);
         }
 
-        if (ScrollIntoViewOnExpand.HasValue && bitAccordionList.HasNotBeenSet(nameof(ScrollIntoViewOnExpand)))
+        if (ScrollIntoViewOnExpand.HasValue)
         {
-            bitAccordionList.ScrollIntoViewOnExpand = ScrollIntoViewOnExpand.Value;
+            bitAccordionList.TakeFromCascade(nameof(ScrollIntoViewOnExpand), ScrollIntoViewOnExpand.Value, static a => a.ScrollIntoViewOnExpand, static (a, v) => a.ScrollIntoViewOnExpand = v);
         }
 
-        if (Size.HasValue && bitAccordionList.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitAccordionList.Size = Size.Value;
+            bitAccordionList.TakeFromCascade(nameof(Size), Size.Value, static a => a.Size, static (a, v) => a.Size = v);
         }
 
-        if (Styles is not null && bitAccordionList.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitAccordionList.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitAccordionList.Styles = Styles;
-
-            bitAccordionList.StyleBuilder.Reset();
+            bitAccordionList.TakeFromCascade(nameof(Styles), Styles, static a => a.Styles, static (a, v) => a.Styles = v);
         }
 
-        if (TransitionDuration.HasValue && bitAccordionList.HasNotBeenSet(nameof(TransitionDuration)))
+        if (TransitionDuration.HasValue)
         {
-            bitAccordionList.TransitionDuration = TransitionDuration.Value;
+            bitAccordionList.TakeFromCascade(nameof(TransitionDuration), TransitionDuration.Value, static a => a.TransitionDuration, static (a, v) => a.TransitionDuration = v);
         }
 
-        if (UnmountOnCollapse.HasValue && bitAccordionList.HasNotBeenSet(nameof(UnmountOnCollapse)))
+        if (UnmountOnCollapse.HasValue)
         {
-            bitAccordionList.UnmountOnCollapse = UnmountOnCollapse.Value;
+            bitAccordionList.TakeFromCascade(nameof(UnmountOnCollapse), UnmountOnCollapse.Value, static a => a.UnmountOnCollapse, static (a, v) => a.UnmountOnCollapse = v);
         }
     }
 }

@@ -195,98 +195,82 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBadge);
 
-        if (Bordered.HasValue && bitBadge.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue)
         {
-            bitBadge.Bordered = Bordered.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Bordered), Bordered.Value, static b => b.Bordered, static (b, v) => b.Bordered = v);
         }
 
-        if (Classes is not null && bitBadge.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitBadge.Classes = Classes;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Classes), Classes, static b => b.Classes, static (b, v) => b.Classes = v);
         }
 
-        if (Color.HasValue && bitBadge.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitBadge.Color = Color.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Color), Color.Value, static b => b.Color, static (b, v) => b.Color = v);
         }
 
         bool contentOrMaxWasSet = false;
 
-        if (Content is not null && bitBadge.HasNotBeenSet(nameof(Content)))
+        if (Content is not null && bitBadge.TakeFromCascade(nameof(Content), Content, static b => b.Content, static (b, v) => b.Content = v))
         {
-            bitBadge.Content = Content;
-
             contentOrMaxWasSet = true;
         }
 
-        if (ContentTemplate is not null && bitBadge.HasNotBeenSet(nameof(ContentTemplate)))
+        if (ContentTemplate is not null)
         {
-            bitBadge.ContentTemplate = ContentTemplate;
+            bitBadge.TakeFromCascade(nameof(ContentTemplate), ContentTemplate, static b => b.ContentTemplate, static (b, v) => b.ContentTemplate = v);
         }
 
-        if (Decorative.HasValue && bitBadge.HasNotBeenSet(nameof(Decorative)))
+        if (Decorative.HasValue)
         {
-            bitBadge.Decorative = Decorative.Value;
+            bitBadge.TakeFromCascade(nameof(Decorative), Decorative.Value, static b => b.Decorative, static (b, v) => b.Decorative = v);
         }
 
-        if (Description.HasValue() && bitBadge.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitBadge.Description = Description;
+            bitBadge.TakeFromCascade(nameof(Description), Description, static b => b.Description, static (b, v) => b.Description = v);
         }
 
-        if (Dot.HasValue && bitBadge.HasNotBeenSet(nameof(Dot)))
+        if (Dot.HasValue)
         {
-            bitBadge.Dot = Dot.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Dot), Dot.Value, static b => b.Dot, static (b, v) => b.Dot = v);
         }
 
-        if (Hidden.HasValue && bitBadge.HasNotBeenSet(nameof(Hidden)))
+        if (Hidden.HasValue)
         {
-            bitBadge.Hidden = Hidden.Value;
+            bitBadge.TakeFromCascade(nameof(Hidden), Hidden.Value, static b => b.Hidden, static (b, v) => b.Hidden = v);
         }
 
         bool linkWasSet = false;
 
-        if (Href.HasValue() && bitBadge.HasNotBeenSet(nameof(Href)))
+        if (Href.HasValue() && bitBadge.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v))
         {
-            bitBadge.Href = Href;
-
             linkWasSet = true;
         }
 
-        if (Icon is not null && bitBadge.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitBadge.Icon = Icon;
+            bitBadge.TakeFromCascade(nameof(Icon), Icon, static b => b.Icon, static (b, v) => b.Icon = v);
         }
 
-        if (IconName.HasValue() && bitBadge.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitBadge.IconName = IconName;
+            bitBadge.TakeFromCascade(nameof(IconName), IconName, static b => b.IconName, static (b, v) => b.IconName = v);
         }
 
-        if (Inline.HasValue && bitBadge.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue)
         {
-            bitBadge.Inline = Inline.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Inline), Inline.Value, static b => b.Inline, static (b, v) => b.Inline = v);
         }
 
-        if (Live.HasValue && bitBadge.HasNotBeenSet(nameof(Live)))
+        if (Live.HasValue)
         {
-            bitBadge.Live = Live.Value;
+            bitBadge.TakeFromCascade(nameof(Live), Live.Value, static b => b.Live, static (b, v) => b.Live = v);
         }
 
-        if (Max.HasValue && bitBadge.HasNotBeenSet(nameof(Max)))
+        if (Max.HasValue && bitBadge.TakeFromCascade(nameof(Max), Max.Value, static b => b.Max, static (b, v) => b.Max = v))
         {
-            bitBadge.Max = Max.Value;
-
             contentOrMaxWasSet = true;
         }
 
@@ -297,85 +281,63 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.OnSetContentAndMax();
         }
 
-        if (OffsetX.HasValue() && bitBadge.HasNotBeenSet(nameof(OffsetX)))
+        if (OffsetX.HasValue())
         {
-            bitBadge.OffsetX = OffsetX;
-
-            bitBadge.StyleBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(OffsetX), OffsetX, static b => b.OffsetX, static (b, v) => b.OffsetX = v);
         }
 
-        if (OffsetY.HasValue() && bitBadge.HasNotBeenSet(nameof(OffsetY)))
+        if (OffsetY.HasValue())
         {
-            bitBadge.OffsetY = OffsetY;
-
-            bitBadge.StyleBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(OffsetY), OffsetY, static b => b.OffsetY, static (b, v) => b.OffsetY = v);
         }
 
-        if (Overlap.HasValue && bitBadge.HasNotBeenSet(nameof(Overlap)))
+        if (Overlap.HasValue)
         {
-            bitBadge.Overlap = Overlap.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Overlap), Overlap.Value, static b => b.Overlap, static (b, v) => b.Overlap = v);
         }
 
-        if (Position.HasValue && bitBadge.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue)
         {
-            bitBadge.Position = Position.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Position), Position.Value, static b => b.Position, static (b, v) => b.Position = v);
         }
 
-        if (Pulse.HasValue && bitBadge.HasNotBeenSet(nameof(Pulse)))
+        if (Pulse.HasValue)
         {
-            bitBadge.Pulse = Pulse.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Pulse), Pulse.Value, static b => b.Pulse, static (b, v) => b.Pulse = v);
         }
 
-        if (Rel.HasValue && bitBadge.HasNotBeenSet(nameof(Rel)))
+        if (Rel.HasValue && bitBadge.TakeFromCascade(nameof(Rel), Rel.Value, static b => b.Rel, static (b, v) => b.Rel = v))
         {
-            bitBadge.Rel = Rel.Value;
-
             linkWasSet = true;
         }
 
-        if (Reversed.HasValue && bitBadge.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue)
         {
-            bitBadge.Reversed = Reversed.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Reversed), Reversed.Value, static b => b.Reversed, static (b, v) => b.Reversed = v);
         }
 
-        if (Shape.HasValue && bitBadge.HasNotBeenSet(nameof(Shape)))
+        if (Shape.HasValue)
         {
-            bitBadge.Shape = Shape.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Shape), Shape.Value, static b => b.Shape, static (b, v) => b.Shape = v);
         }
 
-        if (ShowZero.HasValue && bitBadge.HasNotBeenSet(nameof(ShowZero)))
+        if (ShowZero.HasValue)
         {
-            bitBadge.ShowZero = ShowZero.Value;
+            bitBadge.TakeFromCascade(nameof(ShowZero), ShowZero.Value, static b => b.ShowZero, static (b, v) => b.ShowZero = v);
         }
 
-        if (Size.HasValue && bitBadge.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitBadge.Size = Size.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Size), Size.Value, static b => b.Size, static (b, v) => b.Size = v);
         }
 
-        if (Styles is not null && bitBadge.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitBadge.Styles = Styles;
-
-            bitBadge.StyleBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Styles), Styles, static b => b.Styles, static (b, v) => b.Styles = v);
         }
 
-        if (Target.HasValue() && bitBadge.HasNotBeenSet(nameof(Target)))
+        if (Target.HasValue() && bitBadge.TakeFromCascade(nameof(Target), Target, static b => b.Target, static (b, v) => b.Target = v))
         {
-            bitBadge.Target = Target;
-
             linkWasSet = true;
         }
 
@@ -386,16 +348,14 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.OnSetHrefAndRel();
         }
 
-        if (Title.HasValue() && bitBadge.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitBadge.Title = Title;
+            bitBadge.TakeFromCascade(nameof(Title), Title, static b => b.Title, static (b, v) => b.Title = v);
         }
 
-        if (Variant.HasValue && bitBadge.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            bitBadge.Variant = Variant.Value;
-
-            bitBadge.ClassBuilder.Reset();
+            bitBadge.TakeFromCascade(nameof(Variant), Variant.Value, static b => b.Variant, static (b, v) => b.Variant = v);
         }
     }
 }
