@@ -84,7 +84,7 @@ $npn-fallback-breakpoints: (
     // that runs is the one of the state being entered.
     transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-decelerate;
 
-    // The drawer is docked to the edge it comes from, which the Position expresses in the text direction:
+    // The drawer is docked to the edge it comes from, which the Placement expresses in the text direction:
     // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
     // screen, and a panel that is both is back where it started.
     &.bit-rtl,

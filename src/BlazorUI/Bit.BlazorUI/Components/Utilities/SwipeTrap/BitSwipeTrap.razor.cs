@@ -160,12 +160,27 @@ public partial class BitSwipeTrap : BitComponentBase
         await OnEnd.InvokeAsync(new(startX, startY, diffX, diffY, velocityX, velocityY, pointerType, isCanceled, duration));
     }
 
+    /// <remarks>
+    /// The script hands the direction over by name rather than as the ordinal of <see cref="BitPlacement"/>, so
+    /// the order of that library-wide enum is no contract with it. A name that is not one of the four physical
+    /// directions triggers nothing.
+    /// </remarks>
     [JSInvokable("OnKeyTrigger")]
-    public async Task _OnKeyTrigger(BitSwipeDirection direction)
+    public async Task _OnKeyTrigger(string direction)
     {
         if (IsEnabled is false || KeyboardTrigger is false) return;
 
-        await OnTrigger.InvokeAsync(new(direction, 0, 0, 0, 0, "keyboard", 0));
+        BitPlacement? placement = direction switch
+        {
+            "top" => BitPlacement.Top,
+            "bottom" => BitPlacement.Bottom,
+            "left" => BitPlacement.Left,
+            "right" => BitPlacement.Right,
+            _ => null
+        };
+        if (placement is null) return;
+
+        await OnTrigger.InvokeAsync(new(placement.Value, 0, 0, 0, 0, "keyboard", 0));
     }
 
     [JSInvokable("OnTrigger")]
@@ -175,8 +190,8 @@ public partial class BitSwipeTrap : BitComponentBase
         // A dead heat goes to the horizontal axis, the same way the JS side resolves the axis a gesture
         // moves along: a perfect diagonal must not be reported as one axis here and locked to the other there.
         var direction = Math.Abs(diffX) >= Math.Abs(diffY)
-            ? diffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
-            : diffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+            ? diffX > 0 ? BitPlacement.Right : BitPlacement.Left
+            : diffY > 0 ? BitPlacement.Bottom : BitPlacement.Top;
 
         await OnTrigger.InvokeAsync(new(direction, diffX, diffY, velocityX, velocityY, pointerType, duration));
     }

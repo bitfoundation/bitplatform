@@ -103,7 +103,7 @@ public class BitDataGridStructureTests : BunitTestContext
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.copyToClipboard", _ => true).SetResult(true);
         var component = RenderGrid(columns: Columns(Column<Row>("Name"), Column<Row>("Kind")),
-            configure: p => p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Multiple));
+            configure: p => p.Add(x => x.SelectionMode, BitSelectionMode.Multiple));
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
 
         var csv = component.Instance.ToCsv();
@@ -180,14 +180,12 @@ public class BitDataGridStructureTests : BunitTestContext
     }
 
     [TestMethod]
-    public void TheObsoleteDirectionStillSwitchesTheGridsDirectionAfterTheFirstRender()
+    public void DirStillSwitchesTheGridsDirectionAfterTheFirstRender()
     {
-#pragma warning disable CS0618 // Direction is the obsolete spelling of Dir, kept working for existing markup.
-        var component = RenderGrid(configure: p => p.Add(x => x.Direction, BitDir.Ltr));
+        var component = RenderGrid(configure: p => p.Add(x => x.Dir, BitDir.Ltr));
         Assert.IsFalse(component.Find(".bit-dtg").ClassList.Contains("bit-dtg-rtl"));
 
-        component.Render(p => p.Add(x => x.Direction, BitDir.Rtl));
-#pragma warning restore CS0618
+        component.Render(p => p.Add(x => x.Dir, BitDir.Rtl));
         Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-rtl"));
         Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("bit-dtg-rtl"));
     }
@@ -203,7 +201,7 @@ public class BitDataGridStructureTests : BunitTestContext
         var component = RenderGrid(columns, p =>
         {
             p.Add(x => x.ShowFooter, true);
-            p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Multiple);
+            p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
         });
 
         var grid = component.Find("[role=grid]");
@@ -232,7 +230,7 @@ public class BitDataGridStructureTests : BunitTestContext
             Column<Row>("Name", c => c.Add("Group", "Product")),
             Column<Row>("Kind", c => c.Add("Group", "Product")),
             Column<Row>("Price"));
-        var component = RenderGrid(columns, p => p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Multiple));
+        var component = RenderGrid(columns, p => p.Add(x => x.SelectionMode, BitSelectionMode.Multiple));
 
         var banners = component.FindAll(".bit-dtg-group-header-row [role=columnheader]");
         CollectionAssert.AreEqual(new[] { "1", "2", "3", "5" }, banners.Select(b => b.GetAttribute("aria-colindex")).ToArray());
@@ -244,7 +242,7 @@ public class BitDataGridStructureTests : BunitTestContext
     public void ARowHeaderColumnHeadsItsRowsAndNamesTheirCheckboxes()
     {
         var columns = Columns(Column<Row>("Id"), Column<Row>("Name", c => c.Add("RowHeader", true)), Column<Row>("Price"));
-        var component = RenderGrid(columns, p => p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Multiple));
+        var component = RenderGrid(columns, p => p.Add(x => x.SelectionMode, BitSelectionMode.Multiple));
 
         var first = BodyRows(component)[0];
         Assert.AreEqual(1, first.QuerySelectorAll("[role=rowheader]").Length);
@@ -276,7 +274,7 @@ public class BitDataGridStructureTests : BunitTestContext
         RenderFragment<Row> detail = row => builder => builder.AddContent(0, row.Name);
         var component = RenderGrid(configure: p =>
         {
-            p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Multiple);
+            p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
             p.Add(x => x.Editable, true);
             p.Add(x => x.DetailTemplate, detail);
         });
@@ -457,7 +455,7 @@ public class BitDataGridStructureTests : BunitTestContext
         {
             p.Add(x => x.Editable, true);
             p.Add(x => x.CellNavigation, true);
-            p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Multiple);
+            p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
         });
 
         var name = BodyRows(component)[0].QuerySelectorAll(".bit-dtg-cell:not(.bit-dtg-cell-select)")[0];
@@ -478,7 +476,7 @@ public class BitDataGridStructureTests : BunitTestContext
     [TestMethod]
     public void SingleSelectionCanBeMadeFromTheKeyboard()
     {
-        var component = RenderGrid(configure: p => p.Add(x => x.SelectionMode, BitDataGridSelectionMode.Single));
+        var component = RenderGrid(configure: p => p.Add(x => x.SelectionMode, BitSelectionMode.Single));
 
         // A click is not the only way in: the cells take the focus, and Space selects the focused row.
         var cell = BodyRows(component)[1].QuerySelector("[aria-colindex]")!;

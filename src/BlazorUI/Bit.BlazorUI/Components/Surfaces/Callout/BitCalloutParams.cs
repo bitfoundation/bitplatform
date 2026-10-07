@@ -30,7 +30,7 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// How the callout is lined up with its anchor along the axis it is not placed on.
     /// </summary>
-    public BitCalloutAlignment? Alignment { get; set; }
+    public BitPlacement? Alignment { get; set; }
 
     /// <summary>
     /// The distance in pixels the callout is slid along the axis it is aligned on, inwards from the edge of the anchor
@@ -150,7 +150,7 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoDismissOnScroll { get; set; }
 
     /// <summary>
-    /// Keeps the callout on the Side it was asked for even when there is not enough room for it there.
+    /// Keeps the callout on the Placement it was asked for even when there is not enough room for it there.
     /// </summary>
     public bool? NoFlip { get; set; }
 
@@ -173,7 +173,7 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The edge of the screen the responsive panel slides in from, for a ResponsiveMode of Panel.
     /// </summary>
-    public BitPanelPosition? PanelPosition { get; set; }
+    public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
     /// Configures the responsive mode of the callout for the small screens.
@@ -198,7 +198,7 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The side of the anchor the callout is placed on when there is room for it there.
     /// </summary>
-    public BitCalloutSide? Side { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the callout.
@@ -376,9 +376,9 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
             bitCallout.OpenOnHover = OpenOnHover.Value;
         }
 
-        if (PanelPosition.HasValue && bitCallout.HasNotBeenSet(nameof(PanelPosition)))
+        if (PanelPlacement.HasValue && bitCallout.HasNotBeenSet(nameof(PanelPlacement)))
         {
-            bitCallout.PanelPosition = PanelPosition.Value;
+            bitCallout.PanelPlacement = PanelPlacement.Value;
         }
 
         if (ResponsiveMode.HasValue && bitCallout.HasNotBeenSet(nameof(ResponsiveMode)))
@@ -401,9 +401,9 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
             bitCallout.ShowArrow = ShowArrow.Value;
         }
 
-        if (Side.HasValue && bitCallout.HasNotBeenSet(nameof(Side)))
+        if (Placement.HasValue && bitCallout.HasNotBeenSet(nameof(Placement)))
         {
-            bitCallout.Side = Side.Value;
+            bitCallout.Placement = Placement.Value;
         }
 
         if (Styles is not null && bitCallout.HasNotBeenSet(nameof(Styles)))

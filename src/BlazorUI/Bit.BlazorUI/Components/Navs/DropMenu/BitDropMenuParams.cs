@@ -29,7 +29,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// How the callout is lined up with the button across the side it opens on.
     /// </summary>
-    public BitCalloutAlignment? Alignment { get; set; }
+    public BitPlacement? Alignment { get; set; }
 
     /// <summary>
     /// The description of the drop menu for the benefit of screen readers, read after the name of the button.
@@ -166,7 +166,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the responsive panel to show on the screen.
     /// </summary>
-    public BitPanelPosition? PanelPosition { get; set; }
+    public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
     /// Renders the drop menu in responsive mode on small screens.
@@ -176,7 +176,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The side of the button the callout opens on when there is room for it there.
     /// </summary>
-    public BitCalloutSide? Side { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The size of the button of the drop menu.
@@ -375,9 +375,9 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.OpenOnHover = OpenOnHover.Value;
         }
 
-        if (PanelPosition.HasValue && bitDropMenu.HasNotBeenSet(nameof(PanelPosition)))
+        if (PanelPlacement.HasValue && bitDropMenu.HasNotBeenSet(nameof(PanelPlacement)))
         {
-            bitDropMenu.PanelPosition = PanelPosition.Value;
+            bitDropMenu.PanelPlacement = PanelPlacement.Value;
         }
 
         if (Responsive.HasValue && bitDropMenu.HasNotBeenSet(nameof(Responsive)))
@@ -385,9 +385,9 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.Responsive = Responsive.Value;
         }
 
-        if (Side.HasValue && bitDropMenu.HasNotBeenSet(nameof(Side)))
+        if (Placement.HasValue && bitDropMenu.HasNotBeenSet(nameof(Placement)))
         {
-            bitDropMenu.Side = Side.Value;
+            bitDropMenu.Placement = Placement.Value;
         }
 
         if (Size.HasValue && bitDropMenu.HasNotBeenSet(nameof(Size)))

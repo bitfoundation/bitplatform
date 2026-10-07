@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -214,8 +214,13 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.
@@ -255,7 +260,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The position of the loading Label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement LoadingLabelPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The custom template used to replace the default spinner and loading label inside the button in the loading state.
@@ -455,7 +464,7 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-md"
         });
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-btn-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-btn-eni" : string.Empty);
 
         ClassBuilder.Register(() => Rounded ? "bit-btn-rnd" : string.Empty);
 
@@ -645,12 +654,12 @@ public partial class BitButton : BitComponentBase
     }
 
     private string GetLabelPositionClass()
-        => LoadingLabelPosition switch
+        => LoadingLabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-btn-top",
-            BitLabelPosition.Start => "bit-btn-srt",
-            BitLabelPosition.End => "bit-btn-end",
-            BitLabelPosition.Bottom => "bit-btn-btm",
+            BitPlacement.Top => "bit-btn-top",
+            BitPlacement.Start => "bit-btn-srt",
+            BitPlacement.End => "bit-btn-end",
+            BitPlacement.Bottom => "bit-btn-btm",
             _ => "bit-btn-end"
         };
 

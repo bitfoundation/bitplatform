@@ -168,7 +168,7 @@ public class BitTimePickerParamsTests : BunitTestContext
             HourInputAriaLabel = "Cascaded hour",
             HourStep = 2,
             IconName = "AlarmClock",
-            IconLocation = BitIconLocation.Left,
+            IconPlacement = BitPlacement.Start,
             InvalidErrorMessage = "Cascaded invalid",
             InvertMouseWheel = true,
             Label = "Cascaded label",
@@ -229,7 +229,7 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded hour", instance.HourInputAriaLabel);
         Assert.AreEqual(2, instance.HourStep);
         Assert.AreEqual("AlarmClock", instance.IconName);
-        Assert.AreEqual(BitIconLocation.Left, instance.IconLocation);
+        Assert.AreEqual(BitPlacement.Start, instance.IconPlacement);
         Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
         Assert.IsTrue(instance.InvertMouseWheel);
         Assert.IsTrue(instance.NoMouseWheel);

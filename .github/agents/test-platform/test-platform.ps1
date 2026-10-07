@@ -15,6 +15,12 @@
               from its feed and restart.
     e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
     mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given.
+    devcontainer
+              Creates a project with bit new, brings bit Boilerplate's dev container up on Docker Desktop's Linux engine
+              with the devcontainers CLI, and runs bit doctor in it. With -Sha, bit and the template come from that
+              commit; without it, from nuget.org, as users get them. Removes the container, its volumes and its image
+              afterwards unless -Keep is given, and keeps the logs. Exits 1 when a setup step fails or bit doctor
+              finds something missing.
 
     What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
@@ -26,12 +32,14 @@
 .EXAMPLE
     pwsh .github/agents/test-platform/test-platform.ps1 e2e -Stage web-firefox -Filter 'FullyQualifiedName~WebSmokeTests'
 .EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 devcontainer -Sha 465ce237c
+.EXAMPLE
     pwsh .github/agents/test-platform/test-platform.ps1 mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory, Position = 0)]
-    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp')]
+    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp', 'devcontainer')]
     [string] $Command,
 
     # What everything must be at. The repository's APP_VERSION variable when omitted.
@@ -67,7 +75,9 @@ param(
     [string] $Tool,
 
     # mcp: the tool's arguments, as json.
-    [string] $Arguments = '{}'
+    [string] $Arguments = '{}',
+
+    [switch] $Keep
 )
 
 $ErrorActionPreference = 'Stop'
@@ -97,7 +107,7 @@ function Get-IisSites {
 # vpk pack -u names the Velopack app id, which is also the folder its setup installs into.
 function Get-WindowsApps {
     $ids = foreach ($workflow in $workflows) {
-        [regex]::Matches((Get-Content $workflow.FullName -Raw), 'vpk@[\d.]+ -- pack -u (?<id>\S+)') | ForEach-Object { $_.Groups['id'].Value }
+        [regex]::Matches((Get-Content $workflow.FullName -Raw), 'vpk(@[\d.]+ --)? pack -u (?<id>\S+)') | ForEach-Object { $_.Groups['id'].Value }
     }
 
     foreach ($id in $ids | Sort-Object -Unique) {
@@ -747,6 +757,201 @@ function Read-JsonRpc($response) {
 
 #endregion
 
+#region Dev container
+
+function Get-DevContainerIds([string] $folder) {
+    $wanted = [IO.Path]::GetFullPath($folder).TrimEnd('\')
+
+    docker ps -a --format '{{.ID}}|{{.Label "devcontainer.local_folder"}}' | ForEach-Object {
+        $id, $local = $_ -split '\|', 2
+
+        if ($local -and [IO.Path]::GetFullPath($local).TrimEnd('\') -ieq $wanted) {
+            $id
+        }
+    }
+}
+
+function Remove-DevContainer([string] $folder) {
+    foreach ($id in Get-DevContainerIds $folder) {
+        $image = docker inspect $id --format '{{.Config.Image}}'
+        $volumes = (docker inspect $id --format '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}} {{end}}{{end}}') -split ' ' | Where-Object { $_ }
+
+        docker rm -f -v $id | Out-Null
+
+        foreach ($volume in $volumes) {
+            docker volume rm $volume 2>&1 | Out-Null
+        }
+
+        if ($image -like 'vsc-*') {
+            docker rmi $image 2>&1 | Out-Null
+        }
+
+        Write-Host "Removed the dev container $($id.Substring(0, 12)), its volumes and its image."
+    }
+}
+
+function Write-BitSteps([string] $log, [string] $after) {
+    $lines = Get-Content $log -Encoding utf8
+    $start = if ($after) { [Array]::FindIndex($lines, [Predicate[string]] { param($line) $line -match [regex]::Escape($after) }) } else { 0 }
+
+    $lines | Select-Object -Skip ([Math]::Max($start, 0)) |
+        ForEach-Object { $_ -replace '^\[[^\]]+\]\s?', '' } |
+        Where-Object { $_ -match "^\s+[✓✗!-]\s|is ready in|Tool 'bit\.cli'" } |
+        ForEach-Object { Write-Host $_.TrimEnd() }
+}
+
+function Invoke-DevContainerTest {
+    if ((docker version --format '{{.Server.Os}}' 2>$null) -ne 'linux') {
+        throw 'Docker Desktop must be running on its Linux engine.'
+    }
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $tools = Join-Path $lab 'tools'
+    $feed = Join-Path $lab 'feed'
+    $source = Join-Path $lab 'source'
+    $project = Join-Path $lab 'DevApp'
+    New-Item -ItemType Directory -Force $lab, $tools, $feed | Out-Null
+
+    $outputEncoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    $failures = [Collections.Generic.List[string]]::new()
+
+    try {
+        $templateArguments = @()
+
+        if ($Sha) {
+            Write-Host "Packing bit from $Sha..."
+            git -C $repositoryRoot fetch --quiet origin 2>&1 | Out-Null
+            git -C $repositoryRoot worktree add --detach $source $Sha 2>&1 | Out-Null
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "$Sha isn't a commit of this repository."
+            }
+
+            dotnet pack (Join-Path $source 'src\Cli\Bit.Cli\Bit.Cli.csproj') -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."
+            }
+
+            dotnet tool install Bit.Cli --tool-path $tools --add-source $feed --version 0.0.0 | Out-Null
+            $templateArguments = '--template-package', (Join-Path $source 'src\Templates\Boilerplate\Bit.Boilerplate')
+        }
+        else {
+            Write-Host 'Installing bit from nuget.org...'
+            dotnet tool install Bit.Cli --tool-path $tools --prerelease | Out-Null
+        }
+
+        if ($LASTEXITCODE -ne 0) {
+            throw 'bit could not be installed.'
+        }
+
+        $bit = Join-Path $tools ($IsWindows ? 'bit.exe' : 'bit')
+        Write-Host "Testing $((& $bit --version) | Select-Object -Last 1)"
+
+        Write-Host 'Creating DevApp with bit new...'
+        $env:BIT_CLI_HOME = Join-Path $lab 'home'
+        $env:BIT_CLI_NO_UPDATE = '1'
+
+        Push-Location $lab
+
+        try {
+            & $bit new DevApp --yes --no-open --no-trust --no-setup @templateArguments *> (Join-Path $lab 'new.log')
+            $newExitCode = $LASTEXITCODE
+        }
+        finally {
+            Pop-Location
+            Remove-Item Env:BIT_CLI_HOME, Env:BIT_CLI_NO_UPDATE -ErrorAction SilentlyContinue
+        }
+
+        Write-BitSteps (Join-Path $lab 'new.log')
+
+        if ($newExitCode -ne 0) {
+            throw "bit new failed; see $(Join-Path $lab 'new.log')."
+        }
+
+        $mount = @()
+
+        if ($Sha) {
+            Set-Content (Join-Path $project 'nuget.config') -Encoding utf8 -Value @'
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="bit-under-test" value="/feed" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key="bit-under-test">
+      <package pattern="Bit.Cli" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>
+'@
+            $mount = '--mount', "type=bind,source=$($feed -replace '\\', '/'),target=/feed"
+        }
+
+        $upLog = Join-Path $lab 'up.log'
+        Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
+        $started = Get-Date
+        npx -y '@devcontainers/cli' up --workspace-folder $project @mount *> $upLog
+        $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+        Write-BitSteps $upLog 'Running the onCreateCommand'
+        Write-Host ('The dev container {0} after {1:mm\:ss}.' -f ($result.outcome -eq 'success' ? 'came up' : "didn't come up ($($result.outcome ?? 'no result'))"), ((Get-Date) - $started))
+
+        if ($result.outcome -ne 'success') {
+            $failures.Add("the dev container didn't come up; see $upLog")
+        }
+
+        if (Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\[[^\]]+\]\s+✗\s' }) {
+            $failures.Add('a step of bit setup failed')
+        }
+
+        if ($result.outcome -eq 'success') {
+            $doctorLog = Join-Path $lab 'doctor.log'
+            npx -y '@devcontainers/cli' exec --workspace-folder $project bit doctor *> $doctorLog
+            $doctorExitCode = $LASTEXITCODE
+
+            Get-Content $doctorLog -Encoding utf8 | Where-Object { $_ -match '^\s+[✓✗!-]\s' } | ForEach-Object { Write-Host $_.TrimEnd() }
+            Write-Host "bit doctor exited with $doctorExitCode."
+
+            if ($doctorExitCode -ne 0) {
+                $failures.Add("bit doctor found something missing; see $doctorLog")
+            }
+        }
+    }
+    finally {
+        [Console]::OutputEncoding = $outputEncoding
+
+        if ($Keep) {
+            Write-Host "Kept the dev container of $project. Run devcontainer exec --workspace-folder $project <command> in it, and run this again without -Keep to start over."
+        }
+        else {
+            Remove-DevContainer $project
+
+            if (Test-Path $source) {
+                git -C $repositoryRoot worktree remove --force $source 2>&1 | Out-Null
+            }
+
+            Remove-Item $project, $tools, $feed, $source, (Join-Path $lab 'home') -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Logs: $lab"
+        }
+    }
+
+    if ($failures.Count) {
+        $failures | ForEach-Object { Write-Host "Failed: $_" }
+        exit 1
+    }
+
+    Write-Host 'The dev container set itself up, and bit doctor found everything.'
+}
+
+#endregion
+
 switch ($Command) {
     'versions' {
         $script:expectedVersion = Get-ExpectedVersion
@@ -804,6 +1009,10 @@ switch ($Command) {
 
     'e2e' {
         Invoke-E2EStages
+    }
+
+    'devcontainer' {
+        Invoke-DevContainerTest
     }
 
     'mcp' {

@@ -1,5 +1,5 @@
 {
-    "Docs_Comment": "Check out https://github.com/bitfoundation/bitplatform/blob/develop/src/ResxTranslator/README.md",
+    "Docs_Comment": "Used by bit translate. Check out https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli#bit-translate",
 
     "DefaultLanguage": "en",
 

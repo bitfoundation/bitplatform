@@ -31,7 +31,7 @@ public class BitPanelParamsTests : BunitTestContext
             {
                 new BitPanelParams
                 {
-                    Position = BitPanelPosition.Start,
+                    Placement = BitPlacement.Start,
                     Size = 420,
                     ModeFull = true,
                     ShowCloseButton = true,
@@ -74,13 +74,13 @@ public class BitPanelParamsTests : BunitTestContext
         {
             parameters.Add(p => p.Parameters, new List<IBitComponentParams>
             {
-                new BitPanelParams { Position = BitPanelPosition.Start, ModeFull = true, Modeless = false, CloseButtonTitle = "Dismiss", ShowCloseButton = true }
+                new BitPanelParams { Placement = BitPlacement.Start, ModeFull = true, Modeless = false, CloseButtonTitle = "Dismiss", ShowCloseButton = true }
             });
             parameters.AddChildContent(builder =>
             {
                 builder.OpenComponent<BitPanel>(0);
                 builder.AddAttribute(1, nameof(BitPanel.IsOpen), true);
-                builder.AddAttribute(2, nameof(BitPanel.Position), BitPanelPosition.Bottom);
+                builder.AddAttribute(2, nameof(BitPanel.Placement), BitPlacement.Bottom);
                 builder.AddAttribute(3, nameof(BitPanel.ModeFull), false);
                 builder.AddAttribute(4, nameof(BitPanel.CloseButtonTitle), "Close it");
                 builder.CloseComponent();
@@ -242,6 +242,8 @@ public class BitPanelParamsTests : BunitTestContext
     [TestMethod]
     [DataRow(".bit-pnl-start", "top,bottom,left,right")]
     [DataRow(".bit-pnl-end", "top,bottom,left,right")]
+    [DataRow(".bit-pnl-left", "top,bottom,left")]
+    [DataRow(".bit-pnl-right", "top,bottom,right")]
     [DataRow(".bit-pnl-top", "top,left,right")]
     [DataRow(".bit-pnl-bottom", "bottom,left,right")]
     [DataRow(".bit-pnl-fsz", "top,right,bottom,left")]

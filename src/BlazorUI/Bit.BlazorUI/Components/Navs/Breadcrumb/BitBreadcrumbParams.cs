@@ -78,7 +78,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Where the icon of each item is rendered relative to its text.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The maximum number of items to display before coalescing.
@@ -213,9 +213,9 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.ExpandOverflow = ExpandOverflow.Value;
         }
 
-        if (IconPosition.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(IconPosition)))
+        if (IconPlacement.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitBreadcrumb.IconPosition = IconPosition.Value;
+            bitBreadcrumb.IconPlacement = IconPlacement.Value;
         }
 
         if (MaxDisplayedItems.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(MaxDisplayedItems)))

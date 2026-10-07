@@ -162,8 +162,8 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
     /// <inheritdoc cref="BitTimePicker.IconName"/>
     public string? IconName { get; set; }
 
-    /// <inheritdoc cref="BitTimePicker.IconLocation"/>
-    public BitIconLocation? IconLocation { get; set; }
+    /// <inheritdoc cref="BitTimePicker.IconPlacement"/>
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <inheritdoc cref="BitTimePicker.IconTemplate"/>
     public RenderFragment? IconTemplate { get; set; }
@@ -551,9 +551,9 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.IconName = IconName;
         }
 
-        if (IconLocation.HasValue && bitTimePicker.HasNotBeenSet(nameof(IconLocation)))
+        if (IconPlacement.HasValue && bitTimePicker.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitTimePicker.IconLocation = IconLocation.Value;
+            bitTimePicker.IconPlacement = IconPlacement.Value;
 
             bitTimePicker.ClassBuilder.Reset();
         }

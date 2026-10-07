@@ -104,7 +104,7 @@ public partial class _BitAccordionListOptionDemo
     </BitAccordionListOption>
 </BitAccordionList>
 
-<BitAccordionList ExpanderIconPosition=""BitIconPosition.Start"" TItem=""BitAccordionListOption"">
+<BitAccordionList ExpanderIconPlacement=""BitPlacement.Start"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
         Once upon a time, ...
     </BitAccordionListOption>

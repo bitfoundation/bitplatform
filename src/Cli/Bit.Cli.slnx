@@ -1,0 +1,9 @@
+﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Bit.Cli/Bit.Cli.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
+  </Folder>
+</Solution>

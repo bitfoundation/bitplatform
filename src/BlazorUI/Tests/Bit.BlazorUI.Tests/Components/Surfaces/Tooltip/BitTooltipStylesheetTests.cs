@@ -123,7 +123,9 @@ public class BitTooltipStylesheetTests
         StringAssert.Contains(arrow, "box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});");
         StringAssert.Contains(arrow, "z-index: calc(var(--bit-ttp-zindex) + 1);");
 
-        Assert.AreEqual(12, Regex.Matches(stylesheet, @"clip-path: \$arrow-clip-(br|tl|tr|bl);").Count);
+        // The cut is the side's to pick, one per side, and the arrow reads whichever one it was given.
+        StringAssert.Contains(arrow, "clip-path: var(--bit-ttp-arw-clip);");
+        Assert.AreEqual(6, Regex.Matches(stylesheet, @"--bit-ttp-arw-clip: #\{\$arrow-clip-(br|tl|tr|bl)\};").Count);
     }
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Tooltip", "BitTooltip.scss");

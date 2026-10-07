@@ -191,7 +191,7 @@ public partial class BitCarouselDemo
 </BitCarousel>";
 
     private readonly string example6RazorCode = @"
-<BitCarousel Vertical Style=""height: 200px"" InfiniteScrolling DotsPosition=""BitCarouselDotsPosition.End"">
+<BitCarousel Vertical Style=""height: 200px"" InfiniteScrolling DotsPlacement=""BitPlacement.End"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
@@ -210,7 +210,7 @@ public partial class BitCarouselDemo
     </BitCarouselItem>
 </BitCarousel>
 
-<BitCarousel Style=""height: 100px"" InfiniteScrolling DotsPosition=""BitCarouselDotsPosition.Top"">
+<BitCarousel Style=""height: 100px"" InfiniteScrolling DotsPlacement=""BitPlacement.Top"">
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>

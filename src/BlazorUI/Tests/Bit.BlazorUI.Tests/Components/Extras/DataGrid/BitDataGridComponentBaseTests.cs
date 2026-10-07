@@ -129,7 +129,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         var component = RenderGrid(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.Filterable, true);
             parameters.Add(p => p.Resizable, true);
             parameters.Add(p => p.Reorderable, true);
@@ -159,7 +159,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         var component = RenderGrid(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Single);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.CellNavigation, true);
             parameters.Add(p => p.OnRowClick, (Row _) => clicks++);
         });
@@ -272,7 +272,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
     {
         var component = RenderGrid(parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItems, new List<Row> { new() { Id = 1 } });
             parameters.Add(p => p.Pageable, true);
             parameters.Add(p => p.ShowToolbar, true);
@@ -645,7 +645,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
             builder.CloseComponent();
         };
 
-        var component = RenderGrid(parameters => parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple), columns);
+        var component = RenderGrid(parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple), columns);
 
         // The selection column (44px) is frozen too.
         var style = component.Find(".bit-dtg-viewport").GetAttribute("style")!;

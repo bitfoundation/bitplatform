@@ -3,6 +3,10 @@ name: bit platform CI - Websites
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      prerelease_packages:
+        type: boolean
+        default: false
   pull_request:
     paths:
     - 'src/Websites/**'
@@ -13,6 +17,7 @@ env:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   build-Websites:
@@ -36,6 +41,12 @@ jobs:
       with:
         node-version: 24
       
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: .
+
     - name: Install wasm
       run: cd src && dotnet workload install wasm-tools
 

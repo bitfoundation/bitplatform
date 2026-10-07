@@ -54,8 +54,8 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> lineVariantItems =
     [
         new() { PrimaryText = "Ordered", IconName = BitIconName.Accept, Color = BitColor.Success },
-        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineVariant = BitTimelineLineVariant.Dashed },
-        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed }
+        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
     ];
 
     private List<BitTimelineItem> customizedItems =
@@ -76,8 +76,8 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> a11yItems =
     [
         new() { PrimaryText = "Ordered", IconName = BitIconName.Accept, Color = BitColor.Success, AriaLabel = "Ordered, done", Title = "Done on 3 March" },
-        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineVariant = BitTimelineLineVariant.Dashed, AriaLabel = "Shipped, done", Title = "Done on 4 March" },
-        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed, AriaLabel = "Delivered, pending", Title = "Expected on 7 March" }
+        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineStyle = BitLineStyle.Dashed, AriaLabel = "Shipped, done", Title = "Done on 4 March" },
+        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed, AriaLabel = "Delivered, pending", Title = "Expected on 7 March" }
     ];
 
     private List<BitTimelineItem> cssVarItems =

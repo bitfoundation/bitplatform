@@ -58,7 +58,7 @@
 <DemoExample Title="Icons" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>
         <code>ExpanderIconName</code> replaces every chevron and <code>ExpandedExpanderIconName</code> swaps it while
-        open; each item can set its own, plus a leading <code>IconName</code>. <code>ExpanderIconPosition</code> moves
+        open; each item can set its own, plus a leading <code>IconName</code>. <code>ExpanderIconPlacement</code> moves
         the expander to the start, <code>NoExpanderRotation</code> stops it turning and <code>HideExpanderIcon</code>
         removes it.
     </div>
@@ -78,8 +78,8 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div>ExpanderIconPosition:</div>
-        <BitAccordionList ExpanderIconPosition="BitIconPosition.Start"
+        <div>ExpanderIconPlacement:</div>
+        <BitAccordionList ExpanderIconPlacement="BitPlacement.Start"
                           Items="basicItems"
                           TItem="Section"
                           NameSelectors="nameSelectors" />
