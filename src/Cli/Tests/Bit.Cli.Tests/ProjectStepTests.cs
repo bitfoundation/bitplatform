@@ -127,6 +127,89 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AMissingSdk_Should_StopTheStepsThatNeedIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        File.WriteAllText(Path.Combine(project.Directory, "global.json"), """{ "sdk": { "version": "11.0.100-rc.1.26425.128", "rollForward": "disable" } }""");
+        host.Runner.On("dotnet", "--version", 145, "A compatible .NET SDK was not found.");
+        var steps = new StepRunner(host.Services);
+
+        var ready = await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), noWorkloads: false, noRestore: false, noBuild: false, noBrowsers: true, CancellationToken.None);
+
+        Assert.IsFalse(ready);
+        var sdk = steps.Reports.Single(r => r.Id == "sdk").Result;
+        Assert.AreEqual(StepStatus.Failed, sdk.Status);
+        Assert.AreEqual("global.json asks for exactly 11.0.100-rc.1.26425.128", sdk.Detail);
+        Assert.AreEqual(project.Directory, host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() == "--version").WorkingDirectory);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build"));
+    }
+
+    [TestMethod]
+    public async Task TheSdkCheck_Should_ReportTheSdkDotnetPicks()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var steps = new ProjectSteps(host.Services, project);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.SdkAsync(_ => { }, CancellationToken.None)).Status);
+
+        File.WriteAllText(Path.Combine(project.Directory, "global.json"), """{ "sdk": { "version": "11.0.100", "rollForward": "latestFeature" } }""");
+        host.Runner.On("dotnet", "--version", 0, "11.0.104");
+        var ready = await steps.SdkAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, ready.Status);
+        Assert.AreEqual("11.0.104", ready.Detail);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_WaitForEveryServerAndStopTheProject()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb", "serverapi");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        var aspire = host.Runner.Calls.Where(c => c.FileName is "aspire").Select(c => string.Join(' ', c.Arguments.Take(2))).ToArray();
+        CollectionAssert.AreEqual(new[] { "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StartNothingWithoutDocker()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("docker", "info", 1, "Cannot connect to the Docker daemon");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Docker isn't running", result.Detail);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "aspire"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StopAProjectThatDoesntGetHealthy()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "wait serverweb", 1, "Timed out waiting for resource 'serverweb' to become healthy.");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Aspire started, serverweb didn't get healthy", result.Title);
+        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
     public void TheProjectContext_Should_ReadTheGeneratedProject()
     {
         using var host = new TestHost();
@@ -434,6 +517,12 @@ public class ProjectStepTests
         noTerminal.Runner.Executables["gh"] = "/usr/bin/gh";
         noTerminal.Runner.On("gh", "auth status", 1);
         Assert.IsFalse(await new ProjectSteps(noTerminal.Services, CreateFakeProject(noTerminal, "Contoso")).CanSignInToGitHubAsync(CancellationToken.None));
+    }
+
+    private static void WriteAppHost(ProjectContext project, params string[] resources)
+    {
+        var folder = Directory.CreateDirectory(project.AppHostDirectory).FullName;
+        File.WriteAllLines(Path.Combine(folder, "Program.cs"), resources.Select(r => $"builder.AddProject(\"{r}\", \"../{r}.csproj\");"));
     }
 
     private static void WriteRecommendations(ProjectContext project, params string[] extensions)

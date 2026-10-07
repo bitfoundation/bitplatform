@@ -328,14 +328,14 @@
 
         <DemoExample Title="Disabled & ReadOnly" RazorCode="@example15RazorCode" Id="example15">
             <div>
-                <b>IsEnabled="false"</b> dims both halves and takes them out of the tab order. <b>ReadOnly</b> keeps the
+                <b>Disabled</b> dims both halves and takes them out of the tab order. <b>ReadOnly</b> keeps the
                 number focusable and copyable while refusing edits and country changes; the selector drops its caret
                 and its country is read out with the number.
             </div>
             <br />
             <div class="example-box">
                 <div>Disabled:</div>
-                <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="+341234567" />
+                <BitPhoneInput Disabled DefaultCountry="BitCountries.Spain" Value="+341234567" />
                 <br />
                 <div>ReadOnly:</div>
                 <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="+341234567" />

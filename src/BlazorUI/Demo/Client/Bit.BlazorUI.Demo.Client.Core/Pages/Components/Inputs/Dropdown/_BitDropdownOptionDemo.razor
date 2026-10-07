@@ -19,7 +19,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" />
-            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsDisabled />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -34,7 +34,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -43,7 +43,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -53,18 +53,18 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
         <BitDropdown Label="Disabled"
                      DefaultValue="@("f-ora")"
                      Placeholder="Select an item"
-                     IsEnabled="false"
+                     Disabled
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -75,7 +75,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -87,7 +87,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -98,7 +98,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -185,7 +185,7 @@
                      TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -196,7 +196,7 @@
                      TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -208,7 +208,7 @@
                      TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -225,7 +225,7 @@
             <Options>
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </Options>
         </BitDropdown>
@@ -236,10 +236,10 @@
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>"
                      TValue="string"
-                     IsEnabled="false">
+                     Disabled>
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -257,7 +257,7 @@
                  TItem="BitDropdownOption<string>" TValue="string">
         @foreach (var item in basicItems)
         {
-            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
         }
     </BitDropdown>
     <br /><br />
@@ -268,7 +268,7 @@
                  TItem="BitDropdownOption<string>" TValue="string">
         @foreach (var item in basicItems)
         {
-            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
         }
     </BitDropdown>
 </DemoExample>
@@ -291,7 +291,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -301,7 +301,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -311,7 +311,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -322,7 +322,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -332,7 +332,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
         </div>
@@ -355,7 +355,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" />
-            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsDisabled />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -439,7 +439,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -453,7 +453,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -468,7 +468,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -482,7 +482,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -515,7 +515,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -528,7 +528,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br /><br /><br />
@@ -543,7 +543,7 @@
                      SearchFunction="(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -557,7 +557,7 @@
                      SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -597,7 +597,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -612,7 +612,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -641,7 +641,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -653,7 +653,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -682,7 +682,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <div>Search value: <b>@immediateSearchValue</b></div>
@@ -697,7 +697,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <div>Search value: <b>@debouncedSearchValue</b></div>
@@ -710,7 +710,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -741,7 +741,7 @@
                              TItem="BitDropdownOption<string>" TValue="string">
                     @foreach (var item in basicItems)
                     {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                     }
                 </BitDropdown>
 
@@ -756,7 +756,7 @@
                              TItem="BitDropdownOption<string>" TValue="string">
                     @foreach (var item in basicItems)
                     {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                     }
                 </BitDropdown>
 
@@ -781,7 +781,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
 
@@ -794,7 +794,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -963,7 +963,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" />
-            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsDisabled />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -981,7 +981,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -994,7 +994,7 @@
                      OnChange="(string value) => changedValue = value">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1007,7 +1007,7 @@
                      OnValuesChange="(IEnumerable<string> values) => changedValues = values">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1021,7 +1021,7 @@
                      OnSelectItem="(BitDropdownOption<string> item) => selectedItem1 = item">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1035,7 +1035,7 @@
                      OnSelectItem="(BitDropdownOption<string> item) => selectedItem2 = item">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1051,7 +1051,7 @@
                      OnDeselectItem="(BitDropdownOption<string> item) => deselectedItem = item">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1067,7 +1067,7 @@
                      OnSelectItem="(BitDropdownOption<string> item) => selectItemCounter++">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1083,7 +1083,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br /><br /><br />
@@ -1096,7 +1096,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1111,7 +1111,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1125,7 +1125,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1168,7 +1168,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1183,7 +1183,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1197,7 +1197,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1210,7 +1210,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1237,7 +1237,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1251,7 +1251,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1312,7 +1312,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1326,7 +1326,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1339,7 +1339,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1352,7 +1352,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1365,7 +1365,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -1399,7 +1399,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1420,7 +1420,7 @@
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1437,7 +1437,7 @@
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1462,7 +1462,7 @@
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1540,7 +1540,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1551,7 +1551,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1562,7 +1562,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -1593,7 +1593,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1610,7 +1610,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -1637,7 +1637,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -1684,7 +1684,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1697,7 +1697,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1716,7 +1716,7 @@
             <Options>
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </Options>
         </BitDropdown>
@@ -1739,7 +1739,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1751,7 +1751,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1769,7 +1769,7 @@
             <Options>
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </Options>
         </BitDropdown>
@@ -1785,7 +1785,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in delayedItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -1923,7 +1923,7 @@
                      CaretDownIconName="@BitIconName.ChevronDownMed">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1935,7 +1935,7 @@
                      ClearButtonIconName="@BitIconName.ChromeClose">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1948,7 +1948,7 @@
                      ItemCheckIconName="@BitIconName.CheckMark">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1962,7 +1962,7 @@
                      SearchBoxClearIconName="@BitIconName.EraseTool">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1975,7 +1975,7 @@
                      ChipsRemoveIconName="@BitIconName.ChromeClose">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -1989,7 +1989,7 @@
                      ComboBoxAddButtonIconName="@BitIconName.CircleAddition">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -2018,7 +2018,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2032,7 +2032,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2063,7 +2063,7 @@
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2088,7 +2088,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2117,7 +2117,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2129,7 +2129,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2146,7 +2146,7 @@
             <Options>
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </Options>
         </BitDropdown>
@@ -2175,7 +2175,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
             <br /><br />
@@ -2185,7 +2185,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
             <br /><br />
@@ -2195,7 +2195,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
         </BitParams>
@@ -2206,7 +2206,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -2229,7 +2229,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2241,7 +2241,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2253,7 +2253,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2265,7 +2265,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2277,7 +2277,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2289,7 +2289,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2301,7 +2301,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2313,7 +2313,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -2343,7 +2343,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
 
@@ -2356,7 +2356,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
 
@@ -2371,7 +2371,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
 
@@ -2385,7 +2385,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
 
@@ -2399,7 +2399,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
 
@@ -2411,7 +2411,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" IconName="@BitIconName.AllApps" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" IconName="@BitIconName.Calculator" />
-            <BitDropdownOption Text="Orange" Value="@("f-ora")" IconName="@BitIconName.FavoriteStar" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IconName="@BitIconName.FavoriteStar" IsDisabled />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" IconName="@BitIconName.Edit" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -2428,7 +2428,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" Icon="@BitIconInfo.Css("fa-solid fa-apple-whole")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" Icon="@BitIconInfo.Css("fa-solid fa-moon")" />
-            <BitDropdownOption Text="Orange" Value="@("f-ora")" Icon="@BitIconInfo.Fa("solid lemon")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" Icon="@BitIconInfo.Fa("solid lemon")" IsDisabled />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" Icon="@BitIconInfo.Css("fa-solid fa-droplet")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -2445,7 +2445,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" Icon="@BitIconInfo.Bi("apple")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" Icon="@BitIconInfo.Bi("flower1")" />
-            <BitDropdownOption Text="Orange" Value="@("f-ora")" Icon="@BitIconInfo.Css("bi bi-sun")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" Icon="@BitIconInfo.Css("bi bi-sun")" IsDisabled />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" Icon="@BitIconInfo.Bi("droplet-fill")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -2471,7 +2471,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2483,7 +2483,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br />
@@ -2495,7 +2495,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -2524,7 +2524,7 @@
                      Style="margin: 1rem; box-shadow: aqua 0 0 0.5rem; text-shadow: aqua 0 0 0.5rem;">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2533,7 +2533,7 @@
                      Class="custom-class">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br /><br /><br />
@@ -2542,7 +2542,7 @@
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in styleClassItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" Style="@item.Style" Class="@item.Class" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" Style="@item.Style" Class="@item.Class" />
             }
         </BitDropdown>
         <br /><br /><br /><br />
@@ -2557,7 +2557,7 @@
                                        Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2570,7 +2570,7 @@
                                         ScrollContainer = "custom-scroll-container" })">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br /><br /><br /><br />
@@ -2592,7 +2592,7 @@
                             --bit-Dropdown-item-selected-color: white;">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
         <br />
@@ -2605,7 +2605,7 @@
                             --bit-Dropdown-item-font-size: 0.75rem;">
             @foreach (var item in basicItems)
             {
-                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
             }
         </BitDropdown>
     </div>
@@ -2629,7 +2629,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in rtlItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
             <br /><br />
@@ -2640,7 +2640,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in rtlItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
             <br /><br />
@@ -2651,7 +2651,7 @@
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in rtlItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsDisabled="item.IsDisabled" />
                 }
             </BitDropdown>
         </div>

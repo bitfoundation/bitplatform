@@ -709,10 +709,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether the BitChoiceGroup item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether the BitChoiceGroup item is disabled.",
                },
                new()
                {
@@ -859,10 +859,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether the BitChoiceGroup option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether the BitChoiceGroup option is disabled.",
                },
                new()
                {
@@ -1009,10 +1009,10 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.IsEnabled))",
-                   Description = "Whether the BitChoiceGroup option is enabled.",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class.",
                },
                new()
                {

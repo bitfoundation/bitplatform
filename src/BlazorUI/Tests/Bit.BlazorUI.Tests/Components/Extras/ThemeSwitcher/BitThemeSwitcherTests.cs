@@ -174,13 +174,13 @@ public class BitThemeSwitcherTests : BunitTestContext
     [DataTestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitThemeSwitcherShouldRespectIsEnabled(bool isEnabled)
+    public void BitThemeSwitcherShouldRespectDisabled(bool isEnabled)
     {
         RegisterServices();
 
         var component = RenderComponent<BitThemeSwitcher>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-ths").ClassList.Contains("bit-dis"));

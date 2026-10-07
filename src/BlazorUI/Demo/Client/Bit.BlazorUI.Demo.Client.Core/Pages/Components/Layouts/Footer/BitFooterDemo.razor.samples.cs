@@ -7,7 +7,7 @@ public partial class BitFooterDemo
 
 <BitFooter Height=""80"">I'm a Footer with a fixed 80px height</BitFooter>
 
-<BitFooter IsEnabled=""false"">I'm a disabled Footer</BitFooter>";
+<BitFooter Disabled>I'm a disabled Footer</BitFooter>";
 
     private readonly string example2RazorCode = @"
 <BitFooter Variant=""BitVariant.Fill"" Color=""BitColor.Info"">Fill</BitFooter>

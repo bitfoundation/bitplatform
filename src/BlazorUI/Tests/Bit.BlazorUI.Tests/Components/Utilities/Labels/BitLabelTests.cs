@@ -19,11 +19,11 @@ public class BitLabelTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitLabelShouldRespectIsEnabled(bool isEnabled)
+    public void BitLabelShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitLabel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? "bit-lbl" : "bit-lbl bit-dis";
@@ -32,7 +32,7 @@ public class BitLabelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitLabelShouldRespectIsEnabledChangingAfterRender()
+    public void BitLabelShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
 
@@ -40,7 +40,7 @@ public class BitLabelTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<label class=""bit-lbl bit-dis"" id:ignore></label>");

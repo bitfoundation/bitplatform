@@ -9,7 +9,7 @@ public partial class BitButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when IsEnabled is false, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
+            Description = "Keeps the disabled button focusable and discoverable by screen readers, rendering aria-disabled instead of the native disabled attribute when Disabled is true, preserving a consistent tab order. Set it to false to render the native disabled attribute and remove the button from the tab order.",
         },
         new()
         {

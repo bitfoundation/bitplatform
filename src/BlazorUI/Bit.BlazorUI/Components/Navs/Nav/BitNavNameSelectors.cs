@@ -58,9 +58,9 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitNavItem.IconName));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class (see <see cref="BitNavItem.IsEnabled"/>).
+    /// The IsDisabled field name and selector of the custom input class (see <see cref="BitNavItem.IsDisabled"/>).
     /// </summary>
-    public BitNameSelectorPair<TItem, bool?> IsEnabled { get; set; } = new(nameof(BitNavItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool?> IsDisabled { get; set; } = new(nameof(BitNavItem.IsDisabled));
 
     /// <summary>
     /// The IsExpanded field name and selector of the custom input class (see <see cref="BitNavItem.IsExpanded"/>).

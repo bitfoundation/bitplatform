@@ -907,7 +907,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         return InvokeAsync(async () =>
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             await TryAddTags([.. tags]);
 
@@ -927,7 +927,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         return InvokeAsync(async () =>
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             var index = GetTags().FindIndex(t => string.Equals(t, tag, Comparison));
             if (index < 0) return;
@@ -947,7 +947,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         return InvokeAsync(async () =>
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             await RemoveTagAt(index, force: true);
 
@@ -967,7 +967,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         return InvokeAsync(async () =>
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             await MoveTag(from, to);
 
@@ -986,7 +986,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         return InvokeAsync(async () =>
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             _inputText = text ?? string.Empty;
 
@@ -1028,7 +1028,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     public Task Clear() => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         ClearInvalid();
 
@@ -1141,7 +1141,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // no more than no mark at all.
         ClassBuilder.Register(() => _invalidReason != BitTagsInputInvalidReason.None ? "bit-tgi-rjd" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && (Label.HasValue() || LabelTemplate is not null) ? "bit-tgi-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && (Label.HasValue() || LabelTemplate is not null) ? "bit-tgi-req" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-tgi-fcs {Classes?.Focused}" : string.Empty);
 
@@ -1212,7 +1212,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             }
             catch { } // JS is unavailable (e.g. a prerender or a disconnected circuit); the keys still work, only with their browser default side effects.
 
-            if (AutoFocus && IsEnabled)
+            if (AutoFocus && Disabled is false)
             {
                 await InputElement.FocusAsync();
             }
@@ -1445,7 +1445,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         var displayed = GetDisplayedTagCount();
 
-        if (_pickedUpTagIndex < displayed && displayed > 1 && IsEnabled && ReadOnly is false && AllowReorder) return;
+        if (_pickedUpTagIndex < displayed && displayed > 1 && Disabled is false && ReadOnly is false && AllowReorder) return;
 
         SetPickedUpTag(-1);
     }
@@ -1520,7 +1520,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // cannot, it would promise a removal that does nothing, so such a tag is told nothing instead.
         if (TagAriaDescription is not null) return TagAriaDescription.HasValue() && removable ? TagAriaDescription : null;
 
-        if (IsEnabled is false) return null;
+        if (Disabled) return null;
 
         // The one thing a chip of a read-only field still answers to is the click, whose keyboard
         // equivalent is the Enter key; there is nothing there to edit, to remove or to move.
@@ -1878,7 +1878,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         // A chip a click opens is a chip the pointer has to be told about: without it the caret the field
         // around it shows is the only cursor a clickable value ever wears.
-        var clickableClass = OnTagClick.HasDelegate && IsEnabled && _pickedUpTagIndex < 0 ? "bit-tgi-tag-clk" : null;
+        var clickableClass = OnTagClick.HasDelegate && Disabled is false && _pickedUpTagIndex < 0 ? "bit-tgi-tag-clk" : null;
 
         var tagClass = InvokeTagStyling(GetTagClass, tag);
 
@@ -1887,7 +1887,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private string GetTagTabIndex(int index, int count)
     {
-        if (IsEnabled is false) return "-1";
+        if (Disabled) return "-1";
 
         // Roving tabindex: the list of tags is a single stop of the tab order, and the arrow keys move
         // between them from there. Without it every dismiss button would be a stop of its own, which
@@ -2190,7 +2190,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         // A read-only field is still focused, exactly as a read-only input is: the caret is what the
         // tags are read and copied out of, and refusing it would only make the field unreachable.
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // A tap that lands on the field rather than on a tag is a tap that chose no place to put the
         // carried tag down, so it is put back rather than left hanging over a field the caret has
@@ -2202,7 +2202,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         _focusedTagIndex = -1;
@@ -2213,7 +2213,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
         ClassBuilder.Reset();
@@ -2239,7 +2239,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleOnInput(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // Typing is the answer to whatever was refused a moment ago, so the mark of that refusal goes
         // with the first keystroke rather than waiting for the next Enter.
@@ -2314,7 +2314,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyDown.InvokeAsync(e);
 
@@ -2390,7 +2390,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private void HandleOnTagFocusIn(int index)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _focusedTagIndex = index;
     }
@@ -2402,7 +2402,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     private async Task HandleOnTagClick(MouseEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // A click landing on another tag while one is being edited is ignored here: the edit input is
         // losing its focus at the very same moment, and HandleOnEditFocusOut is what commits it.
@@ -2449,7 +2449,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleOnTagKeyDown(KeyboardEventArgs e, int index)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var count = CurrentValue?.Count ?? 0;
         if (count == 0) return;
@@ -2638,7 +2638,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     private bool CanDragTag(int index)
     {
-        return AllowReorder && IsEnabled && ReadOnly is false && _editingTagIndex != index;
+        return AllowReorder && Disabled is false && ReadOnly is false && _editingTagIndex != index;
     }
 
     private void HandleOnTagDragStart(int index)
@@ -2677,7 +2677,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     private async Task HandleOnReorderClick(int index)
     {
-        if (AllowReorder is false || IsEnabled is false || ReadOnly) return;
+        if (AllowReorder is false || Disabled || ReadOnly) return;
 
         var tags = GetTags();
         if (index < 0 || index >= tags.Count) return;
@@ -2752,7 +2752,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         HandleOnTagDragEnd();
 
         if (from < 0 || from == index) return;
-        if (AllowReorder is false || IsEnabled is false || ReadOnly) return;
+        if (AllowReorder is false || Disabled || ReadOnly) return;
 
         await MoveTag(from, index);
     }
@@ -2765,7 +2765,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     private void StartEdit(int index)
     {
-        if (EditableTags is false || IsEnabled is false || ReadOnly) return;
+        if (EditableTags is false || Disabled || ReadOnly) return;
 
         var list = GetTags();
         if (index < 0 || index >= list.Count) return;
@@ -2837,7 +2837,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         // A field that was disabled, made read-only or told to stop offering the inline edit while one was
         // open accepts no change from it: the edit is dropped rather than committed through the back door.
-        if (IsEnabled is false || ReadOnly || EditableTags is false)
+        if (Disabled || ReadOnly || EditableTags is false)
         {
             _editText = string.Empty;
             return;
@@ -3101,7 +3101,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleRemoveTag(int index)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var removed = await RemoveTagAt(index);
 

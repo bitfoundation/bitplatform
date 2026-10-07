@@ -78,7 +78,7 @@ public partial class BitCollapse : BitComponentBase
     // Whether the closed content is offered to find-in-page at all. A peek is on the screen already, so it
     // has nothing to gain and the fade it would lose is worth keeping, and a disabled collapse is one the
     // browser would reveal content inside of and never open.
-    private bool _searchable => HiddenUntilFound && _keepsPeek is false && IsEnabled && _revealRefused is false;
+    private bool _searchable => HiddenUntilFound && _keepsPeek is false && Disabled is false && _revealRefused is false;
 
     // Whether the closed content is handed to the browser as hidden-until-found, which is what makes
     // find-in-page and a fragment navigation able to reach into a closed section and open it. It waits for
@@ -105,7 +105,7 @@ public partial class BitCollapse : BitComponentBase
     // scroll a section that holds nothing focusable of its own, and an explicit TabIndex says where it sits
     // in the tab order - "-1" takes it out while still letting FocusAsync move the focus into it - without
     // ever taking a closed section back into it.
-    private string _tabIndex => (IsEnabled && _visible) ? (TabIndex.HasValue() ? TabIndex! : "0") : "-1";
+    private string _tabIndex => (Disabled is false && _visible) ? (TabIndex.HasValue() ? TabIndex! : "0") : "-1";
 
     // An unnamed region is dropped by assistive technology rather than announced, so the role is worth
     // keeping only while the consumer can name it; it stays the default for the markup this component has
@@ -703,7 +703,7 @@ public partial class BitCollapse : BitComponentBase
 
     private async Task SetExpandedAsync(bool value)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (Expanded == value) return;
 

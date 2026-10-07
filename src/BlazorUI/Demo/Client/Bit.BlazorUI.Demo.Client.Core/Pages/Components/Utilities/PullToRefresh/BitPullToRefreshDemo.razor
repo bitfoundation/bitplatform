@@ -257,15 +257,15 @@
 
     <DemoExample Title="Disabled and touch only" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
-            <b>IsEnabled="false"</b> turns the gesture off and gives scrolling back to the browser; the content stays
+            <b>Disabled</b> turns the gesture off and gives scrolling back to the browser; the content stays
             interactive. <b>NoMouse</b> keeps it for touch and pen, leaving a mouse drag to select text. A mouse drag
             that starts in a form field is always left to the field.
         </div>
         <br />
-        <BitToggle @bind-Value="isEnabled" Label="Enabled" />
+        <BitToggle @bind-Value="isDisabled" Label="Disabled" />
         <BitToggle @bind-Value="noMouse" Label="NoMouse" />
         <br />
-        <BitPullToRefresh IsEnabled="isEnabled" NoMouse="noMouse" OnRefresh="HandleOnRefreshDisabled">
+        <BitPullToRefresh Disabled="isDisabled" NoMouse="noMouse" OnRefresh="HandleOnRefreshDisabled">
             <div class="anchor">
                 @foreach (var (idx, i) in disabledItems)
                 {

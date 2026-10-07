@@ -19,7 +19,7 @@ public class BitDateRangePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitDatePicker = component.Find(".bit-dtrp");
@@ -70,7 +70,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var clickedValue = 0;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -84,7 +84,7 @@ public class BitDateRangePickerTests : BunitTestContext
       DataRow(true),
       DataRow(false)
     ]
-    public void BitDateRangePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled)
+    public void BitDateRangePickerCalendarItemsShouldRespectDisabled(bool isEnabled)
     {
         var isOpen = true;
         var changeValue = 0;
@@ -92,7 +92,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnChange, () => changeValue++);
         });
 
@@ -112,7 +112,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         Assert.IsNull(component.Instance.Value);
@@ -1927,7 +1927,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
             {
                 new() { Text = "Today", Value = new() { StartDate = DateTimeOffset.Now.Date, EndDate = DateTimeOffset.Now.Date } },
-                new() { Text = "Disabled one", IsEnabled = false, Title = "Not yet" },
+                new() { Text = "Disabled one", IsDisabled = true, Title = "Not yet" },
             });
         });
 
@@ -2029,7 +2029,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
             {
-                new() { Text = "Today", IsEnabled = false, Value = new() { StartDate = DateTimeOffset.Now.Date } },
+                new() { Text = "Today", IsDisabled = true, Value = new() { StartDate = DateTimeOffset.Now.Date } },
             });
         });
 
@@ -2147,7 +2147,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         // The callout renders outside of the root element, so it needs the marker of its own.
@@ -3495,7 +3495,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.TestModel, new BitDateRangePickerTestModel());
         });
 
@@ -3520,7 +3520,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.TestModel, new BitDateRangePickerTestModel());
         });
 
@@ -3557,7 +3557,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
@@ -3858,7 +3858,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
@@ -3955,7 +3955,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");

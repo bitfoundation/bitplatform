@@ -332,10 +332,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the item is disabled.",
                },
                new()
                {
@@ -497,10 +497,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the option is disabled.",
                },
                new()
                {
@@ -672,10 +672,10 @@ public partial class BitTimelineDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "BitNameSelectorPair<TItem, bool>",
-                    DefaultValue = "new(nameof(BitTimelineItem.IsEnabled))",
-                    Description = "IsEnabled field name and selector of the custom input class.",
+                    DefaultValue = "new(nameof(BitTimelineItem.IsDisabled))",
+                    Description = "IsDisabled field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },

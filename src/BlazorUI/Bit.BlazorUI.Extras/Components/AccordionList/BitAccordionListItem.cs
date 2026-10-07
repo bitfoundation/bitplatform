@@ -86,9 +86,9 @@ public class BitAccordionListItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the item is enabled.
+    /// Whether or not the item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Determines whether the item is expanded. This value is also assigned by the component during interactions.

@@ -379,7 +379,7 @@ private async Task OpenEvents()
              OnShow=""HandleControlChange"" OnDismiss=""HandleControlChange"" />
 
 <BitButton OnClick=""StartUpload"">Start upload</BitButton>
-<BitButton OnClick=""CompleteUpload"" IsEnabled=""uploadItem is not null"">Complete upload</BitButton>
+<BitButton OnClick=""CompleteUpload"" Disabled=""uploadItem is null"">Complete upload</BitButton>
 
 <BitButton OnClick=""TrackExport"">Track a task</BitButton>
 <BitButton OnClick=""TrackFailingExport"">Track a failing task</BitButton>

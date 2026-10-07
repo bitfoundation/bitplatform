@@ -65,7 +65,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
     {
         var clicks = new List<string?>();
         var items = GetItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -107,7 +107,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -137,7 +137,7 @@ public class BitChoiceGroupEventsTests : BunitTestContext
     public void BitChoiceGroupShouldAutoFocusTheFirstEnabledItemWhenNothingIsChecked()
     {
         var items = GetItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {

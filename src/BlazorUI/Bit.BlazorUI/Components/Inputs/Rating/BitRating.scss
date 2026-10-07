@@ -9,7 +9,7 @@
 //   --bit-Rating-active-color       color of the filled part while an item is
 //                                   being pressed                                 (default: the role's active color)
 //   --bit-Rating-focus-color        color of the keyboard focus ring of an item    (default: the role's focus color)
-//   --bit-Rating-disabled-color     color of both parts when IsEnabled is false    (default: $clr-fg-dis)
+//   --bit-Rating-disabled-color     color of both parts when Disabled is true    (default: $clr-fg-dis)
 //   --bit-Rating-invalid-color      color of both parts, and of the focus ring,
 //                                   while the value is invalid                    (default: $clr-err / $clr-err-focus)
 //   --bit-Rating-size               size of the item glyphs                        (default: per size, $siz-icon-*)

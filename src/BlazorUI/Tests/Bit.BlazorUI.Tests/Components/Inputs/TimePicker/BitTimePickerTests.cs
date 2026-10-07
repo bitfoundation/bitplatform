@@ -22,7 +22,7 @@ public class BitTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitTimePicker = component.Find(".bit-tpc");
@@ -110,7 +110,7 @@ public class BitTimePickerTests : BunitTestContext
 
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -1840,7 +1840,7 @@ public class BitTimePickerTests : BunitTestContext
 
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -2760,7 +2760,7 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.Value, new TimeSpan(14, 30, 0));
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Add(p => p.Standalone, standalone);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);

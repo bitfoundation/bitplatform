@@ -480,7 +480,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         // which happens as soon as everything fits the trail again (the items changed, the room grew, the
         // cap was raised, ...), the whole component gets disabled while the menu is open, or the button it
         // belongs to is turned into one that reveals the items in place instead.
-        if (_isCalloutOpen && (_overflowItems.Count == 0 || IsEnabled is false || ExpandOverflow))
+        if (_isCalloutOpen && (_overflowItems.Count == 0 || Disabled || ExpandOverflow))
         {
             await CloseCallout();
 
@@ -593,8 +593,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnItemClick(TItem item)
     {
-        if (IsEnabled is false) return;
-        if (GetIsEnabled(item) is false) return;
+        if (Disabled) return;
+        if (GetIsDisabled(item)) return;
 
         if (OnItemClick.HasDelegate)
         {
@@ -634,7 +634,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // activation reaches the button itself and has to close what it opened.
     private async Task HandleOnOverflowButtonClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (ExpandOverflow)
         {
@@ -670,7 +670,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // The current page rendered as text is not a link at all, disabled or not.
     private bool IsDisabledLink(TItem item)
     {
-        return GetIsEnabled(item) is false && IsPlainText(item) is false && GetRawItemHref(item).HasValue();
+        return GetIsDisabled(item) && IsPlainText(item) is false && GetRawItemHref(item).HasValue();
     }
 
     // An item is rendered as a button when it has no Href but something to run on click, either the
@@ -957,7 +957,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             }
         }
 
-        if (GetIsEnabled(item) is false)
+        if (GetIsDisabled(item))
         {
             classes.Add("bit-brc-dis");
         }
@@ -1011,7 +1011,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // either one keeps its address but renders none.
     private string? GetItemHref(TItem item)
     {
-        return GetIsEnabled(item) && IsPlainText(item) is false ? GetRawItemHref(item) : null;
+        return GetIsDisabled(item) is false && IsPlainText(item) is false ? GetRawItemHref(item) : null;
     }
 
     // Opening a link in another browsing context hands the opener over to it unless it is turned down,
@@ -1270,28 +1270,28 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
-    private bool GetIsEnabled(TItem item)
+    private bool GetIsDisabled(TItem item)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return true;
 
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.IsEnabled;
+            return breadcrumbItem.IsDisabled;
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.IsEnabled;
+            return bitBreadcrumbOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private RenderFragment<TItem>? GetOverflowTemplate(TItem? item)
@@ -1344,7 +1344,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task OpenCallout()
     {
-        if (_isCalloutOpen || IsEnabled is false) return;
+        if (_isCalloutOpen || Disabled) return;
 
         _isCalloutOpen = true;
         await ToggleCallout();
@@ -1405,7 +1405,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         // Nothing of the menu applies to a button that reveals the items in place: it is activated the way
         // any other button is, and the trail it expands is walked with the Tab key like the rest of it.
-        if (IsEnabled is false || ExpandOverflow) return;
+        if (Disabled || ExpandOverflow) return;
 
         if (e.Key is "Escape")
         {
@@ -1430,7 +1430,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || _isCalloutOpen is false) return;
+        if (Disabled || _isCalloutOpen is false) return;
 
         switch (e.Key)
         {

@@ -646,7 +646,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     public async Task Clear()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await ClearValue();
     }
@@ -656,7 +656,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     public async Task ShowSuggestItems()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await SearchItems(openCallout: true, force: true);
     }
@@ -994,7 +994,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // Whatever the user just typed replaced the inline completion, so the field is back to holding
         // nothing but their own text until the next search completes it again.
@@ -1066,35 +1066,35 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
 
     private async Task HandleOnIconClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await InputElement.FocusAsync();
     }
 
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocus.InvokeAsync(e);
     }
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyUp.InvokeAsync(e);
     }
 
     private async Task HandleInputFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _inputHasFocus = true;
         ClassBuilder.Reset();
@@ -1137,7 +1137,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task HandleOnSearchButtonClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await CommitInputElementValue();
 
@@ -1148,7 +1148,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task HandleOnClearButtonClick()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await ClearValue();
 
@@ -1157,7 +1157,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Which key produced the edit is the one thing the input event does not say, and inline
         // auto-completion turns on it: a completion that comes straight back after backspace would
@@ -1317,7 +1317,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task SelectSuggestItem(string item)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await CloseCallout();
 
@@ -1397,7 +1397,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (AutoFillSuggestItem is false) return;
 
-        if (IsEnabled is false || ReadOnly || IsDisposed) return;
+        if (Disabled || ReadOnly || IsDisposed) return;
 
         // Deleting has to uncover the term rather than have it completed again on the spot. Only a search the
         // user's own typing started ever gets here (see SearchItems), and a field that has lost the focus
@@ -1785,7 +1785,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task OpenOrCloseCallout(bool force = false)
     {
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         // Without the focus check, a value changed from outside of the component
         // (e.g. by a two-way bound sibling) would pop the callout open out of nowhere.
@@ -1822,7 +1822,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task CloseCallout()
     {
-        // Deliberately not gated on IsEnabled: a component disabled while its callout was open would
+        // Deliberately not gated on Disabled: a component disabled while its callout was open would
         // otherwise be stuck with it, and with the full screen overlay that swallows every click,
         // since dismissing the list is exactly what the overlay click is supposed to do. Opening is
         // still blocked upstream in OpenOrCloseCallout.

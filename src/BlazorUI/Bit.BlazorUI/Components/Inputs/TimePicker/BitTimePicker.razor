@@ -73,7 +73,7 @@
                        aria-label="@AriaLabel"
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
-                       disabled="@(IsEnabled is false)"
+                       disabled="@(Disabled)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
                        aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
@@ -141,7 +141,7 @@
                aria-label="@AriaLabel"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)"
+               disabled="@(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
@@ -231,7 +231,7 @@
                            style="@Styles?.HourInput"
                            class="bit-tpc-tin @Classes?.HourInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
-                           disabled="@(IsEnabled is false)" />
+                           disabled="@(Disabled)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Hour)"
@@ -279,7 +279,7 @@
                            style="@Styles?.MinuteInput"
                            class="bit-tpc-tin @Classes?.MinuteInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
-                           disabled="@(IsEnabled is false)" />
+                           disabled="@(Disabled)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Minute)"
@@ -329,7 +329,7 @@
                                style="@Styles?.SecondInput"
                                class="bit-tpc-tin @Classes?.SecondInput"
                                autocomplete="@BitAutoCompleteValue.NewPassword"
-                               disabled="@(IsEnabled is false)" />
+                               disabled="@(Disabled)" />
                         <button @onpointerup="HandleOnPointerUpOrOut"
                                 @onpointerout="HandleOnPointerUpOrOut"
                                 @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Second)"

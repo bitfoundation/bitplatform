@@ -81,14 +81,14 @@
         <div>
             <b>@@bind-IsExpanded</b> keeps the state and a field in step both ways. <b>IsExpanded</b> bound one way makes the
             accordion controlled: it never moves on its own, and <b>OnClick</b> is where the page decides - here, one open at a
-            time. <b>IsEnabled="false"</b> ignores pointer and keyboard, while the binding still drives it.
+            time. <b>Disabled</b> ignores pointer and keyboard, while the binding still drives it.
         </div>
         <br />
         <div class="example-content">
             <div>Two-way:</div>
-            <BitToggle @bind-Value="bindingIsEnabled" OnText="Enabled" OffText="Disabled" />
+            <BitToggle @bind-Value="bindingIsDisabled" OnText="Disabled" OffText="Enabled" />
             <BitToggle @bind-Value="bindingIsExpanded" OnText="Expanded" OffText="Collapsed" />
-            <BitAccordion Title="Bound" IsEnabled="bindingIsEnabled" @bind-IsExpanded="bindingIsExpanded">
+            <BitAccordion Title="Bound" Disabled="bindingIsDisabled" @bind-IsExpanded="bindingIsExpanded">
                 Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
             </BitAccordion>
         </div>
@@ -267,7 +267,7 @@
         <div>
             <b>ReadOnly</b> is the panel that must stay as it is (e.g. the last open one): it keeps its colors and tab stop,
             reports <b>aria-disabled</b>, still raises <b>OnClick</b> and still answers the methods. Compare
-            <b>IsEnabled="false"</b>, which greys it out and drops the tab stop.
+            <b>Disabled</b>, which greys it out and drops the tab stop.
         </div>
         <br />
         <BitAccordion Title="Read-only"
@@ -277,7 +277,7 @@
                       DefaultIsExpanded>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
-        <BitAccordion Title="Disabled" IsEnabled="false" DefaultIsExpanded>
+        <BitAccordion Title="Disabled" Disabled DefaultIsExpanded>
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
         </BitAccordion>
     </DemoExample>

@@ -33,9 +33,9 @@ public class BitDropdownNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, object?> Data { get; set; } = new(nameof(BitDropdownItem<TValue>.Data));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class.
+    /// The IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitDropdownItem<TValue>.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitDropdownItem<TValue>.IsDisabled));
 
     /// <summary>
     /// The IsHidden field name and selector of the custom input class.

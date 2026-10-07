@@ -2,17 +2,17 @@
    click on enabled content bubbles up to it, neither of which the pointer-events of the disabled class stop, so the
    click handler written on a disabled element is dropped whatever its tag. *@
 
-<BitElement role="button" TabIndex="0" IsEnabled="@IsEnabled" @onclick="() => Clicks++">I'm a clickable div</BitElement>
+<BitElement role="button" TabIndex="0" Disabled="Disabled" @onclick="() => Clicks++">I'm a clickable div</BitElement>
 
-<BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="@IsEnabled" @onclick="() => Clicks++">I'm a clickable link</BitElement>
+<BitElement Element="a" href="https://bitplatform.dev/" Disabled="Disabled" @onclick="() => Clicks++">I'm a clickable link</BitElement>
 
-<BitElement IsEnabled="@IsEnabled" @onclick="() => Clicks++">
+<BitElement Disabled="Disabled" @onclick="() => Clicks++">
     <button class="inner" @onclick="() => InnerClicks++">I'm an enabled button inside</button>
 </BitElement>
 
 @* The other events an element is activated through go the same way as the click, while a hover, which activates
    nothing, is left alone. *@
-<BitElement class="activated" role="button" TabIndex="0" IsEnabled="@IsEnabled"
+<BitElement class="activated" role="button" TabIndex="0" Disabled="Disabled"
             @ondblclick="() => Activations++"
             @oncontextmenu="() => Activations++"
             @onmousedown="() => Activations++"
@@ -23,7 +23,7 @@
 </BitElement>
 
 @code {
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool Disabled { get; set; }
 
     public int Clicks { get; private set; }
     public int InnerClicks { get; private set; }

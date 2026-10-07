@@ -610,8 +610,8 @@ private Task HandleChange(BitFullCalendarChangeEventArgs args)
     <BitChoiceGroupOption Text=""Day"" Value=""BitFullCalendarView.Day"" />
     <BitChoiceGroupOption Text=""Week"" Value=""BitFullCalendarView.Week"" />
     <BitChoiceGroupOption Text=""Month"" Value=""BitFullCalendarView.Month"" />
-    <BitChoiceGroupOption Text=""Year"" Value=""BitFullCalendarView.Year"" IsEnabled=""@(bindingMode == BitFullCalendarMode.Event)"" />
-    <BitChoiceGroupOption Text=""Agenda"" Value=""BitFullCalendarView.Agenda"" IsEnabled=""@(bindingMode == BitFullCalendarMode.Event)"" />
+    <BitChoiceGroupOption Text=""Year"" Value=""BitFullCalendarView.Year"" IsDisabled=""@(bindingMode != BitFullCalendarMode.Event)"" />
+    <BitChoiceGroupOption Text=""Agenda"" Value=""BitFullCalendarView.Agenda"" IsDisabled=""@(bindingMode != BitFullCalendarMode.Event)"" />
 </BitChoiceGroup>
 <BitChoiceGroup Horizontal
                 Label=""Mode""

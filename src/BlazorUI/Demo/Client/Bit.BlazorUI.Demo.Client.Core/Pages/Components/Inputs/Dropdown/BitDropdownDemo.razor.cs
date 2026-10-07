@@ -1011,10 +1011,10 @@ public partial class BitDropdownDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Determines if the dropdown item is enabled."
+                   DefaultValue = "false",
+                   Description = "Determines if the dropdown item is disabled."
                },
                new()
                {
@@ -1105,10 +1105,10 @@ public partial class BitDropdownDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Determines if the dropdown option is enabled."
+                   DefaultValue = "false",
+                   Description = "Determines if the dropdown option is disabled."
                },
                new()
                {
@@ -1223,10 +1223,10 @@ public partial class BitDropdownDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsEnabled))",
-                   Description = "The IsEnabled field name and selector of the custom input class.",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -2114,19 +2114,19 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text, label and glyphs when IsEnabled is false.",
+            Description = "Text, label and glyphs when Disabled is true.",
         },
         new()
         {
             Name = "--bit-Dropdown-disabled-background",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "Background of the field when IsEnabled is false.",
+            Description = "Background of the field when Disabled is true.",
         },
         new()
         {
             Name = "--bit-Dropdown-disabled-border-color",
             DefaultValue = "--bit-clr-brd-dis",
-            Description = "Border of the field when IsEnabled is false.",
+            Description = "Border of the field when Disabled is true.",
         },
         new()
         {

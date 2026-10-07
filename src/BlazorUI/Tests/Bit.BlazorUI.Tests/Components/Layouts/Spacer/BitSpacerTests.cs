@@ -393,11 +393,11 @@ public class BitSpacerTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitSpacerShouldRespectIsEnabled(bool isEnabled)
+    public void BitSpacerShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSpacer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(isEnabled is false, component.Find(".bit-spc").ClassList.Contains("bit-dis"));

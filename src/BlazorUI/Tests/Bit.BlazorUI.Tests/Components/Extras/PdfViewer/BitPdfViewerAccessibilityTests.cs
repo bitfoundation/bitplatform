@@ -163,7 +163,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
@@ -173,7 +173,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-pdv-toolbar").HasAttribute("inert"));
         Assert.IsTrue(component.Find(".bit-pdv-thumbs").HasAttribute("inert"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         Assert.IsFalse(component.Find(".bit-pdv-toolbar").HasAttribute("inert"));
         Assert.IsFalse(component.Find(".bit-pdv-thumbs").HasAttribute("inert"));

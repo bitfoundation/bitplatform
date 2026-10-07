@@ -963,11 +963,11 @@ public class BitGridItemTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridItemShouldRespectIsEnabled()
+    public void BitGridItemShouldRespectDisabled()
     {
         var component = RenderComponent<BitGridItem>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-dis"));

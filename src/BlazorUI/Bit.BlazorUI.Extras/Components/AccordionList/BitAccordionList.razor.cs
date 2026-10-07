@@ -383,7 +383,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// <remarks>
     /// This is the list whose panels have to stay as they are rather than the one that is turned off, so the
     /// headers report themselves as <c>aria-disabled</c> without being greyed out the way
-    /// <see cref="BitComponentBase.IsEnabled"/> greys them. <see cref="OnItemClick"/> still reports the click,
+    /// <see cref="BitComponentBase.Disabled"/> greys them. <see cref="OnItemClick"/> still reports the click,
     /// and the public methods still drive the list.
     /// </remarks>
     [Parameter] public bool ReadOnly { get; set; }
@@ -452,7 +452,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
             foreach (var item in _items.ToArray())
             {
-                if (GetIsEnabled(item) is false) continue;
+                if (GetIsDisabled(item)) continue;
 
                 // The cap is a cap on the whole list, so ExpandAll stops at it rather than opening every panel
                 // and letting each one close the one before it.
@@ -524,7 +524,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// that key. In single-expand mode the currently expanded item is collapsed along the way.
     /// </summary>
     /// <remarks>
-    /// A call of its own is not turned away by <see cref="BitComponentBase.IsEnabled"/>, by
+    /// A call of its own is not turned away by <see cref="BitComponentBase.Disabled"/>, by
     /// <see cref="ReadOnly"/> or by <see cref="Collapsible"/>: what those close off is the way in from the
     /// header, not the one the app itself uses.
     /// </remarks>
@@ -535,7 +535,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// that key.
     /// </summary>
     /// <remarks>
-    /// Not turned away by <see cref="BitComponentBase.IsEnabled"/>, <see cref="ReadOnly"/> or
+    /// Not turned away by <see cref="BitComponentBase.Disabled"/>, <see cref="ReadOnly"/> or
     /// <see cref="Collapsible"/>; see <see cref="Expand(string)"/>.
     /// </remarks>
     public Task Collapse(string key) => SetExpandedByKey(key, false);
@@ -544,7 +544,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// Expands the item with the provided key if it is collapsed and collapses it if it is expanded.
     /// </summary>
     /// <remarks>
-    /// Not turned away by <see cref="BitComponentBase.IsEnabled"/>, <see cref="ReadOnly"/> or
+    /// Not turned away by <see cref="BitComponentBase.Disabled"/>, <see cref="ReadOnly"/> or
     /// <see cref="Collapsible"/>; see <see cref="Expand(string)"/>.
     /// </remarks>
     public Task Toggle(string key)
@@ -578,7 +578,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// </summary>
     public async Task FocusAsync()
     {
-        var item = _items.FirstOrDefault(GetIsEnabled);
+        var item = _items.FirstOrDefault(i => GetIsDisabled(i) is false);
         if (item is null) return;
 
         await InvokeAsync(() => FocusItemCore(item));
@@ -973,7 +973,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     private async Task UpdatePreventedKeys()
     {
-        var wanted = Navigable && IsEnabled;
+        var wanted = Navigable && Disabled is false;
 
         if (wanted == _preventKeysRegistered) return;
 
@@ -1295,7 +1295,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     internal async Task HandleOnItemClick(TItem item)
     {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         await OnItemClick.InvokeAsync(item);
 
@@ -1315,7 +1315,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     internal async Task HandleOnItemKeyDown(KeyboardEventArgs e, TItem item)
     {
-        if (Navigable is false || IsEnabled is false) return;
+        if (Navigable is false || Disabled) return;
 
         if (e.Key is not ("ArrowDown" or "ArrowUp" or "Home" or "End")) return;
 
@@ -1326,7 +1326,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         // A disabled header is out of the tab order, so the navigation walks past it rather than parking the
         // focus on something that cannot be reached by the Tab key either.
-        var focusables = _items.Where(GetIsEnabled).ToList();
+        var focusables = _items.Where(i => GetIsDisabled(i) is false).ToList();
         if (focusables.Count == 0) return;
 
         var index = focusables.FindIndex(i => ReferenceEquals(i, item));
@@ -1361,7 +1361,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         // The wait can have changed what the accordion saw when it asked: the list can be gone, or the item have
         // been turned off or made read-only meanwhile.
-        if (IsDisposed || HiddenUntilFound is false || IsEnabled is false || GetIsEnabled(item) is false || GetItemIsReadOnly(item)) return false;
+        if (IsDisposed || HiddenUntilFound is false || Disabled || GetIsDisabled(item) || GetItemIsReadOnly(item)) return false;
 
         var key = GetItemKey(item);
         if (key.HasNoValue()) return false;
@@ -1956,28 +1956,28 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return item.GetValueFromProperty<string?>(NameSelectors.Description.Name);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitAccordionListItem listItem)
         {
-            return listItem.IsEnabled;
+            return listItem.IsDisabled;
         }
 
         if (item is BitAccordionListOption listOption)
         {
-            return listOption.IsEnabled;
+            return listOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private bool GetIsExpanded(TItem? item)

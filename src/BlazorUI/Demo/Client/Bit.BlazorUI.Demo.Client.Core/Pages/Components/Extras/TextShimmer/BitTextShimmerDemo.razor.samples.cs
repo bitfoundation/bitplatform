@@ -73,13 +73,13 @@ private int replayCount;";
 <BitToggle @bind-Value=""isStatic"" Text=""Static"" />
 <BitTextShimmer Static=""isStatic"" Text=""Stop me and start me again"" />
 
-<BitTextShimmer IsEnabled=""false"" Text=""A disabled shimmer"" />";
+<BitTextShimmer Disabled Text=""A disabled shimmer"" />";
     private readonly string example7CsharpCode = @"
 private bool isPaused;
 private bool isStatic;";
 
     private readonly string example8RazorCode = @"
-<BitButton OnClick=""AskAsync"" IsEnabled=""isThinking is false"">Ask a question</BitButton>
+<BitButton OnClick=""AskAsync"" Disabled=""isThinking"">Ask a question</BitButton>
 
 <BitTextShimmer role=""status""
                 Static=""isThinking is false""

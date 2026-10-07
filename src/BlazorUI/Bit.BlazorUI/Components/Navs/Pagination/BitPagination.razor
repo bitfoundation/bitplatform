@@ -50,7 +50,7 @@
                         @ref="_pageSizeSelectRef"
                         id="@($"{_Id}-pss")"
                         value="@_PageSize"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         aria-label="@(PageSizeText.HasValue() ? null : PageSizeAriaLabel)"
                         @onchange="HandlePageSizeChange"
                         style="@Styles?.PageSizeSelect"
@@ -191,7 +191,7 @@
 
                                 if (_UseLinks)
                                 {
-                                    var ellipsisHref = GetHref(ellipsisPage, IsEnabled is false);
+                                    var ellipsisHref = GetHref(ellipsisPage, Disabled);
                                     <a @onclick="@(e => ChangePageFromLink(e, FocusTarget.Ellipsis, ellipsisPage))"
                                        href="@ellipsisHref"
                                        role="@(ellipsisHref is null ? "link" : null)"
@@ -209,7 +209,7 @@
                                             type="button"
                                             title="@ellipsisLabel"
                                             aria-label="@ellipsisLabel"
-                                            disabled="@(IsEnabled is false)"
+                                            disabled="@(Disabled)"
                                             style="@Styles?.Ellipsis"
                                             class="@ellipsisClass">
                                         @EllipsisText
@@ -225,7 +225,7 @@
                         <li @key="@pageNumber" role="listitem" class="bit-pgn-itm">
                             @if (_UseLinks)
                             {
-                                var pageHref = GetHref(pageNumber, IsEnabled is false);
+                                var pageHref = GetHref(pageNumber, Disabled);
                                 <a @ref="_pageRefs[pageNumber]"
                                    @onclick="@(e => ChangePageFromLink(e, pageNumber))"
                                    href="@pageHref"
@@ -243,7 +243,7 @@
                                 <button @ref="_pageRefs[pageNumber]"
                                         @onclick="@(() => ChangePage(pageNumber))"
                                         type="button"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(Disabled)"
                                         aria-current="@(isSelected ? "page" : null)"
                                         aria-label="@GetPageLabel(pageNumber, isSelected)"
                                         style="@JoinStyles(Styles?.Button, isSelected ? Styles?.SelectedButton : null)"
@@ -367,7 +367,7 @@
                        type="number"
                        value="@_goToPageText"
                        autocomplete="off"
-                       disabled="@(IsEnabled is false)"
+                       disabled="@(Disabled)"
                        aria-label="@(GoToPageText.HasValue() ? null : GoToPageAriaLabel)"
                        @oninput="HandleGoToPageInput"
                        @onchange="HandleGoToPageChange"

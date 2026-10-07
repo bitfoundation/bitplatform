@@ -18,7 +18,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private int _lastThreshold;
     private int _lastMaxPull;
     private decimal _lastFactor;
-    private bool _lastIsEnabled;
+    private bool _lastDisabled;
     private bool _lastNoMouse;
     private BitPullToRefreshDirection _lastDirection;
     private string? _lastScrollerSelector;
@@ -330,7 +330,7 @@ public partial class BitPullToRefresh : BitComponentBase
     /// </summary>
     public async Task RefreshAsync()
     {
-        if (_refreshing || _completed || IsEnabled is false || IsRendered is false || IsDisposed) return;
+        if (_refreshing || _completed || Disabled || IsRendered is false || IsDisposed) return;
 
         await _js.BitPullToRefreshRefresh(UniqueId);
     }
@@ -498,19 +498,19 @@ public partial class BitPullToRefresh : BitComponentBase
         if (IsRendered is false) return;
 
         if (_lastTrigger != Trigger || _lastFactor != Factor || _lastMargin != Margin || _lastThreshold != Threshold ||
-            _lastMaxPull != MaxPull || _lastIsEnabled != IsEnabled || _lastNoMouse != NoMouse || _lastDirection != Direction ||
+            _lastMaxPull != MaxPull || _lastDisabled != Disabled || _lastNoMouse != NoMouse || _lastDirection != Direction ||
             _lastScrollerSelector != ScrollerSelector || !Nullable.Equals(_lastScrollerElement, ScrollerElement))
         {
             // js drops the pull height of an idle component when it gets disabled, or when the direction it is
             // pulled in turns around under it, so the managed side does the same, otherwise the indicator keeps
             // rendering at the height it had.
-            if ((IsEnabled is false || _lastDirection != Direction) && _refreshing is false && _completed is false)
+            if ((Disabled || _lastDirection != Direction) && _refreshing is false && _completed is false)
             {
                 _diff = 0;
             }
 
             CacheJsParameters();
-            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse, Direction);
+            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, Disabled is false, NoMouse, Direction);
 
             // A pull dropped by the disabling or the turn, or one a new Trigger has moved across the release line.
             NotifyStateChange();
@@ -523,7 +523,7 @@ public partial class BitPullToRefresh : BitComponentBase
         {
             CacheJsParameters();
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, NoMouse, Direction, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, Disabled is false, NoMouse, Direction, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -536,7 +536,7 @@ public partial class BitPullToRefresh : BitComponentBase
         _lastMargin = Margin;
         _lastThreshold = Threshold;
         _lastMaxPull = MaxPull;
-        _lastIsEnabled = IsEnabled;
+        _lastDisabled = Disabled;
         _lastNoMouse = NoMouse;
         _lastDirection = Direction;
         _lastScrollerSelector = ScrollerSelector;

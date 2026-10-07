@@ -13,11 +13,11 @@ public class BitTextShimmerTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitTextShimmerShouldRespectIsEnabled(bool isEnabled)
+    public void BitTextShimmerShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitTextShimmer>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-tsh");
@@ -33,7 +33,7 @@ public class BitTextShimmerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTextShimmerShouldRespectIsEnabledChangingAfterRender()
+    public void BitTextShimmerShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitTextShimmer>();
 
@@ -41,7 +41,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-tsh").ClassList.Contains("bit-dis"));
@@ -1325,7 +1325,7 @@ public class BitTextShimmerTests : BunitTestContext
         {
             parameters.Add(p => p.Static, true);
             parameters.Add(p => p.Paused, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Color, BitColor.Success);
         });
 

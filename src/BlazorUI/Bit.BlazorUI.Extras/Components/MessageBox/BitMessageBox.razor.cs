@@ -569,7 +569,7 @@ public partial class BitMessageBox : BitComponentBase
 
     private async Task HandleAction(BitMessageBoxResult result)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Only one answer is given per showing: a slow callback leaves every other button pressable, and
         // a message box answered Ok and then Cancel while the first answer is still being worked out is

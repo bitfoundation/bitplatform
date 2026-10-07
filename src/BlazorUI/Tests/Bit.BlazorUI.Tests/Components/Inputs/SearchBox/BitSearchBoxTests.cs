@@ -313,7 +313,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.AutoComplete, autoComplete);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var input = component.Find(".bit-srb-inp");
@@ -743,7 +743,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.Value, "bit");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ShowSearchButton, true);
         });
 
@@ -901,7 +901,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnKeyDown, _ => downCount++);
         });
 
@@ -3059,7 +3059,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.MinSuggestTriggerChars, 1);
             parameters.Add(p => p.SuggestItems, Fruits);
             parameters.Bind(p => p.Value, value, v => value = v);
@@ -3133,7 +3133,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Immediate, true);
         });
 
@@ -3174,7 +3174,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Immediate, true);
         });
 
@@ -3213,7 +3213,7 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBoxValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.Immediate, true);
         });
 

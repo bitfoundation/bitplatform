@@ -439,6 +439,13 @@ public partial class DemoPage
         },
         new()
         {
+            Name = "Disabled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.",
+        },
+        new()
+        {
             Name = "ForceAnimation",
             Type = "bool",
             DefaultValue = "false",
@@ -457,13 +464,6 @@ public partial class DemoPage
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the unique identifier for the component's root element.",
-        },
-        new()
-        {
-            Name = "IsEnabled",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Gets or sets a value indicating whether the component is enabled and can respond to user interaction.",
         },
         new()
         {

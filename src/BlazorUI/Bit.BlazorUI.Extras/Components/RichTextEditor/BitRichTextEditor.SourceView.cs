@@ -37,7 +37,7 @@ public partial class BitRichTextEditor
         // flips ReadOnly to true while source view is open, the editor would otherwise be
         // trapped there with no way back to the rendered view. A disabled component takes no
         // input at all, so it stays where it is until re-enabled.
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (EffectiveReadOnly && _inSourceView is false) return;
         ClearInlineError();
 

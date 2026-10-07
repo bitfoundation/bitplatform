@@ -81,11 +81,11 @@ public class BitScrollablePaneTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitScrollablePaneShouldRespectIsEnabled(bool isEnabled)
+    public void BitScrollablePaneShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitScrollablePane>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-scp");
@@ -236,7 +236,7 @@ public class BitScrollablePaneTests : BunitTestContext
         var component = RenderComponent<BitScrollablePane>(parameters =>
         {
             parameters.Add(p => p.Focusable, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual("-1", component.Find(".bit-scp").GetAttribute("tabindex"));
@@ -985,7 +985,7 @@ public class BitScrollablePaneTests : BunitTestContext
         RenderComponent<BitScrollablePane>(parameters =>
         {
             parameters.Add(p => p.Fade, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.AreEqual(0, InvocationCount(Setup));

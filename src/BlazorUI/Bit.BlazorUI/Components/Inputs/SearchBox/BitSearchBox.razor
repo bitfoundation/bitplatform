@@ -84,7 +84,7 @@
                    enterkeyhint="@_enterKeyHint"
                    autocorrect="@GetAutoCorrect()"
                    aria-labelledby="@LabelledBy"
-                   disabled="@(IsEnabled is false)"
+                   disabled="@(Disabled)"
                    autocapitalize="@AutoCapitalize"
                    aria-describedby="@DescribedBy"
                    class="bit-srb-inp @Classes?.Input"
@@ -134,7 +134,7 @@
                         title="@ClearButtonAriaLabel"
                         style="@Styles?.ClearButton"
                         aria-label="@ClearButtonAriaLabel"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         class="bit-srb-cbt @Classes?.ClearButton">
                     @if (ClearButtonTemplate is not null)
                     {
@@ -158,7 +158,7 @@
             <button @onclick="HandleOnSearchButtonClick"
                     type="button"
                     style="@Styles?.SearchButton"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     class="bit-srb-sbn @Classes?.SearchButton"
                     title="@(hasSearchButtonLabel ? null : SearchButtonAriaLabel)"
                     aria-label="@(hasSearchButtonLabel ? null : SearchButtonAriaLabel)">

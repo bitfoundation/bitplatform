@@ -70,9 +70,9 @@
         document, so whatever pointed at it still has something to point at. Everywhere else the tab
         index is whatever was asked for and nothing more - a flag is not focusable by itself. *@
     var tabIndex = TabIndex ?? splattedTabIndex;
-    var rootTabIndex = interactive ? (IsEnabled ? (tabIndex ?? "0") : "-1") : tabIndex;
+    var rootTabIndex = interactive ? (Disabled ? "-1" : (tabIndex ?? "0")) : tabIndex;
 
-    var ariaDisabled = interactive && IsEnabled is false ? "true" : splattedDisabled;
+    var ariaDisabled = interactive && Disabled ? "true" : splattedDisabled;
 
     @*  Nothing is listening on a flag that does nothing: an empty handler still costs a round trip to
         the server on every click and every keystroke of a Blazor Server app. *@

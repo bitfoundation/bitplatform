@@ -76,7 +76,7 @@ public partial class PopularComponents
                        [
                            new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
                            new() { Text = "Apple", Value = "f-app" },
-                           new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+                           new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
                            new() { Text = "Banana", Value = "f-ban" },
                            new() { ItemType = BitDropdownItemType.Divider },
                            new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -107,12 +107,12 @@ public partial class PopularComponents
                                ChildItems =
                                [
                                    new() { Text = "Activity" },
-                                   new() { Text = "MSN", IsEnabled = false }
+                                   new() { Text = "MSN", IsDisabled = true }
                                ]
                            },
                            new() { Text = "Documents", IsExpanded = true },
                            new() { Text = "Pages" },
-                           new() { Text = "Notebook", IsEnabled = false },
+                           new() { Text = "Notebook", IsDisabled = true },
                            new() { Text = "Communication and Media" },
                            new() { Text = "News", Title = "News", IconName = BitIconName.News },
                        ];
@@ -167,7 +167,7 @@ public partial class PopularComponents
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
-        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Orange", Value = "f-ora", IsDisabled = true },
         new() { Text = "Banana", Value = "f-ban" },
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
@@ -188,12 +188,12 @@ public partial class PopularComponents
             ChildItems =
             [
                 new() { Text = "Activity" },
-                new() { Text = "MSN", IsEnabled = false }
+                new() { Text = "MSN", IsDisabled = true }
             ]
         },
         new() { Text = "Documents", IsExpanded = true },
         new() { Text = "Pages" },
-        new() { Text = "Notebook", IsEnabled = false },
+        new() { Text = "Notebook", IsDisabled = true },
         new() { Text = "Communication and Media" },
         new() { Text = "News", Title = "News", IconName = BitIconName.News },
     ];

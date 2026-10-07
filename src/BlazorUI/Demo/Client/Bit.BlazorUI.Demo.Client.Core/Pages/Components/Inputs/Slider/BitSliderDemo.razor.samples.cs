@@ -9,7 +9,7 @@ public partial class BitSliderDemo
 
 <BitSlider Label=""Percentage"" Min=""0"" Max=""100"" Step=""10"" DefaultValue=""40"" />
 
-<BitSlider Label=""Disabled slider"" DefaultValue=""5"" IsEnabled=""false"" />
+<BitSlider Label=""Disabled slider"" DefaultValue=""5"" Disabled />
 
 <BitSlider Label=""ReadOnly slider"" DefaultValue=""6"" ReadOnly />";
 
@@ -24,7 +24,7 @@ public partial class BitSliderDemo
 <BitSlider Label=""Age band"" IsRanged Min=""0"" Max=""100"" Step=""5"" @bind-RangeValue=""ageBand"" />
 <BitLabel>From @ageBand.Lower to @ageBand.Upper (@ageBand.Length years wide)</BitLabel>
 
-<BitSlider Label=""Disabled range"" IsRanged DefaultLowerValue=""2"" DefaultUpperValue=""5"" IsEnabled=""false"" />";
+<BitSlider Label=""Disabled range"" IsRanged DefaultLowerValue=""2"" DefaultUpperValue=""5"" Disabled />";
     private readonly string example2CsharpCode = @"
 private BitSliderRangeValue ageBand = new(25, 45);";
 
@@ -112,7 +112,7 @@ private double storageValue = 256;";
     private readonly string example4RazorCode = @"
 <BitSlider Label=""Basic"" IsVertical DefaultValue=""4"" />
 
-<BitSlider Label=""Disabled"" IsVertical DefaultValue=""4"" IsEnabled=""false"" />
+<BitSlider Label=""Disabled"" IsVertical DefaultValue=""4"" Disabled />
 
 <BitSlider Label=""Formatted"" IsVertical DefaultValue=""2"" ValueFormat=""0 cm"" />
 

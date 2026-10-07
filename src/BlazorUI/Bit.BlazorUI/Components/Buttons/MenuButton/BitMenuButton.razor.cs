@@ -664,7 +664,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     // which leaves out the separators and the group labels that only structure the list around them.
     private bool IsSelectable(TItem item)
     {
-        return GetIsEnabled(item)
+        return GetIsDisabled(item) is false
             && GetIsSeparator(item) is false
             && GetIsHeader(item) is false
             // An item that opens a submenu is a way further in rather than a command, so there is nothing
@@ -996,28 +996,28 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Href.Name);
     }
 
-    internal bool GetIsEnabled(TItem? item)
+    internal bool GetIsDisabled(TItem? item)
     {
-        if (item is null) return false;
+        if (item is null) return true;
 
         if (item is BitMenuButtonItem menuButtonItem)
         {
-            return menuButtonItem.IsEnabled;
+            return menuButtonItem.IsDisabled;
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
         {
-            return menuButtonOption.IsEnabled;
+            return menuButtonOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     private bool GetIsSelected(TItem? item)
@@ -1212,7 +1212,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnHeaderClick(TItem? item)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         if (Split is false)
@@ -1238,7 +1238,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             await OnToggleChange.InvokeAsync(IsToggled);
         }
 
-        if (item is not null && GetIsEnabled(item) is false) return;
+        if (item is not null && GetIsDisabled(item)) return;
 
         if (AutoLoading)
         {
@@ -1275,7 +1275,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     // keyboard the chevron can still be the focused element with the menu open, and Enter has to close it.
     private async Task HandleOnChevronClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (IsOpen)
         {
@@ -1303,7 +1303,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     internal async Task HandleOnItemClick(TItem item)
     {
-        if (IsEnabled is false || GetIsEnabled(item) is false) return;
+        if (Disabled || GetIsDisabled(item)) return;
 
         // A check or radio item's state changes on activation, so it is written before anything is told
         // about the click: a handler that reads the item back sees the state its own click produced.
@@ -1432,7 +1432,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnTriggerKeyDown(KeyboardEventArgs e, bool opener)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -1469,7 +1469,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     // it is open, so its keys never reach the handler of the menu around it.
     internal async Task HandleOnMenuKeyDown(KeyboardEventArgs e, string calloutId, IBitMenuButtonSubmenu? owner)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         // The level of the items of THIS menu: the submenu of an item at level N holds items at N + 1.
         var level = owner is null ? 0 : owner.Level + 1;
@@ -1588,7 +1588,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         // The loading state belongs to the header button alone: in split mode the chevron still opens the menu,
         // so the operation running under the main half never takes the rest of the commands away with it.
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
@@ -1680,7 +1680,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        if (Disabled || IsDisposed) return;
 
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,

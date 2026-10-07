@@ -1801,7 +1801,7 @@ public partial class BitMapDemo
     private bool interDragging = true;
     private bool interScaleBar = true;
     private bool interMaxBounds;
-    private bool interEnabled = true;
+    private bool interDisabled;
     private BitLeafletMapProvider interProvider = new() { Center = new(51.5074, -0.1278), Zoom = 10, ShowScaleControl = true };
 
     private void BuildInteractionProvider()

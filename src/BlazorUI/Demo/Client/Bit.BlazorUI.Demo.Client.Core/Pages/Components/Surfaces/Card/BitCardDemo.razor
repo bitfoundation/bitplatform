@@ -212,7 +212,7 @@
         <div>
             <b>OnClick</b> stretches a native button over the card, named by its <b>Title</b>: focusable, pressed by Enter and Space, shaded
             under the pointer. <b>Actions</b>, <b>Footer</b> and <b>FloatingActions</b> stay separate controls above it. Binding <b>Selected</b>
-            makes it a toggle (<code>aria-pressed</code> and a ring). <b>IsEnabled="false"</b> disables it; <b>StopPropagation</b> keeps the click
+            makes it a toggle (<code>aria-pressed</code> and a ring). <b>Disabled</b> disables it; <b>StopPropagation</b> keeps the click
             from its ancestors.
         </div>
         <br /><br />
@@ -226,7 +226,7 @@
                 </ChildContent>
             </BitCard>
 
-            <BitCard OnClick="() => clickCount++" IsEnabled="false" Title="Disabled" Width="14rem">
+            <BitCard OnClick="() => clickCount++" Disabled Title="Disabled" Width="14rem">
                 <BitText Typography="BitTypography.Body2">Answers nothing.</BitText>
             </BitCard>
 
@@ -447,9 +447,9 @@
         <div>Disabled:</div>
         <br />
         <div class="card-row">
-            <BitCard IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Fill" Title="Primary" Subtitle="Fill" Width="12rem" />
-            <BitCard IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Outline" Title="Success" Subtitle="Outline" Width="12rem" />
-            <BitCard IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Text" Title="Error" Subtitle="Text" Width="12rem" />
+            <BitCard Disabled Color="BitColor.Primary" Variant="BitVariant.Fill" Title="Primary" Subtitle="Fill" Width="12rem" />
+            <BitCard Disabled Color="BitColor.Success" Variant="BitVariant.Outline" Title="Success" Subtitle="Outline" Width="12rem" />
+            <BitCard Disabled Color="BitColor.Error" Variant="BitVariant.Text" Title="Error" Subtitle="Text" Width="12rem" />
         </div>
     </DemoExample>
 

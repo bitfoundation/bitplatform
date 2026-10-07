@@ -49,7 +49,7 @@
                             aria-controls="@(ExpandOverflow ? null : _calloutId)"
                             aria-expanded="@(ExpandOverflow ? null : _isCalloutOpen.ToString().ToLower())"
                             aria-label="@(OverflowAriaLabel ?? "More items")"
-                            disabled="@(IsEnabled is false)">
+                            disabled="@(Disabled)">
                         @if (OverflowIconTemplate is not null)
                         {
                             @OverflowIconTemplate
@@ -133,7 +133,7 @@
                                 title="@GetItemTitle(item)"
                                 aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                disabled="@(GetIsEnabled(item) is false)"
+                                disabled="@(GetIsDisabled(item))"
                                 style="@GetStyles(item, false)"
                                 class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
                             @if (template is not null)
@@ -164,7 +164,7 @@
                         var ariaLabel = GetItemAriaLabel(item);
                         <span title="@GetItemTitle(item)"
                               aria-current="@(GetIsSelected(item) ? "page" : null)"
-                              aria-disabled="@(GetIsEnabled(item) ? null : "true")"
+                              aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
                               style="@GetStyles(item, false)"
                               class="bit-brc-nii @GetClasses(item, false)">
                             @if (ariaLabel.HasValue())
@@ -297,12 +297,12 @@
                 {
                     <button type="button"
                             role="menuitem"
-                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
+                            tabindex="@(GetIsDisabled(item) ? -1 : 0)"
                             title="@GetItemTitle(item, true)"
                             aria-label="@GetItemAriaLabel(item)"
                             aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            aria-disabled="@(GetIsEnabled(item) ? null : "true")"
-                            disabled="@(GetIsEnabled(item) is false)"
+                            aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
+                            disabled="@(GetIsDisabled(item))"
                             style="@GetStyles(item, true)"
                             class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnOverflowItemClick(item)">
                         @if (overflowTemplate is not null)
@@ -333,7 +333,7 @@
                           title="@GetItemTitle(item, true)"
                           aria-label="@GetItemAriaLabel(item)"
                           aria-current="@(GetIsSelected(item) ? "page" : null)"
-                          aria-disabled="@(GetIsEnabled(item) ? null : "true")"
+                          aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
                           style="@GetStyles(item, true)"
                           class="bit-brc-ofn @GetClasses(item, true)">
                           @if (overflowTemplate is not null)

@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
 
 /// <summary>
-/// Covers what the grid takes from BitComponentBase and the BitParams infrastructure - the root attributes, IsEnabled,
+/// Covers what the grid takes from BitComponentBase and the BitParams infrastructure - the root attributes, Disabled,
 /// BitDataGridParams, the per-part Classes/Styles - and the keyboard alternatives to the pointer gestures on the
 /// column headers (the resize separator, Ctrl+Arrow and the column chooser's move buttons), plus OnStateChange.
 /// </summary>
@@ -128,7 +128,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
     {
         var component = RenderGrid(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.Filterable, true);
             parameters.Add(p => p.Resizable, true);
@@ -158,7 +158,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         var clicks = 0;
         var component = RenderGrid(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
             parameters.Add(p => p.CellNavigation, true);
             parameters.Add(p => p.OnRowClick, (Row _) => clicks++);
@@ -176,7 +176,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
     {
         var component = RenderGrid(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.CellNavigation, true);
             parameters.Add(p => p.Dir, BitDir.Ltr);
         });

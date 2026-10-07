@@ -31,13 +31,13 @@
     // lands on a control a screen reader has nothing to say about (WCAG 4.1.2). The native disabled attribute is
     // not there to do it here - a disabled button kept interactive does not carry one - so the tab order of both
     // halves is written out rather than left to the browser.
-    var tabIndex = (ariaHidden is false && (IsEnabled || DisabledInteractive)) ? 0 : -1;
+    var tabIndex = (ariaHidden is false && (Disabled is false || DisabledInteractive)) ? 0 : -1;
     // Autofocus follows the same rule as the tab order: a menu button hidden from assistive technologies, or a
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.
     var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null)
                         && ariaHidden is false
-                        && (IsEnabled || DisabledInteractive);
+                        && (Disabled is false || DisabledInteractive);
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -55,10 +55,10 @@
             type="@headerButtonType"
             autofocus="@autoFocus"
             tabindex="@tabIndex"
-            disabled="@(IsEnabled is false && DisabledInteractive is false)"
+            disabled="@(Disabled && DisabledInteractive is false)"
             aria-label="@ariaLabel"
             aria-hidden="@(ariaHidden ? "true" : null)"
-            aria-disabled="@(IsEnabled ? null : "true")"
+            aria-disabled="@(Disabled ? "true" : null)"
             aria-busy="@(IsLoading ? "true" : null)"
             aria-describedby="@describedByValue"
             aria-haspopup="@(Split ? null : "menu")"
@@ -150,12 +150,12 @@
                 id="@(_Id + "-chb")"
                 title="@ChevronDownTitle"
                 tabindex="@tabIndex"
-                disabled="@(IsEnabled is false && DisabledInteractive is false)"
+                disabled="@(Disabled && DisabledInteractive is false)"
                 aria-haspopup="menu"
                 aria-controls="@_menuId"
                 aria-label="@chevronLabel"
                 aria-hidden="@(ariaHidden ? "true" : null)"
-                aria-disabled="@(IsEnabled ? null : "true")"
+                aria-disabled="@(Disabled ? "true" : null)"
                 aria-describedby="@describedByValue"
                 aria-expanded="@IsOpen.ToString().ToLower()"
                 style="@Styles?.ChevronDownButton"

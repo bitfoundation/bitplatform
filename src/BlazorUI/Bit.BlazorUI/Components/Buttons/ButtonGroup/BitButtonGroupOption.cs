@@ -54,9 +54,9 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the option is enabled.
+    /// Whether or not the option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Whether or not the option is in the loading state, which replaces its icon with a spinner and blocks its click.

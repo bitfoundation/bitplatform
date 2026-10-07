@@ -188,7 +188,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
     [TestMethod]
     public void BitPullToRefreshShouldApplyCascadedBaseParameters()
     {
-        var component = RenderWithParams(new BitPullToRefreshParams { Dir = BitDir.Rtl, IsEnabled = false, AriaLabel = "Messages" });
+        var component = RenderWithParams(new BitPullToRefreshParams { Dir = BitDir.Rtl, Disabled = true, AriaLabel = "Messages" });
 
         var root = component.Find(".bit-ptr");
 

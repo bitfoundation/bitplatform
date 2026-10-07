@@ -123,7 +123,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     public void BitAccordionListShouldNotToggleADisabledItem()
     {
         var items = GetItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
         {
@@ -140,7 +140,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     public async Task BitAccordionListExpandAllShouldSkipTheDisabledItems()
     {
         var items = GetItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
         {
@@ -873,7 +873,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     public async Task BitAccordionListCollapseAllShouldCloseTheDisabledItemsAsWell()
     {
         var items = GetItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
         {

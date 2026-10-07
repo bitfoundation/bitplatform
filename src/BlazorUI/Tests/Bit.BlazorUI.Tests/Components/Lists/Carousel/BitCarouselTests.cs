@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Lists.Carousel;
@@ -262,11 +263,11 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldRespectIsEnabledFalse()
+    public void BitCarouselShouldRespectDisabledFalse()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-csl");
@@ -1253,7 +1254,7 @@ public partial class BitCarouselTests : BunitTestContext
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.Wheel, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var container = component.Find(".bit-csl-cnt");
@@ -2050,6 +2051,78 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCarouselShouldNotAutoPlayInAPageThatIsAlreadyHidden()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));
+        Services.AddSingleton(visibility);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 5000d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        // No visibilitychange is coming for a tab that was already in the background when the carousel started.
+        Assert.IsFalse(carousel.IsPlaying);
+
+        // Holding the rotation for a hidden page never counts as taking the carousel over.
+        Assert.IsFalse(carousel.IsPaused);
+
+        await component.InvokeAsync(() => visibility._VisibilityChanged(false));
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldAutoPlayAsUsualWhenThePageVisibilityScriptFails()
+    {
+        var visibility = new BitPageVisibility(new PageStateJsRuntime(new JSException("BitBlazorUI.PageVisibility is not defined")));
+        Services.AddSingleton(visibility);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 5000d);
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Carousel.IsPlaying));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldBeHeldByARetriedPageVisibilityInitWithoutRenderingAgain()
+    {
+        var js = new PageStateJsRuntime("""{"hidden":true,"blurred":false}""")
+        {
+            Failure = new JSException("BitBlazorUI.PageVisibility is not defined")
+        };
+        Services.AddSingleton(new BitPageVisibility(js));
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 5000d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+
+        // The script has loaded by the time the utility asks again on its own, and the hidden page it then reads
+        // reaches the carousel as a change: nothing has to render it again, and no render polls the page.
+        js.Failure = null;
+
+        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying), TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual(2, js.InitCount);
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlayInterval, 7000d));
+
+        Assert.AreEqual(2, js.InitCount);
+    }
+
+    [TestMethod]
     public async Task BitCarouselShouldTogglePlayFromCode()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
@@ -2233,7 +2306,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var carousel = component.Instance.Carousel;
@@ -2253,7 +2326,7 @@ public partial class BitCarouselTests : BunitTestContext
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoPlay, true);
             parameters.Add(p => p.AutoPlayInterval, 50d);
         });
@@ -2431,7 +2504,7 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Page));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         // A disabled carousel does not move, but it neither drops the request nor writes its page over it.
         component.Render(parameters => parameters.Add(p => p.Page, 3));
@@ -2439,7 +2512,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
         Assert.AreEqual(3, component.Instance.Page);
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
         Assert.AreEqual(3, component.Instance.Page);

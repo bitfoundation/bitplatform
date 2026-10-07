@@ -111,10 +111,10 @@ private async Task FocusTheBox()
 }";
 
     private readonly string example9RazorCode = @"
-<BitElement Element=""button"" IsEnabled=""false"">A disabled button</BitElement>
-<BitElement Element=""input"" IsEnabled=""false"" placeholder=""A disabled input"" AriaLabel=""A disabled input"" />
-<BitElement Element=""a"" href=""https://bitplatform.dev/"" IsEnabled=""false"">A disabled anchor</BitElement>
-<BitElement class=""demo-boxed"" TabIndex=""0"" role=""button"" IsEnabled=""false"" @onclick=""() => disabledClicks++"">A disabled div button, out of the tab order (@disabledClicks)</BitElement>";
+<BitElement Element=""button"" Disabled>A disabled button</BitElement>
+<BitElement Element=""input"" Disabled placeholder=""A disabled input"" AriaLabel=""A disabled input"" />
+<BitElement Element=""a"" href=""https://bitplatform.dev/"" Disabled>A disabled anchor</BitElement>
+<BitElement class=""demo-boxed"" TabIndex=""0"" role=""button"" Disabled @onclick=""() => disabledClicks++"">A disabled div button, out of the tab order (@disabledClicks)</BitElement>";
     private readonly string example9CsharpCode = @"
 private int disabledClicks;";
 
@@ -154,8 +154,8 @@ private readonly BitElementParams[] elementParams =
 <BitElement Class=""demo-boxed"">Classed through the Class parameter</BitElement>
 <BitElement Class=""demo-boxed"" style=""color: mediumseagreen;"">A Class parameter and a plain style attribute</BitElement>
 
-<BitElement Element=""button"" IsEnabled=""false"" Style=""--bit-Element-disabled-opacity: 0.2;"">Disabled, dimmed further</BitElement>
-<BitElement Element=""fieldset"" IsEnabled=""false"" Style=""--bit-Element-disabled-opacity: 1;"">
+<BitElement Element=""button"" Disabled Style=""--bit-Element-disabled-opacity: 0.2;"">Disabled, dimmed further</BitElement>
+<BitElement Element=""fieldset"" Disabled Style=""--bit-Element-disabled-opacity: 1;"">
     <BitElement Element=""legend"">A disabled fieldset, not dimmed</BitElement>
     <BitElement Element=""input"" placeholder=""Its input shows its own disabled look"" AriaLabel=""Fieldset input"" />
 </BitElement>";

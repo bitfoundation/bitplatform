@@ -39,11 +39,11 @@ public class BitPhoneInputTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitPhoneInputShouldRespectIsEnabled(bool isEnabled)
+    public void BitPhoneInputShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-phi");
@@ -1096,7 +1096,7 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var disabled = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         disabled.Find("button.bit-phi-drp").Click();
@@ -1439,7 +1439,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnKeyDown, () => keyDowns++);
             parameters.Add(p => p.OnClick, () => clicks++);
         });

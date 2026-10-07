@@ -591,7 +591,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // Called from outside a Blazor event handler as well as from one, so the render the opened
         // callout needs is asked for here rather than left to the caller - and on the renderer's own
         // context, since the caller can be on any thread.
-        if (IsEnabled is false || ReadOnly || NoDropdown || IsOpen) return;
+        if (Disabled || ReadOnly || NoDropdown || IsOpen) return;
 
         await OpenCallout();
 
@@ -649,7 +649,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task SetNumber(string? number)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var (country, local) = ParseFullNumber(NormalizeTyped(number), keepCountry: NoDropdown);
 
@@ -1014,7 +1014,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-phi-rdo" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-phi-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-phi-req" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? "bit-phi-fcs" : string.Empty);
 
@@ -1624,7 +1624,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task HandleOnDropdownClick()
     {
-        if (IsEnabled is false || ReadOnly || NoDropdown) return;
+        if (Disabled || ReadOnly || NoDropdown) return;
 
         if (IsOpen)
         {
@@ -1646,7 +1646,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e, bool fromSearchBox)
     {
-        if (IsEnabled is false || ReadOnly || NoDropdown) return;
+        if (Disabled || ReadOnly || NoDropdown) return;
 
         var key = e.Key;
 
@@ -1830,7 +1830,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task OpenCallout()
     {
-        if (IsEnabled is false || NoDropdown) return;
+        if (Disabled || NoDropdown) return;
 
         _hasOpened = true;
 
@@ -1973,7 +1973,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private async Task ToggleCallout()
     {
         // Without a dropdown there is no callout element in the document to show or position.
-        if (IsEnabled is false || IsDisposed || NoDropdown) return;
+        if (Disabled || IsDisposed || NoDropdown) return;
 
         // The callout is positioned against the field group, but the root is the element whose Style, classes
         // and theme the callout and the overlay have to go on inheriting once they are relocated to the body,
@@ -2026,7 +2026,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task HandleOnCountrySelect(BitCountry country)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await CloseCallout();
 
@@ -2072,7 +2072,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task ClearNumber()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // An empty field has nothing to clear, and reporting a clear that changed nothing would have a
         // consumer react to a number that was never there.
@@ -2110,7 +2110,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // Parse what the user typed so a full number entered with an international prefix
         // ('+' or its "00" equivalent) selects the matching country and keeps only the local
@@ -2149,7 +2149,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var typed = e.Value?.ToString();
 
@@ -2226,7 +2226,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(true);
 
@@ -2235,7 +2235,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The focus ring belongs to the field as a whole, and the search box of an open callout is
         // part of that field as far as the user is concerned, so the ring stays on while it is open.
@@ -2250,28 +2250,28 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task HandleOnInputFocus(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnFocus.InvokeAsync(e);
     }
 
     private async Task HandleOnInputBlur(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnBlur.InvokeAsync(e);
     }
 
     private async Task HandleOnInputClick(MouseEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await OnClick.InvokeAsync(e);
     }
 
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await OnKeyDown.InvokeAsync(e);
 

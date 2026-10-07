@@ -17,11 +17,11 @@ public class BitActionButtonTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitActionButtonIsEnabledTest(bool isEnabled)
+    public void BitActionButtonDisabledTest(bool isEnabled)
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var button = component.Find(".bit-acb");
@@ -163,7 +163,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -196,7 +196,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -334,7 +334,7 @@ public class BitActionButtonTests : BunitTestContext
         {
             parameters.Add(p => p.Href, href);
             parameters.Add(p => p.AutoFocus, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -462,7 +462,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var button = component.Find(".bit-acb");
@@ -560,7 +560,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var button = component.Find(".bit-acb");
@@ -1064,7 +1064,7 @@ public class BitActionButtonTests : BunitTestContext
             {
                 parameters.Add(p => p.Title, $"title-{i}");
                 parameters.Add(p => p.IconName, "Add");
-                parameters.Add(p => p.IsEnabled, i % 3 != 0);
+                parameters.Add(p => p.Disabled, i % 3 == 0);
                 parameters.Add(p => p.FullWidth, i % 2 == 0);
                 parameters.Add(p => p.Href, i % 5 == 0 ? "https://bitplatform.dev" : null);
             });
@@ -1081,7 +1081,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.IconName, "Add");
         });
 
@@ -1093,7 +1093,7 @@ public class BitActionButtonTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.IconName, "Delete");
         });
 
@@ -1133,7 +1133,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.TabIndex, tabIndex);
         });
 
@@ -1141,7 +1141,7 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.AreEqual("-1", button.GetAttribute("tabindex"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         Assert.AreEqual(tabIndex, button.GetAttribute("tabindex"));
     }
@@ -1266,7 +1266,7 @@ public class BitActionButtonTests : BunitTestContext
             Target = "_blank",
             Title = "Test Title",
             AriaLabel = "Test Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -1303,7 +1303,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("_blank", instance.Target);
         Assert.AreEqual("Test Title", instance.Title);
         Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 
@@ -1449,7 +1449,7 @@ public class BitActionButtonTests : BunitTestContext
             {
                 AriaLabel = "Base Label",
                 Id = "test-id",
-                IsEnabled = false,
+                Disabled = true,
                 TabIndex = "3",
                 Style = "background: blue;",
                 Class = "base-class"
@@ -1725,7 +1725,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -1781,7 +1781,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -1800,7 +1800,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
@@ -2096,7 +2096,7 @@ public class BitActionButtonTests : BunitTestContext
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
             parameters.Add(p => p.TabIndex, tabIndex);
         });
@@ -2269,7 +2269,7 @@ public class BitActionButtonTests : BunitTestContext
         var control = RenderSplatted(new()
         {
             ["Href"] = "https://bitplatform.dev",
-            ["IsEnabled"] = false,
+            ["Disabled"] = false,
             ["role"] = "menuitem"
         }).Find(".bit-acb");
 

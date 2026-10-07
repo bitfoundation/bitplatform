@@ -34,8 +34,8 @@
     var title = Title ?? splattedTitle;
     var tabIndex = _tabIndex ?? splattedTabIndex;
     var target = Target.HasValue() ? Target : splattedTarget;
-    var role = splattedRole ?? (IsEnabled ? null : "link");
-    var ariaDisabled = IsEnabled ? splattedDisabled : "true";
+    var role = splattedRole ?? (Disabled ? "link" : null);
+    var ariaDisabled = Disabled ? "true" : splattedDisabled;
     var ariaCurrent = GetAriaCurrent();
 
     @* A link that cannot take the focus must not pull it on the first render - a hand-written autofocus included. *@
@@ -45,7 +45,7 @@
        anything on one that scrolls the page instead of navigating it. Everything downstream reads the
        target that is actually on the element rather than the parameter, so a link that will not open a new
        tab is not described as one either. *@
-    var canNavigate = isAnchor && IsEnabled && isHash is false;
+    var canNavigate = isAnchor && Disabled is false && isHash is false;
     var download = canNavigate ? (Download ?? splattedDownload) : null;
     var renderedTarget = canNavigate ? target : null;
 
@@ -100,7 +100,7 @@
 {
     <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
        @onclick:stopPropagation="StopPropagation"
-       @onclick:preventDefault="@(isHash || PreventDefault || IsEnabled is false)"
+       @onclick:preventDefault="@(isHash || PreventDefault || Disabled)"
        id="@_Id"
        dir="@dir"
        rel="@rel"
@@ -112,7 +112,7 @@
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        download="@download"
-       href="@(IsEnabled ? Href : null)"
+       href="@(Disabled ? null : Href)"
        target="@renderedTarget"
        aria-current="@ariaCurrent"
        aria-disabled="@ariaDisabled"
@@ -135,7 +135,7 @@ else
             class="@ClassBuilder.Value"
             aria-current="@ariaCurrent"
             aria-describedby="@ariaDescribedBy"
-            disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+            disabled="@(Disabled && AllowDisabledFocus is false)"
             aria-disabled="@ariaDisabled">
         @body
     </button>

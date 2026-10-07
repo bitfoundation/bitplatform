@@ -1699,7 +1699,7 @@ public partial class BitTextFieldDemo : IDisposable
     private readonly string example1RazorCode = @"
 <BitTextField Label=""Basic"" />
 <BitTextField Label=""Placeholder"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Disabled"" IsEnabled=""false"" />
+<BitTextField Label=""Disabled"" Disabled />
 <BitTextField Label=""ReadOnly"" ReadOnly DefaultValue=""This is ReadOnly"" />
 <BitTextField Label=""Description"" Description=""This is Description"" />
 <BitTextField Label=""Required"" Required />
@@ -1719,9 +1719,9 @@ public partial class BitTextFieldDemo : IDisposable
 
 <BitTextField Label=""NoBorder + Required"" NoBorder Required />
 
-<BitTextField Label=""Underlined + Disabled"" Underlined IsEnabled=""false"" DefaultValue=""Not editable"" />
+<BitTextField Label=""Underlined + Disabled"" Underlined Disabled DefaultValue=""Not editable"" />
 
-<BitTextField Label=""NoBorder + Disabled"" NoBorder IsEnabled=""false"" DefaultValue=""Not editable"" />";
+<BitTextField Label=""NoBorder + Disabled"" NoBorder Disabled DefaultValue=""Not editable"" />";
 
     private readonly string example3RazorCode = @"
 <BitTextField Label=""Multiline"" Multiline />
@@ -1781,7 +1781,7 @@ public partial class BitTextFieldDemo : IDisposable
               IconName=""@BitIconName.Calculator""
               IconPlacement=""BitPlacement.Start"" />
 
-<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IconName=""@BitIconName.Globe"" IsEnabled=""false"" />
+<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IconName=""@BitIconName.Globe"" Disabled />
 
 <BitTextField Label=""Clickable icon""
               Placeholder=""Press the magnifier...""

@@ -1,7 +1,7 @@
 <EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitTagsInput IsEnabled="IsEnabled"
+    <BitTagsInput Disabled="Disabled"
                   Placeholder="@Placeholder"
                   @bind-Value="@TestModel.Tags" />
 
@@ -10,7 +10,7 @@
 @code {
     [Parameter] public BitTagsInputTestModel TestModel { get; set; } = new();
     [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
 
     public int ValidCount { get; set; }
     public int InvalidCount { get; set; }

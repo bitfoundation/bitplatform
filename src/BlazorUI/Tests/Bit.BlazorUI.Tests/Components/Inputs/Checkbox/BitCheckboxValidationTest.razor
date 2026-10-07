@@ -1,7 +1,7 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitCheckbox IsEnabled="@IsEnabled"
+    <BitCheckbox Disabled="Disabled"
                  AriaLabel="@AriaLabel"
                  CheckIconName="@CheckIconName"
                  AriaDescription="@AriaDescription"
@@ -25,7 +25,7 @@
 </EditForm>
 
 @code {
-    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string? AriaLabel { get; set; }
     [Parameter] public string? CheckIconName { get; set; }

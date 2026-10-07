@@ -257,9 +257,9 @@ public class BitBasicListTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBasicListShouldRespectIsEnabled()
+    public void BitBasicListShouldRespectDisabled()
     {
-        var component = RenderList(p => p.Add(x => x.IsEnabled, false));
+        var component = RenderList(p => p.Add(x => x.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-bsl").ClassList.Contains("bit-dis"));
     }
@@ -678,7 +678,7 @@ public class BitBasicListTests : BunitTestContext
         var component = RenderComponent<BitBasicList<Person>>(p =>
         {
             p.Add(x => x.LoadMore, true);
-            p.Add(x => x.IsEnabled, false);
+            p.Add(x => x.Disabled, true);
             p.Add(x => x.LoadMoreSize, 5);
             p.Add(x => x.Items, GetTestData(12));
             p.Add(x => x.RowTemplate, RowTemplate);
@@ -1219,7 +1219,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual("0", loadMore.GetAttribute("tabindex"));
         Assert.IsFalse(loadMore.HasAttribute("aria-disabled"));
 
-        component.Render(p => p.Add(x => x.IsEnabled, false));
+        component.Render(p => p.Add(x => x.Disabled, true));
 
         loadMore = component.Find(".bit-bsl-lmb");
         Assert.AreEqual("-1", loadMore.GetAttribute("tabindex"));
@@ -1386,7 +1386,7 @@ public class BitBasicListTests : BunitTestContext
             Styles = styles,
             Virtualize = true,
             AriaLabel = "People",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "0",
         };
 
@@ -1415,7 +1415,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreSame(styles, list.Styles);
         Assert.IsTrue(list.Virtualize);
         Assert.AreEqual("People", list.AriaLabel);
-        Assert.IsFalse(list.IsEnabled);
+        Assert.IsTrue(list.Disabled);
         Assert.AreEqual("0", list.TabIndex);
     }
 

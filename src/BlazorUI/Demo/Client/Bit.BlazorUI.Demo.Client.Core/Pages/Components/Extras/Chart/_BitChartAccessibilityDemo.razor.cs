@@ -2,7 +2,7 @@
 
 public partial class _BitChartAccessibilityDemo
 {
-    private bool _enabled = true;
+    private bool _disabled;
     private string? _selected;
 
     private readonly BitChartData _data = new()
@@ -20,19 +20,19 @@ public partial class _BitChartAccessibilityDemo
 
 
     private readonly string keyboardRazorCode = @"
-<BitCheckbox Label=""IsEnabled"" @bind-Value=""_enabled"" />
+<BitCheckbox Label=""Disabled"" @bind-Value=""_disabled"" />
 
 <div>@(_selected ?? ""Press Enter on a bar"")</div>
 
 <BitChart Type=""BitChartType.Bar""
           Data=""_data""
-          IsEnabled=""_enabled""
+          Disabled=""_disabled""
           AriaLabel=""Quarterly revenue by region""
           Description=""North leads every quarter and both regions peak in Q4.""
           NavigationHint=""Use the arrow keys to compare regions and quarters, Enter to select one.""
           OnElementClick=""Select"" />";
     private readonly string keyboardCsharpCode = @"
-private bool _enabled = true;
+private bool _disabled;
 private string? _selected;
 
 private readonly BitChartData _data = new()

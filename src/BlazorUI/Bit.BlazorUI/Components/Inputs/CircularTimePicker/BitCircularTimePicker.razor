@@ -49,7 +49,7 @@
                        aria-label="@AriaLabel"
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
-                       disabled=@(IsEnabled is false)
+                       disabled=@(Disabled)
                        readonly=@(AllowTextInput is false || ReadOnly)
                        aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
@@ -87,7 +87,7 @@
                aria-hidden="true"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)"
+               disabled="@(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
@@ -195,7 +195,7 @@
                             aria-label="@GetPartButtonLabel(HourButtonTitle, _hour, GetHourString())"
                             aria-pressed="@(IsHourView ? "true" : "false")"
                             style="@GetHourButtonStyle()"
-                            disabled="@(IsEnabled is false)"
+                            disabled="@(Disabled)"
                             class="bit-ctp-txt @(IsHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
                         @GetHourString()
                     </button>
@@ -208,7 +208,7 @@
                             aria-label="@GetPartButtonLabel(MinuteButtonTitle, _minute, GetMinuteString())"
                             aria-pressed="@(IsMinuteView ? "true" : "false")"
                             style="@GetMinuteButtonStyle()"
-                            disabled="@(IsEnabled is false)"
+                            disabled="@(Disabled)"
                             class="bit-ctp-txt @(IsMinuteView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.MinuteButton">
                         @GetMinuteString()
                     </button>
@@ -223,7 +223,7 @@
                                 aria-label="@GetPartButtonLabel(SecondButtonTitle, _second, GetSecondString())"
                                 aria-pressed="@(IsSecondView ? "true" : "false")"
                                 style="@GetSecondButtonStyle()"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 class="bit-ctp-txt @(IsSecondView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.SecondButton">
                             @GetSecondString()
                         </button>
@@ -265,11 +265,11 @@
                      @onblur="@(() => _clockHasFocus = false)"
                      id="@_clockId"
                      role="listbox"
-                     tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
+                     tabindex="@(Disabled ? "-1" : (TabIndex ?? "0"))"
                      data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
                      aria-label="@(IsClockNamedByLabelTemplate ? null : ClockAriaLabel)"
                      aria-labelledby="@(IsClockNamedByLabelTemplate ? $"{_labelId} {_clockLabelId}" : null)"
-                     aria-disabled="@(IsEnabled ? null : "true")"
+                     aria-disabled="@(Disabled ? "true" : null)"
                      aria-readonly="@(ReadOnly ? "true" : null)"
                      aria-required="@(Standalone && Required ? "true" : null)"
                      aria-invalid="@(Standalone && ValueInvalid is true ? "true" : null)"

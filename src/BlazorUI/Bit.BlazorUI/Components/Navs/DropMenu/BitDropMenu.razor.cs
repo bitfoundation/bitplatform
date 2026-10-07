@@ -467,7 +467,7 @@ public partial class BitDropMenu : BitComponentBase
         // Escape pressed inside the callout - or anywhere outside it, for a callout opened by hovering - which the
         // JS side only reports while no callout opened from inside this one is open: a dropdown in the content
         // closes its own list on that key, not the whole panel (see Utils.setupEscape).
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         // A focus inside the callout is handed back to the trigger by the closing itself, and one elsewhere in
         // the page is left where it is.
@@ -680,7 +680,7 @@ public partial class BitDropMenu : BitComponentBase
         var focusCallout = _focusCalloutOnClick;
         _focusCalloutOnClick = false;
 
-        if (IsEnabled is false || IsLoading) return;
+        if (Disabled || IsLoading) return;
 
         // A click on the trigger while the callout is open usually lands on the overlay above it, but a
         // keyboard activation always arrives here, as does a click when an ancestor stacking context
@@ -712,7 +712,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task HandleOnButtonKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsLoading) return;
+        if (Disabled || IsLoading) return;
 
         // Escape dismisses the callout, and so does tabbing off the trigger: the callout is relocated to the
         // end of the body while it is open, so the tab sequence runs from the trigger on into the page
@@ -758,7 +758,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task HandleOnCalloutClick()
     {
-        if (AutoClose is false || IsEnabled is false || IsOpen is false) return;
+        if (AutoClose is false || Disabled || IsOpen is false) return;
 
         await CloseCallout();
 
@@ -777,7 +777,7 @@ public partial class BitDropMenu : BitComponentBase
         // button scheduled, and coming back to the button cancels the close leaving the callout scheduled.
         CancelHover();
 
-        if (IsEnabled is false || IsLoading || IsOpen) return;
+        if (Disabled || IsLoading || IsOpen) return;
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
@@ -794,7 +794,7 @@ public partial class BitDropMenu : BitComponentBase
 
         CancelHover();
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (await DelayHover(HoverCloseDelay) is false) return;
 
@@ -811,7 +811,7 @@ public partial class BitDropMenu : BitComponentBase
         // A drop menu the user cannot reach must not be opened by the Open and Toggle methods either,
         // since the callout would then hang over the page with a disabled trigger under it. An IsOpen
         // the parent sets itself is left alone: the state is the parent's to own there.
-        if (IsOpen || IsEnabled is false || IsLoading) return;
+        if (IsOpen || Disabled || IsLoading) return;
 
         // Assigning IsOpen runs OnSetIsOpen, which is the entry point for the open state changing from
         // the outside and toggles the callout on its own. Here the toggling is done below instead, once
@@ -857,7 +857,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsOpen is false) return;
 
-        if (IsEnabled && IsLoading is false) return;
+        if (Disabled is false && IsLoading is false) return;
 
         if (IsRendered)
         {

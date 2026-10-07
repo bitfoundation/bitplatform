@@ -112,27 +112,41 @@ public sealed class ClaudeCodeTrust : TrustWriter
             root["projects"] = projects = [];
         }
 
-        var key = projects.Select(p => p.Key).FirstOrDefault(k => string.Equals(k, folder, PathComparison(context))) ?? folder;
+        var keys = ProjectKeys(folder, context.Environment);
 
-        if (projects[key] is JsonObject existing && existing["hasTrustDialogAccepted"]?.GetValueKind() is JsonValueKind.True)
+        if (keys.All(k => projects[k] is JsonObject existing && existing["hasTrustDialogAccepted"]?.GetValueKind() is JsonValueKind.True))
             return new TrustOutcome(Name, TrustResultKind.AlreadyTrusted);
 
-        if (projects[key] is not JsonObject project)
+        foreach (var key in keys)
         {
-            projects[key] = project = new JsonObject
+            if (projects[key] is not JsonObject project)
             {
-                ["allowedTools"] = new JsonArray(),
-                ["mcpContextUris"] = new JsonArray(),
-                ["enabledMcpjsonServers"] = new JsonArray(),
-                ["disabledMcpjsonServers"] = new JsonArray(),
-                ["hasClaudeMdExternalIncludesApproved"] = false,
-                ["hasClaudeMdExternalIncludesWarningShown"] = false
-            };
+                projects[key] = project = new JsonObject
+                {
+                    ["allowedTools"] = new JsonArray(),
+                    ["mcpContextUris"] = new JsonArray(),
+                    ["enabledMcpjsonServers"] = new JsonArray(),
+                    ["disabledMcpjsonServers"] = new JsonArray(),
+                    ["hasClaudeMdExternalIncludesApproved"] = false,
+                    ["hasClaudeMdExternalIncludesWarningShown"] = false
+                };
+            }
+
+            project["hasTrustDialogAccepted"] = true;
         }
 
-        project["hasTrustDialogAccepted"] = true;
         WriteJson(path, root);
         return new TrustOutcome(Name, TrustResultKind.Trusted, path);
+    }
+
+    public static IReadOnlyList<string> ProjectKeys(string folder, CliEnvironment environment)
+    {
+        if (environment.IsWindows is false || folder.Length < 2 || folder[1] != ':')
+            return [folder];
+
+        var forward = folder.Replace('\\', '/');
+
+        return [.. new[] { forward, folder }.SelectMany(k => new[] { char.ToUpperInvariant(k[0]) + k[1..], char.ToLowerInvariant(k[0]) + k[1..] })];
     }
 }
 

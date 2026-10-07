@@ -53,7 +53,7 @@ public static class BlazorUIMarkdown
         }
 
         builder.AppendLine("Every one of them also takes the parameters of `BitComponentBase` - `Class`, `Style`, `Id`,")
-               .AppendLine("`IsEnabled`, `Dir`, `Visibility`, `HtmlAttributes` and the rest; the inputs add those of")
+               .AppendLine("`Disabled`, `Dir`, `Visibility`, `HtmlAttributes` and the rest; the inputs add those of")
                .AppendLine("`BitInputBase` - `Value` and its `@bind-Value`, `Required`, `ReadOnly`, `OnChange`, and what an")
                .AppendLine("EditForm validates them by - and the ones that are typed into add `BitTextInputBase`. Each set is")
                .AppendLine("documented once, by `GetBitBlazorUIComponent` under its own name, rather than repeated on each")

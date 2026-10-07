@@ -67,9 +67,9 @@ public class BitNavItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the nav item is enabled.
+    /// Whether or not the nav item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Whether or not the nav item is in an expanded state.

@@ -1,7 +1,7 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         An item with an <b>Href</b> is a link; <b>IsSelected</b> marks the current page (<code>aria-current="page"</code>)
-        and <b>SelectedItemAsText</b> renders it as plain text. <b>IsEnabled</b> disables the whole trail or a single item
+        and <b>SelectedItemAsText</b> renders it as plain text. <b>Disabled</b> disables the whole trail and <b>IsDisabled</b> a single item
         (a disabled link stays a link, announced as unavailable), and <b>Target</b> opens a link elsewhere
         (with <code>rel="noopener noreferrer"</code>).
     </div>
@@ -17,7 +17,7 @@
         </div>
         <div>
             <div>Disabled</div>
-            <BitBreadcrumb Items="BreadcrumbItems" IsEnabled="false" />
+            <BitBreadcrumb Items="BreadcrumbItems" Disabled />
         </div>
         <div>
             <div>Item disabled</div>

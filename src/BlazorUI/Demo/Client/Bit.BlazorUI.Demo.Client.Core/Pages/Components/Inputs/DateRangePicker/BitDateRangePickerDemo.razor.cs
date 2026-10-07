@@ -1441,10 +1441,10 @@ public partial class BitDateRangePickerDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "bool",
-                    DefaultValue = "true",
-                    Description = "Whether the preset's button is enabled.",
+                    DefaultValue = "false",
+                    Description = "Whether the preset's button is disabled.",
                 },
                 new()
                 {
@@ -2384,7 +2384,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Text = "Coming soon",
-            IsEnabled = false,
+            IsDisabled = true,
             Title = "This preset is not available yet"
         },
     ];
