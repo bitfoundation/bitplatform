@@ -473,17 +473,17 @@ public class ProjectStepTests
         var name = Path.GetFileNameWithoutExtension(code);
         host.Runner.Executables["code"] = code;
         var project = CreateFakeProject(host, "Contoso");
-        WriteRecommendations(project, "GitHub.copilot", "GitHub.copilot-chat");
+        WriteRecommendations(project, "Anthropic.claude-code", "vscode.git");
         host.Runner.On(name, "--list-extensions", 0, "ms-dotnettools.csdevkit\n");
-        host.Runner.On(name, "--install-extension GitHub.copilot", 0);
-        host.Runner.On(name, "--install-extension GitHub.copilot --install-extension GitHub.copilot-chat", 1,
-            "Error while installing extension github.copilot-chat: Extension 'github.copilot-chat' is a built-in extension with version '0.68.0' and cannot be downgraded to version '0.48.1'.\nFailed Installing Extensions: github.copilot-chat");
+        host.Runner.On(name, "--install-extension Anthropic.claude-code", 0);
+        host.Runner.On(name, "--install-extension Anthropic.claude-code --install-extension vscode.git", 1,
+            "Error while installing extension vscode.git: Extension 'vscode.git' is a built-in extension with version '1.112.0' and cannot be downgraded to version '1.0.0'.\nFailed Installing Extensions: vscode.git");
 
         var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.AreEqual("Installed 1 VS Code extension", result.Title);
-        CollectionAssert.AreEqual(new[] { "--install-extension", "GitHub.copilot" }, host.Runner.Calls.Last().Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, host.Runner.Calls.Last().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -509,8 +509,8 @@ public class ProjectStepTests
         var code = typeof(ProjectStepTests).Assembly.Location;
         host.Runner.Executables["code"] = code;
         var project = CreateFakeProject(host, "Contoso");
-        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "GitHub.copilot");
-        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "github.copilot\nms-dotnettools.csdevkit\n");
+        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csharp");
+        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "ms-dotnettools.csharp\nms-dotnettools.csdevkit\n");
 
         var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
@@ -519,7 +519,7 @@ public class ProjectStepTests
         var install = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "--install-extension");
         CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, install.Arguments.ToArray());
 
-        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "anthropic.claude-code\ngithub.copilot\nms-dotnettools.csdevkit\n");
+        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "anthropic.claude-code\nms-dotnettools.csharp\nms-dotnettools.csdevkit\n");
         var done = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual("Extensions already installed", done.Title);

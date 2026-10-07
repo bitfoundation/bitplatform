@@ -29,7 +29,7 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
 9. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
 10. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts. That works even when VS Code was just installed and has never run.
-11. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code.
+11. Installs the VS Code extensions the project recommends, like C# Dev Kit and Claude Code. Copilot is built into VS Code, so it isn't one of them.
 12. With Aspire, starts the project once with `aspire start`, waits until its server is healthy and stops it with `aspire stop`, so the container images are already pulled when you first start it from the IDE. It comes last, so everything else is ready however long it takes. It asks `aspire doctor` first whether Aspire can use Docker, and when it can't, says why and how to fix it instead of starting. While it waits, it shows which resources are still starting or unhealthy, and it stops waiting as soon as one fails to start or Docker can't run the containers.
 13. Opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
 

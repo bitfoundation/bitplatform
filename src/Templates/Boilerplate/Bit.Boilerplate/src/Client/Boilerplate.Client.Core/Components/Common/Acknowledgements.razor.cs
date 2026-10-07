@@ -150,7 +150,6 @@ public partial class Acknowledgements
     /// </summary>
     private static readonly Dependency[] IdeExtensions =
     [
-        new("GitHub Copilot", "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot", null, "Proprietary"),
         new("C# (ms-dotnettools.csharp)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp", "https://github.com/dotnet/vscode-csharp", "MIT"),
         new("C# Dev Kit", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit", null, "Proprietary"),
         new(".NET MAUI (VS Code)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui", null, "Proprietary"),

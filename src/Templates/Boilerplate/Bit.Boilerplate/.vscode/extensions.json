@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "GitHub.copilot",
         "ms-dotnettools.csharp",
         "Anthropic.claude-code",
         "ms-dotnettools.csdevkit",
