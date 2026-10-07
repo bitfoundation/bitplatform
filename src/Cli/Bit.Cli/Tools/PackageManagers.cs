@@ -45,7 +45,7 @@ public sealed record PackageManagers
         };
     }
 
-    public ToolAction? WingetInstall(string toolId, string title, string packageId, bool admin = true, string? afterInstall = null, string? version = null)
+    public ToolAction? WingetInstall(string toolId, string title, string packageId, bool admin = true, string? afterInstall = null, string? version = null, string? installerArguments = null)
     {
         if (Winget is null)
             return null;
@@ -62,7 +62,7 @@ public sealed record PackageManagers
                 new ProcessSpec
                 {
                     FileName = "winget",
-                    Arguments = ["install", "--id", packageId, "--exact", .. (version is null ? (string[])[] : ["--version", version]), "--source", "winget", "--silent", "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"],
+                    Arguments = ["install", "--id", packageId, "--exact", .. (version is null ? (string[])[] : ["--version", version]), "--source", "winget", .. (installerArguments is null ? (string[])["--silent"] : ["--override", installerArguments]), "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"],
                     Timeout = TimeSpan.FromMinutes(30)
                 }
             ]

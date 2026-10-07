@@ -14,6 +14,7 @@ public static partial class ToolCatalog
         new GitHubCliTool(),
         new NodeTool(),
         new HomebrewTool(),
+        new VirtualMachinePlatformTool(),
         new WslTool(),
         new DockerTool(),
         new AspireCliTool(),
@@ -48,6 +49,9 @@ public static partial class ToolCatalog
 
         var dockerMissing = checks.Any(c => c.Tool is DockerTool && c.Status.State is ToolState.Missing);
         checks.RemoveAll(c => c.Tool is WslTool && dockerMissing is false);
+
+        var dockerRunning = checks.Any(c => c.Tool is DockerTool && c.Status.IsSatisfied);
+        checks.RemoveAll(c => c.Tool is VirtualMachinePlatformTool && dockerRunning);
 
         var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
@@ -428,6 +432,46 @@ public static partial class ToolCatalog
         public override string? ManualInstructions(ToolContext context) => "https://brew.sh";
     }
 
+    private static async Task<bool> WindowsFeatureEnabledAsync(ToolContext context, string feature, CancellationToken cancellationToken)
+    {
+        var result = await context.RunAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", $"(Get-CimInstance Win32_OptionalFeature -Filter \"Name='{feature}'\").InstallState"], cancellationToken);
+        return result.Succeeded && result.Output.Trim() == "1";
+    }
+
+    private static ToolAction EnableWindowsFeature(string toolId, string name, string feature) => new()
+    {
+        ToolId = toolId,
+        Title = $"Turn on the {name}",
+        Elevation = Elevation.Admin,
+        AfterInstall = $"Restart Windows to finish turning on the {name}.",
+        SuccessExitCodes = [0, 3010],
+        Commands = [new ProcessSpec { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", $"/featurename:{feature}", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) }]
+    };
+
+    private sealed class VirtualMachinePlatformTool : Tool
+    {
+        public override string Id => "virtual-machine-platform";
+
+        public override string Name => "Virtual Machine Platform";
+
+        public override bool AppliesInCi(ToolContext context) => false;
+
+        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Aspire;
+
+        public override string Why(ToolContext context) => "the Windows feature that WSL 2 and Docker Desktop run their Linux virtual machine on";
+
+        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            return await WindowsFeatureEnabledAsync(context, "VirtualMachinePlatform", cancellationToken) ? ToolStatus.Installed() : ToolStatus.Missing();
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => EnableWindowsFeature(Id, Name, "VirtualMachinePlatform");
+
+        public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/windows/wsl/install-manual";
+    }
+
     private sealed class WslTool : Tool
     {
         public override string Id => "wsl";
@@ -512,7 +556,7 @@ public static partial class ToolCatalog
 
             return context.Environment.Os switch
             {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install Docker Desktop", "Docker.DockerDesktop", afterInstall: "Start Docker Desktop once and accept its terms; Windows may need a restart first."),
+                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install Docker Desktop", "Docker.DockerDesktop", afterInstall: "Start Docker Desktop once; Windows may need a restart first.", installerArguments: "install --quiet --accept-license"),
                 HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install Docker Desktop", "docker", cask: true, afterInstall: "Open Docker Desktop once and accept its terms."),
                 _ when context.PackageManagers.Apt is not null || context.PackageManagers.Dnf is not null => new ToolAction
                 {
@@ -668,19 +712,10 @@ public static partial class ToolCatalog
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
-            var result = await context.RunAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "(Get-CimInstance Win32_OptionalFeature -Filter \"Name='HypervisorPlatform'\").InstallState"], cancellationToken);
-            return result.Succeeded && result.Output.Trim() == "1" ? ToolStatus.Installed() : ToolStatus.Missing();
+            return await WindowsFeatureEnabledAsync(context, "HypervisorPlatform", cancellationToken) ? ToolStatus.Installed() : ToolStatus.Missing();
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
-        {
-            ToolId = Id,
-            Title = "Turn on the Windows Hypervisor Platform",
-            Elevation = Elevation.Admin,
-            AfterInstall = "Restart Windows to finish turning on the Windows Hypervisor Platform.",
-            SuccessExitCodes = [0, 3010],
-            Commands = [new ProcessSpec { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", "/featurename:HypervisorPlatform", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) }]
-        };
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => EnableWindowsFeature(Id, Name, "HypervisorPlatform");
 
         public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/dotnet/maui/android/emulator/hardware-acceleration";
     }

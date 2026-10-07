@@ -337,7 +337,10 @@ public class ToolTests
 
         Assert.AreEqual(Elevation.Admin, node.Elevation);
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
-        Assert.AreEqual("Install Docker Desktop", checks.Single(c => c.Tool.Id == "docker").Action!.Title);
+        var docker = checks.Single(c => c.Tool.Id == "docker").Action!;
+        Assert.AreEqual("Install Docker Desktop", docker.Title);
+        CollectionAssert.IsSubsetOf(new[] { "Docker.DockerDesktop", "--override", "install --quiet --accept-license" }, docker.Commands[0].Arguments.ToArray());
+        CollectionAssert.DoesNotContain(docker.Commands[0].Arguments.ToArray(), "--silent");
 
         host.Runner.On("dotnet", "--version", 145);
         host.Runner.Executables["dotnet"] = @"C:\Program Files\dotnet\dotnet.exe";
@@ -469,6 +472,29 @@ public class ToolTests
         Assert.IsTrue((await CheckAsync(host, android)).Single(c => c.Tool.Id == "hypervisor-platform").Status.IsSatisfied);
 
         Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "hypervisor-platform"));
+    }
+
+    [TestMethod]
+    public async Task TheVirtualMachinePlatform_Should_BeTurnedOnUntilDockerRuns()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true };
+        const string probe = "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature -Filter \"Name='VirtualMachinePlatform'\")";
+
+        host.Runner.On("powershell", probe, 0, "2\r\n");
+        Assert.IsFalse((await CheckAsync(host, needs)).Any(c => c.Tool.Id == "virtual-machine-platform"));
+
+        host.Runner.NotFound("docker");
+        var platform = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "virtual-machine-platform");
+        Assert.IsTrue(platform.Needed);
+        Assert.AreEqual(Elevation.Admin, platform.Action!.Elevation);
+        CollectionAssert.Contains(platform.Action.Commands[0].Arguments.ToArray(), "/featurename:VirtualMachinePlatform");
+
+        host.Runner.On("powershell", probe, 0, "1\r\n");
+        Assert.IsTrue((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "virtual-machine-platform").Status.IsSatisfied);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "virtual-machine-platform"));
     }
 
     [TestMethod]
