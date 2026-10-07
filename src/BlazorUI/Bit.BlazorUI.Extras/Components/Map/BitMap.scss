@@ -440,18 +440,7 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 .bit-map-status-spinner {
     flex: none;
     display: inline-block;
-    width: $siz-icon-sm;
-    height: $siz-icon-sm;
-    border: $siz-spinner-stroke solid $clr-brd-sec;
-    border-block-start-color: $clr-pri;
-    border-radius: $shp-radius-full;
-    animation: bit-map-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-map-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring($siz-icon-sm, $clr-pri, $clr-brd-sec, $box-sizing: null);
 }
 
 // Anchor for map-pinned Blazor content. The chrome layer drives its transform every frame, so it

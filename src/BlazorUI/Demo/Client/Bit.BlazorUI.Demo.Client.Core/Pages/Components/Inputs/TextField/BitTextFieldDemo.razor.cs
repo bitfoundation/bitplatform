@@ -1345,7 +1345,7 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-spinner-size",
-            DefaultValue = "The icon size",
+            DefaultValue = "The icon size plus the spinner stroke on each side (16 / 20 / 24px per Size)",
             Description = "Diameter of the default busy spinner.",
         },
         new()

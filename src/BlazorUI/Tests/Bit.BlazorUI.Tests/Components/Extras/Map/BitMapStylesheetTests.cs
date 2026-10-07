@@ -96,7 +96,8 @@ public class BitMapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(ReadBlock(".bit-map-status-spinner"), "animation: bit-map-spin $mot-duration-spinner $mot-easing-spinner infinite;");
+        // The shared ring turns on the spinner tokens (BitSpinnerRingStylesheetTests pins the mixin itself).
+        StringAssert.Contains(ReadBlock(".bit-map-status-spinner"), "@include spinner-ring(");
         StringAssert.Contains(ReadBlock(".bit-map-gesture-hint"), "$mot-duration $mot-easing");
         Assert.DoesNotContain("prefers-reduced-motion", stylesheet);
     }

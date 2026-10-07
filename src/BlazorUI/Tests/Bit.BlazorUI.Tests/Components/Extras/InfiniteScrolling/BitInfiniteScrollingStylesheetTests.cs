@@ -55,8 +55,9 @@ public partial class BitInfiniteScrollingStylesheetTests
     {
         var spinner = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-spn {");
 
-        // The spinner tokens slow a looping animation down under reduced motion instead of collapsing it to zero.
-        StringAssert.Contains(spinner, "animation: bit-isc-spin $mot-duration-spinner $mot-easing-spinner infinite;");
+        // The shared ring turns on the spinner tokens, which slow a looping animation down under reduced motion
+        // instead of collapsing it to zero (BitSpinnerRingStylesheetTests pins the mixin itself).
+        StringAssert.Contains(spinner, "@include spinner-ring(");
     }
 
     [TestMethod]
@@ -64,7 +65,8 @@ public partial class BitInfiniteScrollingStylesheetTests
     {
         var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, "border-block-start-color: CanvasText;");
+        // The spinner's track and arc are kept apart by the spinner-ring mixin it is drawn with.
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-spn {"), "@include spinner-ring(");
         StringAssert.Contains(forced, "color: GrayText;");
 
         // A button with no box of its own would read as plain text in a forced palette.

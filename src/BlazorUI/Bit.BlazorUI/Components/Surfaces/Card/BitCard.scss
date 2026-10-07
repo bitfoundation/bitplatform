@@ -42,7 +42,7 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 //   --bit-Card-scrim                 layer painted over a CoverOverlay picture,
 //                                    under the content                              (default: none)
 //   --bit-Card-skeleton-background   resting color of the bars of a loading card    (default: the text color at 10%)
-//   --bit-Card-skeleton-color        the wave that sweeps across those bars         (default: the text color at 10%)
+//   --bit-Card-skeleton-color        the wave that sweeps across those bars         (default: the text color at 20%)
 //
 // A parameter set on the card itself wins over them - Background, Border, Color, Elevation, NoShadow, Outlined,
 // Square, NoPadding, CoverWidth - since it is the more specific ask (a Fill card also keeps the hover and pressed
@@ -325,12 +325,14 @@ i.bit-crd-hic {
 
 // A bar is a wash of the card's own text color, so it reads against whatever surface the card was given - the
 // default one, a role fill or a variable - instead of matching it and disappearing. The last bar is shortened,
-// which is most of what makes a stack of bars read as text rather than as a table.
+// which is most of what makes a stack of bars read as text rather than as a table. A bar is a part inside the
+// card rather than a surface of its own, so its corner comes off the sub-element scale: a preset rounding its
+// cards heavily would otherwise turn these thin bars into pills.
 .bit-crd-skb {
     overflow: hidden;
     position: relative;
     height: spacing(1.5);
-    border-radius: $shp-radius-surface;
+    border-radius: $shp-radius-xs;
     background-color: var(--bit-Card-skeleton-background, #{translucent(currentcolor, 10%)});
 
     &:nth-child(2) {
@@ -343,18 +345,22 @@ i.bit-crd-hic {
 
     // The wave sweeping across the bar. It loops, so it keeps a literal pace scaled by the loop factor rather
     // than the --bit-mot-duration* tokens, which collapse under reduced motion and would render as flicker.
+    // It is a stronger wash of the same text color than the bar it crosses, so it stands out from the bar on
+    // every surface the way BitShimmer's second color does from its first.
     &::after {
         content: "";
         inset: 0;
         position: absolute;
         transform: translateX(-100%);
-        background: linear-gradient(90deg, transparent, var(--bit-Card-skeleton-color, #{translucent(currentcolor, 10%)}), transparent);
+        background: linear-gradient(90deg, transparent, var(--bit-Card-skeleton-color, #{translucent(currentcolor, 20%)}), transparent);
         animation: bit-crd-skb-anm calc(1.6s * #{$mot-loop-factor}) linear calc(0.5s * #{$mot-loop-factor}) infinite;
     }
 }
 
-// The wave sweeps with the reading direction: on a right-to-left card it comes in from the right.
-.bit-crd.bit-rtl .bit-crd-skb::after {
+// The wave sweeps with the reading direction: on a right-to-left card it comes in from the right. :dir() rather
+// than the bit-rtl class, which only Dir on the card itself sets, so a page or an ancestor turned right-to-left
+// reverses it too.
+.bit-crd-skb:dir(rtl)::after {
     animation-direction: reverse;
 }
 

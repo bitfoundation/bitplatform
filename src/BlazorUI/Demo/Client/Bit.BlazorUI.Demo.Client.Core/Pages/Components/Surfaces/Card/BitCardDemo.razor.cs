@@ -1071,7 +1071,7 @@ public partial class BitCardDemo
         new()
         {
             Name = "--bit-Card-skeleton-color",
-            DefaultValue = "The text color at 10%",
+            DefaultValue = "The text color at 20%",
             Description = "Color of the wave that sweeps across those bars.",
         },
     ];

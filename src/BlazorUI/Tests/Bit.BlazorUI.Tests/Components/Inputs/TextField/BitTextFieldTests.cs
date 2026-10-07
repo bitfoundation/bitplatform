@@ -2227,6 +2227,29 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTextFieldLoadingSlotIsHiddenFromAssistiveTechnologiesWithATemplateToo()
+    {
+        // The live region is what says the field is busy, so whatever the slot draws - the default spinner or
+        // a template - is muted rather than read out a second time next to it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<em class=\"custom-loading\">wait</em>")));
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-tfl-lod").GetAttribute("aria-hidden"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment?)null);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-tfl-lod").GetAttribute("aria-hidden"));
+        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .bit-tfl-spn").Count);
+    }
+
+    [TestMethod]
     public void BitTextFieldLoadingIsAnnouncedAlongsideATemplate()
     {
         // A template that draws an indicator without saying anything - a bare spinner of its own - would

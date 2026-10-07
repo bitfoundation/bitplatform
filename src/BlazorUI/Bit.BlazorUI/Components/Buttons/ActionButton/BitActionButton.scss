@@ -108,25 +108,7 @@
 
 // The spinner takes the icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-acb-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    border-color: $clr-brd-sec;
-    border-style: $shp-border-style;
-    border-width: $siz-spinner-stroke;
-    border-top-color: var(--bit-acb-ico);
-    width: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
-    height: var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size));
-    animation: bit-acb-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-acb-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-ActionButton-icon-size, var(--bit-acb-ico-size)), var(--bit-acb-ico), $clr-brd-sec, $box-sizing: null);
 }
 
 // The content is text before it is anything else, so it flows as text: a flex box here would turn
@@ -273,8 +255,7 @@
         --bit-acb-ico: GrayText;
     }
 
-    .bit-acb-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
+    .bit-acb.bit-dis .bit-acb-spn {
+        @include spinner-ring-forced-disabled;
     }
 }

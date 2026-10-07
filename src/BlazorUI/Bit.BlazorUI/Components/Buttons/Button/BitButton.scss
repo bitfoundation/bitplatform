@@ -93,16 +93,6 @@
             @include focus-ring(var(--bit-Button-disabled-color, var(--bit-btn-clr-dis-text)));
         }
     }
-
-    @keyframes bit-btn-spinner-animation {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
 }
 
 // A compound button aligns its children to the top so the two lines of text start at the top of the box,
@@ -160,15 +150,10 @@
 // the variant put behind it - the on-color over a filled background, the role color over a transparent one - and
 // follows the disabled and FixedColor states without a second set of role variables to keep in step.
 .bit-btn-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    border-style: $shp-border-style;
-    border-width: $siz-spinner-stroke;
-    border-color: var(--bit-Button-spinner-track-color, #{translucent(currentcolor, 25%)});
-    border-top-color: var(--bit-Button-spinner-color, currentcolor);
-    width: var(--bit-Button-spinner-size, var(--bit-btn-spn-size));
-    height: var(--bit-Button-spinner-size, var(--bit-btn-spn-size));
-    animation: bit-btn-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+    @include spinner-ring(var(--bit-Button-spinner-size, var(--bit-btn-spn-size)),
+                          var(--bit-Button-spinner-color, currentcolor),
+                          var(--bit-Button-spinner-track-color, #{translucent(currentcolor, 25%)}),
+                          $box-sizing: null);
 }
 
 // The loading visuals are stacked on top of the content rather than replacing it, so the box keeps the width
@@ -593,8 +578,7 @@
         border-color: GrayText;
     }
 
-    .bit-btn-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
+    .bit-btn.bit-dis .bit-btn-spn {
+        @include spinner-ring-forced-disabled;
     }
 }

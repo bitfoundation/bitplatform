@@ -93,6 +93,11 @@ public class BitSearchBoxClassStyles
     public string? LoadingSpinner { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the search box's busy spinner itself - the ring drawn in the field while it is Loading, and in the suggest callout when no LoadingTemplate is set.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the search box's error message.
     /// </summary>
     public string? ErrorMessageContainer { get; set; }

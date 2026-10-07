@@ -1196,7 +1196,7 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-spinner-size",
-            DefaultValue = "the icon size",
+            DefaultValue = "the icon size plus the spinner stroke on each side (16 / 20 / 24px per Size)",
             Description = "Diameter of the default busy spinner.",
         },
         new()

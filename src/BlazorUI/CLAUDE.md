@@ -50,10 +50,13 @@ rendered inside another would carry an app's restyle of the first into the secon
 components' markup, defaults and accessibility behaviour as well.
 
 - **Draw the part locally**, under the component's own class prefix, reading the global tokens: an inline
-  busy spinner is a ring with `$siz-spinner-stroke` turning on `$mot-duration-spinner` /
-  `$mot-easing-spinner` (see `.bit-btn-spn`, `.bit-srb-spn`, `.bit-tfl-spn`); a skeleton is a few bars
-  of its own (`.bit-crd-skb`). Offer a `...Template` parameter for an app that wants a library component
-  there instead - rendering one is the app's choice, never the component's default.
+  busy spinner is `@include spinner-ring($size, $color, $track)` from `Styles/functions.scss` - one ring
+  of `$siz-spinner-stroke` turning on `$mot-duration-spinner` / `$mot-easing-spinner` over the shared
+  `bit-spin` keyframes, with its forced-colors pair built in - never a hand-written copy of it (see
+  `.bit-btn-spn`, `.bit-srb-spn`, `.bit-tfl-spn`). A part that goes GrayText when disabled in
+  forced-colors mode includes `spinner-ring-forced-disabled` for its spinner in that block. A skeleton is
+  a few bars of its own (`.bit-crd-skb`). Offer a `...Template` parameter for an app that wants a library
+  component there instead - rendering one is the app's choice, never the component's default.
 - **A part drawn locally is a part of the component's public surface**, since what it replaces was
   restylable through its own API: give it a `<Component>ClassStyles` member applied as
   `style="@Styles?.X" class="bit-xxx-yyy @Classes?.X"` (`Spinner`, `Skeleton` / `SkeletonBar`), the public

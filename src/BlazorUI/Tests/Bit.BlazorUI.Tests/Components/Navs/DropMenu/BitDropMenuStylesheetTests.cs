@@ -17,8 +17,9 @@ public class BitDropMenuStylesheetTests
         // A loading drop menu is only aria-disabled, so nothing else would tell it from an enabled one.
         DataRow(".bit-drm.bit-drm-ldg {", "color: GrayText;"),
         DataRow(".bit-drm.bit-drm-ldg {", "border-color: GrayText;"),
-        // The track and the arc of the spinner would otherwise be forced to the same color.
-        DataRow(".bit-drm-spn {", "border-top-color: CanvasText;")]
+        // The disabled drop menu goes GrayText, and its spinner with it rather than turning in CanvasText (the track
+        // and the arc of an enabled one are kept apart by the spinner-ring mixin, see BitSpinnerRingStylesheetTests).
+        DataRow(".bit-drm.bit-dis .bit-drm-spn {", "@include spinner-ring-forced-disabled;")]
     public void BitDropMenuShouldReestablishItsStatesInForcedColors(string selector, string declaration)
     {
         var forcedColors = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {\n    .bit-drm {");

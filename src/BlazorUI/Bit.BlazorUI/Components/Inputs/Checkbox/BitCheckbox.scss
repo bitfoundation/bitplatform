@@ -165,25 +165,7 @@
 // until hover, which is not a thing to do to the one mark saying the change is still running.
 .bit-chb-spn {
     opacity: 1;
-    border-radius: 50%;
-    box-sizing: border-box;
-    border-style: $shp-border-style;
-    border-width: $siz-spinner-stroke;
-    border-color: translucent(var(--bit-chb-spn-clr), 30%);
-    border-top-color: var(--bit-chb-spn-clr);
-    width: var(--bit-chb-spn-size);
-    height: var(--bit-chb-spn-size);
-    animation: bit-chb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-chb-spinner-animation {
-    from {
-        rotate: 0deg;
-    }
-
-    to {
-        rotate: 360deg;
-    }
+    @include spinner-ring(var(--bit-chb-spn-size), var(--bit-chb-spn-clr), translucent(var(--bit-chb-spn-clr), 30%));
 }
 
 // The asterisk hangs on whichever label the checkbox carries - a plain one or a template - since both

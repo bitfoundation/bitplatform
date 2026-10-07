@@ -162,3 +162,60 @@ $html-font-size: 16px;
 @mixin focus-anchor {
     outline: none;
 }
+
+/*
+ * spinner-ring($size, $color, $track, $box-sizing, $stroke)
+ * --------------------------------------------------
+ * The inline busy spinner a component draws for itself - core components never render a
+ * BitSpinnerLoading - so every one of them is the same ring: a $siz-spinner-stroke border whose
+ * arc turns on the spinner motion tokens over the shared bit-spin keyframes (general.scss).
+ *   - $size is the diameter. With the default border-box it includes the stroke. $box-sizing: null
+ *     leaves box-sizing to the page, as the spinners first written without it always have: an app
+ *     with a border-box reset draws them at $size, one without it adds the stroke outside, and
+ *     forcing either way would resize them in the other kind of app.
+ *   - $color paints the moving arc, $track the ring it travels on (the arc at 25% when not given).
+ *     Pass the component's public variables with their fallbacks, so the spinner stays restylable.
+ *   - $stroke is the thickness of the ring, for a component that publishes a variable for it.
+ *   - forced-colors: every side would come back in the one system color, turning a ring that
+ *     visibly spins into a still circle, so the arc is set apart from its track with a second
+ *     system color. A component whose disabled state goes GrayText in that mode includes
+ *     spinner-ring-forced-disabled in that block, so the arc goes grey with the rest of it.
+ *
+ * Usage:
+ *   .bit-xyz-spn {
+ *       @include spinner-ring(var(--bit-Xyz-spinner-size, #{$siz-icon-md}), var(--bit-Xyz-spinner-color, currentcolor));
+ *   }
+ */
+@mixin spinner-ring($size, $color: currentcolor, $track: null, $box-sizing: border-box, $stroke: $siz-spinner-stroke) {
+    @if $track == null {
+        $track: translucent($color, 25%);
+    }
+
+    flex-shrink: 0;
+    border-radius: 50%;
+    width: $size;
+    height: $size;
+    box-sizing: $box-sizing;
+    border-style: $shp-border-style;
+    border-width: $stroke;
+    border-color: $track;
+    border-block-start-color: $color;
+    animation: bit-spin $mot-duration-spinner $mot-easing-spinner infinite;
+
+    @media (forced-colors: active) {
+        border-color: GrayText;
+        border-block-start-color: CanvasText;
+    }
+}
+
+/*
+ * spinner-ring-forced-disabled
+ * --------------------------------------------------
+ * The forced-colors look of a spinner-ring inside a part that the mode turns GrayText for being
+ * disabled: the arc goes GrayText with the rest of it, and the track takes the Canvas it sits on,
+ * since an arc and a track in the same GrayText would be a still circle again.
+ */
+@mixin spinner-ring-forced-disabled {
+    border-color: Canvas;
+    border-block-start-color: GrayText;
+}
