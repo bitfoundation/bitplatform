@@ -644,40 +644,42 @@
             overlay, the callout, and <b>Opened</b>, applied to the root only while the callout is open.
         </div>
         <br />
-        <BitStack Horizontal Wrap Gap="1rem" FitHeight>
-            <BitDropMenu Text="Styled" Style="background-color: transparent; border-color: blueviolet; color: blueviolet;">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-            <BitDropMenu Text="Classed" Class="custom-class">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-            <BitDropMenu Text="Styles"
-                         Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff;",
-                                           Text = "color: tomato; font-weight: bold;",
-                                           Callout = "border: 2px solid tomato;",
-                                           Opened = "border-color: tomato; background-color: goldenrod;" })">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-            <BitDropMenu Text="Classes"
-                         Classes="@(new() { Root = "custom-root",
-                                            Text = "custom-text",
-                                            ChevronDown = "custom-chevron",
-                                            Opened = "custom-opened" })">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-        </BitStack>
+        <div>
+            <BitStack Horizontal Wrap Gap="1rem" FitHeight>
+                <BitDropMenu Text="Styled" Style="background-color: transparent; border-color: blueviolet; color: blueviolet;">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+                <BitDropMenu Text="Classed" Class="custom-class">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+                <BitDropMenu Text="Styles"
+                             Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff;",
+                                               Text = "color: tomato; font-weight: bold;",
+                                               Callout = "border: 2px solid tomato;",
+                                               Opened = "border-color: tomato; background-color: goldenrod;" })">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+                <BitDropMenu Text="Classes"
+                             Classes="@(new() { Root = "custom-root",
+                                                Text = "custom-text",
+                                                ChevronDown = "custom-chevron",
+                                                Opened = "custom-opened" })">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+            </BitStack>
+        </div>
         <br /><br />
         <div>
             For what no parameter covers, the drop menu reads the <BitLink Href="#css-variables-section">CSS variables</BitLink>

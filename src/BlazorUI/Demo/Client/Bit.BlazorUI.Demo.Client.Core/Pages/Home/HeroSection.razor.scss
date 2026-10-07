@@ -21,7 +21,9 @@
         }
     }
 
-    .hero-title {
+    // The title, subtitle, action row, stat values and theming link are BitTexts, a BitStack and a
+    // BitLink, whose roots do not carry this file's scope attribute - so each is reached with ::deep.
+    ::deep .hero-title {
         max-width: rem2(560px);
 
         // A marketing hero wants more than the 40px the H1 token gives an application page title, and
@@ -44,7 +46,7 @@
         background-image: linear-gradient(90deg, $bit-color-primary, $bit-color-primary-dark);
     }
 
-    .hero-subtitle {
+    ::deep .hero-subtitle {
         max-width: rem2(520px);
         margin-top: rem2(16px);
         color: $bit-color-foreground-secondary;
@@ -54,7 +56,7 @@
         }
     }
 
-    .hero-actions {
+    ::deep .hero-actions {
         margin-top: rem2(32px);
     }
 
@@ -143,7 +145,7 @@
         }
     }
 
-    .hero-stat-value {
+    ::deep .hero-stat-value {
         color: $bit-color-primary;
     }
 
@@ -159,7 +161,7 @@
         }
     }
 
-    .hero-theming-link {
+    ::deep .hero-theming-link {
         margin-inline-start: rem2(6px);
     }
 

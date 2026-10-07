@@ -412,19 +412,21 @@
             every part of every item.
         </div>
         <br />
-        <BitSnackBar @ref="snackBarStyleRef" />
-        <BitButton OnClick="OpenSnackBarStyle">Item style</BitButton>
-        <BitButton OnClick="OpenSnackBarClass">Item class</BitButton>
-        <br /><br />
-        <BitSnackBar @ref="snackBarStylesRef"
-                     Styles="@(new() { Container = "width: 16rem; background-color: purple;",
-                                       Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
-        <BitButton OnClick="OpenSnackBarStyles">Styles</BitButton>
-        <br /><br />
-        <BitSnackBar @ref="snackBarClassesRef" AutoDismiss
-                     Classes="@(new() { Container = "custom-container",
-                                        ProgressBar = "custom-progress" })" />
-        <BitButton OnClick="OpenSnackBarClasses">Classes</BitButton>
+        <div>
+            <BitSnackBar @ref="snackBarStyleRef" />
+            <BitButton OnClick="OpenSnackBarStyle">Item style</BitButton>
+            <BitButton OnClick="OpenSnackBarClass">Item class</BitButton>
+            <br /><br />
+            <BitSnackBar @ref="snackBarStylesRef"
+                         Styles="@(new() { Container = "width: 16rem; background-color: purple;",
+                                           Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
+            <BitButton OnClick="OpenSnackBarStyles">Styles</BitButton>
+            <br /><br />
+            <BitSnackBar @ref="snackBarClassesRef" AutoDismiss
+                         Classes="@(new() { Container = "custom-container",
+                                            ProgressBar = "custom-progress" })" />
+            <BitButton OnClick="OpenSnackBarClasses">Classes</BitButton>
+        </div>
         <br /><br />
         <div>
             The public <b>--bit-SnackBar-*</b> variables (listed under CSS variables below) inherit, so one set on

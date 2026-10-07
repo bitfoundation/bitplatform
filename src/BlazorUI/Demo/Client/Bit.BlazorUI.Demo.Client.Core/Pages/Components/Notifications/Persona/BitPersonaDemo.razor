@@ -421,34 +421,36 @@
             <b>OptionalTextTemplate</b>); <b>ImageOverlayTemplate</b> replaces the overlay and <b>CoinTemplate</b> the coin's contents.
         </div>
         <br />
-        <BitPersona Size="BitPersonaSize.Size100" ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" OnImageClick="() => {}">
-            <PrimaryTextTemplate>
-                <BitIcon IconName="@BitIconName.Contact" Class="custom-ico" />
-                Xafan Salina
-            </PrimaryTextTemplate>
-            <SecondaryTextTemplate>
-                <BitIcon IconName="@BitIconName.Suitcase" Class="custom-ico" />
-                Software Engineer
-            </SecondaryTextTemplate>
-            <TertiaryTextTemplate>
-                <BitIcon IconName="@BitIconName.JoinOnlineMeeting" Class="custom-ico" />
-                In a meeting
-            </TertiaryTextTemplate>
-            <OptionalTextTemplate>
-                <BitIcon IconName="@BitIconName.Clock" Class="custom-ico" />
-                Available at 7:00pm
-            </OptionalTextTemplate>
-            <ImageOverlayTemplate>
-                <BitIcon IconName="@BitIconName.Edit" Class="custom-ico" />
-                Edit image
-            </ImageOverlayTemplate>
-        </BitPersona>
-        <br /><br />
-        <BitPersona Size="BitPersonaSize.Size100" PrimaryText="Xafan Salina" SecondaryText="CoinTemplate" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
-            <CoinTemplate>
-                <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" width="100" height="100" class="custom-coin" />
-            </CoinTemplate>
-        </BitPersona>
+        <div>
+            <BitPersona Size="BitPersonaSize.Size100" ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" OnImageClick="() => {}">
+                <PrimaryTextTemplate>
+                    <BitIcon IconName="@BitIconName.Contact" Class="custom-ico" />
+                    Xafan Salina
+                </PrimaryTextTemplate>
+                <SecondaryTextTemplate>
+                    <BitIcon IconName="@BitIconName.Suitcase" Class="custom-ico" />
+                    Software Engineer
+                </SecondaryTextTemplate>
+                <TertiaryTextTemplate>
+                    <BitIcon IconName="@BitIconName.JoinOnlineMeeting" Class="custom-ico" />
+                    In a meeting
+                </TertiaryTextTemplate>
+                <OptionalTextTemplate>
+                    <BitIcon IconName="@BitIconName.Clock" Class="custom-ico" />
+                    Available at 7:00pm
+                </OptionalTextTemplate>
+                <ImageOverlayTemplate>
+                    <BitIcon IconName="@BitIconName.Edit" Class="custom-ico" />
+                    Edit image
+                </ImageOverlayTemplate>
+            </BitPersona>
+            <br /><br />
+            <BitPersona Size="BitPersonaSize.Size100" PrimaryText="Xafan Salina" SecondaryText="CoinTemplate" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
+                <CoinTemplate>
+                    <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" width="100" height="100" class="custom-coin" />
+                </CoinTemplate>
+            </BitPersona>
+        </div>
     </DemoExample>
 
     <DemoExample Title="AutoCoinColor" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
@@ -711,27 +713,29 @@
             <b>--bit-Persona-*</b> CSS variables re-skin the coin, texts, rings, presence colors and focus - on <code>:root</code>, an ancestor or one persona's <b>Style</b>.
         </div>
         <br />
-        <BitPersona PrimaryText="Saleh Khafan"
-                    Size="BitPersonaSize.Size72"
-                    Style="padding: 1rem; background: gray; border-radius: 1rem;" />
-        <br /><br />
-        <BitPersona PrimaryText="Saleh Khafan"
-                    Size="BitPersonaSize.Size72"
-                    Class="custom-class" />
-        <br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div>
-        <br />
-        <BitPersona PrimaryText="Saleh Khafan"
-                    Size="BitPersonaSize.Size72"
-                    Presence="BitPersonaPresence.Online"
-                    Styles="@(new() { ImageContainer = "color: #b6ff00; background-color: #00ff90;",
-                                      Presence = "border-color: #b6ff00;",
-                                      PrimaryTextContainer = "color: #ea1919; font-weight: bold; font-style: italic;" })" />
-        <br /><br />
-        <BitPersona PrimaryText="Saleh Khafan"
-                    Size="BitPersonaSize.Size72"
-                    Classes="@(new() { ImageContainer = "custom-img-container",
-                                       PrimaryTextContainer = "custom-primary-text" })" />
+        <div>
+            <BitPersona PrimaryText="Saleh Khafan"
+                        Size="BitPersonaSize.Size72"
+                        Style="padding: 1rem; background: gray; border-radius: 1rem;" />
+            <br /><br />
+            <BitPersona PrimaryText="Saleh Khafan"
+                        Size="BitPersonaSize.Size72"
+                        Class="custom-class" />
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <BitPersona PrimaryText="Saleh Khafan"
+                        Size="BitPersonaSize.Size72"
+                        Presence="BitPersonaPresence.Online"
+                        Styles="@(new() { ImageContainer = "color: #b6ff00; background-color: #00ff90;",
+                                          Presence = "border-color: #b6ff00;",
+                                          PrimaryTextContainer = "color: #ea1919; font-weight: bold; font-style: italic;" })" />
+            <br /><br />
+            <BitPersona PrimaryText="Saleh Khafan"
+                        Size="BitPersonaSize.Size72"
+                        Classes="@(new() { ImageContainer = "custom-img-container",
+                                           PrimaryTextContainer = "custom-primary-text" })" />
+        </div>
         <br /><br /><br />
         <div>CSS variables, set once on an ancestor:</div>
         <br />
