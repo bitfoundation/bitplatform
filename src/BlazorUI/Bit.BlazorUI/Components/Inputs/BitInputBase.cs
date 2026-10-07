@@ -153,13 +153,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
     public virtual ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
 
-    /// <summary>
-    /// Whether the named parameter of <see cref="BitInputBase{TValue}"/> was left unset on this component,
-    /// which is what a <see cref="BitParams"/> cascade fills in. It is the input tier alone of the question
-    /// that <see cref="BitComponentBase.HasNotBeenSet"/> answers for the whole hierarchy, this one included.
-    /// </summary>
-    protected internal bool HasNotBeenSetOnInput(string name) => _assignedInputParameters.Contains(name) is false;
-
     private protected override bool IsSetByMarkup(string name) => _assignedInputParameters.Contains(name) || base.IsSetByMarkup(name);
 
 

@@ -395,13 +395,6 @@ public abstract class BitLoadingBase : BitComponentBase
 
     internal new ElementStyleBuilder StyleBuilder => base.StyleBuilder;
 
-    /// <summary>
-    /// Whether the named parameter of <see cref="BitLoadingBase"/> was left unset on this component, which is
-    /// what a <see cref="BitParams"/> cascade fills in. It is the loading tier alone of the question that
-    /// <see cref="BitComponentBase.HasNotBeenSet"/> answers for the whole hierarchy, this one included.
-    /// </summary>
-    internal bool HasNotBeenSetOnLoading(string name) => _assignedLoadingParameters.Contains(name) is false;
-
     private protected override bool IsSetByMarkup(string name) => _assignedLoadingParameters.Contains(name) || base.IsSetByMarkup(name);
 
     // Read straight off the property rather than through reflection, as the generated code of a component does.

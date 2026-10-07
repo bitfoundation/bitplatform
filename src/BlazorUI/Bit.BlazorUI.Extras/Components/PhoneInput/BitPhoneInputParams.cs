@@ -350,10 +350,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
 
         UpdateInputBaseParameters(bitPhoneInput);
 
-        // The parameters of the input base classes are not tracked by the generated HasNotBeenSet of the
-        // component, which only knows the ones the component declares itself, so they are asked about through
-        // the tier that does track them.
-        if (AutoComplete.HasValue() && bitPhoneInput.HasNotBeenSetOnTextInput(nameof(AutoComplete)))
+        if (AutoComplete.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(AutoComplete)))
         {
             bitPhoneInput.AutoComplete = AutoComplete;
         }
@@ -422,7 +419,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.Countries = Countries;
         }
 
-        if (DebounceTime.HasValue && bitPhoneInput.HasNotBeenSetOnTextInput(nameof(DebounceTime)))
+        if (DebounceTime.HasValue && bitPhoneInput.HasNotBeenSet(nameof(DebounceTime)))
         {
             bitPhoneInput.DebounceTime = DebounceTime.Value;
         }
@@ -484,7 +481,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.ClassBuilder.Reset();
         }
 
-        if (Immediate.HasValue && bitPhoneInput.HasNotBeenSetOnTextInput(nameof(Immediate)))
+        if (Immediate.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Immediate)))
         {
             bitPhoneInput.Immediate = Immediate.Value;
         }
@@ -654,7 +651,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.StyleBuilder.Reset();
         }
 
-        if (ThrottleTime.HasValue && bitPhoneInput.HasNotBeenSetOnTextInput(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue && bitPhoneInput.HasNotBeenSet(nameof(ThrottleTime)))
         {
             bitPhoneInput.ThrottleTime = ThrottleTime.Value;
         }
