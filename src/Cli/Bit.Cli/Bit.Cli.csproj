@@ -44,6 +44,7 @@
         <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/.template.config/template.json" LogicalName="Bit.Cli.template.json" Link="Templates/template.json" />
         <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json" LogicalName="Bit.Cli.package.json" Link="Templates/package.json" />
         <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" LogicalName="Bit.Cli.AppHost.csproj" Link="Templates/AppHost.csproj" />
+        <EmbeddedResource Include="../../Templates/Boilerplate/Bit.Boilerplate/global.json" LogicalName="Bit.Cli.global.json" Link="Templates/global.json" />
     </ItemGroup>
 
     <ItemGroup>
