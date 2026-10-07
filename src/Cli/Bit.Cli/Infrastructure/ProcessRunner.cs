@@ -101,17 +101,15 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
 
         log.Write($"> {spec.CommandLine}{(spec.WorkingDirectory is null ? "" : $"   (in {spec.WorkingDirectory})")}");
 
-        var startInfo = new ProcessStartInfo(executable)
-        {
-            UseShellExecute = false,
-            WorkingDirectory = spec.WorkingDirectory ?? environment.CurrentDirectory,
-            RedirectStandardOutput = spec.Interactive is false,
-            RedirectStandardError = spec.Interactive is false,
-            RedirectStandardInput = spec.Interactive is false,
-            StandardOutputEncoding = spec.Interactive ? null : Encoding.UTF8,
-            StandardErrorEncoding = spec.Interactive ? null : Encoding.UTF8,
-            CreateNoWindow = spec.Interactive is false
-        };
+        var startInfo = CreateStartInfo(executable, spec);
+        startInfo.UseShellExecute = false;
+        startInfo.WorkingDirectory = spec.WorkingDirectory ?? environment.CurrentDirectory;
+        startInfo.RedirectStandardOutput = spec.Interactive is false;
+        startInfo.RedirectStandardError = spec.Interactive is false;
+        startInfo.RedirectStandardInput = spec.Interactive is false;
+        startInfo.StandardOutputEncoding = spec.Interactive ? null : Encoding.UTF8;
+        startInfo.StandardErrorEncoding = spec.Interactive ? null : Encoding.UTF8;
+        startInfo.CreateNoWindow = spec.Interactive is false;
 
         PrepareStart(startInfo, spec);
 
@@ -186,12 +184,10 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
     {
         log.Write($"> {spec.CommandLine}   (detached)");
 
-        var startInfo = new ProcessStartInfo(FindExecutable(spec.FileName) ?? spec.FileName)
-        {
-            UseShellExecute = false,
-            WorkingDirectory = spec.WorkingDirectory ?? environment.CurrentDirectory,
-            CreateNoWindow = true
-        };
+        var startInfo = CreateStartInfo(FindExecutable(spec.FileName) ?? spec.FileName, spec);
+        startInfo.UseShellExecute = false;
+        startInfo.WorkingDirectory = spec.WorkingDirectory ?? environment.CurrentDirectory;
+        startInfo.CreateNoWindow = true;
 
         PrepareStart(startInfo, spec);
 
@@ -207,13 +203,23 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
         }
     }
 
-    private void PrepareStart(ProcessStartInfo startInfo, ProcessSpec spec)
+    private ProcessStartInfo CreateStartInfo(string executable, ProcessSpec spec)
     {
+        if (environment.IsWindows && WindowsShell.IsBatchFile(executable))
+            return new ProcessStartInfo(environment.GetVariable("ComSpec") ?? "cmd.exe", WindowsShell.CommandLine(executable, spec.Arguments));
+
+        var startInfo = new ProcessStartInfo(executable);
+
         foreach (var argument in spec.Arguments)
         {
             startInfo.ArgumentList.Add(argument);
         }
 
+        return startInfo;
+    }
+
+    private void PrepareStart(ProcessStartInfo startInfo, ProcessSpec spec)
+    {
         foreach (var variable in CliEnvironment.InProcessOnlyVariables)
         {
             if (environment.Variables.TryGetValue(variable, out var original))

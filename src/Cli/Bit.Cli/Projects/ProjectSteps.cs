@@ -481,15 +481,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return result.Succeeded ? StepResult.Succeeded($"Opened {found.Name}") : StepResult.FromProcess(result, "", $"Couldn't open {found.Name}", spec.CommandLine);
         }
 
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(spec.FileName, spec.Arguments) { UseShellExecute = false })?.Dispose();
-            return StepResult.Succeeded($"Opened {found.Name}");
-        }
-        catch (System.ComponentModel.Win32Exception exp)
-        {
-            return StepResult.Failed($"Couldn't open {found.Name}", exp.Message, spec.CommandLine);
-        }
+        return Runner.StartDetached(spec)
+            ? StepResult.Succeeded($"Opened {found.Name}")
+            : StepResult.Failed($"Couldn't open {found.Name}", $"{found.Executable} didn't start", spec.CommandLine);
     }
 
     private async Task<string?> CommitAllAsync(string message, CancellationToken cancellationToken)
