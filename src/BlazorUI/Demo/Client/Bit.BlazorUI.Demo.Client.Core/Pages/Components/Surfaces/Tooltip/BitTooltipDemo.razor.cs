@@ -302,7 +302,7 @@ public partial class BitTooltipDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        SharedSubEnums.BitPlacement,
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "tooltip-relationship-enum",
@@ -330,44 +330,8 @@ public partial class BitTooltipDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Value = "0", Description = "Primary general color." },
-                new() { Name = "Secondary", Value = "1", Description = "Secondary general color." },
-                new() { Name = "Tertiary", Value = "2", Description = "Tertiary general color." },
-                new() { Name = "Info", Value = "3", Description = "Info general color." },
-                new() { Name = "Success", Value = "4", Description = "Success general color." },
-                new() { Name = "Warning", Value = "5", Description = "Warning general color." },
-                new() { Name = "SevereWarning", Value = "6", Description = "SevereWarning general color." },
-                new() { Name = "Error", Value = "7", Description = "Error general color." },
-                new() { Name = "PrimaryBackground", Value = "8", Description = "Primary background color." },
-                new() { Name = "SecondaryBackground", Value = "9", Description = "Secondary background color." },
-                new() { Name = "TertiaryBackground", Value = "10", Description = "Tertiary background color." },
-                new() { Name = "PrimaryForeground", Value = "11", Description = "Primary foreground color." },
-                new() { Name = "SecondaryForeground", Value = "12", Description = "Secondary foreground color." },
-                new() { Name = "TertiaryForeground", Value = "13", Description = "Tertiary foreground color." },
-                new() { Name = "PrimaryBorder", Value = "14", Description = "Primary border color." },
-                new() { Name = "SecondaryBorder", Value = "15", Description = "Secondary border color." },
-                new() { Name = "TertiaryBorder", Value = "16", Description = "Tertiary border color." }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Small", Value = "0", Description = "The small size tooltip." },
-                new() { Name = "Medium", Value = "1", Description = "The medium size tooltip." },
-                new() { Name = "Large", Value = "2", Description = "The large size tooltip." }
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize()
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

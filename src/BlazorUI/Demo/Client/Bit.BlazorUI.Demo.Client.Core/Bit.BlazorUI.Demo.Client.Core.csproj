@@ -57,7 +57,12 @@
 
     <ItemGroup>
         <Compile Include="..\..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
+        <!-- The MSBuild task writing the prose of the shared enum tables, compiled by MSBuild itself. -->
+        <Compile Remove="MSBuild\**" />
+        <None Include="MSBuild\*.cs" />
     </ItemGroup>
+
+    <Import Project="MSBuild\DemoSharedEnumDocs.targets" />
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
@@ -117,4 +122,4 @@
         <None Include="tsconfig.json" />
     </ItemGroup>
 
-</Project>
+</Project>

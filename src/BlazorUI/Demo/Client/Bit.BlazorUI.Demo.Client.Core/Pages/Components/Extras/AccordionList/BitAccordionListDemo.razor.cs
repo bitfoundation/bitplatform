@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class BitAccordionListDemo
 {
@@ -588,20 +588,8 @@ public partial class BitAccordionListDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "Defines the color kinds available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Primary", Description = "The primary color kind.", Value = "0" },
-                new() { Name = "Secondary", Description = "The secondary color kind.", Value = "1" },
-                new() { Name = "Tertiary", Description = "The tertiary color kind.", Value = "2" },
-                new() { Name = "Transparent", Description = "The transparent color kind.", Value = "3" },
-            ]
-        },
-        SharedSubEnums.BitPlacement,
+        DemoSharedEnums.BitColorKind(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "accordion-toggle-reason-enum",
@@ -614,17 +602,6 @@ public partial class BitAccordionListDemo
                 new() { Name = "Reveal", Description = "Find-in-page or a fragment navigation landed inside the collapsed panel of a HiddenUntilFound list.", Value = "2" },
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
+        DemoSharedEnums.BitSize(),
     ];
 }

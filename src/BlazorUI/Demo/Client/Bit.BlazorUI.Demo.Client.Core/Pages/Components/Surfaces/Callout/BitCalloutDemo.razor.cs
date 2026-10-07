@@ -486,27 +486,7 @@ public partial class BitCalloutDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Value = "0",
-                    Description = "The direction determined automatically based on the available spaces in all directions."
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Value = "1",
-                    Description = "The direction determined automatically based on the available spaces in only top and bottom directions."
-                },
-            ]
-        },
+        DemoSharedEnums.BitDropDirection(),
         new()
         {
             Id = "responsive-mode-enum",
@@ -540,20 +520,8 @@ public partial class BitCalloutDemo
                 },
             ]
         },
-        SharedSubEnums.BitPlacement,
-        new()
-        {
-            Id = "color-kind-enum",
-            Name = "BitColorKind",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Primary", Value = "0", Description = "The primary color kind." },
-                new() { Name = "Secondary", Value = "1", Description = "The secondary color kind." },
-                new() { Name = "Tertiary", Value = "2", Description = "The tertiary color kind." },
-                new() { Name = "Transparent", Value = "3", Description = "The transparent color kind." },
-            ]
-        }
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitColorKind()
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =

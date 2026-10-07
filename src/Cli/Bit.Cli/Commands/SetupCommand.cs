@@ -60,7 +60,7 @@ public static class SetupCommand
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, BuildProperties = properties };
             var aspire = Directory.Exists(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost"));
             var requirements = TemplateRequirements.FromProject(directory, name);
-            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, Sdk = ReadSdk(directory), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
             var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var tools = parseResult.GetValue(shared.NoTools)
                 ? []
@@ -83,7 +83,12 @@ public static class SetupCommand
             }
 
             var projectSteps = new ProjectSteps(cli, context);
-            await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
+            var sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
+
+            if (sdkReady && NewWorkflow.StartsAspireOnce(cli, aspire, parseResult.GetValue(shared.NoBuild)))
+            {
+                await NewWorkflow.RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
+            }
 
             if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
             {
@@ -104,19 +109,5 @@ public static class SetupCommand
         });
 
         return command;
-    }
-
-    public static SdkRequirement? ReadSdk(string directory)
-    {
-        var path = Path.Combine(directory, "global.json");
-
-        try
-        {
-            return File.Exists(path) ? SdkRequirement.FromGlobalJson(File.ReadAllText(path)) : null;
-        }
-        catch (IOException)
-        {
-            return null;
-        }
     }
 }

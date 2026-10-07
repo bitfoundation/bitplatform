@@ -154,7 +154,7 @@ public partial class BitNavBarDemo
             DefaultValue = "BitNavItemTemplateRenderMode.Normal",
             Description = "Whether the ItemTemplate renders inside the anchor (or button) of each item, or replaces it for items that are controls of their own. Replaced items own their clicks, focus and accessible name, and are left out of the keyboard navigation.",
             LinkType = LinkType.Link,
-            Href = "#template-render-mode-enum",
+            Href = "#nav-item-template-render-mode-enum",
         },
         new()
         {
@@ -364,7 +364,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavAriaCurrent.Page",
                    Description = "The value of the aria-current attribute of the navbar item when it is the selected one.",
                    LinkType = LinkType.Link,
-                   Href = "#aria-current-enum",
+                   Href = "#nav-aria-current-enum",
                },
                new()
                {
@@ -491,7 +491,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "Whether the Template of the navbar item is rendered inside the anchor (or the button) the item is, or replaces it altogether, which is what an item that is a control of its own needs, since an interactive element cannot be nested in another one. A replaced item is left out of the keyboard navigation of the navbar.",
                    LinkType = LinkType.Link,
-                   Href = "#template-render-mode-enum",
+                   Href = "#nav-item-template-render-mode-enum",
                },
                new()
                {
@@ -536,7 +536,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavAriaCurrent.Page",
                    Description = "The value of the aria-current attribute of the navbar option when it is the selected one.",
                    LinkType = LinkType.Link,
-                   Href = "#aria-current-enum",
+                   Href = "#nav-aria-current-enum",
                },
                new()
                {
@@ -663,7 +663,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "BitNavItemTemplateRenderMode.Normal",
                    Description = "Whether the Template of the navbar option is rendered inside the anchor (or the button) the option is, or replaces it altogether, which is what an option that is a control of its own needs, since an interactive element cannot be nested in another one. A replaced option is left out of the keyboard navigation of the navbar.",
                    LinkType = LinkType.Link,
-                   Href = "#template-render-mode-enum",
+                   Href = "#nav-item-template-render-mode-enum",
                },
                new()
                {
@@ -833,7 +833,7 @@ public partial class BitNavBarDemo
                    DefaultValue = "new(nameof(BitNavBarItem.TemplateRenderMode))",
                    Description = "The TemplateRenderMode field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
-                   Href = "#template-render-mode-enum",
+                   Href = "#nav-item-template-render-mode-enum",
                },
                new()
                {
@@ -976,82 +976,10 @@ public partial class BitNavBarDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "nav-mode-enum",
-            Name = "BitNavMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Automatic",
-                    Description = "The navbar follows the browser: it selects the item whose URL points at the page the app currently sits on, and it re-selects on every navigation.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Manual",
-                    Description = "The selection is driven by clicks and by the SelectedItem binding instead of by the current URL, which is what a navbar that switches between the panels of a single page needs.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-match-enum",
-            Name = "BitNavMatch",
-            Items =
-            [
-                new()
-                {
-                    Name = "Exact",
-                    Description = "Specifies that the item should be active when it matches exactly the current URL.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Prefix",
-                    Description = "Specifies that the item should be active when it matches any prefix of the current URL.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Regex",
-                    Description = "Specifies that the item should be active when its provided regex matches the current URL.",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Wildcard",
-                    Description = "Specifies that the item should be active when its provided wildcard matches the current URL.",
-                    Value = "3",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "aria-current-enum",
-            Name = "BitNavAriaCurrent",
-            Items =
-            [
-                new() { Name = "Page", Description = "Represents the current page within a set of pages.", Value = "0" },
-                new() { Name = "Step", Description = "Represents the current step within a process.", Value = "1" },
-                new() { Name = "Location", Description = "Represents the current location within an environment or context.", Value = "2" },
-                new() { Name = "Date", Description = "Represents the current date within a collection of dates.", Value = "3" },
-                new() { Name = "Time", Description = "Represents the current time within a set of times.", Value = "4" },
-                new() { Name = "True", Description = "Represents the current item within a set.", Value = "5" }
-            ]
-        },
-        new()
-        {
-            Id = "template-render-mode-enum",
-            Name = "BitNavItemTemplateRenderMode",
-            Items =
-            [
-                new() { Name = "Normal", Description = "Renders the template inside the anchor (or the button) the item is, so the item keeps its click, its focus and its place in the keyboard navigation of the navbar.", Value = "0" },
-                new() { Name = "Replace", Description = "Replaces the anchor (or the button) the item is with the template, which is what an item that is a control of its own needs. The template owns its clicks, its focus and its accessible name, and the item is left out of the keyboard navigation of the navbar.", Value = "1" }
-            ]
-        },
+        DemoSharedEnums.BitNavMode(),
+        DemoSharedEnums.BitNavMatch(),
+        DemoSharedEnums.BitNavAriaCurrent(),
+        DemoSharedEnums.BitNavItemTemplateRenderMode(),
         new()
         {
             Id = "indicator-enum",
@@ -1079,16 +1007,6 @@ public partial class BitNavBarDemo
                 new() { Name = "Stretch", Description = "Carries no distribution of its own here, so the navbar keeps its default. Use Justified to have the items fill the navbar.", Value = "7" }
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" }
-            ]
-        }
+        DemoSharedEnums.BitSize(),
     ];
 }

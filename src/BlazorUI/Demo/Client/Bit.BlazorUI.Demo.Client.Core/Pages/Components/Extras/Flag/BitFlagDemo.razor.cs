@@ -488,33 +488,7 @@ public partial class BitFlagDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Defines the sizes available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Small",
-                    Description = "The small size.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Medium",
-                    Description = "The medium size, which is the 16 pixels the packaged flag images are drawn at.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Large",
-                    Description = "The large size.",
-                    Value = "2",
-                },
-            ]
-        },
+        DemoSharedEnums.BitSize(),
         new()
         {
             Id = "flag-image-set-enum",
@@ -632,27 +606,7 @@ public partial class BitFlagDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "image-loading-enum",
-            Name = "BitImageLoading",
-            Description = "Represents the img loading attribute values.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Eager",
-                    Description = "Tells the browser to load the image as soon as the element is processed.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Lazy",
-                    Description = "Tells the browser to hold off on loading the image until it estimates that it will be needed imminently. This is what a flag with no Loading set does.",
-                    Value = "1",
-                },
-            ]
-        },
+        DemoSharedEnums.BitImageLoading(),
     ];
 
 

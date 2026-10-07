@@ -48,7 +48,7 @@ public partial class BitMessageBoxDemo
             DefaultValue = "null",
             Description = "The color of the action buttons of the message box. Tertiary by default.",
             LinkType = LinkType.Link,
-            Href = "/components/message/#color-enum",
+            Href = "#color-enum",
         },
         new()
         {
@@ -101,7 +101,7 @@ public partial class BitMessageBoxDemo
             DefaultValue = "null",
             Description = "The general color of the message box, which paints its leading icon and - unless IconName says otherwise - picks the glyph.",
             LinkType = LinkType.Link,
-            Href = "/components/message/#color-enum",
+            Href = "#color-enum",
         },
         new()
         {
@@ -235,7 +235,7 @@ public partial class BitMessageBoxDemo
             DefaultValue = "null",
             Description = "The color of the affirmative action button (Ok, or Yes), which falls back to ButtonColor where it is not set.",
             LinkType = LinkType.Link,
-            Href = "/components/message/#color-enum",
+            Href = "#color-enum",
         },
         new()
         {
@@ -897,18 +897,8 @@ public partial class BitMessageBoxDemo
                 new() { Name = "No", Description = "The No button ended the showing.", Value = "4" }
             ]
         },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "The size of the message box.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" }
-            ]
-        }
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(description: "The size of the message box.")
     ];
 
 

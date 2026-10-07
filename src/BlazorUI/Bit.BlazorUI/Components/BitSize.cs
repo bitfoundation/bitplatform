@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines the sizes available in the bit BlazorUI.
+/// </summary>
 public enum BitSize
 {
     /// <summary>

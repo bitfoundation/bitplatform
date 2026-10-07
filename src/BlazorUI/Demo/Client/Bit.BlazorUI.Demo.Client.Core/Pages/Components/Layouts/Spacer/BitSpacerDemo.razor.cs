@@ -66,18 +66,7 @@ public partial class BitSpacerDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "Determines the fixed amount of space the spacer generates, picked from the spacing scale of the theme.",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" },
-            ]
-        },
+        DemoSharedEnums.BitSize(description: "Determines the fixed amount of space the spacer generates, picked from the spacing scale of the theme."),
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =

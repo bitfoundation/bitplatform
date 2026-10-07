@@ -540,55 +540,8 @@ public partial class BitCircularTimePickerDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "component-visibility-enum",
-            Name = "BitVisibility",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Visible",
-                    Description = "Show content of the component.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Hidden",
-                    Description = "Hide content of the component,though the space it takes on the page remains.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Collapsed",
-                    Description = "Hide content of the component,though the space it takes on the page gone.",
-                    Value = "2",
-                }
-            ]
-        },
-        SharedSubEnums.BitPlacement,
-        new()
-        {
-            Id = "drop-direction-enum",
-            Name = "BitDropDirection",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "All",
-                    Description = "The direction determined automatically based on the available spaces in all directions.",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "TopAndBottom",
-                    Description = "Show the callout at the top or bottom side.",
-                    Value = "1"
-                }
-            ]
-        },
+        DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitDropDirection(),
         new()
         {
             Id = "edit-mode-enum",
@@ -649,65 +602,9 @@ public partial class BitCircularTimePickerDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "time-format-enum",
-            Name = "BitTimeFormat",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "TwentyFourHours",
-                    Description="Show time pickers in 24 hours format.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "TwelveHours",
-                    Description="Show time pickers in 12 hours format.",
-                    Value="1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Small", Description = "The small size.", Value = "0" },
-                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
-                new() { Name = "Large", Description = "The large size.", Value = "2" }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "",
-            Items =
-            [
-                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
-                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
-                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
-                new() { Name = "Info", Description = "Info general color.", Value = "3" },
-                new() { Name = "Success", Description = "Success general color.", Value = "4" },
-                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
-                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
-                new() { Name = "Error", Description = "Error general color.", Value = "7" },
-                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
-                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
-                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
-                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
-                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
-                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
-                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
-                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
-                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
-            ]
-        }
+        DemoSharedEnums.BitTimeFormat(),
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitColor()
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

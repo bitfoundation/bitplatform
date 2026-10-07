@@ -59,14 +59,29 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 - **A section only uses what has already been introduced.** A demo page is read from the top down, so
   a section may only use the parameters and the features its own section, or an earlier one, has
   introduced.
-- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
-  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are written once in
-  `Models/SharedSubEnums.cs`; a page adds the one it needs to its sub-enum list and points its row at
-  the table's stable id (`Href="#placement-enum"`). Which of the values a particular parameter honours
-  is the row's own `Description` - it is what the site renders and what the MCP server hands an agent,
-  and a component honouring four of nine values says nothing without it.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
+- **A library-wide enum's table is written once.** `BitColor`, `BitSize`, `BitVariant` and the other
+  types many pages list come from `Models/DemoSharedEnums` (`DemoSharedEnums.BitColor()` in the page's
+  `componentSubEnums`), with one anchor id per type. A page passes `description:` for its own line above
+  the table and `.Only(...)` for the members it supports (BitPagination's eight general colors; a name
+  that is not a member throws, as does naming none), and keeps a table of its own only when the members
+  mean something different there (BitLoading's pixel sizes) - still under the shared table's anchor
+  id, and a type of its own never under a shared one (BitPersonaSize is `persona-size-enum`). A
+  default that holds on one page only goes in that page's parameter description, not in the table. A
+  shared table writes nothing but its anchor id: the members and values are read off the enum in
+  declaration order, and the prose is the enum's own XML documentation, which
+  `MSBuild/DemoSharedEnumDocs.targets` writes into a generated half of `DemoSharedEnums` before every
+  compile (a WebAssembly page has none to read) - so a table's wording is changed in the enum's doc
+  comments, and a new shared table names its enum in that file as well as adding its factory. A missing
+  summary only empties a cell at runtime; `DemoSharedEnumsTests` is what fails on it, and pins every
+  page's anchor ids - one per type, shared or not.
+- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
+  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are shared tables
+  like the rest; a page adds the one it needs to its sub-enum list and points its row at the table's
+  anchor id (`Href="#placement-enum"`). Which of the values a particular parameter honours is the row's
+  own `Description` - it is what the site renders and what the MCP server hands an agent, and a
+  component honouring four of nine values says nothing without it.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
   they carry the markup that section actually renders, including any parameter added or renamed.
 - **A feature that is not one file gets one tab per file.** `RazorCode` + `CsharpCode` is one file -

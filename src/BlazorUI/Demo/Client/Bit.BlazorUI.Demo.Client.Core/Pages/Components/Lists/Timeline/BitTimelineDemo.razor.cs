@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class BitTimelineDemo
 {
@@ -138,7 +138,7 @@ public partial class BitTimelineDemo
             DefaultValue = "null",
             Description = "The size of the timeline, which sets the size of the dots and of the text.",
             LinkType = LinkType.Link,
-            Href = "#timeline-size-enum",
+            Href = "#size-enum",
         },
         new()
         {
@@ -402,7 +402,7 @@ public partial class BitTimelineDemo
                    DefaultValue = "null",
                    Description = "The size of the item, overriding the size of the timeline.",
                    LinkType = LinkType.Link,
-                   Href = "#timeline-size-enum",
+                   Href = "#size-enum",
                },
                new()
                {
@@ -567,7 +567,7 @@ public partial class BitTimelineDemo
                    DefaultValue = "null",
                    Description = "The size of the option, overriding the size of the timeline.",
                    LinkType = LinkType.Link,
-                   Href = "#timeline-size-enum",
+                   Href = "#size-enum",
                },
                new()
                {
@@ -922,173 +922,11 @@ public partial class BitTimelineDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name = "Fill",
-                    Description = "Fill styled variant.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Outline",
-                    Description = "Outline styled variant.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Text",
-                    Description = "Text styled variant.",
-                    Value = "2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                },
-                new()
-                {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
-                },
-                new()
-                {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
-                },
-                new()
-                {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
-                },
-                new()
-                {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
-                },
-                new()
-                {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
-                },
-                new()
-                {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
-                },
-                new()
-                {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
-                },
-                new()
-                {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
-                },
-                new()
-                {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "timeline-size-enum",
-            Name = "BitSize",
-            Description = "Determines the size of the dots and the font of the timeline.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size timeline.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size timeline.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size timeline.",
-                    Value="2",
-                }
-            ]
-        },
-        SharedSubEnums.BitLineStyle,
-        SharedSubEnums.BitPlacement,
+        DemoSharedEnums.BitVariant(),
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitSize(description: "Determines the size of the dots and the font of the timeline."),
+        DemoSharedEnums.BitLineStyle(),
+        DemoSharedEnums.BitPlacement(),
         new()
         {
             Id = "truncate-line-enum",
