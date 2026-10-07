@@ -33,6 +33,8 @@ public partial class BitSwiper : BitComponentBase
     private bool _hovered;
     private bool _stopped;
     private bool _focused;
+    private bool _hoverOverridden;
+    private bool _focusOverridden;
     private bool _keysOwnedByContent;
     private bool _isPaused;
     private bool _pageHidden;
@@ -40,6 +42,8 @@ public partial class BitSwiper : BitComponentBase
     private bool _needsSetup;
     private bool _needsRefresh;
     private bool _afterFirstRender;
+    private bool _prefersReducedMotion;
+    private bool _autoPlayApplied;
     private int _laidOutItemsCount = -1;
     private (bool Playing, bool Paused) _playbackState;
     private string _optionsSignature = string.Empty;
@@ -131,6 +135,10 @@ public partial class BitSwiper : BitComponentBase
     /// <br />
     /// A swiper that reaches its end rewinds to the start, unless <see cref="StopOnLastSlide"/> says to
     /// stop there.
+    /// <br />
+    /// When the system or the browser reports 'prefers-reduced-motion: reduce', the scrolling starts paused
+    /// (<see cref="IsPaused"/> is true) until it is started with the play/pause button or <see cref="Resume"/>,
+    /// unless <see cref="BitComponentBase.ForceAnimation"/> opts the swiper back into motion.
     /// </remarks>
     [Parameter] public bool AutoPlay { get; set; }
 
@@ -596,7 +604,8 @@ public partial class BitSwiper : BitComponentBase
     public bool IsAtEnd => _atEnd;
 
     /// <summary>
-    /// Whether the auto scrolling has been paused through <see cref="Pause"/> or the play/pause button.
+    /// Whether the auto scrolling has been paused through <see cref="Pause"/> or the play/pause button, or
+    /// started paused because reduced motion was requested (see <see cref="AutoPlay"/>).
     /// </summary>
     public bool IsPaused => _isPaused || _stopped;
 
@@ -698,6 +707,13 @@ public partial class BitSwiper : BitComponentBase
     {
         _isPaused = false;
         _stopped = false;
+
+        // Asking for the scrolling is what the hover and focus pauses wait for, and the play/pause button
+        // that asks for it is itself under the pointer and holding the focus, so the pointer and the focus
+        // already inside the swiper no longer hold it back. Only leaving the swiper and coming back (or
+        // moving the focus on inside it) pauses it again.
+        _hoverOverridden = _hovered;
+        _focusOverridden = _focused;
 
         UpdateAutoPlayTimer();
     }
@@ -978,6 +994,16 @@ public partial class BitSwiper : BitComponentBase
             _needsSetup = _afterFirstRender;
         }
 
+        // A reader who asked the system for less motion is not handed a swiper that starts scrolling on its
+        // own, including one whose AutoPlay is only switched on after the first render (the one it is on
+        // from the start is paused in OnAfterRenderAsync).
+        if (AutoPlay && _autoPlayApplied is false && _afterFirstRender && _prefersReducedMotion)
+        {
+            _isPaused = true;
+        }
+
+        _autoPlayApplied = AutoPlay;
+
         UpdateAutoPlayTimer();
 
         base.OnParametersSet();
@@ -1007,6 +1033,18 @@ public partial class BitSwiper : BitComponentBase
             await _js.BitSwiperSetup(_Id, RootElement, _swiperContainer, _dotnetObj, GetOptions());
 
             await RegisterPreventKeysAsync();
+
+            // A reader who asked the system for less motion is not handed a swiper that starts scrolling on
+            // its own: the scrolling starts paused, and the play/pause button (or Resume) starts it. A swiper
+            // opted back into motion with ForceAnimation (itself or through an ancestor) plays. It is settled
+            // while the pending page visibility still holds the timer, so a swiper that starts paused never
+            // renders (or moves) as a playing one first.
+            _prefersReducedMotion = await _js.BitUtilsPrefersReducedMotion(RootElement);
+
+            if (AutoPlay && _prefersReducedMotion)
+            {
+                _isPaused = true;
+            }
 
             await pageVisibilityInit;
 
@@ -1259,6 +1297,7 @@ public partial class BitSwiper : BitComponentBase
         if (_hovered is false) return;
 
         _hovered = false;
+        _hoverOverridden = false;
 
         UpdateAutoPlayTimer();
     }
@@ -1277,6 +1316,7 @@ public partial class BitSwiper : BitComponentBase
         if (_focused is false) return;
 
         _focused = false;
+        _focusOverridden = false;
 
         UpdateAutoPlayTimer();
     }
@@ -1287,8 +1327,8 @@ public partial class BitSwiper : BitComponentBase
         if (Disabled) return false;
         if (_isPaused || _stopped) return false;
         if (_pageHidden || _pageVisibilityPending) return false;
-        if (PauseOnHover && _hovered) return false;
-        if (PauseOnFocus && _focused) return false;
+        if (PauseOnHover && _hovered && _hoverOverridden is false) return false;
+        if (PauseOnFocus && _focused && _focusOverridden is false) return false;
 
         // A swiper everything fits in has nowhere to scroll to.
         return _scrollable;

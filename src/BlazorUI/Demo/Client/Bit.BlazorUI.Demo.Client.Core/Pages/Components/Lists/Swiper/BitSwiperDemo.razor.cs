@@ -25,7 +25,7 @@ public partial class BitSwiperDemo
             Name = "AutoPlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables/disables the auto scrolling of the items."
+            Description = "Enables/disables the auto scrolling of the items. It pauses while hovered, focused or in a hidden tab, and starts paused under prefers-reduced-motion unless ForceAnimation is set."
         },
         new()
         {
