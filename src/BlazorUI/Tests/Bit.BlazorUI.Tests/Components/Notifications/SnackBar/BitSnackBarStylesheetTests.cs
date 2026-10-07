@@ -80,13 +80,13 @@ public class BitSnackBarStylesheetTests
     }
 
     [TestMethod]
-    public void BitSnackBarUnfilledVariantsShouldReadBackgroundAndBorderRolesWithTheirOnColor()
+    public void BitSnackBarUnfilledVariantsShouldReadEveryRoleThroughTheSharedForeground()
     {
         var rules = GetRules(ReadStylesheet());
 
-        // The fg of a background or border role is that surface or border color itself, invisible as text on the
-        // page surface the unfilled variants sit on; only the foreground roles are read as they are.
-        StringAssert.Contains(rules, "@if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {\n            --bit-snb-clr-txt: #{role($tokens, on)};");
+        // The shared map already gives a background or border role its on color as fg (BitColorRoleMapsTests), so the
+        // snack bar reads the same slot as every other component instead of special-casing those roles itself.
+        Assert.IsFalse(rules.Contains("--bit-snb-clr-txt: #{role($tokens, on)};"), "The snack bar special-cases the text of a role.");
     }
 
     [TestMethod,

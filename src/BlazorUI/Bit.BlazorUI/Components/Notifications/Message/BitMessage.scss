@@ -412,7 +412,8 @@
 
         // The unfilled variants read the role's foreground token - the shade of the role meant to be read on
         // the page rather than filled behind its on-color - which the theme decides (--bit-clr-<role>-fg); a
-        // neutral role is a page color already, so its foreground is the role itself.
+        // foreground role is the role itself, and a background or border role, which would vanish as text on the
+        // page, is its on color.
         --bit-msg-clr-txt: #{role($tokens, fg)};
         --bit-msg-clr-focus: #{role($tokens, focus)};
         --bit-msg-clr-tint: #{role($tokens, tint)};
