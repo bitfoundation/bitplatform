@@ -351,7 +351,7 @@ namespace BitBlazorUI {
             // once: nothing else counts the content the surface started with. Every later set of the markup
             // already there is a no-op, as it has always been. Comments are left out of the comparison: the markup
             // the component rendered carries Blazor's own marker comments, which no sanitized value ever does.
-            const unchanged = editor.innerHTML.replace(/<!--[\s\S]*?-->/g, '') === next;
+            const unchanged = RichTextEditor.markupWithoutComments(editor) === next;
             if (unchanged && editor._factsReported) return;
 
             if (unchanged === false) {
@@ -378,6 +378,18 @@ namespace BitBlazorUI {
                 editor._dotNetRef.invokeMethodAsync('OnFactsChanged', RichTextEditor.computeFacts(editor));
                 editor._factsReported = true;
             }
+        }
+
+        // The surface's markup less its comment nodes. The comments are removed from a clone's tree
+        // rather than matched out of the serialized string, so what remains is exactly what the
+        // parser built - no pattern to fool - and the live surface is never touched.
+        private static markupWithoutComments(editor: any): string {
+            const clone = editor.cloneNode(true) as HTMLElement;
+            const walker = document.createTreeWalker(clone, NodeFilter.SHOW_COMMENT);
+            const comments: Node[] = [];
+            while (walker.nextNode()) comments.push(walker.currentNode);
+            comments.forEach(c => c.parentNode && c.parentNode.removeChild(c));
+            return clone.innerHTML;
         }
 
         public static focus(editor: any) {
