@@ -205,7 +205,7 @@ public class TemplateConfigurationTests
     /// <para>
     /// That has happened: <c>AiChatPanelDictationUITests.cs</c> shipped in no exclude list while its base class
     /// <c>AiChatPanelTestBase.cs</c> and the <c>TestChatClient</c> it uses were both removed at
-    /// <c>advancedTests != true || signalR != true</c>, so <c>dotnet new bit-bp</c> with no arguments produced a test
+    /// <c>advancedTests != true || signalR != true</c>, so generating the template with no arguments produced a test
     /// project with two CS0246s. Nothing caught it: inside the template every conditional is a comment so the local
     /// build is green, and CI never generates the one combination that breaks - its build-only job passes
     /// <c>--signalR false</c> without <c>--advancedTests</c>, and both of its test jobs pass <c>--advancedTests</c>.
@@ -856,7 +856,7 @@ public class TemplateConfigurationTests
     /// The template engine scans every line for the text <c>#if</c> with no idea that it might be inside a C# string
     /// literal, an XML doc comment or a markdown fence. When it finds one with no parenthesized condition after it,
     /// the expression parser indexes past the end of its token list and <b>aborts the entire generation</b> - so one
-    /// such line anywhere in the tree means <c>dotnet new bit-bp</c> produces no project at all, and the local build
+    /// such line anywhere in the tree means generating the template produces no project at all, and the local build
     /// and the local test run both stay green because inside the template every directive is just a comment.
     /// <para>
     /// This has now happened twice: once in a doc comment that quoted a directive (the file shipped truncated at that

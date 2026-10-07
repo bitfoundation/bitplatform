@@ -282,18 +282,9 @@ This single line:
 
 ---
 
-## 4. Migrations (Optional for Server-Side)
+## 4. Migrations
 
-### Important Note About Migrations
-
-**EF Core migrations are NOT mandatory** in this project, especially for:
-- Test projects
-- Rapid prototyping scenarios
-- Development environments where the database can be easily recreated
-
-### Default Approach: EnsureCreatedAsync()
-
-By default, the project uses `Database.EnsureCreatedAsync()` which **automatically creates** the database schema based on your entities without requiring migrations:
+The project uses EF Core migrations from day one. In the Development environment, the app applies them when it starts:
 
 **File:** [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
 ```csharp
@@ -301,76 +292,36 @@ if (builder.Environment.IsDevelopment())
 {
     await using var scope = app.Services.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.EnsureCreatedAsync(); // Automatically creates schema
+    await dbContext.Database.MigrateAsync();
 }
 ```
 
-### When to Use Migrations?
-
-You should **switch to migrations** when:
-- Deploying to **production environments**
-- You need to **preserve existing data** during schema changes
-- You want **version control** for your database schema
-- You're working in a **team environment** where schema changes need to be tracked
-
-### How to Switch to Migrations
-
-If you decide to use migrations, follow these steps:
-
-#### Step 1: Replace EnsureCreatedAsync() with MigrateAsync()
-
 <!--#if (api == "Integrated")-->
-Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 3 files:
-1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
-2. [`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs)
-3. [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)
+[`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs) and [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs) do the same.
 <!--#endif-->
 <!--#if (api == "Standalone")-->
-Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 2 files:
-1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
-2. [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)
+[`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs) does the same for the tests.
 <!--#endif-->
 
-**Before:**
-```csharp
-await dbContext.Database.EnsureCreatedAsync();
-```
+You do **NOT** need to run `dotnet ef database update` or `Update-Database` manually. The `MigrateAsync()` call in the application startup code handles this automatically.
 
-**After:**
-```csharp
-await dbContext.Database.MigrateAsync();
-```
+### The Initial Migration
 
-#### Step 2: Delete Existing Database (If Applicable)
-
-**Important:** If you've already run the project with `EnsureCreatedAsync()`, you **must delete the existing database** before switching to migrations. 
-
-- `EnsureCreatedAsync()` and `MigrateAsync()` cannot be mixed
-- Your database will be recreated with the initial migration
-
-#### Step 3: Create Your First Migration
-
-Open a terminal in the `Boilerplate.Server.Api` project directory and run:
+`bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
 dnx dotnet-ef@10.0.12 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
-This creates migration files in the `/Infrastructure/Data/Migrations/` folder.
-
-#### Step 4: Apply the Migration
-
-The migration will be **automatically applied** when the application starts (thanks to `MigrateAsync()`).
-
-**Note:** You do **NOT** need to run `dotnet ef database update` or `Update-Database` manually. The `MigrateAsync()` call in the application startup code handles this automatically.
-
 ### Adding Future Migrations
 
-When you modify entities or configurations, create a new migration:
+When you modify entities or configurations, create a new migration; the app applies it on its next start:
 
 ```bash
 dnx dotnet-ef@10.0.12 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
 ```
+
+If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
 
 ---
 <!--#if (offlineDb == true)-->

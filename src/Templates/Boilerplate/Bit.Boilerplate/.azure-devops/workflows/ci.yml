@@ -22,28 +22,19 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
-
   - task: Bash@3
     displayName: 'Verify formatting'
     inputs:
       targetType: 'inline'
       script: 'dotnet format whitespace --folder . --verify-no-changes'
 
-  - task: Bash@3
-    displayName: 'Workload restore'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet workload restore'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
 
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build Boilerplate.slnx -p:EnforceCodeStyleInBuild=true'
+  - script: bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+    displayName: 'Set up and build with bit setup'
 
 - job: test
   displayName: 'CI test'
@@ -58,29 +49,13 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@1
-    inputs:
-      versionSpec: '24.x'
-    displayName: 'Install Node.js'
+  - pwsh: |
+      Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+    displayName: 'Install the bit CLI'
 
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build Boilerplate.Web.slnf'
-
-  - task: Bash@3
-    displayName: 'Install Playwright'
-    inputs:
-      targetType: 'inline'
-      script: 'pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps'
-
-  - task: Bash@3
-    displayName: 'Trust dotnet cert'
-    continueOnError: true # Fails on hosted linux images where the OS trust store is not writable.
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet dev-certs https --trust' # Necessary for aspire related resources
+  - script: bit setup --yes
+    displayName: 'Prepare this machine and build with bit setup'
 
   - task: Bash@3
     name: test

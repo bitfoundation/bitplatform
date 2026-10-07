@@ -16,7 +16,6 @@ public static class Urls
 
     public const string YouTube = "https://www.youtube.com/@bitplatform";
 
-    public const string LowCodeNoCode = "/lowcode-nocode";
     public const string Templates = "/templates";
 
     public const string Bswup = "https://bswup.bitplatform.dev/";

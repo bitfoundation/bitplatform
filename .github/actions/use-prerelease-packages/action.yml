@@ -1,5 +1,5 @@
 name: Use prerelease packages
-description: Restores every Bit.* package from the nupkg-files artifact of the latest successful Prerelease nuget packages run instead of nuget.org.
+description: Restores every Bit.* package from the newest nupkg-files artifact of the Prerelease nuget packages runs instead of nuget.org.
 
 # Run it before the first restore; for a project made from the Boilerplate template, on the template before dotnet new.
 

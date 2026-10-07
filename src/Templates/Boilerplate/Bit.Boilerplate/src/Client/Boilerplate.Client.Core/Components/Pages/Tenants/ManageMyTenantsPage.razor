@@ -13,6 +13,7 @@
     RenderFragment<TenantDto> tenantFields = model =>
     @<BitStack Gap="0.5rem">
         <BitTextField @bind-Value="model.Name" FullWidth
+                      AutoCapitalize="none" AutoCorrect="false" SpellCheck="false"
                       Label="@Localizer[nameof(AppStrings.Name)]"
                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantName)]" />
         <ValidationMessage For="() => model.Name" />
@@ -21,6 +22,8 @@
                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantTitle)]" />
         <ValidationMessage For="() => model.Title" />
         <BitTextField @bind-Value="model.Domain" FullWidth
+                      InputMode="BitInputMode.Url"
+                      AutoCapitalize="none" AutoCorrect="false" SpellCheck="false"
                       Label="@Localizer[nameof(AppStrings.Domain)]"
                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantDomain)]" />
         <ValidationMessage For="() => model.Domain" />
