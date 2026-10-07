@@ -127,6 +127,42 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AMissingSdk_Should_StopTheStepsThatNeedIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        File.WriteAllText(Path.Combine(project.Directory, "global.json"), """{ "sdk": { "version": "11.0.100-rc.1.26425.128", "rollForward": "disable" } }""");
+        host.Runner.On("dotnet", "--version", 145, "A compatible .NET SDK was not found.");
+        var steps = new StepRunner(host.Services);
+
+        var ready = await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), noWorkloads: false, noRestore: false, noBuild: false, noBrowsers: true, CancellationToken.None);
+
+        Assert.IsFalse(ready);
+        var sdk = steps.Reports.Single(r => r.Id == "sdk").Result;
+        Assert.AreEqual(StepStatus.Failed, sdk.Status);
+        Assert.AreEqual("global.json asks for exactly 11.0.100-rc.1.26425.128", sdk.Detail);
+        Assert.AreEqual(project.Directory, host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() == "--version").WorkingDirectory);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build"));
+    }
+
+    [TestMethod]
+    public async Task TheSdkCheck_Should_ReportTheSdkDotnetPicks()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var steps = new ProjectSteps(host.Services, project);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.SdkAsync(_ => { }, CancellationToken.None)).Status);
+
+        File.WriteAllText(Path.Combine(project.Directory, "global.json"), """{ "sdk": { "version": "11.0.100", "rollForward": "latestFeature" } }""");
+        host.Runner.On("dotnet", "--version", 0, "11.0.104");
+        var ready = await steps.SdkAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, ready.Status);
+        Assert.AreEqual("11.0.104", ready.Detail);
+    }
+
+    [TestMethod]
     public async Task AspireStart_Should_WaitForEveryServerAndStopTheProject()
     {
         using var host = new TestHost(HostOs.Linux);
