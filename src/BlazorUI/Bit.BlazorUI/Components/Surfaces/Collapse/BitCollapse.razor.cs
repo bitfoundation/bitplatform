@@ -28,11 +28,6 @@ public partial class BitCollapse : BitComponentBase
     // out of a collapse that is not yet its full size.
     private bool _entered;
 
-    // Whether the collapse transition has finished, which is the only moment at which it is safe to hand the
-    // closed content to hidden="until-found": the attribute stops the content from being drawn at all, so
-    // applying it while the track is still shrinking would take the close off the screen instead of playing it.
-    private bool _exited = true;
-
     private ElementReference _contentElement;
 
     // The beforematch listener the content region carries while it is searchable, splatted onto the element
@@ -58,6 +53,12 @@ public partial class BitCollapse : BitComponentBase
     // than guessed before it. The wait is the estimate used when the browser is not asked.
     private (bool Expanded, int Wait, CancellationTokenSource Cts)? _pendingTransition;
 
+    // A transition whose end is timed off the estimate because nothing was waiting for it when it started, with
+    // the moment the clock was set. An option that starts waiting for it part-way through - an OnCollapsed
+    // handed down mid-close, an UnmountOnCollapse switched on - has the browser asked what is left of it instead
+    // of inheriting a guess, which is what keeps it from landing early under a slower theme preset.
+    private (bool Expanded, int Wait, long Started, CancellationTokenSource Cts)? _estimatedTransition;
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -81,9 +82,11 @@ public partial class BitCollapse : BitComponentBase
     private bool _searchable => HiddenUntilFound && _keepsPeek is false && Disabled is false && _revealRefused is false;
 
     // Whether the closed content is handed to the browser as hidden-until-found, which is what makes
-    // find-in-page and a fragment navigation able to reach into a closed section and open it. It waits for
-    // the end of the close, which is the only moment at which hiding the content outright is not a jump cut.
-    private bool _hiddenUntilFound => _searchable && Expanded is false && _exited;
+    // find-in-page and a fragment navigation able to reach into a closed section and open it. The attribute
+    // goes on as the close starts, and the stylesheet holds back what it hides with until the transition has
+    // played (content-visibility and display, allow-discrete): the browser is the one place that knows how long
+    // the theme, a Duration or the reduced motion preference made the close, so the hiding is never a jump cut.
+    private bool _hiddenUntilFound => _searchable && Expanded is false;
 
     private string? _hidden => _hiddenUntilFound ? "until-found" : null;
 
@@ -97,7 +100,7 @@ public partial class BitCollapse : BitComponentBase
     // tree in one attribute. The stylesheet hides it as well - a zero-height box with overflow:hidden still
     // holds focusable children - but the attribute applies the instant the state flips rather than at the
     // end of the transition, which is what keeps a Tab pressed mid-collapse from landing inside it.
-    // It comes off once hidden-until-found has taken over, since inert content is not searchable: the
+    // It stays off while hidden-until-found is on, since inert content is not searchable: the
     // content-visibility that value carries hides the content from the same three places on its own.
     private bool _inert => _visible is false && _hiddenUntilFound is false;
 
@@ -131,9 +134,10 @@ public partial class BitCollapse : BitComponentBase
 
     // Whether anything is waiting for the end of the transition in the given direction. Only then is the
     // browser asked how long the transition takes; one nothing is waiting for is timed off the estimate.
+    // HiddenUntilFound is not among them: the stylesheet times the hiding of a searchable section itself.
     private bool AwaitsTransitionEnd(bool expanded) => expanded
         ? NoClip || OnExpanded.HasDelegate
-        : _searchable || (UnmountOnCollapse && _keepsContent is false) || OnCollapsed.HasDelegate;
+        : (UnmountOnCollapse && _keepsContent is false) || OnCollapsed.HasDelegate;
 
 
 
@@ -320,7 +324,8 @@ public partial class BitCollapse : BitComponentBase
     /// <remarks>
     /// This is what a page of collapsed documentation, a FAQ or a long form wants: text the reader cannot see
     /// is still text they can search for, and the section holding the match opens itself around it. The
-    /// attribute is applied at the end of the collapse transition, so the close still animates, and the
+    /// attribute is applied as the collapse starts closing and the stylesheet keeps the content drawn until the
+    /// transition has played, so the close still animates at whatever pace the browser gives it, and the
     /// browser takes it off again when it reveals the content - which the component answers by expanding for
     /// real, reporting the change through <c>ExpandedChanged</c> and <see cref="OnChange"/>.
     /// <br />
@@ -638,6 +643,8 @@ public partial class BitCollapse : BitComponentBase
 
         _expandOnPrintFromCascade = expandOnPrintAssigned is false && CascadingParameters?.ExpandOnPrint.HasValue is true;
 
+        RetimeEstimatedTransition();
+
         base.OnParametersSet();
     }
 
@@ -675,6 +682,10 @@ public partial class BitCollapse : BitComponentBase
             catch (JSDisconnectedException) { }
             catch (JSException) { }
             catch (TaskCanceledException) { }
+        }
+        else
+        {
+            _estimatedTransition = (pending.Expanded, wait, Stopwatch.GetTimestamp(), pending.Cts);
         }
 
         if (pending.Cts.IsCancellationRequested || IsDisposed) return;
@@ -755,15 +766,12 @@ public partial class BitCollapse : BitComponentBase
         if (IsRendered is false)
         {
             SetEntered(Expanded);
-            _exited = Expanded is false;
             return;
         }
 
         // The clipping goes back on the moment either transition starts, since the content is the wrong size
-        // for the whole of both of them, and the closed content is taken back out of hidden-until-found so
-        // the expand has something to draw.
+        // for the whole of both of them.
         SetEntered(false);
-        _exited = false;
 
         // A collapse that was closed to begin with never played a close, so there is nothing to report and
         // nothing to take out of the DOM that was ever put in it.
@@ -777,10 +785,11 @@ public partial class BitCollapse : BitComponentBase
         }
 
         // The end is scheduled for every transition that is played rather than only for the options that are
-        // set at the moment it starts: NoClip, UnmountOnCollapse, HiddenUntilFound, OnExpanded and
-        // OnCollapsed can all be set while the transition is still running, and what they do belongs at the
-        // end of it. Which of them apply is read by CompleteTransitionAsync when it gets there, so a
-        // transition that ends up needing none of them costs one timer and does nothing when it fires.
+        // set at the moment it starts: NoClip, UnmountOnCollapse, OnExpanded and OnCollapsed can all be set
+        // while the transition is still running, and what they do belongs at the end of it. Which of them apply
+        // is read by CompleteTransitionAsync when it gets there, so a transition that ends up needing none of
+        // them costs one timer and does nothing when it fires; one set part-way through has the time left read
+        // from the browser (RetimeEstimatedTransition) rather than trusting the estimate.
 
         // The end of the transition is reached by the clock rather than by an event from the browser, so that
         // it is still reached when there is no transition to end - with NoAnimation, or while the collapse is
@@ -827,15 +836,6 @@ public partial class BitCollapse : BitComponentBase
             }
             else
             {
-                // The closed content is only handed to hidden-until-found once the close has played, since
-                // the attribute stops it from being drawn at all.
-                if (_exited is false)
-                {
-                    _exited = true;
-
-                    render = _searchable;
-                }
-
                 // The content leaves the DOM only after the close has had time to play, so the collapse still
                 // animates shut rather than blinking out of existence.
                 if (UnmountOnCollapse && _keepsContent is false && _unmounted is false)
@@ -896,9 +896,37 @@ public partial class BitCollapse : BitComponentBase
         ClassBuilder.Reset();
     }
 
+    // An option that waits for the end of the transition has just been set while the end was being timed off
+    // the estimate, so the estimate's clock is stopped and the transition is handed back to OnAfterRenderAsync,
+    // which asks the browser what is left of it after the render this parameter change is about to make. What
+    // is left of the estimate stays the answer for when the browser cannot be asked.
+    private void RetimeEstimatedTransition()
+    {
+        if (_estimatedTransition is not { } estimated) return;
+
+        if (ReferenceEquals(estimated.Cts, _transitionCts) is false || estimated.Expanded != Expanded)
+        {
+            _estimatedTransition = null;
+            return;
+        }
+
+        if (AwaitsTransitionEnd(estimated.Expanded) is false) return;
+
+        var elapsed = (int)Stopwatch.GetElapsedTime(estimated.Started).TotalMilliseconds;
+
+        CancelPendingTransition();
+
+        var cts = new CancellationTokenSource();
+
+        _transitionCts = cts;
+
+        _pendingTransition = (estimated.Expanded, Math.Max(0, estimated.Wait - elapsed), cts);
+    }
+
     private void CancelPendingTransition()
     {
         _pendingTransition = null;
+        _estimatedTransition = null;
 
         var cts = _transitionCts;
 

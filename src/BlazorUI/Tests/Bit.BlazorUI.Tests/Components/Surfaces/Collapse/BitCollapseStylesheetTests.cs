@@ -167,6 +167,24 @@ public partial class BitCollapseStylesheetTests
         StringAssert.Contains(print, "--bit-col-fade: initial;");
     }
 
+    [TestMethod]
+    public void BitCollapseShouldHoldBackTheHidingOfASearchableSectionUntilTheCloseHasPlayed()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // hidden="until-found" is applied as the close starts, so what it hides with - content-visibility, or the
+        // display:none of a browser that treats it as a plain hidden - is a discrete transition timed like the track.
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-col-huf > .bit-col-con {");
+
+        StringAssert.Contains(block, "content-visibility var(--bit-col-duration) linear var(--bit-col-delay) allow-discrete");
+        StringAssert.Contains(block, "display var(--bit-col-duration) linear var(--bit-col-delay) allow-discrete");
+
+        // NoAnimation takes the transitions off at the same specificity, so it has to come later to win.
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-col-huf > .bit-col-con {", System.StringComparison.Ordinal)
+                      < stylesheet.IndexOf("\n.bit-col-nan,", System.StringComparison.Ordinal),
+                      "The NoAnimation rule has to follow the searchable transition to override it.");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
