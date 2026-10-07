@@ -569,12 +569,11 @@ public class BitColorPickerTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(null, "bit-clp-md"),
         DataRow(BitSize.Small, "bit-clp-sm"),
         DataRow(BitSize.Medium, "bit-clp-md"),
         DataRow(BitSize.Large, "bit-clp-lg")
     ]
-    public void BitColorPickerShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitColorPickerShouldRespectSize(BitSize size, string expectedClass)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
@@ -582,6 +581,21 @@ public class BitColorPickerTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-clp").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldPublishNoSizeWhileItIsUnset()
+    {
+        var com = RenderComponent<BitColorPicker>();
+
+        // An unset Size publishes nothing, so the public --bit-ColorPicker-* variables restyle the default while an
+        // explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-clp");
+
+        foreach (var cssClass in new[] { "bit-clp-sm", "bit-clp-md", "bit-clp-lg" })
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset Size published {cssClass}.");
+        }
     }
 
     [TestMethod,

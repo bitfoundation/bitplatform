@@ -130,16 +130,24 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     /// <summary>
     /// The color kind of the fill of the phone input, for a field that sits on a surface other than the
-    /// primary one. The --bit-PhoneInput-background variable still wins over it.
+    /// primary one.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-PhoneInput-background</c>; left unset, the fill is the primary kind unless
+    /// that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// The color kind of the frame of the phone input at rest and under a pointer, winning over the main color
-    /// of <see cref="Color"/>, which keeps the focus ring. The --bit-PhoneInput-border-color variable still
-    /// wins over it.
+    /// of <see cref="Color"/>, which keeps the focus ring.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-PhoneInput-border-color</c> and <c>--bit-PhoneInput-hover-border-color</c>;
+    /// left unset, the frame is the primary border unless an explicit <see cref="Color"/> or those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
 
@@ -183,6 +191,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// The general color of the phone input: the frame takes its main color and the focus ring its focus color.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-PhoneInput-focus-color</c> and the <c>--bit-PhoneInput-*</c> border colors
+    /// (an explicit <see cref="Border"/> still wins the frame); left unset, the field is primary unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -550,6 +563,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// The size of the phone input.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-PhoneInput-*</c> size variables (minimum height, font sizes, paddings,
+    /// flag size, row height); left unset, the field is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1018,6 +1035,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => _hasFocus ? "bit-phi-fcs" : string.Empty);
 
+        // Size, Color, Background and Border publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-PhoneInput-* variables restyle the default and never an
+        // explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-phi-sm",
@@ -1320,12 +1340,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     // The size of the control is driven by CSS variables, and the callout is rendered outside the
     // root element, so the class carrying them is repeated on it: without that the rows and the
-    // flags of the list would be left with an undefined height.
+    // flags of the list would ignore an explicit Size. Like the root's, it is empty while the Size is
+    // unset, so the public --bit-PhoneInput-* variables restyle the default rows.
     private string SizeClass => Size switch
     {
         BitSize.Small => "bit-phi-sm",
+        BitSize.Medium => "bit-phi-md",
         BitSize.Large => "bit-phi-lg",
-        _ => "bit-phi-md"
+        _ => string.Empty
     };
 
     // The callout is rendered outside the root as well, and the keyboard cue of its active row takes the focus

@@ -158,6 +158,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The general color of the calendar that applies to the today day button, the highlighted current month,
     /// the selected AM/PM button, and the event indicators.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Calendar-*</c> today, focus and event color variables; left unset,
+    /// the calendar is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -623,6 +627,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The size of the calendar, which scales its cells and their text.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Calendar-day-size</c> and <c>--bit-Calendar-day-font-size</c>; left
+    /// unset, the calendar is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -767,6 +775,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-Calendar-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-cal"));
 
         ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-cal"));
@@ -2442,7 +2452,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     }
 
     // An event of its own color paints its dot with it; one without takes whatever the calendar's event color
-    // is, which is the Color role unless --bit-Calendar-event-color says otherwise.
+    // is: an explicit Color, otherwise --bit-Calendar-event-color, otherwise the primary role.
     private static string? GetEventIndicatorColorClass(BitCalendarEvent evt)
     {
         return evt.Color.HasValue ? BitCssClasses.Color(evt.Color, "bit-cal-evi") : null;

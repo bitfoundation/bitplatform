@@ -346,7 +346,7 @@ public partial class BitCardDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Scales the padding, the gaps and the header type together.",
+            Description = "Scales the padding, the gaps and the header type together. An explicit value wins over the --bit-Card-* size variables; left unset, the card is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -657,20 +657,20 @@ public partial class BitCardDemo
         new()
         {
             Name = "--bit-Card-padding",
-            DefaultValue = "--bit-spa-card-{sm,md,lg}, per Size",
-            Description = "Inset of the card and of each of its parts. NoPadding wins over it.",
+            DefaultValue = "--bit-spa-card-md",
+            Description = "Inset of the card and of each of its parts. The Size and NoPadding parameters win over it.",
         },
         new()
         {
             Name = "--bit-Card-gap",
-            DefaultValue = "Per Size",
-            Description = "Room between the parts, and between the header icon, text and actions.",
+            DefaultValue = "spacing(1.5)",
+            Description = "Room between the parts, and between the header icon, text and actions. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Card-title-font-size",
-            DefaultValue = "Per Size",
-            Description = "Title text size.",
+            DefaultValue = "--bit-tpg-fs-md",
+            Description = "Title text size. The Size parameter wins over it.",
         },
         new()
         {
@@ -681,8 +681,8 @@ public partial class BitCardDemo
         new()
         {
             Name = "--bit-Card-subtitle-font-size",
-            DefaultValue = "Per Size",
-            Description = "Subtitle text size.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Subtitle text size. The Size parameter wins over it.",
         },
         new()
         {
@@ -693,8 +693,8 @@ public partial class BitCardDemo
         new()
         {
             Name = "--bit-Card-icon-size",
-            DefaultValue = "--bit-siz-icon-{sm,md,lg}, per Size",
-            Description = "Size of the header icon.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the header icon. The Size parameter wins over it.",
         },
         new()
         {

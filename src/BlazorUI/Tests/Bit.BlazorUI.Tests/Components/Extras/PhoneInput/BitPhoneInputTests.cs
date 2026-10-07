@@ -1384,8 +1384,19 @@ public class BitPhoneInputTests : BunitTestContext
         // variables of its own.
         Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-lg"));
 
-        var medium = RenderComponent<BitPhoneInput>();
+        var medium = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Medium);
+        });
         Assert.IsTrue(medium.Find(".bit-phi-cal").ClassList.Contains("bit-phi-md"));
+
+        // An unset Size publishes no class on the callout either, so the public --bit-PhoneInput-* variables restyle
+        // the default rows while an explicit Size wins over them.
+        var unset = RenderComponent<BitPhoneInput>();
+        var callout = unset.Find(".bit-phi-cal").ClassList;
+        Assert.IsFalse(callout.Contains("bit-phi-sm"));
+        Assert.IsFalse(callout.Contains("bit-phi-md"));
+        Assert.IsFalse(callout.Contains("bit-phi-lg"));
     }
 
     [TestMethod]
@@ -2547,6 +2558,29 @@ public class BitPhoneInputTests : BunitTestContext
         foreach (var cssClass in new[] { "bit-phi-bpr", "bit-phi-bse", "bit-phi-btr", "bit-phi-btn", "bit-phi-brp", "bit-phi-brs", "bit-phi-brt", "bit-phi-brn" })
         {
             Assert.IsFalse(classes.Contains(cssClass), cssClass);
+        }
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        // An unset Color or Size publishes nothing - on the root, nor on the callout that is given the same classes -
+        // so the public --bit-PhoneInput-* variables restyle the default while an explicit value wins over them.
+        var published = new[]
+        {
+            "bit-phi-pri", "bit-phi-sec", "bit-phi-ter", "bit-phi-inf", "bit-phi-suc", "bit-phi-wrn", "bit-phi-swr", "bit-phi-err",
+            "bit-phi-pbg", "bit-phi-sbg", "bit-phi-tbg", "bit-phi-pfg", "bit-phi-sfg", "bit-phi-tfg", "bit-phi-pbr", "bit-phi-sbr", "bit-phi-tbr",
+            "bit-phi-sm", "bit-phi-md", "bit-phi-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-phi"), component.Find(".bit-phi-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
         }
     }
 

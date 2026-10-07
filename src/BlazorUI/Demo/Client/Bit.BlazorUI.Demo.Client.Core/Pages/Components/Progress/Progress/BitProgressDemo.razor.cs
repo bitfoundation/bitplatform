@@ -30,7 +30,7 @@ public partial class BitProgressDemo
             Name = "BarColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The color of the bar as any CSS color, replacing the Color role. The ring, the buffer and the stripes follow it.",
+            Description = "The color of the bar as any CSS color, replacing the Color role. The ring, the buffer and the stripes follow it. It wins over --bit-Progress-bar-color and --bit-Progress-buffer-color.",
         },
         new()
         {
@@ -62,7 +62,7 @@ public partial class BitProgressDemo
             LinkType = LinkType.Link,
             Href = "#color-enum",
             DefaultValue = "null",
-            Description = "The general color of the BitProgress.",
+            Description = "The general color of the BitProgress. An explicit value wins over the --bit-Progress-bar-color, --bit-Progress-bar-text-color and --bit-Progress-buffer-color variables; left unset, the progress is primary unless they say otherwise.",
         },
         new()
         {
@@ -236,7 +236,7 @@ public partial class BitProgressDemo
             LinkType = LinkType.Link,
             Href = "#size-enum",
             DefaultValue = "null",
-            Description = "The size of the BitProgress.",
+            Description = "The size of the BitProgress. An explicit value wins over the --bit-Progress-font-size, --bit-Progress-description-font-size, --bit-Progress-thickness and --bit-Progress-diameter variables; left unset, the progress keeps its own defaults - the thinnest track and ring stroke, the medium type - unless they say otherwise.",
         },
         new()
         {
@@ -296,14 +296,14 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-bar-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Fill of the bar and stroke of the ring; the buffer and the stripes derive from it. BarColor wins over it.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Fill of the bar and stroke of the ring; the buffer and the stripes derive from it. The Color and BarColor parameters win over it.",
         },
         new()
         {
             Name = "--bit-Progress-bar-text-color",
-            DefaultValue = "The Color role's text color",
-            Description = "Color of a readout placed Inside the bar.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Color of a readout placed Inside the bar. The Color parameter wins over it.",
         },
         new()
         {
@@ -315,7 +315,7 @@ public partial class BitProgressDemo
         {
             Name = "--bit-Progress-buffer-color",
             DefaultValue = "The bar color at 38%",
-            Description = "The buffered second value, on the bar and on the ring.",
+            Description = "The buffered second value, on the bar and on the ring. The Color and BarColor parameters win over it.",
         },
         new()
         {
@@ -332,8 +332,8 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-thickness",
-            DefaultValue = "Per Size: --bit-siz-track-sm / -md / -lg (bar), 1x / 2x / 4x --bit-siz-spinner-stroke (ring)",
-            Description = "Height of the bar, width of a vertical one and stroke of the ring. Thickness wins over it.",
+            DefaultValue = "--bit-siz-track-sm (bar), --bit-siz-spinner-stroke (ring)",
+            Description = "Height of the bar, width of a vertical one and stroke of the ring. The Size and Thickness parameters win over it.",
         },
         new()
         {
@@ -344,8 +344,8 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-diameter",
-            DefaultValue = "Per Size: spacing(4) / spacing(6.25) / spacing(9)",
-            Description = "Smallest diameter of the ring. Diameter wins over it.",
+            DefaultValue = "spacing(6.25)",
+            Description = "Smallest diameter of the ring. The Size and Diameter parameters win over it.",
         },
         new()
         {
@@ -362,8 +362,8 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of the label and of the readout beside the bar.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label and of the readout beside the bar. The Size parameter wins over it.",
         },
         new()
         {
@@ -398,8 +398,8 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-description-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-2xs (small, medium), --bit-tpg-fs-xs (large)",
-            Description = "Text size of the description.",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Text size of the description. The Size parameter wins over it.",
         },
     ];
 

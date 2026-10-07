@@ -106,13 +106,12 @@ public partial class BitIcon : BitComponentBase
 
     /// <summary>
     /// Specifies the color theme of the icon.
-    /// Default value is <see cref="BitColor.Primary"/>.
     /// </summary>
     /// <remarks>
-    /// The role supplies the defaults of the <c>--bit-Icon-*</c> color variables, which win over it as the
-    /// public variables of every other component win over its Color: one set on <c>:root</c> re-colors every
-    /// icon, and one set on the <see cref="BitComponentBase.Style"/> of an icon re-colors that icon alone. Set
-    /// to <c>currentColor</c>, <c>--bit-Icon-color</c> makes a <see cref="BitVariant.Text"/> icon follow the
+    /// An explicit value wins over the <c>--bit-Icon-*</c> color variables; left unset, the icon is primary unless
+    /// those variables say otherwise. They restyle that default: one set on <c>:root</c> re-colors every icon
+    /// given no Color, and one set on the <see cref="BitComponentBase.Style"/> of an icon re-colors that icon
+    /// alone. Set to <c>currentColor</c>, <c>--bit-Icon-color</c> makes a <see cref="BitVariant.Text"/> icon follow the
     /// color of the text it sits in, the way a glyph of a font does - a Text icon only, since a
     /// <see cref="BitVariant.Fill"/> one would paint its box in its own glyph color and show as a blank square,
     /// so scope that value to the Text icons rather than to an ancestor holding icons of every variant.
@@ -250,12 +249,10 @@ public partial class BitIcon : BitComponentBase
 
     /// <summary>
     /// Specifies the size of the icon.
-    /// Default value is <see cref="BitSize.Medium"/>.
     /// </summary>
     /// <remarks>
-    /// The size supplies the default of the <c>--bit-Icon-size</c> custom property, which wins over it as the
-    /// public variables of every other component win over its Size. <see cref="FontSize"/>, an inline size
-    /// of the instance's own, wins over both.
+    /// An explicit value wins over <c>--bit-Icon-size</c>; left unset, the icon is medium unless that variable says
+    /// otherwise. <see cref="FontSize"/>, an inline size of the instance's own, wins over both.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -332,6 +329,8 @@ public partial class BitIcon : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Icon-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-ico-pri",
@@ -351,7 +350,7 @@ public partial class BitIcon : BitComponentBase
             BitColor.PrimaryBorder => "bit-ico-pbr",
             BitColor.SecondaryBorder => "bit-ico-sbr",
             BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => "bit-ico-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => _icon?.GetCssClasses());
@@ -361,7 +360,7 @@ public partial class BitIcon : BitComponentBase
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Variant switch

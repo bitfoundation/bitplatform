@@ -43,6 +43,11 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The general color of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value (or the Color of an item) wins over the <c>--bit-Timeline-*</c> dot color variables (dot
+    /// background, dot border color, icon color); left unset, the timeline is primary unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -135,6 +140,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The size of the timeline, which sets the size of the dots and of the text.
     /// </summary>
+    /// <remarks>
+    /// An explicit value (or the Size of an item) wins over <c>--bit-Timeline-font-size</c> and
+    /// <c>--bit-Timeline-dot-size</c>; left unset, the timeline is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -185,6 +194,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Timeline-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-tln-pri",
@@ -204,7 +215,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-tln-pbr",
             BitColor.SecondaryBorder => "bit-tln-sbr",
             BitColor.TertiaryBorder => "bit-tln-tbr",
-            _ => "bit-tln-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
@@ -257,7 +268,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitSize.Small => "bit-tln-sm",
             BitSize.Medium => "bit-tln-md",
             BitSize.Large => "bit-tln-lg",
-            _ => "bit-tln-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Variant switch

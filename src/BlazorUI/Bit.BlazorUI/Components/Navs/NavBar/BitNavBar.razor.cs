@@ -242,12 +242,14 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
+        // Size and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-NavBar-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-nbr-sm",
             BitSize.Medium => "bit-nbr-md",
             BitSize.Large => "bit-nbr-lg",
-            _ => "bit-nbr-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Color switch
@@ -269,7 +271,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-nbr-pbr",
             BitColor.SecondaryBorder => "bit-nbr-sbr",
             BitColor.TertiaryBorder => "bit-nbr-tbr",
-            _ => "bit-nbr-pri",
+            _ => string.Empty,
         });
 
         ClassBuilder.Register(() => Filled ? "bit-nbr-fil" : string.Empty);

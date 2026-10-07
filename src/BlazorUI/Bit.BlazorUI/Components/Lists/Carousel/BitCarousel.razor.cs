@@ -123,6 +123,10 @@ public partial class BitCarousel : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It colors the dot of the current page. <see cref="Color"/> takes precedence over it when both are set.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Carousel-dot-current-color</c> and
+    /// <c>--bit-Carousel-dot-current-hover-color</c>; left unset, the current dot is primary unless those variables say
+    /// otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Accent { get; set; }
@@ -188,6 +192,9 @@ public partial class BitCarousel : BitComponentBase
     /// <br />
     /// When not set, the carousel falls back to <see cref="Accent"/>, and to the primary color of the theme
     /// when that is not set either.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Carousel-*</c> focus, button and current-dot color variables; left
+    /// unset, the carousel keeps those defaults unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -491,6 +498,10 @@ public partial class BitCarousel : BitComponentBase
     /// <summary>
     /// The size of the dots and of the next/prev buttons of the carousel.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Carousel-dot-size</c> and <c>--bit-Carousel-button-size</c>; left unset,
+    /// the carousel is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -775,6 +786,8 @@ public partial class BitCarousel : BitComponentBase
             _ => string.Empty
         });
 
+        // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Carousel-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-csl-sm",
@@ -789,7 +802,7 @@ public partial class BitCarousel : BitComponentBase
             BitColorKind.Secondary => "bit-csl-asec",
             BitColorKind.Tertiary => "bit-csl-ater",
             BitColorKind.Transparent => "bit-csl-atra",
-            _ => "bit-csl-apri"
+            _ => string.Empty
         });
 
         // The color classes come after the accent ones in the stylesheet, so a carousel that sets both

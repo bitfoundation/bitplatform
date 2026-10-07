@@ -25,7 +25,7 @@ public partial class BitCalendarDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the calendar that applies to the today day button, the highlighted current month, the selected AM/PM button, and the event indicators.",
+            Description = "The general color of the calendar that applies to the today day button, the highlighted current month, the selected AM/PM button, and the event indicators. An explicit value wins over the --bit-Calendar-* today, focus and event color variables; left unset, the calendar is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -601,7 +601,7 @@ public partial class BitCalendarDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the calendar, which scales its cells and their text.",
+            Description = "The size of the calendar, which scales its cells and their text. An explicit value wins over the --bit-Calendar-day-size and --bit-Calendar-day-font-size variables; left unset, the calendar is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -1515,8 +1515,8 @@ public partial class BitCalendarDemo
         new()
         {
             Name = "--bit-Calendar-focus-color",
-            DefaultValue = "The Color role's focus color (--bit-clr-err-focus while the value is invalid)",
-            Description = "Color of the keyboard focus ring drawn around every cell and button of the calendar.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring drawn around every cell and button of the calendar. The Color parameter wins over it, and so does an invalid value, which draws the ring in --bit-clr-err-focus.",
         },
         new()
         {
@@ -1539,14 +1539,14 @@ public partial class BitCalendarDemo
         new()
         {
             Name = "--bit-Calendar-day-size",
-            DefaultValue = "Per Size: 24px / 28px / 34px at the Fluent defaults",
-            Description = "Width and height of a day cell. The week numbers, the weekday headers, the empty cells and the navigation buttons all take it, so the whole day grid stays in step.",
+            DefaultValue = "8px * 3.5 (the spacing unit)",
+            Description = "Width and height of a day cell. The week numbers, the weekday headers, the empty cells and the navigation buttons all take it, so the whole day grid stays in step. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Calendar-day-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of the day cells and of the headers and week numbers that line up with them.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the day cells and of the headers and week numbers that line up with them. The Size parameter wins over it.",
         },
         new()
         {
@@ -1581,26 +1581,26 @@ public partial class BitCalendarDemo
         new()
         {
             Name = "--bit-Calendar-today-background",
-            DefaultValue = "The Color role's main color",
-            Description = "Background of today, of the current month while HighlightCurrentMonth is on, and of the AM/PM button that is in force.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Background of today, of the current month while HighlightCurrentMonth is on, and of the AM/PM button that is in force. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Calendar-today-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text color of today, of the highlighted current month and of the AM/PM button that is in force.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of today, of the highlighted current month and of the AM/PM button that is in force. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Calendar-today-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Background of today on hover (pointer devices only), which the highlighted current month and the AM/PM button that is in force share. Set it alongside --bit-Calendar-today-background so the hover does not fall back to the Color role.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background of today on hover (pointer devices only), which the highlighted current month and the AM/PM button that is in force share. Set it alongside --bit-Calendar-today-background so the hover does not fall back to the primary color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Calendar-today-active-background",
-            DefaultValue = "The Color role's active color",
-            Description = "Background of today while pressed, which the AM/PM button that is in force shares.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background of today while pressed, which the AM/PM button that is in force shares. The Color parameter wins over it.",
         },
         new()
         {
@@ -1629,8 +1629,8 @@ public partial class BitCalendarDemo
         new()
         {
             Name = "--bit-Calendar-event-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of an indicator dot whose event named no Color of its own. On today it falls to the on-color instead, which is what reads against the cell.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of an indicator dot whose event named no Color of its own. On today it falls to the on-color instead, which is what reads against the cell. The Color parameter wins over it; an event's own Color wins over both.",
         },
         new()
         {

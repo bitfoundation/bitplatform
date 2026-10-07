@@ -68,7 +68,10 @@ public partial class BitAccordion : BitComponentBase
     /// The color kind of the background of the accordion.
     /// </summary>
     /// <remarks>
-    /// It wins over a --bit-Accordion-background inherited from an ancestor, since it is asked for by the instance itself.
+    /// An explicit value wins over <c>--bit-Accordion-background</c> and the two header shades that travel with the fill
+    /// (<c>--bit-Accordion-header-hover-background</c>, <c>--bit-Accordion-header-active-background</c>), inherited or
+    /// set on the instance alike; left unset, the accordion takes the primary background (the secondary one with
+    /// <see cref="NoBorder"/>) unless those variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
@@ -77,7 +80,8 @@ public partial class BitAccordion : BitComponentBase
     /// The color kind of the border of the accordion.
     /// </summary>
     /// <remarks>
-    /// It wins over a --bit-Accordion-border-color inherited from an ancestor, since it is asked for by the instance itself.
+    /// An explicit value wins over <c>--bit-Accordion-border-color</c>, inherited or set on the instance alike; left
+    /// unset, the outline takes the primary border color unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
@@ -341,9 +345,11 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Gets or sets the size of the accordion, which drives the padding of the header and of the content
     /// and the size of the title.
-    /// <br />
-    /// The default value is <see cref="BitSize.Medium"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Accordion-*</c> size variables (font sizes, header and content padding,
+    /// icon size); left unset, the accordion is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -508,12 +514,14 @@ public partial class BitAccordion : BitComponentBase
 
         ClassBuilder.Register(() => ExpanderIconPlacement is BitPlacement.Start ? "bit-acd-sei" : string.Empty);
 
+        // Size, Background and Border publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Accordion-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-acd-sm",
             BitSize.Medium => "bit-acd-md",
             BitSize.Large => "bit-acd-lg",
-            _ => "bit-acd-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Background switch

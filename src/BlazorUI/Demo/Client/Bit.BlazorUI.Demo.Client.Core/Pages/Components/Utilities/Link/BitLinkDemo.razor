@@ -207,7 +207,8 @@
     <DemoExample Title="CSS variables" RazorCode="@example11RazorCode" Id="example11">
         <div>
             The public <b>--bit-Link-*</b> variables inherit, so one set on <b>:root</b> or a container restyles every link
-            inside it, and one set in <b>Style</b> restyles that link. They win over <b>Color</b> and <b>Size</b>. A current
+            inside it, and one set in <b>Style</b> restyles that link. They restyle the default, not a choice: an explicit
+            <b>Color</b> or <b>Size</b> wins over the variables for what it sets. A current
             link drawn in a weight of its own no longer needs the underline to stand out.
         </div>
         <br />

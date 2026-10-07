@@ -92,6 +92,11 @@ public partial class BitPersona : BitComponentBase
     /// <remarks>
     /// The color is picked by a stable hash of <see cref="CoinColorSeed"/>, or - when that is not set - of
     /// <see cref="ImageInitials"/> or <see cref="PrimaryText"/>, so the same person always gets the same color.
+    /// <br />
+    /// The picked color counts as a choice, the same as an explicit <see cref="CoinColor"/>: it wins over the
+    /// <c>--bit-Persona-coin-background</c>, <c>--bit-Persona-coin-color</c> and <c>--bit-Persona-ring-color</c>
+    /// variables, since telling people apart by color is what turning this on asked for and one variable set on
+    /// <c>:root</c> would otherwise paint every one of them the same.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AutoCoinColor { get; set; }
@@ -115,6 +120,11 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// The background color when the user's initials are displayed.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Persona-coin-background</c>, <c>--bit-Persona-coin-color</c> and
+    /// <c>--bit-Persona-ring-color</c> variables; left unset (and with <see cref="AutoCoinColor"/> off), the coin is
+    /// Info unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? CoinColor { get; set; }
 
@@ -471,6 +481,9 @@ public partial class BitPersona : BitComponentBase
     /// <br />
     /// This supersedes <see cref="Squared"/>, which is the same thing said with a flag and can only reach
     /// <see cref="BitShape.Rounded"/>. When both are set, this one wins.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Persona-coin-radius</c>; left unset (and with <see cref="Squared"/>
+    /// off), the coin is a circle unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitShape? Shape { get; set; }
@@ -523,8 +536,13 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Decides the size of the control.
     /// </summary>
+    /// <remarks>
+    /// Left unset, the persona is laid out as <see cref="BitPersonaSize.Size48"/>. An explicit value wins over the
+    /// <c>--bit-Persona-gap</c>, <c>--bit-Persona-ring-gap</c> and <c>--bit-Persona-ring-width</c> variables, which
+    /// restyle only a persona that leaves it unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitPersonaSize Size { get; set; } = BitPersonaSize.Size48;
+    public BitPersonaSize? Size { get; set; }
 
     /// <summary>
     /// If true, renders the coin with a rounded square shape instead of the default circular shape.
@@ -532,6 +550,7 @@ public partial class BitPersona : BitComponentBase
     /// <remarks>
     /// This is the shorthand for <see cref="BitShape.Rounded"/>. Set <see cref="Shape"/> instead to
     /// reach the sharp square as well; a <see cref="Shape"/> of its own takes precedence over this.
+    /// Like an explicit <see cref="Shape"/>, it wins over <c>--bit-Persona-coin-radius</c>.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Squared { get; set; }
@@ -612,7 +631,10 @@ public partial class BitPersona : BitComponentBase
 
         ClassBuilder.Register(() => Vertical ? "bit-prs-vrt" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
+        // The size class lays out every part of the persona, so an unset Size still renders one - Size48's. What
+        // it publishes for the gap and the active ring is handed over as a choice only by bit-prs-ssz, which an
+        // explicit Size alone adds: the public --bit-Persona-* variables restyle the default and never a choice.
+        ClassBuilder.Register(() => (Size ?? BitPersonaSize.Size48) switch
         {
             BitPersonaSize.Size8 => "bit-prs-s8",
             BitPersonaSize.Size24 => "bit-prs-s24",
@@ -626,17 +648,23 @@ public partial class BitPersona : BitComponentBase
             _ => string.Empty
         });
 
+        ClassBuilder.Register(() => Size.HasValue ? "bit-prs-ssz" : string.Empty);
+
         ClassBuilder.Register(() => HasClickableCoin ? "bit-prs-iac" : string.Empty);
 
         ClassBuilder.Register(() => HasImage ? "bit-prs-him" : string.Empty);
 
+        // CoinColor (or the color AutoCoinColor picks) and Shape (or Squared) publish nothing while they are unset,
+        // which is what lets the stylesheet tell a default from a choice: the public --bit-Persona-coin-* variables
+        // restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size is BitPersonaSize.Size8 ? string.Empty
                                   : CoinColor is not null ? GetCoinColorClass(CoinColor.Value)
                                   : AutoCoinColor ? GetAutoCoinColorClass()
-                                  : "bit-prs-inf");
+                                  : string.Empty);
 
-        ClassBuilder.Register(() => GetShape() switch
+        ClassBuilder.Register(() => (Shape ?? (Squared ? BitShape.Rounded : (BitShape?)null)) switch
         {
+            BitShape.Pill => "bit-prs-cir",
             BitShape.Rounded => "bit-prs-sqr",
             BitShape.Square => "bit-prs-sqr bit-prs-sqs",
             _ => string.Empty

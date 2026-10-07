@@ -140,6 +140,10 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// The general color of the badge.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Badge-*</c> color variables; left unset, the badge is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -418,6 +422,8 @@ public partial class BitBadge : BitComponentBase
     /// anything here; a badge takes its box from its own content, so <see cref="BitShape.Circle"/> has no
     /// dimension to build a circle from and leaves the badge fully rounded. A fully rounded badge is a circle
     /// while it holds a single digit and a pill once the label grows past one.
+    /// An explicit value wins over <c>--bit-Badge-radius</c>; left unset, the badge is a pill unless that variable
+    /// says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitShape? Shape { get; set; }
@@ -440,6 +446,10 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// The size of badge, Possible values: Small | Medium | Large
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Badge-*</c> size variables (height, padding, font size, dot size);
+    /// left unset, the badge is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -486,6 +496,8 @@ public partial class BitBadge : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color, Shape and Size publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Badge-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-bdg-pri",
@@ -505,7 +517,7 @@ public partial class BitBadge : BitComponentBase
             BitColor.PrimaryBorder => "bit-bdg-pbr",
             BitColor.SecondaryBorder => "bit-bdg-sbr",
             BitColor.TertiaryBorder => "bit-bdg-tbr",
-            _ => "bit-bdg-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Dot ? "bit-bdg-dot" : string.Empty);
@@ -548,7 +560,7 @@ public partial class BitBadge : BitComponentBase
             BitShape.Pill => "bit-bdg-cir",
             BitShape.Rounded => "bit-bdg-rnd",
             BitShape.Square => "bit-bdg-sqr",
-            _ => "bit-bdg-cir"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -556,7 +568,7 @@ public partial class BitBadge : BitComponentBase
             BitSize.Small => "bit-bdg-sm",
             BitSize.Medium => "bit-bdg-md",
             BitSize.Large => "bit-bdg-lg",
-            _ => "bit-bdg-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Variant switch

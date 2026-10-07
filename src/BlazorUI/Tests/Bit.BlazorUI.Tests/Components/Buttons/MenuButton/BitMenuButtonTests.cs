@@ -545,14 +545,31 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMenuButtonCalloutShouldCarryTheMediumSizeClassByDefault()
+    public void BitMenuButtonShouldPublishNoColorSizeOrBackgroundWhileTheyAreUnset()
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.IsTrue(com.Find(".bit-mnb-cal").ClassList.Contains("bit-mnb-md"));
+        // An unset Color, Size or Background publishes nothing - on the root, or on the callout that repeats the
+        // classes - so the public --bit-MenuButton-* variables restyle the default while an explicit value, which
+        // does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-mnb-pri", "bit-mnb-sec", "bit-mnb-ter", "bit-mnb-inf", "bit-mnb-suc", "bit-mnb-wrn", "bit-mnb-swr", "bit-mnb-err",
+            "bit-mnb-pbg", "bit-mnb-sbg", "bit-mnb-tbg", "bit-mnb-pfg", "bit-mnb-sfg", "bit-mnb-tfg", "bit-mnb-pbr", "bit-mnb-sbr", "bit-mnb-tbr",
+            "bit-mnb-sm", "bit-mnb-md", "bit-mnb-lg",
+            "bit-mnb-bpg", "bit-mnb-bsg", "bit-mnb-btg", "bit-mnb-brg",
+        };
+
+        foreach (var element in new[] { com.Find(".bit-mnb"), com.Find(".bit-mnb-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod]

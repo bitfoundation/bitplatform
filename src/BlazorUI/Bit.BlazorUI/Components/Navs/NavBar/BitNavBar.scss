@@ -9,37 +9,48 @@
 //   --bit-NavBar-padding-inline          room on the two sides of the items                (default: 0)
 //   --bit-NavBar-gap                     space between the items                           (default: 0)
 //   --bit-NavBar-item-color              content color of an item                          (default: $clr-fg-pri)
-//   --bit-NavBar-item-hover-color        content color of a hovered item                   (default: per Color and Filled)
-//   --bit-NavBar-item-hover-background   fill of a hovered item (its pill with Pill)       (default: per Color when Filled, transparent)
+//   --bit-NavBar-item-hover-color        content color of a hovered item                   (default: $clr-pri, $clr-pri-text when Filled)
+//   --bit-NavBar-item-hover-background   fill of a hovered item (its pill with Pill)       (default: transparent, $clr-pri-hover when Filled)
 //   --bit-NavBar-item-border-radius      corners of an item                                (default: $shp-radius-control)
-//   --bit-NavBar-item-padding            padding of an item, one length on every side      (default: per Size)
-//   --bit-NavBar-item-min-size           minimum width and height of an item               (default: per Size)
-//   --bit-NavBar-icon-size               size of the icon of an item                       (default: per Size)
-//   --bit-NavBar-text-size               font size of the text of an item                  (default: per Size)
-//   --bit-NavBar-selected-color          content color of the selected item                (default: per Color and Filled)
-//   --bit-NavBar-selected-background     fill of the selected item (its pill with Pill)    (default: per Color when Filled, transparent)
+//   --bit-NavBar-item-padding            padding of an item, one length on every side      (default: spacing(1), spacing(2) on a single line)
+//   --bit-NavBar-item-min-size           minimum width and height of an item               (default: $siz-ctrl-md)
+//   --bit-NavBar-icon-size               size of the icon of an item                       (default: $tg-fs-md)
+//   --bit-NavBar-text-size               font size of the text of an item                  (default: $tg-fs-sm)
+//   --bit-NavBar-selected-color          content color of the selected item                (default: $clr-pri, $clr-pri-text when Filled)
+//   --bit-NavBar-selected-background     fill of the selected item (its pill with Pill)    (default: transparent ($clr-bg-ter for the pill),
+//                                                                                             $clr-pri-active when Filled)
 //   --bit-NavBar-selected-font-weight    font weight of the selected item                  (default: $tg-fw-semibold)
-//   --bit-NavBar-indicator-color         color of the Line indicator                       (default: per Color and Filled)
+//   --bit-NavBar-indicator-color         color of the Line indicator                       (default: $clr-pri, $clr-pri-text when Filled)
 //   --bit-NavBar-indicator-thickness     thickness of the Line indicator                   (default: $siz-tab-indicator)
 //   --bit-NavBar-indicator-inset         inset of the Line from both ends of the item      (default: 0)
 //   --bit-NavBar-badge-color             text color of a badge                             (default: $clr-err-text)
 //   --bit-NavBar-badge-background        fill of a badge and a dot                         (default: $clr-err)
-//   --bit-NavBar-disabled-color          content color of a disabled item                  (default: per Color)
-//   --bit-NavBar-focus-color             color of the focus ring of an item                (default: per Color)
+//   --bit-NavBar-disabled-color          content color of a disabled item                  (default: $clr-pri-dis-text)
+//   --bit-NavBar-focus-color             color of the focus ring of an item                (default: $clr-pri-focus)
+//
+// A parameter written on the navbar wins over the variable that restyles what it sets: an explicit Color over the
+// hover, selected, indicator, disabled and focus colors it paints (the transparent hover and selected backgrounds
+// of an unfilled bar and the neutral pill of one stay the variables' alone, since no Color paints them), and an
+// explicit Size over the item padding, the minimum item size and the icon and text sizes. The variables restyle
+// the default, not a choice - which is why Color and Size publish nothing while they are left unset: a class that
+// always carried the default would be indistinguishable from one that was asked for. Filled only switches the
+// default to the filled recipe of the primary role, which the variables still restyle.
 
 // The look of an item under the pointer, which a press also takes: a touch screen has no hover, and the
 // press is then the only feedback a tap gets before the selection lands (the browser's grey tap flash is
 // turned off on the item, since it ignores the shape and the colors of the bar).
+// The colors an explicit Color publishes are read first (the filled ones ahead of the plain role), then the
+// public variable, then the default an unset Color stands for - the primary role, filled or not.
 @mixin nbr-item-hover {
-    color: var(--bit-NavBar-item-hover-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
-    background-color: var(--bit-NavBar-item-hover-background, var(--bit-nbr-clr-acc-hover, transparent));
+    color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr, var(--bit-NavBar-item-hover-color, var(--bit-nbr-fil-text, #{$clr-pri}))));
+    background-color: var(--bit-nbr-clr-acc-hover, var(--bit-NavBar-item-hover-background, var(--bit-nbr-fil-hover, transparent)));
 }
 
 // The pill mode puts that look on the pill alone, and leaves the label beside it on the Color role. An
 // item with nothing to draw the pill on keeps the look on itself, the way its selection keeps the fill.
 @mixin nbr-pill-hover {
     &:has(.bit-nbr-icc) {
-        color: var(--bit-nbr-clr);
+        color: var(--bit-nbr-clr, #{$clr-pri});
         background-color: transparent;
     }
 
@@ -74,6 +85,43 @@
     // classes only swap the metrics this reads, so it is declared once, here.
     --bit-nbr-txt-lh: 1.5;
     --bit-nbr-lbl-min: calc(var(--bit-nbr-pad) * 2 + var(--bit-nbr-ico-fs) + var(--bit-nbr-gap) + var(--bit-nbr-txt-fs) * var(--bit-nbr-txt-lh));
+
+    // The values the Color, Size and Filled classes publish start out unset on every root, so a navbar never
+    // inherits another one's choice from an ancestor carrying those classes (one placed in the header of
+    // another, say); the classes - declared further down at the same weight - still win on the root that
+    // carries them. Left unset, each sends the var() reading it on to the public variable and then to the
+    // default, which is what lets an explicit parameter outrank the variable while an unset one leaves the
+    // variable in charge.
+    --bit-nbr-clr: initial;
+    --bit-nbr-clr-ind: initial;
+    --bit-nbr-clr-dis: initial;
+    --bit-nbr-clr-fcs: initial;
+    --bit-nbr-clr-acc-hover: initial;
+    --bit-nbr-clr-acc-active: initial;
+    --bit-nbr-clr-acc-text: initial;
+    --bit-nbr-fil-hover: initial;
+    --bit-nbr-fil-active: initial;
+    --bit-nbr-fil-text: initial;
+    --bit-nbr-sz-ico: initial;
+    --bit-nbr-sz-txt: initial;
+    --bit-nbr-sz-gap: initial;
+    --bit-nbr-sz-pad: initial;
+    --bit-nbr-sz-sec-pad: initial;
+    --bit-nbr-sz-row-pad: initial;
+    --bit-nbr-sz-min: initial;
+
+    // The metrics every part reads: the step an explicit Size publishes, then the public variable, then the
+    // medium navbar an unset Size stands for. The padding variable sets both the stacked padding and the wider
+    // one of a single-line item, since an author setting it means the item's padding; it is a single length
+    // because the room a label reserves is worked out from it. The header and the footer keep a padding of
+    // their own, which that variable is not about.
+    --bit-nbr-ico-fs: var(--bit-nbr-sz-ico, var(--bit-NavBar-icon-size, #{$tg-fs-md}));
+    --bit-nbr-txt-fs: var(--bit-nbr-sz-txt, var(--bit-NavBar-text-size, #{$tg-fs-sm}));
+    --bit-nbr-gap: var(--bit-nbr-sz-gap, #{spacing(0.5)});
+    --bit-nbr-pad: var(--bit-nbr-sz-pad, var(--bit-NavBar-item-padding, #{spacing(1)}));
+    --bit-nbr-sec-pad: var(--bit-nbr-sz-sec-pad, #{spacing(1)});
+    --bit-nbr-row-pad: var(--bit-nbr-sz-row-pad, var(--bit-NavBar-item-padding, #{spacing(2)}));
+    --bit-nbr-min: var(--bit-nbr-sz-min, var(--bit-NavBar-item-min-size, #{$siz-ctrl-md}));
 
 }
 
@@ -169,7 +217,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-NavBar-focus-color, var(--bit-nbr-clr-fcs, #{$clr-pri-focus})));
+        @include focus-ring(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color, #{$clr-pri-focus})));
     }
 }
 
@@ -375,7 +423,7 @@
     // the item, so all that would be left of it is the two sides between the items. The ring is drawn inside
     // the item instead: along its edge, with the gap that sets it off the item's fill inside it.
     .bit-nbr-itm:focus-visible {
-        box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-NavBar-focus-color, var(--bit-nbr-clr-fcs, #{$clr-pri-focus})),
+        box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color, #{$clr-pri-focus})),
                     inset 0 0 0 calc(#{$shp-focus-ring-width} + #{$shp-focus-ring-offset}) #{$clr-bg-pri};
 
         @media (forced-colors: active) {
@@ -431,8 +479,8 @@
 
 .bit-nbr-sel {
     font-weight: var(--bit-NavBar-selected-font-weight, #{$tg-fw-semibold});
-    color: var(--bit-NavBar-selected-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
-    background-color: var(--bit-NavBar-selected-background, var(--bit-nbr-clr-acc-active, transparent));
+    color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr, var(--bit-NavBar-selected-color, var(--bit-nbr-fil-text, #{$clr-pri}))));
+    background-color: var(--bit-nbr-clr-acc-active, var(--bit-NavBar-selected-background, var(--bit-nbr-fil-active, transparent)));
 }
 
 // The line runs along the edge of the selected item - the bottom edge across a bar, the leading edge down a
@@ -454,7 +502,7 @@
             block-size: var(--bit-NavBar-indicator-thickness, #{$siz-tab-indicator});
             transform: scaleX(0);
             border-radius: $shp-radius-full;
-            background-color: var(--bit-NavBar-indicator-color, var(--bit-nbr-clr-ind, currentColor));
+            background-color: var(--bit-nbr-clr-ind, var(--bit-NavBar-indicator-color, var(--bit-nbr-fil-text, #{$clr-pri})));
             transition: transform $mot-duration $mot-easing;
         }
     }
@@ -509,13 +557,13 @@
     }
 
     .bit-nbr-sel:has(.bit-nbr-icc) {
-        color: var(--bit-NavBar-selected-color, var(--bit-nbr-clr));
+        color: var(--bit-nbr-clr, var(--bit-NavBar-selected-color, #{$clr-pri}));
         background-color: transparent;
     }
 
     .bit-nbr-sel .bit-nbr-icc {
-        color: var(--bit-NavBar-selected-color, var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr)));
-        background-color: var(--bit-NavBar-selected-background, var(--bit-nbr-clr-acc-active, #{$clr-bg-ter}));
+        color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr, var(--bit-NavBar-selected-color, var(--bit-nbr-fil-text, #{$clr-pri}))));
+        background-color: var(--bit-nbr-clr-acc-active, var(--bit-NavBar-selected-background, var(--bit-nbr-fil-active, #{$clr-bg-ter})));
     }
 }
 
@@ -536,7 +584,7 @@
 // line and the pill - dims along with its content instead of staying in the full Color.
 .bit-nbr-dis {
     cursor: default;
-    color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
+    color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));
     background-color: transparent;
 
     .bit-nbr-lin &.bit-nbr-sel::after {
@@ -544,7 +592,7 @@
     }
 
     .bit-nbr-pil &.bit-nbr-sel {
-        color: var(--bit-NavBar-disabled-color, var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor)));
+        color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));
 
         .bit-nbr-icc {
             color: inherit;
@@ -553,39 +601,37 @@
     }
 }
 
-// The size classes swap the metrics every part reads, and each one yields to its public variable, so a
-// value set for the icon size (say) holds at every Size. The padding variable sets both the stacked
-// padding and the wider one of a single-line item, since an author setting it means the item's padding;
-// it is a single length because the room a label reserves is worked out from it. The header and the
-// footer keep a padding of their own, which that variable is not about.
+// The size classes publish the steps of the metrics every part reads, which the root ranks ahead of the public
+// variables (see .bit-nbr): an explicit Size wins over a value set for the icon size (say), and an unset one is
+// the medium navbar those variables restyle.
 .bit-nbr-sm {
-    --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-sm});
-    --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-2xs});
-    --bit-nbr-gap: #{spacing(0.25)};
-    --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(0.75)});
-    --bit-nbr-sec-pad: #{spacing(0.75)};
-    --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(1.5)});
-    --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-sm});
+    --bit-nbr-sz-ico: #{$tg-fs-sm};
+    --bit-nbr-sz-txt: #{$tg-fs-2xs};
+    --bit-nbr-sz-gap: #{spacing(0.25)};
+    --bit-nbr-sz-pad: #{spacing(0.75)};
+    --bit-nbr-sz-sec-pad: #{spacing(0.75)};
+    --bit-nbr-sz-row-pad: #{spacing(1.5)};
+    --bit-nbr-sz-min: #{$siz-ctrl-sm};
 }
 
 .bit-nbr-md {
-    --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-md});
-    --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-sm});
-    --bit-nbr-gap: #{spacing(0.5)};
-    --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(1)});
-    --bit-nbr-sec-pad: #{spacing(1)};
-    --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(2)});
-    --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-md});
+    --bit-nbr-sz-ico: #{$tg-fs-md};
+    --bit-nbr-sz-txt: #{$tg-fs-sm};
+    --bit-nbr-sz-gap: #{spacing(0.5)};
+    --bit-nbr-sz-pad: #{spacing(1)};
+    --bit-nbr-sz-sec-pad: #{spacing(1)};
+    --bit-nbr-sz-row-pad: #{spacing(2)};
+    --bit-nbr-sz-min: #{$siz-ctrl-md};
 }
 
 .bit-nbr-lg {
-    --bit-nbr-ico-fs: var(--bit-NavBar-icon-size, #{$tg-fs-xl});
-    --bit-nbr-txt-fs: var(--bit-NavBar-text-size, #{$tg-fs-md});
-    --bit-nbr-gap: #{spacing(0.75)};
-    --bit-nbr-pad: var(--bit-NavBar-item-padding, #{spacing(1.5)});
-    --bit-nbr-sec-pad: #{spacing(1.5)};
-    --bit-nbr-row-pad: var(--bit-NavBar-item-padding, #{spacing(2.5)});
-    --bit-nbr-min: var(--bit-NavBar-item-min-size, #{$siz-ctrl-lg});
+    --bit-nbr-sz-ico: #{$tg-fs-xl};
+    --bit-nbr-sz-txt: #{$tg-fs-md};
+    --bit-nbr-sz-gap: #{spacing(0.75)};
+    --bit-nbr-sz-pad: #{spacing(1.5)};
+    --bit-nbr-sz-sec-pad: #{spacing(1.5)};
+    --bit-nbr-sz-row-pad: #{spacing(2.5)};
+    --bit-nbr-sz-min: #{$siz-ctrl-lg};
 }
 
 // forced-colors: selection is conveyed by text color and a background fill, both of which High Contrast
@@ -662,7 +708,8 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Color; an unset one is the primary role, which the reads spell out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-nbr-#{$role} {
         --bit-nbr-clr: #{role($tokens, main)};
@@ -676,8 +723,16 @@
 // The fill covers the hovered and the selected item with the Color role itself, so what is drawn on top of
 // it - the content of the item and the indicator - moves to that role's on-color to stay legible over it.
 // Without the fill none of these are defined and every var() above falls back to the unfilled look: the
-// Color role on a transparent background. The selector carries both classes, so it outweighs the role loop
-// above and takes the indicator over from it.
+// Color role on a transparent background. Filled on its own only publishes the filled recipe of the primary
+// role, as the default the public variables are read ahead of.
+.bit-nbr-fil {
+    --bit-nbr-fil-hover: #{$clr-pri-hover};
+    --bit-nbr-fil-active: #{$clr-pri-active};
+    --bit-nbr-fil-text: #{$clr-pri-text};
+}
+
+// With an explicit Color the fill is that role's, ahead of the public variables. The selector carries both
+// classes, so it outweighs the role loop above and takes the indicator over from it.
 @each $role, $tokens in $bit-color-roles {
     .bit-nbr-fil.bit-nbr-#{$role} {
         --bit-nbr-clr-acc-hover: #{role($tokens, hover)};

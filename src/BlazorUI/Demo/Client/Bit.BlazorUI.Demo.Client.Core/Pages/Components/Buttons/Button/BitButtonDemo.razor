@@ -5,7 +5,7 @@
 @page "/components/icon-button"
 
 <PageOutlet Url="components/button" Title="Button"
-            Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, pill and circular shapes, icons, primary/secondary text, loading and auto-loading states, link rendering, full-width and floating (FAB) layouts with optional dragging, cascading defaults through BitParams, and public CSS variables for everything the parameters do not cover." />
+            Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, pill and circular shapes, icons, primary/secondary text, loading and auto-loading states, link rendering, full-width and floating (FAB) layouts with optional dragging, cascading defaults through BitParams, and public CSS variables that restyle its defaults." />
 
 <DemoPage Name="Button"
           SecondaryNames="@(["CompoundButton", "IconButton"])"
@@ -60,8 +60,8 @@
         </div>
         <br /><br />
         <div>
-            <b>Rounded</b> gives the button pill-shaped corners. It sets what the corner falls back to, so a
-            <code>--bit-Button-radius</code> of your own still wins.
+            <b>Rounded</b> gives the button pill-shaped corners. It is a choice rather than a default, so it wins over
+            a <code>--bit-Button-radius</code> set on the button or on an ancestor.
         </div>
         <br />
         <div class="example-content">
@@ -838,10 +838,11 @@
         </div>
         <br /><br /><br />
         <div>
-            What the parameters do not cover, the public <BitLink Href="#css-variables-section">CSS variables</BitLink>
-            do. They are read off the root and never declared by the component, so one set on an ancestor re-skins every
-            button inside it, and one set on the <b>Style</b> of an instance re-skins that one alone - a tighter
-            toolbar row, a taller touch target, a squared-off box, without a single selector:
+            The public <BitLink Href="#css-variables-section">CSS variables</BitLink> restyle the defaults. They are read
+            off the root and never declared by the component, so one set on an ancestor re-skins every button inside it,
+            and one set on the <b>Style</b> of an instance re-skins that one alone - a tighter toolbar row, a taller touch
+            target, a squared-off box, without a single selector. They restyle the default, not a choice: an explicit
+            <b>Color</b>, <b>Size</b> or <b>Rounded</b> wins over the variables for what it sets.
         </div>
         <br />
         <div class="example-content compact-buttons">

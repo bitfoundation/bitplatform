@@ -133,6 +133,11 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// The general color of the pivot.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Pivot-*</c> accent, focus, disabled and indicator color variables
+    /// and the hover and selected colors of a Tab item; left unset, the pivot is primary unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -354,6 +359,10 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// The size of the pivot header items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Pivot-font-size</c> and <c>--bit-Pivot-item-height</c>; left unset, the
+    /// pivot is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -425,12 +434,14 @@ public partial class BitPivot : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Size and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Pivot-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-pvt-sm",
             BitSize.Medium => "bit-pvt-md",
             BitSize.Large => "bit-pvt-lg",
-            _ => "bit-pvt-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Color switch
@@ -452,7 +463,7 @@ public partial class BitPivot : BitComponentBase
             BitColor.PrimaryBorder => "bit-pvt-pbr",
             BitColor.SecondaryBorder => "bit-pvt-sbr",
             BitColor.TertiaryBorder => "bit-pvt-tbr",
-            _ => "bit-pvt-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => HeaderType switch

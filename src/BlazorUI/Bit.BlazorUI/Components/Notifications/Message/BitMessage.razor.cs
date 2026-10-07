@@ -201,6 +201,10 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The general color of the message.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Message-*</c> color variables (color, background, border color,
+    /// focus color); left unset, the message is Info unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -497,6 +501,10 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The size of Message, Possible values: Small | Medium | Large
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Message-*</c> size variables (font size, icon size, progress height);
+    /// left unset, the message is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -697,6 +705,8 @@ public partial class BitMessage : BitComponentBase
             _ => "bit-msg-fil"
         });
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-Message-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-msg-pri",
@@ -716,7 +726,7 @@ public partial class BitMessage : BitComponentBase
             BitColor.PrimaryBorder => "bit-msg-pbr",
             BitColor.SecondaryBorder => "bit-msg-sbr",
             BitColor.TertiaryBorder => "bit-msg-tbr",
-            _ => "bit-msg-inf"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -724,7 +734,7 @@ public partial class BitMessage : BitComponentBase
             BitSize.Small => "bit-msg-sm",
             BitSize.Medium => "bit-msg-md",
             BitSize.Large => "bit-msg-lg",
-            _ => "bit-msg-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Square ? "bit-msg-sqr" : string.Empty);

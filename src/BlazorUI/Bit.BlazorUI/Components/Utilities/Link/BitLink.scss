@@ -2,17 +2,17 @@
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // link, one set on an ancestor every link inside it, and one set on the Style of an instance that one alone:
-//   --bit-Link-color                  text color at rest                          (default: from the Color role)
+//   --bit-Link-color                  text color at rest                          (default: $clr-pri)
 //   --bit-Link-hover-color            text color under the pointer and while
-//                                     focused from the keyboard                   (default: from the Color role)
-//   --bit-Link-active-color           text color while pressed                    (default: from the Color role)
+//                                     focused from the keyboard                   (default: $clr-pri-hover)
+//   --bit-Link-active-color           text color while pressed                    (default: $clr-pri-active)
 //   --bit-Link-visited-color          text color of a link already visited        (default: the rest color)
-//   --bit-Link-disabled-color         text color when disabled                    (default: from the Color role)
+//   --bit-Link-disabled-color         text color when disabled                    (default: $clr-pri-dis-text)
 //   --bit-Link-current-color          text color of the current link (aria-current,
 //                                     or a Match on the URL) at rest              (default: the rest color)
-//   --bit-Link-focus-color            color of the keyboard focus ring            (default: from the Color role)
+//   --bit-Link-focus-color            color of the keyboard focus ring            (default: $clr-pri-focus)
 //   --bit-Link-font-family            typeface                                    (default: $tg-font-family)
-//   --bit-Link-font-size              text size                                   (default: inherit, or per Size)
+//   --bit-Link-font-size              text size                                   (default: inherit)
 //   --bit-Link-font-weight            text weight                                 (default: inherit)
 //   --bit-Link-current-font-weight    text weight of the current link             (default: the text weight)
 //   --bit-Link-underline-color        color of the underline                      (default: currentColor)
@@ -21,17 +21,32 @@
 //   --bit-Link-icon-gap               room between the icon and the text          (default: spacing(0.375))
 //   --bit-Link-radius                 corner radius of the focus ring             (default: $shp-radius-control)
 //
-// As on the rest of the library, the variables win over the Color and the Size of the link, which only supply
-// their defaults. NoColor still wins over the colors, since it asks for no link color at all, and a disabled link
-// keeps its disabled color whatever the other color variables say, so it never reads as an enabled one.
+// A parameter written on the link wins over the variable that restyles what it sets: an explicit Color over every
+// color above (the rest, hover, press, visited, current, disabled and focus colors all come from the role it
+// picks), and an explicit Size over the font size. The variables restyle the default, not a choice - which is why
+// Color and Size publish nothing while they are left unset: a class that always carried the default would be
+// indistinguishable from one that was asked for. NoColor still wins over the colors, since it asks for no link
+// color at all, and a disabled link keeps its disabled color whatever the other color variables say, so it never
+// reads as an enabled one.
 .bit-lnk {
+    // Each root starts the values the Color and Size classes publish out unset, so a link never inherits another
+    // one's choice from an ancestor carrying those classes, and the classes - declared further down at the same
+    // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
+    // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
+    // an unset one leaves the variable in charge.
+    --bit-lnk-clr: initial;
+    --bit-lnk-clr-hover: initial;
+    --bit-lnk-clr-active: initial;
+    --bit-lnk-clr-focus: initial;
+    --bit-lnk-clr-dis: initial;
+    --bit-lnk-fs: initial;
     margin: 0;
     padding: 0;
     outline: none;
     cursor: pointer;
     background-color: transparent;
     border-radius: var(--bit-Link-radius, #{$shp-radius-control});
-    color: var(--bit-Link-color, var(--bit-lnk-clr));
+    color: var(--bit-lnk-clr, var(--bit-Link-color, #{$clr-pri}));
     // A link is a piece of text before it is a control, so it takes the type of the sentence it sits in
     // rather than a size of its own - which is also what the properties below are for. A button brings its
     // own centered text, its own line box, its own baseline and its own letter spacing and case, and a link
@@ -40,7 +55,7 @@
     // the theme's, since the library sets none on the page for a link to inherit - set the variable to inherit
     // where a link has to match a typeface of its own around it, such as the monospace of a code sample.
     font-family: var(--bit-Link-font-family, #{$tg-font-family});
-    font-size: var(--bit-Link-font-size, var(--bit-lnk-fs, inherit));
+    font-size: var(--bit-lnk-fs, var(--bit-Link-font-size, inherit));
     font-weight: var(--bit-Link-font-weight, inherit);
     line-height: inherit;
     text-align: inherit;
@@ -62,7 +77,7 @@
 
     // Declared ahead of the states below: a visited link still changes under the pointer and while pressed.
     &:visited {
-        color: var(--bit-Link-visited-color, var(--bit-Link-color, var(--bit-lnk-clr)));
+        color: var(--bit-lnk-clr, var(--bit-Link-visited-color, var(--bit-Link-color, #{$clr-pri})));
     }
 
     // The link to the page already open. That page has been visited by definition, so the visited color would
@@ -70,7 +85,7 @@
     // press, the focus, NoColor and the disabled state all winning over it the way they win over the rest color.
     &:where(.bit-lnk-cur),
     &:where(.bit-lnk-cur):visited {
-        color: var(--bit-Link-current-color, var(--bit-Link-color, var(--bit-lnk-clr)));
+        color: var(--bit-lnk-clr, var(--bit-Link-current-color, var(--bit-Link-color, #{$clr-pri})));
         font-weight: var(--bit-Link-current-font-weight, var(--bit-Link-font-weight, inherit));
     }
 
@@ -78,39 +93,39 @@
     @media (hover: hover) {
         &:hover {
             text-decoration-line: var(--bit-lnk-deco-hover, underline);
-            color: var(--bit-Link-hover-color, var(--bit-lnk-clr-hover));
+            color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
         }
     }
 
     // Only the keyboard focus: a link that stays in its hover color after a mouse click reads as stuck.
     &:focus-visible {
-        color: var(--bit-Link-hover-color, var(--bit-lnk-clr-hover));
-        @include focus-ring(var(--bit-Link-focus-color, var(--bit-lnk-clr-focus)));
+        color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
+        @include focus-ring(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color, #{$clr-pri-focus})));
     }
 
     // Declared after the focus, so a link pressed from the keyboard shows the press color inside its ring.
     &:active {
         text-decoration-line: var(--bit-lnk-deco-hover, underline);
-        color: var(--bit-Link-active-color, var(--bit-lnk-clr-active));
+        color: var(--bit-lnk-clr-active, var(--bit-Link-active-color, #{$clr-pri-active}));
     }
 
     &.bit-dis {
         cursor: default;
         // The underline a disabled link has at rest is all it keeps: the pointer adds none.
         --bit-lnk-deco-hover: var(--bit-lnk-deco, none);
-        color: var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis));
+        color: var(--bit-lnk-clr-dis, var(--bit-Link-disabled-color, #{$clr-pri-dis-text}));
 
         &:hover,
         &:active,
         &:focus-visible {
-            color: var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis));
+            color: var(--bit-lnk-clr-dis, var(--bit-Link-disabled-color, #{$clr-pri-dis-text}));
         }
 
         &:focus-visible {
             // AllowDisabledFocus keeps a disabled link in the tab order, so the indicator has to stay
             // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
             // contradicts the inert look and reads as actionable.
-            @include focus-ring(var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis)));
+            @include focus-ring(var(--bit-lnk-clr-dis, var(--bit-Link-disabled-color, #{$clr-pri-dis-text})));
         }
     }
 }
@@ -178,7 +193,8 @@
     clip-path: inset(50%);
 }
 
-// The size classes are for the link that stands on its own; a link inside a sentence is left inheriting.
+// The size classes are for the link that stands on its own; a link inside a sentence is left inheriting. Published
+// only by an explicit Size, which wins over --bit-Link-font-size.
 .bit-lnk-sm {
     --bit-lnk-fs: #{$tg-fs-xs};
 }
@@ -198,7 +214,8 @@
 // background or border role is the page's own color or a hairline's, invisible or far under 4.5:1 as text, so it
 // reads its foreground too - its on color, the body text - with that text color's own states. The primary main is
 // the brand's own link color, which every preset tunes to be read as text, and a foreground role is a text color
-// already, so both keep their main and its states.
+// already, so both keep their main and its states. Published only by an explicit Color; an unset one is the primary
+// role, which the reads in .bit-lnk spell out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-lnk-#{$role} {
         @if role($tokens, kind) == semantic and $role != pri {

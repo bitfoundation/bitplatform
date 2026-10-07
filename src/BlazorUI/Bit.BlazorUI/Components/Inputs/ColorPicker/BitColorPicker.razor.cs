@@ -294,6 +294,11 @@ public partial class BitColorPicker : BitComponentBase
     /// <summary>
     /// The size of the color picker.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ColorPicker-*</c> size variables (width, font and caption sizes,
+    /// saturation height, thumb, track, button, icon, preview and swatch sizes); left unset, the picker is medium
+    /// unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder] public BitSize? Size { get; set; }
 
     /// <summary>
@@ -443,12 +448,14 @@ public partial class BitColorPicker : BitComponentBase
 
         ClassBuilder.Register(() => ReadOnly ? "bit-clp-rdl" : string.Empty);
 
+        // Size publishes nothing while it is unset, which is what lets the stylesheet tell a default from a choice:
+        // the public --bit-ColorPicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-clp-sm",
             BitSize.Medium => "bit-clp-md",
             BitSize.Large => "bit-clp-lg",
-            _ => "bit-clp-md"
+            _ => string.Empty
         });
     }
 

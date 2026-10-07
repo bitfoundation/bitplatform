@@ -1,35 +1,62 @@
 @import "../../../Styles/functions.scss";
 
+// The values the Color and Size classes publish, started out unset on each element those classes land on - the
+// root, and the callout that repeats them (see .bit-mnb-cal) - so a menu button placed inside another one's
+// header or menu never inherits the outer one's choice. The classes are declared further down at the same
+// weight and still win on the element that carries them. Left unset, each sends the var() reading it on to the
+// public variable and then to the default, which is what lets an explicit parameter outrank the variable while
+// an unset one leaves the variable in charge.
+@mixin bit-mnb-unset-published {
+    --bit-mnb-clr: initial;
+    --bit-mnb-clr-txt: initial;
+    --bit-mnb-clr-hover: initial;
+    --bit-mnb-clr-active: initial;
+    --bit-mnb-clr-dark: initial;
+    --bit-mnb-clr-dark-hover: initial;
+    --bit-mnb-clr-dark-active: initial;
+    --bit-mnb-clr-focus: initial;
+    --bit-mnb-clr-dis: initial;
+    --bit-mnb-clr-dis-text: initial;
+    --bit-mnb-font-size: initial;
+    --bit-mnb-min-height: initial;
+    --bit-mnb-icon-size: initial;
+    --bit-mnb-item-height: initial;
+    --bit-mnb-pad-y: initial;
+    --bit-mnb-padding: initial;
+    --bit-mnb-item-padding: initial;
+}
+
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
 // menu button and one set on the Style of an instance (or on Styles.Callout for the callout half) re-skins that
 // one alone. The callout is rendered outside the root element, so the callout and item groups are read there.
-//   --bit-MenuButton-color                     text and icon color at rest                     (default: per variant, from the role)
-//   --bit-MenuButton-background                background of the button at rest                (default: per variant, from the role)
+//   --bit-MenuButton-color                     text and icon color at rest                     (default: per variant, $clr-pri-text or $clr-pri)
+//   --bit-MenuButton-background                background of the button at rest                (default: per variant, $clr-pri or transparent)
 //   --bit-MenuButton-border-color              border color of the button                      (default: the background, or transparent)
 //   --bit-MenuButton-border-width              border thickness of the button                  (default: $shp-border-width)
 //   --bit-MenuButton-radius                    corner radius of the button and its focus ring  (default: $shp-radius-button)
-//   --bit-MenuButton-hover-color               text and icon color on hover                    (default: the role's on-color)
-//   --bit-MenuButton-hover-background          background of the hovered half                  (default: the role's hover color)
+//   --bit-MenuButton-hover-color               text and icon color on hover                    (default: $clr-pri-text)
+//   --bit-MenuButton-hover-background          background of the hovered half                  (default: $clr-pri-hover)
 //   --bit-MenuButton-active-color              text and icon color while pressed or with the
-//                                              menu open                                       (default: the role's on-color)
-//   --bit-MenuButton-active-background         background while pressed or with the menu open  (default: the role's active color)
-//   --bit-MenuButton-toggled-color             text and icon color of the toggled header       (default: the role's on-color)
-//   --bit-MenuButton-toggled-background        background of the toggled header                (default: the role's dark color)
-//   --bit-MenuButton-toggled-hover-background  background of the toggled header on hover       (default: the role's dark-hover color)
-//   --bit-MenuButton-toggled-active-background background of the toggled header while pressed  (default: the role's dark-active color)
-//   --bit-MenuButton-disabled-color            text and icon color when disabled               (default: the role's disabled text color)
-//   --bit-MenuButton-disabled-background       background when disabled                        (default: per variant, the role's dis color)
+//                                              menu open                                       (default: $clr-pri-text)
+//   --bit-MenuButton-active-background         background while pressed or with the menu open  (default: $clr-pri-active)
+//   --bit-MenuButton-toggled-color             text and icon color of the toggled header       (default: $clr-pri-text)
+//   --bit-MenuButton-toggled-background        background of the toggled header                (default: $clr-pri-dark)
+//   --bit-MenuButton-toggled-hover-background  background of the toggled header on hover       (default: $clr-pri-dark-hover)
+//   --bit-MenuButton-toggled-active-background background of the toggled header while pressed  (default: $clr-pri-dark-active)
+//   --bit-MenuButton-disabled-color            text and icon color when disabled               (default: $clr-pri-dis-text)
+//   --bit-MenuButton-disabled-background       background when disabled                        (default: per variant, $clr-pri-dis or transparent)
 //   --bit-MenuButton-disabled-border-color     border color when disabled                      (default: the disabled background)
-//   --bit-MenuButton-focus-color               focus ring color                                (default: the role's focus color)
+//   --bit-MenuButton-focus-color               focus ring color                                (default: $clr-pri-focus)
 //   --bit-MenuButton-min-height                smallest height of the button, and the width of
-//                                              the chevron half and of an IconOnly header       (default: per size, $siz-ctrl-*)
-//   --bit-MenuButton-padding                   padding of each half of the button              (default: per size)
+//                                              the chevron half and of an IconOnly header       (default: $siz-ctrl-md)
+//   --bit-MenuButton-padding                   padding of each half of the button              (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-sm,
+//                                                                                              $siz-ctrl-pad-y-md on a square half)
 //   --bit-MenuButton-gap                       room between the icon, the text and the chevron (default: spacing(1))
-//   --bit-MenuButton-font-size                 text size of the button and of the items        (default: per size, from the type ramp)
-//   --bit-MenuButton-icon-size                 glyph and spinner size                          (default: per size, $siz-icon-*)
-//   --bit-MenuButton-chevron-width             width of the chevron half of a split button     (default: per size, $siz-ctrl-*)
-//   --bit-MenuButton-divider-color             the hairline between the two halves             (default: per variant)
-//   --bit-MenuButton-callout-background        background of the callout and of any submenu    (default: $clr-bg-pri, or the Background kind)
+//   --bit-MenuButton-font-size                 text size of the button and of the items        (default: $tg-fs-sm)
+//   --bit-MenuButton-icon-size                 glyph and spinner size                          (default: $siz-icon-md)
+//   --bit-MenuButton-chevron-width             width of the chevron half of a split button     (default: the min-height, $siz-ctrl-md)
+//   --bit-MenuButton-divider-color             the hairline between the two halves             (default: per variant, $clr-pri-text or $clr-pri)
+//   --bit-MenuButton-callout-background        background of the callout and of any submenu    (default: $clr-bg-pri)
 //   --bit-MenuButton-callout-radius            corner radius of the callout, on the corners
 //                                              away from the button                           (default: $shp-radius-popup)
 //   --bit-MenuButton-callout-shadow            elevation of the callout                       (default: $box-shadow-popup)
@@ -42,20 +69,31 @@
 //   --bit-MenuButton-callout-padding           padding around the list of items inside the
 //                                              callout                                        (default: 0)
 //   --bit-MenuButton-item-color                text and icon color of an item                 (default: $clr-fg-pri)
-//   --bit-MenuButton-item-min-height           smallest height of an item                     (default: per size, $siz-item-*)
-//   --bit-MenuButton-item-padding              padding of an item                             (default: per size)
+//   --bit-MenuButton-item-min-height           smallest height of an item                     (default: $siz-item-md)
+//   --bit-MenuButton-item-padding              padding of an item                             (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-sm)
 //   --bit-MenuButton-item-gap                  room between an item's icon, text and trailings(default: spacing(1))
 //   --bit-MenuButton-item-hover-background     background of a hovered item, and of the row
 //                                              whose submenu is open                          (default: $clr-bg-pri-hover)
 //   --bit-MenuButton-item-active-background    background of a pressed item                   (default: $clr-bg-pri-active)
 //   --bit-MenuButton-item-checked-background   background of a checked item                   (default: $clr-bg-sec)
 //   --bit-MenuButton-item-checked-color        the mark of a checked item: a check mark, or a
-//                                              bullet on a single-choice one                  (default: the role's main color)
+//                                              bullet on a single-choice one                  (default: $clr-pri)
 //   --bit-MenuButton-item-disabled-color       text and icon color of a disabled item         (default: $clr-fg-dis)
-//   --bit-MenuButton-item-focus-color          focus ring color of the focused item           (default: the role's focus color)
+//   --bit-MenuButton-item-focus-color          focus ring color of the focused item           (default: $clr-pri-focus)
 //   --bit-MenuButton-item-separator-color      the hairline of a separator item                (default: $clr-brd-sec)
 //   --bit-MenuButton-item-secondary-color      the secondary text of an item (a shortcut)     (default: $clr-fg-sec)
 //   --bit-MenuButton-item-header-color         the label of a group header item               (default: $clr-fg-sec)
+//
+// A parameter written on the menu button wins over the variable that restyles what it sets: an explicit Color
+// over every color above that the role paints - the button's resting, hovered, pressed, open, toggled, disabled
+// and focus colors, its divider, and the focus ring and check mark of the items - an explicit Size over the
+// min-height, padding, font size, icon size and chevron width of the button and the min-height and padding of
+// the items, and an explicit Background over the callout background. The variables keep what a Color leaves
+// alone: the transparent background of the Outline and Text variants and the transparent border of Text. The
+// variables restyle the default, not a choice - which is why Color, Size and Background publish nothing while
+// they are left unset: a class that always carried the default would be indistinguishable from one that was
+// asked for. The disabled state is still read before all of them, so a re-tinted menu button that is disabled
+// still reads as disabled.
 
 .bit-mnb {
     display: flex;
@@ -69,21 +107,22 @@
     border-style: $shp-border-style;
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
-    font-size: var(--bit-MenuButton-font-size, var(--bit-mnb-font-size));
+    @include bit-mnb-unset-published;
+    font-size: var(--bit-mnb-font-size, var(--bit-MenuButton-font-size, #{$tg-fs-sm}));
     border-width: var(--bit-MenuButton-border-width, #{$shp-border-width});
     border-radius: var(--bit-MenuButton-radius, #{$shp-radius-button});
     // The one name every state resolves the disabled foreground through, so the public variable is read once.
-    --bit-mnb-dis-clr: var(--bit-MenuButton-disabled-color, var(--bit-mnb-clr-dis-text));
+    --bit-mnb-dis-clr: var(--bit-mnb-clr-dis-text, var(--bit-MenuButton-disabled-color, #{$clr-pri-dis-text}));
     // The control height of the size class, as a floor rather than a height, so the button still grows with a
     // taller icon or a wrapped label. It is what lines a menu button up with the other controls of its size in
     // a toolbar, and what keeps the smallest one clear of the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8).
-    min-height: var(--bit-MenuButton-min-height, var(--bit-mnb-min-height));
+    min-height: var(--bit-mnb-min-height, var(--bit-MenuButton-min-height, #{$siz-ctrl-md}));
     // The variants below repaint all three on hover/active, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible,
     &:has(:focus-visible) {
-        @include focus-ring(var(--bit-MenuButton-focus-color, var(--bit-mnb-clr-focus)));
+        @include focus-ring(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color, #{$clr-pri-focus})));
     }
 
     &.bit-dis {
@@ -122,14 +161,14 @@
 
 // The spinner takes the header icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-mnb-spn {
-    @include spinner-ring(var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size)), currentcolor, $clr-brd-sec);
+    @include spinner-ring(var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md})), currentcolor, $clr-brd-sec);
 }
 
 .bit-mnb-ico,
 .bit-mnb-chv {
     line-height: 1;
     flex-shrink: 0;
-    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+    font-size: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
 }
 
 // The chevron turns over while the menu is open, so the state of the button can be read off it rather than
@@ -164,19 +203,21 @@
     background-color: inherit;
     -webkit-tap-highlight-color: transparent;
     gap: var(--bit-MenuButton-gap, #{spacing(1)});
-    padding: var(--bit-MenuButton-padding, var(--bit-mnb-padding));
+    // Each read below ranks the value an explicit Size or Color publishes, then the public variable, then the
+    // medium primary menu button an unset one stands for.
+    padding: var(--bit-mnb-padding, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-MenuButton-hover-color, var(--bit-mnb-clr-txt));
-            background-color: var(--bit-MenuButton-hover-background, var(--bit-mnb-clr-hover));
+            color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-hover-color, #{$clr-pri-text}));
+            background-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        color: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
-        background-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
+        color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-active-color, #{$clr-pri-text}));
+        background-color: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
     }
 }
 
@@ -192,16 +233,16 @@
     background-color: var(--bit-mnb-clr-chb-bg);
     // The chevron half is a square of the control's own height, the way every icon button in the library is,
     // so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too.
-    width: var(--bit-MenuButton-chevron-width, var(--bit-mnb-min-height));
-    padding: var(--bit-MenuButton-padding, var(--bit-mnb-pad-y));
+    width: var(--bit-mnb-min-height, var(--bit-MenuButton-chevron-width, var(--bit-MenuButton-min-height, #{$siz-ctrl-md})));
+    padding: var(--bit-mnb-pad-y, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md}));
 }
 
 // An icon-only header is a square of the control's own height, the way every icon button in the library is,
 // so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too. The width is a
 // floor rather than a size, so FullWidth still stretches the button and a split one still shares the row.
 .bit-mnb-ion > .bit-mnb-opb {
-    min-width: var(--bit-MenuButton-min-height, var(--bit-mnb-min-height));
-    padding: var(--bit-MenuButton-padding, var(--bit-mnb-pad-y));
+    min-width: var(--bit-mnb-min-height, var(--bit-MenuButton-min-height, #{$siz-ctrl-md}));
+    padding: var(--bit-mnb-pad-y, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md}));
 }
 
 .bit-mnb-spb {
@@ -209,43 +250,47 @@
     flex-shrink: 0;
     height: spacing(2);
     width: $siz-divider;
-    background-color: var(--bit-MenuButton-divider-color, var(--bit-mnb-clr-spb));
+    // Resolved per variant (see .bit-mnb-fil), where the Color and the public variables are ranked against each
+    // other, and by the disabled state ahead of both.
+    background-color: var(--bit-mnb-clr-spb);
 }
 
 .bit-mnb-omn {
     --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-opb-txt-nsp);
     --bit-mnb-clr-opb-bg: var(--bit-mnb-clr-opb-bg-nsp);
-    --bit-mnb-clr-chb-txt: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
-    --bit-mnb-clr-chb-bg: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
+    --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-txt, var(--bit-MenuButton-active-color, #{$clr-pri-text}));
+    --bit-mnb-clr-chb-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
 }
 
 // The toggled header is painted with the darker end of the role, the way BitToggleButton's checked state is,
 // rather than with the pressed color: pressed is a lighter step of the role in the dark scheme, so a sustained
 // state drawn with it made the button that is ON read as the lighter - and so the weaker - of the two. The
 // hovered and the pressed steps are restated here because `.bit-mnb-opb:hover` weighs the same as this rule
-// and would otherwise be settled by source order, leaving a toggled header inert under the pointer.
+// and would otherwise be settled by source order, leaving a toggled header inert under the pointer. The state
+// is the rule's, but the colors it shows are still the role's, so an explicit Color outranks the toggled
+// variables here just as it outranks the resting ones.
 .bit-mnb-tgl {
     > .bit-mnb-opb {
-        color: var(--bit-MenuButton-toggled-color, var(--bit-mnb-clr-txt));
-        background-color: var(--bit-MenuButton-toggled-background, var(--bit-mnb-clr-dark));
+        color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
+        background-color: var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark}));
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-MenuButton-toggled-color, var(--bit-mnb-clr-txt));
-                background-color: var(--bit-MenuButton-toggled-hover-background, var(--bit-mnb-clr-dark-hover));
+                color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
+                background-color: var(--bit-mnb-clr-dark-hover, var(--bit-MenuButton-toggled-hover-background, #{$clr-pri-dark-hover}));
             }
         }
 
         &:active {
-            color: var(--bit-MenuButton-toggled-color, var(--bit-mnb-clr-txt));
-            background-color: var(--bit-MenuButton-toggled-active-background, var(--bit-mnb-clr-dark-active));
+            color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
+            background-color: var(--bit-mnb-clr-dark-active, var(--bit-MenuButton-toggled-active-background, #{$clr-pri-dark-active}));
         }
     }
 }
 
 .bit-mnb-nsp {
-    --bit-mnb-clr-opb-txt-nsp: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
-    --bit-mnb-clr-opb-bg-nsp: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
+    --bit-mnb-clr-opb-txt-nsp: var(--bit-mnb-clr-txt, var(--bit-MenuButton-active-color, #{$clr-pri-text}));
+    --bit-mnb-clr-opb-bg-nsp: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
 }
 
 // The label of either half of the button, and of an item. min-width lets it shrink below its own text so that
@@ -288,6 +333,10 @@
 }
 
 .bit-mnb-cal {
+    // The callout carries the Color and Size classes of its menu button (and the Background class of its own), so
+    // what they publish is unset here first, exactly as on the root.
+    @include bit-mnb-unset-published;
+    --bit-mnb-cal-bg: initial;
     // The entry offset is signed by where the callout was placed, so it always slides out of the
     // button: downward when it opens below it, upward when there was only room above. The attribute
     // is set by Callouts.playEntryAnimation, which knows the placement only after measuring.
@@ -316,10 +365,11 @@
     max-width: var(--bit-MenuButton-callout-max-width, calc(100vw - #{spacing(2)}));
     max-width: var(--bit-MenuButton-callout-max-width, calc(100dvw - #{spacing(2)}));
     box-shadow: var(--bit-MenuButton-callout-shadow, #{$box-shadow-popup});
-    font-size: var(--bit-MenuButton-font-size, var(--bit-mnb-font-size));
+    font-size: var(--bit-mnb-font-size, var(--bit-MenuButton-font-size, #{$tg-fs-sm}));
     transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
     border-radius: 0 0 var(--bit-MenuButton-callout-radius, #{$shp-radius-popup}) var(--bit-MenuButton-callout-radius, #{$shp-radius-popup});
-    background-color: var(--bit-MenuButton-callout-background, var(--bit-mnb-cal-bg, #{$clr-bg-pri}));
+    // An explicit Background outranks the public variable the way an explicit Color does.
+    background-color: var(--bit-mnb-cal-bg, var(--bit-MenuButton-callout-background, #{$clr-bg-pri}));
 
     // A callout that had to open above the button is tucked against its top edge, so the square corners are
     // the bottom ones instead - the rounding always sits on the corners away from the button.
@@ -403,7 +453,7 @@
     font-weight: $tg-fw-semibold;
     font-size: max(#{$tg-fs-2xs}, 0.85em);
     color: var(--bit-MenuButton-item-header-color, #{$clr-fg-sec});
-    padding: var(--bit-MenuButton-item-padding, var(--bit-mnb-item-padding));
+    padding: var(--bit-mnb-item-padding, var(--bit-MenuButton-item-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));
 }
 
 .bit-mnb-itm {
@@ -426,8 +476,8 @@
     -webkit-tap-highlight-color: transparent;
     color: var(--bit-MenuButton-item-color, #{$clr-fg-pri});
     gap: var(--bit-MenuButton-item-gap, #{spacing(1)});
-    padding: var(--bit-MenuButton-item-padding, var(--bit-mnb-item-padding));
-    min-height: var(--bit-MenuButton-item-min-height, var(--bit-mnb-item-height));
+    padding: var(--bit-mnb-item-padding, var(--bit-MenuButton-item-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));
+    min-height: var(--bit-mnb-item-height, var(--bit-MenuButton-item-min-height, #{$siz-item-md}));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &[disabled],
@@ -444,7 +494,7 @@
     // where the navigation is (WCAG 2.4.7). It is drawn inside the item: the callout clips what overflows it,
     // and an outset ring would be cut off on both sides of a row that spans the full width of one.
     &:focus-visible {
-        outline: $shp-border-width-thick $shp-border-style var(--bit-MenuButton-item-focus-color, var(--bit-mnb-clr-focus));
+        outline: $shp-border-width-thick $shp-border-style var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}));
         outline-offset: calc(-1 * #{$shp-border-width-thick});
     }
 
@@ -471,7 +521,7 @@
     line-height: 1;
     flex-shrink: 0;
     color: inherit;
-    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+    font-size: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
 }
 
 // The check column of a checkable item. It is reserved on every item of a menu that has one, so the labels of
@@ -480,9 +530,9 @@
     flex-shrink: 0;
     line-height: 1;
     visibility: hidden;
-    color: var(--bit-MenuButton-item-checked-color, var(--bit-mnb-clr));
-    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
-    width: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+    color: var(--bit-mnb-clr, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));
+    font-size: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
+    width: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
 }
 
 .bit-mnb-chk > .bit-mnb-ick {
@@ -497,7 +547,7 @@
     flex-shrink: 0;
     color: inherit;
     margin-inline-start: auto;
-    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+    font-size: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
 }
 
 .bit-mnb-isc + .bit-mnb-sch {
@@ -524,57 +574,61 @@
     color: var(--bit-MenuButton-item-secondary-color, #{$clr-fg-sec});
 }
 
+// Every color the Color role paints is read from the role first - published only by an explicit Color (see
+// .bit-mnb) - then from the public variables, then from the primary role an unset Color stands for. A color the
+// role leaves alone (the transparent background of Outline and Text, the transparent border of Text) is the
+// variables' alone. The divider is resolved here too, and the disabled state replaces it outright (see .bit-mnb).
 .bit-mnb-fil {
-    color: var(--bit-MenuButton-color, var(--bit-mnb-clr-txt));
-    border-color: var(--bit-MenuButton-border-color, var(--bit-MenuButton-background, var(--bit-mnb-clr)));
-    background-color: var(--bit-MenuButton-background, var(--bit-mnb-clr));
-    --bit-mnb-clr-spb: var(--bit-MenuButton-color, var(--bit-mnb-clr-txt));
+    color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-color, #{$clr-pri-text}));
+    border-color: var(--bit-mnb-clr, var(--bit-MenuButton-border-color, var(--bit-MenuButton-background, #{$clr-pri})));
+    background-color: var(--bit-mnb-clr, var(--bit-MenuButton-background, #{$clr-pri}));
+    --bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-color, #{$clr-pri-text})));
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-MenuButton-hover-background, var(--bit-mnb-clr-hover));
+            border-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
+        border-color: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
         color: var(--bit-mnb-dis-clr);
-        border-color: var(--bit-MenuButton-disabled-border-color, var(--bit-MenuButton-disabled-background, var(--bit-mnb-clr-dis)));
-        background-color: var(--bit-MenuButton-disabled-background, var(--bit-mnb-clr-dis));
+        border-color: var(--bit-mnb-clr-dis, var(--bit-MenuButton-disabled-border-color, var(--bit-MenuButton-disabled-background, #{$clr-pri-dis})));
+        background-color: var(--bit-mnb-clr-dis, var(--bit-MenuButton-disabled-background, #{$clr-pri-dis}));
     }
 }
 
 .bit-mnb-otl {
-    color: var(--bit-MenuButton-color, var(--bit-mnb-clr));
-    border-color: var(--bit-MenuButton-border-color, var(--bit-mnb-clr));
+    color: var(--bit-mnb-clr, var(--bit-MenuButton-color, #{$clr-pri}));
+    border-color: var(--bit-mnb-clr, var(--bit-MenuButton-border-color, #{$clr-pri}));
     background-color: var(--bit-MenuButton-background, transparent);
-    --bit-mnb-clr-spb: var(--bit-MenuButton-border-color, var(--bit-mnb-clr));
+    --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-border-color, #{$clr-pri})));
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-MenuButton-hover-background, var(--bit-mnb-clr-hover));
+            border-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
+        border-color: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
         color: var(--bit-mnb-dis-clr);
-        border-color: var(--bit-MenuButton-disabled-border-color, var(--bit-mnb-clr-dis));
+        border-color: var(--bit-mnb-clr-dis, var(--bit-MenuButton-disabled-border-color, #{$clr-pri-dis}));
         background-color: var(--bit-MenuButton-disabled-background, transparent);
     }
 }
 
 .bit-mnb-txt {
-    color: var(--bit-MenuButton-color, var(--bit-mnb-clr));
+    color: var(--bit-mnb-clr, var(--bit-MenuButton-color, #{$clr-pri}));
     border-color: var(--bit-MenuButton-border-color, transparent);
     background-color: var(--bit-MenuButton-background, transparent);
-    --bit-mnb-clr-spb: var(--bit-MenuButton-divider-color, var(--bit-mnb-clr));
+    --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-divider-color, #{$clr-pri}));
 
     &.bit-dis {
         color: var(--bit-mnb-dis-clr);
@@ -586,6 +640,8 @@
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They are
 // rendered on the callout as well as on the root, which is a sibling of it rather than an ancestor: the focus
 // ring of an item and the glyph of a checked one are what follows the color the menu button was given inside it.
+// Published only by an explicit Color, on both; an unset one is the primary role, which the fallbacks above spell
+// out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-mnb-#{$role} {
         --bit-mnb-clr: #{role($tokens, main)};
@@ -604,7 +660,9 @@
 
 // The x padding sits one ramp step below the standalone button's (a split button is a compact control), so the
 // token still drives it and a preset that widens the ramp widens these too. The size class is rendered on the
-// callout as well as on the root, so the same block is also what sizes the items.
+// callout as well as on the root, so the same block is also what sizes the items. Published only by an explicit
+// Size, on both; an unset one is the medium menu button, which the fallbacks above spell out after the public
+// variables.
 .bit-mnb-sm {
     --bit-mnb-font-size: #{$tg-fs-xs};
     --bit-mnb-min-height: #{$siz-ctrl-sm};
@@ -636,6 +694,8 @@
 }
 
 
+// Published only by an explicit Background; an unset one leaves the callout to its public variable, then to the
+// primary background.
 .bit-mnb-bpg {
     --bit-mnb-cal-bg: #{$clr-bg-pri};
 }

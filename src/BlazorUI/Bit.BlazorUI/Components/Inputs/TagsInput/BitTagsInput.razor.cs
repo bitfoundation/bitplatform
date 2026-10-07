@@ -239,6 +239,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// the component follows the color of the form it sits in rather than only lighting up while it is
     /// focused. How much of it the tags are painted with is decided by the <see cref="TagVariant"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TagsInput-*</c> color variables it paints (the chip colors of the
+    /// tag variant, the focus ring and rule of the field, the spinner); left unset, the tags input is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -767,6 +772,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// <summary>
     /// The size of the tags input.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TagsInput-*</c> size variables (font sizes, min heights, paddings,
+    /// gap, icon size); left unset, the tags input is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1102,6 +1111,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             _ => "bit-tgi-tgf"
         });
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-TagsInput-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-tgi-pri",
@@ -1121,7 +1132,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             BitColor.PrimaryBorder => "bit-tgi-pbr",
             BitColor.SecondaryBorder => "bit-tgi-sbr",
             BitColor.TertiaryBorder => "bit-tgi-tbr",
-            _ => "bit-tgi-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -1129,7 +1140,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             BitSize.Small => "bit-tgi-sm",
             BitSize.Medium => "bit-tgi-md",
             BitSize.Large => "bit-tgi-lg",
-            _ => "bit-tgi-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => NoBorder ? "bit-tgi-nbd" : string.Empty);

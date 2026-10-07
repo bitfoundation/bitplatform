@@ -602,9 +602,8 @@ public class BitActionButtonTests : BunitTestContext
         DataRow(BitColor.PrimaryBorder),
         DataRow(BitColor.SecondaryBorder),
         DataRow(BitColor.TertiaryBorder),
-        DataRow(null)
         ]
-    public void BitActionButtonColorClassTest(BitColor? color)
+    public void BitActionButtonColorClassTest(BitColor color)
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
@@ -622,9 +621,8 @@ public class BitActionButtonTests : BunitTestContext
         DataRow(BitSize.Small),
         DataRow(BitSize.Medium),
         DataRow(BitSize.Large),
-        DataRow(null)
     ]
-    public void BitActionButtonSizeClassTest(BitSize? size)
+    public void BitActionButtonSizeClassTest(BitSize size)
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
@@ -636,6 +634,26 @@ public class BitActionButtonTests : BunitTestContext
         var expectedClass = GetSizeClass(size);
 
         Assert.IsTrue(button.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitActionButton>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-ActionButton-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var button = component.Find(".bit-acb");
+
+        foreach (var color in Enum.GetValues<BitColor>())
+        {
+            Assert.IsFalse(button.ClassList.Contains(GetColorClass(color)), $"An unset Color published {GetColorClass(color)}.");
+        }
+
+        foreach (var size in Enum.GetValues<BitSize>())
+        {
+            Assert.IsFalse(button.ClassList.Contains(GetSizeClass(size)), $"An unset Size published {GetSizeClass(size)}.");
+        }
     }
 
     [TestMethod,
@@ -2295,7 +2313,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.HasCount(1, invocation);
     }
 
-    private static string GetColorClass(BitColor? color) => color switch
+    private static string GetColorClass(BitColor color) => color switch
     {
         BitColor.Primary => "bit-acb-pri",
         BitColor.Secondary => "bit-acb-sec",
@@ -2314,14 +2332,14 @@ public class BitActionButtonTests : BunitTestContext
         BitColor.PrimaryBorder => "bit-acb-pbr",
         BitColor.SecondaryBorder => "bit-acb-sbr",
         BitColor.TertiaryBorder => "bit-acb-tbr",
-        _ => "bit-acb-pri"
+        _ => throw new ArgumentOutOfRangeException(nameof(color))
     };
 
-    private static string GetSizeClass(BitSize? size) => size switch
+    private static string GetSizeClass(BitSize size) => size switch
     {
         BitSize.Small => "bit-acb-sm",
         BitSize.Medium => "bit-acb-md",
         BitSize.Large => "bit-acb-lg",
-        _ => "bit-acb-md"
+        _ => throw new ArgumentOutOfRangeException(nameof(size))
     };
 }

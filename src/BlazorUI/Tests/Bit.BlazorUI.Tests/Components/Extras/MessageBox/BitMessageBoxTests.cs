@@ -654,6 +654,26 @@ public class BitMessageBoxTests : BunitTestContext
         Assert.IsFalse(classList.Contains("bit-msb-lg"));
     }
 
+    [TestMethod]
+    public void BitMessageBoxShouldRenderNoColorClassByDefault()
+    {
+        var component = RenderComponent<BitMessageBox>();
+
+        // An unset Color publishes nothing, so --bit-MessageBox-icon-color restyles the default icon while an explicit
+        // Color - which does publish its class - wins over it.
+        var classList = component.Find(".bit-msb").ClassList;
+        var published = new[]
+        {
+            "bit-msb-pri", "bit-msb-sec", "bit-msb-ter", "bit-msb-inf", "bit-msb-suc", "bit-msb-wrn", "bit-msb-swr", "bit-msb-err",
+            "bit-msb-pbg", "bit-msb-sbg", "bit-msb-tbg", "bit-msb-pfg", "bit-msb-sfg", "bit-msb-tfg", "bit-msb-pbr", "bit-msb-sbr", "bit-msb-tbr",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(classList.Contains(cssClass), $"An unset Color published {cssClass}.");
+        }
+    }
+
     [TestMethod,
         DataRow(BitDir.Ltr, "ltr"),
         DataRow(BitDir.Rtl, "rtl"),

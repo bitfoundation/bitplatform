@@ -200,15 +200,11 @@ public class BitNavBarTests : BunitTestContext
     [DataRow(BitColor.Primary, "bit-nbr-pri")]
     [DataRow(BitColor.Secondary, "bit-nbr-sec")]
     [DataRow(BitColor.Error, "bit-nbr-err")]
-    [DataRow(null, "bit-nbr-pri")]
-    public void BitNavBarShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitNavBarShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
@@ -239,18 +235,35 @@ public class BitNavBarTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-nbr-sm")]
     [DataRow(BitSize.Medium, "bit-nbr-md")]
     [DataRow(BitSize.Large, "bit-nbr-lg")]
-    [DataRow(null, "bit-nbr-md")]
-    public void BitNavBarShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitNavBarShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitNavBar<BitNavBarOption>>(parameters =>
         {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.Size, size.Value);
-            }
+            parameters.Add(p => p.Size, size);
         });
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitNavBar<BitNavBarOption>>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-NavBar-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-nbr");
+        var published = new[]
+        {
+            "bit-nbr-pri", "bit-nbr-sec", "bit-nbr-ter", "bit-nbr-inf", "bit-nbr-suc", "bit-nbr-wrn", "bit-nbr-swr", "bit-nbr-err",
+            "bit-nbr-pbg", "bit-nbr-sbg", "bit-nbr-tbg", "bit-nbr-pfg", "bit-nbr-sfg", "bit-nbr-tfg", "bit-nbr-pbr", "bit-nbr-sbr", "bit-nbr-tbr",
+            "bit-nbr-sm", "bit-nbr-md", "bit-nbr-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
 

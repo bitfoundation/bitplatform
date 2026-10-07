@@ -10,20 +10,20 @@
 //
 //   --bit-DateRangePicker-color                    accent: the range ends, today, the selected preset,
 //                                                  the active AM/PM button and the open field
-//                                                                       (default: the Color role's main color)
-//   --bit-DateRangePicker-text-color               foreground over that accent     (default: the role's on color)
-//   --bit-DateRangePicker-hover-color              accent while hovered            (default: the role's hover color)
-//   --bit-DateRangePicker-active-color             accent while pressed            (default: the role's active color)
-//   --bit-DateRangePicker-range-background         body of the selected range      (default: the role's light color)
+//                                                                       (default: $clr-pri)
+//   --bit-DateRangePicker-text-color               foreground over that accent     (default: $clr-pri-text)
+//   --bit-DateRangePicker-hover-color              accent while hovered            (default: $clr-pri-hover)
+//   --bit-DateRangePicker-active-color             accent while pressed            (default: $clr-pri-active)
+//   --bit-DateRangePicker-range-background         body of the selected range      (default: $clr-pri-light)
 //   --bit-DateRangePicker-preview-background       body of the range previewed while hovering (default: $clr-bg-sec)
 //   --bit-DateRangePicker-focus-color              focus ring of the field and of every cell
-//                                                  and button in the calendar     (default: the role's focus color)
+//                                                  and button in the calendar     (default: $clr-pri-focus)
 //   --bit-DateRangePicker-invalid-color            border and underline while invalid         (default: $clr-err)
 //   --bit-DateRangePicker-required-color           the asterisk after a required label        (default: $clr-req)
 //   --bit-DateRangePicker-disabled-color           text of every disabled part                (default: $clr-fg-dis)
 //
-//   --bit-DateRangePicker-input-height             height of the field             (default: per size, $siz-ctrl-*)
-//   --bit-DateRangePicker-input-font-size          text size of the field          (default: per size, from the ramp)
+//   --bit-DateRangePicker-input-height             height of the field             (default: $siz-ctrl-md)
+//   --bit-DateRangePicker-input-font-size          text size of the field          (default: $tg-fs-sm)
 //   --bit-DateRangePicker-input-color              text color of the field                    (default: $clr-fg-pri)
 //   --bit-DateRangePicker-input-background         background of the field                    (default: $clr-bg-pri)
 //   --bit-DateRangePicker-input-border-color       border of the field                        (default: $clr-brd-pri)
@@ -32,7 +32,7 @@
 //   --bit-DateRangePicker-icon-color               the calendar glyph in the field            (default: $clr-fg-sec)
 //
 //   --bit-DateRangePicker-label-color              color of the label                         (default: $clr-fg-pri)
-//   --bit-DateRangePicker-label-font-size          text size of the label          (default: per size, from the ramp)
+//   --bit-DateRangePicker-label-font-size          text size of the label          (default: $tg-fs-sm)
 //   --bit-DateRangePicker-label-font-weight        weight of the label                     (default: $tg-field-label-font-weight)
 //
 //   --bit-DateRangePicker-callout-background       background of the calendar surface         (default: $clr-bg-pri)
@@ -41,8 +41,8 @@
 //   --bit-DateRangePicker-calendar-padding         padding around each pane of the callout
 //                                                  (a month, the month picker, the presets)  (default: spacing(1.5))
 //
-//   --bit-DateRangePicker-day-size                 width and height of a day cell  (default: per size)
-//   --bit-DateRangePicker-day-font-size            text size of a day cell         (default: per size, from the ramp)
+//   --bit-DateRangePicker-day-size                 width and height of a day cell  (default: spacing(3.5))
+//   --bit-DateRangePicker-day-font-size            text size of a day cell         (default: $tg-fs-xs)
 //   --bit-DateRangePicker-day-color                text color of a day cell                   (default: $clr-fg-pri)
 //   --bit-DateRangePicker-day-radius               corner radius of a day cell      (default: $shp-radius-control)
 //   --bit-DateRangePicker-day-hover-background     background of a hovered day          (default: $clr-bg-pri-hover)
@@ -58,16 +58,20 @@
 //
 //   --bit-DateRangePicker-presets-width            width of the presets column               (default: spacing(14))
 //   --bit-DateRangePicker-presets-max-height       height the presets column scrolls in      (default: spacing(40))
+//
+// A parameter written on the DateRangePicker wins over the variable that restyles what it sets: an explicit
+// Color over the accent, text, hover, active, range and focus colors above, and an explicit Size over the
+// input height and font size, the label font size and the day size and font size. The variables restyle the
+// default, not a choice - which is why Color and Size publish nothing while they are left unset: a class
+// that always carried the default would be indistinguishable from one that was asked for. An invalid field
+// keeps the error color on its focus ring whatever either says.
 
 // The three size classes are declared as one set of private properties, so a part only has to read the
-// property rather than repeat itself once per size. Medium is the default and is therefore also what the
-// root and the callout carry with no size class at all.
+// property rather than repeat itself once per size. The medium values of the parts no public variable
+// reaches are what the root and the callout carry with no size class at all; the five a public variable
+// restyles are published by an explicit Size alone (see dtrp-parameter-resets), and every read of them
+// spells the medium value out after the variable.
 @mixin dtrp-size-medium {
-    --bit-dtrp-inp-h: #{$siz-ctrl-md};
-    --bit-dtrp-inp-fs: #{$tg-fs-sm};
-    --bit-dtrp-cell-size: #{spacing(3.5)};
-    --bit-dtrp-cell-fs: #{$tg-fs-xs};
-    --bit-dtrp-lbl-fs: #{$tg-fs-sm};
     --bit-dtrp-hdr-fs: #{$tg-fs-sm};
     --bit-dtrp-clr-size: #{spacing(3.75)};
     --bit-dtrp-time-size: #{spacing(3.75)};
@@ -76,6 +80,38 @@
     --bit-dtrp-month-cell-w: #{spacing(6)};
     --bit-dtrp-month-cell-h: #{spacing(5)};
     --bit-dtrp-month-pane-w: #{spacing(24.5)};
+}
+
+// What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
+// DateRangePicker in the content of another one (a callout template, say) never inherits the outer one's
+// choice; the classes - declared further down at the same weight - still win on the element that carries
+// them. Left unset, each sends the var() reading it on to the public variable and then to the default,
+// which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in
+// charge.
+@mixin dtrp-parameter-resets {
+    --bit-dtrp-rl-clr: initial;
+    --bit-dtrp-rl-txt: initial;
+    --bit-dtrp-rl-hover: initial;
+    --bit-dtrp-rl-active: initial;
+    --bit-dtrp-rl-body: initial;
+    --bit-dtrp-rl-focus: initial;
+    --bit-dtrp-inp-h: initial;
+    --bit-dtrp-inp-fs: initial;
+    --bit-dtrp-cell-size: initial;
+    --bit-dtrp-cell-fs: initial;
+    --bit-dtrp-lbl-fs: initial;
+}
+
+// The colors resolve once, on whichever of the two elements the parts live under: the explicit Color first,
+// then the public variable, then the primary role an unset one stands for. Every part reads the resolved
+// slot, so the ranking is written here alone.
+@mixin dtrp-color-resolution {
+    --bit-dtrp-clr: var(--bit-dtrp-rl-clr, var(--bit-DateRangePicker-color, #{$clr-pri}));
+    --bit-dtrp-clr-txt: var(--bit-dtrp-rl-txt, var(--bit-DateRangePicker-text-color, #{$clr-pri-text}));
+    --bit-dtrp-clr-hover: var(--bit-dtrp-rl-hover, var(--bit-DateRangePicker-hover-color, #{$clr-pri-hover}));
+    --bit-dtrp-clr-active: var(--bit-dtrp-rl-active, var(--bit-DateRangePicker-active-color, #{$clr-pri-active}));
+    --bit-dtrp-clr-body: var(--bit-dtrp-rl-body, var(--bit-DateRangePicker-range-background, #{$clr-pri-light}));
+    --bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color, #{$clr-pri-focus}));
 }
 
 // The root and the callout each carry their own disabled marker, so both dim the same content.
@@ -103,7 +139,9 @@
     font-size: $tg-fs-lg;
     font-family: $tg-font-family;
 
+    @include dtrp-parameter-resets;
     @include dtrp-size-medium;
+    @include dtrp-color-resolution;
 
     &.bit-dis {
         .bit-dtrp-lbl {
@@ -135,7 +173,8 @@
     &.bit-inv {
         // Showing the error border and a primary-colored focus ring at once would report two states
         // of the same field, so the ring follows the border into the error color. The rules that draw
-        // it read the slot rather than a literal, so re-pointing it here is all it takes.
+        // it read the slot rather than a literal, so re-pointing it here - at a weight above the
+        // resolution on the root - is all it takes, whatever the Color or the public variable say.
         --bit-dtrp-clr-focus: #{$clr-err-focus};
 
         .bit-dtrp-icn {
@@ -231,7 +270,7 @@
     font-weight: var(--bit-DateRangePicker-label-font-weight, #{$tg-field-label-font-weight});
     box-sizing: border-box;
     padding: spacing(0.5) 0;
-    font-size: var(--bit-DateRangePicker-label-font-size, var(--bit-dtrp-lbl-fs));
+    font-size: var(--bit-dtrp-lbl-fs, var(--bit-DateRangePicker-label-font-size, #{$tg-fs-sm}));
     overflow-wrap: break-word;
     color: var(--bit-DateRangePicker-label-color, #{$clr-fg-pri});
 }
@@ -246,7 +285,7 @@
     gap: spacing(1);
     cursor: pointer;
     box-shadow: none;
-    height: var(--bit-DateRangePicker-input-height, var(--bit-dtrp-inp-h));
+    height: var(--bit-dtrp-inp-h, var(--bit-DateRangePicker-input-height, #{$siz-ctrl-md}));
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
@@ -315,7 +354,7 @@
     color: var(--bit-DateRangePicker-input-color, #{$clr-fg-pri});
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: var(--bit-DateRangePicker-input-font-size, var(--bit-dtrp-inp-fs));
+    font-size: var(--bit-dtrp-inp-fs, var(--bit-DateRangePicker-input-font-size, #{$tg-fs-sm}));
     background: none transparent;
     font-family: $tg-font-family;
 }
@@ -371,8 +410,10 @@
     animation-timing-function: $mot-easing-decelerate;
 
     // Nothing of the root cascades into the callout, which is reparented to the body while it is open,
-    // so the default size has to be declared here as well.
+    // so the resets, the default size and the color resolution have to be declared here as well.
+    @include dtrp-parameter-resets;
     @include dtrp-size-medium;
+    @include dtrp-color-resolution;
 }
 
 .bit-dtrp-cac {
@@ -443,8 +484,8 @@
     color: var(--bit-DateRangePicker-week-day-color, #{$clr-fg-pri});
     position: relative;
     text-align: center;
-    font-size: var(--bit-DateRangePicker-day-font-size, var(--bit-dtrp-cell-fs));
-    line-height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    font-size: var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}));
+    line-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     animation-fill-mode: both;
     // A step shorter than the calendar's own entry above, so the days still resolve inside the
     // container rather than with it.
@@ -461,13 +502,13 @@
     overflow: visible;
     color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
     position: relative;
-    width: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     align-items: center;
-    height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
-    font-size: var(--bit-DateRangePicker-day-font-size, var(--bit-dtrp-cell-fs));
+    font-size: var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}));
     line-height: 1;
     justify-content: center;
     background-color: transparent;
@@ -509,8 +550,8 @@
 }
 
 .bit-dtrp-dbe {
-    width: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
-    height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
+    height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
 }
 
 .bit-dtrp-dhl {
@@ -615,11 +656,11 @@
     display: flex;
     font-weight: $tg-fw-regular;
     color: var(--bit-DateRangePicker-week-number-color, #{$clr-fg-sec});
-    width: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     align-items: center;
-    height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     box-sizing: border-box;
-    font-size: var(--bit-DateRangePicker-day-font-size, var(--bit-dtrp-cell-fs));
+    font-size: var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}));
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
     background-color: var(--bit-DateRangePicker-week-number-background, #{$clr-bg-sec});
@@ -629,7 +670,7 @@
 .bit-dtrp-pkh {
     width: 100%;
     position: relative;
-    height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     display: inline-flex;
     line-height: spacing(5.5);
 }
@@ -660,7 +701,7 @@
     // without the row having to run past the wrapper - see the header floor at the end of this file.
     padding: 0 spacing(0.75);
     font-size: var(--bit-dtrp-hdr-fs);
-    line-height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    line-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     background-color: transparent;
     border-radius: $shp-radius-control;
 }
@@ -707,13 +748,13 @@
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    width: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
-    height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
+    height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     outline: transparent;
-    font-size: var(--bit-DateRangePicker-day-font-size, var(--bit-dtrp-cell-fs));
-    min-width: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
-    min-height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
-    line-height: var(--bit-DateRangePicker-day-size, var(--bit-dtrp-cell-size));
+    font-size: var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}));
+    min-width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
+    min-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
+    line-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     background-color: transparent;
     border-radius: $shp-radius-control;
     transition: background-color $mot-duration-short $mot-easing;
@@ -751,7 +792,7 @@
     text-align: center;
     width: var(--bit-dtrp-time-size);
     outline: transparent;
-    font-size: var(--bit-dtrp-cell-fs);
+    font-size: var(--bit-dtrp-cell-fs, #{$tg-fs-xs});
     line-height: var(--bit-dtrp-time-size);
     background-color: transparent;
     border-radius: $shp-radius-control;
@@ -898,7 +939,7 @@
     white-space: nowrap;
     outline: transparent;
     max-width: calc(var(--bit-dtrp-month-cell-w) + #{spacing(1)});
-    font-size: var(--bit-dtrp-cell-fs);
+    font-size: var(--bit-dtrp-cell-fs, #{$tg-fs-xs});
     line-height: var(--bit-dtrp-month-cell-h);
     text-overflow: ellipsis;
     background-color: transparent;
@@ -1094,10 +1135,10 @@
     white-space: nowrap;
     outline: transparent;
     box-sizing: border-box;
-    height: var(--bit-DateRangePicker-input-height, var(--bit-dtrp-inp-h));
+    height: var(--bit-dtrp-inp-h, var(--bit-DateRangePicker-input-height, #{$siz-ctrl-md}));
     padding: 0 $siz-ctrl-pad-x-md;
     min-width: $siz-ctrl-min-width;
-    font-size: var(--bit-dtrp-inp-fs);
+    font-size: var(--bit-dtrp-inp-fs, #{$tg-fs-sm});
     font-weight: $tg-fw-semibold;
     font-family: $tg-font-family;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -1326,20 +1367,23 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // They are applied to the root element and to the callout alike, since the callout is rendered
-// outside of the root and inherits nothing from it. Each slot passes through the public custom
-// property first, so one declaration re-skins every role at once.
+// outside of the root and inherits nothing from it. Published only by an explicit Color, and read
+// ahead of the public custom properties by dtrp-color-resolution, so a choice outranks the variable
+// that restyles the default.
 @each $role, $tokens in $bit-color-roles {
     .bit-dtrp-#{$role} {
-        --bit-dtrp-clr: var(--bit-DateRangePicker-color, #{role($tokens, main)});
-        --bit-dtrp-clr-txt: var(--bit-DateRangePicker-text-color, #{role($tokens, on)});
-        --bit-dtrp-clr-hover: var(--bit-DateRangePicker-hover-color, #{role($tokens, hover)});
-        --bit-dtrp-clr-active: var(--bit-DateRangePicker-active-color, #{role($tokens, active)});
-        --bit-dtrp-clr-body: var(--bit-DateRangePicker-range-background, #{role($tokens, light)});
-        --bit-dtrp-clr-focus: var(--bit-DateRangePicker-focus-color, #{role($tokens, focus)});
+        --bit-dtrp-rl-clr: #{role($tokens, main)};
+        --bit-dtrp-rl-txt: #{role($tokens, on)};
+        --bit-dtrp-rl-hover: #{role($tokens, hover)};
+        --bit-dtrp-rl-active: #{role($tokens, active)};
+        --bit-dtrp-rl-body: #{role($tokens, light)};
+        --bit-dtrp-rl-focus: #{role($tokens, focus)};
     }
 }
 
 
+// Published only by an explicit Size, on the root and on the callout alike; an unset one is the medium
+// DateRangePicker, which every read spells out after the public variable.
 .bit-dtrp-sm {
     --bit-dtrp-inp-h: #{$siz-ctrl-sm};
     --bit-dtrp-inp-fs: #{$tg-fs-xs};
@@ -1358,6 +1402,11 @@
 }
 
 .bit-dtrp-md {
+    --bit-dtrp-inp-h: #{$siz-ctrl-md};
+    --bit-dtrp-inp-fs: #{$tg-fs-sm};
+    --bit-dtrp-cell-size: #{spacing(3.5)};
+    --bit-dtrp-cell-fs: #{$tg-fs-xs};
+    --bit-dtrp-lbl-fs: #{$tg-fs-sm};
     @include dtrp-size-medium;
 }
 

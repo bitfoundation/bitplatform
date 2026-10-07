@@ -89,6 +89,27 @@ public class BitPivotTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPivotShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPivot>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Pivot-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-pvt");
+        var published = new[]
+        {
+            "bit-pvt-pri", "bit-pvt-sec", "bit-pvt-ter", "bit-pvt-inf", "bit-pvt-suc", "bit-pvt-wrn", "bit-pvt-swr", "bit-pvt-err",
+            "bit-pvt-pbg", "bit-pvt-sbg", "bit-pvt-tbg", "bit-pvt-pfg", "bit-pvt-sfg", "bit-pvt-tfg", "bit-pvt-pbr", "bit-pvt-sbr", "bit-pvt-tbr",
+            "bit-pvt-sm", "bit-pvt-md", "bit-pvt-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
     public void BitPivotShouldRespectFullWidthAndStackedAndDismissible()
     {
         var component = RenderComponent<BitPivot>(parameters =>

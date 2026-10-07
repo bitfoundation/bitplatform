@@ -429,7 +429,9 @@
         <div>
             The public <b>--bit-SnackBar-*</b> variables (listed under CSS variables below) inherit, so one set on
             <b>:root</b> restyles every snack bar, on a host's <b>Style</b> all of its items, and on an item's
-            <b>cssStyle</b> that item.
+            <b>cssStyle</b> that item. They restyle the default, not a choice: an item's explicit <b>Color</b> (the one
+            <b>Info</b>, <b>Success</b>, <b>Warning</b>, <b>SevereWarning</b> and <b>Error</b> pass included) and an
+            explicit <b>Size</b> win over them for what they set - which is why the item below is shown with <b>Show</b>.
         </div>
         <br />
         <BitSnackBar @ref="cssVarsRef" ShowIcon AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(6)"

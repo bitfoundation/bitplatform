@@ -108,6 +108,10 @@ public partial class BitRating : BitInputBase<double>
     /// The general color of the rating, applied to the filled part of the items.
     /// The unfilled part stays neutral so it reads as "not rated yet" whichever color is picked.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Rating-*</c> color variables (the fill and its hover, active and
+    /// focus colors); left unset, the rating is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -286,6 +290,11 @@ public partial class BitRating : BitInputBase<double>
     /// <summary>
     /// Size of the rating, which scales the item glyphs, the label and the description together.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Rating-size</c>, <c>--bit-Rating-label-font-size</c> and
+    /// <c>--bit-Rating-description-font-size</c>; left unset, the rating is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -395,6 +404,8 @@ public partial class BitRating : BitInputBase<double>
             _ => string.Empty
         });
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Rating-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-rtg-pri",
@@ -414,7 +425,7 @@ public partial class BitRating : BitInputBase<double>
             BitColor.PrimaryBorder => "bit-rtg-pbr",
             BitColor.SecondaryBorder => "bit-rtg-sbr",
             BitColor.TertiaryBorder => "bit-rtg-tbr",
-            _ => "bit-rtg-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -422,7 +433,7 @@ public partial class BitRating : BitInputBase<double>
             BitSize.Small => "bit-rtg-sm",
             BitSize.Medium => "bit-rtg-md",
             BitSize.Large => "bit-rtg-lg",
-            _ => "bit-rtg-md"
+            _ => string.Empty
         });
     }
 

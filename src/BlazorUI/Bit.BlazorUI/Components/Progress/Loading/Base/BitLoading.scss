@@ -1,17 +1,23 @@
 // Public CSS variables, shared by all eighteen loaders. They are read with a fallback and never declared here, so
 // a value set on :root re-skins every loader, one set on an ancestor the loaders inside it, and one set on the
-// Style of a loader that loader alone. Each one wins over the parameter it stands beside.
-//   --bit-Loading-color               color of the drawing                          (default: Color / CustomColor, or $clr-pri)
+// Style of a loader that loader alone.
+//   --bit-Loading-color               color of the drawing                          (default: $clr-pri)
 //   --bit-Loading-track-color         full circle under the moving arcs of the Ring,
 //                                     DualRing and Xbox loaders                    (default: transparent)
-//   --bit-Loading-size                width and height of the drawing, any length   (default: per Size / CustomSize, 64px,
-//                                                                                   1em when Inline and unsized)
-//   --bit-Loading-thickness           stroke width of the stroked loaders           (default: Thickness, or the authored width)
-//   --bit-Loading-speed               multiplier of the animation speed             (default: Speed, or 1)
+//   --bit-Loading-size                width and height of the drawing, any length   (default: 64px, 1em when Inline)
+//   --bit-Loading-thickness           stroke width of the stroked loaders           (default: the authored width)
+//   --bit-Loading-speed               multiplier of the animation speed             (default: 1)
 //   --bit-Loading-gap                 room between the drawing and the label        (default: spacing(1))
 //   --bit-Loading-label-color         color of the label                            (default: the surrounding text color)
-//   --bit-Loading-label-font-size     text size of the label                        (default: per Size, from the type ramp)
+//   --bit-Loading-label-font-size     text size of the label                        (default: $tg-fs-sm, 1em when Inline)
 //   --bit-Loading-label-font-weight   text weight of the label                      (default: $tg-fw-regular)
+//
+// A parameter written on the loader wins over the variable that restyles what it sets: Color and CustomColor over
+// --bit-Loading-color, Size and CustomSize over --bit-Loading-size and --bit-Loading-label-font-size, Thickness over
+// --bit-Loading-thickness and Speed over --bit-Loading-speed. The variables restyle the default, not a choice -
+// which is why none of those parameters publishes anything while it is left unset: a value that always carried the
+// default would be indistinguishable from one that was asked for. The 1em of an inline loader given no size is such
+// a default too, so the variables still win over it.
 
 .bit-ldn {
     display: flex;
@@ -20,19 +26,26 @@
     justify-content: center;
     gap: var(--bit-Loading-gap, #{spacing(1)});
 
-    // What every part of a loader reads, resolved here, once, from the public variable, then the parameter
-    // (written in the style attribute under a name of its own, so it cannot outrank the variable), then the
-    // theme. The drawing's geometry is expressed in units of an 80th of the size - the grid the artwork was
-    // drawn on - so it rescales in CSS alone, which is what lets --bit-Loading-size resize a loader whole.
-    --bit-ldn-color: var(--bit-Loading-color, var(--bit-ldn-clr, #{$clr-pri}));
-    --bit-ldn-track: var(--bit-Loading-track-color, transparent);
-    --bit-ldn-size: var(--bit-Loading-size, var(--bit-ldn-sz, 64px));
-    --bit-ldn-unit: calc(var(--bit-ldn-size) / 80);
-    --bit-ldn-thickness: var(--bit-Loading-thickness, var(--bit-ldn-stroke, var(--bit-ldn-stroke-authored)));
+    // The values the parameters publish - in the style attribute under a name of their own, or through a size
+    // class - start out unset on every root, so a loader nested in the label of another one never inherits the
+    // outer one's choice; the classes, declared further down at the same weight, and the style attribute still
+    // win on the root that carries them. So do the defaults of an inline loader given no size (.bit-ldn-em).
+    --bit-ldn-clr: initial;
+    --bit-ldn-sz: initial;
+    --bit-ldn-lfs: initial;
+    --bit-ldn-stroke: initial;
+    --bit-ldn-spd: initial;
+    --bit-ldn-sz-def: initial;
+    --bit-ldn-lfs-def: initial;
 
-    // A custom size takes the label along, within the readable range of the type ramp: the 14px it has at 64px,
-    // never below the smallest body text nor above the large step. The three sizes use the ramp exactly.
-    --bit-ldn-lfs: clamp(#{$tg-fs-xs}, calc(var(--bit-ldn-size) * 0.21875), #{$tg-fs-lg});
+    // What every part of a loader reads, resolved here, once, from the parameter, then the public variable, then
+    // the default. The drawing's geometry is expressed in units of an 80th of the size - the grid the artwork was
+    // drawn on - so it rescales in CSS alone, which is what lets --bit-Loading-size resize a loader whole.
+    --bit-ldn-color: var(--bit-ldn-clr, var(--bit-Loading-color, #{$clr-pri}));
+    --bit-ldn-track: var(--bit-Loading-track-color, transparent);
+    --bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, var(--bit-ldn-sz-def, 64px)));
+    --bit-ldn-unit: calc(var(--bit-ldn-size) / 80);
+    --bit-ldn-thickness: var(--bit-ldn-stroke, var(--bit-Loading-thickness, var(--bit-ldn-stroke-authored)));
 
     // Loading animations loop forever, so they keep literal durations rather than going through the
     // --bit-mot-duration* tokens: a near-zero looping duration renders as flicker, and stopping a
@@ -42,7 +55,7 @@
     // scaling the durations alone would bunch them up. It follows the theme's shared loop factor,
     // which already slows under reduced motion and is restored by ForceAnimation, divided by the
     // speed the loader was asked for.
-    --bit-ldn-mot-factor: calc(#{$mot-loop-factor} / var(--bit-Loading-speed, var(--bit-ldn-spd, 1)));
+    --bit-ldn-mot-factor: calc(#{$mot-loop-factor} / var(--bit-ldn-spd, var(--bit-Loading-speed, 1)));
 
     // Paused holds every animation of the drawing at the frame it had reached rather than removing it, so
     // the shape and the space it takes up are exactly what they were and nothing around it moves. The
@@ -71,11 +84,22 @@
 // text size too. The 1em is only resolved where the drawing and the label use it, so it follows the font of the
 // loader's surroundings. A class of its own rather than part of bit-ldn-inl, which an inline loader keeps when it
 // is given a Size or a CustomSize - and then the label has to follow that size, as it does on any other loader.
+// It is the default of an unsized inline loader rather than a size it was given, so it is read after the public
+// variables, which still restyle it.
 .bit-ldn-em {
-    --bit-ldn-sz: 1em;
-    --bit-ldn-lfs: 1em;
+    --bit-ldn-sz-def: 1em;
+    --bit-ldn-lfs-def: 1em;
 }
 
+// A custom size takes the label along, within the readable range of the type ramp: the 14px it has at 64px,
+// never below the smallest body text nor above the large step. The three sizes use the ramp exactly. Like them it
+// is an explicit size, so it wins over --bit-Loading-label-font-size.
+.bit-ldn-csz {
+    --bit-ldn-lfs: clamp(#{$tg-fs-xs}, calc(var(--bit-ldn-size) * 0.21875), #{$tg-fs-lg});
+}
+
+// Published only by an explicit Size; an unset one is the 64px drawing with the $tg-fs-sm label, which the root
+// and .bit-ldn-lbl spell out after the public variables.
 .bit-ldn-sm {
     --bit-ldn-sz: 40px;
     --bit-ldn-lfs: #{$tg-fs-xs};
@@ -115,7 +139,7 @@
 .bit-ldn-lbl {
     font-family: $tg-font-family;
     color: var(--bit-Loading-label-color, currentColor);
-    font-size: var(--bit-Loading-label-font-size, var(--bit-ldn-lfs));
+    font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, var(--bit-ldn-lfs-def, #{$tg-fs-sm})));
     font-weight: var(--bit-Loading-label-font-weight, #{$tg-fw-regular});
 }
 

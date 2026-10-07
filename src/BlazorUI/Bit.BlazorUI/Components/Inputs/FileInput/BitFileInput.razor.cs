@@ -114,6 +114,10 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// The general color of the file input, applied to the browse button and the drag-and-drop indicator.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileInput-*</c> color variables; left unset, the file input is
+    /// primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -343,6 +347,12 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// The size of the file input, applied to the browse button and the file list items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileInput-*</c> size variables (the browse button's height,
+    /// padding and text size, the drop zone's height, padding and glyph, the description, file name and file size
+    /// text, the preview side and the remove button); left unset, the file input is medium unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -566,6 +576,8 @@ public partial class BitFileInput : BitComponentBase
             _ => ShowDropZone ? "bit-fin-otl" : "bit-fin-fil"
         });
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-FileInput-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-fin-pri",
@@ -585,7 +597,7 @@ public partial class BitFileInput : BitComponentBase
             BitColor.PrimaryBorder => "bit-fin-pbr",
             BitColor.SecondaryBorder => "bit-fin-sbr",
             BitColor.TertiaryBorder => "bit-fin-tbr",
-            _ => "bit-fin-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -593,7 +605,7 @@ public partial class BitFileInput : BitComponentBase
             BitSize.Small => "bit-fin-sm",
             BitSize.Medium => "bit-fin-md",
             BitSize.Large => "bit-fin-lg",
-            _ => "bit-fin-md"
+            _ => string.Empty
         });
 
         // the browse button is what carries the drop indicator, so a component rendered without one - hidden

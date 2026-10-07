@@ -2,17 +2,17 @@
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // rating and one set on the Style of an instance re-skins that one alone:
-//   --bit-Rating-color              color of the filled part of the items          (default: the Color role's main color)
+//   --bit-Rating-color              color of the filled part of the items          (default: $clr-pri)
 //   --bit-Rating-unselected-color   color of the unfilled part of the items        (default: $clr-fg-ter)
 //   --bit-Rating-hover-color        color of the filled part while the pointer is
-//                                   previewing a value over the items             (default: the role's hover color)
+//                                   previewing a value over the items             (default: $clr-pri-hover)
 //   --bit-Rating-active-color       color of the filled part while an item is
-//                                   being pressed                                 (default: the role's active color)
-//   --bit-Rating-focus-color        color of the keyboard focus ring of an item    (default: the role's focus color)
+//                                   being pressed                                 (default: $clr-pri-active)
+//   --bit-Rating-focus-color        color of the keyboard focus ring of an item    (default: $clr-pri-focus)
 //   --bit-Rating-disabled-color     color of both parts when Disabled is true    (default: $clr-fg-dis)
 //   --bit-Rating-invalid-color      color of both parts, and of the focus ring,
 //                                   while the value is invalid                    (default: $clr-err / $clr-err-focus)
-//   --bit-Rating-size               size of the item glyphs                        (default: per size, $siz-icon-*)
+//   --bit-Rating-size               size of the item glyphs                        (default: $siz-icon-md)
 //   --bit-Rating-target-size        smallest pointer target of an item, which the
 //                                   glyph is centred in; 0 shrinks the items to
 //                                   the glyph and its padding                      (default: 1.5rem)
@@ -22,13 +22,19 @@
 //   --bit-Rating-hover-scale        how much the hovered item grows                (default: 1.1; 1 turns it off)
 //   --bit-Rating-active-scale       how much the pressed item dips                 (default: 0.9; 1 turns it off)
 //   --bit-Rating-label-color        text color of the label                        (default: $clr-fg-pri)
-//   --bit-Rating-label-font-size    text size of the label                         (default: per size, $tg-fs-xs/sm/md)
+//   --bit-Rating-label-font-size    text size of the label                         (default: $tg-fs-sm)
 //   --bit-Rating-label-font-weight  text weight of the label                       (default: $tg-fw-semibold)
 //   --bit-Rating-label-gap          room between the label and the items, and
 //                                   between the items and the description         (default: spacing(1))
 //   --bit-Rating-description-color  text color of the description                  (default: $clr-fg-sec)
-//   --bit-Rating-description-font-size  text size of the description               (default: per size,
-//                                                                                  $tg-fs-2xs/xs/sm)
+//   --bit-Rating-description-font-size  text size of the description               (default: $tg-fs-xs)
+//
+// A parameter written on the rating wins over the variable that restyles what it sets: an explicit Color over the
+// fill and its hover, press and focus colors, and an explicit Size over the glyph size and the two font sizes. The
+// variables restyle the default, not a choice - which is why Color and Size publish nothing while they are left
+// unset: a class that always carried the default would be indistinguishable from one that was asked for. What a
+// Color leaves alone - the unfilled part, the label and description colors - stays the variables'. A state the
+// rating is in (disabled, invalid) still paints over all of them, as before.
 
 .bit-rtg {
     // Block-level like the plain div the rating has always been, so two ratings written one after the other
@@ -44,8 +50,20 @@
     font-weight: $tg-fw-regular;
     // The text of the rating scales with its Size the way every other sized control in the library
     // scales its own, so a Large rating is not a large row of stars under a small label.
-    font-size: var(--bit-rtg-lbl-size);
+    font-size: var(--bit-rtg-lbl-size, #{$tg-fs-sm});
     font-family: $tg-font-family;
+    // The values the Color and Size classes publish start out unset on every root, which those classes -
+    // declared further down at the same weight - still win over on the root that carries them. That keeps a
+    // rating placed in the label or an item template of another one from inheriting the outer one's choice,
+    // and it is what lets each read below rank an explicit parameter first, then the public variable, then
+    // the primary, medium rating an unset parameter stands for.
+    --bit-rtg-clr: initial;
+    --bit-rtg-clr-hover: initial;
+    --bit-rtg-clr-active: initial;
+    --bit-rtg-clr-focus: initial;
+    --bit-rtg-size: initial;
+    --bit-rtg-lbl-size: initial;
+    --bit-rtg-dsc-size: initial;
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
     --bit-rtg-clr-uns: #{$clr-fg-ter};
@@ -58,7 +76,7 @@
         // Scoped to the box the items live in rather than to the root: the pointer resting on the label
         // or the description previews nothing, so it must not repaint the fill as though it did.
         &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-cnt:hover .bit-rtg-ifl {
-            color: var(--bit-Rating-hover-color, var(--bit-rtg-clr-hover));
+            color: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));
         }
 
         // The item under the pointer grows a little, which is the affordance that says the items are
@@ -75,7 +93,7 @@
     // gated by the hover query the two rules above are in. Declared after that block rather than inside
     // it so that a press outranks the hover it happens under on a pointer device, on source order.
     &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl) .bit-rtg-cnt:active .bit-rtg-ifl {
-        color: var(--bit-Rating-active-color, var(--bit-rtg-clr-active));
+        color: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));
     }
 
     // Dipping rather than growing: the item is already grown by the hover it is pressed under on a
@@ -142,7 +160,7 @@
     overflow-wrap: break-word;
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-Rating-label-color, #{$clr-fg-pri});
-    font-size: var(--bit-Rating-label-font-size, var(--bit-rtg-lbl-size));
+    font-size: var(--bit-rtg-lbl-size, var(--bit-Rating-label-font-size, #{$tg-fs-sm}));
     font-weight: var(--bit-Rating-label-font-weight, #{$tg-fw-semibold});
 }
 
@@ -154,7 +172,7 @@
     max-width: 100%;
     overflow-wrap: break-word;
     color: var(--bit-Rating-description-color, #{$clr-fg-sec});
-    font-size: var(--bit-Rating-description-font-size, var(--bit-rtg-dsc-size));
+    font-size: var(--bit-rtg-dsc-size, var(--bit-Rating-description-font-size, #{$tg-fs-xs}));
 }
 
 .bit-rtg-btn {
@@ -189,12 +207,12 @@
     // sizes: an ItemTemplate taller or wider than a glyph grows the item to fit instead of spilling out.
     min-width: var(--bit-Rating-target-size, 1.5rem);
     min-height: var(--bit-Rating-target-size, 1.5rem);
-    font-size: var(--bit-Rating-size, var(--bit-rtg-size));
-    line-height: var(--bit-Rating-size, var(--bit-rtg-size));
+    font-size: var(--bit-rtg-size, var(--bit-Rating-size, #{$siz-icon-md}));
+    line-height: var(--bit-rtg-size, var(--bit-Rating-size, #{$siz-icon-md}));
     border-radius: var(--bit-Rating-radius, #{$shp-radius-control});
 
     &:focus-visible {
-        @include focus-ring(var(--bit-Rating-focus-color, var(--bit-rtg-clr-focus)));
+        @include focus-ring(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color, #{$clr-pri-focus})));
         // The ring is drawn with a box-shadow, which the neighbouring items would otherwise paint over.
         z-index: 1;
     }
@@ -219,7 +237,8 @@
 }
 
 // Each size class carries the whole ramp of the rating - the glyph, the label and the description -
-// so that one parameter scales the control rather than only the stars in the middle of it.
+// so that one parameter scales the control rather than only the stars in the middle of it. Published only
+// by an explicit Size; an unset one is the medium rating, which the reads spell out after the variables.
 .bit-rtg-sm {
     --bit-rtg-size: #{$siz-icon-sm};
     --bit-rtg-lbl-size: #{$tg-fs-xs};
@@ -285,7 +304,7 @@
     font-weight: $tg-fw-regular;
     display: inline-block;
     vertical-align: middle;
-    color: var(--bit-Rating-color, var(--bit-rtg-clr));
+    color: var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri}));
     transition: width $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 }
 
@@ -357,7 +376,8 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only
+// by an explicit Color; an unset one is the primary role, which every read spells out after the variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-rtg-#{$role} {
         --bit-rtg-clr: #{role($tokens, main)};

@@ -93,10 +93,14 @@ public class BitSnackBarService
     /// <summary>
     /// Shows a new snackbar.
     /// </summary>
+    /// <remarks>
+    /// A <paramref name="color"/> left out is no color at all rather than Info: the item is drawn in Info unless the
+    /// <c>--bit-SnackBar-*</c> color variables say otherwise, while one passed in wins over them.
+    /// </remarks>
     public Task<BitSnackBarItem> Show(
         string title,
         string? body = "",
-        BitColor color = BitColor.Info,
+        BitColor? color = null,
         string? cssClass = null,
         string? cssStyle = null,
         bool persistent = false,

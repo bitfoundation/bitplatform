@@ -252,6 +252,10 @@ public partial class BitFileUpload : BitComponentBase
     /// The general color of the file upload, applied to the browse button, the drag-and-drop indicator,
     /// the progress bars and the hovered action buttons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileUpload-*</c> color variables; left unset, the file upload is
+    /// primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -707,6 +711,11 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// The size of the file upload, applied to the browse button and the file list items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileUpload-*</c> size variables (the browse button's height floor,
+    /// padding, text and icon size, the description, file name and meta text sizes, the thumbnail side and the
+    /// action buttons); left unset, the file upload is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1233,6 +1242,8 @@ public partial class BitFileUpload : BitComponentBase
             _ => "bit-upl-fil"
         });
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-FileUpload-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-upl-pri",
@@ -1252,7 +1263,7 @@ public partial class BitFileUpload : BitComponentBase
             BitColor.PrimaryBorder => "bit-upl-pbr",
             BitColor.SecondaryBorder => "bit-upl-sbr",
             BitColor.TertiaryBorder => "bit-upl-tbr",
-            _ => "bit-upl-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -1260,7 +1271,7 @@ public partial class BitFileUpload : BitComponentBase
             BitSize.Small => "bit-upl-sm",
             BitSize.Medium => "bit-upl-md",
             BitSize.Large => "bit-upl-lg",
-            _ => "bit-upl-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);

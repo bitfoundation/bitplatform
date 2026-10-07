@@ -335,6 +335,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The general color of the DatePicker that applies to the today day button, the highlighted current month,
     /// and the selected AM/PM button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-DatePicker-*</c> today and focus color variables; left unset, the
+    /// DatePicker is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -1010,6 +1014,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The size of the DatePicker.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-DatePicker-*</c> size variables (label, input, icon, day, header and
+    /// time sizes); left unset, the DatePicker is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1268,6 +1276,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => BitCssClasses.CultureRtl(Dir, _culture));
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-DatePicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(GetColorClass);
 
         ClassBuilder.Register(GetSizeClass);
@@ -4240,9 +4250,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string GetCalloutCssClasses()
     {
         // The callout is rendered outside of the root element (and is reparented to the body while it is
-        // open), so the custom properties of the color and the size have to be declared on it as well -
+        // open), so the custom properties of an explicit color and size have to be declared on it as well -
         // nothing of the root cascades down to it.
-        List<string> classes = ["bit-dtp-cal", GetColorClass()];
+        List<string> classes = ["bit-dtp-cal"];
+
+        var colorClass = GetColorClass();
+        if (colorClass.HasValue())
+        {
+            classes.Add(colorClass);
+        }
 
         var sizeClass = GetSizeClass();
         if (sizeClass.HasValue())

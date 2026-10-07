@@ -10,7 +10,9 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 [TestClass]
 public class BitIconTests : BunitTestContext
 {
-    private const string CLASS = "bit-ico bit-ico-pri bit-ico-md bit-ico-txt";
+    // An unset Color and Size publish no class, so the public --bit-Icon-* variables restyle the default while an
+    // explicit value - which does publish its class - wins over them.
+    private const string CLASS = "bit-ico bit-ico-txt";
 
     // An icon with nothing to name it is decorative, so it is hidden from assistive technology and
     // carries no role. Every markup expectation that does not set a name therefore carries this.
@@ -22,6 +24,27 @@ public class BitIconTests : BunitTestContext
         var component = RenderComponent<BitIcon>();
 
         component.MarkupMatches(@$"<i {HIDDEN} class=""{CLASS}"" id:ignore />");
+    }
+
+    [TestMethod]
+    public void BitIconShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Icon-* variables restyle the default while an
+        // explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-ico");
+        var published = new[]
+        {
+            "bit-ico-pri", "bit-ico-sec", "bit-ico-ter", "bit-ico-inf", "bit-ico-suc", "bit-ico-wrn", "bit-ico-swr", "bit-ico-err",
+            "bit-ico-pbg", "bit-ico-sbg", "bit-ico-tbg", "bit-ico-pfg", "bit-ico-sfg", "bit-ico-tfg", "bit-ico-pbr", "bit-ico-sbr", "bit-ico-tbr",
+            "bit-ico-sm", "bit-ico-md", "bit-ico-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,
@@ -430,13 +453,13 @@ public class BitIconTests : BunitTestContext
 
         var sizeClass = size switch
         {
-            BitSize.Small => "bit-ico-sm",
-            BitSize.Medium => "bit-ico-md",
-            BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
+            BitSize.Small => " bit-ico-sm",
+            BitSize.Medium => " bit-ico-md",
+            BitSize.Large => " bit-ico-lg",
+            _ => string.Empty
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt {sizeClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{sizeClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -451,7 +474,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-lg"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -520,27 +543,27 @@ public class BitIconTests : BunitTestContext
 
         var colorClass = color switch
         {
-            BitColor.Primary => "bit-ico-pri",
-            BitColor.Secondary => "bit-ico-sec",
-            BitColor.Tertiary => "bit-ico-ter",
-            BitColor.Info => "bit-ico-inf",
-            BitColor.Success => "bit-ico-suc",
-            BitColor.Warning => "bit-ico-wrn",
-            BitColor.SevereWarning => "bit-ico-swr",
-            BitColor.Error => "bit-ico-err",
-            BitColor.PrimaryBackground => "bit-ico-pbg",
-            BitColor.SecondaryBackground => "bit-ico-sbg",
-            BitColor.TertiaryBackground => "bit-ico-tbg",
-            BitColor.PrimaryForeground => "bit-ico-pfg",
-            BitColor.SecondaryForeground => "bit-ico-sfg",
-            BitColor.TertiaryForeground => "bit-ico-tfg",
-            BitColor.PrimaryBorder => "bit-ico-pbr",
-            BitColor.SecondaryBorder => "bit-ico-sbr",
-            BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => "bit-ico-pri"
+            BitColor.Primary => " bit-ico-pri",
+            BitColor.Secondary => " bit-ico-sec",
+            BitColor.Tertiary => " bit-ico-ter",
+            BitColor.Info => " bit-ico-inf",
+            BitColor.Success => " bit-ico-suc",
+            BitColor.Warning => " bit-ico-wrn",
+            BitColor.SevereWarning => " bit-ico-swr",
+            BitColor.Error => " bit-ico-err",
+            BitColor.PrimaryBackground => " bit-ico-pbg",
+            BitColor.SecondaryBackground => " bit-ico-sbg",
+            BitColor.TertiaryBackground => " bit-ico-tbg",
+            BitColor.PrimaryForeground => " bit-ico-pfg",
+            BitColor.SecondaryForeground => " bit-ico-sfg",
+            BitColor.TertiaryForeground => " bit-ico-tfg",
+            BitColor.PrimaryBorder => " bit-ico-pbr",
+            BitColor.SecondaryBorder => " bit-ico-sbr",
+            BitColor.TertiaryBorder => " bit-ico-tbr",
+            _ => string.Empty
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt {colorClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt{colorClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -555,7 +578,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Color, BitColor.Error);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-txt bit-ico-err"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,
@@ -579,7 +602,7 @@ public class BitIconTests : BunitTestContext
             _ => "bit-ico-txt"
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md {variantClass}"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico {variantClass}"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -594,7 +617,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Variant, BitVariant.Fill);
         });
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-md bit-ico-fil"" {HIDDEN} id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-fil"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod,

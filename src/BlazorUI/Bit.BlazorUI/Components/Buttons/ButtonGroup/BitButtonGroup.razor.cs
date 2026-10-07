@@ -73,6 +73,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ButtonGroup-*</c> color variables (the toggled, disabled and focus colors
+    /// included); left unset, the group is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -225,6 +229,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Renders the ButtonGroup with fully rounded (pill shaped) corners.
     /// </summary>
+    /// <remarks>
+    /// It wins over <c>--bit-ButtonGroup-radius</c>, set on the group or on an ancestor: the variable restyles the
+    /// default corner, not a rounded one. A vertical group is not rounded as a whole, though the buttons of a
+    /// <see cref="Detached"/> one still are.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
 
@@ -261,6 +270,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The size of ButtonGroup, Possible values: Small | Medium | Large
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ButtonGroup-*</c> size variables (min-height, padding, font size, icon
+    /// size, badge font size); left unset, the group is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -486,6 +499,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => "bit-btg-fil"
         });
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-ButtonGroup-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-btg-pri",
@@ -505,7 +520,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             BitColor.PrimaryBorder => "bit-btg-pbr",
             BitColor.SecondaryBorder => "bit-btg-sbr",
             BitColor.TertiaryBorder => "bit-btg-tbr",
-            _ => "bit-btg-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -513,7 +528,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             BitSize.Small => "bit-btg-sm",
             BitSize.Medium => "bit-btg-md",
             BitSize.Large => "bit-btg-lg",
-            _ => "bit-btg-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);

@@ -415,6 +415,10 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// The size of the snack bar items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-SnackBar-*</c> size variables (padding, title and body font sizes,
+    /// icon size); left unset, the items are medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
@@ -536,10 +540,14 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Shows a new snackbar.
     /// </summary>
+    /// <remarks>
+    /// A <paramref name="color"/> left out is no color at all rather than Info: the item is drawn in Info unless the
+    /// <c>--bit-SnackBar-*</c> color variables say otherwise, while one passed in wins over them.
+    /// </remarks>
     public Task<BitSnackBarItem> Show(
         string title,
         string? body = "",
-        BitColor color = BitColor.Info,
+        BitColor? color = null,
         string? cssClass = null,
         string? cssStyle = null,
         bool persistent = false,
@@ -1424,6 +1432,9 @@ public partial class BitSnackBar : BitComponentBase
 
     private string GetItemClasses(BitSnackBarItem item)
     {
+        // The Color of the item and the Size publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-SnackBar-* variables restyle the default and never an
+        // explicit value.
         var classes = new List<string>(6)
         {
             item.Color switch
@@ -1445,7 +1456,7 @@ public partial class BitSnackBar : BitComponentBase
                 BitColor.PrimaryBorder => "bit-snb-pbr",
                 BitColor.SecondaryBorder => "bit-snb-sbr",
                 BitColor.TertiaryBorder => "bit-snb-tbr",
-                _ => "bit-snb-inf"
+                _ => string.Empty
             },
             Variant switch
             {
@@ -1459,9 +1470,11 @@ public partial class BitSnackBar : BitComponentBase
                 BitSize.Small => "bit-snb-sm",
                 BitSize.Medium => "bit-snb-md",
                 BitSize.Large => "bit-snb-lg",
-                _ => "bit-snb-md"
+                _ => string.Empty
             }
         };
+
+        classes.RemoveAll(string.IsNullOrEmpty);
 
         if (item._dismissing) classes.Add("bit-snb-dsm");
         if (item._paused) classes.Add("bit-snb-pau");

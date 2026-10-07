@@ -495,10 +495,9 @@ public class BitToggleTests : BunitTestContext
         DataRow(BitColor.TertiaryForeground, "bit-tgl-tfg"),
         DataRow(BitColor.PrimaryBorder, "bit-tgl-pbr"),
         DataRow(BitColor.SecondaryBorder, "bit-tgl-sbr"),
-        DataRow(BitColor.TertiaryBorder, "bit-tgl-tbr"),
-        DataRow(null, "bit-tgl-pri")
+        DataRow(BitColor.TertiaryBorder, "bit-tgl-tbr")
     ]
-    public void BitToggleColorTest(BitColor? color, string expectedClass)
+    public void BitToggleColorTest(BitColor color, string expectedClass)
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
@@ -511,10 +510,9 @@ public class BitToggleTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-tgl-sm"),
         DataRow(BitSize.Medium, "bit-tgl-md"),
-        DataRow(BitSize.Large, "bit-tgl-lg"),
-        DataRow(null, "bit-tgl-md")
+        DataRow(BitSize.Large, "bit-tgl-lg")
     ]
-    public void BitToggleSizeTest(BitSize? size, string expectedClass)
+    public void BitToggleSizeTest(BitSize size, string expectedClass)
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
@@ -522,6 +520,27 @@ public class BitToggleTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitToggleShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitToggle>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Toggle-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-tgl");
+        var published = new[]
+        {
+            "bit-tgl-pri", "bit-tgl-sec", "bit-tgl-ter", "bit-tgl-inf", "bit-tgl-suc", "bit-tgl-wrn", "bit-tgl-swr", "bit-tgl-err",
+            "bit-tgl-pbg", "bit-tgl-sbg", "bit-tgl-tbg", "bit-tgl-pfg", "bit-tgl-sfg", "bit-tgl-tfg", "bit-tgl-pbr", "bit-tgl-sbr", "bit-tgl-tbr",
+            "bit-tgl-sm", "bit-tgl-md", "bit-tgl-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,

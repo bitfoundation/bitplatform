@@ -130,6 +130,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <remarks>
     /// This is the severity of the message: Info, Success, Warning, SevereWarning and Error each carry a
     /// glyph of their own, which is why setting a color is enough to give a message box its icon.
+    /// <br />
+    /// An explicit value wins over <c>--bit-MessageBox-icon-color</c>; left unset, the icon takes the text color
+    /// unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -275,6 +278,10 @@ public partial class BitMessageBox : BitComponentBase
     /// <summary>
     /// The size of the message box, which scales its inset, its title, its body text and its leading icon together.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-MessageBox-*</c> size variables (padding, min width, title and body
+    /// font sizes, icon size); left unset, the message box is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -465,6 +472,8 @@ public partial class BitMessageBox : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-MessageBox-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Classes?.Root)
                     .Register(() => Color switch
                     {

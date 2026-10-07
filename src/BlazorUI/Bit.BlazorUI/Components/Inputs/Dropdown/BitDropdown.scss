@@ -8,26 +8,26 @@
 // both of them by hand - see GetPublicCssVariables.
 //
 //   FIELD
-//   --bit-Dropdown-background              background of the field                  (default: $clr-bg-pri, transparent with Transparent)
+//   --bit-Dropdown-background              background of the field                  (default: $clr-bg-pri)
 //   --bit-Dropdown-color                   text of the field once something
 //                                          is selected                              (default: $clr-fg-pri)
 //   --bit-Dropdown-placeholder-color       text of the field while it is empty      (default: $clr-fg-sec)
 //   --bit-Dropdown-border-color            border at rest                           (default: $clr-brd-pri)
 //   --bit-Dropdown-hover-border-color      border on hover                          (default: $clr-brd-pri-hover)
-//   --bit-Dropdown-focus-color             focus indicator color                    (default: the role's focus color)
+//   --bit-Dropdown-focus-color             focus indicator color                    (default: $clr-pri-focus)
 //   --bit-Dropdown-invalid-color           border, focus indicator and ErrorMessage
 //                                          text while the value is rejected         (default: $clr-err / $clr-err-focus)
 //   --bit-Dropdown-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
 //   --bit-Dropdown-disabled-background     background when disabled                 (default: $clr-bg-dis)
 //   --bit-Dropdown-disabled-border-color   border when disabled                     (default: $clr-brd-dis)
 //   --bit-Dropdown-radius                  corner radius of the field               (default: $shp-radius-control)
-//   --bit-Dropdown-min-height              smallest height of the field             (default: per size, $siz-ctrl-*)
-//   --bit-Dropdown-font-size               text size of the field                   (default: per size, from the type ramp)
+//   --bit-Dropdown-min-height              smallest height of the field             (default: $siz-ctrl-md)
+//   --bit-Dropdown-font-size               text size of the field                   (default: $tg-fs-sm)
 //   --bit-Dropdown-icon-color              the caret, the clear button glyph and
 //                                          the responsive add button glyph          (default: $clr-fg-sec)
 //   --bit-Dropdown-icon-size               size of every glyph of the component,
 //                                          including the search box's and the
-//                                          responsive panel's                       (default: per size, $siz-icon-*)
+//                                          responsive panel's                       (default: $siz-icon-md)
 //
 //   PREFIX AND SUFFIX (the two addons flush with the ends of the field)
 //   --bit-Dropdown-prefix-color            text of the prefix addon                 (default: $clr-fg-pri)
@@ -37,11 +37,11 @@
 //
 //   ACCENT - the role color, which reaches the group headers, the search glyph, the checkbox fill, the
 //   search-match highlight, the overflow chip, the spinner arc and the bar marking the commit target.
-//   --bit-Dropdown-accent-color            the accent itself                        (default: the Color role's main color)
-//   --bit-Dropdown-accent-hover-color      the accent while the part is hovered     (default: the role's hover color)
+//   --bit-Dropdown-accent-color            the accent itself                        (default: $clr-pri)
+//   --bit-Dropdown-accent-hover-color      the accent while the part is hovered     (default: $clr-pri-hover)
 //   --bit-Dropdown-accent-text-color       text and glyphs drawn ON the accent -
 //                                          set it along with the accent to keep the
-//                                          check mark and the highlight legible     (default: the role's on-color)
+//                                          check mark and the highlight legible     (default: $clr-pri-text)
 //
 //   LABEL AND DESCRIPTION
 //   --bit-Dropdown-label-color             label text                               (default: $clr-fg-pri)
@@ -68,8 +68,8 @@
 //                                          a color for a modal-style scrim          (default: transparent)
 //
 //   ITEMS
-//   --bit-Dropdown-item-height             height of one row                        (default: per size, $siz-item-*)
-//   --bit-Dropdown-item-font-size          text size of one row                     (default: per size, from the type ramp)
+//   --bit-Dropdown-item-height             height of one row                        (default: $siz-item-md)
+//   --bit-Dropdown-item-font-size          text size of one row                     (default: $tg-fs-sm)
 //   --bit-Dropdown-item-color              text of one row                          (default: $clr-fg-pri)
 //   --bit-Dropdown-item-hover-background   background of the hovered row            (default: $clr-bg-pri-hover)
 //   --bit-Dropdown-item-selected-background  background of a selected row           (default: $clr-bg-sec)
@@ -80,12 +80,22 @@
 //   --bit-Dropdown-header-color            text of a group header                   (default: the accent)
 //   --bit-Dropdown-divider-color           the rule a Divider item draws, and the
 //                                          one under the select all row             (default: $clr-bg-sec / $clr-brd-sec)
+//
+// A parameter written on the dropdown wins over the variable that restyles what it sets: an explicit Color
+// over the accent, accent hover, accent text, focus and header colors, an explicit Size over the min height,
+// font size (and the label font size that follows it), icon size, item height and item font size, and
+// Transparent over the background. The variables restyle the default, not a choice - which is why Color and
+// Size publish nothing while they are left unset: a class that always carried the default would be
+// indistinguishable from one that was asked for. The callout carries the Color and Size classes of its
+// dropdown as well as the copied variables, so the same order holds in the list it opens. The invalid and
+// disabled states are read before all of them, as before.
 
 
 // The size of the control and of its callout is driven by these variables so a single size class,
 // applied to the root element and repeated on the callout, resizes every part consistently.
 // A preset that raises the control height (Material 40px, Cupertino 36px) then resizes the trigger,
-// the callout and the rows inside it together.
+// the callout and the rows inside it together. Published only by an explicit Size: an unset one leaves
+// them unset (see drp-reset), and drp-vars spells out the medium size after the public variables.
 @mixin drp-size($fs, $h, $lbl-lh, $itm-h, $itm-fs, $ico, $sel) {
     --bit-drp-sz-fs: #{$fs};
     --bit-drp-sz-h: #{$h};
@@ -100,27 +110,49 @@
     @include drp-size($tg-fs-sm, $siz-ctrl-md, spacing(2.75), $siz-item-md, $tg-fs-sm, $siz-icon-md, $siz-sel-md);
 }
 
-// The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
+// A dropdown can sit in the template of another one (and its callout in the callout of another one before
+// it is moved to the body), which must not inherit the outer one's Color, Size or Transparent: the root and
+// the callout each start the values those classes publish out unset, and the classes - declared further down
+// at the same weight - still win on the element that carries them. Left unset, each sends the var() reading
+// it on to the public variable and then to the default, which is what lets an explicit parameter outrank the
+// variable while an unset one leaves the variable in charge.
+@mixin drp-reset {
+    --bit-drp-sz-fs: initial;
+    --bit-drp-sz-h: initial;
+    --bit-drp-sz-lbl-lh: initial;
+    --bit-drp-sz-itm-h: initial;
+    --bit-drp-sz-itm-fs: initial;
+    --bit-drp-sz-ico: initial;
+    --bit-drp-sz-sel: initial;
+    --bit-drp-role-main: initial;
+    --bit-drp-role-on: initial;
+    --bit-drp-role-hover: initial;
+    --bit-drp-role-focus: initial;
+    --bit-drp-bg: initial;
+}
+
+// The one place the public variables meet the per-size and per-role values. Every rule below reads the
 // private variables this leaves behind, so no use site repeats the fallback chain - and the block is
-// included on the callout as well, which is a sibling of the root and inherits nothing from it.
+// included on the callout as well, which is a sibling of the root and inherits nothing from it. Each value
+// an explicit Size or Color publishes is read first, then the public variable, then the medium size or the
+// primary role an unset one stands for.
 @mixin drp-vars {
-    --bit-drp-fs: var(--bit-Dropdown-font-size, var(--bit-drp-sz-fs));
-    --bit-drp-h: var(--bit-Dropdown-min-height, var(--bit-drp-sz-h));
-    --bit-drp-lbl-lh: var(--bit-drp-sz-lbl-lh);
-    --bit-drp-itm-h: var(--bit-Dropdown-item-height, var(--bit-drp-sz-itm-h));
-    --bit-drp-itm-fs: var(--bit-Dropdown-item-font-size, var(--bit-drp-sz-itm-fs));
-    --bit-drp-ico: var(--bit-Dropdown-icon-size, var(--bit-drp-sz-ico));
-    --bit-drp-sel: var(--bit-drp-sz-sel);
+    --bit-drp-fs: var(--bit-drp-sz-fs, var(--bit-Dropdown-font-size, #{$tg-fs-sm}));
+    --bit-drp-h: var(--bit-drp-sz-h, var(--bit-Dropdown-min-height, #{$siz-ctrl-md}));
+    --bit-drp-lbl-lh: var(--bit-drp-sz-lbl-lh, #{spacing(2.75)});
+    --bit-drp-itm-h: var(--bit-drp-sz-itm-h, var(--bit-Dropdown-item-height, #{$siz-item-md}));
+    --bit-drp-itm-fs: var(--bit-drp-sz-itm-fs, var(--bit-Dropdown-item-font-size, #{$tg-fs-sm}));
+    --bit-drp-ico: var(--bit-drp-sz-ico, var(--bit-Dropdown-icon-size, #{$siz-icon-md}));
+    --bit-drp-sel: var(--bit-drp-sz-sel, #{$siz-sel-md});
     --bit-drp-radius: var(--bit-Dropdown-radius, #{$shp-radius-control});
 
     // The accent, and the two colors that go with it. A theme that repaints the accent has to be able to
     // repaint what is drawn on top of it too, or the check mark and the highlighted text lose their contrast.
-    --bit-drp-clr: var(--bit-Dropdown-accent-color, var(--bit-drp-role-main, #{$clr-pri}));
-    --bit-drp-clr-hover: var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, var(--bit-drp-role-hover, #{$clr-pri-hover})));
-    --bit-drp-clr-text: var(--bit-Dropdown-accent-text-color, var(--bit-drp-role-on, #{$clr-pri-text}));
-    --bit-drp-clr-focus: var(--bit-Dropdown-focus-color, var(--bit-drp-role-focus, #{$clr-pri-focus}));
+    --bit-drp-clr: var(--bit-drp-role-main, var(--bit-Dropdown-accent-color, #{$clr-pri}));
+    --bit-drp-clr-hover: var(--bit-drp-role-hover, var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, #{$clr-pri-hover})));
+    --bit-drp-clr-text: var(--bit-drp-role-on, var(--bit-Dropdown-accent-text-color, #{$clr-pri-text}));
+    --bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color, #{$clr-pri-focus}));
 
-    --bit-drp-bg: #{$clr-bg-pri};
     --bit-drp-itm-clr: var(--bit-Dropdown-item-color, #{$clr-fg-pri});
     --bit-drp-itm-hover-bg: var(--bit-Dropdown-item-hover-background, #{$clr-bg-pri-hover});
     --bit-drp-itm-sel-bg: var(--bit-Dropdown-item-selected-background, #{$clr-bg-sec});
@@ -150,7 +182,7 @@
     position: relative;
     flex-direction: column;
     font-family: $tg-font-family;
-    @include drp-size-medium;
+    @include drp-reset;
     @include drp-vars;
 
     &.bit-drp-req {
@@ -310,8 +342,9 @@
     }
 }
 
-// Retunes the field's own background variable rather than overriding the declaration that reads it, so a
-// public --bit-Dropdown-background set on a transparent dropdown still wins the way it does everywhere else.
+// Publishes the field's own background variable rather than overriding the declaration that reads it, which
+// reads it ahead of the public --bit-Dropdown-background: Transparent is a parameter written on the dropdown,
+// and like Color and Size it wins over the variable that restyles the default.
 .bit-drp.bit-drp-trn {
     --bit-drp-bg: transparent;
 }
@@ -349,7 +382,9 @@
     padding: spacing(0.625) 0;
     line-height: var(--bit-drp-lbl-lh);
     color: var(--bit-Dropdown-label-color, #{$clr-fg-pri});
-    font-size: var(--bit-Dropdown-label-font-size, var(--bit-drp-fs));
+    // An explicit Size first, then the public label size, then the field's own (its public variable or the
+    // medium size).
+    font-size: var(--bit-drp-sz-fs, var(--bit-Dropdown-label-font-size, var(--bit-drp-fs)));
     font-weight: var(--bit-Dropdown-label-font-weight, #{$tg-field-label-font-weight});
 }
 
@@ -390,7 +425,7 @@
     min-height: var(--bit-drp-h);
     box-sizing: border-box;
     border-radius: var(--bit-drp-radius);
-    background-color: var(--bit-Dropdown-background, var(--bit-drp-bg));
+    background-color: var(--bit-drp-bg, var(--bit-Dropdown-background, #{$clr-bg-pri}));
     border: $shp-border-width $shp-border-style var(--bit-Dropdown-border-color, #{$clr-brd-pri});
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
@@ -1016,7 +1051,7 @@
     font-size: var(--bit-drp-fs);
     font-family: $tg-font-family;
     animation-fill-mode: both;
-    @include drp-size-medium;
+    @include drp-reset;
     @include drp-vars;
 
     animation-duration: $mot-duration-long;
@@ -1052,7 +1087,9 @@
     cursor: default;
     font-weight: $tg-fw-semibold;
     user-select: none;
-    color: var(--bit-Dropdown-header-color, var(--bit-drp-clr));
+    // An explicit Color first, then the public header color, then the accent (its public variable or the
+    // primary role).
+    color: var(--bit-drp-role-main, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));
     height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
@@ -1404,9 +1441,10 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They leave
-// the four slots the dropdown uses behind as defaults; drp-vars is what reads them back through the public
-// accent variables, so a role and an override never have to be kept in sync here.
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and published
+// only by an explicit Color - on the root and on the callout. They leave the four slots the dropdown uses
+// behind; drp-vars reads them ahead of the public accent variables, and spells out the primary role after
+// those for an unset Color.
 @each $role, $tokens in $bit-color-roles {
     .bit-drp-#{$role} {
         --bit-drp-role-main: #{role($tokens, main)};

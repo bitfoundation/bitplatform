@@ -37,6 +37,11 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// The general color of the navbar, used for the icon, the text and the indicator of the selected item.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-NavBar-*</c> hover, selected, indicator, disabled and focus color
+    /// variables (and, with <see cref="Filled"/>, over the hover and selected backgrounds); left unset, the navbar is
+    /// primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -250,6 +255,11 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// The size of the navbar.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-NavBar-item-padding</c>, <c>--bit-NavBar-item-min-size</c>,
+    /// <c>--bit-NavBar-icon-size</c> and <c>--bit-NavBar-text-size</c>; left unset, the navbar is medium unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 

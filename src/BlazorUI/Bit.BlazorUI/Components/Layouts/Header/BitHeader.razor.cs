@@ -101,6 +101,9 @@ public partial class BitHeader : BitComponentBase
     /// and as the text and border color in the Outline and Text variants.
     /// <br />
     /// When not set, the header keeps the primary background and foreground colors of the current theme.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Header-*</c> color variables; left unset, the header keeps those theme
+    /// colors unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -314,6 +317,10 @@ public partial class BitHeader : BitComponentBase
     /// <summary>
     /// The size of the BitHeader, which determines the paddings around its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Header-padding-block</c> and <c>--bit-Header-padding-inline</c>; left unset,
+    /// the header is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -485,6 +492,8 @@ public partial class BitHeader : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Header-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-hdr-pri",

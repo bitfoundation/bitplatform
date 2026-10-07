@@ -1203,7 +1203,6 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(null, "bit-dtrp-pri"),
         DataRow(BitColor.Primary, "bit-dtrp-pri"),
         DataRow(BitColor.Secondary, "bit-dtrp-sec"),
         DataRow(BitColor.Tertiary, "bit-dtrp-ter"),
@@ -1213,7 +1212,7 @@ public class BitDateRangePickerTests : BunitTestContext
         DataRow(BitColor.SevereWarning, "bit-dtrp-swr"),
         DataRow(BitColor.Error, "bit-dtrp-err")
     ]
-    public void BitDateRangePickerColorTest(BitColor? color, string expectedClass)
+    public void BitDateRangePickerColorTest(BitColor color, string expectedClass)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
@@ -3750,6 +3749,32 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsFalse(classes.Contains("bit-dtrp-sm"));
         Assert.IsFalse(classes.Contains("bit-dtrp-md"));
         Assert.IsFalse(classes.Contains("bit-dtrp-lg"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>();
+
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered outside it - so the public
+        // --bit-DateRangePicker-* variables restyle the default while an explicit value, which does publish its class,
+        // wins over them.
+        var published = new[]
+        {
+            "bit-dtrp-pri", "bit-dtrp-sec", "bit-dtrp-ter", "bit-dtrp-inf", "bit-dtrp-suc", "bit-dtrp-wrn", "bit-dtrp-swr", "bit-dtrp-err",
+            "bit-dtrp-pbg", "bit-dtrp-sbg", "bit-dtrp-tbg", "bit-dtrp-pfg", "bit-dtrp-sfg", "bit-dtrp-tfg", "bit-dtrp-pbr", "bit-dtrp-sbr", "bit-dtrp-tbr",
+            "bit-dtrp-sm", "bit-dtrp-md", "bit-dtrp-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-dtrp"), component.Find(".bit-dtrp-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod,

@@ -124,6 +124,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// The background color kind of the search box.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-SearchBox-background</c>; left unset, the background is the primary kind
+    /// unless that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
@@ -178,6 +182,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// The general color of the search box, used for colored parts like icons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-SearchBox-*</c> color variables it paints (the icon, the focus rings,
+    /// the disabled colors, the search button, the spinner and the ring of the highlighted suggestion); left unset,
+    /// the search box is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -556,6 +565,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// The size of the search box.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-SearchBox-*</c> size variables (height, font sizes, icon sizes, search
+    /// button width and padding, spinner size, suggest row height and font size); left unset, the search box is
+    /// medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -732,6 +746,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-srb-rol" : string.Empty);
 
+        // Size, Background and Color publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-SearchBox-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-srb-sm",
@@ -746,7 +762,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             BitColorKind.Secondary => "bit-srb-bse",
             BitColorKind.Tertiary => "bit-srb-btr",
             BitColorKind.Transparent => "bit-srb-btn",
-            _ => "bit-srb-bpr"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(GetColorClass);
@@ -776,7 +792,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         BitColor.PrimaryBorder => "bit-srb-pbr",
         BitColor.SecondaryBorder => "bit-srb-sbr",
         BitColor.TertiaryBorder => "bit-srb-tbr",
-        _ => "bit-srb-pri"
+        _ => string.Empty
     };
 
     protected override void RegisterCssStyles()
@@ -872,12 +888,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         SetInputMode();
 
         // The callout is rendered as a sibling of the root element, so the size class of the component
-        // never reaches it through the cascade and it has to be given one of its own.
+        // never reaches it through the cascade and it has to be given one of its own - and, like the root's,
+        // none while the Size is unset, so the public --bit-SearchBox-* variables restyle the default rows.
         _calloutSizeClass = Size switch
         {
             BitSize.Small => "bit-srb-sm",
+            BitSize.Medium => "bit-srb-md",
             BitSize.Large => "bit-srb-lg",
-            _ => "bit-srb-md"
+            _ => string.Empty
         };
 
         _calloutColorClass = GetColorClass();

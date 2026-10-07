@@ -61,6 +61,10 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// The accent color of the inputs, applied to the border and the focus ring of the focused input.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-OtpInput-focus-border-color</c>, <c>--bit-OtpInput-focus-color</c> and
+    /// <c>--bit-OtpInput-loader-color</c>; left unset, the accent is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
@@ -333,6 +337,10 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// The size of the inputs.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-OtpInput-*</c> size variables (the box size, width and height, the font
+    /// size and the description font size); left unset, the boxes are medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -520,6 +528,8 @@ public partial class BitOtpInput : BitInputBase<string?>
             _ => "bit-otp-otl"
         });
 
+        // Accent and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-OtpInput-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Accent switch
         {
             BitColor.Primary => "bit-otp-pri",
@@ -539,7 +549,7 @@ public partial class BitOtpInput : BitInputBase<string?>
             BitColor.PrimaryBorder => "bit-otp-pbr",
             BitColor.SecondaryBorder => "bit-otp-sbr",
             BitColor.TertiaryBorder => "bit-otp-tbr",
-            _ => "bit-otp-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
@@ -557,7 +567,7 @@ public partial class BitOtpInput : BitInputBase<string?>
             BitSize.Small => "bit-otp-sm",
             BitSize.Medium => "bit-otp-md",
             BitSize.Large => "bit-otp-lg",
-            _ => "bit-otp-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-otp-vrt" : string.Empty);

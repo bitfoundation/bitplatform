@@ -62,6 +62,9 @@ public class BitSnackBarItem
     /// The color also decides the default icon and the default live-region role of the item: the colors that
     /// report a problem (Warning, SevereWarning, Error) are announced as an <c>alert</c>, everything else as a
     /// <c>status</c>.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-SnackBar-*</c> color variables (color, background, border color);
+    /// left unset, the item is Info unless those variables say otherwise.
     /// </remarks>
     public BitColor? Color { get; set; }
 

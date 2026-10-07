@@ -83,7 +83,7 @@ public partial class BitFileInputDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the file input, applied to the browse button and the drag-and-drop indicator.",
+            Description = "The general color of the file input, applied to the browse button and the drag-and-drop indicator. An explicit value wins over the --bit-FileInput-* color variables; left unset, the file input is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -354,7 +354,7 @@ public partial class BitFileInputDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the file input, applied to the browse button and the file list items.",
+            Description = "The size of the file input, applied to the browse button and the file list items. An explicit value wins over the --bit-FileInput-* size variables; left unset, the file input is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum"
         },
@@ -721,32 +721,32 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The role color: the fill of a Fill browse button, the rule and the text of an Outline or Text one.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The role color: the fill of a Fill browse button, the rule and the text of an Outline or Text one. The Color parameter wins over it; the transparent fill of Outline and Text is not its to paint.",
         },
         new()
         {
             Name = "--bit-FileInput-text-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text drawn on top of the role color.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text drawn on top of the role color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Role color while the browse button is hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Role color while the browse button is hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-active-color",
-            DefaultValue = "The Color role's active color",
-            Description = "Role color while the browse button is pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Role color while the browse button is pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring of the browse button and of each remove button.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring of the browse button and of each remove button. The Color parameter wins over it.",
         },
         new()
         {
@@ -769,20 +769,20 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-label-height",
-            DefaultValue = "--bit-siz-ctrl-sm / -md / -lg per Size",
-            Description = "Smallest height of the browse button, which is what lines it up with the other controls of its size.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the browse button, which is what lines it up with the other controls of its size. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-label-padding",
-            DefaultValue = "--bit-siz-ctrl-pad-y-* --bit-siz-ctrl-pad-x-* per Size",
-            Description = "Padding of the browse button.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
+            Description = "Padding of the browse button. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-label-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the browse button.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the browse button. The Size parameter wins over it.",
         },
         new()
         {
@@ -799,14 +799,14 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-drop-zone-height",
-            DefaultValue = "Per Size, 4.5rem / 5.5rem / 6.5rem",
-            Description = "The smallest height of the drop zone panel rendered by ShowDropZone.",
+            DefaultValue = "5.5rem",
+            Description = "The smallest height of the drop zone panel rendered by ShowDropZone. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-drop-zone-padding",
-            DefaultValue = "Per Size, from the spacing rhythm",
-            Description = "Padding of the drop zone panel.",
+            DefaultValue = "1rem",
+            Description = "Padding of the drop zone panel. The Size parameter wins over it.",
         },
         new()
         {
@@ -829,8 +829,8 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-drop-zone-icon-size",
-            DefaultValue = "Per Size, 1.5rem / 2rem / 2.5rem",
-            Description = "Glyph size inside the drop zone panel.",
+            DefaultValue = "2rem",
+            Description = "Glyph size inside the drop zone panel. The Size parameter wins over it.",
         },
         new()
         {
@@ -841,20 +841,20 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-description-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of that hint, of the file size and of the folder.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of that hint, of the file size and of the folder. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-drop-color",
             DefaultValue = "--bit-FileInput-text-color",
-            Description = "Rule and text of the browse button while files are dragged over the component.",
+            Description = "Rule and text of the browse button while files are dragged over the component. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileInput-drop-background",
             DefaultValue = "--bit-FileInput-hover-color",
-            Description = "Fill of the browse button while files are dragged over the component.",
+            Description = "Fill of the browse button while files are dragged over the component. The Color parameter wins over it.",
         },
         new()
         {
@@ -913,8 +913,8 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-item-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the file name.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the file name. The Size parameter wins over it.",
         },
         new()
         {
@@ -943,8 +943,8 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-preview-size",
-            DefaultValue = "2rem / 2.5rem / 3.25rem per Size",
-            Description = "Side of the image thumbnail and of the file type glyph standing in for it.",
+            DefaultValue = "2.5rem",
+            Description = "Side of the image thumbnail and of the file type glyph standing in for it. The Size parameter wins over it.",
         },
         new()
         {
@@ -961,8 +961,8 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-remove-button-size",
-            DefaultValue = "--bit-siz-ctrl-sm / -md / -lg per Size",
-            Description = "Side of the square remove button.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Side of the square remove button. The Size parameter wins over it.",
         },
         new()
         {
@@ -991,8 +991,8 @@ public partial class BitFileInputDemo
         new()
         {
             Name = "--bit-FileInput-remove-icon-size",
-            DefaultValue = "--bit-siz-icon-sm / -md / -lg per Size",
-            Description = "Glyph size of the remove button.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Glyph size of the remove button. The Size parameter wins over it.",
         },
     ];
 

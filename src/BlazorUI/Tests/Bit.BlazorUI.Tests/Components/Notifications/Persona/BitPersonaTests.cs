@@ -893,6 +893,53 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaShouldPublishNoCoinColorOrShapeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        // An unset CoinColor (with AutoCoinColor off) or Shape (with Squared off) publishes nothing, so the public
+        // --bit-Persona-coin-* variables restyle the default while an explicit value - which does publish its class -
+        // wins over them.
+        var root = component.Find(".bit-prs");
+        var published = new[]
+        {
+            "bit-prs-pri", "bit-prs-sec", "bit-prs-ter", "bit-prs-inf", "bit-prs-suc", "bit-prs-wrn", "bit-prs-swr", "bit-prs-err",
+            "bit-prs-pbg", "bit-prs-sbg", "bit-prs-tbg", "bit-prs-pfg", "bit-prs-sfg", "bit-prs-tfg", "bit-prs-pbr", "bit-prs-sbr", "bit-prs-tbr",
+            "bit-prs-cir", "bit-prs-sqr", "bit-prs-sqs",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldLayAnUnsetSizeOutAsSize48WithoutHandingItOverAsAChoice()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        // The size class lays the persona out, so an unset Size still renders Size48's; only an explicit one adds the
+        // class that hands its gap and active ring over as a choice the --bit-Persona-* variables cannot override.
+        var root = component.Find(".bit-prs");
+        Assert.IsNull(component.Instance.Size);
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-s48"));
+        Assert.IsFalse(root.ClassList.Contains("bit-prs-ssz"));
+
+        component.Render(parameters => parameters.Add(p => p.Size, BitPersonaSize.Size48));
+
+        root = component.Find(".bit-prs");
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-s48"));
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-ssz"));
+    }
+
+    [TestMethod]
     public void BitPersonaAutoCoinColorShouldBeDeterministicForSameName()
     {
         var class1 = GetAutoCoinColorClass(p => p.Add(x => x.PrimaryText, "Saleh Khafan"));
@@ -2190,8 +2237,8 @@ public class BitPersonaTests : BunitTestContext
     [TestMethod,
         DataRow(null, false, null),
         DataRow(null, true, "bit-prs-sqr"),
-        DataRow(BitShape.Pill, false, null),
-        DataRow(BitShape.Pill, true, null),
+        DataRow(BitShape.Pill, false, "bit-prs-cir"),
+        DataRow(BitShape.Pill, true, "bit-prs-cir"),
         DataRow(BitShape.Rounded, false, "bit-prs-sqr"),
         DataRow(BitShape.Square, false, "bit-prs-sqs")
     ]
@@ -2207,8 +2254,15 @@ public class BitPersonaTests : BunitTestContext
 
         if (expectedClass is null)
         {
+            Assert.IsFalse(classList.Contains("bit-prs-cir"));
             Assert.IsFalse(classList.Contains("bit-prs-sqr"));
             Assert.IsFalse(classList.Contains("bit-prs-sqs"));
+        }
+        else if (expectedClass is "bit-prs-cir")
+        {
+            // An explicit Pill is the circle an unset Shape is too, published so it wins over --bit-Persona-coin-radius.
+            Assert.IsTrue(classList.Contains(expectedClass));
+            Assert.IsFalse(classList.Contains("bit-prs-sqr"));
         }
         else
         {

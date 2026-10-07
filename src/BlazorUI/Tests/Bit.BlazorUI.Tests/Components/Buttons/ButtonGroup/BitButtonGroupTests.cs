@@ -456,6 +456,65 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitColor.Primary, "bit-btg-pri")]
+    [DataRow(BitColor.Error, "bit-btg-err")]
+    [DataRow(BitColor.PrimaryBackground, "bit-btg-pbg")]
+    [DataRow(BitColor.TertiaryBorder, "bit-btg-tbr")]
+    public void BitButtonGroupShouldRespectColor(BitColor color, string expectedClass)
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitButtonGroupItem> { new() { Text = "A" } });
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(comp.Find(".bit-btg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(BitSize.Small, "bit-btg-sm")]
+    [DataRow(BitSize.Medium, "bit-btg-md")]
+    [DataRow(BitSize.Large, "bit-btg-lg")]
+    public void BitButtonGroupShouldRespectSize(BitSize size, string expectedClass)
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitButtonGroupItem> { new() { Text = "A" } });
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(comp.Find(".bit-btg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitButtonGroupItem> { new() { Text = "A" } });
+        });
+
+        // An unset Color or Size publishes nothing, so the public --bit-ButtonGroup-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = comp.Find(".bit-btg");
+        var published = new[]
+        {
+            "bit-btg-pri", "bit-btg-sec", "bit-btg-ter", "bit-btg-inf", "bit-btg-suc", "bit-btg-wrn", "bit-btg-swr", "bit-btg-err",
+            "bit-btg-pbg", "bit-btg-sbg", "bit-btg-tbg", "bit-btg-pfg", "bit-btg-sfg", "bit-btg-tfg", "bit-btg-pbr", "bit-btg-sbr", "bit-btg-tbr",
+            "bit-btg-sm", "bit-btg-md", "bit-btg-lg",
+            "bit-btg-rnd",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+
+        // The Variant keeps its default class: it is the structure of the group rather than a value a variable restyles.
+        Assert.IsTrue(root.ClassList.Contains("bit-btg-fil"));
+    }
+
+    [TestMethod]
     [DataRow(BitButtonGroupOverflow.Clip, "")]
     [DataRow(BitButtonGroupOverflow.Wrap, "bit-btg-wrp")]
     [DataRow(BitButtonGroupOverflow.Scroll, "bit-btg-scr")]

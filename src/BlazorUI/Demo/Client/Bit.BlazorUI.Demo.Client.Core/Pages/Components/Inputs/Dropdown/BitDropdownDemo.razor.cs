@@ -173,7 +173,7 @@ public partial class BitDropdownDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the dropdown.",
+            Description = "The general color of the dropdown. An explicit value wins over the --bit-Dropdown-* accent, focus and header color variables, in the field and in the callout alike; left unset, the dropdown is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -852,7 +852,7 @@ public partial class BitDropdownDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the dropdown.",
+            Description = "The size of the dropdown. An explicit value wins over the --bit-Dropdown-* size variables, in the field and in the callout alike; left unset, the dropdown is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -919,7 +919,7 @@ public partial class BitDropdownDemo
             Name = "Transparent",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the default background color from the root element.",
+            Description = "Removes the default background color from the root element. When true, it wins over --bit-Dropdown-background.",
         },
         new()
         {
@@ -1936,7 +1936,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-background",
             DefaultValue = "--bit-clr-bg-pri",
-            Description = "Background of the field. Transparent turns the default into transparent; a value set here still wins over it.",
+            Description = "Background of the field. The Transparent parameter wins over it.",
         },
         new()
         {
@@ -1965,8 +1965,8 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "--bit-Dropdown-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the focus indicator: the ring around the field, the underline of the Underlined and NoBorder variants, and the outline drawn inside the row the arrow keys have reached.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus indicator: the ring around the field, the underline of the Underlined and NoBorder variants, and the outline drawn inside the row the arrow keys have reached. The Color parameter wins over it.",
         },
         new()
         {
@@ -2001,14 +2001,14 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "--bit-Dropdown-min-height",
-            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Smallest height of the field, which the search box, the clear button and the ComboBox add button follow. It is a floor, not a height: a Chips field still grows with the rows of chips in it.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the field, which the search box, the clear button and the ComboBox add button follow. It is a floor, not a height: a Chips field still grows with the rows of chips in it. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dropdown-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of the field and of the search box.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the field and of the search box. The Size parameter wins over it.",
         },
         new()
         {
@@ -2019,8 +2019,8 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "--bit-Dropdown-icon-size",
-            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of every glyph of the component, including the ones in the search box and in the responsive panel.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of every glyph of the component, including the ones in the search box and in the responsive panel. The Size parameter wins over it.",
         },
         new()
         {
@@ -2049,20 +2049,20 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "--bit-Dropdown-accent-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The accent: group headers, the search glyph, the filled checkbox, the highlighted part of a matched item, the overflow chip, the spinner arc and the bar marking the item Enter would commit.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The accent: group headers, the search glyph, the filled checkbox, the highlighted part of a matched item, the overflow chip, the spinner arc and the bar marking the item Enter would commit. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dropdown-accent-hover-color",
-            DefaultValue = "--bit-Dropdown-accent-color, then the Color role's hover color",
-            Description = "The accent while the part carrying it is hovered.",
+            DefaultValue = "--bit-Dropdown-accent-color, then --bit-clr-pri-hover",
+            Description = "The accent while the part carrying it is hovered. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dropdown-accent-text-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text and glyphs drawn ON the accent - the check mark, the highlighted text, the overflow chip. Set it along with the accent, or a custom accent keeps the contrast of the role it replaced.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text and glyphs drawn ON the accent - the check mark, the highlighted text, the overflow chip. Set it along with the accent, or a custom accent keeps the contrast of the role it replaced. The Color parameter wins over it.",
         },
         new()
         {
@@ -2074,7 +2074,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-label-font-size",
             DefaultValue = "--bit-Dropdown-font-size",
-            Description = "Label text size.",
+            Description = "Label text size. The Size parameter wins over it.",
         },
         new()
         {
@@ -2157,14 +2157,14 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "--bit-Dropdown-item-height",
-            DefaultValue = "Per Size: --bit-siz-item-sm / -md / -lg",
-            Description = "Height of one row, which the group headers, the empty state and the loading row follow. Set ItemSize to the same number when Virtualize is on, since virtualization measures in pixels.",
+            DefaultValue = "--bit-siz-item-md",
+            Description = "Height of one row, which the group headers, the empty state and the loading row follow. Set ItemSize to the same number when Virtualize is on, since virtualization measures in pixels. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dropdown-item-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of one row, of a group header, and of the empty and loading states.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of one row, of a group header, and of the empty and loading states. The Size parameter wins over it.",
         },
         new()
         {
@@ -2200,7 +2200,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-header-color",
             DefaultValue = "--bit-Dropdown-accent-color",
-            Description = "Text of a group header, for a list whose headers should read quieter than the accent.",
+            Description = "Text of a group header, for a list whose headers should read quieter than the accent. The Color parameter wins over it.",
         },
         new()
         {

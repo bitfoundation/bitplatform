@@ -535,6 +535,10 @@ public partial class BitCard : BitComponentBase
     /// <summary>
     /// The size of the card, which sets its padding, the gap between its parts and the type of its header.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Card-*</c> size variables (padding, gap, title and subtitle font
+    /// sizes, icon size); left unset, the card is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -695,7 +699,10 @@ public partial class BitCard : BitComponentBase
             BitSize.Small => "bit-crd-sm",
             BitSize.Medium => "bit-crd-md",
             BitSize.Large => "bit-crd-lg",
-            _ => "bit-crd-md"
+            // Like the Background, Border and Color above, an unset Size publishes nothing, which is what lets the
+            // stylesheet tell a default from a choice: the public --bit-Card-* variables restyle the medium card and
+            // never an explicit size.
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => FullSize || FullHeight ? "bit-crd-fhe" : string.Empty);

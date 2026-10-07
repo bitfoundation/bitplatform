@@ -247,6 +247,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The general color of the dropdown.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Dropdown-*</c> accent, focus and header color variables, in the
+    /// field and in the callout alike; left unset, the dropdown is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -862,6 +866,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The size of the dropdown.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Dropdown-*</c> size variables (min height, font size, label font
+    /// size, icon size, item height and item font size), in the field and in the callout alike; left unset, the
+    /// dropdown is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -917,6 +926,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Removes the default background color from the root element.
     /// </summary>
+    /// <remarks>
+    /// When true, it wins over <c>--bit-Dropdown-background</c>, which only restyles the background of a
+    /// dropdown that is not transparent.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
 
@@ -1755,6 +1768,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Dropdown-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => GetColorClass());
 
         ClassBuilder.Register(() => GetSizeClass());
@@ -4245,11 +4260,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             classes.Add("bit-drp-rtl");
         }
 
-        classes.Add(GetColorClass());
+        // The callout renders outside the root element, so the color and the size classes have to be repeated
+        // on it for the items to follow the dropdown they belong to. Each is empty while its parameter is unset,
+        // and is left out rather than joined in as an empty entry.
+        if (GetColorClass() is { Length: > 0 } colorClass)
+        {
+            classes.Add(colorClass);
+        }
 
-        // The callout renders outside the root element, so the size class has to be repeated on it for
-        // the items to follow the size of the dropdown they belong to.
-        classes.Add(GetSizeClass());
+        if (GetSizeClass() is { Length: > 0 } sizeClass)
+        {
+            classes.Add(sizeClass);
+        }
 
         return string.Join(' ', classes).Trim();
     }

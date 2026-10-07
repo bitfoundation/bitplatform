@@ -11,7 +11,7 @@ public partial class BitNavDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The accent color of the nav: the background of the hovered and the selected item. A background, foreground or border role tints the item, a semantic role fills it and recolors its content.",
+            Description = "The accent color of the nav: the background of the hovered and the selected item. A background, foreground or border role tints the item, a semantic role fills it and recolors its content. An explicit value wins over the --bit-Nav-* hover, pressed and selected variables; left unset, the nav takes the PrimaryBackground accent unless they say otherwise.",
             Href = "#color-enum",
             LinkType = LinkType.Link,
         },
@@ -66,7 +66,7 @@ public partial class BitNavDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the nav that is only used for colored parts like icons.",
+            Description = "The general color of the nav that is only used for colored parts like icons. An explicit value wins over --bit-Nav-icon-color and --bit-Nav-indicator-color; left unset, the nav is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -264,7 +264,7 @@ public partial class BitNavDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the nav items.",
+            Description = "The size of the nav items. An explicit value wins over the --bit-Nav-* size variables; left unset, the nav is medium unless they say otherwise.",
             Href = "#size-enum",
             LinkType = LinkType.Link,
         },
@@ -297,8 +297,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-icon-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Icon color of an item at rest; kept on hover and selection unless the Accent is a semantic role.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Icon color of an item at rest; kept on hover and selection unless the Accent is a semantic role. The Color parameter wins over it.",
         },
         new()
         {
@@ -315,38 +315,38 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-hover-background",
-            DefaultValue = "The Accent role's hover color",
-            Description = "Background of a hovered item (pointer devices only).",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a hovered item (pointer devices only). The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-hover-color",
-            DefaultValue = "The Accent role's on color",
-            Description = "Text and chevron color of a hovered item.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and chevron color of a hovered item. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-background",
-            DefaultValue = "The Accent role's active color",
-            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen).",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen). The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-selected-background",
-            DefaultValue = "The Accent role's active color",
-            Description = "Background of the selected item, and of a collapsed branch that holds it.",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-selected-color",
-            DefaultValue = "The Accent role's on color",
-            Description = "Text and chevron color of the selected item, and of a collapsed branch that holds it.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and chevron color of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-indicator-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of the leading bar of the selected item.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the leading bar of the selected item. The Color parameter wins over it.",
         },
         new()
         {
@@ -363,8 +363,8 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-item-min-height",
-            DefaultValue = "Per size (36px / 48px / 56px)",
-            Description = "Smallest height of an item.",
+            DefaultValue = "spacing(6) (48px)",
+            Description = "Smallest height of an item. The Size parameter wins over it.",
         },
         new()
         {
@@ -381,20 +381,20 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-font-size",
-            DefaultValue = "Per size (--bit-tpg-fs-xs / -sm / -md)",
-            Description = "Text size of an item.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of an item. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-icon-size",
-            DefaultValue = "Per size (--bit-siz-icon-sm / -md / -lg)",
-            Description = "Icon size of an item and of a group header.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Icon size of an item and of a group header. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-description-font-size",
-            DefaultValue = "Per size (--bit-tpg-fs-2xs / -xs / -sm)",
-            Description = "Text size of the description of an item.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the description of an item. The Size parameter wins over it.",
         },
         new()
         {
@@ -405,14 +405,14 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-header-font-size",
-            DefaultValue = "Per size (--bit-tpg-fs-sm / -lg / -xl)",
-            Description = "Text size of a group header.",
+            DefaultValue = "--bit-tpg-fs-lg",
+            Description = "Text size of a group header. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-header-min-height",
-            DefaultValue = "Per size (36px / 44px / 52px)",
-            Description = "Smallest height of a group header; one with a description grows past it.",
+            DefaultValue = "spacing(5.5) (44px)",
+            Description = "Smallest height of a group header; one with a description grows past it. The Size parameter wins over it.",
         },
         new()
         {

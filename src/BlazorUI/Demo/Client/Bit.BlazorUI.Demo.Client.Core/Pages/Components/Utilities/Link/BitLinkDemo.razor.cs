@@ -46,7 +46,7 @@ public partial class BitLinkDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the link, Primary when not set. Accent colors use the role's readable text shade.",
+            Description = "The general color of the link, Primary when not set. Accent colors use the role's readable text shade. An explicit value wins over the --bit-Link-* color variables; left unset, the link is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -151,7 +151,7 @@ public partial class BitLinkDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The preset text size. Unset, the link takes the font size of whatever it sits in.",
+            Description = "The preset text size. Unset, the link takes the font size of whatever it sits in. An explicit value wins over --bit-Link-font-size; left unset, the link inherits its font size unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -192,44 +192,44 @@ public partial class BitLinkDemo
         new()
         {
             Name = "--bit-Link-color",
-            DefaultValue = "from the Color role",
-            Description = "Text color at rest. Wins over the Color parameter.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Text color at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Link-hover-color",
-            DefaultValue = "from the Color role",
-            Description = "Text color under the pointer and while focused from the keyboard.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Text color under the pointer and while focused from the keyboard. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Link-active-color",
-            DefaultValue = "from the Color role",
-            Description = "Text color while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Text color while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Link-visited-color",
             DefaultValue = "--bit-Link-color",
-            Description = "Text color of a link whose destination was already visited.",
+            Description = "Text color of a link whose destination was already visited. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Link-disabled-color",
-            DefaultValue = "from the Color role",
-            Description = "Text color and focus ring color of a disabled link.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Text color and focus ring color of a disabled link. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Link-current-color",
             DefaultValue = "--bit-Link-color",
-            Description = "Text color of the current link (aria-current, or a Match on the URL) at rest.",
+            Description = "Text color of the current link (aria-current, or a Match on the URL) at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Link-focus-color",
-            DefaultValue = "from the Color role",
-            Description = "Color of the keyboard focus ring.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring. The Color parameter wins over it.",
         },
         new()
         {
@@ -241,7 +241,7 @@ public partial class BitLinkDemo
         {
             Name = "--bit-Link-font-size",
             DefaultValue = "inherit",
-            Description = "Size of the text. Wins over the Size parameter.",
+            Description = "Size of the text. The Size parameter wins over it.",
         },
         new()
         {

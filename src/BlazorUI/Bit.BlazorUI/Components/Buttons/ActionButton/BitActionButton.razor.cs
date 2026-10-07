@@ -90,6 +90,10 @@ public partial class BitActionButton : BitComponentBase
     /// The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral
     /// foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ActionButton-*</c> color variables it paints (icon, hover, active, focus
+    /// and the disabled icon color); left unset, the action button is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -252,6 +256,10 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Sets the preset size (Small, Medium, Large) for typography and padding of the action button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ActionButton-*</c> size variables (min-height, padding, font size, icon
+    /// size); left unset, the action button is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -311,6 +319,8 @@ public partial class BitActionButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-ActionButton-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-acb-pri",
@@ -330,7 +340,7 @@ public partial class BitActionButton : BitComponentBase
             BitColor.PrimaryBorder => "bit-acb-pbr",
             BitColor.SecondaryBorder => "bit-acb-sbr",
             BitColor.TertiaryBorder => "bit-acb-tbr",
-            _ => "bit-acb-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
@@ -346,7 +356,7 @@ public partial class BitActionButton : BitComponentBase
             BitSize.Small => "bit-acb-sm",
             BitSize.Medium => "bit-acb-md",
             BitSize.Large => "bit-acb-lg",
-            _ => "bit-acb-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Underlined ? "bit-acb-und" : string.Empty);

@@ -208,7 +208,7 @@ public partial class BitColorPickerDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the color picker.",
+            Description = "The size of the color picker. An explicit value wins over the --bit-ColorPicker-* size variables (width, font and caption sizes, saturation height, thumb, track, button, icon, preview and swatch sizes); left unset, the picker is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -515,8 +515,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-width",
-            DefaultValue = "Per Size (33.5 spacing units at Medium)",
-            Description = "Width of the whole panel. A size class never overrides it, so this is how a panel is fitted to a popover or a sidebar the Size presets do not suit.",
+            DefaultValue = "33.5 spacing units",
+            Description = "Width of the whole panel, which is how a panel is fitted to a popover or a sidebar the Size presets do not suit. The Size parameter wins over it, so leave Size unset where it is used.",
         },
         new()
         {
@@ -545,14 +545,14 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the panel, which the label and the text fields inherit.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the panel, which the label and the text fields inherit. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ColorPicker-caption-font-size",
-            DefaultValue = "One step below the panel, per Size",
-            Description = "Text size of the captions under the fields and of the contrast readout.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the captions under the fields and of the contrast readout. The Size parameter wins over it.",
         },
         new()
         {
@@ -575,8 +575,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-saturation-height",
-            DefaultValue = "Per Size (29.5 spacing units at Medium)",
-            Description = "Height of the saturation-brightness area. It is also the row that gives way when the panel is pinned to a height smaller than its content.",
+            DefaultValue = "29.5 spacing units",
+            Description = "Height of the saturation-brightness area. It is also the row that gives way when the panel is pinned to a height smaller than its content. The Size parameter wins over it.",
         },
         new()
         {
@@ -587,8 +587,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-thumb-size",
-            DefaultValue = "Per Size (2.5 spacing units at Medium)",
-            Description = "Diameter of the saturation thumb and of the thumbs of both sliders, which is also what reserves the room they overhang their tracks by.",
+            DefaultValue = "2.5 spacing units",
+            Description = "Diameter of the saturation thumb and of the thumbs of both sliders, which is also what reserves the room they overhang their tracks by. The Size parameter wins over it.",
         },
         new()
         {
@@ -611,8 +611,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-track-height",
-            DefaultValue = "Per Size (2.5 spacing units at Medium)",
-            Description = "Height of the hue and alpha tracks.",
+            DefaultValue = "2.5 spacing units",
+            Description = "Height of the hue and alpha tracks. The Size parameter wins over it.",
         },
         new()
         {
@@ -623,8 +623,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-preview-size",
-            DefaultValue = "Per Size (6 spacing units at Medium)",
-            Description = "Width and height of the preview box.",
+            DefaultValue = "6 spacing units",
+            Description = "Width and height of the preview box. The Size parameter wins over it.",
         },
         new()
         {
@@ -635,8 +635,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-button-size",
-            DefaultValue = "Per Size (3 spacing units at Medium)",
-            Description = "Square of the eye dropper and inputs-mode buttons. Keep it at or above 24px, which is the minimum pointer target WCAG 2.2 asks for.",
+            DefaultValue = "3 spacing units",
+            Description = "Square of the eye dropper and inputs-mode buttons. Keep it at or above 24px, which is the minimum pointer target WCAG 2.2 asks for. The Size parameter wins over it.",
         },
         new()
         {
@@ -665,8 +665,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-icon-size",
-            DefaultValue = "Per Size (--bit-siz-icon-md at Medium)",
-            Description = "Glyph size inside the eye dropper and inputs-mode buttons.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Glyph size inside the eye dropper and inputs-mode buttons. The Size parameter wins over it.",
         },
         new()
         {
@@ -695,8 +695,8 @@ public partial class BitColorPickerDemo
         new()
         {
             Name = "--bit-ColorPicker-swatch-size",
-            DefaultValue = "Per Size (3 spacing units at Medium)",
-            Description = "Square of a preset swatch, and the column width a PresetsPerRow grid is laid out on.",
+            DefaultValue = "3 spacing units",
+            Description = "Square of a preset swatch, and the column width a PresetsPerRow grid is laid out on. The Size parameter wins over it.",
         },
         new()
         {

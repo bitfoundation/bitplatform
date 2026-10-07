@@ -51,13 +51,38 @@ public partial class BitLinkStylesheetTests
     }
 
     [TestMethod]
-    public void BitLinkShouldLetTheVariablesWinOverTheColorAndTheSize()
+    public void BitLinkShouldLetAParameterWinOverItsPublicVariable()
     {
-        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk {");
+        var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk {");
 
-        // The Color and the Size classes only set the private fallbacks the public variables are read over.
-        StringAssert.Contains(root, "color: var(--bit-Link-color, var(--bit-lnk-clr));");
-        StringAssert.Contains(root, "font-size: var(--bit-Link-font-size, var(--bit-lnk-fs, inherit));");
+        // An explicit Color or Size publishes these, so they are read before the variable, which only restyles the
+        // default an unset one stands for: the primary role, and the font size of the text around the link.
+        StringAssert.Contains(root, "color: var(--bit-lnk-clr, var(--bit-Link-color, #{$clr-pri}));");
+        StringAssert.Contains(root, "color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));");
+        StringAssert.Contains(root, "color: var(--bit-lnk-clr-active, var(--bit-Link-active-color, #{$clr-pri-active}));");
+        StringAssert.Contains(root, "font-size: var(--bit-lnk-fs, var(--bit-Link-font-size, inherit));");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Link-[a-z-]+, var\(--bit-lnk-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitLinkShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
+    {
+        var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk {");
+
+        // A link never inherits another one's Color or Size from an ancestor carrying those classes: each root starts
+        // the values they publish out unset, and the classes - declared further down at the same weight - still win on
+        // the root that carries them.
+        foreach (var property in new[] { "--bit-lnk-clr", "--bit-lnk-clr-hover", "--bit-lnk-clr-active", "--bit-lnk-clr-focus", "--bit-lnk-clr-dis", "--bit-lnk-fs" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
+
+        var rootAt = stylesheet.IndexOf("\n.bit-lnk {", System.StringComparison.Ordinal);
+        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-lnk-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the root that resets them.");
+        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-lnk-#{$role} {", System.StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
     }
 
     [TestMethod,
@@ -115,7 +140,7 @@ public partial class BitLinkStylesheetTests
 
         // A link left in its hover color after a mouse click reads as stuck, so only :focus-visible is styled.
         Assert.IsFalse(Regex.IsMatch(rules, @"&:focus\b(?!-visible)"), "A bare :focus is styled.");
-        StringAssert.Contains(rules, "@include focus-ring(var(--bit-Link-focus-color, var(--bit-lnk-clr-focus)));");
+        StringAssert.Contains(rules, "@include focus-ring(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color, #{$clr-pri-focus})));");
     }
 
     [TestMethod]
@@ -128,7 +153,7 @@ public partial class BitLinkStylesheetTests
         var active = root.IndexOf("&:active {", System.StringComparison.Ordinal);
 
         Assert.IsTrue(visited >= 0 && visited < hover && visited < active, "A visited link would no longer change under the pointer.");
-        StringAssert.Contains(root, "color: var(--bit-Link-visited-color, var(--bit-Link-color, var(--bit-lnk-clr)));");
+        StringAssert.Contains(root, "color: var(--bit-lnk-clr, var(--bit-Link-visited-color, var(--bit-Link-color, #{$clr-pri})));");
     }
 
     [TestMethod]
@@ -144,7 +169,7 @@ public partial class BitLinkStylesheetTests
 
         Assert.IsTrue(current >= 0 && current < hover, "The current link is not styled ahead of the interactive states.");
         StringAssert.Contains(root, "&:where(.bit-lnk-cur):visited {");
-        StringAssert.Contains(root, "color: var(--bit-Link-current-color, var(--bit-Link-color, var(--bit-lnk-clr)));");
+        StringAssert.Contains(root, "color: var(--bit-lnk-clr, var(--bit-Link-current-color, var(--bit-Link-color, #{$clr-pri})));");
 
         // Color alone must not be what tells the current link apart, and NoUnderline still takes the underline off.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");
@@ -157,8 +182,8 @@ public partial class BitLinkStylesheetTests
     {
         var disabled = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
-        StringAssert.Contains(disabled, "color: var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis));");
-        StringAssert.Contains(disabled, "@include focus-ring(var(--bit-Link-disabled-color, var(--bit-lnk-clr-dis)));");
+        StringAssert.Contains(disabled, "color: var(--bit-lnk-clr-dis, var(--bit-Link-disabled-color, #{$clr-pri-dis-text}));");
+        StringAssert.Contains(disabled, "@include focus-ring(var(--bit-lnk-clr-dis, var(--bit-Link-disabled-color, #{$clr-pri-dis-text})));");
         Assert.IsFalse(disabled.Contains("--bit-Link-color"), "A disabled link reads the enabled color variable.");
         Assert.IsFalse(disabled.Contains("--bit-Link-hover-color"), "A disabled link reads the hover color variable.");
     }

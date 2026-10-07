@@ -154,6 +154,10 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// The general color of the checkbox.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Checkbox-*</c> color variables (the checked, indeterminate, focus and
+    /// disabled colors); left unset, the checkbox is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -306,6 +310,11 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// The size of the checkbox.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Checkbox-box-size</c>, <c>--bit-Checkbox-font-size</c> and
+    /// <c>--bit-Checkbox-description-font-size</c>; left unset, the checkbox is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -410,6 +419,8 @@ public partial class BitCheckbox : BitInputBase<bool>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Checkbox-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-chb-pri",
@@ -429,7 +440,7 @@ public partial class BitCheckbox : BitInputBase<bool>
             BitColor.PrimaryBorder => "bit-chb-pbr",
             BitColor.SecondaryBorder => "bit-chb-sbr",
             BitColor.TertiaryBorder => "bit-chb-tbr",
-            _ => "bit-chb-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -437,7 +448,7 @@ public partial class BitCheckbox : BitInputBase<bool>
             BitSize.Small => "bit-chb-sm",
             BitSize.Medium => "bit-chb-md",
             BitSize.Large => "bit-chb-lg",
-            _ => "bit-chb-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd {Classes?.Checked}" : string.Empty);

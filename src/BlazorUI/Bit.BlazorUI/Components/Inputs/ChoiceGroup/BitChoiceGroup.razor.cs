@@ -73,6 +73,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The general color of the BitChoiceGroup.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ChoiceGroup-*</c> color variables (the accent, hover, focus and disabled
+    /// colors, the checked card's border and tint, the tile background); left unset, the group is primary unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -107,6 +112,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The gap between the items of the ChoiceGroup.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-ChoiceGroup-gap</c> and over the gap of the <see cref="Size"/>.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }
 
@@ -209,6 +217,10 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The size of the BitChoiceGroup.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ChoiceGroup-*</c> size variables (gap, font sizes, circle, dot and icon
+    /// sizes, card padding); left unset, the group is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -438,6 +450,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => ReadOnly ? "bit-chg-rdo" : string.Empty);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-ChoiceGroup-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-chg-pri",
@@ -457,7 +471,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             BitColor.PrimaryBorder => "bit-chg-pbr",
             BitColor.SecondaryBorder => "bit-chg-sbr",
             BitColor.TertiaryBorder => "bit-chg-tbr",
-            _ => "bit-chg-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -465,7 +479,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             BitSize.Small => "bit-chg-sm",
             BitSize.Medium => "bit-chg-md",
             BitSize.Large => "bit-chg-lg",
-            _ => "bit-chg-md"
+            _ => string.Empty
         });
     }
 

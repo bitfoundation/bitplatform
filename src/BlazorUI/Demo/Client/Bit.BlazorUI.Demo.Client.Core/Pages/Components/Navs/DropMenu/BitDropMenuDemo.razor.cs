@@ -46,7 +46,7 @@ public partial class BitDropMenuDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the callout of the drop menu.",
+            Description = "The color kind of the background of the callout of the drop menu. An explicit value wins over --bit-DropMenu-callout-background; left unset, the callout is the primary background unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum"
         },
@@ -62,7 +62,7 @@ public partial class BitDropMenuDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the border of the callout of the drop menu.",
+            Description = "The color kind of the border of the callout of the drop menu. An explicit value wins over --bit-DropMenu-callout-border-color; left unset, the callout has no border unless the --bit-DropMenu-callout-border-* variables say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum"
         },
@@ -105,7 +105,7 @@ public partial class BitDropMenuDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button of the drop menu.",
+            Description = "The general color of the button of the drop menu. An explicit value wins over the --bit-DropMenu-* button color variables; left unset, the button takes the PrimaryBackground look unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -299,7 +299,7 @@ public partial class BitDropMenuDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the button of the drop menu.",
+            Description = "The size of the button of the drop menu. An explicit value wins over the --bit-DropMenu-* size variables; left unset, the button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum"
         },
@@ -392,20 +392,20 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "--bit-DropMenu-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Text and icon color of the button at rest.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and icon color of the button at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-background",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Background of the button at rest.",
+            DefaultValue = "--bit-clr-bg-pri (transparent for Outline, Text and Transparent)",
+            Description = "Background of the button at rest. The Color parameter wins over it where the look paints one; the transparent background of Outline, Text and Transparent is its alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-border-color",
             DefaultValue = "Per Variant",
-            Description = "Border color of the button, in every state.",
+            Description = "Border color of the button, in every state. The Color parameter wins over it where the look paints the border with the Color.",
         },
         new()
         {
@@ -434,38 +434,38 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "--bit-DropMenu-hover-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Text and icon color on hover.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and icon color on hover. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Background on hover.",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background on hover. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-active-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Text and icon color while pressed or while the callout is open.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text and icon color while pressed or while the callout is open. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-active-background",
-            DefaultValue = "The Color role's active color",
-            Description = "Background while pressed or while the callout is open.",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background while pressed or while the callout is open. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-disabled-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Text and icon color when disabled or loading.",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text and icon color when disabled or loading. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-disabled-background",
-            DefaultValue = "Per Variant, the Color role's disabled color",
-            Description = "Background when disabled or loading.",
+            DefaultValue = "--bit-clr-bg-pri (transparent for Outline, Text and Transparent)",
+            Description = "Background when disabled or loading. The Color parameter wins over it where the look paints one.",
         },
         new()
         {
@@ -476,20 +476,20 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "--bit-DropMenu-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Focus ring color of the button.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring color of the button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-min-height",
-            DefaultValue = "Per Size, --bit-siz-ctrl-*",
-            Description = "Smallest height of the button, and the width of one that holds only an icon.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the button, and the width of one that holds only an icon. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DropMenu-padding",
-            DefaultValue = "Per Size",
-            Description = "Padding of the button.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
+            Description = "Padding of the button. The Size parameter wins over it.",
         },
         new()
         {
@@ -500,8 +500,8 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "--bit-DropMenu-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the button.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the button. The Size parameter wins over it.",
         },
         new()
         {
@@ -512,8 +512,8 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "--bit-DropMenu-icon-size",
-            DefaultValue = "Per Size, --bit-siz-icon-*",
-            Description = "Size of the icon, the chevron and the spinner.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, the chevron and the spinner. The Size parameter wins over it.",
         },
         new()
         {
@@ -531,7 +531,7 @@ public partial class BitDropMenuDemo
         {
             Name = "--bit-DropMenu-callout-background",
             DefaultValue = "--bit-clr-bg-pri, or the Background kind",
-            Description = "Background of the callout.",
+            Description = "Background of the callout. The Background parameter wins over it.",
         },
         new()
         {
@@ -543,7 +543,7 @@ public partial class BitDropMenuDemo
         {
             Name = "--bit-DropMenu-callout-border-color",
             DefaultValue = "None, or the Border kind",
-            Description = "Border color of the callout.",
+            Description = "Border color of the callout. The Border parameter wins over it.",
         },
         new()
         {

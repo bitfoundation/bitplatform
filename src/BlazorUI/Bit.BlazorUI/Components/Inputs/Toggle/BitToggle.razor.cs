@@ -117,6 +117,11 @@ public partial class BitToggle : BitInputBase<bool>
     /// The general color of the toggle, applied to the track of the checked state.
     /// The unchecked track stays neutral so it keeps reading as "off" whichever color is picked.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Toggle-*</c> color variables of the checked state (track fill, its
+    /// hover, knob and track content) and over the focus color; left unset, the toggle is primary unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -345,6 +350,10 @@ public partial class BitToggle : BitInputBase<bool>
     /// <summary>
     /// The size of the toggle.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Toggle-*</c> size variables (track width and height, knob size,
+    /// content padding and the font sizes); left unset, the toggle is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -395,6 +404,8 @@ public partial class BitToggle : BitInputBase<bool>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Toggle-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-tgl-pri",
@@ -414,7 +425,7 @@ public partial class BitToggle : BitInputBase<bool>
             BitColor.PrimaryBorder => "bit-tgl-pbr",
             BitColor.SecondaryBorder => "bit-tgl-sbr",
             BitColor.TertiaryBorder => "bit-tgl-tbr",
-            _ => "bit-tgl-pri"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Size switch
@@ -422,7 +433,7 @@ public partial class BitToggle : BitInputBase<bool>
             BitSize.Small => "bit-tgl-sm",
             BitSize.Medium => "bit-tgl-md",
             BitSize.Large => "bit-tgl-lg",
-            _ => "bit-tgl-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-tgl-chk {Classes?.Checked}" : string.Empty);

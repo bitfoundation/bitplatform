@@ -69,7 +69,7 @@ public partial class BitButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button.",
+            Description = "The general color of the button. An explicit value wins over the --bit-Button-* color variables (the disabled and focus colors included); left unset, the button is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -265,7 +265,7 @@ public partial class BitButtonDemo
             Name = "Rounded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle. It sets what --bit-Button-radius falls back to, so a radius of your own still wins.",
+            Description = "Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle. It wins over --bit-Button-radius, which restyles the default corner and not a rounded one.",
         },
         new()
         {
@@ -286,7 +286,7 @@ public partial class BitButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size for typography and padding of the button.",
+            Description = "Sets the preset size for typography and padding of the button. An explicit value wins over the --bit-Button-* size variables (padding, min-height, gap, font, icon and spinner sizes); left unset, the button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -462,86 +462,86 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-color",
-            DefaultValue = "Per variant: the role's on-color when filled, its main color otherwise",
-            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well.",
+            DefaultValue = "Per variant: --bit-clr-pri-text when filled, --bit-clr-pri otherwise",
+            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-background",
-            DefaultValue = "The role's main color when filled, transparent otherwise",
-            Description = "Background in the rest state.",
+            DefaultValue = "--bit-clr-pri when filled, transparent otherwise",
+            Description = "Background in the rest state. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Button-border-color",
-            DefaultValue = "The role's main color when filled or outlined, transparent otherwise",
-            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size.",
+            DefaultValue = "--bit-clr-pri when filled or outlined, transparent otherwise",
+            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
             Name = "--bit-Button-hover-color",
-            DefaultValue = "The role's on-color, and the rest color for the Fill variant",
-            Description = "Foreground while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-text, and the rest color for the Fill variant",
+            Description = "Foreground while hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-hover-background",
-            DefaultValue = "The role's hover color",
-            Description = "Background while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background while hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-hover-border-color",
             DefaultValue = "The rest border color, and the hover background for the Fill variant",
-            Description = "Border color while hovered (pointer devices only).",
+            Description = "Border color while hovered (pointer devices only). The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
             Name = "--bit-Button-active-color",
             DefaultValue = "As the hover foreground",
-            Description = "Foreground while pressed.",
+            Description = "Foreground while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-active-background",
-            DefaultValue = "The role's active color",
-            Description = "Background while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-active-border-color",
             DefaultValue = "As the hover border color",
-            Description = "Border color while pressed.",
+            Description = "Border color while pressed. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
             Name = "--bit-Button-disabled-color",
-            DefaultValue = "The role's disabled text color",
-            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-background",
-            DefaultValue = "The role's disabled color when filled, transparent otherwise",
-            Description = "Background when disabled.",
+            DefaultValue = "--bit-clr-pri-dis when filled, transparent otherwise",
+            Description = "Background when disabled. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Button-disabled-border-color",
             DefaultValue = "As the disabled background",
-            Description = "Border color when disabled.",
+            Description = "Border color when disabled. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
             Name = "--bit-Button-focus-color",
-            DefaultValue = "The role's focus color",
-            Description = "Color of the focus ring drawn around the button on keyboard focus.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring drawn around the button on keyboard focus. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-radius",
             DefaultValue = "--bit-shp-radius-button",
-            Description = "Corner radius of the box, which the focus ring follows. Rounded moves the default to --bit-shp-radius-full.",
+            Description = "Corner radius of the box, which the focus ring follows. The Rounded parameter wins over it.",
         },
         new()
         {
@@ -558,8 +558,8 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-padding",
-            DefaultValue = "Per size, from --bit-siz-ctrl-pad-*",
-            Description = "Padding of the box. An icon-only button takes its vertical padding on all four sides instead.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
+            Description = "Padding of the box. An icon-only button takes its vertical padding on all four sides instead. The Size parameter wins over it.",
         },
         new()
         {
@@ -570,26 +570,26 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-min-height",
-            DefaultValue = "Per size, from --bit-siz-ctrl-*",
-            Description = "Smallest height of the box, and the smallest width of an icon-only one. It is a floor, not a height: the box still grows with a wrapped label or a secondary line.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the box, and the smallest width of an icon-only one. It is a floor, not a height: the box still grows with a wrapped label or a secondary line. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-gap",
-            DefaultValue = "Per size: 0.25rem for Small, 0.5rem otherwise",
-            Description = "Room between the icon and the text, and between the loading spinner and its label.",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon and the text, and between the loading spinner and its label. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "Size of the primary text.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the primary text. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-secondary-font-size",
-            DefaultValue = "One ramp step below the primary text",
-            Description = "Size of the secondary text.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Size of the secondary text, one ramp step below the primary text by default. The Size parameter wins over it.",
         },
         new()
         {
@@ -618,14 +618,14 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-icon-size",
-            DefaultValue = "Per size, from --bit-siz-icon-*",
-            Description = "Size of the icon, for a glyph and an IconUrl image alike.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, for a glyph and an IconUrl image alike. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Button-spinner-size",
-            DefaultValue = "As the icon size",
-            Description = "Diameter of the loading spinner.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Diameter of the loading spinner, the icon's size by default. The Size parameter wins over it.",
         },
         new()
         {
