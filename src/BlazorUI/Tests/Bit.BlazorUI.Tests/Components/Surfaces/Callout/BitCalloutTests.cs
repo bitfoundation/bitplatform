@@ -519,6 +519,37 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalloutShouldFocusItsTriggerWhenAClickOpensIt()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        // WebKit leaves the focus where it was on a click, and Escape is answered on the root around the anchor.
+        var focus = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusClickedTrigger"];
+
+        Assert.AreEqual(1, focus.Count);
+        Assert.AreEqual(component.Find(".bit-clo-acn").Id, focus[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldLeaveTheFocusToTheContentWhenAClickOpensItWithAutoFocus()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusClickedTrigger"].Count);
+    }
+
+    [TestMethod]
     public void BitCalloutShouldPutItsContentInTheTabOrderRightAfterItsAnchor()
     {
         var component = RenderComponent<BitCallout>(parameters =>

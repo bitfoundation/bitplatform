@@ -539,6 +539,10 @@
                 }
             }
 
+            if (detached === false) {
+                Callouts.keepInBand(callout, scrollContainer, fixedRect, visibleTop, visibleBottom);
+            }
+
             // Decided along with the band above, because the placement has to know whether the component
             // fell out of it only because the keyboard shrank it.
             callout.style.visibility = detached ? 'hidden' : '';
@@ -565,6 +569,65 @@
             }
 
             return (calloutWidth + calloutLeft) > document.body.offsetWidth;
+        }
+
+        // The last word on where the callout ends up vertically: whatever the placement decided, the callout is
+        // kept inside the visible band. The room the placement hands the scrollable content is worked out from
+        // what it can measure ahead of time - the header, the footer and the scroll offset the component names -
+        // and a content that puts more than that around its scrollable part (a padding of its own, a part nobody
+        // named) still runs past the edge by the difference; a callout with nothing to scroll and no side with
+        // the room for it (a clock dial between a field and the edges of a short screen) runs past it whole.
+        // So the callout is measured where it has been put, and what still hangs off the band is first taken
+        // off the scrollable content, and then - for whatever no scrolling can take back - the callout is slid
+        // back onto the screen, over its component if it has to be, the way a side the consumer forced it onto
+        // already is. One taller than the whole band keeps its top edge on the screen, where it starts.
+        // It is measured off the placement just written rather than off the box the callout reports, which
+        // carries the offset of the entry animation (see positionArrow); the height is the layout height, which
+        // no transform touches.
+        private static keepInBand(
+            callout: HTMLElement,
+            scrollContainer: { style: any },
+            fixedRect: { top: number, left: number, bottom: number },
+            visibleTop: number,
+            visibleBottom: number,
+        ) {
+            // The same 2px the clamping everywhere else keeps from the edges of the band.
+            const minTop = visibleTop + 2;
+            const maxBottom = visibleBottom - 2;
+
+            // A callout placed below or beside the component is anchored by its top edge, one placed above it by
+            // its bottom edge, which is the one the browser then grows it upwards from.
+            const anchoredByTop = callout.style.top !== '';
+            if (anchoredByTop === false && callout.style.bottom === '') return;
+
+            const measure = () => {
+                const height = callout.offsetHeight;
+                const top = anchoredByTop
+                    ? fixedRect.top + parseFloat(callout.style.top)
+                    : fixedRect.bottom - parseFloat(callout.style.bottom) - height;
+                return { top, height, bottom: top + height };
+            };
+
+            let box = measure();
+            const overflow = Math.max(0, minTop - box.top) + Math.max(0, box.bottom - maxBottom);
+            if (overflow <= 0) return;
+
+            if (scrollContainer instanceof HTMLElement && scrollContainer.offsetHeight > 0) {
+                scrollContainer.style.maxHeight = Math.max(0, scrollContainer.offsetHeight - overflow) + 'px';
+                box = measure();
+            }
+
+            if (box.top >= minTop && box.bottom <= maxBottom) return;
+
+            let top = box.top;
+            if (box.bottom > maxBottom) top = maxBottom - box.height;
+            if (top < minTop) top = minTop;
+
+            if (anchoredByTop) {
+                callout.style.top = (top - fixedRect.top) + 'px';
+            } else {
+                callout.style.bottom = (fixedRect.bottom - (top + box.height)) + 'px';
+            }
         }
 
         // Places the callout on the side of the component the consumer asked for, or on the opposite one
@@ -954,6 +1017,44 @@
 
                 Callouts.closeTop();
             }
+        }
+
+        // Dismisses the callouts a click on the overlay of the innermost one lands outside of, along with that
+        // one. The overlay of a callout opened from inside another covers the whole page, the outer callout
+        // included, so the click that dismisses it reaches neither the page nor the outer callout: left to the
+        // overlay alone, a click outside every open callout would only ever take the innermost one away, and a
+        // stack of them would have to be clicked away one level at a time. A click over the callout right
+        // under the innermost one is the user going back to it, which keeps it open, and so does one over any
+        // callout further down for that one and everything under it. A callout that is not dismissed from
+        // outside (noDismiss) keeps itself and everything it is nested in open, as it does for the page.
+        // Reports whether it took the click, in which case the overlay's own handler must not see it: the
+        // innermost callout has already been dismissed here, along with the rest.
+        public static dismissOnOverlayClick(target: EventTarget | null, x: number, y: number): boolean {
+            if (Callouts._stack.length < 2) return false;
+
+            const top = Callouts.current;
+            if (!top.overlayId || top.noDismiss) return false;
+            if (!(target instanceof Element) || target.id !== top.overlayId) return false;
+
+            let keep = Callouts._stack.length - 2;
+            while (keep >= 0) {
+                const entry = Callouts._stack[keep];
+                if (entry.noDismiss) break;
+
+                const rect = document.getElementById(entry.calloutId)?.getBoundingClientRect();
+                if (rect && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) break;
+
+                keep--;
+            }
+
+            // Only the innermost one goes, which its overlay does on its own.
+            if (keep === Callouts._stack.length - 2) return false;
+
+            while (Callouts._stack.length > keep + 1) {
+                Callouts.closeTop();
+            }
+
+            return true;
         }
 
         // True when the node lives inside the given open callout or inside the component it was opened
@@ -1574,8 +1675,14 @@
                 arrow && (arrow.style.display = 'none');
             }
 
-            if (notify) {
-                entry.dotnetObj?.invokeMethodAsync('CloseCallout');
+            // A callout no longer in the page is one whose component Blazor has already taken away, so there is
+            // nobody left to tell. Nor is there when the component is disposed while the call is on its way: a
+            // navigation scrolls the page, and the scroll dismisses the callout here while the old page is still
+            // in the DOM - but by the time the call reaches .NET, the render of the new page has disposed the
+            // component and its reference with it, and the call fails there. Either way the callout is closed
+            // for good, which is all the call was for, so its failure is not one to report.
+            if (notify && callout) {
+                entry.dotnetObj?.invokeMethodAsync('CloseCallout').catch(() => { });
             }
         }
     }

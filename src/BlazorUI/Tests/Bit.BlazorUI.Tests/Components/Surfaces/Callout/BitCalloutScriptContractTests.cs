@@ -56,6 +56,23 @@ public class BitCalloutScriptContractTests
     }
 
     [TestMethod]
+    public void CalloutsOverlayClickShouldBeHeardAheadOfBlazor()
+    {
+        var script = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "Callouts.ts"));
+        var general = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "general.ts"));
+
+        StringAssert.Contains(script, "public static dismissOnOverlayClick(");
+
+        // The overlay's own Blazor handler dismisses the innermost callout on the same click, so the listener that
+        // dismisses the ones under it too has to run first and keep the click from reaching that handler: on the
+        // window, in the capture phase.
+        var listener = Regex.Match(general, @"window\.addEventListener\('click',(?<body>.*?)\},\s*true\);", RegexOptions.Singleline);
+        Assert.IsTrue(listener.Success, "The capture-phase click listener on the window was not found in general.ts.");
+        StringAssert.Contains(listener.Groups["body"].Value, "Callouts.dismissOnOverlayClick(");
+        StringAssert.Contains(listener.Groups["body"].Value, "stopImmediatePropagation()");
+    }
+
+    [TestMethod]
     public void BitCalloutShouldResetEveryPrivateVariableItWritesInline()
     {
         var component = ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Callout", "BitCallout.razor.cs");

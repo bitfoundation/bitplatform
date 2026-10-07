@@ -834,11 +834,32 @@ public partial class BitCallout : BitComponentBase
         if (IsOpen is false)
         {
             await OpenCallout();
+
+            // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus
+            // where it was - and a callout whose trigger never took the focus is a callout without its Escape
+            // key, since the key is answered on the root around the anchor. Doing it here is what the engines
+            // that focus it have already done, so nothing moves for them. It is left alone where the callout is
+            // the one taking the focus, which AutoFocus and the modes that keep the focus ask for.
+            if (IsOpen && (AutoFocus || KeepsFocus) is false)
+            {
+                await FocusClickedTrigger();
+            }
         }
         else if (HoverDriven is false || _hoverInside is false)
         {
             await CloseCallout();
         }
+    }
+
+    private async Task FocusClickedTrigger()
+    {
+        if (IsDisposed || Anchor is null || _dotnetObj is null) return;
+
+        try
+        {
+            await _js.BitUtilsFocusClickedTrigger(_anchorId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnOverlayClick()

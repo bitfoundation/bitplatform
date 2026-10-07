@@ -1318,6 +1318,45 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBreadcrumbShouldFocusTheOverflowButtonWhenAClickOpensTheMenu()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        var before = Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+
+        component.Find(".bit-brc-obt").Click();
+
+        // WebKit leaves the focus where it was on a click, and Escape is answered on the button.
+        Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus") - before);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldLeaveTheFocusOnTheFirstItemWhenAKeyOpensTheMenu()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        var before = Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+
+        var button = component.Find(".bit-brc-obt");
+        button.KeyDown(Key.Enter);
+        button.Click();
+
+        Assert.AreEqual("first", handler.Invocations.Single().Arguments[2]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus") - before);
+    }
+
+    [TestMethod]
     public void BitBreadcrumbShouldRenderTheStructuredDataOfTheWholeHierarchy()
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>

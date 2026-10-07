@@ -656,7 +656,19 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             return;
         }
 
+        // A key that activated the button has asked for the focus to move onto the first item of the menu.
+        var focusFirstItem = _focusFirstItemOnOpen;
+
         await OpenCallout();
+
+        // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus where
+        // it was - and a menu whose button never took the focus is a menu without its Escape key, since the key
+        // is answered on the button. Doing it here is what the engines that focus it have already done, so
+        // nothing moves for them.
+        if (focusFirstItem is false && _isCalloutOpen)
+        {
+            await FocusOverflowButton();
+        }
     }
 
     // The current page is a step to read rather than one to follow, so it renders as plain text when the
