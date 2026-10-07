@@ -50,8 +50,10 @@ public partial class BitCollapse : BitComponentBase
 
     // A transition that has started and whose end is still to be scheduled: the render that follows the change
     // of state is what puts the new pace on the root, so the time left of it is read after that render rather
-    // than guessed before it. The wait is the estimate used when the browser is not asked.
-    private (bool Expanded, int Wait, CancellationTokenSource Cts)? _pendingTransition;
+    // than guessed before it. The wait is the estimate used when the browser is not asked, and Started is the
+    // moment the transition itself started, which is what a browser that can only report the whole of it has
+    // that time taken off.
+    private (bool Expanded, int Wait, long Started, CancellationTokenSource Cts)? _pendingTransition;
 
     // A transition whose end is timed off the estimate because nothing was waiting for it when it started, with
     // the moment the clock was set. An option that starts waiting for it part-way through - an OnCollapsed
@@ -670,7 +672,9 @@ public partial class BitCollapse : BitComponentBase
                 // trip has passed since then, which is taken off so the end lands when the transition does.
                 var started = Stopwatch.GetTimestamp();
 
-                var remaining = await _js.BitCollapseGetRemainingTransitionTime(RootElement);
+                var elapsed = Stopwatch.GetElapsedTime(pending.Started, started).TotalMilliseconds;
+
+                var remaining = await _js.BitCollapseGetRemainingTransitionTime(RootElement, elapsed);
 
                 if (remaining.HasValue)
                 {
@@ -808,7 +812,7 @@ public partial class BitCollapse : BitComponentBase
 
         var estimate = Math.Max(0, Delay ?? 0) + Math.Max(0, _durationValue ?? DefaultDurationInMs);
 
-        _pendingTransition = (Expanded, estimate, cts);
+        _pendingTransition = (Expanded, estimate, Stopwatch.GetTimestamp(), cts);
     }
 
     private async Task CompleteTransitionAsync(int wait, bool expanded, CancellationTokenSource cts)
@@ -920,7 +924,7 @@ public partial class BitCollapse : BitComponentBase
 
         _transitionCts = cts;
 
-        _pendingTransition = (estimated.Expanded, Math.Max(0, estimated.Wait - elapsed), cts);
+        _pendingTransition = (estimated.Expanded, Math.Max(0, estimated.Wait - elapsed), estimated.Started, cts);
     }
 
     private void CancelPendingTransition()
