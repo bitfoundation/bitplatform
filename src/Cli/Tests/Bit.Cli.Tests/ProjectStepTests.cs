@@ -127,6 +127,38 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task RazorErrorsFromAStaleCompilerServer_Should_BuildAgainWithAFreshOne()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var builds = 0;
+        host.Runner.On("dotnet", "build ", _ => ++builds == 1
+            ? new ProcessResult { ExitCode = 1, Output = "HumanFollowUpCard.razor(5,10): error RZ1021: Markup in a code block must start with a tag." }
+            : new ProcessResult { ExitCode = 0 });
+
+        var result = await new ProjectSteps(host.Services, project).BuildAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        Assert.AreEqual("on a second try, after restarting the C# compiler server", result.Detail);
+        CollectionAssert.AreEqual(new[] { "build", "build-server", "build" }, host.Runner.Calls.Select(c => c.Arguments[0]).ToArray());
+        CollectionAssert.AreEqual(new[] { "build-server", "shutdown", "--vbcscompiler" }, host.Runner.Calls[1].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task OtherBuildErrors_Should_FailWithoutRestartingTheCompilerServer()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.On("dotnet", "build ", 1, "Program.cs(3,1): error CS0246: The type or namespace name 'Foo' could not be found");
+
+        var result = await new ProjectSteps(host.Services, project).BuildAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        Assert.AreEqual("CS0246", result.Detail);
+        Assert.AreEqual(1, host.Runner.Calls.Count);
+    }
+
+    [TestMethod]
     public async Task AMissingSdk_Should_StopTheStepsThatNeedIt()
     {
         using var host = new TestHost(HostOs.Linux);
