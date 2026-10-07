@@ -824,6 +824,110 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldPlayWhenStartedWithThePointerAndTheFocusOnThePlayPauseButton()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+            parameters.Add(p => p.ShowPlayPause, true);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+        var root = component.Find(".bit-swp");
+
+        // A click in a browser reaches the button with the pointer over the swiper and the focus moved into
+        // it, both of which pause the scrolling on their own.
+        root.MouseEnter();
+        root.FocusIn();
+
+        component.Find(".bit-swp-ppb").Click();
+        Assert.IsTrue(swiper.IsPaused);
+
+        component.Find(".bit-swp-ppb").Click();
+        Assert.IsFalse(swiper.IsPaused);
+        Assert.IsTrue(swiper.IsPlaying);
+
+        // Moving the focus on (or the pointer out and back in) pauses it again, as it would anywhere else.
+        root.FocusOut();
+        root.FocusIn();
+        Assert.IsFalse(swiper.IsPlaying);
+
+        root.FocusOut();
+        Assert.IsTrue(swiper.IsPlaying);
+
+        root.MouseLeave();
+        root.MouseEnter();
+        Assert.IsFalse(swiper.IsPlaying);
+        Assert.IsFalse(swiper.IsPaused);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldStartTheAutoPlayPausedUnderReducedMotion()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+            parameters.Add(p => p.ShowPlayPause, true);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+
+        component.WaitForAssertion(() => Assert.IsTrue(swiper.IsPaused));
+        Assert.IsFalse(swiper.IsPlaying);
+        Assert.AreEqual("Start automatic slide show", component.Find(".bit-swp-ppb").GetAttribute("aria-label"));
+
+        // The play/pause button still starts it.
+        component.Find(".bit-swp-ppb").Click();
+
+        component.WaitForAssertion(() => Assert.IsTrue(swiper.IsPlaying));
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldStartTheAutoPlayPausedWhenItIsSwitchedOnUnderReducedMotion()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        var swiper = component.Instance.Swiper;
+
+        component.Render(parameters => parameters.Add(p => p.AutoPlay, true));
+
+        Assert.IsTrue(swiper.IsPaused);
+        Assert.IsFalse(swiper.IsPlaying);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldAutoPlayWhenReducedMotionIsNotRequested()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(false);
+
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+        });
+
+        await PushState(component);
+
+        Assert.IsFalse(component.Instance.Swiper.IsPaused);
+        Assert.IsTrue(component.Instance.Swiper.IsPlaying);
+    }
+
+    [TestMethod]
     public async Task BitSwiperShouldNotAutoPlayInAPageThatIsAlreadyHidden()
     {
         var visibility = new BitPageVisibility(new PageStateJsRuntime("""{"hidden":true,"blurred":false}"""));

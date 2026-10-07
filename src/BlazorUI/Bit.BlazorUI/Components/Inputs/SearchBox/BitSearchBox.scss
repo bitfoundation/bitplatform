@@ -57,6 +57,7 @@
 //   --bit-SearchBox-callout-failed-color        color of the message a failing suggest items
 //                                               provider is reported with                         (default: $clr-err)
 //   --bit-SearchBox-spinner-color               arc color of the loading spinner                   (default: the Color role's main color)
+//   --bit-SearchBox-spinner-track-color         the ring the arc of the loading spinner travels on (default: $clr-brd-pri)
 //   --bit-SearchBox-spinner-size                diameter of the loading spinner, in the field and
 //                                               in the callout                                    (default: per size)
 //   --bit-SearchBox-item-color                  text color of a suggest item                       (default: $clr-fg-pri)
@@ -976,26 +977,12 @@
     color: var(--bit-SearchBox-callout-failed-color, #{$clr-err});
 }
 
+// The callout carries the color role class of the component for exactly this, so the progress of a search is
+// painted in the color the search box was given rather than always in the primary one.
 .bit-srb-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    box-sizing: border-box;
-    width: var(--bit-srb-spn-size, #{spacing(1.75)});
-    height: var(--bit-srb-spn-size, #{spacing(1.75)});
-    border: $siz-spinner-stroke $shp-border-style $clr-brd-pri;
-    // The callout carries the color role class of the component for exactly this, so the progress of a
-    // search is painted in the color the search box was given rather than always in the primary one.
-    border-block-start-color: var(--bit-SearchBox-spinner-color, var(--bit-srb-clr, #{$clr-pri}));
-
-    // The spinner tokens rather than a literal duration: a looping animation must slow down
-    // under prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
-    animation: bit-srb-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-srb-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-srb-spn-size, #{spacing(1.75)}),
+                          var(--bit-SearchBox-spinner-color, var(--bit-srb-clr, #{$clr-pri})),
+                          var(--bit-SearchBox-spinner-track-color, #{$clr-brd-pri}));
 }
 
 
@@ -1059,6 +1046,10 @@
         .bit-srb-sbx {
             color: GrayText;
         }
+
+        .bit-srb-spn {
+            @include spinner-ring-forced-disabled;
+        }
     }
 
     .bit-srb-itm:hover,
@@ -1080,10 +1071,5 @@
     .bit-srb-hlt {
         color: inherit;
         background-color: transparent;
-    }
-
-    .bit-srb-spn {
-        border-color: GrayText;
-        border-block-start-color: CanvasText;
     }
 }

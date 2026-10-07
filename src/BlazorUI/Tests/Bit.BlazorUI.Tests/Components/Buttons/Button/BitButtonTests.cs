@@ -622,6 +622,7 @@ public class BitButtonTests : BunitTestContext
 
     [TestMethod,
         DataRow("https://bitplatform.dev", "_blank", "noopener"),
+        DataRow("https://bitplatform.dev", "_BLANK", "noopener"),
         DataRow("https://bitplatform.dev", "_self", null),
         DataRow("https://bitplatform.dev", null, null)
     ]
@@ -995,6 +996,25 @@ public class BitButtonTests : BunitTestContext
         }).Find(".bit-btn");
 
         Assert.AreEqual("noreferrer", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow("nofollow sponsored", "nofollow sponsored noopener"),
+        DataRow("opener", "opener"),
+        DataRow("noreferrer", "noreferrer")
+    ]
+    public void BitButtonBlankTargetParameterShouldKeepTheSplattedRel(string splattedRel, string expectedRel)
+    {
+        // With no Rel parameter, the rel written by hand is the one the anchor carries: the new-tab noopener is
+        // added to it, never put in its place, and one that already says what the opener should be is left alone.
+        var anchor = RenderSplatted(new()
+        {
+            [nameof(BitButton.Href)] = "https://bitplatform.dev",
+            [nameof(BitButton.Target)] = "_blank",
+            ["rel"] = splattedRel
+        }).Find(".bit-btn");
+
+        Assert.AreEqual(expectedRel, anchor.GetAttribute("rel"));
     }
 
     [TestMethod]

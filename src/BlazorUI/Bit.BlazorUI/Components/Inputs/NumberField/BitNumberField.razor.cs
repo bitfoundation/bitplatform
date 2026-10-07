@@ -1387,15 +1387,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                                     ? _labelId
                                     : null;
 
-    // The busy indicator is sized in pixels rather than by its own size enum, whose smallest step is
-    // already taller than the whole field, so it follows the size of the number field instead.
-    private int LoadingSize => Size switch
-    {
-        BitSize.Small => 16,
-        BitSize.Large => 24,
-        _ => 20
-    };
-
     private string? GetInputAttribute(string name)
     {
         return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)

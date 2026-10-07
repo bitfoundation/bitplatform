@@ -299,21 +299,7 @@
 }
 
 .bit-cht-spn {
-    border-radius: 50%;
-    box-sizing: border-box;
-    width: $siz-icon-lg;
-    height: $siz-icon-lg;
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    border-color: translucent(currentcolor, 25%);
-    border-top-color: var(--bit-Chart-loading-spinner-color, #{$clr-pri});
-    animation: bit-cht-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-cht-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring($siz-icon-lg, var(--bit-Chart-loading-spinner-color, #{$clr-pri}), translucent(currentcolor, 25%));
 }
 
 .bit-cht-nodata {

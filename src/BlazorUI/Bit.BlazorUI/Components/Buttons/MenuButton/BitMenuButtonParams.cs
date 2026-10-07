@@ -183,9 +183,20 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? MaxHeight { get; set; }
 
     /// <summary>
+    /// The text the items opening a new tab are announced with. The default is "(opens in a new tab)"; an empty
+    /// value takes the announcement off.
+    /// </summary>
+    public string? NewTabHint { get; set; }
+
+    /// <summary>
     /// If true, removes the icon from the header button.
     /// </summary>
     public bool? NoIcon { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    public bool? NoNewTabHint { get; set; }
 
     /// <summary>
     /// The icon of the bullet shown on a checked single-choice item, using custom CSS classes for external
@@ -423,6 +434,18 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
         if (MaxHeight.HasValue() && bitMenuButton.HasNotBeenSet(nameof(MaxHeight)))
         {
             bitMenuButton.MaxHeight = MaxHeight;
+        }
+
+        // an empty hint is a value of its own - the one that takes the announcement off - so only null is
+        // what leaves the component to its default.
+        if (NewTabHint is not null && bitMenuButton.HasNotBeenSet(nameof(NewTabHint)))
+        {
+            bitMenuButton.NewTabHint = NewTabHint;
+        }
+
+        if (NoNewTabHint.HasValue && bitMenuButton.HasNotBeenSet(nameof(NoNewTabHint)))
+        {
+            bitMenuButton.NoNewTabHint = NoNewTabHint.Value;
         }
 
         if (NoIcon.HasValue && bitMenuButton.HasNotBeenSet(nameof(NoIcon)))

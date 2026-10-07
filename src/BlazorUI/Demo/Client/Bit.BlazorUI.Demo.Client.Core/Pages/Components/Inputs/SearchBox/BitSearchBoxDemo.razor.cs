@@ -879,6 +879,12 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "--bit-SearchBox-spinner-track-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the ring the arc of the loading spinner travels on, in the field and in the callout.",
+        },
+        new()
+        {
             Name = "--bit-SearchBox-spinner-size",
             DefaultValue = "Per Size ($siz-icon-md by default)",
             Description = "Diameter of the loading spinner, in the field and in the callout.",
@@ -1091,6 +1097,13 @@ public partial class BitSearchBoxDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the spinner slot shown in the field while the search box is Loading. The spinner of the suggest callout is Loading instead.",
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's busy spinner itself - the ring drawn in the field while it is Loading, and in the suggest callout when no LoadingTemplate is set.",
                 },
                 new()
                 {

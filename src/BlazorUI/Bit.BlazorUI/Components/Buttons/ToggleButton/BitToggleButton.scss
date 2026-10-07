@@ -110,16 +110,6 @@
             @include focus-ring(var(--bit-ToggleButton-disabled-color, var(--bit-tgb-clr-dis-text)));
         }
     }
-
-    @keyframes bit-tgb-spinner-animation {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
 }
 
 .bit-tgb-ico {
@@ -233,18 +223,9 @@
     flex-direction: row;
 }
 
+// The arc is the button's own foreground, which already contrasts with its background in every variant and state.
 .bit-tgb-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    border-color: $clr-brd-sec;
-    border-style: $shp-border-style;
-    border-width: $siz-spinner-stroke;
-    width: var(--bit-ToggleButton-spinner-size, var(--bit-tgb-spn-size));
-    height: var(--bit-ToggleButton-spinner-size, var(--bit-tgb-spn-size));
-
-    // the button's own foreground already contrasts with its background in every variant and state
-    border-top-color: currentcolor;
-    animation: bit-tgb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+    @include spinner-ring(var(--bit-ToggleButton-spinner-size, var(--bit-tgb-spn-size)), currentcolor, $clr-brd-sec, $box-sizing: null);
 }
 
 .bit-tgb-lbl {
@@ -491,9 +472,8 @@
         background-color: Canvas;
     }
 
-    .bit-tgb-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
+    .bit-tgb.bit-dis .bit-tgb-spn {
+        @include spinner-ring-forced-disabled;
     }
 }
 

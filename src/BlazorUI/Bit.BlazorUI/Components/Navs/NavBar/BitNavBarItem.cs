@@ -107,6 +107,17 @@ public class BitNavBarItem
     public string? SelectedIconName { get; set; }
 
     /// <summary>
+    /// The relationship of the link of the navbar item to the current document, rendered as the rel attribute of its anchor.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c> added to whatever this
+    /// says, unless it already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>). Nothing adds <c>noreferrer</c> on its
+    /// own: ask for it here where the page the link leads to must not learn which page it was followed from.
+    /// </remarks>
+    public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// Custom CSS style for the navbar item.
     /// </summary>
     public string? Style { get; set; }

@@ -5,6 +5,62 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### Every anchor resolves a new tab's rel the same way ([#13475](https://github.com/bitfoundation/bitplatform/issues/13475))
+
+The components that render an anchor from a `Target` (`BitLink`, `BitTag`, `BitButton`, `BitActionButton`,
+`BitButtonGroup`, `BitBadge`, `BitPersona`, `BitCard`, and the items of `BitNav`, `BitNavBar`,
+`BitBreadcrumb` and `BitMenuButton`) used to each have their own rule for the rel a new tab gets. They now
+share one: a `Target` of `_blank`, matched case-insensitively as the browser does, adds `noopener` to
+whatever `Rel` says, unless `Rel` already says what the opener relationship should be (`NoOpener`,
+`NoReferrer` or `Opener`); no other target gets a rel, and `noreferrer` is never added on its own. The
+items of the four navigation components gain the `Rel` they were missing (`BitNavItem.Rel`,
+`BitNavOption.Rel`, `BitNavNameSelectors.Rel` and the same on the navbar, breadcrumb and menu button), and
+the four components announce a new-tab item the way `BitLink` does, worded by their new `NewTabHint` and
+taken off by `NoNewTabHint` (both also in their `Bit*Params`). Most links render as they did. These do
+not:
+
+| Component | Before | After |
+|---|---|---|
+| `BitButton`, `BitActionButton`, `BitCard` with `Rel="BitLinkRels.Opener"` and `Target="_blank"` | `rel="opener noopener"`: the opened page could not reach the opener | `rel="opener"`: **the opened page can reach `window.opener`** |
+| `BitBadge`, `BitPersona`, `BitTag` with a `Rel` that does not mention the opener (`NoFollow`, `External`, ...) and `Target="_blank"` | `rel="nofollow"`: no `noopener` | `rel="nofollow noopener"` |
+| `BitButton` with a `rel` passed through `@attributes` and `Target="_blank"` | `rel="noopener"`: the passed rel was dropped | the passed rel plus `noopener`, e.g. `rel="nofollow sponsored noopener"` |
+| `BitNav`, `BitNavBar` item with an external url and `Target="_blank"` | `rel="noopener noreferrer"` | `rel="noopener"`: **the page the link opens now receives the Referer header** |
+| `BitNav`, `BitNavBar` item with an in-app url and `Target="_blank"` | no rel | `rel="noopener"` |
+| `BitNav`, `BitNavBar` item with an external url and any other target (`_self`, `_top`, a frame name) | `rel="noopener noreferrer"` | no rel: the referrer is sent, as from any other link |
+| `BitBreadcrumb`, `BitMenuButton` item with `Target="_blank"` | `rel="noopener noreferrer"` | `rel="noopener"`: **the page the link opens now receives the Referer header** |
+| `BitNav`, `BitNavBar`, `BitBreadcrumb`, `BitMenuButton` item with `Target="_blank"` | not announced | announced: "(opens in a new tab)" is read after its name |
+| `Target="_BLANK"` (any casing) on `BitLink`, `BitButton`, `BitActionButton`, `BitBadge`, `BitPersona` and the `BitButtonGroup`, `BitMenuButton` and `BitBreadcrumb` items (`BitTag` and `BitCard` already matched it) | not treated as a new tab | treated as a new tab: hardened, and announced by `BitLink` |
+
+`Opener` is the one way to ask for the opener back, so it is now honored everywhere. Modern browsers
+already apply `noopener` to `_blank` on their own, so `Opener` exists only to give that up. **If an app
+sets `Rel` to `Opener` on a `BitButton`, `BitActionButton` or `BitCard`, directly or through a `BitParams`
+cascade, its new tabs can now reach and navigate the page that opened them.** Check that this is intended,
+and remove `Opener` wherever it is not:
+
+```razor
+@* before: the Opener was overridden *@
+<BitCard Href="https://example.com" Target="_blank" Rel="BitLinkRels.Opener | BitLinkRels.NoFollow" />
+
+@* after: keep the hardening by not asking for the opener *@
+<BitCard Href="https://example.com" Target="_blank" Rel="BitLinkRels.NoFollow" />
+```
+
+`noreferrer` is a privacy choice rather than a security one - it hides which page a link was followed from,
+and with it the app from the analytics of the site it links to - so it is the app's to make. The
+navigation components used to make it for every new-tab link they rendered; **an app that relied on
+that has to ask for it now**, on the item:
+
+```csharp
+// before: noopener noreferrer came on its own
+new BitNavItem { Text = "Partner", Url = "https://partner.example", Target = "_blank" }
+
+// after: ask for noreferrer where the destination must not learn where the reader came from
+new BitNavItem { Text = "Partner", Url = "https://partner.example", Target = "_blank", Rel = BitLinkRels.NoReferrer }
+```
+
+An app whose own text already says that an item opens a new tab sets `NoNewTabHint` on the component,
+so the announcement is not made twice.
+
 ### The enabled state is a flag: `IsEnabled` is now `Disabled` / `IsDisabled` ([#5527](https://github.com/bitfoundation/bitplatform/issues/5527))
 
 The enabled state of every component, item, option and name selector used to be `IsEnabled`, which

@@ -48,6 +48,11 @@ public class BitTextFieldClassStyles
     public string? Loading { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's default busy spinner, drawn when no LoadingTemplate is set.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitTextField's reveal password.
     /// </summary>
     public string? RevealPassword { get; set; }

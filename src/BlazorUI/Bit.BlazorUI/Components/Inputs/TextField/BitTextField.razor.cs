@@ -1227,16 +1227,6 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private string CountText => MaxLength >= 0 ? $"{_charCount}/{MaxLength}" : _charCount.ToString();
 
-    // The busy indicator is sized in pixels rather than by its own size enum, whose smallest step is
-    // already taller than the whole field, so it follows the size of the text field instead.
-    private int LoadingSize => Size switch
-    {
-        BitSize.Small => 16,
-        BitSize.Large => 24,
-        _ => 20
-    };
-
-
     internal void SetInputMode()
     {
         _inputMode = InputMode?.ToString().ToLower();

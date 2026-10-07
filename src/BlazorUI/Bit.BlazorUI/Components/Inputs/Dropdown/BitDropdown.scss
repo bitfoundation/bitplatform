@@ -1220,22 +1220,7 @@
 }
 
 .bit-drp-spn {
-    width: 1em;
-    height: 1em;
-    flex-shrink: 0;
-    border-radius: 50%;
-    box-sizing: border-box;
-    border-color: $clr-brd-sec;
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    border-top-color: var(--bit-drp-clr);
-    animation: bit-drp-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-drp-spinner-animation {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(1em, var(--bit-drp-clr), $clr-brd-sec);
 }
 
 // Read-only keeps the dropdown focusable and its callout browsable, but nothing inside it can be
@@ -1494,13 +1479,6 @@
     .bit-drp-hlt {
         color: HighlightText;
         background-color: Highlight;
-    }
-
-    // The spinner's track and its arc are painted the same color here, which stops the ring reading as
-    // motion at all; the arc is put back on the text color so the turning stays visible.
-    .bit-drp-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
     }
 
     // Disabled is conveyed through a drained palette, which this mode discards, so it is restated with the

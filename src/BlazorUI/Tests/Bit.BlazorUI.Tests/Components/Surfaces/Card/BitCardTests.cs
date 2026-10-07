@@ -1291,6 +1291,11 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual("true", card.GetAttribute("aria-busy"));
         Assert.AreEqual(1, component.FindAll(".bit-crd-bdy .bit-crd-skl").Count);
         Assert.AreEqual(0, component.FindAll(".inner").Count);
+
+        // The card draws its own placeholder bars rather than rendering another component of the library.
+        Assert.AreEqual(3, component.FindAll(".bit-crd-skl .bit-crd-skb").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-crd-skl .bit-smr").Count);
+        Assert.AreEqual("true", component.Find(".bit-crd-skl").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -2250,6 +2255,21 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardOpenerRelShouldHandTheNewTabItsOpenerBack()
+    {
+        // Opener is the one way an author asks for the opener relationship back, so no noopener is added to
+        // contradict it - the same rule every anchor of the library follows.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Rel, BitLinkRels.Opener);
+        });
+
+        Assert.AreEqual("opener", component.Find(".bit-crd-lnk").GetAttribute("rel"));
+    }
+
+    [TestMethod]
     public void BitCardFragmentHrefShouldNotGetARel()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -2906,6 +2926,29 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual("color:teal", component.Find(".bit-crd-act").GetAttribute("style"));
         Assert.AreEqual("color:gray", component.Find(".bit-crd-bdy").GetAttribute("style"));
         Assert.AreEqual("color:brown", component.Find(".bit-crd-ftr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCardSkeletonClassesAndStylesShouldReachThePlaceholder()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Classes, new BitCardClassStyles { Skeleton = "c-skeleton", SkeletonBar = "c-bar" });
+            parameters.Add(p => p.Styles, new BitCardClassStyles { Skeleton = "color:red", SkeletonBar = "color:blue" });
+        });
+
+        var skeleton = component.Find(".bit-crd-skl");
+        Assert.IsTrue(skeleton.ClassList.Contains("c-skeleton"));
+        Assert.AreEqual("color:red", skeleton.GetAttribute("style"));
+
+        var bars = component.FindAll(".bit-crd-skb");
+        Assert.AreEqual(3, bars.Count);
+        foreach (var bar in bars)
+        {
+            Assert.IsTrue(bar.ClassList.Contains("c-bar"));
+            Assert.AreEqual("color:blue", bar.GetAttribute("style"));
+        }
     }
 
     [TestMethod]

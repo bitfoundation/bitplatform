@@ -360,20 +360,7 @@
 .bit-btg-spn {
     flex: none;
     display: block;
-    border-radius: 50%;
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    width: var(--bit-btg-itm-ics);
-    height: var(--bit-btg-itm-ics);
-    border-color: transparent;
-    border-top-color: currentcolor;
-    animation: bit-btg-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-btg-spinner-animation {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-btg-itm-ics), currentcolor, transparent, $box-sizing: null);
 }
 
 // The check mark is drawn with a rotated border so the component keeps no icon-font dependency,

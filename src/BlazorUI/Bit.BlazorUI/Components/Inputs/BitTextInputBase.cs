@@ -9,7 +9,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
     // The parameters of this class are taken out of the ParameterView here, before it reaches the classes below,
-    // so their sets never see them: a cascade filling in what the markup left unset reads this one instead.
+    // so their sets never see them: IsSetByMarkup adds this one to theirs, which is what HasNotBeenSet reads.
     private readonly HashSet<string> _assignedTextInputParameters = [];
 
 
@@ -39,14 +39,6 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     [Parameter] public int ThrottleTime { get; set; }
 
 
-
-    /// <summary>
-    /// Whether the named parameter of <see cref="BitTextInputBase{TValue}"/> was left unset on this component,
-    /// which is what a <see cref="BitParams"/> cascade fills in: the text-input tier of
-    /// <see cref="BitInputBase{TValue}.HasNotBeenSetOnInput"/>, since the parameters of this class are taken
-    /// out of the ParameterView before either of the sets below it sees them.
-    /// </summary>
-    protected internal bool HasNotBeenSetOnTextInput(string name) => _assignedTextInputParameters.Contains(name) is false;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {

@@ -280,10 +280,24 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Replaces the visually hidden \"(opens in a new tab)\" an item whose Target is _blank is announced with, e.g. to translate it. An empty value removes it.",
+        },
+        new()
+        {
             Name = "NoIcon",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, the icon of the header button is hidden.",
+        },
+        new()
+        {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the items whose Target is _blank from announcing that they open a new tab - only for where a visible label or heading already says so.",
         },
         new()
         {
@@ -808,6 +822,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+               },
+               new()
+               {
                    Name = "SecondaryText",
                    Type = "string?",
                    DefaultValue = "null",
@@ -969,6 +990,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Turns the option into a single-choice option: it is announced as a radio button inside the menu, carries its IsChecked state as a bullet, and checking it clears every other option of the menu button that names the same group. It outranks Checkable where both are set.",
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
                },
                new()
                {
@@ -1337,6 +1365,15 @@ public partial class BitMenuButtonDemo
                     Description = "RadioGroup field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Rel",
+                    Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Rel))",
+                    Description = "The Rel field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
