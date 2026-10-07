@@ -123,6 +123,8 @@ public sealed record ToolAction
     public bool Optional { get; init; }
 
     public PartialSuccess? Partial { get; init; }
+
+    public ProcessSpec? PathProbe { get; init; }
 }
 
 public sealed record PartialSuccess(int ExitCode, string Detail, string Hint);
