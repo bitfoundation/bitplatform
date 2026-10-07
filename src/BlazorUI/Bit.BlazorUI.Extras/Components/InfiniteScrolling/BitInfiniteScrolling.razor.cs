@@ -62,7 +62,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // retry, the manual mode waits for the button, and a disabled component (or one with no provider) loads
     // nothing at all. Observing it in any of those states would make the browser ask for a page that the
     // component immediately declines, over and over.
-    private bool _canAutoLoad => IsEnabled && ItemsProvider is not null && _isManual is false && _hasMore && _error is null;
+    private bool _canAutoLoad => Disabled is false && ItemsProvider is not null && _isManual is false && _hasMore && _error is null;
 
     // The manual mode, or the automatic one that has used up the pages it may load on its own.
     private bool _isManual => Manual || (AutoLoadLimit is int limit && _loadedPages >= Math.Max(0, limit));
@@ -86,7 +86,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // The button loads the next page in manual mode and retries the page that failed in any mode. It stays in
     // the DOM (marked aria-disabled) while the load it started runs, rather than vanishing under the keyboard
     // focus that pressed it and dropping that focus back to the top of the page.
-    private bool _showButton => IsEnabled && (_error is not null || _retrying || (_isManual && _hasMore && _initialized));
+    private bool _showButton => Disabled is false && (_error is not null || _retrying || (_isManual && _hasMore && _initialized));
 
     // The label of that button, which keeps saying "retry" for as long as the retry it started is running.
     private string? _buttonText => (_error is not null || _retrying) ? RetryText : LoadMoreText;
@@ -800,7 +800,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         // left to arrange.
         if (IsDisposed || _isLoading) return;
 
-        if (ItemsProvider is null || IsEnabled is false) return;
+        if (ItemsProvider is null || Disabled) return;
 
         if (_hasMore is false || IsMaxItemsReached())
         {
@@ -1023,7 +1023,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         _items.RemoveRange(fromStart ? 0 : _items.Count - surplus, surplus);
     }
 
-    private string BuildJsSetupKey() => $"{ScrollerSelector}|{Threshold}|{RootMargin}|{Reversed}|{Horizontal}|{_isManual}|{IsEnabled}|{Feed}";
+    private string BuildJsSetupKey() => $"{ScrollerSelector}|{Threshold}|{RootMargin}|{Reversed}|{Horizontal}|{_isManual}|{Disabled}|{Feed}";
 
     private async Task SetupJsAsync()
     {

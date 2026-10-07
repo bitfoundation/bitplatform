@@ -33,9 +33,9 @@ public class BitButtonGroupNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitButtonGroupItem.IconName));
 
     /// <summary>
-    /// IsEnabled field name and selector of the custom input class.
+    /// IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitButtonGroupItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool> IsDisabled { get; set; } = new(nameof(BitButtonGroupItem.IsDisabled));
 
     /// <summary>
     /// IsLoading field name and selector of the custom input class.

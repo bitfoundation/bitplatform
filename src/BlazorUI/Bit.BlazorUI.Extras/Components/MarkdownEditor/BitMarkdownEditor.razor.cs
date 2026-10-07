@@ -401,7 +401,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// </summary>
     public async ValueTask Run(BitMarkdownEditorCommand command)
     {
-        if (IsRendered is false || ReadOnly || IsEnabled is false) return;
+        if (IsRendered is false || ReadOnly || Disabled) return;
 
         await _js.BitMarkdownEditorRun(_Id, command.ToString());
     }
@@ -412,7 +412,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// </summary>
     public async ValueTask Insert(string text)
     {
-        if (IsRendered is false || ReadOnly || IsEnabled is false) return;
+        if (IsRendered is false || ReadOnly || Disabled) return;
 
         await _js.BitMarkdownEditorInsert(_Id, text ?? string.Empty);
     }
@@ -425,7 +425,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// </summary>
     public async ValueTask<int> Replace(string search, string replacement, bool all = true, bool matchCase = true)
     {
-        if (IsRendered is false || ReadOnly || IsEnabled is false || string.IsNullOrEmpty(search)) return 0;
+        if (IsRendered is false || ReadOnly || Disabled || string.IsNullOrEmpty(search)) return 0;
 
         return await _js.BitMarkdownEditorReplaceAll(_Id, search, replacement ?? string.Empty, all, matchCase);
     }
@@ -493,7 +493,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// </summary>
     public async ValueTask Undo()
     {
-        if (IsRendered is false || ReadOnly || IsEnabled is false) return;
+        if (IsRendered is false || ReadOnly || Disabled) return;
 
         await _js.BitMarkdownEditorUndo(_Id);
     }
@@ -503,7 +503,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// </summary>
     public async ValueTask Redo()
     {
-        if (IsRendered is false || ReadOnly || IsEnabled is false) return;
+        if (IsRendered is false || ReadOnly || Disabled) return;
 
         await _js.BitMarkdownEditorRedo(_Id);
     }
@@ -577,7 +577,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("ApplyCommand")]
     public BitMarkdownEditorEditResult _ApplyCommand(string command, int start, int end, string value)
     {
-        if (ReadOnly || IsEnabled is false || Enum.TryParse<BitMarkdownEditorCommand>(command, out var cmd) is false)
+        if (ReadOnly || Disabled || Enum.TryParse<BitMarkdownEditorCommand>(command, out var cmd) is false)
         {
             return BitMarkdownEditorEditResult.NotHandled(value, start, end);
         }
@@ -674,7 +674,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("UploadImage")]
     public async Task<string?> _UploadImage(string fileName, string base64, string contentType)
     {
-        if (OnImageUpload is null || ReadOnly || IsEnabled is false) return null;
+        if (OnImageUpload is null || ReadOnly || Disabled) return null;
 
         byte[] data;
         try
@@ -1152,7 +1152,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
     private bool IsToolbarItemDisabled(BitMarkdownEditorToolbarItem item)
     {
-        if (IsEnabled is false) return true;
+        if (Disabled) return true;
 
         if (ReadOnly is false)
         {
@@ -1474,7 +1474,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
     private async Task ReplaceOne()
     {
-        if (IsRendered is false || ReadOnly || IsEnabled is false || string.IsNullOrEmpty(_findText)) return;
+        if (IsRendered is false || ReadOnly || Disabled || string.IsNullOrEmpty(_findText)) return;
 
         _findResult = await _js.BitMarkdownEditorReplaceOne(_Id, _findText, _replaceText, _matchCase, focusEditor: false);
     }

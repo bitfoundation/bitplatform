@@ -271,7 +271,7 @@ public class BitSplitterParamsTests : BunitTestContext
             DefaultPercent = 30,
             KeyboardStep = 25,
             Class = "cascaded-class",
-            IsEnabled = false,
+            Disabled = true,
         }, builder =>
         {
             builder.AddAttribute(1, nameof(BitSplitter.GutterSize), (int?)4);

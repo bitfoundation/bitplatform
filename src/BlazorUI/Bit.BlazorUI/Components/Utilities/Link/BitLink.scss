@@ -194,15 +194,22 @@
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). A link is text read
 // on the page, so an accent role other than the primary one paints it in the role's foreground shade: its main
 // color is picked to fill a surface, and a warning or a secondary main falls under the 4.5:1 of body text on
-// white. Hover and press lean further towards the text color, which raises the contrast in both schemes. The
-// primary main is the brand's own link color, which every preset tunes to be read as text, and a surface role is
-// a page color already, so both keep their main and its states.
+// white. Hover and press lean further towards the text color, which raises the contrast in both schemes. A
+// background or border role is the page's own color or a hairline's, invisible or far under 4.5:1 as text, so it
+// reads its foreground too - its on color, the body text - with that text color's own states. The primary main is
+// the brand's own link color, which every preset tunes to be read as text, and a foreground role is a text color
+// already, so both keep their main and its states.
 @each $role, $tokens in $bit-color-roles {
     .bit-lnk-#{$role} {
         @if role($tokens, kind) == semantic and $role != pri {
             --bit-lnk-clr: #{role($tokens, fg)};
             --bit-lnk-clr-hover: color-mix(in srgb, #{role($tokens, fg)} 80%, #{$clr-fg-pri});
             --bit-lnk-clr-active: color-mix(in srgb, #{role($tokens, fg)} 65%, #{$clr-fg-pri});
+        }
+        @else if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {
+            --bit-lnk-clr: #{role($tokens, fg)};
+            --bit-lnk-clr-hover: #{$clr-fg-pri-hover};
+            --bit-lnk-clr-active: #{$clr-fg-pri-active};
         }
         @else {
             --bit-lnk-clr: #{role($tokens, main)};

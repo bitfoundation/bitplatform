@@ -145,7 +145,7 @@
 
     <DemoExample Title="Disabled" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div class="example-desc">
-            <b>IsEnabled="false"</b> dims the element and blocks the pointer on any tag. Every tag gets
+            <b>Disabled</b> dims the element and blocks the pointer on any tag. Every tag gets
             <code>aria-disabled</code>; form elements also get the native <code>disabled</code>, other tags
             <code>tabindex="-1"</code>. An anchor with an <code>href</code> loses it but gets <code>role="link"</code>,
             so it is announced as a disabled link; an <code>area</code> keeps its <code>href</code> and has its clicks'
@@ -155,10 +155,10 @@
             so give it a role. Content inside keeps its own tab stops - use a <code>fieldset</code> to disable a whole form.
         </div>
         <div class="example-content">
-            <BitElement Element="button" IsEnabled="false">A disabled button</BitElement>
-            <BitElement Element="input" IsEnabled="false" placeholder="A disabled input" AriaLabel="A disabled input" />
-            <BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">A disabled anchor</BitElement>
-            <BitElement class="demo-boxed" TabIndex="0" role="button" IsEnabled="false" @onclick="() => disabledClicks++">A disabled div button, out of the tab order (@disabledClicks)</BitElement>
+            <BitElement Element="button" Disabled>A disabled button</BitElement>
+            <BitElement Element="input" Disabled placeholder="A disabled input" AriaLabel="A disabled input" />
+            <BitElement Element="a" href="https://bitplatform.dev/" Disabled>A disabled anchor</BitElement>
+            <BitElement class="demo-boxed" TabIndex="0" role="button" Disabled @onclick="() => disabledClicks++">A disabled div button, out of the tab order (@disabledClicks)</BitElement>
         </div>
     </DemoExample>
 
@@ -211,8 +211,8 @@
             also reaches every element inside it.
         </div>
         <div class="example-content">
-            <BitElement Element="button" IsEnabled="false" Style="--bit-Element-disabled-opacity: 0.2;">Disabled, dimmed further</BitElement>
-            <BitElement Element="fieldset" IsEnabled="false" Style="--bit-Element-disabled-opacity: 1;">
+            <BitElement Element="button" Disabled Style="--bit-Element-disabled-opacity: 0.2;">Disabled, dimmed further</BitElement>
+            <BitElement Element="fieldset" Disabled Style="--bit-Element-disabled-opacity: 1;">
                 <BitElement Element="legend">A disabled fieldset, not dimmed</BitElement>
                 <BitElement Element="input" placeholder="Its input shows its own disabled look" AriaLabel="Fieldset input" />
             </BitElement>

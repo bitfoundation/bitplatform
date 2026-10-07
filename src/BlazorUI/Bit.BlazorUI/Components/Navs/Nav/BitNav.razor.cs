@@ -739,7 +739,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // swallowing the Tab that follows an arrow key.
     internal async Task HandleOnKeyDown(TItem source, KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         // The focus event of the item that received the key has already run, so the focused item is known;
@@ -792,7 +792,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 if (current is null || NoCollapse || SingleExpand) return;
                 foreach (var sibling in GetSiblingsOf(current).ToList())
                 {
-                    if (GetIsEnabled(sibling) && GetChildItems(sibling).Any() && GetItemExpanded(sibling) is false)
+                    if (GetIsDisabled(sibling) is false && GetChildItems(sibling).Any() && GetItemExpanded(sibling) is false)
                     {
                         await ToggleItem(sibling);
                     }
@@ -814,7 +814,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         if (IsItemOpen(item) is false)
         {
-            if (GetIsEnabled(item) is false) return;
+            if (GetIsDisabled(item)) return;
 
             await ToggleItem(item);
             return;
@@ -832,7 +832,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     private async Task StepOut(TItem item, List<TItem> visibleItems)
     {
-        if (GetChildItems(item).Any() && GetItemExpanded(item) && NoCollapse is false && GetIsEnabled(item))
+        if (GetChildItems(item).Any() && GetItemExpanded(item) && NoCollapse is false && GetIsDisabled(item) is false)
         {
             await ToggleItem(item);
             return;
@@ -914,7 +914,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 if (GetIsSeparator(item)) continue;
 
                 // A static group header is a label that takes no focus, but its group is walked all the same.
-                if (GetIsEnabled(item) && IsStaticGroupHeader(item, areRoots) is false)
+                if (GetIsDisabled(item) is false && IsStaticGroupHeader(item, areRoots) is false)
                 {
                     result.Add(item);
                 }
@@ -939,7 +939,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         {
             if (GetIsSeparator(item)) continue;
 
-            if (GetIsEnabled(item)) return item;
+            if (GetIsDisabled(item) is false) return item;
 
             var childItems = GetChildItems(item);
             if (childItems.Count > 0 && IsItemOpen(item))

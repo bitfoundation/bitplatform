@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -48,7 +46,7 @@ public class BitTextStylesheetTests
     [TestMethod]
     public void BitTextShouldListEveryPublicVariableOnItsDemoPage()
     {
-        var demo = ReadFile("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "Text", "BitTextDemo.razor.cs");
+        var demo = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "Text", "BitTextDemo.razor.cs");
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Text-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
@@ -97,8 +95,7 @@ public class BitTextStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var disabled = stylesheet[stylesheet.IndexOf("\n.bit-txt.bit-dis {", StringComparison.Ordinal)..];
-        disabled = disabled[..disabled.IndexOf("\n}", StringComparison.Ordinal)];
+        var disabled = SourceFiles.GetScssBlock(stylesheet, "\n.bit-txt.bit-dis {");
 
         StringAssert.Contains(disabled, "@media (forced-colors: active) {");
         StringAssert.Contains(disabled, "color: GrayText;");
@@ -112,8 +109,7 @@ public class BitTextStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        var root = stylesheet[stylesheet.IndexOf("\n.bit-txt {", StringComparison.Ordinal)..];
-        root = root[..root.IndexOf("\n}", StringComparison.Ordinal)];
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-txt {");
 
         StringAssert.Contains(root, "&:focus-visible:not([tabindex=\"-1\"]) {");
         StringAssert.Contains(root, "@include focus-ring;");
@@ -122,16 +118,5 @@ public class BitTextStylesheetTests
 
 
 
-    private static string ReadStylesheet() => ReadFile("Bit.BlazorUI", "Components", "Utilities", "Text", "BitText.scss");
-
-    private static string ReadFile(params string[] segments) => ReadFileFrom(segments);
-
-    private static string ReadFileFrom(string[] segments, [CallerFilePath] string thisFile = "")
-    {
-        var path = Path.GetFullPath(Path.Combine([Path.GetDirectoryName(thisFile)!, "..", "..", "..", "..", "..", .. segments]));
-
-        Assert.IsTrue(File.Exists(path), $"Missing {path}.");
-
-        return File.ReadAllText(path).Replace("\r\n", "\n");
-    }
+    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Text", "BitText.scss");
 }

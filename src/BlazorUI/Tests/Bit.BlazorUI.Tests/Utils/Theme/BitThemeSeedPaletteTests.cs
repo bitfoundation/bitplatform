@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -54,10 +53,7 @@ public sealed class BitThemeSeedPaletteTests
 
     private static Dictionary<string, string> PackagedTokens(string paletteFile)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent", paletteFile);
-        Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
-
-        return Regex.Matches(File.ReadAllText(path), @"--bit-clr-([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})")
+        return Regex.Matches(SourceFiles.ReadThemeStylesheet("Fluent", paletteFile), @"--bit-clr-([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})")
                     .ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value.ToUpperInvariant());
     }
 

@@ -194,7 +194,7 @@ public partial class BitDialogDemo
             Name = "IsCancelButtonEnabled",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike IsEnabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
+            Description = "Whether the Cancel button of the Dialog can be pressed. Unlike Disabled, which turns the whole Dialog off, this leaves every other way out of the Dialog working."
         },
         new()
         {
@@ -215,7 +215,7 @@ public partial class BitDialogDemo
             Name = "IsOkButtonEnabled",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way IsEnabled would."
+            Description = "Whether the Ok button of the Dialog can be pressed. This is what holds the answer shut until the content of the Dialog provides it - a consent to tick, a name to type - without turning the rest of the Dialog off the way Disabled would."
         },
         new()
         {
@@ -350,11 +350,11 @@ public partial class BitDialogDemo
         new()
         {
             Name = "Position",
-            Type = "BitDialogPosition",
-            DefaultValue = "BitDialogPosition.Center",
+            Type = "BitPosition",
+            DefaultValue = "BitPosition.Center",
             Description = "Position of the Dialog on the screen.",
             LinkType = LinkType.Link,
-            Href = "#component-position-enum",
+            Href = "#position-enum",
         },
         new()
         {
@@ -787,30 +787,7 @@ public partial class BitDialogDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "component-position-enum",
-            Name = "BitDialogPosition",
-            Description = "The Left and Right values are physical and stay on the same side of the screen in both reading directions. The Start and End values are logical: Start is the left in an LTR Dialog and the right in an RTL one.",
-            Items =
-            [
-                new() { Name = "Center", Value = "0", Description = "Centered both ways." },
-                new() { Name = "TopLeft", Value = "1", Description = "The top left corner, in both reading directions." },
-                new() { Name = "TopCenter", Value = "2", Description = "The top edge, centered horizontally." },
-                new() { Name = "TopRight", Value = "3", Description = "The top right corner, in both reading directions." },
-                new() { Name = "CenterLeft", Value = "4", Description = "The left edge, centered vertically." },
-                new() { Name = "CenterRight", Value = "5", Description = "The right edge, centered vertically." },
-                new() { Name = "BottomLeft", Value = "6", Description = "The bottom left corner, in both reading directions." },
-                new() { Name = "BottomCenter", Value = "7", Description = "The bottom edge, centered horizontally." },
-                new() { Name = "BottomRight", Value = "8", Description = "The bottom right corner, in both reading directions." },
-                new() { Name = "TopStart", Value = "9", Description = "The top edge, on the side the reading direction starts from." },
-                new() { Name = "TopEnd", Value = "10", Description = "The top edge, on the side the reading direction ends at." },
-                new() { Name = "CenterStart", Value = "11", Description = "Centered vertically, on the side the reading direction starts from." },
-                new() { Name = "CenterEnd", Value = "12", Description = "Centered vertically, on the side the reading direction ends at." },
-                new() { Name = "BottomStart", Value = "13", Description = "The bottom edge, on the side the reading direction starts from." },
-                new() { Name = "BottomEnd", Value = "14", Description = "The bottom edge, on the side the reading direction ends at." }
-            ]
-        },
+        SharedSubEnums.BitPosition,
         new()
         {
             Id = "component-result-enum",
@@ -1026,15 +1003,15 @@ public partial class BitDialogDemo
     private bool isOpenFocusSelector;
 
     private bool isOpenPosition;
-    private BitDialogPosition position;
-    private readonly BitDialogPosition[] dialogPositions =
+    private BitPosition position;
+    private readonly BitPosition[] dialogPositions =
     [
-        BitDialogPosition.TopLeft, BitDialogPosition.TopCenter, BitDialogPosition.TopRight,
-        BitDialogPosition.CenterLeft, BitDialogPosition.Center, BitDialogPosition.CenterRight,
-        BitDialogPosition.BottomLeft, BitDialogPosition.BottomCenter, BitDialogPosition.BottomRight,
+        BitPosition.TopLeft, BitPosition.TopCenter, BitPosition.TopRight,
+        BitPosition.CenterLeft, BitPosition.Center, BitPosition.CenterRight,
+        BitPosition.BottomLeft, BitPosition.BottomCenter, BitPosition.BottomRight,
     ];
 
-    private void OpenDialogInPosition(BitDialogPosition value)
+    private void OpenDialogInPosition(BitPosition value)
     {
         position = value;
         isOpenPosition = true;
@@ -1075,7 +1052,7 @@ public partial class BitDialogDemo
             ShowCloseButton = false,
             CloseOnOverlayClick = false,
             AutoFocusButton = BitDialogButton.Cancel,
-            Position = BitDialogPosition.TopCenter,
+            Position = BitPosition.TopCenter,
         }
     ];
 

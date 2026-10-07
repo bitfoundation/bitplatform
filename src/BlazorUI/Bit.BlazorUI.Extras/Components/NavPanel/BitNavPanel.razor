@@ -4,7 +4,7 @@
 
 @* Only the drawer has an overlay, so once the browser has reported a column there is none to render; until
    then the stylesheet hides it on the screens the column is on. *@
-@if (IsOpen && NoOverlay is false && IsEnabled && (_screenChecked is false || _isDrawer))
+@if (IsOpen && NoOverlay is false && Disabled is false && (_screenChecked is false || _isDrawer))
 {
     @* The overlay is a duplicate of what the Escape key and the swipe gesture already do, so it is left out
        of the accessibility tree instead of being announced as a control of its own. A disabled panel draws
@@ -108,7 +108,7 @@
                                    Color="Color"
                                    Size="BitSize.Large"
                                    Title="@toggleLabel"
-                                   IsEnabled="IsEnabled"
+                                   Disabled="Disabled"
                                    AriaLabel="@toggleLabel"
                                    OnClick="ToggleNavPanel"
                                    Variant="BitVariant.Text"
@@ -134,7 +134,7 @@
                                        Color="Color"
                                        Size="BitSize.Large"
                                        Title="@closeLabel"
-                                       IsEnabled="IsEnabled"
+                                       Disabled="Disabled"
                                        OnClick="ClosePanel"
                                        AriaLabel="@closeLabel"
                                        Icon="@customCloseIcon"
@@ -153,7 +153,7 @@
                               Underlined
                               Color="Color"
                               Immediate
-                              IsEnabled="IsEnabled"
+                              Disabled="Disabled"
                               Value="@_searchText"
                               Styles="SearchBoxStyles"
                               Classes="SearchBoxClasses"
@@ -171,7 +171,7 @@
                     <BitButton IconOnly
                                Color="Color"
                                Size="BitSize.Large"
-                               IsEnabled="IsEnabled"
+                               Disabled="Disabled"
                                Icon="@customSearchIcon"
                                OnClick="ToggleForSearch"
                                Variant="BitVariant.Text"
@@ -224,7 +224,7 @@
                     IndentPadding="IndentPadding"
                     IndentReversedPadding="IndentReversedPadding"
                     IndentValue="IndentValue"
-                    IsEnabled="IsEnabled"
+                    Disabled="Disabled"
                     Items="_filteredNavItems"
                     ItemTemplate="ItemTemplate"
                     ItemTemplateRenderMode="ItemTemplateRenderMode"

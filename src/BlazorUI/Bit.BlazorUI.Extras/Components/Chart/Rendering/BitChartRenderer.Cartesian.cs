@@ -45,10 +45,10 @@ public sealed partial class BitChartRenderer
             if (so.Reverse) scene.ReversedAxes.Add(id);
             if (so.Type != BitChartScaleType.Category) scene.ZoomableAxes.Add(id);
             if (!ScaleVisible(so)) continue;
-            switch (PositionOf(so, IsVertical ? BitChartPosition.Left : BitChartPosition.Bottom))
+            switch (PlacementOf(so, IsVertical ? BitPlacement.Left : BitPlacement.Bottom))
             {
-                case BitChartPosition.Right or BitChartPosition.Top: rightAxes.Add(scale); break;
-                case BitChartPosition.Center: centerAxes.Add(scale); break;
+                case BitPlacement.Right or BitPlacement.Top: rightAxes.Add(scale); break;
+                case BitPlacement.Center: centerAxes.Add(scale); break;
                 default: leftAxes.Add(scale); break;
             }
         }
@@ -94,7 +94,7 @@ public sealed partial class BitChartRenderer
             if (id == "x") indexScale = xs;
             if (ScaleVisible(so))
             {
-                if (PositionOf(so, BitChartPosition.Bottom) == BitChartPosition.Top) topXAxes.Add(xs);
+                if (PlacementOf(so, BitPlacement.Bottom) == BitPlacement.Top) topXAxes.Add(xs);
                 else bottomXAxes.Add(xs);
             }
         }

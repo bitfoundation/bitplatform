@@ -27,9 +27,9 @@
         <br />
         <BitToggle Label="On by default" DefaultValue="true" />
         <br />
-        <BitToggle Label="Disabled" IsEnabled="false" />
+        <BitToggle Label="Disabled" Disabled />
         <br />
-        <BitToggle Label="Disabled and on" IsEnabled="false" Value="true" />
+        <BitToggle Label="Disabled and on" Disabled Value="true" />
     </DemoExample>
 
     <DemoExample Title="Texts" RazorCode="@example2RazorCode" Id="example2">
@@ -94,7 +94,7 @@
             <OffContent>Night</OffContent>
         </BitToggle>
         <br /><br />
-        <BitToggle Label="Disabled" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" IsEnabled="false" />
+        <BitToggle Label="Disabled" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" Disabled />
         <br /><br /><br />
         <div><b>ThumbTemplate</b>:</div>
         <br />
@@ -109,21 +109,21 @@
 
     <DemoExample Title="Label &amp; layout" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            <b>LabelPosition</b> puts the label on any of the four sides of the knob and follows the reading
+            <b>LabelPlacement</b> puts the label on any of the four sides of the knob and follows the reading
             direction, so <b>Start</b> is the left in LTR and the right in RTL.
         </div>
         <br />
         <div class="example-box">
-            <BitToggle Label="Top" LabelPosition="BitLabelPosition.Top" />
-            <BitToggle Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
-            <BitToggle Label="Start" LabelPosition="BitLabelPosition.Start" />
-            <BitToggle Label="End" LabelPosition="BitLabelPosition.End" />
+            <BitToggle Label="Top" LabelPlacement="BitPlacement.Top" />
+            <BitToggle Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
+            <BitToggle Label="Start" LabelPlacement="BitPlacement.Start" />
+            <BitToggle Label="End" LabelPlacement="BitPlacement.End" />
         </div>
         <br /><br /><br />
         <div>
             <b>Inline</b> and <b>Reversed</b> reach the same four shapes with flags instead: <b>Inline</b> puts
             the label and the knob on one line - the usual shape of a settings row - and <b>Reversed</b> flips
-            whichever of the two stacks is in use. An explicit <b>LabelPosition</b> wins over both.
+            whichever of the two stacks is in use. An explicit <b>LabelPlacement</b> wins over both.
         </div>
         <br />
         <div class="example-box">
@@ -503,8 +503,8 @@
             the two below:
         </div><br />
         <div class="example-box">
-            <BitToggle Label="Disabled" IsEnabled="false" Title="Out of the tab order" />
-            <BitToggle Label="Disabled, still focusable" IsEnabled="false" AllowDisabledFocus
+            <BitToggle Label="Disabled" Disabled Title="Out of the tab order" />
+            <BitToggle Label="Disabled, still focusable" Disabled AllowDisabledFocus
                        Title="Available on the Pro plan" />
         </div>
     </DemoExample>

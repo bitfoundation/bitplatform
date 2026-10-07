@@ -171,12 +171,12 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Markdown, "- [ ] one");
             parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
             parameters.Add(p => p.OnTaskChanged, _ => { });
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-mdv input[type=checkbox]").HasAttribute("disabled"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         Assert.IsFalse(component.Find(".bit-mdv input[type=checkbox]").HasAttribute("disabled"));
     }
@@ -195,10 +195,10 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
 
         var document = component.Instance.Document;
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
         Assert.IsTrue(component.Find(".bit-mdv input[type=checkbox]").HasAttribute("disabled"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
         Assert.IsFalse(component.Find(".bit-mdv input[type=checkbox]").HasAttribute("disabled"));
 
         Assert.AreEqual(1, parsed);

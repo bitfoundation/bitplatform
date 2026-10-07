@@ -82,7 +82,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         }
         set
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             _hourBeforeInput = _hour;
 
@@ -114,7 +114,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         get => _minute;
         set
         {
-            if (IsEnabled is false || ReadOnly) return;
+            if (Disabled || ReadOnly) return;
 
             // Brought into the hour here and held to the MinuteStep grid on commit, for the same reason the
             // hour above is.
@@ -993,7 +993,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private async Task SelectDate(DateTime selectedDate)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
         if (IsDayDisabled(selectedDate)) return;
 
         var previousYear = _currentYear;
@@ -1065,7 +1065,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task SelectMonth(int month)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsMonthOutOfMinAndMaxDate(month)) return;
 
         var previousYear = _currentYear;
@@ -1086,7 +1086,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task SelectYear(int year)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsYearOutOfMinAndMaxDate(year)) return;
 
         var previousYear = _currentYear;
@@ -1111,7 +1111,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void ToggleBetweenMonthAndYearPicker()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _showYearPicker = !_showYearPicker;
 
@@ -1123,7 +1123,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task HandleMonthChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeMonth(isNext) is false) return;
 
         var previousYear = _currentYear;
@@ -1147,7 +1147,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task HandleYearChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeYear(isNext) is false) return;
 
         var previousYear = _currentYear;
@@ -1164,7 +1164,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void HandleYearRangeChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeYearRange(isNext) is false) return;
 
         var fromYear = _yearPickerStartYear + (isNext ? +12 : -12);
@@ -1174,7 +1174,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task HandleGoToToday()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
@@ -1191,7 +1191,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void HandleNowButtonClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (ReadOnly) return;
 
         var now = GetToday();
@@ -1536,7 +1536,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
-        if (IsEnabled is false) return true;
+        if (Disabled) return true;
 
         if (showYearPicker)
         {
@@ -1624,7 +1624,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <inheritdoc cref="DismissMonthPickerOverlay"/>
     private void HandleTimePickerKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.Key is not "Escape") return;
         if (ShowTimePickerAsOverlay is false) return;
 
@@ -1655,7 +1655,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeMonth(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (isNext)
         {
@@ -1710,7 +1710,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYear(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (isNext && _currentYear >= GetMaxCalendarYearMonth().Year) return false;
         if (isNext is false && _currentYear <= GetMinCalendarYearMonth().Year) return false;
@@ -1726,7 +1726,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYearRange(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         if (isNext && GetMaxCalendarYearMonth().Year < _yearPickerStartYear + 12) return false;
         if (isNext is false && GetMinCalendarYearMonth().Year >= _yearPickerStartYear) return false;
@@ -2125,7 +2125,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // PageUp/PageDown moving to the same month of the adjacent year.
     private async Task HandleMonthKeyDown(KeyboardEventArgs e, int month)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -2203,7 +2203,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // adjacent range of years.
     private void HandleYearKeyDown(KeyboardEventArgs e, int year)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Escape leaves the year grid the way it was reached: back to the months of the year it is showing,
         // and from there - a second Escape - out of the overlay entirely.
@@ -2281,7 +2281,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task HandleDayKeyDown(KeyboardEventArgs e, DateTime date)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var isRtl = BitCssClasses.IsRtl(Dir, _culture);
 
@@ -2594,14 +2594,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnTimeHourFocus()
     {
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(_inputTimeHourRef);
     }
 
     private async Task HandleOnTimeMinuteFocus()
     {
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(_inputTimeMinuteRef);
     }
@@ -2609,7 +2609,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private void HandleOnAmClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
 
@@ -2622,7 +2622,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private void HandleOnPmClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
         {
@@ -2646,7 +2646,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private async Task HandleOnPointerDown(bool isNext, bool isHour)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         ChangeTime(isNext, isHour);
 
@@ -2881,7 +2881,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // a number that was typed, so a step of a sparser grid moves on rather than sitting still.
     private void HandleOnTimeInputChange(bool isHour)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // A typed number is brought inside the bounds before the grid has its say: distance on a clock is
         // measured around it, so the allowed value nearest to a number below the minimum can be the one late
@@ -2905,7 +2905,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // move by, so the time can be set without leaving the keyboard or the field.
     private void HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         if (e.Key is not ("PageUp" or "PageDown")) return;
 

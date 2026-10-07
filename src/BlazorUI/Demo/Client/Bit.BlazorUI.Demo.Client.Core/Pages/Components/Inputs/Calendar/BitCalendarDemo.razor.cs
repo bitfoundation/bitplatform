@@ -1705,7 +1705,7 @@ public partial class BitCalendarDemo
         {
             Name = "--bit-Calendar-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text color of a disabled cell, and of every part of a calendar whose IsEnabled is false.",
+            Description = "Text color of a disabled cell, and of every part of a calendar whose Disabled is true.",
         },
         new()
         {

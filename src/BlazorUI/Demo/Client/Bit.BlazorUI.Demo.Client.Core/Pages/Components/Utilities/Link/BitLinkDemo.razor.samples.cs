@@ -5,7 +5,7 @@ public partial class BitLinkDemo
     private readonly string example1RazorCode = @"
 <div>Read the <BitLink Href=""https://github.com/bitfoundation/bitplatform"">bit platform source</BitLink> on GitHub.</div>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Basic link</BitLink>
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" IsEnabled=""false"">Disabled link</BitLink>";
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Disabled>Disabled link</BitLink>";
 
     private readonly string example2RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">Underlined on hover (default)</BitLink>
@@ -14,14 +14,14 @@ public partial class BitLinkDemo
 
     private readonly string example3RazorCode = @"
 <BitLink IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Leading icon</BitLink>
-<BitLink IconName=""@BitIconName.ChevronRight"" IconPosition=""BitIconPosition.End"" Href=""https://github.com/bitfoundation/bitplatform"">Trailing icon</BitLink>";
+<BitLink IconName=""@BitIconName.ChevronRight"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">Trailing icon</BitLink>";
 
     private readonly string example4RazorCode = @"
 <BitLink Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>
 
 <BitLink Target=""@BitLinkTarget.Blank"" NewTabHint=""(در زبانه جدید باز می‌شود)"" Href=""https://github.com/bitfoundation/bitplatform"">Announced with a translated hint</BitLink>
 
-<BitLink Target=""@BitLinkTarget.Blank"" NoNewTabHint IconName=""@BitIconName.OpenInNewWindow"" IconPosition=""BitIconPosition.End"" Href=""https://github.com/bitfoundation/bitplatform"">
+<BitLink Target=""@BitLinkTarget.Blank"" NoNewTabHint IconName=""@BitIconName.OpenInNewWindow"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">
     GitHub (opens in a new tab)
 </BitLink>";
 
@@ -115,8 +115,8 @@ private readonly string[] checkoutSteps = [""Cart"", ""Shipping"", ""Payment""];
 </BitLink>
 
 
-<BitLink IsEnabled=""false"" Href=""https://github.com/bitfoundation/bitplatform"">Disabled (skipped by Tab)</BitLink>
-<BitLink IsEnabled=""false"" AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled (still focusable)</BitLink>
+<BitLink Disabled Href=""https://github.com/bitfoundation/bitplatform"">Disabled (skipped by Tab)</BitLink>
+<BitLink Disabled AllowDisabledFocus Href=""https://github.com/bitfoundation/bitplatform"">Disabled (still focusable)</BitLink>
 
 <BitLink OnClick=""() => focusTargetRef.FocusAsync()"">Focus the link below</BitLink>
 <BitLink @ref=""focusTargetRef"" Href=""https://github.com/bitfoundation/bitplatform"">The focus lands here</BitLink>";
@@ -137,7 +137,7 @@ private BitLink focusTargetRef = default!;";
 
 <BitLink Style=""--bit-Link-color: var(--bit-clr-fg-pri); --bit-Link-hover-color: var(--bit-clr-sec-fg); --bit-Link-font-weight: 600; --bit-Link-icon-gap: 8px;""
          IconName=""@BitIconName.ChevronRight""
-         IconPosition=""BitIconPosition.End""
+         IconPlacement=""BitPlacement.End""
          Href=""https://github.com/bitfoundation/bitplatform"">
     Set on one link
 </BitLink>";
@@ -156,7 +156,7 @@ private readonly BitLinkParams[] linkParams =
         Underlined = true,
         Target = BitLinkTarget.Blank,
         IconName = BitIconName.OpenInNewWindow,
-        IconPosition = BitIconPosition.End,
+        IconPlacement = BitPlacement.End,
     }
 ];";
 
@@ -184,11 +184,11 @@ private readonly BitLinkParams[] linkParams =
 <BitLink Color=""BitColor.TertiaryBorder"" Href=""https://github.com/bitfoundation/bitplatform"">TertiaryBorder</BitLink>
 
 
-<BitLink IsEnabled=""false"" Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
-<BitLink IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
+<BitLink Disabled Color=""BitColor.Primary"" Href=""https://github.com/bitfoundation/bitplatform"">Primary</BitLink>
+<BitLink Disabled Color=""BitColor.Secondary"" Href=""https://github.com/bitfoundation/bitplatform"">Secondary</BitLink>
+<BitLink Disabled Color=""BitColor.Warning"" Href=""https://github.com/bitfoundation/bitplatform"">Warning</BitLink>
+<BitLink Disabled Color=""BitColor.Error"" Href=""https://github.com/bitfoundation/bitplatform"">Error</BitLink>
+<BitLink Disabled Color=""BitColor.PrimaryForeground"" Href=""https://github.com/bitfoundation/bitplatform"">PrimaryForeground</BitLink>
 
 
 <BitLink NoColor Href=""https://github.com/bitfoundation/bitplatform"">
@@ -201,9 +201,9 @@ private readonly BitLinkParams[] linkParams =
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitLink Icon=""@BitIconInfo.Fa(""brands github"")"" Href=""https://github.com/bitfoundation/bitplatform"">FontAwesome</BitLink>
-<BitLink Icon=""@BitIconInfo.Fa(""solid arrow-up-right-from-square"")"" IconPosition=""BitIconPosition.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">FontAwesome, trailing</BitLink>
+<BitLink Icon=""@BitIconInfo.Fa(""solid arrow-up-right-from-square"")"" IconPlacement=""BitPlacement.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">FontAwesome, trailing</BitLink>
 <BitLink Icon=""@BitIconInfo.Bi(""github"")"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap</BitLink>
-<BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPosition=""BitIconPosition.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap, trailing</BitLink>";
+<BitLink Icon=""@BitIconInfo.Bi(""box-arrow-up-right"")"" IconPlacement=""BitPlacement.End"" Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Bootstrap, trailing</BitLink>";
 
     private readonly string example15RazorCode = @"
 <BitLink Size=""BitSize.Small"" IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Small</BitLink>

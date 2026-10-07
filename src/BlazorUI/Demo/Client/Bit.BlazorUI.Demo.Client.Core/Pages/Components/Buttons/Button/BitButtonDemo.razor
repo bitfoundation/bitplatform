@@ -50,13 +50,13 @@
         </div>
         <br /><br />
         <div>
-            <b>IsEnabled="false"</b> suppresses the action and mutes all three variants:
+            <b>Disabled</b> suppresses the action and mutes all three variants:
         </div>
         <br />
         <div class="example-content">
-            <BitButton Variant="BitVariant.Fill" IsEnabled="false">Fill</BitButton>
-            <BitButton Variant="BitVariant.Outline" IsEnabled="false">Outline</BitButton>
-            <BitButton Variant="BitVariant.Text" IsEnabled="false">Text</BitButton>
+            <BitButton Variant="BitVariant.Fill" Disabled>Fill</BitButton>
+            <BitButton Variant="BitVariant.Outline" Disabled>Outline</BitButton>
+            <BitButton Variant="BitVariant.Text" Disabled>Text</BitButton>
         </div>
         <br /><br />
         <div>
@@ -74,11 +74,11 @@
     <DemoExample Title="Icon" RazorCode="@example3RazorCode" Id="example3">
         <div>
             <b>IconName</b> renders a built-in Fluent glyph and <b>IconUrl</b> a custom image; either sits at the start
-            of the label by default and moves to its end with <b>IconPosition</b>. Both are hidden from screen readers,
+            of the label by default and moves to its end with <b>IconPlacement</b>. Both are hidden from screen readers,
             since the label beside them already says what the button does.
         </div>
         <div>
-            Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink>
+            Using the <b>IconPlacement</b> parameter and <BitLink Href="#placement-enum">BitPlacement</BitLink>
             enum as its value:
         </div>
         <br />
@@ -86,7 +86,7 @@
             <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Fill">Start</BitButton>
             <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Outline"
                        SecondaryText="this is the secondary text">Start</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPlacement="BitPlacement.End">
                 End
             </BitButton>
         </div>
@@ -98,7 +98,7 @@
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"
                        Variant="BitVariant.Outline" SecondaryText="IconUrl">Start</BitButton>
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Variant="BitVariant.Text"
-                       IconPosition="BitIconPosition.End">End</BitButton>
+                       IconPlacement="BitPlacement.End">End</BitButton>
         </div>
         <br /><br />
         <div>
@@ -127,7 +127,7 @@
             the accessible name it had before the click. It refuses a second click and says so with
             <code>aria-busy</code> and <code>aria-disabled</code> - busy alone would report progress without reporting
             that the press now does nothing. <b>LoadingLabel</b> adds text beside the spinner - announced from a live
-            region rather than folded into the button's name - and <b>LoadingLabelPosition</b> places it.
+            region rather than folded into the button's name - and <b>LoadingLabelPlacement</b> places it.
         </div>
         <br />
         <div class="example-content">
@@ -147,19 +147,19 @@
         </div>
         <br />
         <div>
-            Using the <b>LoadingLabelPosition</b> parameter and its value of type <BitLink Href="#label-position-enum">
-            BitLabelPosition</BitLink> enum:
+            Using the <b>LoadingLabelPlacement</b> parameter and its value of type <BitLink Href="#placement-enum">
+            BitPlacement</BitLink> enum:
         </div>
         <br />
         <div class="example-content">
             <BitButton IsLoading LoadingLabel="End..." Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.End">End</BitButton>
+                       LoadingLabelPlacement="BitPlacement.End">End</BitButton>
             <BitButton IsLoading LoadingLabel="Start..." Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.Start">Start</BitButton>
+                       LoadingLabelPlacement="BitPlacement.Start">Start</BitButton>
             <BitButton IsLoading LoadingLabel="Top..." Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.Top">Top</BitButton>
+                       LoadingLabelPlacement="BitPlacement.Top">Top</BitButton>
             <BitButton IsLoading LoadingLabel="Bottom..." Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.Bottom">Bottom</BitButton>
+                       LoadingLabelPlacement="BitPlacement.Bottom">Bottom</BitButton>
         </div>
         <br /><br />
         <div>
@@ -521,11 +521,11 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsEnabled="false" IconName="@BitIconName.Blocked" Title="Pick a plan first">
+            <BitButton Disabled IconName="@BitIconName.Blocked" Title="Pick a plan first">
                 Disabled (still focusable)
             </BitButton>
 
-            <BitButton IsEnabled="false" AllowDisabledFocus="false" IconName="@BitIconName.Blocked">
+            <BitButton Disabled AllowDisabledFocus="false" IconName="@BitIconName.Blocked">
                 Disabled (skipped by Tab)
             </BitButton>
         </div>
@@ -880,7 +880,7 @@
                 دکمه با آیکن
             </BitButton>
             <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Text"
-                       IconPosition="BitIconPosition.End">
+                       IconPlacement="BitPlacement.End">
                 دکمه با آیکن
             </BitButton>
         </div>

@@ -17,7 +17,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" IsEnabled=""false"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" Disabled>
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
@@ -25,8 +25,8 @@ public partial class _BitBreadcrumbOptionDemo
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IsEnabled=""false"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IsEnabled=""false"" />
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IsDisabled />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IsDisabled />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
@@ -177,7 +177,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPosition=""BitIconPosition.End"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPlacement=""BitPlacement.End"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />

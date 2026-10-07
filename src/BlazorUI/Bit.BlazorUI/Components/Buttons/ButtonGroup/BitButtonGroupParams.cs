@@ -124,7 +124,7 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
     /// Determines how many items can be toggled at the same time.
     /// When not set, it falls back to Single if the Toggle parameter is enabled, otherwise None.
     /// </summary>
-    public BitButtonGroupSelectionMode? SelectionMode { get; set; }
+    public BitSelectionMode? SelectionMode { get; set; }
 
     /// <summary>
     /// Renders a check mark at the start of the toggled buttons.

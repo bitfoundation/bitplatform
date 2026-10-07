@@ -188,15 +188,17 @@ public partial class BitLink : BitComponentBase
     /// Gets or sets the position of the icon relative to the link content.
     /// </summary>
     /// <remarks>
-    /// The icon goes in front of the text by default, the way it does everywhere else in the library.
-    /// <see cref="BitIconPosition.End"/> puts it after the text instead, which is where the two glyphs a link
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here; every
+    /// other placement leaves the icon where Start would put it. The icon goes in front of the text by
+    /// default, the way it does everywhere else in the library.
+    /// <see cref="BitPlacement.End"/> puts it after the text instead, which is where the two glyphs a link
     /// carries most often - the arrow of a link opening a new tab and the tray of a download - belong.
     /// <br />
     /// The icon is drawn as decoration and hidden from assistive technologies, so whatever it says has to be
     /// said by the link text or by an <see cref="BitComponentBase.AriaLabel"/> as well.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Follows the URL the app sits on and reports the link as the current one while its <see cref="Href"/>
@@ -414,11 +416,11 @@ public partial class BitLink : BitComponentBase
             OnSetHrefAndRel();
         }
 
-        _tabIndex = IsEnabled
-            ? TabIndex
-            : AllowDisabledFocus
+        _tabIndex = Disabled
+            ? AllowDisabledFocus
                 ? (TabIndex ?? (Href.HasValue() ? "0" : null))
-                : Href.HasValue() ? null : "-1";
+                : Href.HasValue() ? null : "-1"
+            : TabIndex;
 
         // Only a link that follows the URL listens to it, so the links of a page that never asks for it cost
         // nothing; one that is given a Match later on starts listening then.
@@ -456,7 +458,7 @@ public partial class BitLink : BitComponentBase
 
     protected virtual async Task HandleClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
 
@@ -532,7 +534,7 @@ public partial class BitLink : BitComponentBase
         return AriaCurrent.HasValue ? _ariaCurrentMap[AriaCurrent.Value] : GetSplattedAttribute("aria-current");
     }
 
-    private bool IsFocusable() => IsEnabled || AllowDisabledFocus;
+    private bool IsFocusable() => Disabled is false || AllowDisabledFocus;
 
     private bool IsUrlMatch()
     {

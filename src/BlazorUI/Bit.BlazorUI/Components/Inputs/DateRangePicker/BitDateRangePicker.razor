@@ -62,7 +62,7 @@
                        aria-label="@AriaLabel"
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
-                       disabled="@(IsEnabled is false)"
+                       disabled="@(Disabled)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
                        aria-invalid="@(ValueInvalid is true ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
@@ -71,7 +71,7 @@
                        style="@Styles?.Input"
                        class="bit-dtrp-inp@(AllowTextInput ? " bit-dtrp-ein" : null) @Classes?.Input" />
 
-                @if (IsEnabled && ReadOnly is false && ShowClearButton && (CurrentValue?.StartDate is not null || CurrentValue?.EndDate is not null))
+                @if (Disabled is false && ReadOnly is false && ShowClearButton && (CurrentValue?.StartDate is not null || CurrentValue?.EndDate is not null))
                 {
                     <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
                             style="@Styles?.ClearButton"
@@ -108,7 +108,7 @@
                aria-label="@AriaLabel"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)"
+               disabled="@(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
@@ -167,7 +167,7 @@
                      aria-label="@PresetsAriaLabel">
                     @foreach (var preset in Presets)
                     {
-                        var presetDisabled = IsEnabled is false || preset.IsEnabled is false;
+                        var presetDisabled = Disabled || preset.IsDisabled;
                         var presetSelected = IsPresetSelected(preset);
                         <button @onclick="() => SelectPreset(preset)"
                                 type="button"
@@ -211,7 +211,7 @@
                                         aria-atomic="true"
                                         aria-label="@title"
                                         style="@Styles?.DayPickerMonth"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(Disabled)"
                                         class="bit-dtrp-ptb @Classes?.DayPickerMonth">
                                     @monthTitle
                                 </button>
@@ -289,7 +289,7 @@
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             type="button"
                                             title="@ShowTimePickerTitle"
-                                            disabled="@(IsEnabled is false)"
+                                            disabled="@(Disabled)"
                                             aria-label="@ShowTimePickerTitle"
                                             style="@Styles?.ShowTimePickerButton"
                                             class="bit-dtrp-nbt @Classes?.ShowTimePickerButton">
@@ -363,7 +363,7 @@
                                         }
 
                                         var isInMonth = IsInMonth(date, monthIndex);
-                                        var disabled = IsEnabled is false || IsDayDisabled(date);
+                                        var disabled = Disabled || IsDayDisabled(date);
                                         var isSelected = IsBetweenTwoSelectedDate(date) || IsStartDaySelectedDate(date) || IsEndDaySelectedDate(date);
                                         var isToday = isInMonth && date == today.Date;
                                         var (style, klass) = GetDayButtonCss(date, monthIndex);
@@ -421,7 +421,7 @@
                                     aria-live="polite"
                                     title="@toggleTitle"
                                     aria-label="@toggleTitle"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     style="@Styles?.YearPickerToggleButton"
                                     class="bit-dtrp-ptb @Classes?.YearPickerToggleButton">
                                 @_currentYear
@@ -470,7 +470,7 @@
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             type="button"
                                             title="@ShowTimePickerTitle"
-                                            disabled="@(IsEnabled is false)"
+                                            disabled="@(Disabled)"
                                             aria-label="@ShowTimePickerTitle"
                                             style="@Styles?.ShowTimePickerButton"
                                             class="bit-dtrp-nbt @Classes?.ShowTimePickerButton">
@@ -496,7 +496,7 @@
                                         if (month > monthsInYear) continue;
 
                                         var monthName = _culture.DateTimeFormat.GetMonthName(month);
-                                        var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
+                                        var disabled = Disabled || IsMonthOutOfMinAndMaxDate(month);
                                         var selected = month == _currentMonth;
                                         <button @onclick="() => SelectMonth(month)"
                                                 @onkeydown="e => HandleMonthKeyDown(e, month)"
@@ -539,7 +539,7 @@
                                     aria-atomic="true"
                                     title="@toggleTitle"
                                     aria-label="@toggleTitle"
-                                    disabled="@(IsEnabled is false)"
+                                    disabled="@(Disabled)"
                                     style="@Styles?.MonthPickerToggleButton"
                                     class="bit-dtrp-ptb @Classes?.MonthPickerToggleButton">
                                 @_yearPickerStartYear - @_yearPickerEndYear
@@ -651,7 +651,7 @@
                                         type="button"
                                         title="@HideTimePickerTitle"
                                         aria-label="@HideTimePickerTitle"
-                                        disabled="@(IsEnabled is false)"
+                                        disabled="@(Disabled)"
                                         style="@Styles?.HideTimePickerButton"
                                         class="bit-dtrp-nbt @Classes?.HideTimePickerButton">
                                     <i aria-hidden="true"
@@ -687,7 +687,7 @@
                                        type="number"
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
-                                       disabled="@(IsEnabled is false)"
+                                       disabled="@(Disabled)"
                                        style="@Styles?.StartTimeHourInput"
                                        aria-label="@StartTimeHourInputAriaLabel"
                                        class="bit-dtrp-tin @Classes?.StartTimeHourInput"
@@ -731,7 +731,7 @@
                                        type="number"
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
-                                       disabled="@(IsEnabled is false)"
+                                       disabled="@(Disabled)"
                                        aria-label="@StartTimeMinuteInputAriaLabel"
                                        style="@Styles?.StartTimeMinuteInput"
                                        class="bit-dtrp-tin @Classes?.StartTimeMinuteInput"
@@ -753,8 +753,8 @@
 
                             @if (TimeFormat == BitTimeFormat.TwelveHours)
                             {
-                                var amDisabled = (IsEnabled is false || IsAm(_startTimeHour) is true || IsAmPmButtonDisabled(true, true));
-                                var pmDisabled = (IsEnabled is false || IsAm(_startTimeHour) is false || IsAmPmButtonDisabled(false, true));
+                                var amDisabled = (Disabled || IsAm(_startTimeHour) is true || IsAmPmButtonDisabled(true, true));
+                                var pmDisabled = (Disabled || IsAm(_startTimeHour) is false || IsAmPmButtonDisabled(false, true));
 
                                 <div style="@Styles?.StartTimeAmPmContainer" class="bit-dtrp-tpr bit-dtrp-am-pm @Classes?.StartTimeAmPmContainer">
 
@@ -804,7 +804,7 @@
                                        type="number"
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
-                                       disabled="@(IsEnabled is false)"
+                                       disabled="@(Disabled)"
                                        style="@Styles?.EndTimeHourInput"
                                        aria-label="@EndTimeHourInputAriaLabel"
                                        class="bit-dtrp-tin @Classes?.EndTimeHourInput"
@@ -848,7 +848,7 @@
                                        type="number"
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
-                                       disabled="@(IsEnabled is false)"
+                                       disabled="@(Disabled)"
                                        style="@Styles?.EndTimeMinuteInput"
                                        aria-label="@EndTimeMinuteInputAriaLabel"
                                        class="bit-dtrp-tin @Classes?.EndTimeMinuteInput"
@@ -870,8 +870,8 @@
 
                             @if (TimeFormat == BitTimeFormat.TwelveHours)
                             {
-                                var amDisabled = (IsEnabled is false || IsAm(_endTimeHour) is true || IsAmPmButtonDisabled(true, false));
-                                var pmDisabled = (IsEnabled is false || IsAm(_endTimeHour) is false || IsAmPmButtonDisabled(false, false));
+                                var amDisabled = (Disabled || IsAm(_endTimeHour) is true || IsAmPmButtonDisabled(true, false));
+                                var pmDisabled = (Disabled || IsAm(_endTimeHour) is false || IsAmPmButtonDisabled(false, false));
 
                                 <div style="@Styles?.EndTimeAmPmContainer" class="bit-dtrp-tpr bit-dtrp-am-pm @Classes?.EndTimeAmPmContainer">
                                     <button @onclick="() => HandleOnAmClick(false)"
@@ -911,7 +911,7 @@
             <div id="@_actionsId" style="@Styles?.ActionsContainer" class="bit-dtrp-act @Classes?.ActionsContainer">
                 <button @onclick="HandleOnCancelButtonClick"
                         type="button"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         style="@Styles?.CancelButton"
                         class="bit-dtrp-acb bit-dtrp-cnb @Classes?.CancelButton">
                     @CancelButtonText

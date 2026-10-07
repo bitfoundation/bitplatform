@@ -30,11 +30,11 @@ public class BitFlagTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitFlagShouldRespectIsEnabled(bool isEnabled)
+    public void BitFlagShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-flg");
@@ -899,10 +899,10 @@ public class BitFlagTests : BunitTestContext
     public void BitFlagShouldOnlyPointAtImagesTheAssetsPackageShips()
     {
         // The images of the sets ship in the Bit.BlazorUI.Assets package, and nothing but their names ties
-        // the flag to them. The test project writes the names of the files the package holds beside the
-        // tests, and every image any flag offers the browser has to be one of them - with none left over.
-        var shipped = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "assets-flags.txt"))
-                          .Where(line => line.HasValue())
+        // the flag to them, so every image any flag offers the browser has to be one the package holds - with
+        // none left over.
+        var shipped = Directory.EnumerateFiles(SourceFiles.GetDirectory("Bit.BlazorUI.Assets", "wwwroot", "flags"), "*.webp")
+                          .Select(file => Path.GetFileName(file))
                           .ToHashSet(StringComparer.Ordinal);
 
         var offered = new HashSet<string>(StringComparer.Ordinal);
@@ -1428,7 +1428,7 @@ public class BitFlagTests : BunitTestContext
 
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Country, BitCountries.Netherlands);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
@@ -1513,7 +1513,7 @@ public class BitFlagTests : BunitTestContext
 
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Country, BitCountries.Netherlands);
             parameters.Add(p => p.OnClick, () => clicked++);
         });

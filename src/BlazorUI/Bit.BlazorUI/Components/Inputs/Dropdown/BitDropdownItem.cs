@@ -37,9 +37,9 @@ public class BitDropdownItem<TValue>
     public object? Data { get; set; }
 
     /// <summary>
-    /// Determines if the dropdown item is enabled.
+    /// Determines if the dropdown item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Determines if the dropdown item is hidden.

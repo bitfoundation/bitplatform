@@ -36,6 +36,7 @@
 
                     <BitStack Gap="0.25rem">
                         <BitTextField @bind-Value="tenant.Name" Immediate
+                                      AutoCapitalize="none" AutoCorrect="false" SpellCheck="false"
                                       Label="@Localizer[nameof(AppStrings.Name)]"
                                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantName)]" />
                         <ValidationMessage For="() => tenant.Name" />
@@ -46,6 +47,8 @@
                         <ValidationMessage For="() => tenant.Title" />
                         <br />
                         <BitTextField @bind-Value="tenant.Domain" Immediate
+                                      InputMode="BitInputMode.Url"
+                                      AutoCapitalize="none" AutoCorrect="false" SpellCheck="false"
                                       Label="@Localizer[nameof(AppStrings.Domain)]"
                                       Placeholder="@Localizer[nameof(AppStrings.EnterTenantDomain)]" />
                         <ValidationMessage For="() => tenant.Domain" />

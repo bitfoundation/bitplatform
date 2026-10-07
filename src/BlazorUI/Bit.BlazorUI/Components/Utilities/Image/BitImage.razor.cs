@@ -106,7 +106,7 @@ public partial class BitImage : BitComponentBase
     private bool _preventKeysRegistered;
     private int _preventKeysReloadKey;
 
-    private bool _isClickable => IsEnabled && OnClick.HasDelegate;
+    private bool _isClickable => Disabled is false && OnClick.HasDelegate;
 
     // The placeholder stands in for an image that is not on screen, which is as true of one that has
     // failed as of one still on its way: it is taken away by the image arriving rather than by time.
@@ -966,7 +966,7 @@ public partial class BitImage : BitComponentBase
         {
             attributes["role"] = "button";
 
-            if (IsEnabled is false)
+            if (Disabled)
             {
                 attributes["aria-disabled"] = "true";
             }
@@ -1120,7 +1120,7 @@ public partial class BitImage : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }

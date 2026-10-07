@@ -10,12 +10,12 @@ public partial class BitToggleButtonDemo
 <BitToggleButton Variant=""BitVariant.Outline"">Outline</BitToggleButton>
 <BitToggleButton Variant=""BitVariant.Text"">Text</BitToggleButton>
 
-<BitToggleButton Variant=""BitVariant.Fill"" IsEnabled=""false"">Fill</BitToggleButton>
-<BitToggleButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Outline</BitToggleButton>
-<BitToggleButton Variant=""BitVariant.Text"" IsEnabled=""false"">Text</BitToggleButton>
+<BitToggleButton Variant=""BitVariant.Fill"" Disabled>Fill</BitToggleButton>
+<BitToggleButton Variant=""BitVariant.Outline"" Disabled>Outline</BitToggleButton>
+<BitToggleButton Variant=""BitVariant.Text"" Disabled>Text</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Title=""Connect a microphone to enable this"">Disabled, with a reason</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" AllowDisabledFocus=""false"">Not focusable</BitToggleButton>";
+<BitToggleButton Disabled Title=""Connect a microphone to enable this"">Disabled, with a reason</BitToggleButton>
+<BitToggleButton Disabled AllowDisabledFocus=""false"">Not focusable</BitToggleButton>";
 
     private readonly string example3RazorCode = @"
 <BitToggleButton Text=""Microphone"" />
@@ -35,8 +35,8 @@ public partial class BitToggleButtonDemo
 <BitToggleButton OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
 
-<BitToggleButton IconPosition=""BitIconPosition.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton IconPosition=""BitIconPosition.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconPlacement=""BitPlacement.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconPlacement=""BitPlacement.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
 
 <BitToggleButton AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton AriaLabel=""Mute""
@@ -95,12 +95,12 @@ private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAs
                  OnText=""Notifications muted"" OnIconName=""@BitIconName.RingerOff""
                  OffText=""Notifications on"" OffIconName=""@BitIconName.Ringer"" />
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Text=""Fill"" />
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" DefaultIsChecked=""true"" Text=""Fill"" />
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Text=""Outline"" />
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Outline"" />
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Text=""Text"" />
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" DefaultIsChecked=""true"" Text=""Text"" />";
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Text=""Fill"" />
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" DefaultIsChecked=""true"" Text=""Fill"" />
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Text=""Outline"" />
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Outline"" />
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Text=""Text"" />
+<BitToggleButton Disabled Variant=""BitVariant.Text"" DefaultIsChecked=""true"" Text=""Text"" />";
 
     private readonly string example7RazorCode = @"
 <BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold heading"" />
@@ -196,10 +196,10 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange"" Text=""No delay"" />
 <BitToggleButton AutoLoading LoadingDelay=""700"" OnChange=""HandleAutoLoadingChange"" Text=""700ms delay"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.End"" Text=""End"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Start"" Text=""Start"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Top"" Text=""Top"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Bottom"" Text=""Bottom"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
 
 <BitToggleButton IsLoading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
 
@@ -403,75 +403,75 @@ private readonly BitToggleButtonParams[] checkedToggleButtonParams =
 <BitToggleButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>
 
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">Primary</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"">Primary</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"">Primary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">Primary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Primary"">Primary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Primary"">Primary</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"">Secondary</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"">Secondary</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"">Secondary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"">Secondary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"">Secondary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Secondary"">Secondary</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"">Tertiary</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"">Tertiary</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">Tertiary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"">Tertiary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"">Tertiary</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">Tertiary</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"">Info</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"">Info</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Info"">Info</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Info"">Info</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Info"">Info</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Info"">Info</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"">Success</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"">Success</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Success"">Success</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Success"">Success</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Success"">Success</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Success"">Success</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"">Warning</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"">Warning</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"">Warning</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Warning"">Warning</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Warning"">Warning</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Warning"">Warning</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"">SevereWarning</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"">SevereWarning</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"">SevereWarning</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"">SevereWarning</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"">SevereWarning</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"">SevereWarning</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"">Error</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"">Error</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Error"">Error</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.Error"">Error</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.Error"">Error</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.Error"">Error</BitToggleButton>
 
 <div style=""background:var(--bit-clr-fg-sec);padding:1rem"">
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitToggleButton>
 
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitToggleButton>
 
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
-    <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
+    <BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitToggleButton>
 </div>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitToggleButton>
 
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>
-<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>";
+<BitToggleButton Disabled Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>
+<BitToggleButton Disabled Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>";
 
     private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

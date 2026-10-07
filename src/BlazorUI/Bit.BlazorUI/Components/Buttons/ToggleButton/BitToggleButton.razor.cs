@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -40,7 +40,7 @@ public partial class BitToggleButton : BitComponentBase
 
     /// <summary>
     /// Keeps the disabled toggle button focusable and discoverable by screen readers, rendering <c>aria-disabled</c> instead of the
-    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.IsEnabled"/> is false, preserving a consistent tab order.
+    /// native <c>disabled</c> attribute when <see cref="BitComponentBase.Disabled"/> is true, preserving a consistent tab order.
     /// Set it to false to render the native <c>disabled</c> attribute and remove the toggle button from the tab order.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
@@ -200,8 +200,13 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the content of the toggle button.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Determines if the toggle button is in the checked state.
@@ -241,7 +246,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The position of the loading label in regards to the spinner icon.
     /// </summary>
-    [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement LoadingLabelPlacement { get; set; } = BitPlacement.End;
 
     /// <summary>
     /// The custom template used to replace the default content of the toggle button in the loading state.
@@ -518,7 +527,7 @@ public partial class BitToggleButton : BitComponentBase
 
         ClassBuilder.Register(() => NoWrap ? "bit-tgb-nwr" : string.Empty);
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-tgb-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-tgb-eni" : string.Empty);
 
         ClassBuilder.Register(() => GetColor() switch
         {
@@ -611,7 +620,7 @@ public partial class BitToggleButton : BitComponentBase
         // user lands on something a screen reader has nothing to say about.
         if (ariaHidden) return "-1";
 
-        if (IsEnabled is false && AllowDisabledFocus is false) return "-1";
+        if (Disabled && AllowDisabledFocus is false) return "-1";
 
         return TabIndex;
     }
@@ -680,7 +689,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
         // The auto-loading window opens before OnClick rather than after it. An async OnClick handler is part of
@@ -706,7 +715,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private async Task ChangeIsChecked(bool value, bool autoLoading)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         autoLoading = autoLoading && AutoLoading;
 
@@ -909,12 +918,12 @@ public partial class BitToggleButton : BitComponentBase
     }
 
     private string GetLoadingLabelPositionClass()
-        => LoadingLabelPosition switch
+        => LoadingLabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-tgb-top",
-            BitLabelPosition.Start => "bit-tgb-srt",
-            BitLabelPosition.End => "bit-tgb-end",
-            BitLabelPosition.Bottom => "bit-tgb-btm",
+            BitPlacement.Top => "bit-tgb-top",
+            BitPlacement.Start => "bit-tgb-srt",
+            BitPlacement.End => "bit-tgb-end",
+            BitPlacement.Bottom => "bit-tgb-btm",
             _ => "bit-tgb-end"
         };
 }

@@ -25,7 +25,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetItems());
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var inputs = component.FindAll(".bit-chg-icn input");
@@ -38,7 +38,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
     public void BitChoiceGroupShouldDisableOnlyTheDisabledItemWhenTheGroupIsEnabled()
     {
         var items = GetItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -57,7 +57,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetItems());
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.FindAll(".bit-chg-icn").All(i => i.ClassList.Contains("bit-chg-ids")));
@@ -547,7 +547,7 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         {
             parameters.Add(p => p.Items, GetItems());
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-chg");

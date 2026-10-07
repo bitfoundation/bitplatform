@@ -2,7 +2,7 @@
 @typeparam TItem where TItem : class
 
 @{
-    var isEnabled = AccordionList.IsEnabled && AccordionList.GetIsEnabled(Item);
+    var isDisabled = AccordionList.Disabled || AccordionList.GetIsDisabled(Item);
     var headerTemplate = AccordionList.GetItemHeaderTemplate(Item);
     var titleTemplate = AccordionList.GetItemTitleTemplate(Item);
     var expanderTemplate = AccordionList.GetItemExpanderTemplate(Item);
@@ -27,7 +27,7 @@
                   ExpandedExpanderIconName="@AccordionList.GetItemExpandedExpanderIconName(Item)"
                   ExpanderIcon="AccordionList.GetItemExpanderIcon(Item)"
                   ExpanderIconName="@AccordionList.GetItemExpanderIconName(Item)"
-                  ExpanderIconPosition="AccordionList.ExpanderIconPosition"
+                  ExpanderIconPlacement="AccordionList.ExpanderIconPlacement"
                   ExpanderTemplate="expanderTemplate"
                   ExpandOnPrint="AccordionList.ExpandOnPrint"
                   HeaderAriaLabel="@AccordionList.GetItemHeaderAriaLabel(Item)"
@@ -37,7 +37,7 @@
                   HideExpanderIcon="AccordionList.GetItemHideExpanderIcon(Item)"
                   Icon="AccordionList.GetItemIcon(Item)"
                   IconName="@AccordionList.GetItemIconName(Item)"
-                  IsEnabled="isEnabled"
+                  Disabled="isDisabled"
                   IsExpanded="AccordionList.IsItemExpanded(Item)"
                   LazyContent="AccordionList.LazyContent"
                   MaxHeight="@AccordionList.MaxHeight"

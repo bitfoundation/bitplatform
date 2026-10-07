@@ -80,11 +80,11 @@ public class BitSliderTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderShouldRespectIsEnabled(bool isEnabled)
+    public void BitSliderShouldRespectDisabled(bool isEnabled)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var slider = com.Find(".bit-sld");
@@ -933,7 +933,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, 2D);
         });
 
@@ -1067,7 +1067,7 @@ public class BitSliderTests : BunitTestContext
         var focusedIn = 0;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnFocusIn, () => focusedIn++);
         });
 
@@ -3126,7 +3126,7 @@ public class BitSliderTests : BunitTestContext
         {
             parameters.Add(p => p.IsRanged, true);
             parameters.Add(p => p.DraggableTrack, true);
-            parameters.Add(p => p.IsEnabled, enabled);
+            parameters.Add(p => p.Disabled, enabled is false);
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Add(p => p.DefaultLowerValue, 2D);
             parameters.Add(p => p.DefaultUpperValue, 6D);
@@ -4187,7 +4187,7 @@ public class BitSliderTests : BunitTestContext
         {
             parameters.Add(p => p.Label, "Days");
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));

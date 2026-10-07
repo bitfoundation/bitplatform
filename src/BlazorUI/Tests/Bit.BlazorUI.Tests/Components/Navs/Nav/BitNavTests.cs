@@ -22,7 +22,7 @@ public class BitNavTests : BunitTestContext
         public string? Note { get; set; }
         public string? Glyph { get; set; }
         public bool Open { get; set; }
-        public bool Enabled { get; set; } = true;
+        public bool Off { get; set; }
         public bool Divider { get; set; }
         public List<NavRecord> Nodes { get; set; } = [];
     }
@@ -211,9 +211,9 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldRespectIsEnabled()
+    public void BitNavShouldRespectDisabled()
     {
-        var component = RenderNav(BasicItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNav(BasicItems(), p => p.Add(c => c.Disabled, true));
 
         Assert.IsTrue(component.Find(".bit-nav").ClassList.Contains("bit-dis"));
     }
@@ -221,7 +221,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldDisableEveryItemOfADisabledNav()
     {
-        var component = RenderNav(BasicItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNav(BasicItems(), p => p.Add(c => c.Disabled, true));
 
         foreach (var item in component.FindAll(".bit-nav-ict"))
         {
@@ -237,7 +237,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldNotToggleAnItemOfADisabledNav()
     {
-        var component = RenderNav(TreeItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.Disabled, true));
 
         component.FindAll(".bit-nav-cbt")[0].Click();
 
@@ -464,7 +464,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldMarkADisabledItem()
     {
-        var component = RenderNav([new() { Text = "Home", Url = "/home", IsEnabled = false }]);
+        var component = RenderNav([new() { Text = "Home", Url = "/home", IsDisabled = true }]);
 
         var item = component.Find(".bit-nav-ict");
 
@@ -479,7 +479,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldDisableTheButtonOfADisabledNonLinkItem()
     {
-        var component = RenderNav([new() { Text = "Home", IsEnabled = false }]);
+        var component = RenderNav([new() { Text = "Home", IsDisabled = true }]);
 
         var item = component.Find(".bit-nav-ict");
 
@@ -1214,7 +1214,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavShouldNotToggleADisabledItem()
     {
         var items = TreeItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderNav(items);
 
@@ -1340,7 +1340,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavShouldTakeTheToggleButtonOfADisabledItemOutOfTheTabOrder()
     {
         var items = LinkTreeItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderNav(items);
 
@@ -1498,7 +1498,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavShouldNotSelectADisabledItem()
     {
         var items = BasicItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNav(items, p => p.Add(c => c.Mode, BitNavMode.Manual));
 
@@ -1593,7 +1593,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavShouldNotInvokeOnItemClickForADisabledItem()
     {
         var items = BasicItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
         var clickCount = 0;
 
         var component = RenderNav(items, p => p.Add(c => c.OnItemClick, (BitNavItem _) => { clickCount++; }));
@@ -2061,7 +2061,7 @@ public class BitNavTests : BunitTestContext
     {
         var items = TreeItems();
         items[0].IsExpanded = true;
-        items[0].ChildItems[0].IsEnabled = false;
+        items[0].ChildItems[0].IsDisabled = true;
 
         var component = RenderNav(items);
 
@@ -2141,7 +2141,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavShouldSkipADisabledSiblingWithTheAsterisk()
     {
         var items = TreeItems();
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         var component = RenderNav(items);
 
@@ -2214,7 +2214,7 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldIgnoreTheKeyboardWhileDisabled()
     {
-        var component = RenderNav(TreeItems(), p => p.Add(c => c.IsEnabled, false));
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.Disabled, true));
 
         component.FindAll(".bit-nav-ict")[0].FocusIn();
         PressKey(component, "ArrowRight");
@@ -2248,7 +2248,7 @@ public class BitNavTests : BunitTestContext
         var items = new List<BitNavItem>
         {
             new() { Text = "Home" },
-            new() { Text = "Bit academy", IsEnabled = false },
+            new() { Text = "Bit academy", IsDisabled = true },
             new() { Text = "Fruits", ChildItems = [new() { Text = "Apple" }] },
         };
 
@@ -2272,7 +2272,7 @@ public class BitNavTests : BunitTestContext
             new()
             {
                 Text = "Fruits",
-                IsEnabled = false,
+                IsDisabled = true,
                 IsExpanded = true,
                 ChildItems = [new() { Text = "Apple", ChildItems = [new() { Text = "Granny Smith" }] }]
             },
@@ -2455,7 +2455,7 @@ public class BitNavTests : BunitTestContext
     public void BitNavShouldDisableTheGroupHeaderOfADisabledItem()
     {
         var items = TreeItems();
-        items[0].IsEnabled = false;
+        items[0].IsDisabled = true;
 
         var component = RenderNav(items, p => p.Add(c => c.RenderType, BitNavRenderType.Grouped));
 
@@ -2690,7 +2690,7 @@ public class BitNavTests : BunitTestContext
                 Nodes = [new() { Label = "Apple", Address = "/apple" }]
             },
             new() { Divider = true },
-            new() { Label = "Disabled", Enabled = false },
+            new() { Label = "Disabled", Off = true },
         };
 
         var component = RenderComponent<BitNav<NavRecord>>(parameters =>
@@ -2703,7 +2703,7 @@ public class BitNavTests : BunitTestContext
                 Description = { Name = nameof(NavRecord.Note) },
                 IconName = { Name = nameof(NavRecord.Glyph) },
                 IsExpanded = { Name = nameof(NavRecord.Open) },
-                IsEnabled = { Name = nameof(NavRecord.Enabled) },
+                IsDisabled = { Name = nameof(NavRecord.Off) },
                 IsSeparator = { Name = nameof(NavRecord.Divider) },
                 ChildItems = { Name = nameof(NavRecord.Nodes) },
             });

@@ -364,7 +364,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
 
     [TestMethod]
     [TestCategory("Visual")]
-    public async Task BitActionButton_ToggleIsEnabled_UpdatesDOM()
+    public async Task BitActionButton_ToggleDisabled_UpdatesDOM()
     {
         const int count = 10;
 
@@ -378,7 +378,7 @@ public class BitActionButtonBrowserTests : PerformanceTestBase
         var enabledButtons = await Page.Locator("#test-container .bit-acb:not(.bit-dis)").CountAsync();
         Console.WriteLine($"Enabled buttons before toggle: {enabledButtons}");
 
-        // Toggle IsEnabled
+        // Toggle Disabled
         await Page.Locator("#btn-rerender").ClickAsync();
         await WaitForReRenderComplete();
 

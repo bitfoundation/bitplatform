@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bunit;
@@ -28,10 +27,7 @@ public sealed class BitThemeSemanticAliasReSubstitutionTests : BunitTestContext
 
     private static (string Alias, string Target)[] ScssAliasPairs()
     {
-        var scssPath = Path.Combine(AppContext.BaseDirectory, "theme-styles", "semantic-tokens.scss");
-        Assert.IsTrue(File.Exists(scssPath), $"Missing {scssPath}; ensure the library Styles folder is copied to output.");
-
-        return SemDeclaration.Matches(File.ReadAllText(scssPath))
+        return SemDeclaration.Matches(SourceFiles.ReadThemeStylesheet("semantic-tokens.scss"))
             .Select(m => (Alias: m.Groups[1].Value, Target: m.Groups[2].Value))
             .Distinct()
             .ToArray();

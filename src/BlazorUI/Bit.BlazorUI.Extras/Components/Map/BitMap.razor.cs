@@ -2494,7 +2494,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task ShowMarker(string markerId)
     {
-        if (_initialized is false || IsEnabled is false) return;
+        if (_initialized is false || Disabled) return;
         if (_markerState.TryGetValue(markerId, out var marker) is false) return;
 
         // Essential motion: the movement is what tells the user where they were taken.
@@ -2523,7 +2523,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         ["tooltipHtml"] = m.TooltipHtml?.Value,
         ["tooltipText"] = m.TooltipText,
         ["tooltipPermanent"] = m.TooltipPermanent,
-        ["tooltipDirection"] = m.TooltipDirection.ToString().ToLowerInvariant(),
+        // The providers' own direction names; anything BitPlacement can say that they cannot leaves it to auto.
+        ["tooltipDirection"] = m.TooltipPlacement switch
+        {
+            BitPlacement.Top => "top",
+            BitPlacement.Bottom => "bottom",
+            BitPlacement.Left => "left",
+            BitPlacement.Right => "right",
+            BitPlacement.Center => "center",
+            _ => "auto"
+        },
         ["focusable"] = m.Focusable,
         ["draggable"] = m.Draggable,
         ["color"] = m.Color,

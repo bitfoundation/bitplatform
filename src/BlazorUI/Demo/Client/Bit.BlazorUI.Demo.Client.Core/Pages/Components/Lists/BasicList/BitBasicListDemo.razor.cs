@@ -290,7 +290,7 @@ public partial class BitBasicListDemo
         {
             Name = "--bit-BasicList-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text of the default LoadMore button when IsEnabled is false.",
+            Description = "Text of the default LoadMore button when Disabled is true.",
         },
         new()
         {

@@ -99,7 +99,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false || IsEnabled is false) return;
+        if (firstRender is false || Disabled) return;
 
         if (AutoFocus)
         {
@@ -115,7 +115,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await SetCurrentValueAsStringAsync(e.Value?.ToString());
     }
@@ -126,7 +126,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         if (Immediate is false) return;
 

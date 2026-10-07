@@ -75,7 +75,7 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Where the <see cref="GapDegree"/> gap of the gauge sits.
     /// </summary>
-    public BitProgressGapPosition? GapPosition { get; set; }
+    public BitPlacement? GapPlacement { get; set; }
 
     /// <summary>
     /// Reports that something is running without saying how far along it is.
@@ -233,9 +233,9 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
             bitProgress.TakeFromCascade(nameof(Id), Id, static p => p.Id, static (p, v) => p.Id = v);
         }
 
-        if (IsEnabled.HasValue)
+        if (Disabled.HasValue)
         {
-            bitProgress.TakeFromCascade(nameof(IsEnabled), IsEnabled.Value, static p => p.IsEnabled, static (p, v) => p.IsEnabled = v);
+            bitProgress.TakeFromCascade(nameof(Disabled), Disabled.Value, static p => p.Disabled, static (p, v) => p.Disabled = v);
         }
 
         if (Style.HasValue())
@@ -298,9 +298,9 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
             bitProgress.TakeFromCascade(nameof(GapDegree), GapDegree.Value, static p => p.GapDegree, static (p, v) => p.GapDegree = v);
         }
 
-        if (GapPosition.HasValue)
+        if (GapPlacement.HasValue)
         {
-            bitProgress.TakeFromCascade(nameof(GapPosition), GapPosition.Value, static p => p.GapPosition, static (p, v) => p.GapPosition = v);
+            bitProgress.TakeFromCascade(nameof(GapPlacement), GapPlacement.Value, static p => p.GapPlacement, static (p, v) => p.GapPlacement = v);
         }
 
         if (Indeterminate.HasValue)

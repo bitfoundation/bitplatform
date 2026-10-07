@@ -409,7 +409,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
     /// <summary>
     /// Determines the location of the DateRangePicker's icon.
     /// </summary>
-    public BitIconLocation? IconLocation { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
@@ -1203,9 +1203,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.Icon = Icon;
         }
 
-        if (IconLocation.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(IconLocation)))
+        if (IconPlacement.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitDateRangePicker.IconLocation = IconLocation.Value;
+            bitDateRangePicker.IconPlacement = IconPlacement.Value;
 
             bitDateRangePicker.ClassBuilder.Reset();
         }

@@ -54,7 +54,7 @@
 <DemoExample Title="Icons" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>
         <code>ExpanderIconName</code> replaces every chevron and <code>ExpandedExpanderIconName</code> swaps it while
-        open; each item can set its own, plus a leading <code>IconName</code>. <code>ExpanderIconPosition</code> moves
+        open; each item can set its own, plus a leading <code>IconName</code>. <code>ExpanderIconPlacement</code> moves
         the expander to the start, <code>NoExpanderRotation</code> stops it turning and <code>HideExpanderIcon</code>
         removes it.
     </div>
@@ -73,8 +73,8 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div>ExpanderIconPosition:</div>
-        <BitAccordionList ExpanderIconPosition="BitIconPosition.Start" Items="basicItems" TItem="BitAccordionListItem" />
+        <div>ExpanderIconPlacement:</div>
+        <BitAccordionList ExpanderIconPlacement="BitPlacement.Start" Items="basicItems" TItem="BitAccordionListItem" />
     </div>
     <br /><br />
     <div class="example-content">
@@ -137,7 +137,7 @@
 
 <DemoExample Title="Disabled & Read-only" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>
-        <code>IsEnabled="false"</code> greys an item out and takes it out of the tab order. <code>ReadOnly</code>
+        <code>IsDisabled</code> greys an item out and takes it out of the tab order. <code>ReadOnly</code>
         keeps it focusable and in its colors but frozen (<code>aria-disabled</code>), and still raises
         <code>OnItemClick</code>. Both work for the whole list or per item.
     </div>

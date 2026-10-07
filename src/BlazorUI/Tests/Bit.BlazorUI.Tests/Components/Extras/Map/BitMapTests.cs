@@ -2280,7 +2280,7 @@ public class BitMapTests : BunitTestContext
             Position = new(0, 0),
             TooltipText = "Plain text",
             TooltipPermanent = true,
-            TooltipDirection = BitMapTooltipDirection.Right,
+            TooltipPlacement = BitPlacement.Right,
         });
 
         var payload = (Dictionary<string, object?>)Context.JSInterop.Invocations
@@ -3439,7 +3439,7 @@ public class BitMapTests : BunitTestContext
 
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.MarkerListMode, BitMapMarkerListMode.Visible);
         });
 
@@ -3452,7 +3452,7 @@ public class BitMapTests : BunitTestContext
         var button = component.Find(".bit-map-marker-table-action");
         Assert.IsTrue(button.HasAttribute("disabled"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         Assert.IsFalse(component.Find(".bit-map").ClassList.Contains("bit-dis"));
         Assert.IsFalse(component.Find(".bit-map-canvas").HasAttribute("inert"));

@@ -36,9 +36,9 @@
         <br /><br />
         <div>Disabled:</div><br />
         <div class="example-box">
-            <BitToggleButton Variant="BitVariant.Fill" IsEnabled="false">Fill</BitToggleButton>
-            <BitToggleButton Variant="BitVariant.Outline" IsEnabled="false">Outline</BitToggleButton>
-            <BitToggleButton Variant="BitVariant.Text" IsEnabled="false">Text</BitToggleButton>
+            <BitToggleButton Variant="BitVariant.Fill" Disabled>Fill</BitToggleButton>
+            <BitToggleButton Variant="BitVariant.Outline" Disabled>Outline</BitToggleButton>
+            <BitToggleButton Variant="BitVariant.Text" Disabled>Text</BitToggleButton>
         </div>
         <br /><br />
         <div>
@@ -48,8 +48,8 @@
             to render the native attribute and take it out of the tab order instead - at the cost of both.
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Title="Connect a microphone to enable this">Disabled, with a reason</BitToggleButton>
-            <BitToggleButton IsEnabled="false" AllowDisabledFocus="false">Not focusable</BitToggleButton>
+            <BitToggleButton Disabled Title="Connect a microphone to enable this">Disabled, with a reason</BitToggleButton>
+            <BitToggleButton Disabled AllowDisabledFocus="false">Not focusable</BitToggleButton>
         </div>
     </DemoExample>
 
@@ -88,7 +88,7 @@
     <DemoExample Title="Icons" RazorCode="@example4RazorCode" Id="example4">
         <div>
             Icons follow the same shape as the text: <b>IconName</b> for both states, <b>OnIconName</b> and
-            <b>OffIconName</b> for one each. <b>IconPosition</b> moves the icon after the content, and <b>IconOnly</b>
+            <b>OffIconName</b> for one each. <b>IconPlacement</b> moves the icon after the content, and <b>IconOnly</b>
             drops the text and squares up the padding for a compact, toolbar-style button - the wording is not thrown
             away with it, since the <b>Text</b> of a button that renders none becomes its accessible name.
         </div><br />
@@ -99,10 +99,10 @@
         <BitToggleButton OnText="Muted" OnIconName="@BitIconName.MicOff"
                          OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         <br /><br /><br /><br />
-        <div>IconPosition:</div><br />
+        <div>IconPlacement:</div><br />
         <div class="example-box">
-            <BitToggleButton IconPosition="BitIconPosition.Start" Text="Start" IconName="@BitIconName.Microphone" />
-            <BitToggleButton IconPosition="BitIconPosition.End" Text="End" IconName="@BitIconName.Microphone" />
+            <BitToggleButton IconPlacement="BitPlacement.Start" Text="Start" IconName="@BitIconName.Microphone" />
+            <BitToggleButton IconPlacement="BitPlacement.End" Text="End" IconName="@BitIconName.Microphone" />
         </div>
         <br /><br /><br />
         <div>
@@ -208,12 +208,12 @@
             rather than repainted in the disabled ones.
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Text="Fill" />
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" DefaultIsChecked="true" Text="Fill" />
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Text="Outline" />
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Outline" />
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Text="Text" />
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" DefaultIsChecked="true" Text="Text" />
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Text="Fill" />
+            <BitToggleButton Disabled Variant="BitVariant.Fill" DefaultIsChecked="true" Text="Fill" />
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Text="Outline" />
+            <BitToggleButton Disabled Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Outline" />
+            <BitToggleButton Disabled Variant="BitVariant.Text" Text="Text" />
+            <BitToggleButton Disabled Variant="BitVariant.Text" DefaultIsChecked="true" Text="Text" />
         </div>
     </DemoExample>
 
@@ -362,15 +362,15 @@
         </div>
         <br /><br /><br />
         <div>
-            <b>LoadingLabel</b> puts a word next to the spinner, and <b>LoadingLabelPosition</b> places it on any of
+            <b>LoadingLabel</b> puts a word next to the spinner, and <b>LoadingLabelPlacement</b> places it on any of
             the four sides. It is also announced to screen readers when the loading starts - the spinner itself says
             nothing - while the content stays in place behind it, so the BitToggleButton keeps its name while it is busy.
         </div><br />
         <div class="example-box">
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.End" Text="End" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Start" Text="Start" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Top" Text="Top" />
-            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Bottom" Text="Bottom" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.End" Text="End" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Start" Text="Start" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Top" Text="Top" />
+            <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="BitPlacement.Bottom" Text="Bottom" />
         </div>
         <br /><br /><br />
         <div>
@@ -721,107 +721,107 @@
         <div><b>Disabled</b>:</div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Primary">Primary</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Primary">Primary</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Primary">Primary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Primary">Primary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Primary">Primary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Primary">Primary</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Secondary">Secondary</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Secondary">Secondary</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Secondary">Secondary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Secondary">Secondary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Secondary">Secondary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Secondary">Secondary</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Tertiary">Tertiary</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Tertiary">Tertiary</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Tertiary">Tertiary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Tertiary">Tertiary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Tertiary">Tertiary</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Tertiary">Tertiary</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Info">Info</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Info">Info</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Info">Info</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Info">Info</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Info">Info</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Info">Info</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Success">Success</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Success">Success</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Success">Success</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Success">Success</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Success">Success</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Success">Success</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Warning">Warning</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Warning">Warning</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Warning">Warning</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Warning">Warning</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Warning">Warning</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Warning">Warning</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.SevereWarning">SevereWarning</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.SevereWarning">SevereWarning</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.SevereWarning">SevereWarning</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.SevereWarning">SevereWarning</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.SevereWarning">SevereWarning</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.SevereWarning">SevereWarning</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.Error">Error</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.Error">Error</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.Error">Error</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.Error">Error</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.Error">Error</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.Error">Error</BitToggleButton>
         </div>
         <br /><br />
         <div style="background:var(--bit-clr-fg-sec);padding:1rem">
             <div class="example-box">
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.PrimaryBackground">PrimaryBackground</BitToggleButton>
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground">PrimaryBackground</BitToggleButton>
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.PrimaryBackground">PrimaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.PrimaryBackground">PrimaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground">PrimaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.PrimaryBackground">PrimaryBackground</BitToggleButton>
             </div>
             <br />
             <div class="example-box">
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.SecondaryBackground">SecondaryBackground</BitToggleButton>
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.SecondaryBackground">SecondaryBackground</BitToggleButton>
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground">SecondaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.SecondaryBackground">SecondaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.SecondaryBackground">SecondaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.SecondaryBackground">SecondaryBackground</BitToggleButton>
             </div>
             <br />
             <div class="example-box">
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.TertiaryBackground">TertiaryBackground</BitToggleButton>
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground">TertiaryBackground</BitToggleButton>
-                <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.TertiaryBackground">TertiaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.TertiaryBackground">TertiaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground">TertiaryBackground</BitToggleButton>
+                <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.TertiaryBackground">TertiaryBackground</BitToggleButton>
             </div>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.PrimaryForeground">PrimaryForeground</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground">PrimaryForeground</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.PrimaryForeground">PrimaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.PrimaryForeground">PrimaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground">PrimaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.PrimaryForeground">PrimaryForeground</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.SecondaryForeground">SecondaryForeground</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground">SecondaryForeground</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.SecondaryForeground">SecondaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.SecondaryForeground">SecondaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground">SecondaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.SecondaryForeground">SecondaryForeground</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.TertiaryForeground">TertiaryForeground</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.TertiaryForeground">TertiaryForeground</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.TertiaryForeground">TertiaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.TertiaryForeground">TertiaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.TertiaryForeground">TertiaryForeground</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.TertiaryForeground">TertiaryForeground</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.PrimaryBorder">PrimaryBorder</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.PrimaryBorder">PrimaryBorder</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.PrimaryBorder">PrimaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.PrimaryBorder">PrimaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.PrimaryBorder">PrimaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.PrimaryBorder">PrimaryBorder</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.SecondaryBorder">SecondaryBorder</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.SecondaryBorder">SecondaryBorder</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.SecondaryBorder">SecondaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.SecondaryBorder">SecondaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.SecondaryBorder">SecondaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.SecondaryBorder">SecondaryBorder</BitToggleButton>
         </div>
         <br />
         <div class="example-box">
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
-            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Fill" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Outline" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
+            <BitToggleButton Disabled Variant="BitVariant.Text" Color="BitColor.TertiaryBorder">TertiaryBorder</BitToggleButton>
         </div>
     </DemoExample>
 

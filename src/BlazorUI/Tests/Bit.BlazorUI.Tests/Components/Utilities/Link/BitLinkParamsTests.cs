@@ -50,7 +50,7 @@ public class BitLinkParamsTests : BunitTestContext
                 AutoFocus = true,
                 Download = "",
                 IconName = "Link",
-                IconPosition = BitIconPosition.End,
+                IconPlacement = BitPlacement.End,
                 PreventDefault = true,
                 AllowDisabledFocus = true,
                 StopPropagation = true,

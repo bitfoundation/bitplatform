@@ -23,7 +23,7 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.IsChecked, isChecked);
             parameters.Add(p => p.Text, text);
             parameters.Add(p => p.IconName, iconName);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Title, title);
         });
 
@@ -56,7 +56,7 @@ public class BitToggleButtonTests : BunitTestContext
         var clicked = false;
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -78,7 +78,7 @@ public class BitToggleButtonTests : BunitTestContext
         bool isCheckedBindingValue = isChecked;
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Bind(p => p.IsChecked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
         });
 
@@ -101,7 +101,7 @@ public class BitToggleButtonTests : BunitTestContext
         bool isCheckedBindingValue = isChecked;
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Bind(p => p.IsChecked, isCheckedBindingValue, newValue => isCheckedBindingValue = newValue);
         });
 
@@ -123,7 +123,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -313,7 +313,7 @@ public class BitToggleButtonTests : BunitTestContext
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -694,21 +694,21 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start),
-        DataRow(BitIconPosition.End)
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.End)
     ]
-    public void BitToggleButtonIconPositionTest(BitIconPosition iconPosition)
+    public void BitToggleButtonIconPlacementTest(BitPlacement iconPosition)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.IconPosition, iconPosition);
+            parameters.Add(p => p.IconPlacement, iconPosition);
             parameters.Add(p => p.IconName, "Microphone");
             parameters.Add(p => p.Text, "Microphone");
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
 
-        Assert.AreEqual(iconPosition is BitIconPosition.End, bitToggleButton.ClassList.Contains("bit-tgb-eni"));
+        Assert.AreEqual(iconPosition is BitPlacement.End, bitToggleButton.ClassList.Contains("bit-tgb-eni"));
     }
 
     [TestMethod,
@@ -911,7 +911,7 @@ public class BitToggleButtonTests : BunitTestContext
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.AutoFocus, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, false);
         });
 
@@ -1400,11 +1400,11 @@ public class BitToggleButtonTests : BunitTestContext
             FullWidth = true,
             IconName = "Share",
             IconOnly = true,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             IsLoading = true,
             LoadingDelay = 300,
             LoadingLabel = "Saving...",
-            LoadingLabelPosition = BitLabelPosition.Top,
+            LoadingLabelPlacement = BitPlacement.Top,
             NoWrap = true,
             OffAriaLabel = "Off label",
             OffColor = BitColor.Info,
@@ -1426,7 +1426,7 @@ public class BitToggleButtonTests : BunitTestContext
             Title = "Test Title",
             Variant = BitVariant.Outline,
             AriaLabel = "Test Label",
-            IsEnabled = false,
+            Disabled = true,
             TabIndex = "5"
         };
 
@@ -1457,11 +1457,11 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.IsTrue(instance.FullWidth);
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
-        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
         Assert.IsTrue(instance.IsLoading);
         Assert.AreEqual(300, instance.LoadingDelay);
         Assert.AreEqual("Saving...", instance.LoadingLabel);
-        Assert.AreEqual(BitLabelPosition.Top, instance.LoadingLabelPosition);
+        Assert.AreEqual(BitPlacement.Top, instance.LoadingLabelPlacement);
         Assert.IsTrue(instance.NoWrap);
         Assert.AreEqual("Off label", instance.OffAriaLabel);
         Assert.AreEqual(BitColor.Info, instance.OffColor);
@@ -1483,7 +1483,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual("Test Title", instance.Title);
         Assert.AreEqual(BitVariant.Outline, instance.Variant);
         Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsFalse(instance.IsEnabled);
+        Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
     }
 
@@ -1631,7 +1631,7 @@ public class BitToggleButtonTests : BunitTestContext
             {
                 AriaLabel = "Base Label",
                 Id = "test-id",
-                IsEnabled = false,
+                Disabled = true,
                 TabIndex = "3",
                 Style = "background: blue;",
                 Class = "base-class"

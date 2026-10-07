@@ -97,7 +97,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
     private string _LoadMoreId => $"{_Id}-lmb";
 
-    private bool _ShowSentinel => LoadMore && AutoLoad && IsEnabled && _loadMoreFinished is false;
+    private bool _ShowSentinel => LoadMore && AutoLoad && Disabled is false && _loadMoreFinished is false;
 
     // Whether the virtualized items come straight off the provider rather than out of the items the list holds.
     private bool _VirtualizeProvider => ItemsProvider is not null && LoadMore is false;
@@ -668,7 +668,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
         if (_globalCts is not null) return;
         // A reset always loads the first page, since that is what the list would have shown anyway; only
         // the loading a disabled list would have been asked for by the user is turned down here.
-        if (reset is false && IsEnabled is false) return;
+        if (reset is false && Disabled) return;
         if (IsDisposed) return;
 
         var localCts = new CancellationTokenSource();

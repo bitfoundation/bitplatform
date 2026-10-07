@@ -22,7 +22,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Value, value);
         });
 
@@ -376,7 +376,7 @@ public class BitToggleTests : BunitTestContext
 
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, false);
             parameters.Add(p => p.OnClick, () => clicked = true);
             parameters.Add(p => p.OnChange, _ => changed = true);
@@ -525,17 +525,17 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitLabelPosition.Top, "bit-tgl-ltp"),
-        DataRow(BitLabelPosition.Bottom, "bit-tgl-lbt"),
-        DataRow(BitLabelPosition.Start, "bit-tgl-lst"),
-        DataRow(BitLabelPosition.End, "bit-tgl-lnd"),
+        DataRow(BitPlacement.Top, "bit-tgl-ltp"),
+        DataRow(BitPlacement.Bottom, "bit-tgl-lbt"),
+        DataRow(BitPlacement.Start, "bit-tgl-lst"),
+        DataRow(BitPlacement.End, "bit-tgl-lnd"),
         DataRow(null, null)
     ]
-    public void BitToggleLabelPositionTest(BitLabelPosition? labelPosition, string expectedClass)
+    public void BitToggleLabelPositionTest(BitPlacement? labelPosition, string expectedClass)
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
             parameters.Add(p => p.Label, "A label");
         });
 
@@ -909,7 +909,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultValue, false);
         });
 
@@ -1504,7 +1504,7 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggleValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var form = com.Find("form");
@@ -1531,7 +1531,7 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggleValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var checkBox = com.Find("input[type='checkbox']");
@@ -1561,7 +1561,7 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggleValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var button = com.Find("button");
@@ -1583,7 +1583,7 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggleValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var bitToggle = com.Find(".bit-tgl");
@@ -1609,7 +1609,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -1628,7 +1628,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, true);
         });
 
@@ -1647,7 +1647,7 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.AutoFocus, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -1946,7 +1946,7 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggleValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = true });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         com.Find("form").Submit();

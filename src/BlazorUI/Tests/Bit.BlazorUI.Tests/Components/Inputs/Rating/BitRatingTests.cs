@@ -20,7 +20,7 @@ public class BitRatingTests : BunitTestContext
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
         var bitRating = component.Find(".bit-rtg");
 
@@ -77,7 +77,7 @@ public class BitRatingTests : BunitTestContext
         {
             parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var bitRating = component.Find(".bit-rtg");
@@ -358,7 +358,7 @@ public class BitRatingTests : BunitTestContext
         var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Max, max);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.ReadOnly, readOnly);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
@@ -1548,7 +1548,7 @@ public class BitRatingTests : BunitTestContext
         var focusedOut = 0;
         var component = RenderComponent<BitRating>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnFocusIn, () => focusedIn++);
             parameters.Add(p => p.OnFocusOut, () => focusedOut++);
         });
@@ -1742,17 +1742,17 @@ public class BitRatingTests : BunitTestContext
 
     [TestMethod,
         DataRow(null, ""),
-        DataRow(BitLabelPosition.Top, ""),
-        DataRow(BitLabelPosition.Bottom, "bit-rtg-lbm"),
-        DataRow(BitLabelPosition.Start, "bit-rtg-lst"),
-        DataRow(BitLabelPosition.End, "bit-rtg-led")
+        DataRow(BitPlacement.Top, ""),
+        DataRow(BitPlacement.Bottom, "bit-rtg-lbm"),
+        DataRow(BitPlacement.Start, "bit-rtg-lst"),
+        DataRow(BitPlacement.End, "bit-rtg-led")
     ]
-    public void BitRatingShouldRespectLabelPosition(BitLabelPosition? position, string expectedClass)
+    public void BitRatingShouldRespectLabelPosition(BitPlacement? position, string expectedClass)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Label, "Quality");
-            parameters.Add(p => p.LabelPosition, position);
+            parameters.Add(p => p.LabelPlacement, position);
         });
 
         var root = component.Find(".bit-rtg");
@@ -2119,7 +2119,7 @@ public class BitRatingTests : BunitTestContext
         {
             parameters.Add(p => p.Label, "Quality");
             parameters.Add(p => p.Required, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-rtg");
@@ -2157,7 +2157,7 @@ public class BitRatingTests : BunitTestContext
                 Vertical = true,
                 ReadOnly = true,
                 Label = "Cascaded label",
-                LabelPosition = BitLabelPosition.End,
+                LabelPlacement = BitPlacement.End,
                 SelectedIconName = "HeartFill",
                 UnselectedIconName = "Heart"
             }

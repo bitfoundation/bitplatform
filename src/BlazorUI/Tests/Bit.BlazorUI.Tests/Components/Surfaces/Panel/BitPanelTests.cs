@@ -164,47 +164,75 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitPanelPosition.End),
-        DataRow(BitPanelPosition.Start),
-        DataRow(BitPanelPosition.Top),
-        DataRow(BitPanelPosition.Bottom),
+        DataRow(BitPlacement.End),
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.Top),
+        DataRow(BitPlacement.Bottom),
         DataRow(null)
     ]
-    public void BitPanelPositionTest(BitPanelPosition? position)
+    public void BitPanelPositionTest(BitPlacement? position)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             if (position.HasValue)
             {
-                parameters.Add(p => p.Position, position.Value);
+                parameters.Add(p => p.Placement, position.Value);
             }
         });
 
         var positionClass = position switch
         {
-            BitPanelPosition.End => "bit-pnl-end",
-            BitPanelPosition.Start => "bit-pnl-start",
-            BitPanelPosition.Top => "bit-pnl-top",
-            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            BitPlacement.End => "bit-pnl-end",
+            BitPlacement.Start => "bit-pnl-start",
+            BitPlacement.Top => "bit-pnl-top",
+            BitPlacement.Bottom => "bit-pnl-bottom",
             _ => "bit-pnl-end",
         };
 
         Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains(positionClass));
     }
 
+    // A physical side is drawn physically whatever the direction, given or not: a panel given no Dir reads the way
+    // the page around it does, which is not known until it is laid out, so resolving Left to Start or End here would
+    // land it on the wrong side of a right-to-left page. The swipe is registered with the same edge, so the class the
+    // panel draws and the edge the gesture returns it to never disagree.
     [TestMethod,
-        DataRow(BitPanelPosition.Start, "width"),
-        DataRow(BitPanelPosition.End, "width"),
-        DataRow(BitPanelPosition.Top, "height"),
-        DataRow(BitPanelPosition.Bottom, "height")
+        DataRow(BitPlacement.Left, null, "bit-pnl-left", "left"),
+        DataRow(BitPlacement.Right, null, "bit-pnl-right", "right"),
+        DataRow(BitPlacement.Left, BitDir.Ltr, "bit-pnl-left", "left"),
+        DataRow(BitPlacement.Right, BitDir.Ltr, "bit-pnl-right", "right"),
+        DataRow(BitPlacement.Left, BitDir.Rtl, "bit-pnl-left", "left"),
+        DataRow(BitPlacement.Right, BitDir.Rtl, "bit-pnl-right", "right"),
+        DataRow(BitPlacement.Center, BitDir.Ltr, "bit-pnl-end", "end")
     ]
-    public void BitPanelSizeShouldFollowTheAxisThePanelSlidesOn(BitPanelPosition position, string property)
+    public void BitPanelShouldKeepAPhysicalSideWhereItIsNamed(BitPlacement position, BitDir? dir, string expectedClass, string expectedEdge)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Position, position);
+            parameters.Add(p => p.Placement, position);
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains(expectedClass));
+
+        var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
+        Assert.AreEqual(expectedEdge, setup.Arguments[2]);
+    }
+
+    [TestMethod,
+        DataRow(BitPlacement.Start, "width"),
+        DataRow(BitPlacement.End, "width"),
+        DataRow(BitPlacement.Top, "height"),
+        DataRow(BitPlacement.Bottom, "height")
+    ]
+    public void BitPanelSizeShouldFollowTheAxisThePanelSlidesOn(BitPlacement position, string property)
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Placement, position);
             parameters.Add(p => p.Size, 320);
         });
 
@@ -356,7 +384,7 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -481,7 +509,7 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -850,7 +878,7 @@ public class BitPanelTests : BunitTestContext
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPanelPosition.Bottom);
+            parameters.Add(p => p.Placement, BitPlacement.Bottom);
             parameters.Add(p => p.SwipeTrigger, 0.5m);
         });
 
@@ -859,7 +887,7 @@ public class BitPanelTests : BunitTestContext
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
 
         Assert.AreEqual(0.5m, arguments[1]);
-        Assert.AreEqual(BitPanelPosition.Bottom, arguments[2]);
+        Assert.AreEqual("bottom", arguments[2]);
         // Given no direction, the gesture follows the one the panel is laid out in, which the script reads.
         Assert.IsNull(arguments[3]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
@@ -871,12 +899,12 @@ public class BitPanelTests : BunitTestContext
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Position, BitPanelPosition.End);
+            parameters.Add(p => p.Placement, BitPlacement.End);
         });
 
         com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
 
-        com.Render(p => p.Add(x => x.Position, BitPanelPosition.Top));
+        com.Render(p => p.Add(x => x.Placement, BitPlacement.Top));
 
         com.WaitForAssertion(() =>
         {
@@ -886,7 +914,7 @@ public class BitPanelTests : BunitTestContext
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
 
-        Assert.AreEqual(BitPanelPosition.Top, arguments[2]);
+        Assert.AreEqual("top", arguments[2]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
     }
 
@@ -1150,7 +1178,7 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -1520,7 +1548,7 @@ public class BitPanelTests : BunitTestContext
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.ShowCloseButton, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var button = com.Find(".bit-pnl-cls");
@@ -1834,7 +1862,7 @@ public class BitPanelTests : BunitTestContext
         var com = RenderComponent<BitPanel>(parameters =>
         {
             parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => escapes++));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -1995,14 +2023,14 @@ public class BitPanelTests : BunitTestContext
 
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
         com.Instance._OnEscapeVerdict(true);
         com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        com.Render(p => p.Add(x => x.IsEnabled, true));
+        com.Render(p => p.Add(x => x.Disabled, false));
 
         com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 

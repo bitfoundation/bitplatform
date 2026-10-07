@@ -153,7 +153,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             parameters.Add(p => p.IncrementIconName, iconName);
             parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
         });
 
@@ -182,7 +182,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             parameters.Add(p => p.DecrementIconName, iconName);
             parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
         });
 
@@ -221,23 +221,23 @@ public class BitNumberFieldTests : BunitTestContext
 
     [TestMethod,
          DataRow(null),
-         DataRow(BitLabelPosition.Start),
-         DataRow(BitLabelPosition.End),
-         DataRow(BitLabelPosition.Top),
-         DataRow(BitLabelPosition.Bottom)
+         DataRow(BitPlacement.Start),
+         DataRow(BitPlacement.End),
+         DataRow(BitPlacement.Top),
+         DataRow(BitPlacement.Bottom)
     ]
-    public void BitNumberFieldShouldHaveLabelPositionClassName(BitLabelPosition? labelPosition)
+    public void BitNumberFieldShouldHaveLabelPositionClassName(BitPlacement? labelPosition)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LabelPlacement, labelPosition);
         });
 
         var lblClass = labelPosition switch
         {
-            BitLabelPosition.Bottom => "bit-nfl-lbt",
-            BitLabelPosition.Start => "bit-nfl-lst",
-            BitLabelPosition.End => "bit-nfl-led",
+            BitPlacement.Bottom => "bit-nfl-lbt",
+            BitPlacement.Start => "bit-nfl-lst",
+            BitPlacement.End => "bit-nfl-led",
             _ => "bit-nfl-ltp"
         };
 
@@ -1531,7 +1531,7 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumberFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isValid = value >= 6 && value <= 18;
@@ -1572,7 +1572,7 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumberFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isInvalid = value < 6 || value > 18;
@@ -1610,7 +1610,7 @@ public class BitNumberFieldTests : BunitTestContext
         var component = RenderComponent<BitNumberFieldValidationTest>(parameters =>
         {
             parameters.Add(p => p.TestModel, new BitNumberFieldTestModel { Value = value });
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var isInvalid = value < 6 || value > 18;
@@ -2043,7 +2043,7 @@ public class BitNumberFieldTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Max, "10");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.Instance.IncrementAsync();
@@ -2051,7 +2051,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.ReadOnly, true);
         });
 
@@ -2850,7 +2850,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             parameters.Add(p => p.Parameters, new IBitComponentParams[]
             {
-                new BitNumberFieldParams { Dir = BitDir.Rtl, IsEnabled = false }
+                new BitNumberFieldParams { Dir = BitDir.Rtl, Disabled = true }
             });
             parameters.AddChildContent<BitNumberField<int>>();
         });

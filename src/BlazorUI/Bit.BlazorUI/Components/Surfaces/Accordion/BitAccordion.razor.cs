@@ -153,10 +153,15 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Gets or sets the side of the header the expander icon sits on.
     /// <br />
-    /// The default value is <see cref="BitIconPosition.End"/>.
+    /// The default value is <see cref="BitPlacement.End"/>.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon at the end, where an unset one puts it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? ExpanderIconPosition { get; set; }
+    public BitPlacement? ExpanderIconPlacement { get; set; }
 
     /// <summary>
     /// The custom content to render in place of the expander icon, leaving the rest of the header - the
@@ -324,7 +329,7 @@ public partial class BitAccordion : BitComponentBase
     /// This is the panel that has to stay as it is rather than the one that is turned off - the open panel of
     /// a one-at-a-time accordion, which cannot be collapsed because something has to stay open - so it reports
     /// itself as <c>aria-disabled</c> the way the WAI-ARIA authoring practices ask a header in that position
-    /// to, without being greyed out the way <see cref="BitComponentBase.IsEnabled"/> greys it.
+    /// to, without being greyed out the way <see cref="BitComponentBase.Disabled"/> greys it.
     /// <br />
     /// <see cref="OnClick"/> still reports the click, and <see cref="Expand"/>, <see cref="Collapse"/> and
     /// <see cref="Toggle"/> still drive the accordion: what is closed here is the way in from the header, not
@@ -393,7 +398,7 @@ public partial class BitAccordion : BitComponentBase
     /// IsExpanded binding, OnChange and OnExpand.
     /// </summary>
     /// <remarks>
-    /// A call of its own is not turned away by <see cref="BitComponentBase.IsEnabled"/> - a disabled
+    /// A call of its own is not turned away by <see cref="BitComponentBase.Disabled"/> - a disabled
     /// accordion answers no pointer and no key, but the app can still open it to show why it is disabled -
     /// and a one-way bound <see cref="IsExpanded"/> still owns the state, so nothing happens there either.
     /// </remarks>
@@ -404,7 +409,7 @@ public partial class BitAccordion : BitComponentBase
     /// IsExpanded binding, OnChange and OnCollapse.
     /// </summary>
     /// <remarks>
-    /// Not turned away by <see cref="BitComponentBase.IsEnabled"/>; see <see cref="Expand"/>.
+    /// Not turned away by <see cref="BitComponentBase.Disabled"/>; see <see cref="Expand"/>.
     /// </remarks>
     public Task Collapse() => SetExpanded(false);
 
@@ -413,7 +418,7 @@ public partial class BitAccordion : BitComponentBase
     /// through the IsExpanded binding, OnChange and OnExpand/OnCollapse.
     /// </summary>
     /// <remarks>
-    /// Not turned away by <see cref="BitComponentBase.IsEnabled"/>; see <see cref="Expand"/>.
+    /// Not turned away by <see cref="BitComponentBase.Disabled"/>; see <see cref="Expand"/>.
     /// </remarks>
     public Task Toggle() => SetExpanded(IsExpanded is false);
 
@@ -437,7 +442,7 @@ public partial class BitAccordion : BitComponentBase
 
     // Whether the collapsed panel is offered to find-in-page at all: only an accordion that can expand itself around
     // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
-    private bool _IsSearchable => HiddenUntilFound && IsEnabled && ReadOnly is false && (_OwnsExpansion || RevealHandler is not null) && _revealRefused is false;
+    private bool _IsSearchable => HiddenUntilFound && Disabled is false && ReadOnly is false && (_OwnsExpansion || RevealHandler is not null) && _revealRefused is false;
 
     // Whether the panel is hidden until found right now. The attribute is applied as the close starts, and the
     // stylesheet keeps the panel drawn until the transition is over (content-visibility, allow-discrete), which is the
@@ -501,7 +506,7 @@ public partial class BitAccordion : BitComponentBase
 
         ClassBuilder.Register(() => ReadOnly ? "bit-acd-rdo" : string.Empty);
 
-        ClassBuilder.Register(() => ExpanderIconPosition is BitIconPosition.Start ? "bit-acd-sei" : string.Empty);
+        ClassBuilder.Register(() => ExpanderIconPlacement is BitPlacement.Start ? "bit-acd-sei" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -614,7 +619,7 @@ public partial class BitAccordion : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
 

@@ -47,7 +47,7 @@ public static class DocsCatalog
                 typeof(TemplatesPage)),
             new("constraints", "Constraints",
                 "18 built-in type and validation constraints, chaining rules, and custom constraints - tested interactively.",
-                "constraint int guid datetime alpha regex min max range length custom register",
+                "constraint route parameter must number numeric typed int guid datetime alpha regex min max range length custom register",
                 typeof(ConstraintsPage)),
             new("route-parameters", "Route parameters",
                 "How URL values reach components: [Parameter] binding, the cascaded parameter bag, and query-string binding.",

@@ -19,7 +19,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var persona = component.Find(".bit-prs");
@@ -303,7 +303,7 @@ public class BitPersonaTests : BunitTestContext
 
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked = true));
         });
 
@@ -1730,7 +1730,7 @@ public class BitPersonaTests : BunitTestContext
 
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked++));
         });
 
@@ -1751,7 +1751,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -1759,7 +1759,7 @@ public class BitPersonaTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
@@ -1772,7 +1772,7 @@ public class BitPersonaTests : BunitTestContext
         // Nothing that is not a control has a disabled state to announce.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.PrimaryText, "Saleh Khafan");
         });
 
@@ -2190,12 +2190,12 @@ public class BitPersonaTests : BunitTestContext
     [TestMethod,
         DataRow(null, false, null),
         DataRow(null, true, "bit-prs-sqr"),
-        DataRow(BitPersonaShape.Circular, false, null),
-        DataRow(BitPersonaShape.Circular, true, null),
-        DataRow(BitPersonaShape.Rounded, false, "bit-prs-sqr"),
-        DataRow(BitPersonaShape.Square, false, "bit-prs-sqs")
+        DataRow(BitShape.Pill, false, null),
+        DataRow(BitShape.Pill, true, null),
+        DataRow(BitShape.Rounded, false, "bit-prs-sqr"),
+        DataRow(BitShape.Square, false, "bit-prs-sqs")
     ]
-    public void BitPersonaShapeShouldApplyItsClassAndSupersedeSquared(BitPersonaShape? shape, bool squared, string? expectedClass)
+    public void BitPersonaShapeShouldApplyItsClassAndSupersedeSquared(BitShape? shape, bool squared, string? expectedClass)
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
@@ -2223,7 +2223,7 @@ public class BitPersonaTests : BunitTestContext
         // presence insets and everything else the rounded coin retunes are keyed off the first of them.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.Shape, BitPersonaShape.Square);
+            parameters.Add(p => p.Shape, BitShape.Square);
         });
 
         var classList = component.Find(".bit-prs").ClassList;
@@ -2238,7 +2238,7 @@ public class BitPersonaTests : BunitTestContext
         // The nudge follows the shape, not the legacy flag it used to be asked for with.
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.Shape, BitPersonaShape.Square);
+            parameters.Add(p => p.Shape, BitShape.Square);
             parameters.Add(p => p.CoinSize, 120);
             parameters.Add(p => p.Presence, BitPersonaPresence.Online);
         });
@@ -2246,6 +2246,26 @@ public class BitPersonaTests : BunitTestContext
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
         Assert.Contains("--bit-prs-presence-inset:-10px;", style);
+    }
+
+    [TestMethod,
+        DataRow(BitShape.Pill),
+        DataRow(BitShape.Circle)
+    ]
+    public void BitPersonaShapeShouldNotNudgeThePresenceOfARoundCoin(BitShape shape)
+    {
+        // The coin draws Circle as round as Pill, so the presence dot keeps the round coin's own inset rather than
+        // the one tuned for square corners.
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Shape, shape);
+            parameters.Add(p => p.CoinSize, 120);
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+        });
+
+        var style = component.Find(".bit-prs-pre").GetAttribute("style");
+
+        Assert.DoesNotContain("--bit-prs-presence-inset", style);
     }
 
     [TestMethod,
@@ -2737,7 +2757,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Href, "/profile/1024");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var coin = component.Find(".bit-prs-cne");
@@ -2771,7 +2791,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.Href, "/profile/1024");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnImageClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
         });
 

@@ -19,24 +19,24 @@ public partial class BitBadgeDemo
 </BitBadge>
 
 
-<BitBadge Content=""84"" Variant=""BitVariant.Fill"" IsEnabled=""false"">
+<BitBadge Content=""84"" Variant=""BitVariant.Fill"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""84"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+<BitBadge Content=""84"" Variant=""BitVariant.Outline"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""84"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+<BitBadge Content=""84"" Variant=""BitVariant.Text"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
 
-<BitBadge Content=""@(""New"")"" Shape=""BitBadgeShape.Circular"">
+<BitBadge Content=""@(""New"")"" Shape=""BitShape.Pill"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""@(""New"")"" Shape=""BitBadgeShape.Rounded"">
+<BitBadge Content=""@(""New"")"" Shape=""BitShape.Rounded"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""@(""New"")"" Shape=""BitBadgeShape.Square"">
+<BitBadge Content=""@(""New"")"" Shape=""BitShape.Square"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
@@ -84,7 +84,7 @@ public partial class BitBadgeDemo
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => count--"" IsEnabled=""@(count > 0)"">Remove one</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => count--"" Disabled=""@(count <= 0)"">Remove one</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => count++"">Add one</BitButton>
 <BitToggle @bind-Value=""hidden"" Label=""Hidden"" Inline />";
     private readonly string example4CsharpCode = @"
@@ -146,7 +146,7 @@ private readonly List<BitDropdownItem<BitPosition>> badgePositionList = Enum.Get
 
     private readonly string example9RazorCode = @"
 <BitBadge Content=""@(""Draft"")"" />
-<BitBadge Content=""@(""Beta"")"" IconName=""@BitIconName.TestBeaker"" Shape=""BitBadgeShape.Rounded"" Variant=""BitVariant.Outline"" />
+<BitBadge Content=""@(""Beta"")"" IconName=""@BitIconName.TestBeaker"" Shape=""BitShape.Rounded"" Variant=""BitVariant.Outline"" />
 <BitBadge Dot Description=""Degraded"" />
 <BitBadge Content=""12345"" Max=""999"" />
 <BitBadge Content=""1234"" Max=""999"" Title=""1,234 downloads this week"" Variant=""BitVariant.Outline"" />
@@ -163,7 +163,7 @@ private readonly List<BitDropdownItem<BitPosition>> badgePositionList = Enum.Get
 <BitBadge Content=""counter"" OnClick=""() => counter++"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
-<BitBadge Content=""counter"" OnClick=""() => counter++"" IsEnabled=""false"">
+<BitBadge Content=""counter"" OnClick=""() => counter++"" Disabled>
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>
 <BitBadge Content=""@(""Docs"")"" Variant=""BitVariant.Outline"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank"" />
@@ -236,7 +236,7 @@ private readonly BitBadgeParams[] badgeParams =
     {
         Max = 99,
         Bordered = true,
-        Shape = BitBadgeShape.Rounded,
+        Shape = BitShape.Rounded,
         Variant = BitVariant.Outline,
     }
 ];";

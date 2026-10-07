@@ -18,7 +18,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             A native <b>button</b> with the icon first and the content beside it. The icon is optional, and the content is any markup, not just text.
-            <b>IsEnabled</b> false dims the button and suppresses its click. <b>IconOnly</b> drops the content and squares the box off into an icon button,
+            <b>Disabled</b> dims the button and suppresses its click. <b>IconOnly</b> drops the content and squares the box off into an icon button,
             so give it an <b>AriaLabel</b> to keep a name for screen readers.
         </div>
         <br />
@@ -27,7 +27,7 @@
                 Create account
             </BitActionButton>
 
-            <BitActionButton IconName="@BitIconName.AddFriend" IsEnabled="false">
+            <BitActionButton IconName="@BitIconName.AddFriend" Disabled>
                 Disabled
             </BitActionButton>
 
@@ -43,17 +43,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="IconPosition" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="IconPlacement" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            <b>IconPosition</b> moves the icon to the other side of the content. End suits forward actions like Next or Open, and the spinner takes the same side while loading.
+            <b>IconPlacement</b> moves the icon to the other side of the content. End suits forward actions like Next or Open, and the spinner takes the same side while loading.
         </div>
         <br />
         <div class="example-content">
-            <BitActionButton IconPosition="BitIconPosition.Start" IconName="@BitIconName.AddFriend">
+            <BitActionButton IconPlacement="BitPlacement.Start" IconName="@BitIconName.AddFriend">
                 Start (default)
             </BitActionButton>
 
-            <BitActionButton IconPosition="BitIconPosition.End" IconName="@BitIconName.Forward">
+            <BitActionButton IconPlacement="BitPlacement.End" IconName="@BitIconName.Forward">
                 End
             </BitActionButton>
         </div>
@@ -170,11 +170,11 @@
                 Settings
             </BitActionButton>
 
-            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+            <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                 Notifications
             </BitActionButton>
 
-            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+            <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                 Privacy
             </BitActionButton>
         </div>
@@ -189,12 +189,12 @@
         </div>
         <br />
         <div class="full-width-container">
-            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+            <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                 Notifications, sounds and background activity
             </BitActionButton>
 
             <BitTooltip Relationship="BitTooltipRelationship.None" Text="Notifications, sounds and background activity">
-                <BitActionButton FullWidth NoWrap IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+                <BitActionButton FullWidth NoWrap IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                     Notifications, sounds and background activity
                 </BitActionButton>
             </BitTooltip>
@@ -213,7 +213,7 @@
                 Save changes
             </BitActionButton>
 
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success" IconPosition="BitIconPosition.End">
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success" IconPlacement="BitPlacement.End">
                 Send message
             </BitActionButton>
         </div>
@@ -365,11 +365,11 @@
         </div>
         <br />
         <div class="example-content">
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.Blocked">
+            <BitActionButton Disabled IconName="@BitIconName.Blocked">
                 Disabled (skipped by Tab)
             </BitActionButton>
 
-            <BitActionButton IsEnabled="false" AllowDisabledFocus IconName="@BitIconName.Blocked">
+            <BitActionButton Disabled AllowDisabledFocus IconName="@BitIconName.Blocked">
                 Disabled (still focusable)
             </BitActionButton>
         </div>
@@ -397,7 +397,7 @@
             <b>BitParams</b> carries a <b>BitActionButtonParams</b> down to every action button under it, so a toolbar, a card, or a whole page sets the shared look and the shared link behavior once instead of on every button.
             What it carries is a default and not an override: a button that writes a parameter for itself keeps its own value, and only what it left unset is filled in from the cascade,
             which is what lets one button step out of the group it is in without the group having to know about it. Every parameter of the component is on the params object, and each of them is filled in on its own,
-            so a button can take its <b>IconPosition</b> from the cascade and its <b>Underlined</b> from its own markup.
+            so a button can take its <b>IconPlacement</b> from the cascade and its <b>Underlined</b> from its own markup.
         </div>
         <br />
         <div class="example-content">
@@ -609,34 +609,34 @@
         </div>
         <br />
         <div class="example-content">
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Primary">Primary</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Secondary">Secondary</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Tertiary">Tertiary</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Info">Info</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Success">Success</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Warning">Warning</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.SevereWarning">SevereWarning</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.Error">Error</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Primary">Primary</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Secondary">Secondary</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Tertiary">Tertiary</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Info">Info</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Success">Success</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Warning">Warning</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.SevereWarning">SevereWarning</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.Error">Error</BitActionButton>
         </div>
         <br /><br />
         <div style="background:var(--bit-clr-fg-pri);padding:1rem">
             <div class="example-content">
-                <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.PrimaryBackground">PrimaryBackground</BitActionButton>
-                <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.SecondaryBackground">SecondaryBackground</BitActionButton>
-                <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.TertiaryBackground">TertiaryBackground</BitActionButton>
+                <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.PrimaryBackground">PrimaryBackground</BitActionButton>
+                <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.SecondaryBackground">SecondaryBackground</BitActionButton>
+                <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.TertiaryBackground">TertiaryBackground</BitActionButton>
             </div>
         </div>
         <br />
         <div class="example-content">
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.PrimaryForeground">PrimaryForeground</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.SecondaryForeground">SecondaryForeground</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.TertiaryForeground">TertiaryForeground</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.PrimaryForeground">PrimaryForeground</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.SecondaryForeground">SecondaryForeground</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.TertiaryForeground">TertiaryForeground</BitActionButton>
         </div>
         <br />
         <div class="example-content">
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.PrimaryBorder">PrimaryBorder</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.SecondaryBorder">SecondaryBorder</BitActionButton>
-            <BitActionButton IsEnabled="false" IconName="@BitIconName.AddFriend" Color="BitColor.TertiaryBorder">TertiaryBorder</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.PrimaryBorder">PrimaryBorder</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.SecondaryBorder">SecondaryBorder</BitActionButton>
+            <BitActionButton Disabled IconName="@BitIconName.AddFriend" Color="BitColor.TertiaryBorder">TertiaryBorder</BitActionButton>
         </div>
     </DemoExample>
 
@@ -789,7 +789,7 @@
                 ساخت حساب
             </BitActionButton>
 
-            <BitActionButton Dir="BitDir.Rtl" IconName="@BitIconName.ChevronLeft" IconPosition="BitIconPosition.End">
+            <BitActionButton Dir="BitDir.Rtl" IconName="@BitIconName.ChevronLeft" IconPlacement="BitPlacement.End">
                 ادامه
             </BitActionButton>
         </div>

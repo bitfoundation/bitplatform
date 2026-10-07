@@ -615,7 +615,7 @@ namespace BitBlazorUI {
 
             const gl = s.gl;
             // A GL anchor names the side of the popup that touches the point, the opposite of the side of the
-            // marker BitMapTooltipDirection names: a tooltip above the marker is one anchored at its bottom.
+            // marker TooltipPlacement names: a tooltip above the marker is one anchored at its bottom.
             const anchors: { [direction: string]: string } = { top: 'bottom', bottom: 'top', left: 'right', right: 'left', center: 'center' };
             const direction = anchors[opts.tooltipDirection];
             const tooltip = new gl.Popup({

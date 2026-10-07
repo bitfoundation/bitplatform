@@ -19,7 +19,7 @@ public partial class _BitChoiceGroupOptionDemo
 
     private readonly string example2RazorCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
-                IsEnabled=""false""
+                Disabled
                 DefaultValue=""@(""A"")""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
@@ -33,7 +33,7 @@ public partial class _BitChoiceGroupOptionDemo
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
-    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" IsDisabled />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
@@ -69,7 +69,7 @@ private string readOnlyValue = ""A"";";
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>
 
 
@@ -97,7 +97,7 @@ private string readOnlyValue = ""A"";";
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>";
 
     private readonly string example4RazorCode = @"
@@ -108,7 +108,7 @@ private string readOnlyValue = ""A"";";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Disabled"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Horizontal>
+<BitChoiceGroup Label=""Disabled"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Disabled DefaultValue=""@(""A"")"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -133,32 +133,32 @@ private string readOnlyValue = ""A"";";
 <BitChoiceGroup Label=""Icon"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Day"")"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>";
 
     private readonly string example5RazorCode = @"
-<BitChoiceGroup Label=""End (default)"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.End"" Horizontal>
+<BitChoiceGroup Label=""End (default)"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.End"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Start"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" Horizontal>
+<BitChoiceGroup Label=""Start"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Start"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Top"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Top"" Horizontal>
+<BitChoiceGroup Label=""Top"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Top"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Bottom"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Bottom"" Horizontal>
+<BitChoiceGroup Label=""Bottom"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Bottom"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -522,16 +522,16 @@ private void ReverseDynamicOptions()
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start (options at the far edge)"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start (options at the far edge)"" DefaultValue=""@(""A"")"" LabelPlacement=""BitPlacement.Start"" FullWidth TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + StretchItemLabel (settings list)""
+<BitChoiceGroup Label=""FullWidth + LabelPlacement.Start + StretchItemLabel (settings list)""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start"" FullWidth StretchItemLabel
+                LabelPlacement=""BitPlacement.Start"" FullWidth StretchItemLabel
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -575,7 +575,7 @@ private bool showAutoFocus;";
 <BitChoiceGroup Label=""Fill, with the circle at the far edge""
                 Variant=""BitVariant.Fill""
                 DefaultValue=""@(""Daily"")""
-                LabelPosition=""BitLabelPosition.Start""
+                LabelPlacement=""BitPlacement.Start""
                 FullWidth
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Daily"" Value=""@(""Daily"")"" Description=""Backs up every night at 2 AM."" />
@@ -591,7 +591,7 @@ private bool showAutoFocus;";
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>";
 
     private readonly string example20RazorCode = @"
@@ -793,56 +793,56 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Secondary"" Label=""Secondary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Secondary"" Label=""Secondary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Tertiary"" Label=""Tertiary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Tertiary"" Label=""Tertiary"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Info"" Label=""Info"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Info"" Label=""Info"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Success"" Label=""Success"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Success"" Label=""Success"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Warning"" Label=""Warning"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Warning"" Label=""Warning"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.SevereWarning"" Label=""SevereWarning"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.SevereWarning"" Label=""SevereWarning"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Error"" Label=""Error"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.Error"" Label=""Error"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -850,21 +850,21 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
 </BitChoiceGroup>
 
 <div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
-    <BitChoiceGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+    <BitChoiceGroup Disabled Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
         <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
         <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
         <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
         <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
     </BitChoiceGroup>
 
-    <BitChoiceGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+    <BitChoiceGroup Disabled Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
         <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
         <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
         <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
         <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
     </BitChoiceGroup>
 
-    <BitChoiceGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+    <BitChoiceGroup Disabled Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
         <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
         <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
         <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -872,42 +872,42 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     </BitChoiceGroup>
 </div>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup Disabled Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
@@ -965,7 +965,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 TValue=""string"" Horizontal Inline>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>
 
 <BitChoiceGroup Size=""BitSize.Medium""
@@ -975,7 +975,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 TValue=""string"" Horizontal Inline>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>
 
 <BitChoiceGroup Size=""BitSize.Large""
@@ -985,7 +985,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 TValue=""string"" Horizontal Inline>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>
 
 <BitChoiceGroup Size=""BitSize.Small""
@@ -995,7 +995,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>
 
 <BitChoiceGroup Size=""BitSize.Medium""
@@ -1005,7 +1005,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>
 
 <BitChoiceGroup Size=""BitSize.Large""
@@ -1015,7 +1015,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
                 TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
     <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
-    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>";
 
     private readonly string example25RazorCode = @"
@@ -1158,7 +1158,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     <BitChoiceGroupOption Text=""گزینه ت"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""غیرفعال"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
+<BitChoiceGroup Label=""غیرفعال"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Disabled DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""گزینه پ"" Value=""@(""C"")"" />

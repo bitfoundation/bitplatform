@@ -4,14 +4,14 @@ public partial class BitDateRangePickerDemo
 {
     private readonly string example1RazorCode = @"
 <BitDateRangePicker Label=""Basic DateRangePicker"" />
-<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" />
+<BitDateRangePicker Label=""Disabled"" Disabled />
 <BitDateRangePicker Label=""Required"" Required />
 <BitDateRangePicker Label=""PlaceHolder"" Placeholder=""Select a date range"" />
 <BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers />
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
-<BitDateRangePicker Label=""Left icon"" IconLocation=""BitIconLocation.Left"" />
+<BitDateRangePicker Label=""Left icon"" IconPlacement=""BitPlacement.Start"" />
 <BitDateRangePicker Label=""Underlined"" Underlined />
 <BitDateRangePicker Label=""Without border"" HasBorder=""false"" />
 <BitDateRangePicker Label=""DropDirection: All"" DropDirection=""BitDropDirection.All"" />
@@ -72,7 +72,7 @@ private readonly BitDateRangePickerPreset[] presets =
     new()
     {
         Text = ""Coming soon"",
-        IsEnabled = false,
+        IsDisabled = true,
         Title = ""This preset is not available yet""
     },
 ];";
@@ -313,7 +313,7 @@ private BitDateRangePickerValue? timeZoneDateRange2 = new();";
 
     private readonly string example16RazorCode = @"
 <BitDateRangePicker Label=""Basic DatePicker"" Standalone />
-<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitDateRangePicker Label=""Disabled"" Disabled Standalone />
 <BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker Standalone />";

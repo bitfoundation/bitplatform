@@ -399,7 +399,7 @@ public partial class BitCollapseDemo
     private bool boundExpanded = true;
     private string changeLog = string.Empty;
     private BitCollapse? collapseRef;
-    private bool collapseEnabled = true;
+    private bool collapseDisabled;
 
     private bool surfaceExpanded = true;
 

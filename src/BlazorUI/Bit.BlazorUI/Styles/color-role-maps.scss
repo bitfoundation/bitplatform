@@ -23,7 +23,10 @@
  * `fg` is the role's color when it is READ on the page's own surfaces rather than filled behind
  * `on` - the text of an outlined or text-only variant. A semantic role reads its own
  * --bit-clr-<role>-fg token (declared once in family-tokens.scss), since its main color is picked
- * to be a fill; a surface role IS a page color already, so its fg is simply its main.
+ * to be a fill. A foreground role (pfg/sfg/tfg) is a text color already, so its fg is simply its
+ * main. A background or border role (pbg/sbg/tbg/pbr/sbr/tbr) is not: its main read as text on the
+ * page is the page's own color (invisible) or a hairline's (far under the 4.5:1 of WCAG 1.4.3), so
+ * its fg is its on color, the text that role is already paired with.
  *
  * `tint` is the role laid over a surface as a faint wash rather than as a fill - the surface of a
  * tinted message, read with `fg` on top of it. A semantic role reads its own --bit-clr-<role>-tint
@@ -189,7 +192,7 @@ $bit-color-roles: (
         dis: $clr-bg-pri-dis,
         dis-text: $clr-bg-pri-dis-text,
         focus: $clr-bg-pri-focus,
-        fg: $clr-bg-pri,
+        fg: $clr-fg-pri,
         tint: color-mix(in srgb, #{$clr-bg-pri} 10%, transparent),
     ),
     sbg: (
@@ -207,7 +210,7 @@ $bit-color-roles: (
         dis: $clr-bg-sec-dis,
         dis-text: $clr-bg-sec-dis-text,
         focus: $clr-bg-sec-focus,
-        fg: $clr-bg-sec,
+        fg: $clr-fg-pri,
         tint: color-mix(in srgb, #{$clr-bg-sec} 10%, transparent),
     ),
     tbg: (
@@ -225,7 +228,7 @@ $bit-color-roles: (
         dis: $clr-bg-ter-dis,
         dis-text: $clr-bg-ter-dis-text,
         focus: $clr-bg-ter-focus,
-        fg: $clr-bg-ter,
+        fg: $clr-fg-pri,
         tint: color-mix(in srgb, #{$clr-bg-ter} 10%, transparent),
     ),
     pfg: (
@@ -297,7 +300,7 @@ $bit-color-roles: (
         dis: $clr-brd-pri-dis,
         dis-text: $clr-brd-pri-dis-text,
         focus: $clr-brd-pri-focus,
-        fg: $clr-brd-pri,
+        fg: $clr-fg-pri,
         tint: color-mix(in srgb, #{$clr-brd-pri} 10%, transparent),
     ),
     sbr: (
@@ -315,7 +318,7 @@ $bit-color-roles: (
         dis: $clr-brd-sec-dis,
         dis-text: $clr-brd-sec-dis-text,
         focus: $clr-brd-sec-focus,
-        fg: $clr-brd-sec,
+        fg: $clr-fg-pri,
         tint: color-mix(in srgb, #{$clr-brd-sec} 10%, transparent),
     ),
     tbr: (
@@ -333,7 +336,7 @@ $bit-color-roles: (
         dis: $clr-brd-ter-dis,
         dis-text: $clr-brd-ter-dis-text,
         focus: $clr-brd-ter-focus,
-        fg: $clr-brd-ter,
+        fg: $clr-fg-pri,
         tint: color-mix(in srgb, #{$clr-brd-ter} 10%, transparent),
     ),
 );

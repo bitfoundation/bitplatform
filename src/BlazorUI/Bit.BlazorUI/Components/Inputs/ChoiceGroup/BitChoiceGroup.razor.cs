@@ -154,18 +154,21 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     /// <summary>
     /// The position of the content of each item relative to its radio circle. The default is
-    /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
+    /// <see cref="BitPlacement.End"/>, which renders the circle first and the content after it.
     /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
     /// </summary>
     /// <remarks>
     /// Replaces the removed Reversed parameter, which only offered the two horizontal positions.
     /// Migrate an existing <c>Reversed="true"</c> (in either layout) to
-    /// <c>LabelPosition="BitLabelPosition.Start"</c>; <c>Reversed="false"</c> was the default and needs
+    /// <c>LabelPlacement="BitPlacement.Start"</c>; <c>Reversed="false"</c> was the default and needs
     /// no replacement. A binding of the form <c>Reversed="@flag"</c> becomes
-    /// <c>LabelPosition="@(flag ? BitLabelPosition.Start : BitLabelPosition.End)"</c>.
+    /// <c>LabelPlacement="@(flag ? BitPlacement.Start : BitPlacement.End)"</c>.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Custom RenderFragment for the label of the ChoiceGroup.
@@ -212,7 +215,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Stretches the label of each item over the full width of its row and spreads its content, which puts
     /// the circle at the far edge of the row instead of right beside the item text. Combined with
-    /// <see cref="FullWidth"/> and <see cref="BitLabelPosition.Start"/> it produces the text-at-the-start,
+    /// <see cref="FullWidth"/> and <see cref="BitPlacement.Start"/> it produces the text-at-the-start,
     /// circle-at-the-end list found in settings pages. The card variants stretch their item labels already,
     /// so this only adds the spreading to them; items rendered as image or icon tiles lay their own content
     /// out and are not affected.
@@ -420,12 +423,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-chg-ltp",
-            BitLabelPosition.Bottom => "bit-chg-lbm",
-            BitLabelPosition.Start => "bit-chg-lst",
-            BitLabelPosition.End => "bit-chg-led",
+            BitPlacement.Top => "bit-chg-ltp",
+            BitPlacement.Bottom => "bit-chg-lbm",
+            BitPlacement.Start => "bit-chg-lst",
+            BitPlacement.End => "bit-chg-led",
             _ => "bit-chg-led"
         });
 
@@ -510,7 +513,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // Follows the required asterisk the label shows, which a disabled group drops: a disabled field is
     // neither submitted nor validated, so announcing it as required would say the opposite of what the
     // label shows and of what the form does with it.
-    internal bool IsRequired => IsEnabled && Required;
+    internal bool IsRequired => Disabled is false && Required;
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
     // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in
@@ -553,7 +556,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             // focus at some later render, when it happens to become interactive.
             _autoFocusDone = true;
 
-            if (ReadOnly || GetIsItemEnabled(item) is false) return;
+            if (ReadOnly || GetIsItemDisabled(item)) return;
 
             try
             {
@@ -574,7 +577,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         {
             _inputTargetDirty = false;
             _inputTargetItem = _items.FirstOrDefault(GetIsCheckedItem)
-                            ?? _items.FirstOrDefault(GetIsItemEnabled)
+                            ?? _items.FirstOrDefault(i => GetIsItemDisabled(i) is false)
                             ?? _items.FirstOrDefault();
         }
 
@@ -595,14 +598,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal async Task HandleClick(TItem item)
     {
-        if (ReadOnly || GetIsItemEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemDisabled(item)) return;
 
         await OnClick.InvokeAsync(item);
     }
 
     internal void HandleChange(TItem item)
     {
-        if (ReadOnly || GetIsItemEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemDisabled(item)) return;
 
         CurrentValue = GetValue(item);
 
@@ -668,7 +671,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         // Last, so a disabled checked item ends up looking disabled: an inline declaration list is resolved
         // in source order, and this is the state that says the item cannot be interacted with at all.
-        if (GetIsItemEnabled(item) is false && (Styles?.ItemDisabled.HasValue() ?? false))
+        if (GetIsItemDisabled(item) && (Styles?.ItemDisabled.HasValue() ?? false))
         {
             styles.Add(Styles.ItemDisabled!);
         }
@@ -704,7 +707,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             }
         }
 
-        if (GetIsItemEnabled(item) is false)
+        if (GetIsItemDisabled(item))
         {
             classes.Add("bit-chg-ids");
 
@@ -783,30 +786,30 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     }
 
     /// <summary>
-    /// An item is only interactive when both the ChoiceGroup and the item itself are enabled.
+    /// An item is disabled when either the ChoiceGroup or the item itself is disabled.
     /// </summary>
-    internal bool GetIsItemEnabled(TItem item) => IsEnabled && GetIsEnabled(item);
+    internal bool GetIsItemDisabled(TItem item) => Disabled || GetIsDisabled(item);
 
-    internal bool GetIsEnabled(TItem item)
+    internal bool GetIsDisabled(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.IsEnabled;
+            return choiceGroupItem.IsDisabled;
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            return choiceGroupOption.IsEnabled;
+            return choiceGroupOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
-        if (NameSelectors.IsEnabled.Selector is not null)
+        if (NameSelectors.IsDisabled.Selector is not null)
         {
-            return NameSelectors.IsEnabled.Selector!(item);
+            return NameSelectors.IsDisabled.Selector!(item);
         }
 
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+        return item.GetValueFromProperty(NameSelectors.IsDisabled.Name, false);
     }
 
     internal BitIconInfo? GetIcon(TItem item)

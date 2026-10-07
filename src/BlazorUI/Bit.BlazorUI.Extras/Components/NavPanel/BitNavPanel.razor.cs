@@ -402,11 +402,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// The edge the off-canvas drawer of a small screen comes from, and the side it is docked to while it
-    /// is open. The default is the starting edge of the text direction.
+    /// is open. Start and End are the honoured values; they are the logical edges, so they follow the reading
+    /// direction. It defaults to Start.
     /// It has no effect on a wide screen, where the panel is a column in the normal flow of the page.
     /// </summary>
+    /// <remarks>
+    /// Every other value (Top, Bottom, Left, Right, Center and the two combined values) names no edge the
+    /// drawer is docked to and renders the default Start.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitNavPanelPosition Position { get; set; }
+    public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// The way to render nav items.
@@ -665,7 +670,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
         ClassBuilder.Register(() => NoPad ? "bit-npn-npd" : string.Empty);
         ClassBuilder.Register(() => ExpandOnHover ? "bit-npn-eoh" : string.Empty);
-        ClassBuilder.Register(() => Position is BitNavPanelPosition.End ? "bit-npn-end" : string.Empty);
+        ClassBuilder.Register(() => Placement is BitPlacement.End ? "bit-npn-end" : string.Empty);
         ClassBuilder.Register(() => StickyEnds ? "bit-npn-ste" : string.Empty);
         ClassBuilder.Register(() => _ShapeClass);
 
@@ -855,14 +860,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOverlayClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await ClosePanel();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.Key is not "Escape") return;
 
         // The first Escape empties an active search - which is what the search box does on its own when the
@@ -1093,7 +1098,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         if (IsOpen is false) return;
 
         // The swipe that closes the drawer goes towards the edge the drawer came from.
-        if (args.Direction == (_IsDockedAtEnd ? BitSwipeDirection.Right : BitSwipeDirection.Left))
+        if (args.Direction == (_IsDockedAtEnd ? BitPlacement.Right : BitPlacement.Left))
         {
             _diffXPanel = 0;
             await ClosePanel();
@@ -1143,9 +1148,10 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // markup that lays the panel out, and the two focus moves that go to what that markup put on screen.
     private bool _IsToggled => (NoToggle is false) && IsToggled && (ExpandOnHover is false || (_isHovered is false && _isFocused is false));
 
-    // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The position is
-    // expressed in the text direction, so the End of a right-to-left layout is the left of the screen.
-    private bool _IsDockedAtEnd => (Position is BitNavPanelPosition.End) != (Dir is BitDir.Rtl);
+    // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The placement is
+    // expressed in the text direction, so the End of a right-to-left layout is the left of the screen; every
+    // value but End docks it at the Start.
+    private bool _IsDockedAtEnd => (Placement is BitPlacement.End) != (Dir is BitDir.Rtl);
 
     // The class that gives the panel its shape. Once the browser has reported the screen it is the shape itself
     // (the drawer or the column), so the stylesheet and everything decided in C# - the dialog role, the page held
@@ -1177,7 +1183,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     // The panel is a modal drawer while it covers the page: only on a small screen, only while it is open,
     // and only with the overlay that is what makes it cover anything at all.
-    private bool _IsModalDrawer => _isDrawer && IsOpen && NoOverlay is false && IsEnabled;
+    private bool _IsModalDrawer => _isDrawer && IsOpen && NoOverlay is false && Disabled is false;
 
     // The modal drawer that also holds the focus inside itself: the one that reports itself as aria-modal, takes
     // the focus as it opens, and is made programmatically focusable to take it.

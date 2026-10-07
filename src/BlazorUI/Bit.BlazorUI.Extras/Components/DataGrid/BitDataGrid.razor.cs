@@ -178,19 +178,6 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     [Parameter] public bool ShowFooter { get; set; }
 
     /// <summary>
-    /// The text direction of the grid. Superseded by <see cref="BitComponentBase.Dir"/>, which it sets;
-    /// kept so markup written against the earlier name keeps rendering instead of failing to bind.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    [Obsolete("Use Dir instead.")]
-    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-    public BitDir Direction
-    {
-        get => Dir ?? BitDir.Ltr;
-        set => Dir = value;
-    }
-
-    /// <summary>
     /// The params object a <see cref="BitParams"/> ancestor shares with every BitDataGrid below it, whose values apply
     /// wherever the grid does not set the parameter itself.
     /// </summary>
@@ -318,7 +305,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// <summary>How rows are selected: not at all, by a row click (Single), or by a checkbox column with a select-all
     /// box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
     /// focused row.</summary>
-    [Parameter] public BitDataGridSelectionMode SelectionMode { get; set; } = BitDataGridSelectionMode.None;
+    [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
 
     /// <summary>The selected rows, as a two-way bindable list. Tracked by <see cref="KeyField"/>, so a selection
     /// survives a refresh that hands the grid new instances of the same rows.</summary>
@@ -365,7 +352,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 20, 50, 100 };
 
     /// <summary>Where the pager renders: below the rows (the default), above them, or both.</summary>
-    [Parameter] public BitDataGridPagerPosition PagerPosition { get; set; } = BitDataGridPagerPosition.Bottom;
+    [Parameter] public BitPlacement PagerPlacement { get; set; } = BitPlacement.Bottom;
 
     // --------------------------------------------------------- Virtualization
     /// <summary>
@@ -601,7 +588,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     private bool _dataInitialized;
     private IEnumerable<TItem>? _lastItems;
     private int _lastPageSize;
-    private BitDataGridSelectionMode? _lastSelectionMode;
+    private BitSelectionMode? _lastSelectionMode;
 
     // editing
     private TItem? _editItem;
@@ -2686,7 +2673,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal void ToggleGroup(BitDataGridGroup<TItem> group)
     {
-        if (!IsEnabled) return;
+        if (Disabled) return;
 
         if (!_groupStateOverrides.Add(group.Path)) _groupStateOverrides.Remove(group.Path);
         _groupExpansionVersion++;
@@ -2722,7 +2709,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     }
 
     // ---------------------------------------------------------- Selection
-    internal bool SelectionEnabled => SelectionMode != BitDataGridSelectionMode.None;
+    internal bool SelectionEnabled => SelectionMode != BitSelectionMode.None;
 
     /// <summary>True when the given row is allowed to be selected.</summary>
     internal bool CanSelectRow(TItem item) => IsRowSelectionDisabled is null || !IsRowSelectionDisabled(item);
@@ -2751,10 +2738,10 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         _rangeSelectPendingKey = null;
         range ??= pendingKey is not null && Equals(pendingKey, GetKey(item));
 
-        if (SelectionMode == BitDataGridSelectionMode.None) return;
+        if (SelectionMode == BitSelectionMode.None) return;
         if (!CanSelectRow(item)) return;
         var selected = value ?? !_selected.Contains(item);
-        if (SelectionMode == BitDataGridSelectionMode.Single)
+        if (SelectionMode == BitSelectionMode.Single)
         {
             _selected.Clear();
             if (selected) _selected.Add(item);
@@ -2806,7 +2793,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// the loaded rows in server, queryable and infinite modes).</summary>
     public async Task SelectAllAsync()
     {
-        if (SelectionMode != BitDataGridSelectionMode.Multiple) return;
+        if (SelectionMode != BitSelectionMode.Multiple) return;
         foreach (var item in _view)
         {
             if (CanSelectRow(item)) _selected.Add(item);
@@ -2927,18 +2914,18 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     private void ApplyControlledSelection()
     {
         _selected.Clear();
-        if (SelectedItems is null || SelectionMode == BitDataGridSelectionMode.None) return;
+        if (SelectedItems is null || SelectionMode == BitSelectionMode.None) return;
         foreach (var i in SelectedItems)
         {
             _selected.Add(i);
-            if (SelectionMode == BitDataGridSelectionMode.Single) break;
+            if (SelectionMode == BitSelectionMode.Single) break;
         }
     }
 
     internal async Task HandleRowClickAsync(TItem item)
     {
         // A disabled grid answers no pointer on its rows, its own events included, the way a disabled button raises no click.
-        if (!IsEnabled) return;
+        if (Disabled) return;
 
         if (OnRowClick.HasDelegate) await OnRowClick.InvokeAsync(item);
 
@@ -2946,7 +2933,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // expanding a detail row would shift the editors out from under the pointer mid-edit.
         if (_editItem is not null) return;
 
-        if (SelectionMode == BitDataGridSelectionMode.Single)
+        if (SelectionMode == BitSelectionMode.Single)
             await ToggleRowSelectionAsync(item, true);
 
         if (ExpandDetailOnRowClick)
@@ -2955,7 +2942,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal async Task HandleRowDoubleClickAsync(TItem item)
     {
-        if (!IsEnabled) return;
+        if (Disabled) return;
 
         if (OnRowDoubleClick.HasDelegate) await OnRowDoubleClick.InvokeAsync(item);
     }
@@ -3060,7 +3047,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// <summary>Whether cells take the focus and the keyboard: <see cref="CellNavigation"/>, which an editable
     /// grid in Cell mode always has - a cell that only a double-click could open would shut out the keyboard - and so
     /// does a grid whose rows are selected by a click (Single), which has no checkbox the keyboard could use instead.</summary>
-    internal bool CellNavigationActive => CellNavigation || (Editable && IsCellEditMode) || SelectionMode == BitDataGridSelectionMode.Single;
+    internal bool CellNavigationActive => CellNavigation || (Editable && IsCellEditMode) || SelectionMode == BitSelectionMode.Single;
 
     /// <summary>Whether this cell shows its editor: every cell of the edited row in Row mode, only the
     /// opened one in Cell mode.</summary>
@@ -3115,7 +3102,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// (gathered by BitDataGrid.ts while it opens) in place of the value, the way a spreadsheet cell does.</param>
     internal async Task BeginEditAtAsync(TItem item, BitDataGridColumn<TItem> column, bool typed = false)
     {
-        if (!IsEnabled || !ColumnEditable(column)) return;
+        if (Disabled || !ColumnEditable(column)) return;
 
         // Moving on from an open edit commits it, in either mode, so a key pressed on another row (Enter, F2 or the
         // first character typed into it) never throws away what was typed there - and a commit refused by a
@@ -3142,7 +3129,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// boxes to type into), open with Enter or F2 instead.
     /// </summary>
     internal bool OpensEditorByTyping(BitDataGridColumn<TItem> column)
-        => IsEnabled && CellNavigationActive && column.EditTemplate is null && ColumnEditable(column)
+        => Disabled is false && CellNavigationActive && column.EditTemplate is null && ColumnEditable(column)
         && column.EffectiveDataType is BitDataGridColumnDataType.Text or BitDataGridColumnDataType.Number;
 
     // The keys that start an edit by typing: a printable character (Space is the selection's), or Backspace, which
@@ -3159,7 +3146,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // it held moves into the row's first editor instead of dropping to the document.
     internal void BeginEditFromCommand(TItem item)
     {
-        if (!IsEnabled) return;
+        if (Disabled) return;
         BeginEdit(item);
         _editorFocusRequest = string.Empty;
     }
@@ -3684,12 +3671,12 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     internal bool ColumnWrapsText(BitDataGridColumn<TItem> column) => !Virtualize && (column.WrapText ?? WrapCellText);
 
     // A disabled grid offers neither pointer gesture: the resizer is not rendered and no header is draggable.
-    internal bool ColumnResizable(BitDataGridColumn<TItem> column) => IsEnabled && (column.Resizable ?? Resizable);
-    internal bool ColumnReorderable(BitDataGridColumn<TItem> column) => IsEnabled && (column.Reorderable ?? Reorderable);
+    internal bool ColumnResizable(BitDataGridColumn<TItem> column) => Disabled is false && (column.Resizable ?? Resizable);
+    internal bool ColumnReorderable(BitDataGridColumn<TItem> column) => Disabled is false && (column.Reorderable ?? Reorderable);
 
     /// <summary>Whether the header of the column renders as the button that sorts it: a disabled grid keeps the
     /// sort it shows (aria-sort included) but offers no way to change it.</summary>
-    internal bool HeaderSortable(BitDataGridColumn<TItem> column) => IsEnabled && ColumnSortable(column);
+    internal bool HeaderSortable(BitDataGridColumn<TItem> column) => Disabled is false && ColumnSortable(column);
 
     // ----------------------------------------------------- Row reordering
     // Row reordering moves items by index within the bound source list (see DropRowAsync). That is only
@@ -3711,7 +3698,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal void StartRowDrag(TItem row)
     {
-        if (!RowReorderEnabled || !IsEnabled) return;
+        if (!RowReorderEnabled || Disabled) return;
         _dragRow = row;
     }
 
@@ -3720,7 +3707,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     [JSInvokable]
     public async Task OnPointerRowDropAsync(int fromIndex, int toIndex)
     {
-        if (!RowReorderEnabled || !IsEnabled) return;
+        if (!RowReorderEnabled || Disabled) return;
         if (!TryGetRowAtDataIndex(fromIndex, out var from) || !TryGetRowAtDataIndex(toIndex, out var to)) return;
         _dragRow = from;
         await DropRowAsync(to);
@@ -3758,7 +3745,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// </summary>
     internal async Task MoveRowAsync(TItem row, int delta)
     {
-        if (!RowReorderEnabled || !IsEnabled) return;
+        if (!RowReorderEnabled || Disabled) return;
 
         // Confine neighbor selection to the current page slice so keyboard reordering never jumps across
         // pages. With no sort/filter/group active (RowReorderEnabled requires that), _pageItems is either
@@ -3780,7 +3767,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal async Task DropRowAsync(TItem target)
     {
-        if (!RowReorderEnabled || !IsEnabled) { _dragRow = default; return; }
+        if (!RowReorderEnabled || Disabled) { _dragRow = default; return; }
         if (_dragRow is null || KeyEquals(_dragRow, target)) { _dragRow = default; return; }
 
         var dragged = _dragRow;
@@ -3825,7 +3812,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // -------------------------------------------------------- Cell events
     internal async Task HandleCellClickAsync(BitDataGridColumn<TItem> column, TItem item, MouseEventArgs e)
     {
-        if (!IsEnabled) return;
+        if (Disabled) return;
 
         if (OnCellClick.HasDelegate)
             await OnCellClick.InvokeAsync(MakeCellArgs(column, item, e));
@@ -3833,7 +3820,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal async Task HandleCellDoubleClickAsync(BitDataGridColumn<TItem> column, TItem item, MouseEventArgs e)
     {
-        if (!IsEnabled) return;
+        if (Disabled) return;
 
         if (OnCellDoubleClick.HasDelegate)
             await OnCellDoubleClick.InvokeAsync(MakeCellArgs(column, item, e));
@@ -3844,7 +3831,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal async Task HandleCellContextMenuAsync(BitDataGridColumn<TItem> column, TItem item, MouseEventArgs e)
     {
-        if (!IsEnabled) return;
+        if (Disabled) return;
 
         if (OnCellContextMenu.HasDelegate)
             await OnCellContextMenu.InvokeAsync(MakeCellArgs(column, item, e));
@@ -3959,7 +3946,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
                 await CopyToClipboardAsync(item);
                 return;
             }
-            if ((e.Key == "a" || e.Key == "A") && SelectionMode == BitDataGridSelectionMode.Multiple && IsEnabled)
+            if ((e.Key == "a" || e.Key == "A") && SelectionMode == BitSelectionMode.Multiple && Disabled is false)
             {
                 await SelectAllAsync();
                 return;
@@ -3972,7 +3959,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // began elsewhere has no say in what the keyboard does.
         if (e.Key == " " && SelectionEnabled)
         {
-            if (IsEnabled) await ToggleRowSelectionAsync(item, range: e.ShiftKey);
+            if (Disabled is false) await ToggleRowSelectionAsync(item, range: e.ShiftKey);
             return;
         }
 
@@ -3985,7 +3972,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         }
 
         // A disabled grid can still be read cell by cell - and copied - but nothing it shows can be changed from it.
-        if (!IsEnabled && e.Key is "Enter" or "F2" or "Delete") return;
+        if (Disabled && e.Key is "Enter" or "F2" or "Delete") return;
 
         int row = rowIdx, col = colIndex;
         // Only the horizontal arrows depend on the direction, so only they pay for reading it.
@@ -3994,7 +3981,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // A treegrid opens and closes its nodes from the cell that holds their toggle, as the APG treegrid does: the
         // forward arrow expands a collapsed node, the backward one collapses an expanded node or else moves up to the
         // parent row. Past that the arrows move between cells as anywhere else, so the toggle needs no tab stop.
-        if (IsTreeMode && IsEnabled && colIndex == 0 && e.Key is "ArrowLeft" or "ArrowRight" && !e.CtrlKey && !e.AltKey && !e.MetaKey)
+        if (IsTreeMode && Disabled is false && colIndex == 0 && e.Key is "ArrowLeft" or "ArrowRight" && !e.CtrlKey && !e.AltKey && !e.MetaKey)
         {
             var forward = (e.Key == "ArrowRight") != rtl;
             if (TreeHasChildren(item) && IsTreeRowExpanded(item) != forward && !IsTreeNodeLoading(item))
@@ -5022,7 +5009,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     }
 
     // ----------------------------------------------------- Layout helpers
-    internal bool HasSelectColumn => SelectionMode == BitDataGridSelectionMode.Multiple;
+    internal bool HasSelectColumn => SelectionMode == BitSelectionMode.Multiple;
 
     /// <summary>True when rows can render expandable detail content.</summary>
     internal bool HasDetailTemplate => DetailTemplate is not null;
@@ -5163,10 +5150,14 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    internal static string AlignClass(BitDataGridColumnAlign a) => a switch
+    // Start needs no class: a cell is laid out from its leading edge already. Everything the column cannot
+    // express - the justification and cascade keywords of BitTextAlign - falls through to that same default.
+    internal static string AlignClass(BitTextAlign a) => a switch
     {
-        BitDataGridColumnAlign.Center => "bit-dtg-center",
-        BitDataGridColumnAlign.Right => "bit-dtg-right",
+        BitTextAlign.Center => "bit-dtg-center",
+        BitTextAlign.End => "bit-dtg-end",
+        BitTextAlign.Left => "bit-dtg-left",
+        BitTextAlign.Right => "bit-dtg-right",
         _ => ""
     };
 

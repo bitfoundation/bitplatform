@@ -76,11 +76,11 @@ public class BitSeparatorParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitSeparatorParams
         {
-            AlignContent = BitSeparatorAlignContent.Start,
+            AlignContent = BitPlacement.Start,
             Background = BitColorKind.Secondary,
             Border = BitColorKind.Tertiary,
             Color = BitColor.Error,
-            LineStyle = BitSeparatorLineStyle.Dashed,
+            LineStyle = BitLineStyle.Dashed,
             Size = BitSize.Large,
             Vertical = true,
             Classes = new() { Root = "cascaded-root", Content = "cascaded-content" },
@@ -138,7 +138,7 @@ public class BitSeparatorParamsTests : BunitTestContext
     [TestMethod]
     public void BitSeparatorShouldApplyCascadedBaseParameters()
     {
-        var component = RenderWithParams(new BitSeparatorParams { Dir = BitDir.Rtl, IsEnabled = false, Class = "cascaded" });
+        var component = RenderWithParams(new BitSeparatorParams { Dir = BitDir.Rtl, Disabled = true, Class = "cascaded" });
 
         var root = component.Find(".bit-spr");
 
@@ -153,7 +153,7 @@ public class BitSeparatorParamsTests : BunitTestContext
         var component = RenderWithParams(new BitSeparatorParams
         {
             Color = BitColor.Error,
-            LineStyle = BitSeparatorLineStyle.Dashed,
+            LineStyle = BitLineStyle.Dashed,
             Vertical = true,
             Decorative = true,
             Element = "li",
@@ -161,7 +161,7 @@ public class BitSeparatorParamsTests : BunitTestContext
         }, builder =>
         {
             builder.AddAttribute(1, nameof(BitSeparator.Color), (BitColor?)BitColor.Success);
-            builder.AddAttribute(2, nameof(BitSeparator.LineStyle), (BitSeparatorLineStyle?)BitSeparatorLineStyle.Solid);
+            builder.AddAttribute(2, nameof(BitSeparator.LineStyle), (BitLineStyle?)BitLineStyle.Solid);
             builder.AddAttribute(3, nameof(BitSeparator.Vertical), false);
             builder.AddAttribute(4, nameof(BitSeparator.Decorative), false);
             builder.AddAttribute(5, nameof(BitSeparator.Element), "section");

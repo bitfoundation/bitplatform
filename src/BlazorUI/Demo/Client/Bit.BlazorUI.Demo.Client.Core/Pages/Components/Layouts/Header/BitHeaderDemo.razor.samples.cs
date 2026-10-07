@@ -7,7 +7,7 @@ public partial class BitHeaderDemo
 
 <BitHeader Height=""80"">I'm a Header with a fixed 80px height</BitHeader>
 
-<BitHeader IsEnabled=""false"">I'm a disabled Header</BitHeader>";
+<BitHeader Disabled>I'm a disabled Header</BitHeader>";
 
     private readonly string example2RazorCode = @"
 <BitHeader Variant=""BitVariant.Fill"" Color=""BitColor.Info"">Fill</BitHeader>

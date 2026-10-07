@@ -1,6 +1,6 @@
 #Requires -Version 7.4
-# Makes a project restore every Bit.* package from the nupkg-files artifact of the latest successful
-# prerelease.nuget.org.yml run. See action.yml.
+# Makes a project restore every Bit.* package from the newest nupkg-files artifact of the
+# prerelease.nuget.org.yml runs. See action.yml.
 param(
     [Parameter(Mandatory)] [string] $ProjectFolder, # Of the nuget.config to use; created when missing.
     [Parameter(Mandatory)] [string] $Repository,
@@ -10,15 +10,18 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 
-# The last one to finish, so a re-run counts; with --status success the API is not newest first.
-$run = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha,url,conclusion,updatedAt |
-    ConvertFrom-Json |
-    Where-Object conclusion -eq 'success' |
-    Sort-Object { [datetimeoffset]$_.updatedAt } -Descending |
+$runs = gh run list --repo $Repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha,url |
+    ConvertFrom-Json
+
+$artifact = (gh api "repos/$Repository/actions/artifacts?name=nupkg-files&per_page=100" | ConvertFrom-Json).artifacts |
+    Where-Object { -not $_.expired -and $_.workflow_run.id -in $runs.databaseId } |
+    Sort-Object { [datetimeoffset]$_.created_at } -Descending |
     Select-Object -First 1
 
+$run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
+
 if (-not $run) {
-    throw "$Repository has no successful run of prerelease.nuget.org.yml to take the packages from."
+    throw "$Repository has no run of prerelease.nuget.org.yml with an unexpired nupkg-files artifact to take the packages from."
 }
 
 New-Item -ItemType Directory -Force $PackagesFolder | Out-Null

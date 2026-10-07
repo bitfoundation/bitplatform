@@ -16,7 +16,7 @@
         <div>
             The picker is a read-only text field that opens a clock callout when it is clicked. <b>Label</b> names it,
             <b>Placeholder</b> fills the empty field, <b>Required</b> marks it with an asterisk and reports the
-            field as required to assistive technology, <b>IsEnabled</b> turns it off, and <b>IconName</b> replaces
+            field as required to assistive technology, <b>Disabled</b> turns it off, and <b>IconName</b> replaces
             the clock glyph that trails the field. Enforcing the requirement is the job of the validator the
             picker is bound through - see the Validation sample.
         </div>
@@ -24,7 +24,7 @@
         <div class="example-content">
             <BitCircularTimePicker Label="Basic CircularTimePicker" />
             <br /><br />
-            <BitCircularTimePicker Label="Disabled" IsEnabled="false" />
+            <BitCircularTimePicker Label="Disabled" Disabled />
             <br /><br />
             <BitCircularTimePicker Label="Required" Required />
             <br /><br />
@@ -47,7 +47,7 @@
         <div class="example-content-standalone">
             <BitCircularTimePicker Label="Basic CircularTimePicker" Standalone />
             <br /><br />
-            <BitCircularTimePicker Label="Disabled" IsEnabled="false" Standalone />
+            <BitCircularTimePicker Label="Disabled" Disabled Standalone />
         </div>
     </DemoExample>
 
@@ -329,7 +329,7 @@
         <div>
             <b>Underlined</b> trades the box of the field for a single rule under it, <b>HasBorder</b> is on by
             default and set to false takes the box away altogether - for a picker that sits inside a container of
-            its own - and <b>IconLocation</b> moves the clock glyph to the leading edge.
+            its own - and <b>IconPlacement</b> moves the clock glyph to the leading edge.
         </div>
         <br />
         <div class="example-content">
@@ -337,7 +337,7 @@
             <br /><br />
             <BitCircularTimePicker Label="No border" HasBorder="false" Placeholder="Select a time" />
             <br /><br />
-            <BitCircularTimePicker Label="Icon on the left" IconLocation="BitIconLocation.Left"
+            <BitCircularTimePicker Label="Icon on the left" IconPlacement="BitPlacement.Start"
                                    Placeholder="Select a time" />
         </div>
     </DemoExample>
@@ -359,7 +359,7 @@
                 </LabelTemplate>
             </BitCircularTimePicker>
             <br /><br /><br />
-            <BitCircularTimePicker Label="Custom left-handed icon" IconLocation="BitIconLocation.Left"
+            <BitCircularTimePicker Label="Custom left-handed icon" IconPlacement="BitPlacement.Start"
                                    Placeholder="Select a time">
                 <IconTemplate>
                     <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />

@@ -36,9 +36,9 @@ public partial class BitCalloutDemo
     </Content>
 </BitCallout>
 
-<BitCallout IsEnabled=""false"">
+<BitCallout Disabled>
     <Anchor>
-        <BitButton IsEnabled=""false"">Disabled</BitButton>
+        <BitButton Disabled>Disabled</BitButton>
     </Anchor>
     <Content>
         <div class=""callout-content"">Never shown.</div>
@@ -185,16 +185,16 @@ private string contextAction = ""none"";";
     <BitChoiceGroupOption Text=""Start"" Value=""@(""Start"")"" />
     <BitChoiceGroupOption Text=""End"" Value=""@(""End"")"" />
 </BitChoiceGroup>
-<BitChoiceGroup Horizontal Label=""Alignment"" TItem=""BitChoiceGroupOption<BitCalloutAlignment>"" TValue=""BitCalloutAlignment"" @bind-Value=""placementAlignment"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitCalloutAlignment.Start"" />
-    <BitChoiceGroupOption Text=""Center"" Value=""BitCalloutAlignment.Center"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitCalloutAlignment.End"" />
+<BitChoiceGroup Horizontal Label=""Alignment"" TItem=""BitChoiceGroupOption<BitPlacement>"" TValue=""BitPlacement"" @bind-Value=""placementAlignment"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitPlacement.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitPlacement.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitPlacement.End"" />
 </BitChoiceGroup>
 <BitNumberField Label=""Gap"" @bind-Value=""placementGap"" Min=""0"" Max=""64"" Style=""max-width:8rem"" />
 <BitNumberField Label=""AlignmentOffset"" @bind-Value=""placementOffset"" Min=""0"" Max=""64"" Style=""max-width:8rem"" />
 <BitCheckbox Label=""NoFlip"" @bind-Value=""placementNoFlip"" />
 
-<BitCallout Side=""PlacementSide"" Alignment=""placementAlignment"" Gap=""placementGap"" AlignmentOffset=""placementOffset"" NoFlip=""placementNoFlip"">
+<BitCallout Placement=""PlacementSide"" Alignment=""placementAlignment"" Gap=""placementGap"" AlignmentOffset=""placementOffset"" NoFlip=""placementNoFlip"">
     <Anchor>
         <BitButton>A wide anchor to place against</BitButton>
     </Anchor>
@@ -232,7 +232,7 @@ private string contextAction = ""none"";";
     </Content>
 </BitCallout>
 
-<BitCallout @ref=""callout4"" Side=""BitCalloutSide.Top"" Gap=""8"">
+<BitCallout @ref=""callout4"" Placement=""BitPlacement.Top"" Gap=""8"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Reposition</BitButton>
     </Anchor>
@@ -250,12 +250,12 @@ private string contextAction = ""none"";";
 </BitCallout>";
     private readonly string example7CsharpCode = @"
 private string placementSide = ""Auto"";
-private BitCalloutAlignment placementAlignment = BitCalloutAlignment.Start;
+private BitPlacement placementAlignment = BitPlacement.Start;
 private int placementGap = 8;
 private int placementOffset;
 private bool placementNoFlip;
 
-private BitCalloutSide? PlacementSide => Enum.TryParse<BitCalloutSide>(placementSide, out var side) ? side : null;
+private BitPlacement? PlacementSide => Enum.TryParse<BitPlacement>(placementSide, out var side) ? side : null;
 
 private BitCallout callout4 = default!;
 private int repositionRows = 2;
@@ -320,7 +320,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
     </Content>
 </BitCallout>
 
-<BitCallout ShowArrow Gap=""8"" Side=""BitCalloutSide.End"" Border=""BitColorKind.Secondary"" Background=""BitColorKind.Secondary"">
+<BitCallout ShowArrow Gap=""8"" Placement=""BitPlacement.End"" Border=""BitColorKind.Secondary"" Background=""BitColorKind.Secondary"">
     <Anchor>
         <BitButton Variant=""BitVariant.Outline"">Beside, with a border</BitButton>
     </Anchor>
@@ -464,7 +464,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 </BitCallout>";
 
     private readonly string example12RazorCode = @"
-<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitPanelPosition.End"">
+<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPlacement=""BitPlacement.End"">
     <Anchor>
         <BitButton>End panel</BitButton>
     </Anchor>
@@ -479,7 +479,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
     </Content>
 </BitCallout>
 
-<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPosition=""BitPanelPosition.Start"">
+<BitCallout ResponsiveMode=""BitResponsiveMode.Panel"" PanelPlacement=""BitPlacement.Start"">
     <Anchor>
         <BitButton>Start panel</BitButton>
     </Anchor>
@@ -583,7 +583,7 @@ private BitCallout modalCallout;";
                 <BitCheckbox Label=""Active"" />
                 <BitCheckbox Label=""Archived"" />
 
-                <BitCallout ShowArrow Gap=""8"" Side=""BitCalloutSide.End"">
+                <BitCallout ShowArrow Gap=""8"" Placement=""BitPlacement.End"">
                     <Anchor>
                         <BitButton Variant=""BitVariant.Outline"">More options</BitButton>
                     </Anchor>
@@ -592,7 +592,7 @@ private BitCallout modalCallout;";
                             <BitStack Gap=""0.25rem"">
                                 <BitText>The panel behind is still open.</BitText>
 
-                                <BitCallout ShowArrow Gap=""8"" AutoClose Side=""BitCalloutSide.End"">
+                                <BitCallout ShowArrow Gap=""8"" AutoClose Placement=""BitPlacement.End"">
                                     <Anchor>
                                         <BitButton Variant=""BitVariant.Text"">One more level</BitButton>
                                     </Anchor>
@@ -671,9 +671,9 @@ private int dismissCount;";
         </Content>
     </BitCallout>
 
-    <BitCallout Side=""BitCalloutSide.Bottom"" ShowArrow=""false"">
+    <BitCallout Placement=""BitPlacement.Bottom"" ShowArrow=""false"">
         <Anchor>
-            <BitButton Variant=""BitVariant.Text"">Own Side, no arrow</BitButton>
+            <BitButton Variant=""BitVariant.Text"">Own Placement, no arrow</BitButton>
         </Anchor>
         <Content>
             <div class=""callout-content"">Its own values win.</div>
@@ -696,7 +696,7 @@ private readonly BitCalloutParams[] calloutParams =
     {
         ShowArrow = true,
         Gap = 8,
-        Side = BitCalloutSide.End,
+        Placement = BitPlacement.End,
         Border = BitColorKind.Secondary,
         NoShadow = true,
     }

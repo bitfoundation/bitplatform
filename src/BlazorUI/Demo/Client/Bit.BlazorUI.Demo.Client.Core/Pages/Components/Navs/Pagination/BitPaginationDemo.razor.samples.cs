@@ -7,7 +7,7 @@ public partial class BitPaginationDemo
 
 <BitPagination Count=""5"" DefaultSelectedPage=""3"" />
 
-<BitPagination Count=""5"" DefaultSelectedPage=""3"" IsEnabled=""false"" />";
+<BitPagination Count=""5"" DefaultSelectedPage=""3"" Disabled />";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -281,9 +281,9 @@ private readonly BitPaginationParams[] paginationParams =
 </div>
 
 <div class=""color-row"">
-    <BitPagination IsEnabled=""false"" Count=""5"" />
-    <BitPagination IsEnabled=""false"" Count=""5"" Variant=""BitVariant.Outline"" />
-    <BitPagination IsEnabled=""false"" Count=""5"" Variant=""BitVariant.Text"" />
+    <BitPagination Disabled Count=""5"" />
+    <BitPagination Disabled Count=""5"" Variant=""BitVariant.Outline"" />
+    <BitPagination Disabled Count=""5"" Variant=""BitVariant.Text"" />
 </div>";
 
     private readonly string example17RazorCode = @"

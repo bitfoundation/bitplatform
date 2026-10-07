@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -31,8 +30,6 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <see cref="LabelTemplate"/> gives the component one, so the same wait is never announced twice.
     /// </remarks>
     internal const string DefaultLoadingText = "Loading";
-
-    private const string ObsoleteGeometryMessage = "The loaders are drawn in CSS units now: write an offset as calc(N * var(--bit-ldn-unit)), an 80th of the size, instead of rescaling it in C#.";
 
     /// <summary>
     /// Whether the component is still inside its <see cref="Delay"/> window, and therefore holds its content
@@ -161,9 +158,12 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <remarks>
     /// The Start and End positions follow the direction of the writing and swap sides in a right-to-left
     /// layout, while Top and Bottom stay where they are.
+    /// <br />
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// The custom content of the label of the loading component.
@@ -326,11 +326,11 @@ public abstract class BitLoadingBase : BitComponentBase
                     Label = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
-                case nameof(LabelPosition):
-                    _assignedLoadingParameters.Add(nameof(LabelPosition));
-                    var labelPosition = (BitLabelPosition?)parameter.Value;
-                    if (LabelPosition != labelPosition) ClassBuilder.Reset();
-                    LabelPosition = labelPosition;
+                case nameof(LabelPlacement):
+                    _assignedLoadingParameters.Add(nameof(LabelPlacement));
+                    var labelPlacement = (BitPlacement?)parameter.Value;
+                    if (LabelPlacement != labelPlacement) ClassBuilder.Reset();
+                    LabelPlacement = labelPlacement;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(LabelTemplate):
@@ -559,12 +559,12 @@ public abstract class BitLoadingBase : BitComponentBase
             _ => CustomSize > 0 ? string.Empty : Inline ? "bit-ldn-em" : "bit-ldn-md"
         });
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-ldn-ltp",
-            BitLabelPosition.Bottom => "bit-ldn-lbm",
-            BitLabelPosition.Start => "bit-ldn-lst",
-            BitLabelPosition.End => "bit-ldn-led",
+            BitPlacement.Top => "bit-ldn-ltp",
+            BitPlacement.Bottom => "bit-ldn-lbm",
+            BitPlacement.Start => "bit-ldn-lst",
+            BitPlacement.End => "bit-ldn-led",
             // An inline loader keeps its label on the line it sits in rather than stacking the two.
             _ => Inline ? "bit-ldn-led" : "bit-ldn-ltp"
         });
@@ -617,38 +617,6 @@ public abstract class BitLoadingBase : BitComponentBase
         StyleBuilder.Register(() => Speed > 0 ? $"--bit-ldn-spd:{Speed.Value.ToString(CultureInfo.InvariantCulture)}" : null);
 
         StyleBuilder.Register(() => Styles?.Root);
-    }
-
-    /// <summary>
-    /// The size, in pixels, the drawing of this loader was authored at.
-    /// </summary>
-    [Obsolete(ObsoleteGeometryMessage)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    protected virtual int OriginalSize => 80;
-
-    /// <summary>
-    /// Rescales one of the drawing's authored offsets, measured against <see cref="OriginalSize"/>, to the pixel
-    /// size <see cref="Size"/> or <see cref="CustomSize"/> gives, and formats it for a CSS custom property.
-    /// </summary>
-    /// <remarks>
-    /// Kept for loaders derived outside this library. It cannot follow a size set in CSS - the --bit-Loading-size
-    /// variable, or the 1em of an unsized inline loader - which a calc() against --bit-ldn-unit does.
-    /// </remarks>
-    [Obsolete(ObsoleteGeometryMessage)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    protected string Convert(double value)
-    {
-        var size = Size switch
-        {
-            BitSize.Small => 40,
-            BitSize.Medium => 64,
-            BitSize.Large => 88,
-            _ => CustomSize > 0 ? CustomSize.Value : 64
-        };
-
-#pragma warning disable CS0618 // The obsolete pair is kept together.
-        return Math.Round(value * size / OriginalSize, 4).ToString(CultureInfo.InvariantCulture);
-#pragma warning restore CS0618
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

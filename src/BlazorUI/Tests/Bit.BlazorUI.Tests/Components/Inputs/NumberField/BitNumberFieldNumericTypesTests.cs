@@ -1045,7 +1045,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
 
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnKeyDown, () => keyDowns++);
         });
 

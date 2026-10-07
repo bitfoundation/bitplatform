@@ -69,7 +69,8 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). A caption is read on
 // the page rather than filled behind, so it takes the role's foreground - a warning main is picked to fill a
-// surface and falls under 2:1 as text on white - which for a surface role is its main color anyway.
+// surface and falls under 2:1 as text on white - and a background or border role, the page's own color or a
+// hairline's, reads its on color through it rather than vanishing.
 @each $role, $tokens in $bit-color-roles {
     .bit-lbl-#{$role} {
         color: role($tokens, fg);

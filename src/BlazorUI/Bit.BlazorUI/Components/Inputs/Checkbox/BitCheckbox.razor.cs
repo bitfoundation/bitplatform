@@ -223,8 +223,12 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// The position of the label in regards to the checkbox box.
     /// Takes precedence over <see cref="Reversed"/> when both are set.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
+    /// leave the layout as it is with this unset.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitLabelPosition? LabelPosition { get; set; }
+    public BitPlacement? LabelPlacement { get; set; }
 
     /// <summary>
     /// Used to customize the label for the checkbox.
@@ -385,7 +389,7 @@ public partial class BitCheckbox : BitInputBase<bool>
             // The autofocus attribute is only honoured while the browser is parsing the document, which is
             // never when the markup arrives from an interactive render - so the attribute alone covers the
             // statically rendered page and nothing else. The focus is moved here for the rest.
-            if (AutoFocus && (IsEnabled || AllowDisabledFocus))
+            if (AutoFocus && (Disabled is false || AllowDisabledFocus))
             {
                 try
                 {
@@ -442,12 +446,12 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         ClassBuilder.Register(() => Reversed ? "bit-chb-rvs" : string.Empty);
 
-        ClassBuilder.Register(() => LabelPosition switch
+        ClassBuilder.Register(() => LabelPlacement switch
         {
-            BitLabelPosition.Top => "bit-chb-ltp",
-            BitLabelPosition.Bottom => "bit-chb-lbt",
-            BitLabelPosition.Start => "bit-chb-lst",
-            BitLabelPosition.End => "bit-chb-lnd",
+            BitPlacement.Top => "bit-chb-ltp",
+            BitPlacement.Bottom => "bit-chb-lbt",
+            BitPlacement.Start => "bit-chb-lst",
+            BitPlacement.End => "bit-chb-lnd",
             _ => string.Empty
         });
 
@@ -457,7 +461,7 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         // The asterisk hangs on the label, so a checkbox named only by an AriaLabel has nowhere to put one
         // and says it is required through the native attribute alone.
-        ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-chb-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && HasLabel ? "bit-chb-req" : string.Empty);
 
         ClassBuilder.Register(() => (UncheckedIcon is not null || UncheckedIconName.HasValue()) ? "bit-chb-uci" : string.Empty);
 
@@ -517,7 +521,7 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// three-state checkbox would skip a state, and on any of them would ask <see cref="OnChanging"/> about
     /// a move from a state the checkbox is no longer in.
     /// </remarks>
-    private bool IsInteractive => IsEnabled && ReadOnly is false && IsLoading is false && _isChanging is false;
+    private bool IsInteractive => Disabled is false && ReadOnly is false && IsLoading is false && _isChanging is false;
 
     /// <summary>
     /// The value of an attribute the page wrote into <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>
@@ -616,7 +620,7 @@ public partial class BitCheckbox : BitInputBase<bool>
     {
         // A disabled or read-only checkbox never arrives here having let the browser change anything: the
         // click is prevented in the markup, which is where a state known at render time belongs.
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         // A change still running its awaited callbacks is only found out about here, after the browser has
         // already toggled the element under the pointer - so what the checkbox still holds is put back.

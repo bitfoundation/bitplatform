@@ -127,7 +127,7 @@ public partial class BitPivotItem : BitComponentBase
     private bool _IsReorderable => Parent?.GetItemReorderable(this) is true;
 
     // A tab of a disabled pivot cannot be activated either, so it says so like one disabled on its own.
-    private bool _IsDisabled => IsEnabled is false || Parent?.IsEnabled is false;
+    private bool _IsDisabled => Disabled || Parent?.Disabled is true;
 
     protected override void RegisterCssClasses()
     {
@@ -160,7 +160,7 @@ public partial class BitPivotItem : BitComponentBase
         // The Icon is compared by the classes it renders rather than by the instance, so an item given
         // a freshly constructed BitIconInfo on every render of its parent does not report a change
         // that is not one, which would leave the two StateHasChanged calls feeding each other.
-        var state = (IsEnabled, Visibility, HeaderText, Title, Icon?.GetCssClasses(), Icon?.Content, IconName, Key, ItemCount, Dismissible, Reorderable);
+        var state = (Disabled, Visibility, HeaderText, Title, Icon?.GetCssClasses(), Icon?.Content, IconName, Key, ItemCount, Dismissible, Reorderable);
 
         if (state == _lastHeaderState) return;
 

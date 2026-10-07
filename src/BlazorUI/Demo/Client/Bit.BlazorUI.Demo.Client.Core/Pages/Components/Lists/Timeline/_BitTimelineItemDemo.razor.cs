@@ -15,14 +15,14 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> disabledItems =
     [
         new() { PrimaryText = "Item 1" },
-        new() { PrimaryText = "Item 2", SecondaryText = "Item 2 Secondary", IsEnabled = false },
+        new() { PrimaryText = "Item 2", SecondaryText = "Item 2 Secondary", IsDisabled = true },
         new() { PrimaryText = "Item 3" }
     ];
 
     private List<BitTimelineItem> iconItems =
     [
         new() { PrimaryText = "Item 1", IconName = BitIconName.Add },
-        new() { PrimaryText = "Item 2", IconName = BitIconName.Edit, SecondaryText = "Item 2 Secondary", IsEnabled = false },
+        new() { PrimaryText = "Item 2", IconName = BitIconName.Edit, SecondaryText = "Item 2 Secondary", IsDisabled = true },
         new() { PrimaryText = "Item 3", IconName = BitIconName.Delete }
     ];
 
@@ -31,9 +31,9 @@ public partial class _BitTimelineItemDemo
         new() { PrimaryText = "Fill", IconName = BitIconName.Accept, Variant = BitVariant.Fill },
         new() { PrimaryText = "Outline", IconName = BitIconName.Accept, Variant = BitVariant.Outline },
         new() { PrimaryText = "Text", IconName = BitIconName.Accept, Variant = BitVariant.Text },
-        new() { PrimaryText = "Fill", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsEnabled = false },
-        new() { PrimaryText = "Outline", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsEnabled = false },
-        new() { PrimaryText = "Text", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsEnabled = false }
+        new() { PrimaryText = "Fill", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsDisabled = true },
+        new() { PrimaryText = "Outline", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsDisabled = true },
+        new() { PrimaryText = "Text", SecondaryText = "Disabled", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsDisabled = true }
     ];
 
     private List<BitTimelineItem> reversedItems =
@@ -54,8 +54,8 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> lineVariantItems =
     [
         new() { PrimaryText = "Ordered", IconName = BitIconName.Accept, Color = BitColor.Success },
-        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineVariant = BitTimelineLineVariant.Dashed },
-        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed }
+        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
     ];
 
     private List<BitTimelineItem> customizedItems =
@@ -76,8 +76,8 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> a11yItems =
     [
         new() { PrimaryText = "Ordered", IconName = BitIconName.Accept, Color = BitColor.Success, AriaLabel = "Ordered, done", Title = "Done on 3 March" },
-        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineVariant = BitTimelineLineVariant.Dashed, AriaLabel = "Shipped, done", Title = "Done on 4 March" },
-        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineVariant = BitTimelineLineVariant.Dashed, AriaLabel = "Delivered, pending", Title = "Expected on 7 March" }
+        new() { PrimaryText = "Shipped", IconName = BitIconName.Accept, Color = BitColor.Success, LineStyle = BitLineStyle.Dashed, AriaLabel = "Shipped, done", Title = "Done on 4 March" },
+        new() { PrimaryText = "Delivered", Variant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed, AriaLabel = "Delivered, pending", Title = "Expected on 7 March" }
     ];
 
     private List<BitTimelineItem> cssVarItems =
@@ -161,7 +161,7 @@ public partial class _BitTimelineItemDemo
         [
             new() { PrimaryText = "Item 1", IconName = BitIconName.Add },
             new() { PrimaryText = "Item 2", IconName = BitIconName.Edit, OnClick = HandleOnItemClick },
-            new() { PrimaryText = "Item 3", IconName = BitIconName.Delete, IsEnabled = false }
+            new() { PrimaryText = "Item 3", IconName = BitIconName.Delete, IsDisabled = true }
         ];
 
         base.OnInitialized();

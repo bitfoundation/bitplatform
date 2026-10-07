@@ -13,7 +13,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
+     tabindex="@((NoKeyboard || Disabled) ? null : (TabIndex ?? "0"))"
      @onfocusin="HandleFocusIn"
      @onfocusout="HandleFocusOut"
      @onmouseenter="HandleMouseEnter"
@@ -36,7 +36,7 @@
                         type="button"
                         aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         class="bit-csl-ppb @Classes?.PlayPauseButton"
                         style="@Styles?.PlayPauseButton">
                     <i aria-hidden="true"
@@ -60,7 +60,7 @@
                                 aria-controls="@_ContainerId"
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_currentPage == index ? "true" : null)"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 style="@Styles?.Dots @(_currentPage == index ? Styles?.CurrentDot : null)"
                                 class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
@@ -83,7 +83,7 @@
          @onpointerdown="HandlePointerDown"
          aria-atomic="false"
          aria-live="@(IsPlaying ? "off" : "polite")"
-         class="bit-csl-cnt @((NoDrag || IsEnabled is false) ? "bit-csl-ndr" : null) @Classes?.Container"
+         class="bit-csl-cnt @((NoDrag || Disabled) ? "bit-csl-ndr" : null) @Classes?.Container"
          style="@_directionStyle @Styles?.Container">
 
         @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
@@ -104,7 +104,7 @@
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoLeftAriaLabel()"
-                         disabled="@(IsEnabled is false)"
+                         disabled="@(Disabled)"
                          class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
                          style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
                     <i aria-hidden="true"
@@ -119,7 +119,7 @@
                          type="button"
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoRightAriaLabel()"
-                         disabled="@(IsEnabled is false)"
+                         disabled="@(Disabled)"
                          class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
                          style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
                     <i aria-hidden="true"

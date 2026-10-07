@@ -46,8 +46,13 @@ Paths that don't start with `src/` are relative to `src/Client/Boilerplate.Clien
   tokens, per-component variables, parameters, APIs - and look it up with its MCP tools (AGENTS.md section 3) instead
   of guessing. When nothing public gets there, a hack is allowed, but undocumented markup and class names change
   without notice: keep every style hack in one partial, `Styles/_brand-hacks.scss`, so it goes in one deletion once
-  bit offers a public way, keep markup hacks minimal, tell the user each one deserves an upstream issue and offer to
-  file it (AGENTS.md section 6), and list it in the report (section 9).
+  bit BlazorUI offers a public way, keep markup hacks minimal, tell the user each one deserves an upstream issue and
+  offer to file it (AGENTS.md section 6), and list it in the report (section 9).
+- **The app's own markup is not upstream material.** A hack is something that reaches into bit BlazorUI's internals.
+  The generated app's pages and layouts are the user's own code, so a selector into them is ordinary app styling,
+  not a gap in the template. Never propose, here or upstream, adding class names, ids, data attributes or other
+  styling hooks to the template's markup to serve one brand. Where the identity markup offers no hook, reach the
+  element from its page's scoped SCSS through its structure and bit BlazorUI's public parameters and classes.
 - **Project conventions** (`AGENTS.md`) apply, `[mirror]` comments included. Values live in `.scss`; `**/*.css` is
   build output.
 - **Branch and commits**: work on `rebrand/<slug>` unless the current branch is already dedicated to this work; commit
@@ -370,7 +375,8 @@ pass.
 <!--#if (module == "Admin")-->
 - The Dashboard's charts carry the brand's palette in both schemes.
 <!--#endif-->
-- Every hack is in `_brand-hacks.scss` or listed in the report, with its upstream issue offered.
+- Every hack is in `_brand-hacks.scss` or listed in the report, with its upstream issue offered, and no issue asks
+  the template for a styling hook.
 - Existing pages, items and actions work as before, the identity markup, the routes and the existing text are
   unchanged, the build is clean, and `dotnet test` passes.
 
@@ -385,6 +391,7 @@ written in, and hand that file to the user:
 - Deviations from the reference, and why (accessibility, licensing, platform limits).
 - What you could not verify (autofill by hand, the native icons), and the follow-ups: assets that need a rebuild,
   emails, a persisted accent.
-- **Hacks and issues to file**: each hack - what it does, where it lives, the public API that would replace it - with
-  a ready-to-file issue for each, offered to the user.
+- **Hacks and issues to file**: each hack - what it does, where it lives, the bit BlazorUI public API that would
+  replace it - with a ready-to-file issue for each, offered to the user. Selectors into the app's own markup are not
+  listed here (section 1).
 - `git diff --stat`.

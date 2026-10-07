@@ -7,7 +7,7 @@ public partial class _BitBreadcrumbCustomDemo
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" SelectedItemAsText />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" IsEnabled=""false"" />
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Disabled />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsDisabled"" NameSelectors=""nameSelectors"" />
 
@@ -20,7 +20,7 @@ public class PageInfo
     public string? Tooltip { get; set; }
     public string? OpenIn { get; set; }
     public bool IsCurrent { get; set; }
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 }
 
 private readonly List<PageInfo> CustomBreadcrumbItems =
@@ -33,8 +33,8 @@ private readonly List<PageInfo> CustomBreadcrumbItems =
 
 private readonly List<PageInfo> CustomBreadcrumbItemsDisabled =
 [
-    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", IsEnabled = false },
-    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", IsDisabled = true },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", IsDisabled = true },
     new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
     new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
@@ -54,7 +54,7 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     Title = { Selector = c => c.Tooltip },
     Target = { Selector = c => c.OpenIn },
     IsSelected = { Selector = c => c.IsCurrent },
-    IsEnabled = { Name = nameof(PageInfo.IsEnabled) }
+    IsDisabled = { Name = nameof(PageInfo.IsDisabled) }
 };";
 
     private readonly string example2RazorCode = @"
@@ -208,7 +208,7 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPosition=""BitIconPosition.End"" />
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPlacement=""BitPlacement.End"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithHomeIcon"" NameSelectors=""nameSelectors"" DividerText=""/"" />";
     private readonly string example6CsharpCode = @"

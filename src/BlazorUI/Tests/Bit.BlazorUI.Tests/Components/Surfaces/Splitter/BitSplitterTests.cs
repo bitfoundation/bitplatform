@@ -428,7 +428,7 @@ public class BitSplitterTests : BunitTestContext
         var component = RenderComponent<BitSplitter>(parameters =>
         {
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.AriaLabel, "Resize the panels");
             parameters.Add(p => p.Percent, 40d);
         });
@@ -462,11 +462,11 @@ public class BitSplitterTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSplitterShouldRespectIsEnabledClass()
+    public void BitSplitterShouldRespectDisabledClass()
     {
         var component = RenderComponent<BitSplitter>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-spl").ClassList.Contains("bit-dis"));
@@ -1357,7 +1357,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.Collapsible, true);
             parameters.Add(p => p.ShowCollapseButton, true);
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);

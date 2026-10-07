@@ -13,15 +13,15 @@
 <DemoExample Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <div>
         The visual style of the group is set by the <strong>Variant</strong>: Fill (default), Outline, or Text.
-        The group can be disabled as a whole through <strong>IsEnabled</strong>, or one button at a time through the
-        field mapped by the <strong>IsEnabled</strong> selector.
+        The group can be disabled as a whole through <strong>Disabled</strong>, or one button at a time through the
+        field mapped by the <strong>IsDisabled</strong> selector.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
         <BitButtonGroup Variant="BitVariant.Fill" Items="disabledCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" IsEnabled="false" />
+        <BitButtonGroup Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" Disabled />
     </div>
     <br /><br />
     <div class="example-content">
@@ -29,14 +29,14 @@
         <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
         <BitButtonGroup Variant="BitVariant.Outline" Items="disabledCustoms" NameSelectors="nameSelector" />
         <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector"
-                        IsEnabled="false" />
+                        Disabled />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
         <BitButtonGroup Variant="BitVariant.Text" Items="disabledCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" IsEnabled="false" />
+        <BitButtonGroup Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" Disabled />
     </div>
 </DemoExample>
 
@@ -190,7 +190,7 @@
     <div>
         The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a
         time
-        (a shorthand for <strong>SelectionMode="BitButtonGroupSelectionMode.Single"</strong>). It renders as a
+        (a shorthand for <strong>SelectionMode="BitSelectionMode.Single"</strong>). It renders as a
         <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. The
         component
         writes the toggle state back onto the class through the field named by the <strong>IsToggled</strong> selector,
@@ -322,7 +322,7 @@
     <br /><br />
     <div class="example-content">
         <div>Binding:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple"
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple"
                         Items="formatCustoms" NameSelectors="multiNameSelectors" @bind-ToggleKeys="formatKeys" />
         <div>Toggle keys: <b>@string.Join(", ", formatKeys ?? [])</b></div>
     </div>
@@ -334,13 +334,13 @@
             cap is visible instead of being a click that does nothing; they stay focusable and come back as soon as
             one of the toggled buttons is un-toggled.
         </div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2"
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple" MaxToggles="2"
                         Items="maxToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>FixedToggle</strong> keeps at least one button toggled:</div>
-        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" FixedToggle
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Multiple" FixedToggle
                         Items="fixedToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
 </DemoExample>
@@ -459,14 +459,14 @@
     <div class="example-content">
         <div>Single</div>
         <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="indicatorSingleCustoms"
+                        SelectionMode="BitSelectionMode.Single" Items="indicatorSingleCustoms"
                         NameSelectors="multiNameSelectors" DefaultToggleKey="list" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Multiple</div>
         <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple" Items="indicatorMultipleCustoms"
+                        SelectionMode="BitSelectionMode.Multiple" Items="indicatorMultipleCustoms"
                         NameSelectors="multiNameSelectors" DefaultToggleKeys="@indicatorDefaultKeys" />
     </div>
 </DemoExample>
@@ -577,7 +577,7 @@
     <div class="example-content">
         <div>Tab into the group, then navigate it using the arrow, Home, and End keys:</div>
         <BitButtonGroup AriaLabel="Text alignment" Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="a11yCustoms" NameSelectors="a11yNameSelectors"
+                        SelectionMode="BitSelectionMode.Single" Items="a11yCustoms" NameSelectors="a11yNameSelectors"
                         DefaultToggleKey="start" />
     </div>
     <br /><br />
@@ -591,7 +591,7 @@
             take back.
         </div>
         <BitButtonGroup AriaLabel="Text alignment (committed with Space)" SelectOnFocus="false"
-                        Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Single"
+                        Variant="BitVariant.Outline" SelectionMode="BitSelectionMode.Single"
                         Items="selectOnFocusCustoms" NameSelectors="a11yNameSelectors" DefaultToggleKey="start" />
     </div>
     <br /><br />
@@ -833,173 +833,173 @@
     <br />
     <div>Primary</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Primary" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Primary" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Primary" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>Secondary</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Secondary" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Secondary" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>Tertiary</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Tertiary" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>Info</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Info" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Info" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Info" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>Success</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Success" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Success" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Success" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>Warning</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Warning" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Warning" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Warning" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>SevereWarning</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.SevereWarning" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.SevereWarning" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>Error</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Error" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Outline" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Error" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.Error" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div style="background:var(--bit-clr-fg-sec);padding:1rem">
         <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
         <div class="example-content row">
-            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill"
+            <BitButtonGroup Disabled Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill"
                             Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline"
+            <BitButtonGroup Disabled Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline"
                             Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Text"
+            <BitButtonGroup Disabled Color="BitColor.PrimaryBackground" Variant="BitVariant.Text"
                             Items="basicCustoms" NameSelectors="nameSelector" />
         </div>
         <br /><br />
         <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
         <div class="example-content row">
-            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill"
+            <BitButtonGroup Disabled Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill"
                             Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline"
+            <BitButtonGroup Disabled Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline"
                             Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Text"
+            <BitButtonGroup Disabled Color="BitColor.SecondaryBackground" Variant="BitVariant.Text"
                             Items="basicCustoms" NameSelectors="nameSelector" />
         </div>
         <br /><br />
         <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
         <div class="example-content row">
-            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill"
+            <BitButtonGroup Disabled Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill"
                             Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline"
+            <BitButtonGroup Disabled Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline"
                             Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Text"
+            <BitButtonGroup Disabled Color="BitColor.TertiaryBackground" Variant="BitVariant.Text"
                             Items="basicCustoms" NameSelectors="nameSelector" />
         </div>
     </div>
     <br /><br />
     <div>PrimaryForeground</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill"
+        <BitButtonGroup Disabled Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Text"
+        <BitButtonGroup Disabled Color="BitColor.PrimaryForeground" Variant="BitVariant.Text"
                         Items="basicCustoms" NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>SecondaryForeground</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill"
+        <BitButtonGroup Disabled Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Text"
+        <BitButtonGroup Disabled Color="BitColor.SecondaryForeground" Variant="BitVariant.Text"
                         Items="basicCustoms" NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>TertiaryForeground</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill"
+        <BitButtonGroup Disabled Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Text"
+        <BitButtonGroup Disabled Color="BitColor.TertiaryForeground" Variant="BitVariant.Text"
                         Items="basicCustoms" NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>PrimaryBorder</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>SecondaryBorder</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill"
+        <BitButtonGroup Disabled Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Text"
+        <BitButtonGroup Disabled Color="BitColor.SecondaryBorder" Variant="BitVariant.Text"
                         Items="basicCustoms" NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div>TertiaryBorder</div>
     <div class="example-content row">
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
                         NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline"
+        <BitButtonGroup Disabled Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline"
                         Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+        <BitButtonGroup Disabled Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
 </DemoExample>

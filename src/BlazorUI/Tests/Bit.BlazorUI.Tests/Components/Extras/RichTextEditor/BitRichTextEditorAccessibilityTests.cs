@@ -560,7 +560,7 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     [TestMethod]
     public void BitRichTextEditorDisabledSurfaceShouldSayItIsDisabled()
     {
-        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.IsEnabled, false));
+        var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Disabled, true));
 
         var surface = component.Find(".bit-rte-edt");
 

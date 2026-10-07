@@ -497,16 +497,16 @@ private async Task CopyCodeAsync(BitMarkdownCodeBlockNode block)
     private readonly DemoCodeFile[] example14CodeFiles;
 
     private readonly string example15RazorCode = @"
-<BitCheckbox Label=""IsEnabled"" @bind-Value=""tasksEnabled"" />
+<BitCheckbox Label=""Disabled"" @bind-Value=""tasksDisabled"" />
 
 <BitMarkdownViewer Markdown=""@taskListMarkdown""
                    Pipeline=""BitMarkdownPipelines.GitHub""
-                   IsEnabled=""tasksEnabled""
+                   Disabled=""tasksDisabled""
                    OnTaskChanged=""HandleTaskChanged"" />
 <div>@taskListStatus</div>";
 
     private readonly string example15CsharpCode = @"
-private bool tasksEnabled = true;
+private bool tasksDisabled;
 
 private string taskListMarkdown = @""## Release checklist
 

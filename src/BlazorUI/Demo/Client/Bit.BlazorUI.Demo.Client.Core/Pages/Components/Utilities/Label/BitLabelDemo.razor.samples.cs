@@ -4,7 +4,7 @@ public partial class BitLabelDemo
 {
     private readonly string example1RazorCode = @"
 <BitLabel>I'm a Label</BitLabel>
-<BitLabel IsEnabled=""false"">I'm a disabled Label</BitLabel>";
+<BitLabel Disabled>I'm a disabled Label</BitLabel>";
 
     private readonly string example2RazorCode = @"
 <BitLabel For=""label-input"">A Label for an input</BitLabel>
@@ -25,7 +25,7 @@ public partial class BitLabelDemo
     </RequiredTemplate>
 </BitLabel>
 
-<BitLabel Required IsEnabled=""false"">A disabled Label dims its mark too</BitLabel>
+<BitLabel Required Disabled>A disabled Label dims its mark too</BitLabel>
 
 <BitLabel Optional>I'm an optional Label</BitLabel>
 

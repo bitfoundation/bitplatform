@@ -9,7 +9,7 @@
     var secondaryText = Timeline.GetSecondaryText(Item);
     var primaryContent = Timeline.GetPrimaryContent(Item);
     var secondaryContent = Timeline.GetSecondaryContent(Item);
-    var isEnabled = Timeline.IsEnabled && Timeline.GetIsEnabled(Item);
+    var isDisabled = Timeline.Disabled || Timeline.GetIsDisabled(Item);
     var isInteractive = Timeline.IsItemInteractive(Item);
     var template = Timeline.GetTemplate(Item) ?? Timeline.ItemTemplate;
     var dotTemplate = Timeline.GetDotTemplate(Item) ?? Timeline.DotTemplate;
@@ -79,7 +79,7 @@
    presentational timeline exposes no controls and stays out of the keyboard tab order. The disabled
    state is announced once: by that button when there is one, and otherwise by the item itself, which is
    then all there is to carry it. *@
-<li aria-disabled="@(isInteractive || isEnabled ? null : "true")"
+<li aria-disabled="@(isInteractive is false && isDisabled ? "true" : null)"
     aria-label="@(isInteractive ? null : Timeline.GetAriaLabel(Item))"
     title="@Timeline.GetTitle(Item)"
     style="@Timeline.GetItemStyles(Item)"
@@ -90,8 +90,8 @@
         <div @ref="_buttonElement"
              @onclick="() => Timeline.HandleOnItemClick(Item)"
              role="button"
-             tabindex="@(isEnabled ? "0" : null)"
-             aria-disabled="@(isEnabled ? null : "true")"
+             tabindex="@(isDisabled ? null : "0")"
+             aria-disabled="@(isDisabled ? "true" : null)"
              aria-label="@Timeline.GetAriaLabel(Item)"
              class="bit-tln-btn@(partsClass)">
             @content

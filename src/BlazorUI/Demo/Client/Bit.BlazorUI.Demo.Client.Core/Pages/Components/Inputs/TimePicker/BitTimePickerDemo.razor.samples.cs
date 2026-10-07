@@ -7,7 +7,7 @@ public partial class BitTimePickerDemo
 <BitTimePicker Label=""Placeholder"" Placeholder=""Select a time..."" />
 <BitTimePicker Label=""Required"" Required />
 <BitTimePicker Label=""ReadOnly"" ReadOnly @bind-Value=""@readOnlyTime"" />
-<BitTimePicker Label=""Disabled"" IsEnabled=""false"" @bind-Value=""@readOnlyTime"" />";
+<BitTimePicker Label=""Disabled"" Disabled @bind-Value=""@readOnlyTime"" />";
     private readonly string example1CsharpCode = @"
 private TimeSpan? readOnlyTime = new(2, 50, 0);";
 
@@ -41,7 +41,7 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
 <BitTimePicker IconName=""@BitIconName.HourGlass"" Placeholder=""Select a time..."" />
 
 <BitTimePicker IconName=""@BitIconName.HourGlass""
-               IconLocation=""BitIconLocation.Left""
+               IconPlacement=""BitPlacement.Start""
                Placeholder=""Select a time..."" />
 
 <BitTimePicker Label=""Custom spin & close icons""
@@ -414,7 +414,7 @@ private readonly List<IBitComponentParams> timePickerParams =
 
 <BitTimePicker Icon=""@BitIconInfo.Css(""fa-solid fa-hourglass-half"")""
                Placeholder=""Select a time...""
-               IconLocation=""BitIconLocation.Left"" />
+               IconPlacement=""BitPlacement.Start"" />
 
 <BitTimePicker Icon=""@BitIconInfo.Fa(""solid stopwatch"")""
                Placeholder=""Select a time..."" />
@@ -426,7 +426,7 @@ private readonly List<IBitComponentParams> timePickerParams =
 
 <BitTimePicker Icon=""@BitIconInfo.Css(""bi bi-alarm-fill"")""
                Placeholder=""Select a time...""
-               IconLocation=""BitIconLocation.Left"" />
+               IconPlacement=""BitPlacement.Start"" />
 
 <BitTimePicker Icon=""@BitIconInfo.Bi(""stopwatch-fill"")""
                Placeholder=""Select a time..."" />";

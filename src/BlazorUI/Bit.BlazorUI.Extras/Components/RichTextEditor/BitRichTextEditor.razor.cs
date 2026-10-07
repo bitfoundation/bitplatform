@@ -357,10 +357,10 @@ public partial class BitRichTextEditor : BitComponentBase
 
     /// <summary>
     /// The effective read-only state: an editor is locked either by ReadOnly or by being disabled
-    /// through the inherited IsEnabled parameter, and both must reach the surface, the bridge, and
+    /// through the inherited Disabled parameter, and both must reach the surface, the bridge, and
     /// the toolbar identically.
     /// </summary>
-    private bool EffectiveReadOnly => ReadOnly || IsEnabled is false;
+    private bool EffectiveReadOnly => ReadOnly || Disabled;
 
     private bool ControlsDisabled => EffectiveReadOnly || _inSourceView;
 
@@ -573,7 +573,7 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         if (_pendingEditorFocus is false) return;
         _pendingEditorFocus = false;
-        if (_initialized is false || _inSourceView || IsEnabled is false) return;
+        if (_initialized is false || _inSourceView || Disabled) return;
         try
         {
             await _js.BitRichTextEditorRestoreFocus(_editorRef);

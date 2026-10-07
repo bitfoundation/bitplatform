@@ -50,9 +50,9 @@ public class BitNavBarNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitNavBarItem.IconName));
 
     /// <summary>
-    /// The IsEnabled field name and selector of the custom input class.
+    /// The IsDisabled field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool?> IsEnabled { get; set; } = new(nameof(BitNavBarItem.IsEnabled));
+    public BitNameSelectorPair<TItem, bool?> IsDisabled { get; set; } = new(nameof(BitNavBarItem.IsDisabled));
 
     /// <summary>
     /// The Key field name and selector of the custom input class.

@@ -84,12 +84,12 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the icon of each item is rendered relative to its text: before it (Start, the default) or after it (End). An item's own IconPosition wins.",
+            Description = "Where the icon of each item is rendered relative to its text: before it (Start, the default) or after it (End). An item's own IconPlacement wins.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -431,11 +431,11 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IconPosition",
-                   Type = "BitIconPosition?",
-                   Description = "Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.",
+                   Name = "IconPlacement",
+                   Type = "BitPlacement?",
+                   Description = "Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.",
                    LinkType = LinkType.Link,
-                   Href = "#icon-position-enum",
+                   Href = "#placement-enum",
                },
                new()
                {
@@ -445,10 +445,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether an item is enabled or not.",
+                   DefaultValue = "false",
+                   Description = "Whether an item is disabled or not.",
                },
                new()
                {
@@ -540,11 +540,11 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IconPosition",
-                   Type = "BitIconPosition?",
-                   Description = "Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.",
+                   Name = "IconPlacement",
+                   Type = "BitPlacement?",
+                   Description = "Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.",
                    LinkType = LinkType.Link,
-                   Href = "#icon-position-enum",
+                   Href = "#placement-enum",
                },
                new()
                {
@@ -554,10 +554,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether an option is enabled or not.",
+                   DefaultValue = "false",
+                   Description = "Whether an option is disabled or not.",
                },
                new()
                {
@@ -818,10 +818,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IconPosition",
-                   Type = "BitNameSelectorPair<TItem, BitIconPosition?>",
-                   DefaultValue = "new(nameof(BitBreadcrumbItem.IconPosition))",
-                   Description = "The IconPosition field name and selector of the custom input class.",
+                   Name = "IconPlacement",
+                   Type = "BitNameSelectorPair<TItem, BitPlacement?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IconPlacement))",
+                   Description = "The IconPlacement field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -836,10 +836,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitBreadcrumbItem.IsEnabled))",
-                   Description = "The IsEnabled field name and selector of the custom input class.",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IsDisabled))",
+                   Description = "The IsDisabled field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -967,17 +967,7 @@ public partial class BitBreadcrumbDemo
                 new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new() { Name = "Start", Description = "Icon renders before the content (default).", Value = "0" },
-                new() { Name = "End", Description = "Icon renders after the content.", Value = "1" }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

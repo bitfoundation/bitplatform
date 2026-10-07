@@ -50,7 +50,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitCircularTimePicker = component.Find(".bit-ctp");
@@ -107,7 +107,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -2263,7 +2263,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual("3", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
 
         // a picker that is switched off is out of the tab order whatever the tab index says
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.AreEqual("-1", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
     }
@@ -2411,11 +2411,11 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldRespectIconLocation()
+    public void BitCircularTimePickerShouldRespectIconPlacement()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IconLocation, BitIconLocation.Left);
+            parameters.Add(p => p.IconPlacement, BitPlacement.Start);
         });
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-lic"));
@@ -3551,7 +3551,7 @@ public class BitCircularTimePickerTests : BunitTestContext
             HasBorder = false,
             HourButtonTitle = "Cascaded hour",
             HourStep = 2,
-            IconLocation = BitIconLocation.Left,
+            IconPlacement = BitPlacement.Start,
             IconName = "Cascaded clock icon",
             InvalidErrorMessage = "Cascaded invalid",
             InvertMouseWheel = true,
@@ -3602,7 +3602,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.IsFalse(picker.HasBorder);
         Assert.AreEqual("Cascaded hour", picker.HourButtonTitle);
         Assert.AreEqual(2, picker.HourStep);
-        Assert.AreEqual(BitIconLocation.Left, picker.IconLocation);
+        Assert.AreEqual(BitPlacement.Start, picker.IconPlacement);
         Assert.AreEqual("Cascaded clock icon", picker.IconName);
         Assert.AreEqual("Cascaded invalid", picker.InvalidErrorMessage);
         Assert.IsTrue(picker.InvertMouseWheel);

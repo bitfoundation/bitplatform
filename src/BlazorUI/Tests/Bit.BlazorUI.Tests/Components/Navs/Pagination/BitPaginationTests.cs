@@ -174,7 +174,7 @@ public class BitPaginationTests : BunitTestContext
         var comp = RenderComponent<BitPagination>(parameters =>
         {
             parameters.Add(p => p.Count, 5);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnChange, (int _) => changedCount++);
         });
 
@@ -1152,7 +1152,7 @@ public class BitPaginationTests : BunitTestContext
         {
             parameters.Add(p => p.Count, 12);
             parameters.Add(p => p.ShowGoToPage, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultSelectedPage, 6);
         });
 
@@ -1428,7 +1428,7 @@ public class BitPaginationTests : BunitTestContext
         var comp = RenderComponent<BitPagination>(parameters =>
         {
             parameters.Add(p => p.Count, 12);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ShowPageSizeSelector, true);
             parameters.Add(p => p.OnPageSizeChange, v => changed = v);
         });
@@ -1619,7 +1619,7 @@ public class BitPaginationTests : BunitTestContext
         var comp = RenderComponent<BitPagination>(parameters =>
         {
             parameters.Add(p => p.Count, 5);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultSelectedPage, 3);
             parameters.Add(p => p.GetPageHref, (int page) => $"/results?page={page}");
         });
@@ -2319,7 +2319,7 @@ public class BitPaginationTests : BunitTestContext
         var comp = RenderComponent<BitPagination>(parameters =>
         {
             parameters.Add(p => p.Count, 50);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ClickableEllipsis, true);
             parameters.Add(p => p.DefaultSelectedPage, 25);
         });
@@ -2337,7 +2337,7 @@ public class BitPaginationTests : BunitTestContext
         var comp = RenderComponent<BitPagination>(parameters =>
         {
             parameters.Add(p => p.Count, 50);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ClickableEllipsis, true);
             parameters.Add(p => p.DefaultSelectedPage, 25);
             parameters.Add(p => p.GetPageHref, (int page) => $"/results?page={page}");

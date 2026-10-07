@@ -9,11 +9,11 @@
 //   --bit-FileInput-hover-color               role color while hovered                         (default: the role's hover color)
 //   --bit-FileInput-active-color              role color while pressed                         (default: the role's active color)
 //   --bit-FileInput-focus-color               focus ring color of the browse and remove buttons (default: the role's focus color)
-//   --bit-FileInput-disabled-color            foreground when IsEnabled is false               (default: $clr-fg-dis)
+//   --bit-FileInput-disabled-color            foreground when Disabled is true               (default: $clr-fg-dis)
 //   --bit-FileInput-disabled-background       background of the browse and remove buttons
-//                                             when IsEnabled is false                          (default: $clr-bg-dis)
+//                                             when Disabled is true                          (default: $clr-bg-dis)
 //   --bit-FileInput-disabled-border-color     border color of the browse button
-//                                             when IsEnabled is false                          (default: $clr-brd-dis)
+//                                             when Disabled is true                          (default: $clr-brd-dis)
 //   --bit-FileInput-label-height              smallest height of the browse button             (default: per size, $siz-ctrl-*)
 //   --bit-FileInput-label-padding             padding of the browse button                     (default: per size, $siz-ctrl-pad-*)
 //   --bit-FileInput-label-font-size           text size of the browse button                   (default: per size, from the type ramp)

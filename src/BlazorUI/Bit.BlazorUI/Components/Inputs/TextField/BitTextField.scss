@@ -36,7 +36,7 @@
 //   --bit-TextField-label-font-weight       weight of the label                             (default: $tg-field-label-font-weight)
 //   --bit-TextField-label-letter-spacing    tracking of the label                           (default: $tg-ctrl-letter-spacing)
 //   --bit-TextField-label-gap               room between the label and the frame when the
-//                                           two share a row (LabelPosition Start/End)       (default: spacing(1))
+//                                           two share a row (LabelPlacement Start/End)       (default: spacing(1))
 //   --bit-TextField-required-color          color of the asterisk of a required field       (default: $clr-req)
 //   --bit-TextField-icon-color              color of the icon at rest                       (default: $clr-fg-pri)
 //   --bit-TextField-icon-size               size of the icon and of the glyphs of the
@@ -799,7 +799,7 @@
     }
 }
 
-// An explicit LabelPosition lays the wrapper out itself, so the metrics the underlined variant gives its
+// An explicit LabelPlacement lays the wrapper out itself, so the metrics the underlined variant gives its
 // label - the fixed row height, the inset and the margin that line it up next to the input - are only right
 // while the two actually share the row the variant puts them on. Stacked above or below the field, or laid
 // out by the Start and End positions with a gap of their own, they would leave an indented, over-tall

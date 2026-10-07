@@ -106,7 +106,7 @@ public partial class BitActionButtonDemo
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Stretches the action button across the full available width. The icon and the content stay next to each other with IconPosition.Start; IconPosition.End reverses the inner wrapper, so the growing content pushes them to the opposite edges.",
+            Description = "Stretches the action button across the full available width. The icon and the content stay next to each other with IconPlacement.Start; IconPlacement.End reverses the inner wrapper, so the growing content pushes them to the opposite edges.",
         },
         new()
         {
@@ -142,12 +142,12 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content.",
+            Description = "Gets or sets the position of the icon relative to the component's content. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -301,7 +301,7 @@ public partial class BitActionButtonDemo
         {
             Name = "--bit-ActionButton-disabled-color",
             DefaultValue = "--bit-clr-fg-dis (text), the Color role's disabled text color (icon)",
-            Description = "Text and icon color when IsEnabled is false; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
+            Description = "Text and icon color when Disabled is true; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
         },
         new()
         {
@@ -609,27 +609,7 @@ public partial class BitActionButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content (default).",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content.",
-                    Value = "1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "link-rels",
@@ -773,7 +753,7 @@ public partial class BitActionButtonDemo
         new()
         {
             Underlined = true,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             Target = "_blank",
         }
     ];

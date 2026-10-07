@@ -108,7 +108,7 @@
         <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
             <div>
                 <b>Label</b> is the status message the loader shows and announces - prefer a short, specific phrase over
-                a bare "Loading". <b>LabelPosition</b> puts it on any side: <b>Top</b> by default, while <b>Start</b> and
+                a bare "Loading". <b>LabelPlacement</b> puts it on any side: <b>Top</b> by default, while <b>Start</b> and
                 <b>End</b> follow the writing direction. <b>LabelTemplate</b> replaces it with markup of your own.
             </div>
             <br />
@@ -117,19 +117,19 @@
                     <BitRingLoading Label="Uploading photos..." />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="Top" LabelPosition="BitLabelPosition.Top" />
+                    <BitDotsRingLoading Label="Top" LabelPlacement="BitPlacement.Top" />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
+                    <BitDotsRingLoading Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="Start" LabelPosition="BitLabelPosition.Start" />
+                    <BitDotsRingLoading Label="Start" LabelPlacement="BitPlacement.Start" />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="End" LabelPosition="BitLabelPosition.End" />
+                    <BitDotsRingLoading Label="End" LabelPlacement="BitPlacement.End" />
                 </div>
                 <div class="wrapper">
-                    <BitRollerLoading LabelPosition="BitLabelPosition.Bottom">
+                    <BitRollerLoading LabelPlacement="BitPlacement.Bottom">
                         <LabelTemplate>
                             <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
                                 Restoring your session
@@ -172,7 +172,7 @@
                 when the loader appears.
             </div>
             <br />
-            <BitButton OnClick="StartWork" IsEnabled="@(isWorking is false)">Run a 1.5s task</BitButton>
+            <BitButton OnClick="StartWork" Disabled="isWorking">Run a 1.5s task</BitButton>
             <br /><br />
             <div class="container">
                 <div class="wrapper">
@@ -246,7 +246,7 @@
                 Syncing <BitDotsRingLoading Inline />
             </BitText>
             <br />
-            <BitButton IsEnabled="false">
+            <BitButton Disabled>
                 <BitRingLoading Inline Label="Saving" />
             </BitButton>
         </DemoExample>
@@ -259,11 +259,11 @@
                 back its announcements and the loader's own has to get through.
             </div>
             <br />
-            <BitButton OnClick="Refresh" IsEnabled="@(isRefreshing is false)">Refresh orders</BitButton>
+            <BitButton OnClick="Refresh" Disabled="isRefreshing">Refresh orders</BitButton>
             <br /><br />
             <div class="orders">
                 <BitOverlay IsOpen="isRefreshing" AbsolutePosition ModeFull Style="align-items:center;justify-content:center;color:white">
-                    <BitRingLoading Label="Refreshing orders..." LabelPosition="BitLabelPosition.End" />
+                    <BitRingLoading Label="Refreshing orders..." LabelPlacement="BitPlacement.End" />
                 </BitOverlay>
                 <div class="order-list" aria-busy="@(isRefreshing ? "true" : "false")">
                     <div>Order #1024 - Shipped</div>
@@ -323,7 +323,7 @@
                         <BitDualRingLoading Label="Uploading" />
                     </div>
                     <div class="wrapper">
-                        <BitSpinnerLoading Label="Indexing" LabelPosition="BitLabelPosition.Bottom" />
+                        <BitSpinnerLoading Label="Indexing" LabelPlacement="BitPlacement.Bottom" />
                     </div>
                 </div>
             </BitParams>
@@ -478,10 +478,10 @@
             <br />
             <div class="container" dir="rtl">
                 <div class="wrapper">
-                    <BitRingLoading Dir="BitDir.Rtl" Label="شروع" LabelPosition="BitLabelPosition.Start" />
+                    <BitRingLoading Dir="BitDir.Rtl" Label="شروع" LabelPlacement="BitPlacement.Start" />
                 </div>
                 <div class="wrapper">
-                    <BitRingLoading Dir="BitDir.Rtl" Label="پایان" LabelPosition="BitLabelPosition.End" />
+                    <BitRingLoading Dir="BitDir.Rtl" Label="پایان" LabelPlacement="BitPlacement.End" />
                 </div>
                 <div class="wrapper">
                     <BitEllipsisLoading Dir="BitDir.Rtl" Label="نقطه‌ها" />

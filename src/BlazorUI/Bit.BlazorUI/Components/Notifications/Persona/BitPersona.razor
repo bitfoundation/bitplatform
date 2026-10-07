@@ -147,13 +147,13 @@
                        with it, which is put back so the element is still announced as a link - a disabled one. *@
                     <a style="@GetImageContainerStyle()"
                        class="@GetImageContainerClass()"
-                       role="@(IsEnabled ? null : "link")"
-                       href="@(IsEnabled ? Href : null)"
+                       role="@(Disabled ? "link" : null)"
+                       href="@(Disabled ? null : Href)"
                        rel="@_rel"
                        target="@Target"
-                       tabindex="@(IsEnabled ? TabIndex : "-1")"
+                       tabindex="@(Disabled ? "-1" : TabIndex)"
                        aria-label="@GetCoinButtonLabel()"
-                       aria-disabled="@(IsEnabled ? null : "true")"
+                       aria-disabled="@(Disabled ? "true" : null)"
                        @onclick="HandleImageClick">
                         @coinContent
                     </a>
@@ -163,7 +163,7 @@
                     <button type="button"
                             style="@GetImageContainerStyle()"
                             class="@GetImageContainerClass()"
-                            disabled="@(IsEnabled is false)"
+                            disabled="@(Disabled)"
                             tabindex="@TabIndex"
                             aria-label="@GetCoinButtonLabel()"
                             @onclick="HandleImageClick">
@@ -196,7 +196,7 @@
                                 type="button"
                                 title="@ActionButtonTitle"
                                 aria-label="@ActionButtonTitle"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 style="@Styles?.ActionButton"
                                 class="bit-prs-abt @Classes?.ActionButton">
                             @if (actionIcon is not null)

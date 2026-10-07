@@ -29,14 +29,14 @@ public class BitBreadcrumbItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Where the icon is rendered relative to the text, in place of the IconPosition of the breadcrumb.
+    /// Where the icon is rendered relative to the text, in place of the IconPlacement of the breadcrumb.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
-    /// Whether an item is enabled or not.
+    /// Whether an item is disabled or not.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Display the breadcrumb item as the selected item.

@@ -216,7 +216,7 @@ public partial class BitChart : BitComponentBase
         _config = Config ?? new BitChartConfig(Type, Data ?? new BitChartData(), Options ?? new BitChartOptions());
 
         // A disabled or loading chart takes no input, so whatever was hovered or walked by the keyboard is let go of.
-        if ((IsEnabled is false || IsLoading) && (_hoverAnchor is not null || _focusKey is not null || _legendHighlight is not null))
+        if ((Disabled || IsLoading) && (_hoverAnchor is not null || _focusKey is not null || _legendHighlight is not null))
         {
             _focusIndex = -1;
             _focusKey = null;
@@ -260,7 +260,7 @@ public partial class BitChart : BitComponentBase
         // switching between panning and drag-to-zoom) at runtime tears the old listeners down instead
         // of leaving the chart reacting to gestures it no longer offers.
         var z = _config.Options.Zoom;
-        bool wantZoom = z.Enabled && IsEnabled && !IsLoading && !_scene.IsRadialOrCircular;
+        bool wantZoom = z.Enabled && Disabled is false && !IsLoading && !_scene.IsRadialOrCircular;
         bool pan = z.Pan && !z.DragZoom;
         string signature = wantZoom ? $"{z.Wheel}|{pan}|{z.DragZoom}" : "";
         if (_zoomSignature == signature) return;
@@ -700,7 +700,7 @@ public partial class BitChart : BitComponentBase
 
     private void OnEnter(BitChartDataElement e)
     {
-        if (IsEnabled is false || IsLoading) return;
+        if (Disabled || IsLoading) return;
         BuildHover(e);
         NotifyHover();
     }
@@ -711,7 +711,7 @@ public partial class BitChart : BitComponentBase
     /// </summary>
     private void OnEnterBand(BitChartHitBand band)
     {
-        if (IsEnabled is false || IsLoading || RepresentativeOf(band) is not { } rep) return;
+        if (Disabled || IsLoading || RepresentativeOf(band) is not { } rep) return;
         BuildHover(rep, forceIndexGroup: true);
         NotifyHover();
     }
@@ -962,7 +962,7 @@ public partial class BitChart : BitComponentBase
 
     private async Task OnClickElement(BitChartDataElement e)
     {
-        if (IsEnabled && OnElementClick.HasDelegate)
+        if (Disabled is false && OnElementClick.HasDelegate)
             await OnElementClick.InvokeAsync((e.DatasetIndex, e.DataIndex));
     }
 
@@ -1021,7 +1021,7 @@ public partial class BitChart : BitComponentBase
         }
     }
 
-    private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && IsEnabled && _scene.IsRadialOrCircular is false;
+    private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && Disabled is false && _scene.IsRadialOrCircular is false;
 
     private static bool IsPlainKey(KeyboardEventArgs e) => e.CtrlKey is false && e.MetaKey is false && e.AltKey is false;
 
@@ -1135,7 +1135,7 @@ public partial class BitChart : BitComponentBase
 
     private async Task ToggleLegend(BitChartLegendItemModel item)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (OnLegendItemClick.HasDelegate) await OnLegendItemClick.InvokeAsync(item);
         if (_scene.Legend is null || !_scene.Legend.OnClickToggle) return;
         if (item.IsDataIndex)
@@ -1198,7 +1198,7 @@ public partial class BitChart : BitComponentBase
     private string SvgRole => IsNavigable ? "application" : "img";
 
     /// <summary>Whether the plot is a tab stop the arrow keys can walk: it has data and it takes input.</summary>
-    private bool IsNavigable => _scene.Elements.Count > 0 && IsEnabled && IsLoading is false;
+    private bool IsNavigable => _scene.Elements.Count > 0 && Disabled is false && IsLoading is false;
 
     /// <summary>The texts in use: the ones given, or the English defaults.</summary>
     private BitChartTexts ActiveTexts => Texts ?? BitChartTexts.Default;
@@ -1308,7 +1308,7 @@ public partial class BitChart : BitComponentBase
 
     private void HighlightLegendItem(BitChartLegendItemModel item)
     {
-        if (IsEnabled is false || IsLoading || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
+        if (Disabled || IsLoading || _scene.Legend is not { HighlightOnHover: true } || item.Hidden) return;
         _legendHighlight = (item.IsDataIndex, item.Index);
     }
 
@@ -1386,7 +1386,7 @@ public partial class BitChart : BitComponentBase
         : $"--bit-cht-dur:{_config.Options.Animation.Duration}ms";
 
     /// <summary>Whether a click on the data does anything, which is what the pointer cursor promises.</summary>
-    private bool IsClickable => IsEnabled && OnElementClick.HasDelegate;
+    private bool IsClickable => Disabled is false && OnElementClick.HasDelegate;
 
     /// <summary>
     /// The tab stop of the plot: present while there is data to walk and the chart takes input, and then
@@ -1539,29 +1539,36 @@ public partial class BitChart : BitComponentBase
     }
 
     /// <summary>
-    /// The side a title actually renders on. Left and right titles run down the side of the plot
+    /// The side a title or subtitle actually renders on. Left and right ones run down the side of the plot
     /// (rotated); anything that is not one of the four sides falls back to the top.
     /// </summary>
-    private static BitChartPosition TitleSide(BitChartTitleModel title) => title.Position switch
+    private static BitPlacement TitleSide(BitChartTitleModel title) => title.Placement switch
     {
-        BitChartPosition.Bottom => BitChartPosition.Bottom,
-        BitChartPosition.Left => BitChartPosition.Left,
-        BitChartPosition.Right => BitChartPosition.Right,
-        _ => BitChartPosition.Top
+        BitPlacement.Bottom => BitPlacement.Bottom,
+        BitPlacement.Left => BitPlacement.Left,
+        BitPlacement.Right => BitPlacement.Right,
+        _ => BitPlacement.Top
     };
 
-    private static string AlignToFlex(BitChartAlign a) => a switch
+    // Each value is written as the CSS keyword that means what it says: the logical pair as the keywords that
+    // follow the reading direction, the physical pair as the ones that never move. Every value without an edge
+    // of its own centers.
+    private static string AlignToFlex(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "flex-start",
-        BitChartAlign.End => "flex-end",
+        BitPlacement.Start => "flex-start",
+        BitPlacement.End => "flex-end",
+        BitPlacement.Left => "left",
+        BitPlacement.Right => "right",
         _ => "center"
     };
 
     /// <summary>The logical keywords, so Start is the right-hand side of a right-to-left chart as flex-start already is.</summary>
-    private static string TextAlign(BitChartAlign a) => a switch
+    private static string TextAlign(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "start",
-        BitChartAlign.End => "end",
+        BitPlacement.Start => "start",
+        BitPlacement.End => "end",
+        BitPlacement.Left => "left",
+        BitPlacement.Right => "right",
         _ => "center"
     };
 

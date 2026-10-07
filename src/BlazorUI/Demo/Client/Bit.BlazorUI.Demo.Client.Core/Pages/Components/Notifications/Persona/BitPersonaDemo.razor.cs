@@ -379,9 +379,9 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "Shape",
-            Type = "BitPersonaShape?",
+            Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The outline of the coin: a circle, a rounded square or a sharp one. Supersedes Squared, and wins over it when both are set.",
+            Description = "The outline of the coin: a circle (Pill, the default), a rounded square (Rounded) or a sharp one (Square). Circle is not honoured, since the coin already has the proportions it would ask for, and falls back to the default. Supersedes Squared, and wins over it when both are set.",
             LinkType = LinkType.Link,
             Href = "#shape-enum",
         },
@@ -527,7 +527,7 @@ public partial class BitPersonaDemo
         {
             Name = "--bit-Persona-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text of every row when IsEnabled is false.",
+            Description = "Text of every row when Disabled is true.",
         },
         new()
         {
@@ -1102,33 +1102,7 @@ public partial class BitPersonaDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "shape-enum",
-            Name = "BitPersonaShape",
-            Description = "The outline of the coin of a BitPersona.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Circular",
-                    Description = "A circle, which is the shape a picture of a person is shown in.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Rounded",
-                    Description = "A square with the rounded corners of a control, which is the shape most design systems reserve for entities - teams, rooms, service accounts - rather than people.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Square",
-                    Description = "A square with sharp corners, for a tile or a logo that has to fill the coin edge to edge.",
-                    Value = "2",
-                },
-            ]
-        },
+        SharedSubEnums.BitShape,
         new()
         {
             Id = "active-appearance-enum",
@@ -1222,7 +1196,7 @@ public partial class BitPersonaDemo
         {
             Size = BitPersonaSize.Size40,
             AutoCoinColor = true,
-            Shape = BitPersonaShape.Rounded,
+            Shape = BitShape.Rounded,
             ShowDefaultPresenceIcons = true,
             PresenceTitles = new()
             {

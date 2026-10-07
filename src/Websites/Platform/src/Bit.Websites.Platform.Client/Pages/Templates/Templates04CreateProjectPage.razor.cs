@@ -1,10 +1,32 @@
 using System.Text;
+using Bit.Butil;
+using Bit.Websites.Platform.Shared.Dtos.ProjectAssistant;
 
 namespace Bit.Websites.Platform.Client.Pages.Templates;
 
 public partial class Templates04CreateProjectPage
 {
+    [AutoInject] private Clipboard clipboard = default!;
+
     private string name = "MyFirstProject";
+
+    private readonly List<AssistantMessage> assistantMessages = [];
+    private string? assistantInput;
+    private string? assistantSummary;
+    private string? lastAssistantReply;
+    private bool isAssistantBusy;
+    private string? copiedCommand;
+    private Parameter<bool> realProject = new() { Value = false, Default = false };
+    private readonly List<Action> realProjectUndo = [];
+
+    private string CopyButtonText => copiedCommand == GetFinalCommand().Trim() ? "Copied" : "Copy";
+
+    private bool githubRepo = true;
+
+    private bool android;
+    private bool ios;
+    private bool macOS;
+    private bool windows;
 
     private Parameter<bool> cloudflare = new() { Value = true, Default = true };
     private Parameter<bool> sample = new() { Value = false, Default = false };
@@ -63,7 +85,7 @@ public partial class Templates04CreateProjectPage
             new() { Text = "SQLite", Value = "Sqlite" },
             new() { Text = "SqlServer", Value = "SqlServer" },
             new() { Text = "PostgreSQL", Value = "PostgreSQL" },
-            new() { Text = "MySQL", Value = "MySQL" },
+            new() { Text = "MySQL", Value = "MySql" },
             new() { Text = "Other", Value = "Other" },
         ]
     };
@@ -92,6 +114,19 @@ public partial class Templates04CreateProjectPage
         ]
     };
 
+    private Parameter<string> ide = new()
+    {
+        Value = "code",
+        Default = "code",
+        Items =
+        [
+            new() { Text = "VS Code", Value = "code" },
+            new() { Text = "Visual Studio", Value = "vs" },
+            new() { Text = "Rider", Value = "rider" },
+            new() { Text = "Don't open it", Value = "none" },
+        ]
+    };
+
     private Parameter<string> theme = new()
     {
         Value = "Fluent2",
@@ -107,7 +142,7 @@ public partial class Templates04CreateProjectPage
 
     private string GetFinalCommand()
     {
-        StringBuilder finalCommand = new($"dotnet new bit-bp {GetNameCommand()}");
+        StringBuilder finalCommand = new(GetNameCommand());
 
         if (captcha.IsModified)
         {
@@ -117,6 +152,11 @@ public partial class Templates04CreateProjectPage
         if (pipeline.IsModified)
         {
             finalCommand.Append(GetPipelineCommand());
+        }
+
+        if (pipeline.Value is "GitHub" && githubRepo)
+        {
+            finalCommand.Append("--github-repo ");
         }
 
         if (sample.IsModified)
@@ -204,12 +244,222 @@ public partial class Templates04CreateProjectPage
             finalCommand.Append(GetThemeCommand());
         }
 
+        if (realProject.IsModified)
+        {
+            finalCommand.Append(GetRealProjectCommand());
+        }
+
+        if (android || ios || macOS || windows)
+        {
+            finalCommand.Append(GetPlatformsCommand());
+        }
+
+        if (ide.IsModified)
+        {
+            finalCommand.Append(GetIdeCommand());
+        }
+
+        finalCommand.Append("--yes");
+
         return finalCommand.ToString();
     }
 
     private string GetNameCommand()
     {
-        return $"--name {name} ";
+        return $"bit new {name} ";
+    }
+
+    private string GetIdeCommand()
+    {
+        return $"--ide {ide.Value} ";
+    }
+
+    private async Task SendToAssistant()
+    {
+        var message = assistantInput?.Trim();
+
+        if (isAssistantBusy || string.IsNullOrEmpty(message))
+            return;
+
+        AssistantMessage userMessage = new(true, message);
+        assistantMessages.Add(userMessage);
+        assistantInput = null;
+        isAssistantBusy = true;
+
+        try
+        {
+            var request = new ProjectAssistantRequest { Message = message, Summary = assistantSummary, LastReply = lastAssistantReply, Options = CurrentOptions() };
+            var response = await HttpClient.PostAsJsonAsync("api/ProjectAssistant/Chat", request, AppJsonContext.Default.ProjectAssistantRequest);
+
+            if (await response.Content.ReadFromJsonAsync(AppJsonContext.Default.ProjectAssistantReply) is not { } reply)
+                return;
+
+            assistantSummary = reply.Summary;
+            lastAssistantReply = reply.Reply;
+            assistantMessages.Add(new(false, reply.Reply));
+            Apply(reply.Options);
+        }
+        catch
+        {
+            assistantMessages.RemoveAt(assistantMessages.LastIndexOf(userMessage));
+            assistantInput = message;
+            throw;
+        }
+        finally
+        {
+            isAssistantBusy = false;
+        }
+    }
+
+    private async Task CopyCommand()
+    {
+        var command = GetFinalCommand().Trim();
+
+        await clipboard.WriteText(command);
+
+        if (command == copiedCommand)
+            return;
+
+        copiedCommand = command;
+        _ = RecordCreatedProject(command);
+    }
+
+    private async Task RecordCreatedProject(string command)
+    {
+        try
+        {
+            await HttpClient.PostAsJsonAsync("api/ProjectAssistant/Created", new ProjectCreatedDto { Command = command, Summary = assistantSummary }, AppJsonContext.Default.ProjectCreatedDto);
+        }
+        catch (KnownException)
+        {
+        }
+        catch (HttpRequestException)
+        {
+        }
+    }
+
+    private ProjectOptions CurrentOptions() => new()
+    {
+        Name = name,
+        Database = database.Value,
+        FilesStorage = fileStorage.Value,
+        Api = api.Value,
+        Pipeline = pipeline.Value,
+        Module = module.Value,
+        Captcha = captcha.Value,
+        Theme = theme.Value,
+        Aspire = aspire.Value,
+        Multitenant = multiTenant.Value,
+        Notification = notification.Value,
+        Cloudflare = cloudflare.Value,
+        Redis = redis.Value,
+        SignalR = signalR.Value,
+        OfflineDb = offlineDb.Value,
+        Sentry = sentry.Value,
+        AppInsights = appInsight.Value,
+        Ads = googleAds.Value,
+        Brouter = brouter.Value,
+        Sample = sample.Value,
+        Platforms = [.. new[] { (android, "android"), (ios, "ios"), (macOS, "macos"), (windows, "windows") }.Where(p => p.Item1).Select(p => p.Item2)],
+        Ide = ide.Value
+    };
+
+    private void Apply(ProjectOptions options)
+    {
+        name = string.IsNullOrWhiteSpace(options.Name) ? name : options.Name;
+        database.Value = options.Database ?? database.Value;
+        fileStorage.Value = options.FilesStorage ?? fileStorage.Value;
+        api.Value = options.Api ?? api.Value;
+        pipeline.Value = options.Pipeline ?? pipeline.Value;
+        module.Value = options.Module ?? module.Value;
+        captcha.Value = options.Captcha ?? captcha.Value;
+        theme.Value = options.Theme ?? theme.Value;
+        aspire.Value = options.Aspire ?? aspire.Value;
+        multiTenant.Value = options.Multitenant ?? multiTenant.Value;
+        notification.Value = options.Notification ?? notification.Value;
+        cloudflare.Value = options.Cloudflare ?? cloudflare.Value;
+        redis.Value = options.Redis ?? redis.Value;
+        signalR.Value = options.SignalR ?? signalR.Value;
+        offlineDb.Value = options.OfflineDb ?? offlineDb.Value;
+        sentry.Value = options.Sentry ?? sentry.Value;
+        appInsight.Value = options.AppInsights ?? appInsight.Value;
+        googleAds.Value = options.Ads ?? googleAds.Value;
+        brouter.Value = options.Brouter ?? brouter.Value;
+        sample.Value = options.Sample ?? sample.Value;
+        ide.Value = options.Ide ?? ide.Value;
+
+        if (options.Platforms is { } platforms)
+        {
+            android = platforms.Contains("android");
+            ios = platforms.Contains("ios");
+            macOS = platforms.Contains("macos");
+            windows = platforms.Contains("windows");
+        }
+    }
+
+    private void SetRealProject(bool value)
+    {
+        realProject.Value = value;
+
+        if (value)
+        {
+            UseForRealProject(database, "PostgreSQL");
+            UseForRealProject(fileStorage, "S3");
+            UseForRealProject(redis, true);
+            UseForRealProject(signalR, true);
+            return;
+        }
+
+        foreach (var undo in realProjectUndo)
+        {
+            undo();
+        }
+
+        realProjectUndo.Clear();
+    }
+
+    private void UseForRealProject<T>(Parameter<T> parameter, T value)
+    {
+        if (parameter.IsModified)
+            return;
+
+        parameter.Value = value;
+        realProjectUndo.Add(() =>
+        {
+            if (EqualityComparer<T>.Default.Equals(parameter.Value, value))
+            {
+                parameter.Value = parameter.Default;
+            }
+        });
+    }
+
+    private sealed record AssistantMessage(bool FromUser, string Text);
+
+    private string GetPlatformsCommand()
+    {
+        List<string> platforms = ["web"];
+
+        if (android)
+        {
+            platforms.Add("android");
+        }
+
+        if (ios)
+        {
+            platforms.Add("ios");
+        }
+
+        if (macOS)
+        {
+            platforms.Add("macos");
+        }
+
+        if (windows)
+        {
+            platforms.Add("windows");
+        }
+
+        return $"--platforms {string.Join(',', platforms)} ";
     }
 
     private string GetCaptchaCommand()
@@ -305,6 +555,11 @@ public partial class Templates04CreateProjectPage
     private string GetThemeCommand()
     {
         return $"--theme {theme.Value} ";
+    }
+
+    private string GetRealProjectCommand()
+    {
+        return $"--realProject{(realProject.Value ? string.Empty : " false")} ";
     }
 
     private class Parameter<T>

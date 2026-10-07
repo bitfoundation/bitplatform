@@ -168,7 +168,7 @@
             <div>
                 <b>TouchOnly</b> ignores mouse drags, trapping touch and pen only. <b>SkipSelector</b> ignores the
                 gestures that start on matching descendants, so an input or a slider inside the trap keeps working.
-                A disabled trap (<b>IsEnabled="false"</b>) takes nothing and lets the page scroll over it.
+                A disabled trap (<b>Disabled</b>) takes nothing and lets the page scroll over it.
             </div>
             <br />
             <div class="boxes">
@@ -192,9 +192,9 @@
                         <input class="no-swipe" placeholder="Swipes skip this field" aria-label="Note" />
                     </div>
                 </BitSwipeTrap>
-                <BitSwipeTrap IsEnabled="false" OnMove="HandleOnMoveDisabled">
+                <BitSwipeTrap Disabled OnMove="HandleOnMoveDisabled">
                     <div class="box">
-                        <div><b>IsEnabled="false"</b></div>
+                        <div><b>Disabled</b></div>
                         <div>(nothing is trapped)</div>
                         <div>Moves: @moveCountDisabled</div>
                     </div>
@@ -283,8 +283,8 @@
                                        Variant="BitVariant.Text"
                                        IconName="@BitIconName.GlobalNavButton"
                                        AriaLabel="Left menu"
-                                       aria-expanded="@IsPanelOpenAdvanced(BitSwipeDirection.Left)"
-                                       OnClick="() => TogglePanelAdvanced(BitSwipeDirection.Left)" />
+                                       aria-expanded="@IsPanelOpenAdvanced(BitPlacement.Left)"
+                                       OnClick="() => TogglePanelAdvanced(BitPlacement.Left)" />
                             <div class="brand">
                                 <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
                                 <BitText Typography="BitTypography.H4" Color="BitColor.Info">
@@ -295,8 +295,8 @@
                                        Variant="BitVariant.Text"
                                        IconName="@BitIconName.More"
                                        AriaLabel="Right menu"
-                                       aria-expanded="@IsPanelOpenAdvanced(BitSwipeDirection.Right)"
-                                       OnClick="() => TogglePanelAdvanced(BitSwipeDirection.Right)" />
+                                       aria-expanded="@IsPanelOpenAdvanced(BitPlacement.Right)"
+                                       OnClick="() => TogglePanelAdvanced(BitPlacement.Right)" />
                         </div>
                         <div class="main">
                             <BitSwipeTrap Style="width:100%;height:100%"
@@ -312,7 +312,7 @@
                                     </BitText>
                                 </div>
 
-                                <div class="panel left" style="@GetLeftPanelAdvancedStyle()" inert="@(panelOpen != BitSwipeDirection.Left)">
+                                <div class="panel left" style="@GetLeftPanelAdvancedStyle()" inert="@(panelOpen != BitPlacement.Left)">
                                     <div class="panel-trap">
                                         <h3>Left Menu</h3>
                                         <div>Item1</div>
@@ -320,7 +320,7 @@
                                         <div>Item3</div>
                                     </div>
                                 </div>
-                                <div class="panel right" style="@GetRightPanelAdvancedStyle()" inert="@(panelOpen != BitSwipeDirection.Right)">
+                                <div class="panel right" style="@GetRightPanelAdvancedStyle()" inert="@(panelOpen != BitPlacement.Right)">
                                     <div class="panel-trap">
                                         <h3>Right Menu</h3>
                                         <div>Item1</div>

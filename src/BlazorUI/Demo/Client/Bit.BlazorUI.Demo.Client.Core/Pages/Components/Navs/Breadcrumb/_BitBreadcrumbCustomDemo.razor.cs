@@ -12,8 +12,8 @@ public partial class _BitBreadcrumbCustomDemo
 
     private readonly List<PageInfo> CustomBreadcrumbItemsDisabled =
     [
-        new() { Name = "Custom 1", Address = "/components/breadcrumb", IsEnabled = false },
-        new() { Name = "Custom 2", Address = "/components/breadcrumb", IsEnabled = false },
+        new() { Name = "Custom 1", Address = "/components/breadcrumb", IsDisabled = true },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb", IsDisabled = true },
         new() { Name = "Custom 3", Address = "/components/breadcrumb" },
         new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
     ];

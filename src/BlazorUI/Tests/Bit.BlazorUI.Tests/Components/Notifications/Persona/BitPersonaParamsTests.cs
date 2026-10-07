@@ -57,7 +57,7 @@ public class BitPersonaParamsTests : BunitTestContext
         var @params = new BitPersonaParams
         {
             Size = BitPersonaSize.Size100,
-            Shape = BitPersonaShape.Square,
+            Shape = BitShape.Square,
             CoinColor = BitColor.Success,
             Vertical = true,
             Reversed = true,
@@ -114,7 +114,7 @@ public class BitPersonaParamsTests : BunitTestContext
     [TestMethod]
     public void BitPersonaOwnSquaredShouldNotBeOverriddenByACascadedShape()
     {
-        var @params = new BitPersonaParams { Shape = BitPersonaShape.Square };
+        var @params = new BitPersonaParams { Shape = BitShape.Square };
 
         var component = RenderWithParams(@params,
             RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.Squared), true)),
@@ -305,7 +305,7 @@ public class BitPersonaParamsTests : BunitTestContext
             PresenceTitles = presenceTitles,
             Rel = BitLinkRels.NoFollow,
             Reversed = true,
-            Shape = BitPersonaShape.Rounded,
+            Shape = BitShape.Rounded,
             ShowDefaultPresenceIcons = true,
             ShowInitialsUntilImageLoads = true,
             ShowOverflowTooltip = false,
@@ -346,7 +346,7 @@ public class BitPersonaParamsTests : BunitTestContext
         Assert.AreSame(presenceTitles, persona.PresenceTitles);
         Assert.AreEqual(BitLinkRels.NoFollow, persona.Rel);
         Assert.IsTrue(persona.Reversed);
-        Assert.AreEqual(BitPersonaShape.Rounded, persona.Shape);
+        Assert.AreEqual(BitShape.Rounded, persona.Shape);
         Assert.IsTrue(persona.ShowDefaultPresenceIcons);
         Assert.IsTrue(persona.ShowInitialsUntilImageLoads);
         Assert.IsFalse(persona.ShowOverflowTooltip);

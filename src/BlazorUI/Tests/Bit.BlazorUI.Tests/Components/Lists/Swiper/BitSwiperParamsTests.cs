@@ -73,7 +73,7 @@ public class BitSwiperParamsTests : BunitTestContext
         {
             Color = BitColor.Success,
             Size = BitSize.Large,
-            Snap = BitSwiperSnap.Center,
+            SnapAlign = BitScrollSnapAlign.Center,
             Vertical = true,
             ShowScrollbar = true,
             NoDrag = true,
@@ -195,6 +195,6 @@ public class BitSwiperParamsTests : BunitTestContext
         Assert.IsTrue(instance.PauseOnHover);
         Assert.IsTrue(instance.PauseOnFocus);
         Assert.IsNull(instance.Color);
-        Assert.IsNull(instance.Snap);
+        Assert.IsNull(instance.SnapAlign);
     }
 }

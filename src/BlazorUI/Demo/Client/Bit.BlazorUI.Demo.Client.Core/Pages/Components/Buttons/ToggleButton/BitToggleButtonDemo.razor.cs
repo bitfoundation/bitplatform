@@ -152,12 +152,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the icon relative to the content of the toggle button.",
+            Description = "The position of the icon relative to the content of the toggle button. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -189,12 +189,12 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "LoadingLabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading label in regards to the spinner icon.",
+            Name = "LoadingLabelPlacement",
+            Type = "BitPlacement",
+            DefaultValue = "BitPlacement.End",
+            Description = "The position of the loading label in regards to the spinner icon. Only Top, Bottom, Start and End are honoured; any other value falls back to the default.",
             LinkType = LinkType.Link,
-            Href = "#label-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -544,19 +544,19 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-disabled-color",
             DefaultValue = "The Color role's disabled text color",
-            Description = "Foreground when IsEnabled is false; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
+            Description = "Foreground when Disabled is true; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-background",
             DefaultValue = "Per Variant: the role's disabled color (Fill), transparent (Outline, Text)",
-            Description = "Background when IsEnabled is false.",
+            Description = "Background when Disabled is true.",
         },
         new()
         {
             Name = "--bit-ToggleButton-disabled-border-color",
             DefaultValue = "--bit-ToggleButton-disabled-background, then per Variant",
-            Description = "Border color when IsEnabled is false.",
+            Description = "Border color when Disabled is true.",
         },
         new()
         {
@@ -888,60 +888,7 @@ public partial class BitToggleButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Start",
-                    Description="Icon renders before the content (default).",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Icon renders after the content.",
-                    Value="1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "label-position-enum",
-            Name = "BitLabelPosition",
-            Description = "Determines the position of the loading label in regards to the spinner icon.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Top",
-                    Description="The label renders above the spinner.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="The label renders after the spinner.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Bottom",
-                    Description="The label renders below the spinner.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Start",
-                    Description="The label renders before the spinner.",
-                    Value="3",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",

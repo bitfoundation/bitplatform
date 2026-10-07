@@ -167,7 +167,7 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the dialog on the screen.
     /// </summary>
-    public BitDialogPosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Hands the focus back to whatever held it when the dialog opened, once the dialog closes.

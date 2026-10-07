@@ -25,7 +25,7 @@
         <div class="example-content">
             <BitDatePicker Label="Basic DatePicker" />
             <br /><br />
-            <BitDatePicker Label="Disabled" IsEnabled="false" />
+            <BitDatePicker Label="Disabled" Disabled />
             <br /><br />
             <BitDatePicker Label="Required" Required />
             <br /><br />
@@ -344,7 +344,7 @@
         <div class="example-content-standalone">
             <BitDatePicker Label="Basic DatePicker" Standalone />
             <br /><br />
-            <BitDatePicker Label="Disabled" IsEnabled="false" Standalone />
+            <BitDatePicker Label="Disabled" Disabled Standalone />
             <br /><br />
             <BitDatePicker Label="Week numbers, highlighted months and a time picker"
                            Standalone
@@ -612,7 +612,7 @@
 
     <DemoExample Title="Appearance" RazorCode="@example21RazorCode" Id="example21">
         <div>
-            <b>Underlined</b>, <b>HasBorder</b>, <b>IconLocation</b> and <b>IconName</b> style the field,
+            <b>Underlined</b>, <b>HasBorder</b>, <b>IconPlacement</b> and <b>IconName</b> style the field,
             <b>ShowGoToToday</b> hides the today button, and <b>DropDirection</b> lets the callout open on any side.
         </div>
         <br />
@@ -621,7 +621,7 @@
             <br /><br />
             <BitDatePicker Label="HasBorder (false)" HasBorder="false" />
             <br /><br />
-            <BitDatePicker Label="IconLocation (Left)" IconLocation="BitIconLocation.Left" />
+            <BitDatePicker Label="IconPlacement (Start)" IconPlacement="BitPlacement.Start" />
             <br /><br />
             <BitDatePicker Label="IconName" IconName="@BitIconName.Calendar" />
             <br /><br />

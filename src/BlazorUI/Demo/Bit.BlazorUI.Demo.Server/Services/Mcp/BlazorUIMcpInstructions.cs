@@ -47,7 +47,7 @@ public static class BlazorUIMcpInstructions
         GetBitBlazorUIThemingGuide with no argument to get the list of what each can return, rather than
         looking for a separate tool that lists them.
 
-        Six things hold across the whole library. Apply them without being asked:
+        Seven things hold across the whole library. Apply them without being asked:
         1. Call AddBitBlazorUIServices() in EVERY DI container that renders components - a Blazor Web App
            with an interactive client has two - and put <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css">
            and <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"> in the host page. Neither
@@ -60,13 +60,19 @@ public static class BlazorUIMcpInstructions
            every component; per-part overrides go in its Classes / Styles bag; an app-wide change is a
            --bit-* token. A literal hex color is correct in exactly one theme and wrong in the other three.
         4. An enum parameter takes the enum, not a string: Color="BitColor.Primary", not Color="Primary".
-        5. Disabled is IsEnabled="false" (never the native disabled attribute), hidden is
+        5. Disabled is the Disabled parameter (never a disabled key splatted through @attributes, which
+           lands on the element as plain HTML), hidden is
            Visibility="BitVisibility.Hidden" or Collapsed (never display:none) - both are BitComponentBase
            parameters that every component has, and both keep the accessibility behaviour the component
            implements.
         6. Two-way binding uses the @bind- form the component declares (@bind-Value, @bind-IsOpen,
            @bind-SelectedItem). Setting the one-way parameter and handling the change callback yourself
            works, but it is the long way round and it is where value-out-of-sync bugs come from.
+        7. Placement, position, shape, line style and selection mode are one enum each for the whole
+           library - BitPlacement, BitPosition, BitShape, BitLineStyle, BitSelectionMode - so a
+           parameter usually honours only part of the enum it takes: IconPlacement reads Start and End
+           alone. Every other value compiles and renders the default, and the parameter's own
+           description is what names the ones it honours.
 
         Where a tool cannot resolve an argument it answers with the nearest candidates and the call that
         would list them, so a near miss is worth reading rather than retrying blind.

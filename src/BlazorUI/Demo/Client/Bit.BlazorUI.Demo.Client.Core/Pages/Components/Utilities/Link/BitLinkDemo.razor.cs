@@ -80,12 +80,12 @@ public partial class BitLinkDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitIconPosition?",
+            Name = "IconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
             Description = "Where the icon sits: before the content (default) or after it (End).",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -538,27 +538,7 @@ public partial class BitLinkDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content (default).",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content.",
-                    Value = "1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "size-enum",
@@ -731,7 +711,7 @@ public partial class BitLinkDemo
             Underlined = true,
             Target = BitLinkTarget.Blank,
             IconName = BitIconName.OpenInNewWindow,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
         }
     ];
 

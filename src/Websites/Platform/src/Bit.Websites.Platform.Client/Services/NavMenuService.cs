@@ -24,15 +24,13 @@ public class NavMenuService
 
     public bool IsTemplateDocRoute { get; private set; }
     public bool IsBesqlDocRoute { get; private set; }
-    public bool IsLcncDocRoute { get; private set; }
 
     /// <summary>
-    /// Docs routes get the docs nav menu (hamburger); Lcnc has no docs yet, so it is excluded here,
-    /// but it still counts as a product route for highlighting the Products menu trigger.
+    /// Docs routes get the docs nav menu (hamburger).
     /// </summary>
     public bool IsDocsRoute => IsTemplateDocRoute || IsBesqlDocRoute;
 
-    public bool IsProductsRoute => IsDocsRoute || IsLcncDocRoute;
+    public bool IsProductsRoute => IsDocsRoute;
 
     /// <summary>
     /// Idempotent; called by every component that reacts to LocationChanged, whichever fires first.
@@ -49,6 +47,5 @@ public class NavMenuService
 
         IsTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
         IsBesqlDocRoute = currentUrl.Contains("/besql");
-        IsLcncDocRoute = currentUrl.Contains("/lowcode-nocode");
     }
 }

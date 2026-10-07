@@ -7,7 +7,7 @@
         @* A nullable bool has three states (true/false/null); a plain checkbox only has two and would
            silently collapse null into false. Use a select whose empty option round-trips back to null
            (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
-        <select disabled="@(!Grid.IsEnabled)" class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
+        <select disabled="@(Grid.Disabled)" class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
                 aria-label="@EditorLabel"
                 aria-invalid="@(Error is null ? null : "true")"
                 aria-describedby="@ErrorId"
@@ -19,7 +19,7 @@
         break;
 
     case BitDataGridColumnDataType.Boolean:
-        <input disabled="@(!Grid.IsEnabled)" type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
+        <input disabled="@(Grid.Disabled)" type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
                checked="@(GetBool())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -28,7 +28,7 @@
         break;
 
     case BitDataGridColumnDataType.Number:
-        <input @key="_typedKey" disabled="@(!Grid.IsEnabled)" type="number" class="bit-dtg-editor" step="any"
+        <input @key="_typedKey" disabled="@(Grid.Disabled)" type="number" class="bit-dtg-editor" step="any"
                value="@_typedStart"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -41,7 +41,7 @@
            GetDate/GetDateTime echo back for a conversion-rejected edit would never be shown. Fall
            back to a text input while the buffer holds raw text so the user's entry stays visible
            alongside the error; a successful parse flips the control back to its native type. *@
-        <input disabled="@(!Grid.IsEnabled)" type="@(Value is string ? "text" : "date")" class="bit-dtg-editor"
+        <input disabled="@(Grid.Disabled)" type="@(Value is string ? "text" : "date")" class="bit-dtg-editor"
                value="@(GetDate())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -50,7 +50,7 @@
         break;
 
     case BitDataGridColumnDataType.DateTime:
-        <input disabled="@(!Grid.IsEnabled)" type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
+        <input disabled="@(Grid.Disabled)" type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
                value="@(GetDateTime())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -59,7 +59,7 @@
         break;
 
     case BitDataGridColumnDataType.DateTimeOffset:
-        <input disabled="@(!Grid.IsEnabled)" type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
+        <input disabled="@(Grid.Disabled)" type="@(Value is string ? "text" : "datetime-local")" class="bit-dtg-editor"
                value="@(GetDateTime())"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"
@@ -68,7 +68,7 @@
         break;
 
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
-        <select disabled="@(!Grid.IsEnabled)" class="bit-dtg-editor" value="@(GetString())"
+        <select disabled="@(Grid.Disabled)" class="bit-dtg-editor" value="@(GetString())"
                 aria-label="@EditorLabel"
                 aria-invalid="@(Error is null ? null : "true")"
                 aria-describedby="@ErrorId"
@@ -85,7 +85,7 @@
         break;
 
     default:
-        <input @key="_typedKey" disabled="@(!Grid.IsEnabled)" type="text" class="bit-dtg-editor"
+        <input @key="_typedKey" disabled="@(Grid.Disabled)" type="text" class="bit-dtg-editor"
                value="@_typedStart"
                aria-label="@EditorLabel"
                aria-invalid="@(Error is null ? null : "true")"

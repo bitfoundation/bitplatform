@@ -77,25 +77,25 @@ public partial class BitPivotDemo
 </BitPivot>";
 
     private readonly string example5RazorCode = @"
-<BitPivot Position=""BitPivotPosition.Bottom"">
+<BitPivot Placement=""BitPlacement.Bottom"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Start"">
+<BitPivot Placement=""BitPlacement.Start"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.End"">
+<BitPivot Placement=""BitPlacement.End"">
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared with me""><div>Pivot #2: Shared with me</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
-<BitPivot Position=""BitPivotPosition.Start"" HeaderType=""BitPivotHeaderType.Tab"">
+<BitPivot Placement=""BitPlacement.Start"" HeaderType=""BitPivotHeaderType.Tab"">
     <BitPivotItem HeaderText=""Account"">
         <BitPivot>
             <BitPivotItem HeaderText=""Profile""><div>Account / Profile</div></BitPivotItem>
@@ -141,7 +141,7 @@ public partial class BitPivotDemo
 </BitPivot>
 
 <div style=""display:flex;height:200px"">
-    <BitPivot Position=""BitPivotPosition.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Menu"">
+    <BitPivot Placement=""BitPlacement.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Menu"">
         @foreach (var tab in overflowTabs)
         {
             <BitPivotItem HeaderText=""@tab"">Content of the @tab tab.</BitPivotItem>
@@ -150,7 +150,7 @@ public partial class BitPivotDemo
 </div>
 
 <div style=""display:flex;height:200px"">
-    <BitPivot Position=""BitPivotPosition.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Slide"">
+    <BitPivot Placement=""BitPlacement.Start"" OverflowBehavior=""BitPivotOverflowBehavior.Slide"">
         @foreach (var tab in overflowTabs)
         {
             <BitPivotItem HeaderText=""@tab"">Content of the @tab tab.</BitPivotItem>
@@ -205,11 +205,11 @@ private readonly List<string> overflowTabs = [""File"", ""Shared with me"", ""Re
     <BitPivotItem Key=""4"" HeaderText=""Last""><div>Pivot #4: Last</div></BitPivotItem>
 </BitPivot>
 
-<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidLeft"" IsEnabled=""@(selectedKey != ""1"")""
+<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidLeft"" Disabled=""@(selectedKey == ""1"")""
            OnClick=""(() => selectedKey = (int.Parse(selectedKey) - 1).ToString())"">
     Prev
 </BitButton>
-<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidRight"" IsEnabled=""@(selectedKey != ""4"")""
+<BitButton Variant=""BitVariant.Outline"" IconName=""@BitIconName.CaretSolidRight"" Disabled=""@(selectedKey == ""4"")""
            OnClick=""(() => selectedKey = (int.Parse(selectedKey) + 1).ToString())"">
     Next
 </BitButton>
@@ -380,7 +380,7 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 </BitPivot>";
 
     private readonly string example15RazorCode = @"
-<BitPivot IsEnabled=""false"">
+<BitPivot Disabled>
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
@@ -388,11 +388,11 @@ private void HandleReorder(BitPivotReorderEventArgs args)
 
 <BitPivot>
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Shared"" IsEnabled=""false""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared"" Disabled><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
-<BitPivot HeaderType=""BitPivotHeaderType.Tab"" IsEnabled=""false"">
+<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Disabled>
     <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
     <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
     <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
@@ -600,7 +600,7 @@ private readonly BitPivotParams[] pivotParams =
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Dir=""BitDir.Rtl"" Position=""BitPivotPosition.Start"">
+<BitPivot Dir=""BitDir.Rtl"" Placement=""BitPlacement.Start"">
     <BitPivotItem HeaderText=""اسناد"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
     </BitPivotItem>

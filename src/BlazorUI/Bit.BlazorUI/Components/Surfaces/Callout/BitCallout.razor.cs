@@ -75,8 +75,15 @@ public partial class BitCallout : BitComponentBase
     /// <remarks>
     /// The alignment is applied before the callout is kept within the screen, so a callout that would hang
     /// off an edge is still slid back onto it, and the arrow keeps pointing at the anchor either way.
+    /// <br />
+    /// Start and End are logical on the horizontal axis, so they follow the reading direction there, while the
+    /// vertical axis reads top to bottom in both. Each axis's physical pair - Left and Right above or below the
+    /// anchor, Top and Bottom beside it - names a side of the screen and only means anything on its own axis:
+    /// which side a callout is placed on is settled by the room it finds, so a physical alignment used off its
+    /// axis falls back to Start, exactly as leaving this unset does. The two combined values fall back the same
+    /// way. This is the rule BitTooltip's Alignment follows, each falling back to its own default.
     /// </remarks>
-    [Parameter] public BitCalloutAlignment? Alignment { get; set; }
+    [Parameter] public BitPlacement? Alignment { get; set; }
 
     /// <summary>
     /// The distance in pixels the callout is slid along the axis it is aligned on, off the edge of the
@@ -355,7 +362,7 @@ public partial class BitCallout : BitComponentBase
     [Parameter] public bool NoDismissOnScroll { get; set; }
 
     /// <summary>
-    /// Keeps the callout on the <see cref="Side"/> it was asked for even when there is not enough room for
+    /// Keeps the callout on the <see cref="Placement"/> it was asked for even when there is not enough room for
     /// it there, instead of flipping it to the opposite side. It has nothing to hold in place for a callout
     /// that was not given a side, whose placement is the automatic one to begin with.
     /// </summary>
@@ -410,7 +417,12 @@ public partial class BitCallout : BitComponentBase
     /// The edge of the screen the responsive panel slides in from, for a <see cref="ResponsiveMode"/> of
     /// Panel. It defaults to End.
     /// </summary>
-    [Parameter] public BitPanelPosition? PanelPosition { get; set; }
+    /// <remarks>
+    /// Left and Right are the physical edges, so they stay where they are named in both directions, whether the
+    /// direction is set on the component or inherited from the page; Center and the two combined values name no
+    /// edge and fall back to the default.
+    /// </remarks>
+    [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
     /// <summary>
     /// Configures the responsive mode of the callout for the small screens.
@@ -454,7 +466,12 @@ public partial class BitCallout : BitComponentBase
     /// every side it allows. Leaving it unset leaves the choice to Direction alone, and
     /// <see cref="NoFlip"/> turns the preference into a demand.
     /// </summary>
-    [Parameter] public BitCalloutSide? Side { get; set; }
+    /// <remarks>
+    /// Start and End follow the reading direction, while Left and Right stay on the side of the screen they
+    /// name in both directions. Center and the two combined values name no side of the anchor and leave the
+    /// choice to Direction, exactly as leaving this unset does.
+    /// </remarks>
+    [Parameter] public BitPlacement? Placement { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the callout.
@@ -503,7 +520,7 @@ public partial class BitCallout : BitComponentBase
     /// </remarks>
     public async Task OpenAt(double x, double y)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _pointX = x;
         _pointY = y;
@@ -630,7 +647,7 @@ public partial class BitCallout : BitComponentBase
         // Escape pressed anywhere in the page while this is the innermost open callout (see Utils.setupEscape),
         // which is how a callout with an external anchor or opened at a point is dismissed from the keyboard:
         // the focus is usually on the trigger that opened it, outside of anything the component renders.
-        if (IsEnabled is false || IsOpen is false || NoDismissOnEscape) return;
+        if (Disabled || IsOpen is false || NoDismissOnEscape) return;
 
         await CloseCallout();
 
@@ -814,7 +831,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnAnchorClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // A click on the anchor while the callout is open usually lands on the overlay above it, but it
         // still arrives here when an ancestor stacking context lifts the anchor over the overlay, and it
@@ -834,7 +851,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnOverlayClick()
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (NoDismissOnOutsideClick) return;
 
@@ -843,7 +860,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutClick()
     {
-        if (AutoClose is false || IsEnabled is false || IsOpen is false) return;
+        if (AutoClose is false || Disabled || IsOpen is false) return;
 
         await CloseCallout();
 
@@ -856,7 +873,7 @@ public partial class BitCallout : BitComponentBase
     // listener leaves the anchor out, so this is the one place the key is answered for it.
     private async Task HandleOnRootKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
 
@@ -870,7 +887,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
 
@@ -895,7 +912,7 @@ public partial class BitCallout : BitComponentBase
         // anchor scheduled, and coming back to the anchor cancels the close leaving the callout scheduled.
         CancelHover();
 
-        if (IsEnabled is false || IsOpen) return;
+        if (Disabled || IsOpen) return;
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
@@ -912,7 +929,7 @@ public partial class BitCallout : BitComponentBase
 
         CancelHover();
 
-        if (IsEnabled is false || IsOpen is false) return;
+        if (Disabled || IsOpen is false) return;
 
         if (await DelayHover(HoverCloseDelay) is false) return;
 
@@ -930,7 +947,7 @@ public partial class BitCallout : BitComponentBase
         // A callout the user cannot reach must not be opened by the Open and Toggle methods either, since
         // it would then hang over the page with a disabled anchor under it. An IsOpen the parent sets
         // itself is left alone: the state is the parent's to own there.
-        if (IsOpen || IsEnabled is false) return;
+        if (IsOpen || Disabled) return;
 
         // Assigning IsOpen runs OnSetIsOpen, which is the entry point for the open state changing from the
         // outside and toggles the callout on its own. Here the toggling is done below instead, once the
@@ -1019,7 +1036,7 @@ public partial class BitCallout : BitComponentBase
     // events, so the pointer leaving it never closes it again.
     private async Task CloseWhenUnavailable()
     {
-        if (IsOpen is false || IsEnabled) return;
+        if (IsOpen is false || Disabled is false) return;
 
         if (IsRendered)
         {
@@ -1104,20 +1121,8 @@ public partial class BitCallout : BitComponentBase
                 arrowId: ShowArrow ? _arrowId : "",
                 gap: Gap,
                 noDismiss: NoDismissOnOutsideClick,
-                preferredSide: Side switch
-                {
-                    BitCalloutSide.Top => "top",
-                    BitCalloutSide.Bottom => "bottom",
-                    BitCalloutSide.Start => "start",
-                    BitCalloutSide.End => "end",
-                    _ => ""
-                },
-                alignment: Alignment switch
-                {
-                    BitCalloutAlignment.Center => "center",
-                    BitCalloutAlignment.End => "end",
-                    _ => ""
-                },
+                preferredSide: Placement.ToEdgeName(fallback: ""),
+                alignment: Alignment.ToAlignmentName(),
                 noFlip: NoFlip,
                 collisionPadding: CollisionPadding,
                 alignmentOffset: AlignmentOffset,
@@ -1614,13 +1619,13 @@ public partial class BitCallout : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // The edge a responsive callout slides in from, which is the panel position for the Panel mode and
-    // the mode itself for the two that name an edge of their own.
-    private BitPanelPosition ResponsivePosition => ResponsiveMode switch
+    // The edge a responsive callout slides in from, which is the panel placement for the Panel mode (see
+    // ToPanelSide) and the mode itself for the two that name an edge of their own.
+    private BitPlacement ResponsivePosition => ResponsiveMode switch
     {
-        BitResponsiveMode.Top => BitPanelPosition.Top,
-        BitResponsiveMode.Bottom => BitPanelPosition.Bottom,
-        _ => PanelPosition ?? BitPanelPosition.End
+        BitResponsiveMode.Top => BitPlacement.Top,
+        BitResponsiveMode.Bottom => BitPlacement.Bottom,
+        _ => PanelPlacement.ToPanelSide()
     };
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
@@ -1646,12 +1651,7 @@ public partial class BitCallout : BitComponentBase
                 trigger: 0.25m,
                 position: ResponsivePosition,
                 isRtl: Dir is BitDir.Rtl,
-                // The axis the panel is swiped away along is the one it slid in on, and the lock is what
-                // takes that axis from the page: a top or bottom panel dragged with the wrong lock follows
-                // the finger while the page scrolls out from under it at the same time.
-                orientationLock: ResponsivePosition is BitPanelPosition.Top or BitPanelPosition.Bottom
-                                    ? BitSwipeOrientation.Vertical
-                                    : BitSwipeOrientation.Horizontal,
+                orientationLock: ResponsivePosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,
                 scrollContainerId: ScrollContainerId ?? "");
@@ -1853,9 +1853,11 @@ public partial class BitCallout : BitComponentBase
 
             classes.Add(ResponsivePosition switch
             {
-                BitPanelPosition.Start => "bit-clo-sta",
-                BitPanelPosition.Top => "bit-clo-top",
-                BitPanelPosition.Bottom => "bit-clo-btm",
+                BitPlacement.Start => "bit-clo-sta",
+                BitPlacement.Left => "bit-clo-lft",
+                BitPlacement.Right => "bit-clo-rgt",
+                BitPlacement.Top => "bit-clo-top",
+                BitPlacement.Bottom => "bit-clo-btm",
                 _ => "bit-clo-end"
             });
         }

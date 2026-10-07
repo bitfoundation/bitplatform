@@ -17,7 +17,7 @@
                      NoBorder
                      Transparent
                      Items="_items"
-                     IsEnabled="IsEnabled"
+                     Disabled="Disabled"
                      Title="@DesignSystemTitle"
                      AriaLabel="@DesignSystemTitle"
                      Class="@GetDesignSystemClass()"
@@ -36,7 +36,7 @@
            every possible state. *@
         <button @onclick="HandleOnToggleColorScheme"
                 type="button"
-                disabled="@(IsEnabled is false)"
+                disabled="@(Disabled)"
                 title="@LightSchemeTitle"
                 aria-label="@LightSchemeTitle"
                 class="@GetColorSchemeClass("bit-ths-drk", Classes?.DarkSchemeButton)"
@@ -46,7 +46,7 @@
 
         <button @onclick="HandleOnToggleColorScheme"
                 type="button"
-                disabled="@(IsEnabled is false)"
+                disabled="@(Disabled)"
                 title="@DarkSchemeTitle"
                 aria-label="@DarkSchemeTitle"
                 class="@GetColorSchemeClass("bit-ths-lgt", Classes?.LightSchemeButton)"
