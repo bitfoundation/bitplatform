@@ -135,49 +135,91 @@ public class ToolTests
     }
 
     [TestMethod]
-    public async Task TheDotnetSdk_Should_MatchTheFeatureBandOfGlobalJson()
+    public async Task TheDotnetSdk_Should_BeWhatDotnetResolvesForTheGlobalJson()
     {
         using var host = new TestHost(HostOs.Linux);
         AllInstalled(host.Runner);
-        var needs = new ToolNeeds { Sdk = new SdkRequirement(new Version(10, 0, 100), Preview: false) };
+        var needs = new ToolNeeds { Sdk = new SdkRequirement("10.0.100") };
+        string? globalJson = null;
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "9.0.300 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+        host.Runner.On("dotnet", "--version", spec =>
+        {
+            globalJson = File.ReadAllText(Path.Combine(spec.WorkingDirectory!, "global.json"));
+            return new ProcessResult { ExitCode = 145, Output = "A compatible .NET SDK was not found." };
+        });
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual("10.0.401", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+        var missing = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status;
+
+        Assert.AreEqual(ToolState.Missing, missing.State);
+        Assert.AreEqual("found 10.0.401", missing.Detail);
+        Assert.AreEqual("""{"sdk":{"version":"10.0.100"}}""", globalJson);
+
+        host.Runner.On("dotnet", "--version", 0, "10.0.104");
+        Assert.AreEqual("10.0.104", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
     }
 
     [TestMethod]
-    public async Task APreviewGlobalJson_Should_StillRequireItsSdk()
+    public void AGlobalJson_Should_KeepItsRollForwardRules()
     {
-        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"latestFeature\" } }");
+        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"disable\", \"allowPrerelease\": true } }")!;
 
-        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true), sdk);
-
-        using var host = new TestHost(HostOs.Linux);
-        AllInstalled(host.Runner);
-        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
-
-        Assert.AreEqual("11.0.100", (await CheckAsync(host, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+        Assert.AreEqual(new SdkRequirement("11.0.100-rc.1.26425.128", "disable", true), sdk);
+        Assert.IsTrue(sdk.Pinned);
+        Assert.IsTrue(sdk.Preview);
+        Assert.AreEqual("11.0", sdk.Channel);
+        Assert.AreEqual("""{"sdk":{"version":"11.0.100-rc.1.26425.128","rollForward":"disable","allowPrerelease":true}}""", sdk.GlobalJson);
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { } }"));
+        Assert.IsNull(SdkRequirement.FromGlobalJson(null));
     }
 
     [TestMethod]
-    public async Task ADisabledRollForward_Should_RequireTheExactSdk()
+    public void TheEmbeddedTemplate_Should_CarryTheSdkOfTheTemplatesGlobalJson()
     {
-        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"disable\" } }");
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
 
-        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128"), sdk);
+        while (directory is not null && File.Exists(Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate", "global.json")) is false)
+        {
+            directory = directory.Parent;
+        }
 
-        using var host = new TestHost(HostOs.Linux);
-        AllInstalled(host.Runner);
-        var needs = new ToolNeeds { Sdk = sdk };
+        Assert.IsNotNull(directory);
+        var expected = SdkRequirement.FromGlobalJson(File.ReadAllText(Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate", "global.json")));
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+        Assert.IsNotNull(expected);
+        Assert.AreEqual(expected, TemplateRequirements.Embedded.Sdk);
+    }
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual("11.0.100-rc.1.26425.128", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    [TestMethod]
+    public async Task TheSdk_Should_InstallItsExactVersionOnMacOSAndLinux()
+    {
+        var sdk = new SdkRequirement("11.0.100-rc.1.26425.128", "disable");
+
+        using var mac = new TestHost(HostOs.MacOS);
+        AllInstalled(mac.Runner);
+        mac.Runner.On("dotnet", "--version", 145);
+        mac.Runner.Executables["dotnet"] = "/usr/local/share/dotnet/dotnet";
+        var package = (await CheckAsync(mac, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        Assert.AreEqual(Elevation.Sudo, package.Elevation);
+        StringAssert.Contains(package.Commands[0].CommandLine, "https://builds.dotnet.microsoft.com/dotnet/Sdk/11.0.100-rc.1.26425.128/dotnet-sdk-11.0.100-rc.1.26425.128-osx-x64.pkg");
+        StringAssert.Contains(package.Commands[0].CommandLine, "pkgutil --check-signature");
+        StringAssert.Contains(package.Commands[0].CommandLine, "installer -pkg");
+
+        using var linux = new TestHost(HostOs.Linux);
+        AllInstalled(linux.Runner);
+        linux.Runner.On("dotnet", "--version", 145);
+        linux.Runner.Executables["dotnet"] = "/usr/lib/dotnet/dotnet";
+        var system = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        Assert.AreEqual(Elevation.Sudo, system.Elevation);
+        StringAssert.Contains(system.Commands[0].CommandLine, "https://dot.net/v1/dotnet-install.sh");
+        StringAssert.Contains(system.Commands[0].CommandLine, "--version '11.0.100-rc.1.26425.128' --install-dir '/usr/lib/dotnet'");
+
+        linux.Runner.Executables["dotnet"] = Path.Combine(linux.Home, ".dotnet", "dotnet");
+        var user = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        Assert.AreEqual(Elevation.None, user.Elevation);
+        StringAssert.Contains(user.Commands[0].CommandLine, $"--install-dir '{Path.Combine(linux.Home, ".dotnet")}'");
     }
 
     [TestMethod]
@@ -200,6 +242,85 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task NodeFromAVersionManager_Should_BeUpdatedThroughIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+        var needs = new ToolNeeds { NodeMajor = 24 };
+
+        host.Runner.Executables["node"] = "/home/me/.nvm/versions/node/v22.11.0/bin/node";
+        var nvm = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual("Update Node.js to the LTS version with nvm", nvm.Title);
+        Assert.AreEqual(Elevation.None, nvm.Elevation);
+        StringAssert.Contains(nvm.Commands.Single().CommandLine, "/nvm.sh' >/dev/null 2>&1; nvm install --lts && nvm alias default 'lts/*'");
+        StringAssert.Contains(nvm.PathProbe!.CommandLine, "nvm which default");
+
+        host.Runner.Executables["node"] = "/home/me/.volta/bin/node";
+        var volta = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual("volta install node@lts", volta.Commands.Single().CommandLine);
+
+        host.Runner.Executables["node"] = "/home/me/.local/state/fnm_multishells/123_456/bin/node";
+        var fnm = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
+
+        CollectionAssert.AreEqual(new[] { "fnm install --lts", "fnm default lts-latest" }, fnm.Commands.Select(c => c.CommandLine).ToArray());
+        StringAssert.Contains(fnm.PathProbe!.CommandLine, "--using=lts-latest");
+    }
+
+    [TestMethod]
+    public async Task NvmWindows_Should_SwitchNodeInTheAdministratorBatch()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["NVM_HOME"] = @"C:\Users\me\AppData\Roaming\nvm", ["NVM_SYMLINK"] = @"C:\Program Files\nodejs" });
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+        host.Runner.Executables["winget"] = @"C:\winget.exe";
+        host.Runner.Executables["node"] = @"C:\Program Files\nodejs\node.exe";
+
+        var action = (await CheckAsync(host, new ToolNeeds { NodeMajor = 24 })).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual(Elevation.Admin, action.Elevation);
+        CollectionAssert.AreEqual(new[] { "nvm install lts", "nvm use lts" }, action.Commands.Select(c => c.CommandLine).ToArray());
+    }
+
+    [TestMethod]
+    public async Task AMissingNode_Should_ComeFromTheVersionManagerTheUserHas()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("node");
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["volta"] = "/home/me/.volta/bin/volta";
+
+        var action = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual("Install Node.js LTS with Volta", action.Title);
+    }
+
+    [TestMethod]
+    public async Task TheNodeAVersionManagerInstalls_Should_BeOnThePathRightAway()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = Environment.GetEnvironmentVariable("PATH") ?? "" });
+        AllInstalled(host.Runner);
+        var installed = Directory.CreateDirectory(Path.Combine(host.Root, "nvm", "v24.9.0", "bin")).FullName;
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+        host.Runner.Executables["node"] = "/home/me/.nvm/versions/node/v22.11.0/bin/node";
+        host.Runner.On("bash", "-c", spec => new ProcessResult { ExitCode = 0, Output = spec.Arguments[1].Contains("nvm which default", StringComparison.Ordinal) ? installed : "" });
+        var needs = new ToolNeeds { NodeMajor = 24 };
+        var node = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([node], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.IsFalse(steps.AnyFailed);
+        CollectionAssert.Contains(host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator), installed);
+    }
+
+    [TestMethod]
     public async Task WindowsInstalls_Should_UseWinget()
     {
         if (OperatingSystem.IsWindows() is false)
@@ -218,16 +339,16 @@ public class ToolTests
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
         Assert.AreEqual("Install Docker Desktop", checks.Single(c => c.Tool.Id == "docker").Action!.Title);
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [C:\\Program Files\\dotnet\\sdk]");
-        var stable = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: false) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
-        var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+        host.Runner.On("dotnet", "--version", 145);
+        host.Runner.Executables["dotnet"] = @"C:\Program Files\dotnet\dotnet.exe";
+        var stable = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement("11.0.100") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+        var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement("11.0.100-rc.1.26425.128", "disable") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
-        var exact = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
-
-        CollectionAssert.Contains(stable.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.11");
-        CollectionAssert.DoesNotContain(stable.Commands[0].Arguments.ToArray(), "--version");
-        CollectionAssert.Contains(preview.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.Preview");
-        CollectionAssert.IsSubsetOf(new[] { "--id", "Microsoft.DotNet.SDK.Preview", "--version", "11.0.100-rc.1.26425.128" }, exact.Commands[0].Arguments.ToArray());
+        Assert.AreEqual(Elevation.Admin, preview.Elevation);
+        StringAssert.Contains(stable.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.11 --exact --version '11.0.100'");
+        StringAssert.Contains(preview.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.Preview --exact --version '11.0.100-rc.1.26425.128'");
+        StringAssert.Contains(preview.Commands[0].CommandLine, "dotnet-install.ps1");
+        StringAssert.Contains(preview.Commands[0].CommandLine, @"-InstallDir 'C:\Program Files\dotnet'");
     }
 
     [TestMethod]
@@ -252,13 +373,83 @@ public class ToolTests
             }
         };
 
-        var script = ToolInstaller.BuildWindowsScript(actions, @"C:\Temp\install.log", @"C:\Temp\results.json");
+        var script = ToolInstaller.BuildWindowsScript(actions, @"C:\Temp\install.log", @"C:\Temp\results.json", @"C:\Temp\cancel");
 
         StringAssert.Contains(script, "& 'reg.exe' 'add' 'HKLM\\SYSTEM\\x' '/d' 'it''s 1'");
         StringAssert.Contains(script, "$results['long-paths'] = $code");
         StringAssert.Contains(script, "$results['node'] = $code");
         StringAssert.Contains(script, "@(0, 3010) -contains $code");
+        StringAssert.Contains(script, "Start-BitWatchdog 1800");
+        StringAssert.Contains(script, "$cancelPath = 'C:\\Temp\\cancel'");
         StringAssert.Contains(script, "Set-Content -LiteralPath 'C:\\Temp\\results.json'");
+    }
+
+    [TestMethod]
+    public async Task TheAdministratorScript_Should_StopACommandAtItsTimeoutAndHonorCancel()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var directory = Directory.CreateTempSubdirectory("bit-cli-admin-").FullName;
+        var log = Path.Combine(directory, "install.log");
+        var results = Path.Combine(directory, "results.json");
+        var cancel = Path.Combine(directory, "cancel");
+        var scriptPath = Path.Combine(directory, "install.ps1");
+
+        ToolAction Action(string id, string arguments, int seconds) => new()
+        {
+            ToolId = id,
+            Title = id,
+            Elevation = Elevation.Admin,
+            Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/d", "/c", arguments], Timeout = TimeSpan.FromSeconds(seconds) }]
+        };
+
+        async Task<string> RunAsync(params ToolAction[] actions)
+        {
+            var script = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript(actions, log, results, cancel));
+            File.WriteAllBytes(scriptPath, script);
+
+            using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {ToolInstaller.EncodeBootstrap(scriptPath, script)}") { UseShellExecute = false, CreateNoWindow = true })!;
+            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(2));
+            return File.ReadAllText(results);
+        }
+
+        var timed = await RunAsync(Action("quick", "exit 0", 60), Action("slow", "ping -n 60 127.0.0.1 >nul", 3));
+
+        StringAssert.Contains(timed, "\"quick\":  0");
+        StringAssert.Contains(timed, $"\"slow\":  {ToolInstaller.TimedOutCode}");
+
+        File.WriteAllText(cancel, "cancel");
+        var cancelled = await RunAsync(Action("skipped", "exit 0", 60));
+
+        StringAssert.Contains(cancelled, $"\"skipped\":  {ToolInstaller.CancelledCode}");
+
+        var original = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript([Action("quick", "exit 0", 60)], log, results, cancel));
+        File.WriteAllBytes(scriptPath, original);
+        var bootstrap = ToolInstaller.EncodeBootstrap(scriptPath, original);
+        var marker = Path.Combine(directory, "tampered");
+        File.WriteAllText(scriptPath, $"Set-Content -LiteralPath '{marker}' -Value 'ran'");
+
+        using (var tampered = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {bootstrap}") { UseShellExecute = false, CreateNoWindow = true })!)
+        {
+            await tampered.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(1));
+            Assert.AreEqual(87, tampered.ExitCode);
+        }
+
+        Assert.IsFalse(File.Exists(marker));
+        Directory.Delete(directory, recursive: true);
+    }
+
+    [TestMethod]
+    public void TheBootstrap_Should_RunOnlyTheScriptItWasMadeFor()
+    {
+        var script = System.Text.Encoding.UTF8.GetBytes("Write-Output 'hi'");
+        var bootstrap = System.Text.Encoding.Unicode.GetString(Convert.FromBase64String(ToolInstaller.EncodeBootstrap(@"C:\Temp\it's\install.ps1", script)));
+
+        StringAssert.Contains(bootstrap, @"[IO.File]::ReadAllBytes('C:\Temp\it''s\install.ps1')");
+        StringAssert.Contains(bootstrap, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(script)));
+        StringAssert.Contains(bootstrap, "exit 87");
+        Assert.DoesNotContain("ExecutionPolicy", bootstrap);
     }
 
     [TestMethod]

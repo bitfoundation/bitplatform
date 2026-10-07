@@ -47,7 +47,7 @@ description: Drives a feature end-to-end using the AI-Driven Development Lifecyc
 ### 6. Troubleshooting
 - Reproduce the failure and locate it before changing anything - a fix aimed at a guess is just a second bug
 - Read a running deployment's own state through the **dev-mcp** MCP server instead of inferring it: effective configuration, health, database schema and applied migrations, entity queries, and Hangfire job state - read-only, global-admin only, and every call is logged
-- The project's MCP files point it at `https://use-your-api-server-url-here.com/dev-mcp`; after the first publish, tell the user to replace that placeholder with the published server's address, because until then it connects to nothing
+- The project's MCP files point it at `https://use-your-api-server-url-here.com/dev-mcp`, the address the project was created with, which is the local server unless a server address was given; to read a published deployment, tell the user to put that server's address in those files
 <!--#if (sentry == true)-->
 - Suggest adding Sentry's MCP server too, so a reported exception can be read here rather than in Sentry's dashboard
 <!--#endif-->
@@ -98,7 +98,7 @@ When the user asks for one of these, or you conclude the task needs it:
 <!--#endif-->
 
 ## Rules
-- This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016 DateTimeOffsetInsteadOfDateTimeAnalyzer`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
+- This project was created with `bit new`, so its code is already formatted, git has `develop` and `main`, and the server has its Initial EF Core migration. Only if the user says it was created another way, do those first: `dotnet format Boilerplate.slnx --exclude-diagnostics BL0016`, the two branches, and the migration from `.docs/01- Entity Framework Core.md`
 - CI runs on `develop` (`.github/workflows/ci.yml`, `.azure-devops/workflows/ci.yml`), production CD on `main` and test CD on `test`; protect `main` and `test` with a required status check on `ci.yml`, because the CD workflows never run the tests. See `.docs/16- CI-CD Pipeline and Environments.md`
 - Always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions

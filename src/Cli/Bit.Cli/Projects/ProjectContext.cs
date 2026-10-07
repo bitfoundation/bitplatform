@@ -28,6 +28,8 @@ public sealed partial class ProjectContext
 
     public string ServerApiDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Api");
 
+    public string AppHostDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.AppHost");
+
     public bool Exists => System.IO.Directory.Exists(Directory) && (File.Exists(Solution) || File.Exists(WebSolutionFilter));
 
     public string? Database => Template?.Database ?? ReadDatabaseFromProject();

@@ -60,7 +60,7 @@ public class WizardTests
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
 
         CollectionAssert.AreEqual(new[] { "Create it?" }, prompter.Prompts.Select(p => p.Question).ToArray(), host.Output);
-        StringAssert.Contains(host.Output, "open in VS Code");
+        StringAssert.Contains(host.FlatOutput, "open in VS Code");
     }
 
     [TestMethod]
@@ -98,13 +98,13 @@ public class WizardTests
         host.AllToolsInstalled();
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.Output, "VS Code extensions, open in VS Code");
+        StringAssert.Contains(host.FlatOutput, "VS Code extensions, open in VS Code");
 
         using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
         ci.AllToolsInstalled();
 
         Assert.AreEqual(0, await ci.RunAsync("new", "Contoso", "--dry-run", "--yes"), ci.Output);
-        Assert.IsFalse(ci.Output.Contains("open in", StringComparison.Ordinal), ci.Output);
+        Assert.IsFalse(ci.FlatOutput.Contains("open in", StringComparison.Ordinal), ci.Output);
         Assert.IsFalse(ci.Output.Contains("Chromium", StringComparison.Ordinal), ci.Output);
     }
 
