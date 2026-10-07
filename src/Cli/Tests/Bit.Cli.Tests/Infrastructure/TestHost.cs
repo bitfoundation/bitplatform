@@ -74,6 +74,7 @@ public sealed class TestHost : IDisposable
         Runner.On("docker", "version", 0, "28.5.1");
         Runner.On("aspire", "--version", 0, "13.6.0");
         Runner.On("dotnet", "--version", 0, TemplateRequirements.Embedded.Sdk?.Version ?? "11.0.100");
+        Runner.On("dotnet", "nuget list source", 0, "Registered Sources:\n  1.  nuget.org [Enabled]\n      https://api.nuget.org/v3/index.json\n");
         Runner.Executables["code"] = typeof(TestHost).Assembly.Location;
     }
 

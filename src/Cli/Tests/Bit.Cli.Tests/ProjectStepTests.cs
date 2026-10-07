@@ -91,8 +91,25 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         Assert.AreEqual("develop and main, committed as Jane Doe <Jane.Doe@git.com>", result.Detail);
         Assert.IsTrue(project.GitReady);
-        var configs = host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "config").Select(c => string.Join(' ', c.Arguments)).ToArray();
+        var configs = host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "config" && c.Arguments[1] is not "--global").Select(c => string.Join(' ', c.Arguments)).ToArray();
         CollectionAssert.AreEqual(new[] { "config user.name Jane Doe", "config user.email Jane.Doe@git.com" }, configs);
+    }
+
+    [TestMethod]
+    [DataRow(HostOs.Windows, "", true)]
+    [DataRow(HostOs.Windows, "true", false)]
+    [DataRow(HostOs.Linux, "", false)]
+    public async Task Git_Should_TurnOnLongPathsOnWindows(HostOs os, string current, bool turnedOn)
+    {
+        using var host = new TestHost(os);
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        host.Runner.On("git", "config --global --get core.longpaths", current.Length > 0 ? 0 : 1, current);
+        var project = CreateFakeProject(host, "Contoso");
+
+        await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(turnedOn, host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) == "config --global core.longpaths true"));
     }
 
     [TestMethod]

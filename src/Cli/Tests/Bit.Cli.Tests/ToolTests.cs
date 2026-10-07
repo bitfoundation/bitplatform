@@ -117,6 +117,27 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task NuGetOrg_Should_BeAddedOrEnabledWhenItIsNotUsable()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied is false);
+
+        host.Runner.On("dotnet", "nuget list source", 0, NuGetSources("company", "Enabled", "https://packages.contoso.com/v3/index.json"));
+        var missing = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Action!;
+        Assert.AreEqual("dotnet nuget add source https://api.nuget.org/v3/index.json --name nuget.org", missing.Commands.Single().CommandLine);
+        Assert.AreEqual(Elevation.None, missing.Elevation);
+
+        host.Runner.On("dotnet", "nuget list source", 0, NuGetSources("NuGet official package source", "Disabled"));
+        var disabled = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Action!;
+        CollectionAssert.AreEqual(new[] { "nuget", "enable", "source", "NuGet official package source" }, disabled.Commands.Single().Arguments.ToArray());
+
+        host.Runner.On("dotnet", "nuget list source", 1, "dotnet isn't here yet");
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied);
+    }
+
+    [TestMethod]
     public async Task Wsl_Should_ComeFromMicrosoftsReleaseThroughWinget()
     {
         using var host = new TestHost(HostOs.Windows);
@@ -743,6 +764,9 @@ public class ToolTests
         return await ToolCatalog.CheckAsync(context, CancellationToken.None);
     }
 
+    private static string NuGetSources(string name, string state, string url = "https://api.nuget.org/v3/index.json")
+        => $"Registered Sources:\n  1.  {name} [{state}]\n      {url}\n  2.  Microsoft Visual Studio Offline Packages [Enabled]\n      C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\\n";
+
     private static void AllInstalled(FakeProcessRunner runner)
     {
         runner.On("git", "--version", 0, "git version 2.47.1");
@@ -752,6 +776,7 @@ public class ToolTests
         runner.On("aspire", "--version", 0, "13.6.0+abc");
         runner.On("dotnet", "dev-certs", 0);
         runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
+        runner.On("dotnet", "nuget list source", 0, NuGetSources("nuget.org", "Enabled"));
         runner.On("wsl", "--status", 0);
         runner.On("xcodebuild", "-version", 0, "Xcode 26.0");
         runner.Executables["code"] = typeof(ToolTests).Assembly.Location;

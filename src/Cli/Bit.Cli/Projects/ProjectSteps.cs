@@ -47,6 +47,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (Runner.FindExecutable("git") is null)
             return StepResult.Failed(title, "git isn't installed", followUp, resultCode: "tool.git.missing");
 
+        if (cli.Environment.IsWindows && (await Git(["config", "--global", "--get", "core.longpaths"], cancellationToken)).Output.Trim() is not "true")
+        {
+            await Git(["config", "--global", "core.longpaths", "true"], cancellationToken);
+        }
+
         var parentRepository = await Git(["rev-parse", "--show-toplevel"], cancellationToken, Path.GetDirectoryName(project.Directory));
 
         if (parentRepository.Succeeded)

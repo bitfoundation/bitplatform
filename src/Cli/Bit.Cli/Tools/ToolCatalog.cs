@@ -10,6 +10,7 @@ public static partial class ToolCatalog
     public static IReadOnlyList<Tool> All { get; } =
     [
         new DotnetSdkTool(),
+        new NuGetOrgTool(),
         new GitTool(),
         new GitHubCliTool(),
         new NodeTool(),
@@ -209,6 +210,59 @@ public static partial class ToolCatalog
             };
         }
     }
+
+    private sealed class NuGetOrgTool : Tool
+    {
+        public const string Url = "https://api.nuget.org/v3/index.json";
+
+        public override string Id => "nuget-org";
+
+        public override string Name => "nuget.org package source";
+
+        public override bool AppliesInCi(ToolContext context) => false;
+
+        public override string Why(ToolContext context) => "bit Boilerplate and the project's packages come from nuget.org";
+
+        public override bool IsNeeded(ToolContext context) => true;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            var sources = await context.Runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["nuget", "list", "source", "--format", "detailed"], WorkingDirectory = context.Environment.HomeDirectory, Timeout = TimeSpan.FromSeconds(30), Environment = new Dictionary<string, string?> { ["DOTNET_CLI_UI_LANGUAGE"] = "en" } }, cancellationToken);
+
+            if (sources.Succeeded is false)
+                return ToolStatus.Installed();
+
+            return FindNuGetOrg(sources.Output) switch
+            {
+                null => ToolStatus.Missing(),
+                { Enabled: false } source => new ToolStatus(ToolState.Missing, null, $"disabled as {source.Name}"),
+                _ => ToolStatus.Installed()
+            };
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
+        {
+            ToolId = Id,
+            Title = status.Detail is null ? "Add nuget.org as a package source" : "Enable the nuget.org package source",
+            Commands = [new ProcessSpec { FileName = "dotnet", Arguments = status.Detail is { } disabled ? ["nuget", "enable", "source", disabled["disabled as ".Length..]] : ["nuget", "add", "source", Url, "--name", "nuget.org"], WorkingDirectory = context.Environment.HomeDirectory }]
+        };
+    }
+
+    public static (string Name, bool Enabled)? FindNuGetOrg(string sources)
+    {
+        var lines = sources.Split('\n').Select(l => l.Trim()).ToList();
+
+        for (var i = 0; i < lines.Count - 1; i++)
+        {
+            if (NuGetSourceRegex().Match(lines[i]) is { Success: true } source && lines[i + 1].Contains("api.nuget.org/v3/index.json", StringComparison.OrdinalIgnoreCase))
+                return (source.Groups["name"].Value, source.Groups["state"].Value is "Enabled");
+        }
+
+        return null;
+    }
+
+    [GeneratedRegex(@"^\d+\.\s+(?<name>.+?)\s+\[(?<state>Enabled|Disabled)\]$")]
+    private static partial Regex NuGetSourceRegex();
 
     private sealed class GitTool : Tool
     {
