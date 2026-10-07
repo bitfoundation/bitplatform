@@ -492,7 +492,7 @@ public static partial class ToolCatalog
             return result.Succeeded ? ToolStatus.Installed() : ToolStatus.Missing();
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.PackageManagers.WingetInstall(Id, "Install WSL", "Microsoft.WSL", afterInstall: "Restart Windows to finish installing WSL.") ?? new()
         {
             ToolId = Id,
             Title = "Install WSL",

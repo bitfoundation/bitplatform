@@ -117,6 +117,26 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task Wsl_Should_ComeFromMicrosoftsReleaseThroughWinget()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("wsl", "--status", 1);
+        host.Runner.NotFound("docker");
+        host.Runner.Executables["winget"] = @"C:\winget.exe";
+
+        var wsl = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "wsl").Action!;
+
+        Assert.AreEqual(Elevation.Admin, wsl.Elevation);
+        CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Microsoft.WSL", "--exact" }, wsl.Commands.Single().Arguments.ToArray());
+
+        host.Runner.Executables.Remove("winget");
+        var fallback = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "wsl").Action!;
+
+        Assert.AreEqual("wsl.exe --install --no-distribution", fallback.Commands.Single().CommandLine);
+    }
+
+    [TestMethod]
     public async Task Wsl_Should_OnlyBeOfferedWhenDockerIsMissingToo()
     {
         if (OperatingSystem.IsWindows() is false)
