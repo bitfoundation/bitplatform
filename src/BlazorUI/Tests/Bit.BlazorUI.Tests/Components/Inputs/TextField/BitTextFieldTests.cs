@@ -3402,7 +3402,7 @@ public class BitTextFieldTests : BunitTestContext
     public void BitTextFieldShouldApplyCascadedParametersOfTheInputBaseClasses()
     {
         // ReadOnly, Required and Immediate are declared by the input base classes rather than by the component,
-        // so they are tracked apart from the parameters the generated HasNotBeenSet knows about.
+        // so they are tracked in sets of their own, apart from the parameters the component declares itself.
         var paramsList = new List<IBitComponentParams>
         {
             new BitTextFieldParams

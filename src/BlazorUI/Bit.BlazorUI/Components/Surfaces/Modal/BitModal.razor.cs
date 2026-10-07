@@ -1674,14 +1674,14 @@ public partial class BitModal : BitComponentBase
         return new BitModalParameters
         {
             // Can only force on (default is not disabled): see remarks on asymmetric merge.
-            Disabled = MergeBase(nameof(Disabled), On(Disabled), p.Disabled),
+            Disabled = Merge(nameof(Disabled), On(Disabled), p.Disabled),
             // HtmlAttributes on both sources are externally settable (non-nullable) properties, so a
             // caller can still assign null. Coalesce to empty dictionaries so the Concat in
             // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
             HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes ?? [], HtmlAttributes ?? []),
             AbsolutePosition = Merge(nameof(AbsolutePosition), On(AbsolutePosition), p.AbsolutePosition),
-            Dir = MergeBase(nameof(Dir), Dir, p.Dir),
-            AriaLabel = MergeBase(nameof(AriaLabel), AriaLabel, p.AriaLabel),
+            Dir = Merge(nameof(Dir), Dir, p.Dir),
+            AriaLabel = Merge(nameof(AriaLabel), AriaLabel, p.AriaLabel),
             AriaModal = Merge(nameof(AriaModal), Off(AriaModal), p.AriaModal),
             AutoToggleScroll = Merge(nameof(AutoToggleScroll), On(AutoToggleScroll), p.AutoToggleScroll),
             Blocking = Merge(nameof(Blocking), On(Blocking), p.Blocking),
@@ -1735,7 +1735,7 @@ public partial class BitModal : BitComponentBase
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
             // Can only force off (default is Visible): own value wins only when it is a meaningful
             // (non-default) override, otherwise the cascaded value is used.
-            Visibility = MergeBase(nameof(Visibility), Visibility != BitVisibility.Visible ? Visibility : (BitVisibility?)null, p.Visibility),
+            Visibility = Merge(nameof(Visibility), Visibility != BitVisibility.Visible ? Visibility : (BitVisibility?)null, p.Visibility),
             Width = Merge(nameof(Width), Width, p.Width),
         };
     }
@@ -1744,13 +1744,9 @@ public partial class BitModal : BitComponentBase
     // ahead of a value that is on the property only because a BitParams ancestor put it there (or because it is
     // the built-in default) - which is what keeps an app-wide default from overriding what one showing of a
     // service Modal asked for. Without a BitParams ancestor the result is the plain "own, else cascaded" merge.
-    // The one rule is Pick; the two below only say whose record of "given explicitly" it reads.
+    // HasNotBeenSet is the record of "given explicitly", for the Modal's own parameters and the base ones alike.
 
     private T Merge<T>(string name, T own, T cascaded) => Pick(HasNotBeenSet(name), own, cascaded);
-
-    // For a parameter declared on the base component, which the generated HasNotBeenSet of this one does not track
-    // (see BaseHasNotBeenSet).
-    private T MergeBase<T>(string name, T own, T cascaded) => Pick(BaseHasNotBeenSet(name), own, cascaded);
 
     // A null says nothing on either side, so it never masks the other one's value.
     private static T Pick<T>(bool ownNotGiven, T own, T cascaded)
@@ -1765,12 +1761,6 @@ public partial class BitModal : BitComponentBase
 
     private static bool? Off(bool own) => own ? null : false;
 
-    // The parameters declared on BitComponentBase (Dir, AriaLabel, Disabled, Visibility) are tracked by the base
-    // component: the HasNotBeenSet generated for this one hides that method and only knows its own parameters, so
-    // it reports every base parameter as not set - which would let a value a BitParams ancestor put on one of them
-    // be mistaken for a value the Modal was given explicitly, or the other way round.
-    private bool BaseHasNotBeenSet(string name) => ((BitComponentBase)this).HasNotBeenSet(name);
-
     // The base component marks the root disabled, right-to-left and hidden off its own Disabled, Dir and
     // Visibility, which never see what the service asks for - and a BitParams default written on them would leave
     // its mark on a Modal whose showing asked for the opposite. So those three are made to hold the merged values
@@ -1779,12 +1769,12 @@ public partial class BitModal : BitComponentBase
     // the ones it was given, its parent has just set again.
     private void ResetUnsetBaseParameters()
     {
-        if (BaseHasNotBeenSet(nameof(Disabled))) Disabled = false;
+        if (HasNotBeenSet(nameof(Disabled))) Disabled = false;
 
         // Null leaves the direction to the one cascaded from an ancestor.
-        if (BaseHasNotBeenSet(nameof(Dir))) Dir = null;
+        if (HasNotBeenSet(nameof(Dir))) Dir = null;
 
-        if (BaseHasNotBeenSet(nameof(Visibility))) Visibility = BitVisibility.Visible;
+        if (HasNotBeenSet(nameof(Visibility))) Visibility = BitVisibility.Visible;
     }
 
     private void ApplyEffectiveBaseParameters()

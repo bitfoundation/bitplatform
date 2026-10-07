@@ -30,7 +30,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
     // The parameters of this class are taken out of the ParameterView below before it reaches
-    // BitComponentBase, so the set that its own HasNotBeenSet reads never sees them, and the one the source
+    // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the one the source
     // generator writes only ever holds the parameters that the component itself declares. A cascade filling
     // in what a consumer left unset therefore has no way of telling the two apart without this third set,
     // and would overwrite a ReadOnly or a Required that was written on the component by hand.
@@ -152,15 +152,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// If preventScroll is set to true, no scrolling will occur.</param>
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
     public virtual ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
-
-    /// <summary>
-    /// Whether the named parameter of <see cref="BitInputBase{TValue}"/> was left unset on this component,
-    /// which is what a <see cref="BitParams"/> cascade fills in. It is the input tier of the very same
-    /// question that <see cref="BitComponentBase.HasNotBeenSet"/> answers for the shared parameters and the
-    /// generated member of each component answers for the ones it declares itself; a separate member because
-    /// the parameters of this class never reach either of those two sets.
-    /// </summary>
-    protected internal bool HasNotBeenSetOnInput(string name) => _assignedInputParameters.Contains(name) is false;
 
     private protected override bool IsSetByMarkup(string name) => _assignedInputParameters.Contains(name) || base.IsSetByMarkup(name);
 

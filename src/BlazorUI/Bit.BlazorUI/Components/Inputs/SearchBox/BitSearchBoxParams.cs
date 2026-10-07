@@ -340,10 +340,6 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
 
         UpdateInputBaseParameters(bitSearchBox);
 
-        // The parameters the search box declares itself are asked through the HasNotBeenSet the source
-        // generator writes for it; the ones it inherits from BitTextInputBase have a record of their own,
-        // which is what HasNotBeenSetOnTextInput reads (ReadOnly and Required are BitInputBaseParams').
-
         if (AnnouncementProvider is not null && bitSearchBox.HasNotBeenSet(nameof(AnnouncementProvider)))
         {
             bitSearchBox.AnnouncementProvider = AnnouncementProvider;
@@ -359,7 +355,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.AutoCapitalize = AutoCapitalize;
         }
 
-        if (AutoComplete.HasValue() && bitSearchBox.HasNotBeenSetOnTextInput(nameof(AutoComplete)))
+        if (AutoComplete.HasValue() && bitSearchBox.HasNotBeenSet(nameof(AutoComplete)))
         {
             bitSearchBox.AutoComplete = AutoComplete;
         }
@@ -369,7 +365,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.AutoCorrect = AutoCorrect.Value;
         }
 
-        if (AutoFocus.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(AutoFocus)))
+        if (AutoFocus.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoFocus)))
         {
             bitSearchBox.AutoFocus = AutoFocus.Value;
         }
@@ -420,7 +416,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.ClassBuilder.Reset();
         }
 
-        if (DebounceTime.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(DebounceTime)))
+        if (DebounceTime.HasValue && bitSearchBox.HasNotBeenSet(nameof(DebounceTime)))
         {
             bitSearchBox.DebounceTime = DebounceTime.Value;
         }
@@ -488,7 +484,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.IconName = IconName;
         }
 
-        if (Immediate.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(Immediate)))
+        if (Immediate.HasValue && bitSearchBox.HasNotBeenSet(nameof(Immediate)))
         {
             bitSearchBox.Immediate = Immediate.Value;
         }
@@ -638,7 +634,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.SuggestItemsAriaLabel = SuggestItemsAriaLabel!;
         }
 
-        if (ThrottleTime.HasValue && bitSearchBox.HasNotBeenSetOnTextInput(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue && bitSearchBox.HasNotBeenSet(nameof(ThrottleTime)))
         {
             bitSearchBox.ThrottleTime = ThrottleTime.Value;
         }

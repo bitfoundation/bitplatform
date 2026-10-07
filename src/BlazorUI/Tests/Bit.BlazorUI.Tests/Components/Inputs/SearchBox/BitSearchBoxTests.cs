@@ -3760,7 +3760,7 @@ public class BitSearchBoxTests : BunitTestContext
         });
 
         // ReadOnly and Required are declared by the input base classes rather than by the search box,
-        // so they are the ones the generated HasNotBeenSet knows nothing about.
+        // so they are tracked in a set of their own, apart from the ones the search box declares.
         Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("readonly"));
         Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("required"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-req"));

@@ -12,7 +12,7 @@ public abstract class BitLoadingBase : BitComponentBase
     private CancellationTokenSource? _delayCts;
 
     // The parameters of this class are taken out of the ParameterView below before it reaches
-    // BitComponentBase, so the set that its own HasNotBeenSet reads never sees them, and the loaders
+    // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the loaders
     // themselves declare no parameters for the source generator to track. A cascade filling in what a
     // consumer left unset therefore needs this set of its own to tell the two apart, or it would overwrite
     // a Color or a Size that was written on the loader by hand.
@@ -394,14 +394,6 @@ public abstract class BitLoadingBase : BitComponentBase
     internal new ElementClassBuilder ClassBuilder => base.ClassBuilder;
 
     internal new ElementStyleBuilder StyleBuilder => base.StyleBuilder;
-
-    /// <summary>
-    /// Whether the named parameter of <see cref="BitLoadingBase"/> was left unset on this component, which is
-    /// what a <see cref="BitParams"/> cascade fills in. It is the loading tier of the very same question that
-    /// <see cref="BitComponentBase.HasNotBeenSet"/> answers for the shared parameters; a separate member
-    /// because the parameters of this class never reach that set.
-    /// </summary>
-    internal bool HasNotBeenSetOnLoading(string name) => _assignedLoadingParameters.Contains(name) is false;
 
     private protected override bool IsSetByMarkup(string name) => _assignedLoadingParameters.Contains(name) || base.IsSetByMarkup(name);
 
