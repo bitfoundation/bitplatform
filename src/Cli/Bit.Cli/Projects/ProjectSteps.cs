@@ -86,6 +86,18 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Initialized git", "develop and main");
     }
 
+    public async Task<StepResult> SdkAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        if (TemplateRequirements.FromProject(project.Directory, project.Name).Sdk is not { } required)
+            return StepResult.Skipped("Skipped the .NET SDK check", "the project has no global.json");
+
+        if (await ToolCatalog.ResolveSdkAsync(Runner, project.Directory, cancellationToken) is { } version)
+            return StepResult.Succeeded("The .NET SDK is ready", version);
+
+        return StepResult.Failed("The project's .NET SDK isn't installed", $"global.json asks for {(required.Pinned ? "exactly " : "")}{required.Version}",
+            $"cd {ProcessSpec.Quote(project.Directory)} && bit setup", resultCode: "sdk.missing");
+    }
+
     public async Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         var needed = Templates.Platforms.Workloads(project.Platforms, cli.Environment.Os);

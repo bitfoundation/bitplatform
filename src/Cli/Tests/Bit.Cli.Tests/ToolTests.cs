@@ -135,49 +135,91 @@ public class ToolTests
     }
 
     [TestMethod]
-    public async Task TheDotnetSdk_Should_MatchTheFeatureBandOfGlobalJson()
+    public async Task TheDotnetSdk_Should_BeWhatDotnetResolvesForTheGlobalJson()
     {
         using var host = new TestHost(HostOs.Linux);
         AllInstalled(host.Runner);
-        var needs = new ToolNeeds { Sdk = new SdkRequirement(new Version(10, 0, 100), Preview: false) };
+        var needs = new ToolNeeds { Sdk = new SdkRequirement("10.0.100") };
+        string? globalJson = null;
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "9.0.300 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+        host.Runner.On("dotnet", "--version", spec =>
+        {
+            globalJson = File.ReadAllText(Path.Combine(spec.WorkingDirectory!, "global.json"));
+            return new ProcessResult { ExitCode = 145, Output = "A compatible .NET SDK was not found." };
+        });
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual("10.0.401", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+        var missing = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status;
+
+        Assert.AreEqual(ToolState.Missing, missing.State);
+        Assert.AreEqual("found 10.0.401", missing.Detail);
+        Assert.AreEqual("""{"sdk":{"version":"10.0.100"}}""", globalJson);
+
+        host.Runner.On("dotnet", "--version", 0, "10.0.104");
+        Assert.AreEqual("10.0.104", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
     }
 
     [TestMethod]
-    public async Task APreviewGlobalJson_Should_StillRequireItsSdk()
+    public void AGlobalJson_Should_KeepItsRollForwardRules()
     {
-        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"latestFeature\" } }");
+        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"disable\", \"allowPrerelease\": true } }")!;
 
-        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true), sdk);
-
-        using var host = new TestHost(HostOs.Linux);
-        AllInstalled(host.Runner);
-        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
-
-        Assert.AreEqual("11.0.100", (await CheckAsync(host, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+        Assert.AreEqual(new SdkRequirement("11.0.100-rc.1.26425.128", "disable", true), sdk);
+        Assert.IsTrue(sdk.Pinned);
+        Assert.IsTrue(sdk.Preview);
+        Assert.AreEqual("11.0", sdk.Channel);
+        Assert.AreEqual("""{"sdk":{"version":"11.0.100-rc.1.26425.128","rollForward":"disable","allowPrerelease":true}}""", sdk.GlobalJson);
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { } }"));
+        Assert.IsNull(SdkRequirement.FromGlobalJson(null));
     }
 
     [TestMethod]
-    public async Task ADisabledRollForward_Should_RequireTheExactSdk()
+    public void TheEmbeddedTemplate_Should_CarryTheSdkOfTheTemplatesGlobalJson()
     {
-        var sdk = SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"11.0.100-rc.1.26425.128\", \"rollForward\": \"disable\" } }");
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
 
-        Assert.AreEqual(new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128"), sdk);
+        while (directory is not null && File.Exists(Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate", "global.json")) is false)
+        {
+            directory = directory.Parent;
+        }
 
-        using var host = new TestHost(HostOs.Linux);
-        AllInstalled(host.Runner);
-        var needs = new ToolNeeds { Sdk = sdk };
+        Assert.IsNotNull(directory);
+        var expected = SdkRequirement.FromGlobalJson(File.ReadAllText(Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate", "global.json")));
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual(ToolState.Missing, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.State);
+        Assert.IsNotNull(expected);
+        Assert.AreEqual(expected, TemplateRequirements.Embedded.Sdk);
+    }
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "11.0.100-rc.2.26475.104 [/usr/share/dotnet/sdk]\n11.0.100-rc.1.26425.128 [/usr/share/dotnet/sdk]");
-        Assert.AreEqual("11.0.100-rc.1.26425.128", (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Status.Version);
+    [TestMethod]
+    public async Task TheSdk_Should_InstallItsExactVersionOnMacOSAndLinux()
+    {
+        var sdk = new SdkRequirement("11.0.100-rc.1.26425.128", "disable");
+
+        using var mac = new TestHost(HostOs.MacOS);
+        AllInstalled(mac.Runner);
+        mac.Runner.On("dotnet", "--version", 145);
+        mac.Runner.Executables["dotnet"] = "/usr/local/share/dotnet/dotnet";
+        var package = (await CheckAsync(mac, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        Assert.AreEqual(Elevation.Sudo, package.Elevation);
+        StringAssert.Contains(package.Commands[0].CommandLine, "https://builds.dotnet.microsoft.com/dotnet/Sdk/11.0.100-rc.1.26425.128/dotnet-sdk-11.0.100-rc.1.26425.128-osx-x64.pkg");
+        StringAssert.Contains(package.Commands[0].CommandLine, "pkgutil --check-signature");
+        StringAssert.Contains(package.Commands[0].CommandLine, "installer -pkg");
+
+        using var linux = new TestHost(HostOs.Linux);
+        AllInstalled(linux.Runner);
+        linux.Runner.On("dotnet", "--version", 145);
+        linux.Runner.Executables["dotnet"] = "/usr/lib/dotnet/dotnet";
+        var system = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        Assert.AreEqual(Elevation.Sudo, system.Elevation);
+        StringAssert.Contains(system.Commands[0].CommandLine, "https://dot.net/v1/dotnet-install.sh");
+        StringAssert.Contains(system.Commands[0].CommandLine, "--version '11.0.100-rc.1.26425.128' --install-dir '/usr/lib/dotnet'");
+
+        linux.Runner.Executables["dotnet"] = Path.Combine(linux.Home, ".dotnet", "dotnet");
+        var user = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+
+        Assert.AreEqual(Elevation.None, user.Elevation);
+        StringAssert.Contains(user.Commands[0].CommandLine, $"--install-dir '{Path.Combine(linux.Home, ".dotnet")}'");
     }
 
     [TestMethod]
@@ -218,16 +260,16 @@ public class ToolTests
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
         Assert.AreEqual("Install Docker Desktop", checks.Single(c => c.Tool.Id == "docker").Action!.Title);
 
-        host.Runner.On("dotnet", "--list-sdks", 0, "10.0.401 [C:\\Program Files\\dotnet\\sdk]");
-        var stable = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: false) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
-        var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true) })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+        host.Runner.On("dotnet", "--version", 145);
+        host.Runner.Executables["dotnet"] = @"C:\Program Files\dotnet\dotnet.exe";
+        var stable = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement("11.0.100") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
+        var preview = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement("11.0.100-rc.1.26425.128", "disable") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
-        var exact = (await CheckAsync(host, new ToolNeeds { Sdk = new SdkRequirement(new Version(11, 0, 100), Preview: true, Exact: "11.0.100-rc.1.26425.128") })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
-
-        CollectionAssert.Contains(stable.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.11");
-        CollectionAssert.DoesNotContain(stable.Commands[0].Arguments.ToArray(), "--version");
-        CollectionAssert.Contains(preview.Commands[0].Arguments.ToArray(), "Microsoft.DotNet.SDK.Preview");
-        CollectionAssert.IsSubsetOf(new[] { "--id", "Microsoft.DotNet.SDK.Preview", "--version", "11.0.100-rc.1.26425.128" }, exact.Commands[0].Arguments.ToArray());
+        Assert.AreEqual(Elevation.Admin, preview.Elevation);
+        StringAssert.Contains(stable.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.11 --exact --version '11.0.100'");
+        StringAssert.Contains(preview.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.Preview --exact --version '11.0.100-rc.1.26425.128'");
+        StringAssert.Contains(preview.Commands[0].CommandLine, "dotnet-install.ps1");
+        StringAssert.Contains(preview.Commands[0].CommandLine, @"-InstallDir 'C:\Program Files\dotnet'");
     }
 
     [TestMethod]
