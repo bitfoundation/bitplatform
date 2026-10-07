@@ -172,7 +172,9 @@ public class ToolTests
         var wsl = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "wsl").Action!;
 
         Assert.AreEqual(Elevation.Admin, wsl.Elevation);
-        CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Microsoft.WSL", "--exact" }, wsl.Commands.Single().Arguments.ToArray());
+        Assert.HasCount(2, wsl.Commands);
+        CollectionAssert.Contains(wsl.Commands[0].Arguments.ToArray(), "/featurename:VirtualMachinePlatform");
+        CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Microsoft.WSL", "--exact" }, wsl.Commands[1].Arguments.ToArray());
 
         host.Runner.Executables.Remove("winget");
         var fallback = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "wsl").Action!;
@@ -591,28 +593,6 @@ public class ToolTests
         Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "hypervisor-platform"));
     }
 
-    [TestMethod]
-    public async Task TheVirtualMachinePlatform_Should_BeTurnedOnUntilDockerRuns()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        AllInstalled(host.Runner);
-        var needs = new ToolNeeds { Aspire = true };
-        const string probe = "-NoProfile -NonInteractive -Command (Get-CimInstance Win32_OptionalFeature -Filter \"Name='VirtualMachinePlatform'\")";
-
-        host.Runner.On("powershell", probe, 0, "2\r\n");
-        Assert.IsFalse((await CheckAsync(host, needs)).Any(c => c.Tool.Id == "virtual-machine-platform"));
-
-        host.Runner.NotFound("docker");
-        var platform = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "virtual-machine-platform");
-        Assert.IsTrue(platform.Needed);
-        Assert.AreEqual(Elevation.Admin, platform.Action!.Elevation);
-        CollectionAssert.Contains(platform.Action.Commands[0].Arguments.ToArray(), "/featurename:VirtualMachinePlatform");
-
-        host.Runner.On("powershell", probe, 0, "1\r\n");
-        Assert.IsTrue((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "virtual-machine-platform").Status.IsSatisfied);
-
-        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "virtual-machine-platform"));
-    }
 
     [TestMethod]
     public async Task DeveloperMode_Should_BeOfferedForMauiWithoutBeingNeeded()

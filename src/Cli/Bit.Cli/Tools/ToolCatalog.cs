@@ -15,7 +15,6 @@ public static partial class ToolCatalog
         new GitHubCliTool(),
         new NodeTool(),
         new HomebrewTool(),
-        new VirtualMachinePlatformTool(),
         new WslTool(),
         new DockerTool(),
         new AspireCliTool(),
@@ -50,9 +49,6 @@ public static partial class ToolCatalog
 
         var dockerMissing = checks.Any(c => c.Tool is DockerTool && c.Status.State is ToolState.Missing);
         checks.RemoveAll(c => c.Tool is WslTool && dockerMissing is false);
-
-        var dockerRunning = checks.Any(c => c.Tool is DockerTool && c.Status.IsSatisfied);
-        checks.RemoveAll(c => c.Tool is VirtualMachinePlatformTool && dockerRunning);
 
         var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
@@ -492,6 +488,8 @@ public static partial class ToolCatalog
         return result.Succeeded && result.Output.Trim() == "1";
     }
 
+    private static ProcessSpec EnableFeatureCommand(string feature) => new() { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", $"/featurename:{feature}", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) };
+
     private static ToolAction EnableWindowsFeature(string toolId, string name, string feature) => new()
     {
         ToolId = toolId,
@@ -499,32 +497,8 @@ public static partial class ToolCatalog
         Elevation = Elevation.Admin,
         AfterInstall = $"Restart Windows to finish turning on the {name}.",
         SuccessExitCodes = [0, 3010],
-        Commands = [new ProcessSpec { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", $"/featurename:{feature}", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) }]
+        Commands = [EnableFeatureCommand(feature)]
     };
-
-    private sealed class VirtualMachinePlatformTool : Tool
-    {
-        public override string Id => "virtual-machine-platform";
-
-        public override string Name => "Virtual Machine Platform";
-
-        public override bool AppliesInCi(ToolContext context) => false;
-
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Aspire;
-
-        public override string Why(ToolContext context) => "the Windows feature that WSL 2 and Docker Desktop run their Linux virtual machine on";
-
-        public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
-
-        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
-        {
-            return await WindowsFeatureEnabledAsync(context, "VirtualMachinePlatform", cancellationToken) ? ToolStatus.Installed() : ToolStatus.Missing();
-        }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => EnableWindowsFeature(Id, Name, "VirtualMachinePlatform");
-
-        public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/windows/wsl/install-manual";
-    }
 
     private sealed class WslTool : Tool
     {
@@ -546,15 +520,17 @@ public static partial class ToolCatalog
             return result.Succeeded ? ToolStatus.Installed() : ToolStatus.Missing();
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.PackageManagers.WingetInstall(Id, "Install WSL", "Microsoft.WSL", afterInstall: "Restart Windows to finish installing WSL.") ?? new()
-        {
-            ToolId = Id,
-            Title = "Install WSL",
-            Elevation = Elevation.Admin,
-            AfterInstall = "Restart Windows to finish installing WSL.",
-            SuccessExitCodes = [0, 3010],
-            Commands = [new ProcessSpec { FileName = "wsl.exe", Arguments = ["--install", "--no-distribution"], Timeout = TimeSpan.FromMinutes(30) }]
-        };
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.PackageManagers.WingetInstall(Id, "Install WSL", "Microsoft.WSL", afterInstall: "Restart Windows to finish installing WSL.") is { } winget
+            ? winget with { Commands = [EnableFeatureCommand("VirtualMachinePlatform"), .. winget.Commands] }
+            : new()
+            {
+                ToolId = Id,
+                Title = "Install WSL",
+                Elevation = Elevation.Admin,
+                AfterInstall = "Restart Windows to finish installing WSL.",
+                SuccessExitCodes = [0, 3010],
+                Commands = [new ProcessSpec { FileName = "wsl.exe", Arguments = ["--install", "--no-distribution"], Timeout = TimeSpan.FromMinutes(30) }]
+            };
 
         public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/windows/wsl/install";
     }
