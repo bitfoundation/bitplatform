@@ -103,16 +103,6 @@
             @include focus-ring(var(--bit-mnb-dis-clr));
         }
     }
-
-    @keyframes bit-mnb-spinner-animation {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
 }
 
 .bit-mnb-flw {
@@ -132,16 +122,7 @@
 
 // The spinner takes the header icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-mnb-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    box-sizing: border-box;
-    border-color: $clr-brd-sec;
-    border-top-color: currentColor;
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    width: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
-    height: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
-    animation: bit-mnb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+    @include spinner-ring(var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size)), currentcolor, $clr-brd-sec);
 }
 
 .bit-mnb-ico,
@@ -685,9 +666,8 @@
         }
     }
 
-    .bit-mnb-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
+    .bit-mnb.bit-dis .bit-mnb-spn {
+        @include spinner-ring-forced-disabled;
     }
 
     .bit-mnb-spb,

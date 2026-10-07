@@ -71,6 +71,16 @@ public class BitCardClassStyles
     public string? Body { get; set; }
 
     /// <summary>
+    /// The custom CSS class/style for the default placeholder of a loading card, drawn when no LoadingTemplate is set.
+    /// </summary>
+    public string? Skeleton { get; set; }
+
+    /// <summary>
+    /// The custom CSS class/style for each bar of the default placeholder of a loading card.
+    /// </summary>
+    public string? SkeletonBar { get; set; }
+
+    /// <summary>
     /// The custom CSS class/style for the footer of the card.
     /// </summary>
     public string? Footer { get; set; }

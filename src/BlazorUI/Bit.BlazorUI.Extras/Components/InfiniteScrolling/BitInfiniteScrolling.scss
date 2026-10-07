@@ -174,21 +174,11 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     display: inline-block;
     vertical-align: middle;
     margin-inline-end: var(--bit-InfiniteScrolling-status-gap, #{spacing(1)});
-    border-radius: 50%;
-    box-sizing: border-box;
-    width: var(--bit-InfiniteScrolling-spinner-size, #{$siz-icon-md});
-    height: var(--bit-InfiniteScrolling-spinner-size, #{$siz-icon-md});
-    border: $siz-spinner-stroke $shp-border-style var(--bit-InfiniteScrolling-spinner-track-color, #{$clr-brd-pri});
-    border-block-start-color: var(--bit-InfiniteScrolling-spinner-color, #{$clr-pri});
-    // The spinner tokens rather than a literal duration: a looping animation must slow down under
-    // prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
-    animation: bit-isc-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-isc-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    // The spinner tokens the mixin turns on rather than a literal duration: a looping animation must slow down
+    // under prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
+    @include spinner-ring(var(--bit-InfiniteScrolling-spinner-size, #{$siz-icon-md}),
+                          var(--bit-InfiniteScrolling-spinner-color, #{$clr-pri}),
+                          var(--bit-InfiniteScrolling-spinner-track-color, #{$clr-brd-pri}));
 }
 
 // The message sits on the list's own ground, so it takes the error color itself; $clr-err-text is the text
@@ -246,14 +236,9 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     }
 }
 
-// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so the spinner's track and
-// arc would be painted the same color and stop reading as motion, and the disabled button would look enabled.
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so the disabled button would
+// look enabled (the spinner-ring mixin keeps the spinner's track and arc apart on its own).
 @media (forced-colors: active) {
-    .bit-isc-spn {
-        border-color: GrayText;
-        border-block-start-color: CanvasText;
-    }
-
     // A button of no box of its own would read as plain text once the palette is forced, so it is outlined.
     .bit-isc-btn {
         border: $shp-border-width $shp-border-style ButtonText;

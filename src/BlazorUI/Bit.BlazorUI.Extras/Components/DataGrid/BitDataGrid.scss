@@ -669,21 +669,11 @@ button.bit-dtg-htext {
     color: $clr-fg-sec;
 }
 
+// The ring is drawn the other way round from most: a three-quarter arc of the text color with its gap turning.
 .bit-dtg-spinner {
     display: inline-block;
-    width: 1em;
-    height: 1em;
-    border: $siz-spinner-stroke $shp-border-style currentcolor;
-    border-top-color: transparent;
-    border-radius: $shp-radius-full;
     vertical-align: middle;
-    animation: bit-dtg-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-dtg-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(1em, transparent, currentcolor);
 }
 
 /* ------------------------------------------ Infinite-scroll placeholder */

@@ -739,6 +739,13 @@ public partial class BitNumberFieldDemo
                 },
                 new()
                 {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the numeric field's default busy spinner, drawn when no LoadingTemplate is set."
+                },
+                new()
+                {
                     Name = "LabelContainer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1081,6 +1088,24 @@ public partial class BitNumberFieldDemo
             Name = "--bit-NumberField-loading-color",
             DefaultValue = "the Accent",
             Description = "Color of the busy indicator.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-spinner-size",
+            DefaultValue = "the icon size plus the spinner stroke on each side (16 / 20 / 24px per Size)",
+            Description = "Diameter of the default busy spinner.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-spinner-color",
+            DefaultValue = "the busy indicator's color",
+            Description = "Color of the moving arc of the default busy spinner.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-spinner-track-color",
+            DefaultValue = "the arc color at 25%",
+            Description = "Color of the ring the arc of the default busy spinner travels on.",
         },
         new()
         {

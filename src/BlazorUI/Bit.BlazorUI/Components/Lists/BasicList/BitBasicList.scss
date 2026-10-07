@@ -88,26 +88,7 @@
 
 // The spinner of the default loading content and of the default LoadMore button while it loads a page.
 .bit-bsl-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    box-sizing: border-box;
-    border-color: $clr-brd-sec;
-    border-style: $shp-border-style;
-    border-width: $siz-spinner-stroke;
-    border-top-color: var(--bit-BasicList-spinner-color, #{$clr-pri});
-    width: var(--bit-BasicList-spinner-size, #{$siz-icon-md});
-    height: var(--bit-BasicList-spinner-size, #{$siz-icon-md});
-    animation: bit-bsl-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-bsl-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-BasicList-spinner-size, #{$siz-icon-md}), var(--bit-BasicList-spinner-color, #{$clr-pri}), $clr-brd-sec);
 }
 
 // A zero sized marker sitting after the last loaded item. The AutoLoad mode watches it for entering
@@ -221,15 +202,10 @@ button.bit-bsl-lmb {
     clip-path: inset(50%);
 }
 
-// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so the spinner's track
-// and arc would be painted the same color and stop reading as motion, and a disabled LoadMore button would
-// look enabled. Both are re-established in system colors.
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so a disabled LoadMore
+// button would look enabled. It is re-established in the system color; the spinner-ring mixin keeps the
+// spinner's track and arc apart on its own.
 @media (forced-colors: active) {
-    .bit-bsl-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
-    }
-
     button.bit-bsl-lmb:disabled {
         color: GrayText;
     }

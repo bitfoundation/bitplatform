@@ -523,6 +523,20 @@ public partial class BitCardDemo
                 },
                 new()
                 {
+                    Name = "Skeleton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the default placeholder of a loading BitCard, drawn when no LoadingTemplate is set."
+                },
+                new()
+                {
+                    Name = "SkeletonBar",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each bar of the default placeholder of a loading BitCard."
+                },
+                new()
+                {
                     Name = "Footer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -711,6 +725,18 @@ public partial class BitCardDemo
             Name = "--bit-Card-scrim",
             DefaultValue = "none",
             Description = "A layer painted over a CoverOverlay picture and under the content, such as a dark gradient, so the text over it stays readable.",
+        },
+        new()
+        {
+            Name = "--bit-Card-skeleton-background",
+            DefaultValue = "The text color at 10%",
+            Description = "Resting color of the bars of the default placeholder of a loading card.",
+        },
+        new()
+        {
+            Name = "--bit-Card-skeleton-color",
+            DefaultValue = "The text color at 20%",
+            Description = "Color of the wave that sweeps across those bars.",
         },
     ];
 

@@ -119,7 +119,7 @@
                 <div aria-hidden="true"
                      style="@Styles?.LoadingSpinner"
                      class="bit-srb-lsp @Classes?.LoadingSpinner">
-                    <div class="bit-srb-spn" />
+                    <div style="@Styles?.Spinner" class="bit-srb-spn @Classes?.Spinner" />
                 </div>
             }
             else if (HideClearButton is false && ReadOnly is false && HasValue)
@@ -302,7 +302,7 @@
                 }
                 else
                 {
-                    <div class="bit-srb-spn" aria-hidden="true" />
+                    <div style="@Styles?.Spinner" class="bit-srb-spn @Classes?.Spinner" />
                     @if (LoadingText.HasValue())
                     {
                         <span>@LoadingText</span>

@@ -2184,6 +2184,10 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.AreEqual(1, component.FindAll(".bit-tfl-lod").Count);
 
+        // The field draws its own spinner rather than rendering another component of the library.
+        Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .bit-tfl-spn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-lod .bit-ldn").Count);
+
         // The announcement comes from the live region of the field rather than from the indicator itself:
         // a region added to the page along with its text is regularly not announced at all.
         Assert.AreEqual("Loading", component.Find("[role=status]").TextContent);
@@ -2219,7 +2223,30 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         Assert.AreEqual(1, component.FindAll(".bit-tfl-lod .custom-loading").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tfl-lod .bit-ldn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-lod .bit-tfl-spn").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldLoadingSlotHidesOnlyTheDefaultSpinnerFromAssistiveTechnologies()
+    {
+        // The live region is what says the field is busy, so the default spinner is muted rather than read out
+        // a second time next to it; a template stays exposed, since it may carry content or actions of its own.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<em class=\"custom-loading\">wait</em>")));
+        });
+
+        Assert.IsFalse(component.Find(".bit-tfl-lod").HasAttribute("aria-hidden"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment?)null);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tfl-lod").HasAttribute("aria-hidden"));
+        Assert.AreEqual("true", component.Find(".bit-tfl-lod .bit-tfl-spn").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -2357,6 +2384,22 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.IsTrue(loading.ClassList.Contains("custom-loading"));
         Assert.AreEqual("color: red;", loading.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldSpinnerClassAndStyleShouldReachTheDefaultSpinner()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Classes, new BitTextFieldClassStyles { Spinner = "custom-spinner" });
+            parameters.Add(p => p.Styles, new BitTextFieldClassStyles { Spinner = "color: red;" });
+        });
+
+        var spinner = component.Find(".bit-tfl-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("custom-spinner"));
+        Assert.AreEqual("color: red;", spinner.GetAttribute("style"));
     }
 
     [TestMethod,

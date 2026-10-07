@@ -305,21 +305,8 @@
 // when the work it reports is done and the spinner gives way to the icon.
 .bit-snb-spn {
     display: block;
-    flex-shrink: 0;
-    box-sizing: border-box;
-    border-radius: $shp-radius-full;
     color: var(--bit-SnackBar-icon-color, currentcolor);
-    width: var(--bit-SnackBar-icon-size, var(--bit-snb-ico-fs));
-    height: var(--bit-SnackBar-icon-size, var(--bit-snb-ico-fs));
-    border: $siz-spinner-stroke solid translucent(currentcolor, 30%);
-    border-top-color: currentcolor;
-    animation: bit-snb-spin $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-@keyframes bit-snb-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    @include spinner-ring(var(--bit-SnackBar-icon-size, var(--bit-snb-ico-fs)), currentcolor, translucent(currentcolor, 30%));
 }
 
 .bit-snb-ttl {

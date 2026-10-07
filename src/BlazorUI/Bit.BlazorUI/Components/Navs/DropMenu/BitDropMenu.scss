@@ -144,16 +144,6 @@
     &.bit-drm-ldg:has(.bit-drm-btn:focus-visible) {
         @include focus-ring(var(--bit-DropMenu-disabled-color, var(--bit-drm-clr-dis-text)));
     }
-
-    @keyframes bit-drm-spinner-animation {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
 }
 
 .bit-drm-btn {
@@ -219,19 +209,12 @@
     }
 }
 
-// The spinner takes the icon's slot and its size, so entering the loading state moves nothing around it.
+// The spinner takes the icon's slot and its size, so entering the loading state moves nothing around it. Both
+// halves are drawn from the text color, so the ring reads on every surface a Color and a Variant paint.
 .bit-drm-spn {
-    flex-shrink: 0;
-    border-radius: 50%;
-    box-sizing: border-box;
-    // Both halves are drawn from the text color, so the ring reads on every surface a Color and a Variant paint.
-    border-color: var(--bit-DropMenu-spinner-track-color, #{translucent(currentcolor, 25%)});
-    border-top-color: var(--bit-DropMenu-spinner-color, currentcolor);
-    border-width: $siz-spinner-stroke;
-    border-style: $shp-border-style;
-    width: var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size));
-    height: var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size));
-    animation: bit-drm-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+    @include spinner-ring(var(--bit-DropMenu-icon-size, var(--bit-drm-icon-size)),
+                          var(--bit-DropMenu-spinner-color, currentcolor),
+                          var(--bit-DropMenu-spinner-track-color, #{translucent(currentcolor, 25%)}));
 }
 
 // The description the button points at through aria-describedby: taken out of the flow rather than hidden,
@@ -593,8 +576,8 @@
         border-color: GrayText;
     }
 
-    .bit-drm-spn {
-        border-color: GrayText;
-        border-top-color: CanvasText;
+    .bit-drm.bit-dis .bit-drm-spn,
+    .bit-drm.bit-drm-ldg .bit-drm-spn {
+        @include spinner-ring-forced-disabled;
     }
 }

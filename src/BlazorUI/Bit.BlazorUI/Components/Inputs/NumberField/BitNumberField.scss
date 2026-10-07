@@ -37,6 +37,9 @@
 //                                               button                                       (default: per Size and Mode)
 //   --bit-NumberField-button-icon-size          size of the glyph inside those buttons       (default: per Size, from the type ramp)
 //   --bit-NumberField-loading-color             color of the busy indicator                  (default: the Accent)
+//   --bit-NumberField-spinner-size              diameter of the default busy spinner         (default: the icon size plus the stroke on each side)
+//   --bit-NumberField-spinner-color             the spinner's moving arc                     (default: the busy indicator's color)
+//   --bit-NumberField-spinner-track-color       the ring the arc travels on                  (default: the arc color at 25%)
 //   --bit-NumberField-disabled-color            text, label, hint and glyph color of a
 //                                               disabled field                               (default: $clr-fg-dis)
 //   --bit-NumberField-disabled-background       fill of a disabled field                     (default: $clr-bg-dis)
@@ -99,6 +102,18 @@
 
         .bit-nfl-lod {
             color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
+        }
+
+        // Colors are replaced wholesale in forced-colors mode, so the dimmed busy indicator would come back
+        // at full contrast there and read as a live field; it goes GrayText like the disabled input itself.
+        @media (forced-colors: active) {
+            .bit-nfl-lod {
+                color: GrayText;
+            }
+
+            .bit-nfl-spn {
+                @include spinner-ring-forced-disabled;
+            }
         }
 
         // The buttons take the disabled fill so the row still reads as one field; they draw no border of
@@ -348,6 +363,16 @@
     justify-content: center;
     padding-inline: spacing(0.5);
     color: var(--bit-NumberField-loading-color, var(--bit-nfl-clr));
+}
+
+// The field's own spinner rather than a BitSpinnerLoading: a component re-skinned on its own would otherwise
+// re-skin this one too. The arc and its track are painted from the color of the slot, so the spinner follows
+// the loading color and the disabled state. The ring is drawn around the icon's box - the icon size with the
+// stroke outside it on each side - so it grows and shrinks with the field and stands a step above its glyphs.
+.bit-nfl-spn {
+    @include spinner-ring(var(--bit-NumberField-spinner-size, calc(var(--bit-NumberField-icon-size, var(--bit-nfl-icon-size)) + 2 * #{$siz-spinner-stroke})),
+                          var(--bit-NumberField-spinner-color, currentcolor),
+                          var(--bit-NumberField-spinner-track-color, #{translucent(var(--bit-NumberField-spinner-color, currentcolor), 25%)}));
 }
 
 .bit-nfl-cin {

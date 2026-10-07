@@ -68,6 +68,11 @@ public class BitNumberFieldClassStyles
     public string? Loading { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the numeric field's default busy spinner, drawn when no LoadingTemplate is set.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the numeric field's label container.
     /// </summary>
     public string? LabelContainer { get; set; }
