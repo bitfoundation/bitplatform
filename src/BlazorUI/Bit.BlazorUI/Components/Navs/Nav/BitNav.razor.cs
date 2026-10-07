@@ -273,13 +273,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a
         // default from a choice: the public --bit-Nav-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-nav-sm",
-            BitSize.Medium => "bit-nav-md",
-            BitSize.Large => "bit-nav-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nav"));
 
         ClassBuilder.Register(() => Accent switch
         {

@@ -530,27 +530,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         // Accent and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
         // choice: the public --bit-OtpInput-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-otp-pri",
-            BitColor.Secondary => "bit-otp-sec",
-            BitColor.Tertiary => "bit-otp-ter",
-            BitColor.Info => "bit-otp-inf",
-            BitColor.Success => "bit-otp-suc",
-            BitColor.Warning => "bit-otp-wrn",
-            BitColor.SevereWarning => "bit-otp-swr",
-            BitColor.Error => "bit-otp-err",
-            BitColor.PrimaryBackground => "bit-otp-pbg",
-            BitColor.SecondaryBackground => "bit-otp-sbg",
-            BitColor.TertiaryBackground => "bit-otp-tbg",
-            BitColor.PrimaryForeground => "bit-otp-pfg",
-            BitColor.SecondaryForeground => "bit-otp-sfg",
-            BitColor.TertiaryForeground => "bit-otp-tfg",
-            BitColor.PrimaryBorder => "bit-otp-pbr",
-            BitColor.SecondaryBorder => "bit-otp-sbr",
-            BitColor.TertiaryBorder => "bit-otp-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-otp"));
 
         ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
 
@@ -562,13 +542,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         ClassBuilder.Register(() => Disabled is false && Required ? "bit-otp-req" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-otp-sm",
-            BitSize.Medium => "bit-otp-md",
-            BitSize.Large => "bit-otp-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-otp"));
 
         ClassBuilder.Register(() => Vertical ? "bit-otp-vrt" : string.Empty);
 

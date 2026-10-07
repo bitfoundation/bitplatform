@@ -520,27 +520,7 @@ public partial class BitDropMenu : BitComponentBase
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-DropMenu-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-drm-pri",
-            BitColor.Secondary => "bit-drm-sec",
-            BitColor.Tertiary => "bit-drm-ter",
-            BitColor.Info => "bit-drm-inf",
-            BitColor.Success => "bit-drm-suc",
-            BitColor.Warning => "bit-drm-wrn",
-            BitColor.SevereWarning => "bit-drm-swr",
-            BitColor.Error => "bit-drm-err",
-            BitColor.PrimaryBackground => "bit-drm-pbg",
-            BitColor.SecondaryBackground => "bit-drm-sbg",
-            BitColor.TertiaryBackground => "bit-drm-tbg",
-            BitColor.PrimaryForeground => "bit-drm-pfg",
-            BitColor.SecondaryForeground => "bit-drm-sfg",
-            BitColor.TertiaryForeground => "bit-drm-tfg",
-            BitColor.PrimaryBorder => "bit-drm-pbr",
-            BitColor.SecondaryBorder => "bit-drm-sbr",
-            BitColor.TertiaryBorder => "bit-drm-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-drm"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -550,13 +530,7 @@ public partial class BitDropMenu : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-drm-sm",
-            BitSize.Medium => "bit-drm-md",
-            BitSize.Large => "bit-drm-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-drm"));
 
         ClassBuilder.Register(() => IsOpen ? "bit-drm-omn" : string.Empty);
 

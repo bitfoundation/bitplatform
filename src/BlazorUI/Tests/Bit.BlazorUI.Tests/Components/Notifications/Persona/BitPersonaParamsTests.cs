@@ -249,6 +249,18 @@ public class BitPersonaParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPersonaCascadedSizeShouldCountAsAChoice()
+    {
+        // A size from a BitPersonaParams ancestor counts as set, the same as one in the markup, so it hands its gap
+        // and active ring over as a choice the --bit-Persona-* variables cannot override.
+        var component = RenderWithParams(new BitPersonaParams { Size = BitPersonaSize.Size48 }, RenderPersona());
+
+        var root = component.Find(".bit-prs");
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-s48"));
+        Assert.IsTrue(root.ClassList.Contains("bit-prs-ssz"));
+    }
+
+    [TestMethod]
     public void BitPersonaCascadedStylesShouldReachTheParts()
     {
         var @params = new BitPersonaParams

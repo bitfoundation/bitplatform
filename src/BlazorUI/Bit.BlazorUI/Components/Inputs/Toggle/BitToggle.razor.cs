@@ -406,35 +406,9 @@ public partial class BitToggle : BitInputBase<bool>
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Toggle-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tgl-pri",
-            BitColor.Secondary => "bit-tgl-sec",
-            BitColor.Tertiary => "bit-tgl-ter",
-            BitColor.Info => "bit-tgl-inf",
-            BitColor.Success => "bit-tgl-suc",
-            BitColor.Warning => "bit-tgl-wrn",
-            BitColor.SevereWarning => "bit-tgl-swr",
-            BitColor.Error => "bit-tgl-err",
-            BitColor.PrimaryBackground => "bit-tgl-pbg",
-            BitColor.SecondaryBackground => "bit-tgl-sbg",
-            BitColor.TertiaryBackground => "bit-tgl-tbg",
-            BitColor.PrimaryForeground => "bit-tgl-pfg",
-            BitColor.SecondaryForeground => "bit-tgl-sfg",
-            BitColor.TertiaryForeground => "bit-tgl-tfg",
-            BitColor.PrimaryBorder => "bit-tgl-pbr",
-            BitColor.SecondaryBorder => "bit-tgl-sbr",
-            BitColor.TertiaryBorder => "bit-tgl-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tgl"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tgl-sm",
-            BitSize.Medium => "bit-tgl-md",
-            BitSize.Large => "bit-tgl-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tgl"));
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-tgl-chk {Classes?.Checked}" : string.Empty);
 

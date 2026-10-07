@@ -539,12 +539,12 @@ public partial class BitPersona : BitComponentBase
     /// Decides the size of the control.
     /// </summary>
     /// <remarks>
-    /// Left unset, the persona is laid out as <see cref="BitPersonaSize.Size48"/>. An explicit value wins over the
-    /// <c>--bit-Persona-gap</c>, <c>--bit-Persona-ring-gap</c> and <c>--bit-Persona-ring-width</c> variables, which
-    /// restyle only a persona that leaves it unset.
+    /// A value given by the markup or by a <see cref="BitPersonaParams"/> ancestor - <see cref="BitPersonaSize.Size48"/>
+    /// included - wins over the <c>--bit-Persona-gap</c>, <c>--bit-Persona-ring-gap</c> and
+    /// <c>--bit-Persona-ring-width</c> variables, which restyle only a persona that leaves it unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitPersonaSize? Size { get; set; }
+    public BitPersonaSize Size { get; set; } = BitPersonaSize.Size48;
 
     /// <summary>
     /// If true, renders the coin with a rounded square shape instead of the default circular shape.
@@ -637,7 +637,7 @@ public partial class BitPersona : BitComponentBase
         // The size class lays out every part of the persona, so an unset Size still renders one - Size48's. What
         // it publishes for the gap and the active ring is handed over as a choice only by bit-prs-ssz, which an
         // explicit Size alone adds: the public --bit-Persona-* variables restyle the default and never a choice.
-        ClassBuilder.Register(() => (Size ?? BitPersonaSize.Size48) switch
+        ClassBuilder.Register(() => Size switch
         {
             BitPersonaSize.Size8 => "bit-prs-s8",
             BitPersonaSize.Size24 => "bit-prs-s24",
@@ -651,7 +651,7 @@ public partial class BitPersona : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size.HasValue ? "bit-prs-ssz" : string.Empty);
+        ClassBuilder.Register(() => HasExplicitSize ? "bit-prs-ssz" : string.Empty);
 
         ClassBuilder.Register(() => HasClickableCoin ? "bit-prs-iac" : string.Empty);
 
@@ -694,6 +694,15 @@ public partial class BitPersona : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // Size48 given where it used to be left unset (or the other way round) leaves Size unchanged, so the
+        // ResetClassBuilder of Size does not fire; whether it was given is what bit-prs-ssz says.
+        if (_hasExplicitSize != HasExplicitSize)
+        {
+            _hasExplicitSize = HasExplicitSize;
+
+            ClassBuilder.Reset();
+        }
 
         base.OnParametersSet();
     }
@@ -836,27 +845,7 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
-    private static string GetCoinColorClass(BitColor color) => color switch
-    {
-        BitColor.Primary => "bit-prs-pri",
-        BitColor.Secondary => "bit-prs-sec",
-        BitColor.Tertiary => "bit-prs-ter",
-        BitColor.Info => "bit-prs-inf",
-        BitColor.Success => "bit-prs-suc",
-        BitColor.Warning => "bit-prs-wrn",
-        BitColor.SevereWarning => "bit-prs-swr",
-        BitColor.Error => "bit-prs-err",
-        BitColor.PrimaryBackground => "bit-prs-pbg",
-        BitColor.SecondaryBackground => "bit-prs-sbg",
-        BitColor.TertiaryBackground => "bit-prs-tbg",
-        BitColor.PrimaryForeground => "bit-prs-pfg",
-        BitColor.SecondaryForeground => "bit-prs-sfg",
-        BitColor.TertiaryForeground => "bit-prs-tfg",
-        BitColor.PrimaryBorder => "bit-prs-pbr",
-        BitColor.SecondaryBorder => "bit-prs-sbr",
-        BitColor.TertiaryBorder => "bit-prs-tbr",
-        _ => "bit-prs-inf"
-    };
+    private static string GetCoinColorClass(BitColor color) => BitCssClasses.Color(color, "bit-prs");
 
     /// <summary>
     /// The colors a hashed coin is picked from when the caller names none: the accent and the semantic
@@ -1129,6 +1118,13 @@ public partial class BitPersona : BitComponentBase
         var style = $"{GetCoinSizeStyle()}{Styles?.ImageContainer?.Trim(';')}";
         return style.HasValue() ? style : null;
     }
+
+    // Size keeps its Size48 default so that it stays a plain value, which leaves telling a default from a choice to
+    // whether anything gave it one: the markup on this render, or a BitPersonaParams ancestor (whose value counts as
+    // set, and is applied only where the markup gave none).
+    private bool HasExplicitSize => HasNotBeenSet(nameof(Size)) is false || CascadingParameters?.Size is not null;
+
+    private bool _hasExplicitSize;
 
     private string? GetCoinSizeStyle()
     {

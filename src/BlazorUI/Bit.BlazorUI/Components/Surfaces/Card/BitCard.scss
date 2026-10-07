@@ -58,6 +58,14 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 // properties inherit, which would hand an outer card's paint, rule, corner or shadow to every card nested in it,
 // so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-crd {
+    --bit-crd-clr: initial;
+    --bit-crd-clr-txt: initial;
+    --bit-crd-clr-fg: initial;
+    --bit-crd-clr-tint: initial;
+    --bit-crd-clr-hover: initial;
+    --bit-crd-clr-active: initial;
+    --bit-crd-clr-dis: initial;
+    --bit-crd-clr-dis-text: initial;
     --bit-crd-fg: initial;
     --bit-crd-bg: initial;
     --bit-crd-bg-hov: initial;

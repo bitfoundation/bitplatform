@@ -572,13 +572,7 @@ public partial class BitToggleButton : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tgb-sm",
-            BitSize.Medium => "bit-tgb-md",
-            BitSize.Large => "bit-tgb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tgb"));
 
         ClassBuilder.Register(() => GetVariant() switch
         {

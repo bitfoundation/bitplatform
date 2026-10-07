@@ -347,35 +347,9 @@ public partial class BitLink : BitComponentBase
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Link-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-lnk-sm",
-            BitSize.Medium => "bit-lnk-md",
-            BitSize.Large => "bit-lnk-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-lnk"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-lnk-pri",
-            BitColor.Secondary => "bit-lnk-sec",
-            BitColor.Tertiary => "bit-lnk-ter",
-            BitColor.Info => "bit-lnk-inf",
-            BitColor.Success => "bit-lnk-suc",
-            BitColor.Warning => "bit-lnk-wrn",
-            BitColor.SevereWarning => "bit-lnk-swr",
-            BitColor.Error => "bit-lnk-err",
-            BitColor.PrimaryBackground => "bit-lnk-pbg",
-            BitColor.SecondaryBackground => "bit-lnk-sbg",
-            BitColor.TertiaryBackground => "bit-lnk-tbg",
-            BitColor.PrimaryForeground => "bit-lnk-pfg",
-            BitColor.SecondaryForeground => "bit-lnk-sfg",
-            BitColor.TertiaryForeground => "bit-lnk-tfg",
-            BitColor.PrimaryBorder => "bit-lnk-pbr",
-            BitColor.SecondaryBorder => "bit-lnk-sbr",
-            BitColor.TertiaryBorder => "bit-lnk-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-lnk"));
     }
 
     /// <summary>

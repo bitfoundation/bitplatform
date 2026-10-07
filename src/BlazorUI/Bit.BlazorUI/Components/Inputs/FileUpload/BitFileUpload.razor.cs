@@ -1244,35 +1244,9 @@ public partial class BitFileUpload : BitComponentBase
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-FileUpload-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-upl-pri",
-            BitColor.Secondary => "bit-upl-sec",
-            BitColor.Tertiary => "bit-upl-ter",
-            BitColor.Info => "bit-upl-inf",
-            BitColor.Success => "bit-upl-suc",
-            BitColor.Warning => "bit-upl-wrn",
-            BitColor.SevereWarning => "bit-upl-swr",
-            BitColor.Error => "bit-upl-err",
-            BitColor.PrimaryBackground => "bit-upl-pbg",
-            BitColor.SecondaryBackground => "bit-upl-sbg",
-            BitColor.TertiaryBackground => "bit-upl-tbg",
-            BitColor.PrimaryForeground => "bit-upl-pfg",
-            BitColor.SecondaryForeground => "bit-upl-sfg",
-            BitColor.TertiaryForeground => "bit-upl-tfg",
-            BitColor.PrimaryBorder => "bit-upl-pbr",
-            BitColor.SecondaryBorder => "bit-upl-sbr",
-            BitColor.TertiaryBorder => "bit-upl-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-upl"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-upl-sm",
-            BitSize.Medium => "bit-upl-md",
-            BitSize.Large => "bit-upl-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-upl"));
 
         ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);
 

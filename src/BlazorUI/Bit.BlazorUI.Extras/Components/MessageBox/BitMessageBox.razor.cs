@@ -90,6 +90,9 @@ public partial class BitMessageBox : BitComponentBase
     /// <remarks>
     /// Tertiary by default, which is the neutral of the theme. <see cref="PrimaryButtonColor"/> is what
     /// singles the affirmative button out of the set - an Error-colored Delete beside a neutral Cancel.
+    /// <br />
+    /// Left unset, the buttons follow an app's <c>--bit-Button-*</c> color variables, the same as any other button
+    /// without a Color; a value set here wins over them.
     /// </remarks>
     [Parameter] public BitColor? ButtonColor { get; set; }
 
@@ -475,34 +478,8 @@ public partial class BitMessageBox : BitComponentBase
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
         // choice: the public --bit-MessageBox-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Classes?.Root)
-                    .Register(() => Color switch
-                    {
-                        BitColor.Primary => "bit-msb-pri",
-                        BitColor.Secondary => "bit-msb-sec",
-                        BitColor.Tertiary => "bit-msb-ter",
-                        BitColor.Info => "bit-msb-inf",
-                        BitColor.Success => "bit-msb-suc",
-                        BitColor.Warning => "bit-msb-wrn",
-                        BitColor.SevereWarning => "bit-msb-swr",
-                        BitColor.Error => "bit-msb-err",
-                        BitColor.PrimaryBackground => "bit-msb-pbg",
-                        BitColor.SecondaryBackground => "bit-msb-sbg",
-                        BitColor.TertiaryBackground => "bit-msb-tbg",
-                        BitColor.PrimaryForeground => "bit-msb-pfg",
-                        BitColor.SecondaryForeground => "bit-msb-sfg",
-                        BitColor.TertiaryForeground => "bit-msb-tfg",
-                        BitColor.PrimaryBorder => "bit-msb-pbr",
-                        BitColor.SecondaryBorder => "bit-msb-sbr",
-                        BitColor.TertiaryBorder => "bit-msb-tbr",
-                        _ => string.Empty
-                    })
-                    .Register(() => Size switch
-                    {
-                        BitSize.Small => "bit-msb-sm",
-                        BitSize.Medium => "bit-msb-md",
-                        BitSize.Large => "bit-msb-lg",
-                        _ => string.Empty
-                    });
+                    .Register(() => BitCssClasses.Color(Color, "bit-msb"))
+                    .Register(() => BitCssClasses.Size(Size, "bit-msb"));
     }
 
     protected override void RegisterCssStyles()
@@ -532,8 +509,11 @@ public partial class BitMessageBox : BitComponentBase
 
     // Tertiary is the neutral the footer has always been drawn in, so a message box that says nothing
     // about its buttons looks exactly as it did before the two color parameters existed.
-    private BitColor GetActionColor(BitMessageBoxResult action)
-        => (action == _PrimaryAction ? PrimaryButtonColor : null) ?? ButtonColor ?? BitColor.Tertiary;
+    // A color the message box was given is handed to the button as its Color, which wins over the app's --bit-Button-*
+    // variables. Without one the button is left unset and drawn Tertiary through bit-btn-dft-ter, the default a host
+    // gives the buttons it renders - read after those variables, so an app's restyle of its buttons reaches these too.
+    private BitColor? GetActionColor(BitMessageBoxResult action)
+        => (action == _PrimaryAction ? PrimaryButtonColor : null) ?? ButtonColor;
 
     private string? GetActionText(BitMessageBoxResult action) => action switch
     {

@@ -795,13 +795,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
         // tell a default from a choice: the public --bit-NumberField-* variables restyle the default and never an
         // explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-nfl-sm",
-            BitSize.Medium => "bit-nfl-md",
-            BitSize.Large => "bit-nfl-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nfl"));
 
         // The mode is on the root so the stylesheet can reach the whole field from the layout its buttons
         // are in - which is what lets the stacked pair grow to a usable pointer target on a touch device.
@@ -817,27 +811,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => Underlined ? "bit-nfl-und" : string.Empty);
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-nfl-pri",
-            BitColor.Secondary => "bit-nfl-sec",
-            BitColor.Tertiary => "bit-nfl-ter",
-            BitColor.Info => "bit-nfl-inf",
-            BitColor.Success => "bit-nfl-suc",
-            BitColor.Warning => "bit-nfl-wrn",
-            BitColor.SevereWarning => "bit-nfl-swr",
-            BitColor.Error => "bit-nfl-err",
-            BitColor.PrimaryBackground => "bit-nfl-pbg",
-            BitColor.SecondaryBackground => "bit-nfl-sbg",
-            BitColor.TertiaryBackground => "bit-nfl-tbg",
-            BitColor.PrimaryForeground => "bit-nfl-pfg",
-            BitColor.SecondaryForeground => "bit-nfl-sfg",
-            BitColor.TertiaryForeground => "bit-nfl-tfg",
-            BitColor.PrimaryBorder => "bit-nfl-pbr",
-            BitColor.SecondaryBorder => "bit-nfl-sbr",
-            BitColor.TertiaryBorder => "bit-nfl-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-nfl"));
 
         ClassBuilder.Register(() => Background switch
         {

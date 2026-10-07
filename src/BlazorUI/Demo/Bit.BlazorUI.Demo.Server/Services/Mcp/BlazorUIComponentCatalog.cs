@@ -484,7 +484,8 @@ public static class BlazorUIComponentCatalog
     /// properties.
     /// <para>
     /// What is left out is what is public for a reason other than being called: the
-    /// <c>[JSInvokable]</c> callbacks the library's own scripts invoke, the <c>Assign*</c> setters the
+    /// <c>[JSInvokable]</c> callbacks the library's own scripts invoke, the overloads hidden from the editor that
+    /// are kept only for assemblies compiled against an earlier signature, the <c>Assign*</c> setters the
     /// parameter source generator emits behind a two-way binding and the <c>HasNotBeenSet</c> probe it
     /// emits on a component outside <c>BitComponentBase</c>, the framework members a component
     /// overrides, and disposal.
@@ -501,6 +502,7 @@ public static class BlazorUIComponentCatalog
         var methods = type.GetMethods(Declared)
             .Where(m => m.IsSpecialName is false && m.GetBaseDefinition() == m)
             .Where(m => m.IsDefined(typeof(Microsoft.JSInterop.JSInvokableAttribute)) is false)
+            .Where(m => m.GetCustomAttribute<System.ComponentModel.EditorBrowsableAttribute>()?.State is not System.ComponentModel.EditorBrowsableState.Never)
             .Where(m => m.Name.StartsWith('_') is false && generated.Contains(m.Name) is false)
             .Where(m => m.Name is not ("Dispose" or "DisposeAsync" or "Equals" or "GetHashCode" or "ToString"))
             .Select(m => new ComponentMember(

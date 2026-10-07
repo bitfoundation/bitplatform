@@ -436,35 +436,9 @@ public partial class BitPivot : BitComponentBase
 
         // Size and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Pivot-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-pvt-sm",
-            BitSize.Medium => "bit-pvt-md",
-            BitSize.Large => "bit-pvt-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-pvt"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-pvt-pri",
-            BitColor.Secondary => "bit-pvt-sec",
-            BitColor.Tertiary => "bit-pvt-ter",
-            BitColor.Info => "bit-pvt-inf",
-            BitColor.Success => "bit-pvt-suc",
-            BitColor.Warning => "bit-pvt-wrn",
-            BitColor.SevereWarning => "bit-pvt-swr",
-            BitColor.Error => "bit-pvt-err",
-            BitColor.PrimaryBackground => "bit-pvt-pbg",
-            BitColor.SecondaryBackground => "bit-pvt-sbg",
-            BitColor.TertiaryBackground => "bit-pvt-tbg",
-            BitColor.PrimaryForeground => "bit-pvt-pfg",
-            BitColor.SecondaryForeground => "bit-pvt-sfg",
-            BitColor.TertiaryForeground => "bit-pvt-tfg",
-            BitColor.PrimaryBorder => "bit-pvt-pbr",
-            BitColor.SecondaryBorder => "bit-pvt-sbr",
-            BitColor.TertiaryBorder => "bit-pvt-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-pvt"));
 
         ClassBuilder.Register(() => HeaderType switch
         {

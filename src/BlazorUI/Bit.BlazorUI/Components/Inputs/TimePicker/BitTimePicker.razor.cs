@@ -2334,17 +2334,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         // and size have to be declared on it as well - nothing of the root cascades down to it there.
         List<string> classes = ["bit-tpc-cal"];
 
-        var colorClass = GetColorClass();
-        if (colorClass.HasValue())
-        {
-            classes.Add(colorClass);
-        }
-
-        var sizeClass = GetSizeClass();
-        if (sizeClass.HasValue())
-        {
-            classes.Add(sizeClass);
-        }
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         if (Classes?.Callout is not null)
         {

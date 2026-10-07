@@ -369,7 +369,15 @@ the Variant's recipe rather than the Color's, so `--bit-Badge-background` still 
 explicit `Color`. The demo page's `componentCssVariables` row says which parameter wins over each
 variable ("The Color parameter wins over it."), and the stylesheet test pins the order - no
 `var(--bit-<Component>-..., var(--bit-<prefix>-` left where the private one is a parameter's, plus the
-resets on the root. `BitBadge` and `BitShimmer` are the reference implementations.
+resets on the root. `BitBadge` and `BitShimmer` are the reference implementations. Every private property a
+role or size class publishes has to be declared again by the component's own rules (`initial`, or the default
+the unset parameter stands for); `BitComponentPrivatePropertyResetTests` fails on one that is not, for every
+stylesheet at once.
+
+A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
+buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
+leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`),
+read after the public variables as the last fallback.
 
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,

@@ -908,13 +908,7 @@ public partial class BitSwiper : BitComponentBase
 
         // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Swiper-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-swp-sm",
-            BitSize.Medium => "bit-swp-md",
-            BitSize.Large => "bit-swp-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-swp"));
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -927,27 +921,7 @@ public partial class BitSwiper : BitComponentBase
 
         // The color classes come after the accent ones in the stylesheet, so a swiper that sets both ends
         // up with the color it was given rather than with the accent it fell back to.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-swp-pri",
-            BitColor.Secondary => "bit-swp-sec",
-            BitColor.Tertiary => "bit-swp-ter",
-            BitColor.Info => "bit-swp-inf",
-            BitColor.Success => "bit-swp-suc",
-            BitColor.Warning => "bit-swp-wrn",
-            BitColor.SevereWarning => "bit-swp-swr",
-            BitColor.Error => "bit-swp-err",
-            BitColor.PrimaryBackground => "bit-swp-pbg",
-            BitColor.SecondaryBackground => "bit-swp-sbg",
-            BitColor.TertiaryBackground => "bit-swp-tbg",
-            BitColor.PrimaryForeground => "bit-swp-pfg",
-            BitColor.SecondaryForeground => "bit-swp-sfg",
-            BitColor.TertiaryForeground => "bit-swp-tfg",
-            BitColor.PrimaryBorder => "bit-swp-pbr",
-            BitColor.SecondaryBorder => "bit-swp-sbr",
-            BitColor.TertiaryBorder => "bit-swp-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-swp"));
     }
 
     protected override void RegisterCssStyles()

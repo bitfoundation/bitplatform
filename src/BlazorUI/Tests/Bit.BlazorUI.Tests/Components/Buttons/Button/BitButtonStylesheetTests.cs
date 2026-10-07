@@ -52,19 +52,20 @@ public partial class BitButtonStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-btn-rnd {"), "--bit-btn-radius: #{$shp-radius-full};");
 
         // So does an explicit Color, for every color it paints - the disabled and focus colors included.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr, var(--bit-Button-background, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-btn-clr-txt, var(--bit-Button-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-active, var(--bit-Button-active-background, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-dis, var(--bit-Button-disabled-background, #{$clr-pri-dis}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, #{$clr-pri-dis-text}));");
-        StringAssert.Contains(stylesheet, "var(--bit-btn-clr-focus, var(--bit-Button-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-dis, var(--bit-Button-disabled-background, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis})));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})));");
+        StringAssert.Contains(stylesheet, "var(--bit-btn-clr-focus, var(--bit-Button-focus-color, var(--bit-btn-dft-clr-focus, #{$clr-pri-focus})))");
 
         // What a Color does not paint stays the variable's: the transparent background of Outline and Text.
         var outline = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btn-otl {");
         StringAssert.Contains(outline, "background-color: var(--bit-Button-background, transparent);");
 
-        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Button-[a-z-]+, var\(--bit-btn-"), "A public variable is read before the parameter it restyles the default of.");
+        // The default a host component gives its buttons (--bit-btn-dft-*) is the one private value read after them.
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Button-[a-z-]+, var\(--bit-btn-(?!dft-)"), "A public variable is read before the parameter it restyles the default of.");
         Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"var\(--bit-btn-[a-z-]+\)"), "A value a parameter publishes is read with no fallback, which leaves it empty while the parameter is unset.");
     }
 

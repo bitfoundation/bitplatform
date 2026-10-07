@@ -22,12 +22,14 @@
 //   --bit-Progress-description-font-size text size of the description                (default: $tg-fs-2xs)
 //
 // A parameter written on the progress wins over the variable that restyles what it sets: an explicit Color over the
-// bar, bar-text and buffer colors, an explicit Size over the font sizes, the thickness and the diameter, and
+// bar and bar-text colors, an explicit Size over the font sizes, the thickness and the diameter, and
 // BarColor, TrackColor, Thickness, Diameter, Length and Rounded over theirs. The variables restyle the default, not
 // a choice - which is why Color and Size publish nothing while they are left unset: a class that always carried the
 // default would be indistinguishable from one that was asked for. The readout in a ring is the exception: its step
 // up the type ramp is one the component works out from the drawn size rather than one that was asked for, so
-// --bit-Progress-percent-font-size still wins over it.
+// --bit-Progress-percent-font-size still wins over it. So does --bit-Progress-buffer-color over the buffer: no parameter
+// paints the buffer - its default is only derived from the bar color, which Color and BarColor replace - so the
+// variable keeps it, the way the Outline background of a badge stays the badge's variable under an explicit Color.
 
 .bit-prb {
     font-weight: $tg-fw-regular;
@@ -45,7 +47,6 @@
     --bit-prb-thk: initial;
     --bit-prb-dia: initial;
     --bit-prb-ring-stroke: initial;
-    --bit-prb-buf-clr: initial;
     --bit-prb-bar-color: var(--bit-prb-clr, var(--bit-Progress-bar-color, #{$clr-pri}));
     --bit-prb-bar-on-color: var(--bit-prb-clr-on, var(--bit-Progress-bar-text-color, #{$clr-pri-text}));
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
@@ -251,7 +252,7 @@
     transition: width var(--bit-prb-duration) linear 0s;
     // The buffer is the same progress seen faintly, so it is the bar color at low alpha rather than a
     // color of its own: every role, preset and scheme keeps it in step with the bar for free.
-    background-color: var(--bit-prb-buf-clr, var(--bit-Progress-buffer-color, #{translucent(var(--bit-prb-bar-color), 38%)}));
+    background-color: var(--bit-Progress-buffer-color, #{translucent(var(--bit-prb-bar-color), 38%)});
 }
 
 .bit-prb-bar {
@@ -366,7 +367,7 @@
 }
 
 .bit-prb-cbf {
-    stroke: var(--bit-prb-buf-clr, var(--bit-Progress-buffer-color, #{translucent(var(--bit-prb-bar-color), 38%)}));
+    stroke: var(--bit-Progress-buffer-color, #{translucent(var(--bit-prb-bar-color), 38%)});
     transition: stroke-dasharray var(--bit-prb-duration) linear;
     stroke-dasharray: calc(3.141 * var(--bit-prb-buffer, 0%) * 0.8 * var(--bit-prb-arc)), 500%;
 }
@@ -572,13 +573,11 @@
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and are only rendered
-// for an explicit Color. The buffer is that Color's as much as the bar is, so it is the bar color at low alpha here
-// whatever --bit-Progress-buffer-color says - the bar color a BarColor replaces, as it always did.
+// for an explicit Color.
 @each $role, $tokens in $bit-color-roles {
     .bit-prb-#{$role} {
         --bit-prb-clr: #{role($tokens, main)};
         --bit-prb-clr-on: #{role($tokens, on)};
-        --bit-prb-buf-clr: #{translucent(var(--bit-prb-bar-color), 38%)};
     }
 }
 

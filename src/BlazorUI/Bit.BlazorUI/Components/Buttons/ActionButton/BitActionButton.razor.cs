@@ -321,27 +321,7 @@ public partial class BitActionButton : BitComponentBase
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-ActionButton-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-acb-pri",
-            BitColor.Secondary => "bit-acb-sec",
-            BitColor.Tertiary => "bit-acb-ter",
-            BitColor.Info => "bit-acb-inf",
-            BitColor.Success => "bit-acb-suc",
-            BitColor.Warning => "bit-acb-wrn",
-            BitColor.SevereWarning => "bit-acb-swr",
-            BitColor.Error => "bit-acb-err",
-            BitColor.PrimaryBackground => "bit-acb-pbg",
-            BitColor.SecondaryBackground => "bit-acb-sbg",
-            BitColor.TertiaryBackground => "bit-acb-tbg",
-            BitColor.PrimaryForeground => "bit-acb-pfg",
-            BitColor.SecondaryForeground => "bit-acb-sfg",
-            BitColor.TertiaryForeground => "bit-acb-tfg",
-            BitColor.PrimaryBorder => "bit-acb-pbr",
-            BitColor.SecondaryBorder => "bit-acb-sbr",
-            BitColor.TertiaryBorder => "bit-acb-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-acb"));
 
         ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
@@ -351,13 +331,7 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-acb-sm",
-            BitSize.Medium => "bit-acb-md",
-            BitSize.Large => "bit-acb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-acb"));
 
         ClassBuilder.Register(() => Underlined ? "bit-acb-und" : string.Empty);
 

@@ -528,38 +528,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
         // choice: the public --bit-MenuButton-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-mnb-pri",
-            BitColor.Secondary => "bit-mnb-sec",
-            BitColor.Tertiary => "bit-mnb-ter",
-            BitColor.Info => "bit-mnb-inf",
-            BitColor.Success => "bit-mnb-suc",
-            BitColor.Warning => "bit-mnb-wrn",
-            BitColor.SevereWarning => "bit-mnb-swr",
-            BitColor.Error => "bit-mnb-err",
-            BitColor.PrimaryBackground => "bit-mnb-pbg",
-            BitColor.SecondaryBackground => "bit-mnb-sbg",
-            BitColor.TertiaryBackground => "bit-mnb-tbg",
-            BitColor.PrimaryForeground => "bit-mnb-pfg",
-            BitColor.SecondaryForeground => "bit-mnb-sfg",
-            BitColor.TertiaryForeground => "bit-mnb-tfg",
-            BitColor.PrimaryBorder => "bit-mnb-pbr",
-            BitColor.SecondaryBorder => "bit-mnb-sbr",
-            BitColor.TertiaryBorder => "bit-mnb-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-mnb"));
 
         ClassBuilder.Register(() => IsOpen ? "bit-mnb-omn" : string.Empty);
         ClassBuilder.Register(() => IsOpen ? Classes?.Opened : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-mnb-sm",
-            BitSize.Medium => "bit-mnb-md",
-            BitSize.Large => "bit-mnb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-mnb"));
 
         ClassBuilder.Register(() => FullWidth ? "bit-mnb-flw" : string.Empty);
 
@@ -1844,15 +1818,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         // height and their padding, and the color class paints the focus ring of the focused one and the glyph
         // of a checked one in the color the menu button was given. Like the root, the callout carries neither
         // while it is unset, so the public variables restyle the default there and never an explicit value.
-        if (Color.HasValue)
-        {
-            classes.Add(BitCssClasses.Color(Color, "bit-mnb"));
-        }
-
-        if (Size.HasValue)
-        {
-            classes.Add(BitCssClasses.Size(Size, "bit-mnb"));
-        }
+        classes.AddIfHasValue(BitCssClasses.Color(Color, "bit-mnb"));
+        classes.AddIfHasValue(BitCssClasses.Size(Size, "bit-mnb"));
 
         var bgClass = Background switch
         {

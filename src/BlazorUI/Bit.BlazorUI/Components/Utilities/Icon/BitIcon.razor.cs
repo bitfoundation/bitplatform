@@ -331,37 +331,11 @@ public partial class BitIcon : BitComponentBase
     {
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
         // choice: the public --bit-Icon-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-ico-pri",
-            BitColor.Secondary => "bit-ico-sec",
-            BitColor.Tertiary => "bit-ico-ter",
-            BitColor.Info => "bit-ico-inf",
-            BitColor.Success => "bit-ico-suc",
-            BitColor.Warning => "bit-ico-wrn",
-            BitColor.SevereWarning => "bit-ico-swr",
-            BitColor.Error => "bit-ico-err",
-            BitColor.PrimaryBackground => "bit-ico-pbg",
-            BitColor.SecondaryBackground => "bit-ico-sbg",
-            BitColor.TertiaryBackground => "bit-ico-tbg",
-            BitColor.PrimaryForeground => "bit-ico-pfg",
-            BitColor.SecondaryForeground => "bit-ico-sfg",
-            BitColor.TertiaryForeground => "bit-ico-tfg",
-            BitColor.PrimaryBorder => "bit-ico-pbr",
-            BitColor.SecondaryBorder => "bit-ico-sbr",
-            BitColor.TertiaryBorder => "bit-ico-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-ico"));
 
         ClassBuilder.Register(() => _icon?.GetCssClasses());
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-ico-sm",
-            BitSize.Medium => "bit-ico-md",
-            BitSize.Large => "bit-ico-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-ico"));
 
         ClassBuilder.Register(() => Variant switch
         {

@@ -784,35 +784,9 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
         // tell a default from a choice: the public --bit-TextField-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tfl-sm",
-            BitSize.Medium => "bit-tfl-md",
-            BitSize.Large => "bit-tfl-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tfl"));
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-tfl-pri",
-            BitColor.Secondary => "bit-tfl-sec",
-            BitColor.Tertiary => "bit-tfl-ter",
-            BitColor.Info => "bit-tfl-inf",
-            BitColor.Success => "bit-tfl-suc",
-            BitColor.Warning => "bit-tfl-wrn",
-            BitColor.SevereWarning => "bit-tfl-swr",
-            BitColor.Error => "bit-tfl-err",
-            BitColor.PrimaryBackground => "bit-tfl-pbg",
-            BitColor.SecondaryBackground => "bit-tfl-sbg",
-            BitColor.TertiaryBackground => "bit-tfl-tbg",
-            BitColor.PrimaryForeground => "bit-tfl-pfg",
-            BitColor.SecondaryForeground => "bit-tfl-sfg",
-            BitColor.TertiaryForeground => "bit-tfl-tfg",
-            BitColor.PrimaryBorder => "bit-tfl-pbr",
-            BitColor.SecondaryBorder => "bit-tfl-sbr",
-            BitColor.TertiaryBorder => "bit-tfl-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-tfl"));
 
         ClassBuilder.Register(() => Background switch
         {

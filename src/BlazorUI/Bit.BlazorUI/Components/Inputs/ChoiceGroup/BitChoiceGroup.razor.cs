@@ -452,35 +452,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-ChoiceGroup-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-chg-pri",
-            BitColor.Secondary => "bit-chg-sec",
-            BitColor.Tertiary => "bit-chg-ter",
-            BitColor.Info => "bit-chg-inf",
-            BitColor.Success => "bit-chg-suc",
-            BitColor.Warning => "bit-chg-wrn",
-            BitColor.SevereWarning => "bit-chg-swr",
-            BitColor.Error => "bit-chg-err",
-            BitColor.PrimaryBackground => "bit-chg-pbg",
-            BitColor.SecondaryBackground => "bit-chg-sbg",
-            BitColor.TertiaryBackground => "bit-chg-tbg",
-            BitColor.PrimaryForeground => "bit-chg-pfg",
-            BitColor.SecondaryForeground => "bit-chg-sfg",
-            BitColor.TertiaryForeground => "bit-chg-tfg",
-            BitColor.PrimaryBorder => "bit-chg-pbr",
-            BitColor.SecondaryBorder => "bit-chg-sbr",
-            BitColor.TertiaryBorder => "bit-chg-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-chg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-chg-sm",
-            BitSize.Medium => "bit-chg-md",
-            BitSize.Large => "bit-chg-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-chg"));
     }
 
     protected override void RegisterCssStyles()

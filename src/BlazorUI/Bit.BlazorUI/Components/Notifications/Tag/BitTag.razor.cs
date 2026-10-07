@@ -580,27 +580,7 @@ public partial class BitTag : BitComponentBase
 
         // Color, Size and Shape publish nothing while they are unset, which is what lets the stylesheet tell a
         // default from a choice: the public --bit-Tag-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tag-pri",
-            BitColor.Secondary => "bit-tag-sec",
-            BitColor.Tertiary => "bit-tag-ter",
-            BitColor.Info => "bit-tag-inf",
-            BitColor.Success => "bit-tag-suc",
-            BitColor.Warning => "bit-tag-wrn",
-            BitColor.SevereWarning => "bit-tag-swr",
-            BitColor.Error => "bit-tag-err",
-            BitColor.PrimaryBackground => "bit-tag-pbg",
-            BitColor.SecondaryBackground => "bit-tag-sbg",
-            BitColor.TertiaryBackground => "bit-tag-tbg",
-            BitColor.PrimaryForeground => "bit-tag-pfg",
-            BitColor.SecondaryForeground => "bit-tag-sfg",
-            BitColor.TertiaryForeground => "bit-tag-tfg",
-            BitColor.PrimaryBorder => "bit-tag-pbr",
-            BitColor.SecondaryBorder => "bit-tag-sbr",
-            BitColor.TertiaryBorder => "bit-tag-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tag"));
 
         ClassBuilder.Register(() => Reversed ? "bit-tag-rvs" : string.Empty);
 
@@ -610,13 +590,7 @@ public partial class BitTag : BitComponentBase
 
         ClassBuilder.Register(() => Selected ? $"bit-tag-sel {Classes?.Selected}" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tag-sm",
-            BitSize.Medium => "bit-tag-md",
-            BitSize.Large => "bit-tag-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tag"));
 
         ClassBuilder.Register(() => Shape switch
         {

@@ -196,27 +196,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
         // choice: the public --bit-Timeline-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tln-pri",
-            BitColor.Secondary => "bit-tln-sec",
-            BitColor.Tertiary => "bit-tln-ter",
-            BitColor.Info => "bit-tln-inf",
-            BitColor.Success => "bit-tln-suc",
-            BitColor.Warning => "bit-tln-wrn",
-            BitColor.SevereWarning => "bit-tln-swr",
-            BitColor.Error => "bit-tln-err",
-            BitColor.PrimaryBackground => "bit-tln-pbg",
-            BitColor.SecondaryBackground => "bit-tln-sbg",
-            BitColor.TertiaryBackground => "bit-tln-tbg",
-            BitColor.PrimaryForeground => "bit-tln-pfg",
-            BitColor.SecondaryForeground => "bit-tln-sfg",
-            BitColor.TertiaryForeground => "bit-tln-tfg",
-            BitColor.PrimaryBorder => "bit-tln-pbr",
-            BitColor.SecondaryBorder => "bit-tln-sbr",
-            BitColor.TertiaryBorder => "bit-tln-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tln"));
 
         ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
 
@@ -263,13 +243,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tln-sm",
-            BitSize.Medium => "bit-tln-md",
-            BitSize.Large => "bit-tln-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tln"));
 
         ClassBuilder.Register(() => Variant switch
         {

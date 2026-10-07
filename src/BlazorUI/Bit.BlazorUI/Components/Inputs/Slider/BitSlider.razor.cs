@@ -543,35 +543,9 @@ public partial class BitSlider : BitInputBase<double>
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Slider-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-sld-pri",
-            BitColor.Secondary => "bit-sld-sec",
-            BitColor.Tertiary => "bit-sld-ter",
-            BitColor.Info => "bit-sld-inf",
-            BitColor.Success => "bit-sld-suc",
-            BitColor.Warning => "bit-sld-wrn",
-            BitColor.SevereWarning => "bit-sld-swr",
-            BitColor.Error => "bit-sld-err",
-            BitColor.PrimaryBackground => "bit-sld-pbg",
-            BitColor.SecondaryBackground => "bit-sld-sbg",
-            BitColor.TertiaryBackground => "bit-sld-tbg",
-            BitColor.PrimaryForeground => "bit-sld-pfg",
-            BitColor.SecondaryForeground => "bit-sld-sfg",
-            BitColor.TertiaryForeground => "bit-sld-tfg",
-            BitColor.PrimaryBorder => "bit-sld-pbr",
-            BitColor.SecondaryBorder => "bit-sld-sbr",
-            BitColor.TertiaryBorder => "bit-sld-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-sld"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-sld-sm",
-            BitSize.Medium => "bit-sld-md",
-            BitSize.Large => "bit-sld-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-sld"));
     }
 
     protected override void RegisterCssStyles()

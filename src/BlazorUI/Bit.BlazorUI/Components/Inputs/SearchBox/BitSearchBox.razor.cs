@@ -748,13 +748,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         // Size, Background and Color publish nothing while they are unset, which is what lets the stylesheet tell a
         // default from a choice: the public --bit-SearchBox-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-srb-sm",
-            BitSize.Medium => "bit-srb-md",
-            BitSize.Large => "bit-srb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-srb"));
 
         ClassBuilder.Register(() => Background switch
         {
@@ -773,27 +767,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// the root element, so it never inherits them and is given the very same class instead - which is what
     /// lets the highlight ring of a suggest item and the spinner of the callout follow the chosen color.
     /// </summary>
-    private string GetColorClass() => Color switch
-    {
-        BitColor.Primary => "bit-srb-pri",
-        BitColor.Secondary => "bit-srb-sec",
-        BitColor.Tertiary => "bit-srb-ter",
-        BitColor.Info => "bit-srb-inf",
-        BitColor.Success => "bit-srb-suc",
-        BitColor.Warning => "bit-srb-wrn",
-        BitColor.SevereWarning => "bit-srb-swr",
-        BitColor.Error => "bit-srb-err",
-        BitColor.PrimaryBackground => "bit-srb-pbg",
-        BitColor.SecondaryBackground => "bit-srb-sbg",
-        BitColor.TertiaryBackground => "bit-srb-tbg",
-        BitColor.PrimaryForeground => "bit-srb-pfg",
-        BitColor.SecondaryForeground => "bit-srb-sfg",
-        BitColor.TertiaryForeground => "bit-srb-tfg",
-        BitColor.PrimaryBorder => "bit-srb-pbr",
-        BitColor.SecondaryBorder => "bit-srb-sbr",
-        BitColor.TertiaryBorder => "bit-srb-tbr",
-        _ => string.Empty
-    };
+    private string GetColorClass() => BitCssClasses.Color(Color, "bit-srb");
 
     protected override void RegisterCssStyles()
     {
@@ -890,13 +864,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         // The callout is rendered as a sibling of the root element, so the size class of the component
         // never reaches it through the cascade and it has to be given one of its own - and, like the root's,
         // none while the Size is unset, so the public --bit-SearchBox-* variables restyle the default rows.
-        _calloutSizeClass = Size switch
-        {
-            BitSize.Small => "bit-srb-sm",
-            BitSize.Medium => "bit-srb-md",
-            BitSize.Large => "bit-srb-lg",
-            _ => string.Empty
-        };
+        _calloutSizeClass = BitCssClasses.Size(Size, "bit-srb");
 
         _calloutColorClass = GetColorClass();
 

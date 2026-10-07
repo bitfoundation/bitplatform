@@ -707,35 +707,9 @@ public partial class BitMessage : BitComponentBase
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
         // a choice: the public --bit-Message-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-msg-pri",
-            BitColor.Secondary => "bit-msg-sec",
-            BitColor.Tertiary => "bit-msg-ter",
-            BitColor.Info => "bit-msg-inf",
-            BitColor.Success => "bit-msg-suc",
-            BitColor.Warning => "bit-msg-wrn",
-            BitColor.SevereWarning => "bit-msg-swr",
-            BitColor.Error => "bit-msg-err",
-            BitColor.PrimaryBackground => "bit-msg-pbg",
-            BitColor.SecondaryBackground => "bit-msg-sbg",
-            BitColor.TertiaryBackground => "bit-msg-tbg",
-            BitColor.PrimaryForeground => "bit-msg-pfg",
-            BitColor.SecondaryForeground => "bit-msg-sfg",
-            BitColor.TertiaryForeground => "bit-msg-tfg",
-            BitColor.PrimaryBorder => "bit-msg-pbr",
-            BitColor.SecondaryBorder => "bit-msg-sbr",
-            BitColor.TertiaryBorder => "bit-msg-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-msg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-msg-sm",
-            BitSize.Medium => "bit-msg-md",
-            BitSize.Large => "bit-msg-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-msg"));
 
         ClassBuilder.Register(() => Square ? "bit-msg-sqr" : string.Empty);
 

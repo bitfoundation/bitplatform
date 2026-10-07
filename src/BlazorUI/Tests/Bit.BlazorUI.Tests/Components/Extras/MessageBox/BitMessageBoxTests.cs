@@ -290,9 +290,42 @@ public class BitMessageBoxTests : BunitTestContext
             parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
         });
 
+        // The neutral color is the default the message box gives its buttons rather than a Color of theirs, so an
+        // app's --bit-Button-* variables still restyle them: no role class, only the host default read after those.
+        foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
+        {
+            Assert.IsTrue(button.ClassList.Contains("bit-btn-dft-ter"));
+            Assert.IsFalse(button.ClassList.Contains("bit-btn-ter"));
+        }
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldDrawItsCloseButtonInTheNeutralColorAsADefault()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        var close = component.Find(".bit-msb-hdr .bit-btn");
+        Assert.IsTrue(close.ClassList.Contains("bit-btn-dft-ter"));
+        Assert.IsFalse(close.ClassList.Contains("bit-btn-ter"));
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldHandAColorItWasGivenToItsButtonsAsAChoice()
+    {
+        var component = RenderComponent<BitMessageBox>(parameters =>
+        {
+            parameters.Add(p => p.Buttons, BitMessageBoxButtons.OkCancel);
+            parameters.Add(p => p.ButtonColor, BitColor.Tertiary);
+        });
+
         foreach (var button in component.FindAll(".bit-msb-ftr .bit-btn"))
         {
             Assert.IsTrue(button.ClassList.Contains("bit-btn-ter"));
+            Assert.IsFalse(button.ClassList.Contains("bit-btn-dft-ter"));
         }
     }
 

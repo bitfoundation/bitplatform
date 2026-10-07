@@ -928,7 +928,7 @@ public class BitPersonaTests : BunitTestContext
         // The size class lays the persona out, so an unset Size still renders Size48's; only an explicit one adds the
         // class that hands its gap and active ring over as a choice the --bit-Persona-* variables cannot override.
         var root = component.Find(".bit-prs");
-        Assert.IsNull(component.Instance.Size);
+        Assert.AreEqual(BitPersonaSize.Size48, component.Instance.Size);
         Assert.IsTrue(root.ClassList.Contains("bit-prs-s48"));
         Assert.IsFalse(root.ClassList.Contains("bit-prs-ssz"));
 

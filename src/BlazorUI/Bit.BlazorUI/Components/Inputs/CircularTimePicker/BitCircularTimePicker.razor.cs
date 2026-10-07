@@ -2192,15 +2192,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         List<string> classes = ["bit-ctp-cal"];
 
-        if (ColorClass.HasValue())
-        {
-            classes.Add(ColorClass);
-        }
-
-        if (SizeClass.HasValue())
-        {
-            classes.Add(SizeClass);
-        }
+        classes.AddIfHasValue(ColorClass);
+        classes.AddIfHasValue(SizeClass);
 
         if (Classes?.Callout is not null)
         {
@@ -2349,13 +2342,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string ColorClass => BitCssClasses.Color(Color, "bit-ctp");
 
-    private string SizeClass => Size switch
-    {
-        BitSize.Small => "bit-ctp-sm",
-        BitSize.Medium => "bit-ctp-md",
-        BitSize.Large => "bit-ctp-lg",
-        _ => string.Empty
-    };
+    private string SizeClass => BitCssClasses.Size(Size, "bit-ctp");
 
     // Where the 24-hour dial stops reading the pointer as the outer ring and starts reading it as the inner
     // one: halfway between the two radii the numbers are laid out on, as a fraction of the radius of the dial.

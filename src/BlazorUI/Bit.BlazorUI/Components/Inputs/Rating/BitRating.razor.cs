@@ -406,35 +406,9 @@ public partial class BitRating : BitInputBase<double>
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Rating-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-rtg-pri",
-            BitColor.Secondary => "bit-rtg-sec",
-            BitColor.Tertiary => "bit-rtg-ter",
-            BitColor.Info => "bit-rtg-inf",
-            BitColor.Success => "bit-rtg-suc",
-            BitColor.Warning => "bit-rtg-wrn",
-            BitColor.SevereWarning => "bit-rtg-swr",
-            BitColor.Error => "bit-rtg-err",
-            BitColor.PrimaryBackground => "bit-rtg-pbg",
-            BitColor.SecondaryBackground => "bit-rtg-sbg",
-            BitColor.TertiaryBackground => "bit-rtg-tbg",
-            BitColor.PrimaryForeground => "bit-rtg-pfg",
-            BitColor.SecondaryForeground => "bit-rtg-sfg",
-            BitColor.TertiaryForeground => "bit-rtg-tfg",
-            BitColor.PrimaryBorder => "bit-rtg-pbr",
-            BitColor.SecondaryBorder => "bit-rtg-sbr",
-            BitColor.TertiaryBorder => "bit-rtg-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-rtg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-rtg-sm",
-            BitSize.Medium => "bit-rtg-md",
-            BitSize.Large => "bit-rtg-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-rtg"));
     }
 
     protected override void RegisterCssStyles()

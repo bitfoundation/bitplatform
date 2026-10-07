@@ -61,7 +61,8 @@ public partial class BitProgress : BitComponentBase
     /// the <see cref="Buffer"/> and the fill of a <see cref="Striped"/> bar.
     /// </summary>
     /// <remarks>
-    /// It wins over the --bit-Progress-bar-color and --bit-Progress-buffer-color CSS variables.
+    /// It wins over the --bit-Progress-bar-color CSS variable. The buffer tint follows it only while
+    /// --bit-Progress-buffer-color is unset: no parameter paints the buffer, so that variable keeps it.
     /// </remarks>
     [Parameter] public string? BarColor { get; set; }
 
@@ -95,9 +96,9 @@ public partial class BitProgress : BitComponentBase
     /// The general color of the BitProgress.
     /// </summary>
     /// <remarks>
-    /// An explicit value wins over the --bit-Progress-bar-color, --bit-Progress-bar-text-color and
-    /// --bit-Progress-buffer-color CSS variables; left unset, the progress is primary unless those variables say
-    /// otherwise.
+    /// An explicit value wins over the --bit-Progress-bar-color and --bit-Progress-bar-text-color CSS variables; left
+    /// unset, the progress is primary unless those variables say otherwise. The buffer tint follows it only while
+    /// --bit-Progress-buffer-color is unset, since no parameter paints the buffer.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -330,35 +331,9 @@ public partial class BitProgress : BitComponentBase
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
         // choice: the public --bit-Progress-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-prb-pri",
-            BitColor.Secondary => "bit-prb-sec",
-            BitColor.Tertiary => "bit-prb-ter",
-            BitColor.Info => "bit-prb-inf",
-            BitColor.Success => "bit-prb-suc",
-            BitColor.Warning => "bit-prb-wrn",
-            BitColor.SevereWarning => "bit-prb-swr",
-            BitColor.Error => "bit-prb-err",
-            BitColor.PrimaryBackground => "bit-prb-pbg",
-            BitColor.SecondaryBackground => "bit-prb-sbg",
-            BitColor.TertiaryBackground => "bit-prb-tbg",
-            BitColor.PrimaryForeground => "bit-prb-pfg",
-            BitColor.SecondaryForeground => "bit-prb-sfg",
-            BitColor.TertiaryForeground => "bit-prb-tfg",
-            BitColor.PrimaryBorder => "bit-prb-pbr",
-            BitColor.SecondaryBorder => "bit-prb-sbr",
-            BitColor.TertiaryBorder => "bit-prb-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-prb"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-prb-sm",
-            BitSize.Medium => "bit-prb-md",
-            BitSize.Large => "bit-prb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-prb"));
 
         ClassBuilder.Register(() => Rounded ? "bit-prb-rnd" : string.Empty);
 
@@ -604,8 +579,7 @@ public partial class BitProgress : BitComponentBase
     // Both colors are declared on the root as custom properties rather than written onto the parts: the bar
     // color is read by the bar, the ring stroke, the buffer tint and the stripes, and one declaration keeps
     // all of them in step. An inline declaration also outranks the role class, which is what lets a custom
-    // color replace the palette Color would have given. The buffer tint is published beside the bar color, the
-    // way an explicit Color publishes it, so it wins over --bit-Progress-buffer-color as well.
+    // color replace the palette Color would have given.
     private string? _ColorStyle
     {
         get
@@ -617,7 +591,6 @@ public partial class BitProgress : BitComponentBase
             if (BarColor.HasValue())
             {
                 sb.Append($"--bit-prb-bar-color: {BarColor};");
-                sb.Append("--bit-prb-buf-clr: color-mix(in srgb, var(--bit-prb-bar-color) 38%, transparent);");
             }
 
             if (TrackColor.HasValue())

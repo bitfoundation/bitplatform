@@ -874,13 +874,7 @@ public partial class BitStack : BitComponentBase
         // separate questions, and either of them may answer to the width of the window without the other doing so.
         ClassBuilder.Register(() => IsResponsiveWrap ? "bit-stc-rswrp" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-stc-sm",
-            BitSize.Medium => "bit-stc-md",
-            BitSize.Large => "bit-stc-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-stc"));
     }
 
     protected override void RegisterCssStyles()

@@ -516,13 +516,7 @@ public partial class BitAccordion : BitComponentBase
 
         // Size, Background and Border publish nothing while they are unset, which is what lets the stylesheet tell a
         // default from a choice: the public --bit-Accordion-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-acd-sm",
-            BitSize.Medium => "bit-acd-md",
-            BitSize.Large => "bit-acd-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-acd"));
 
         ClassBuilder.Register(() => Background switch
         {

@@ -501,35 +501,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-ButtonGroup-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-btg-pri",
-            BitColor.Secondary => "bit-btg-sec",
-            BitColor.Tertiary => "bit-btg-ter",
-            BitColor.Info => "bit-btg-inf",
-            BitColor.Success => "bit-btg-suc",
-            BitColor.Warning => "bit-btg-wrn",
-            BitColor.SevereWarning => "bit-btg-swr",
-            BitColor.Error => "bit-btg-err",
-            BitColor.PrimaryBackground => "bit-btg-pbg",
-            BitColor.SecondaryBackground => "bit-btg-sbg",
-            BitColor.TertiaryBackground => "bit-btg-tbg",
-            BitColor.PrimaryForeground => "bit-btg-pfg",
-            BitColor.SecondaryForeground => "bit-btg-sfg",
-            BitColor.TertiaryForeground => "bit-btg-tfg",
-            BitColor.PrimaryBorder => "bit-btg-pbr",
-            BitColor.SecondaryBorder => "bit-btg-sbr",
-            BitColor.TertiaryBorder => "bit-btg-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-btg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-btg-sm",
-            BitSize.Medium => "bit-btg-md",
-            BitSize.Large => "bit-btg-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-btg"));
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
 

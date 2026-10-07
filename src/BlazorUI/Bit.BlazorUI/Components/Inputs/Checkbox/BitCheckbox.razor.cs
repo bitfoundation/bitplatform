@@ -421,35 +421,9 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Checkbox-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-chb-pri",
-            BitColor.Secondary => "bit-chb-sec",
-            BitColor.Tertiary => "bit-chb-ter",
-            BitColor.Info => "bit-chb-inf",
-            BitColor.Success => "bit-chb-suc",
-            BitColor.Warning => "bit-chb-wrn",
-            BitColor.SevereWarning => "bit-chb-swr",
-            BitColor.Error => "bit-chb-err",
-            BitColor.PrimaryBackground => "bit-chb-pbg",
-            BitColor.SecondaryBackground => "bit-chb-sbg",
-            BitColor.TertiaryBackground => "bit-chb-tbg",
-            BitColor.PrimaryForeground => "bit-chb-pfg",
-            BitColor.SecondaryForeground => "bit-chb-sfg",
-            BitColor.TertiaryForeground => "bit-chb-tfg",
-            BitColor.PrimaryBorder => "bit-chb-pbr",
-            BitColor.SecondaryBorder => "bit-chb-sbr",
-            BitColor.TertiaryBorder => "bit-chb-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-chb"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-chb-sm",
-            BitSize.Medium => "bit-chb-md",
-            BitSize.Large => "bit-chb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-chb"));
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd {Classes?.Checked}" : string.Empty);
 

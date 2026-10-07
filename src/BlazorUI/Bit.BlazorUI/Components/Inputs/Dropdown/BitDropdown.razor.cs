@@ -4263,15 +4263,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // The callout renders outside the root element, so the color and the size classes have to be repeated
         // on it for the items to follow the dropdown they belong to. Each is empty while its parameter is unset,
         // and is left out rather than joined in as an empty entry.
-        if (GetColorClass() is { Length: > 0 } colorClass)
-        {
-            classes.Add(colorClass);
-        }
-
-        if (GetSizeClass() is { Length: > 0 } sizeClass)
-        {
-            classes.Add(sizeClass);
-        }
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         return string.Join(' ', classes).Trim();
     }

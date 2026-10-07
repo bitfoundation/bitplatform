@@ -30,7 +30,7 @@ public partial class BitProgressDemo
             Name = "BarColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The color of the bar as any CSS color, replacing the Color role. The ring, the buffer and the stripes follow it. It wins over --bit-Progress-bar-color and --bit-Progress-buffer-color.",
+            Description = "The color of the bar as any CSS color, replacing the Color role. The ring, the buffer and the stripes follow it. It wins over --bit-Progress-bar-color; --bit-Progress-buffer-color still paints the buffer.",
         },
         new()
         {
@@ -62,7 +62,7 @@ public partial class BitProgressDemo
             LinkType = LinkType.Link,
             Href = "#color-enum",
             DefaultValue = "null",
-            Description = "The general color of the BitProgress. An explicit value wins over the --bit-Progress-bar-color, --bit-Progress-bar-text-color and --bit-Progress-buffer-color variables; left unset, the progress is primary unless they say otherwise.",
+            Description = "The general color of the BitProgress. An explicit value wins over the --bit-Progress-bar-color and --bit-Progress-bar-text-color variables; left unset, the progress is primary unless they say otherwise. --bit-Progress-buffer-color still paints the buffer.",
         },
         new()
         {
@@ -315,7 +315,7 @@ public partial class BitProgressDemo
         {
             Name = "--bit-Progress-buffer-color",
             DefaultValue = "The bar color at 38%",
-            Description = "The buffered second value, on the bar and on the ring. The Color and BarColor parameters win over it.",
+            Description = "The buffered second value, on the bar and on the ring. No parameter paints the buffer, so it wins over the tint Color and BarColor derive it from.",
         },
         new()
         {

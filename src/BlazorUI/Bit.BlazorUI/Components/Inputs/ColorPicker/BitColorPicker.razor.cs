@@ -450,13 +450,7 @@ public partial class BitColorPicker : BitComponentBase
 
         // Size publishes nothing while it is unset, which is what lets the stylesheet tell a default from a choice:
         // the public --bit-ColorPicker-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-clp-sm",
-            BitSize.Medium => "bit-clp-md",
-            BitSize.Large => "bit-clp-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-clp"));
     }
 
     protected override void RegisterCssStyles()

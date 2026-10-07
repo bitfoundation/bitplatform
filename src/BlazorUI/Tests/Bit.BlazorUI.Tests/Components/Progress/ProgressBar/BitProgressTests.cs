@@ -1992,9 +1992,9 @@ public class BitProgressTests : BunitTestContext
 
         Assert.Contains("--bit-prb-bar-color: tomato;", component.Find(".bit-prb").GetAttribute("style")!);
 
-        // The buffer tint is published beside it, the way an explicit Color publishes it, so a BarColor wins over
-        // --bit-Progress-buffer-color as well as over --bit-Progress-bar-color.
-        Assert.Contains("--bit-prb-buf-clr: color-mix(in srgb, var(--bit-prb-bar-color) 38%, transparent);", component.Find(".bit-prb").GetAttribute("style")!);
+        // The buffer tint is left to derive from it, so --bit-Progress-buffer-color - which no parameter paints over -
+        // still restyles the buffer.
+        Assert.DoesNotContain("--bit-prb-buf-clr", component.Find(".bit-prb").GetAttribute("style")!);
     }
 
     [TestMethod]

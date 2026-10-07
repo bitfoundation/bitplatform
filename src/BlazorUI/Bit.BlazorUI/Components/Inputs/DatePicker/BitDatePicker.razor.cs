@@ -4254,17 +4254,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // nothing of the root cascades down to it.
         List<string> classes = ["bit-dtp-cal"];
 
-        var colorClass = GetColorClass();
-        if (colorClass.HasValue())
-        {
-            classes.Add(colorClass);
-        }
-
-        var sizeClass = GetSizeClass();
-        if (sizeClass.HasValue())
-        {
-            classes.Add(sizeClass);
-        }
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         if (Classes?.Callout is not null)
         {

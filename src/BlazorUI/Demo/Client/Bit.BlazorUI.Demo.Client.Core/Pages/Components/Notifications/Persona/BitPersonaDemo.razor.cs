@@ -439,11 +439,11 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "Size",
-            Type = "BitPersonaSize?",
-            DefaultValue = "null",
+            Type = "BitPersonaSize",
+            DefaultValue = "BitPersonaSize.Size48",
             LinkType = LinkType.Link,
             Href = "#persona-size-enum",
-            Description = "Decides the size of the control. Left unset, the persona is laid out as Size48. An explicit value wins over --bit-Persona-gap, --bit-Persona-ring-gap and --bit-Persona-ring-width; left unset, those variables restyle it.",
+            Description = "Decides the size of the control. A value given in the markup or by a BitPersonaParams ancestor (Size48 included) wins over --bit-Persona-gap, --bit-Persona-ring-gap and --bit-Persona-ring-width; left unset, those variables restyle it.",
         },
         new()
         {

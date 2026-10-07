@@ -4268,17 +4268,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // nothing of the root cascades down to it.
         List<string> classes = ["bit-dtrp-cal"];
 
-        var colorClass = GetColorClass();
-        if (colorClass.HasValue())
-        {
-            classes.Add(colorClass);
-        }
-
-        var sizeClass = GetSizeClass();
-        if (sizeClass.HasValue())
-        {
-            classes.Add(sizeClass);
-        }
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         if (Disabled)
         {

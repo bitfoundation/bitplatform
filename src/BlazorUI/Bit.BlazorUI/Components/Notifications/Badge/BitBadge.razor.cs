@@ -499,27 +499,7 @@ public partial class BitBadge : BitComponentBase
 
         // Color, Shape and Size publish nothing while they are unset, which is what lets the stylesheet tell a
         // default from a choice: the public --bit-Badge-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-bdg-pri",
-            BitColor.Secondary => "bit-bdg-sec",
-            BitColor.Tertiary => "bit-bdg-ter",
-            BitColor.Info => "bit-bdg-inf",
-            BitColor.Success => "bit-bdg-suc",
-            BitColor.Warning => "bit-bdg-wrn",
-            BitColor.SevereWarning => "bit-bdg-swr",
-            BitColor.Error => "bit-bdg-err",
-            BitColor.PrimaryBackground => "bit-bdg-pbg",
-            BitColor.SecondaryBackground => "bit-bdg-sbg",
-            BitColor.TertiaryBackground => "bit-bdg-tbg",
-            BitColor.PrimaryForeground => "bit-bdg-pfg",
-            BitColor.SecondaryForeground => "bit-bdg-sfg",
-            BitColor.TertiaryForeground => "bit-bdg-tfg",
-            BitColor.PrimaryBorder => "bit-bdg-pbr",
-            BitColor.SecondaryBorder => "bit-bdg-sbr",
-            BitColor.TertiaryBorder => "bit-bdg-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-bdg"));
 
         ClassBuilder.Register(() => Dot ? "bit-bdg-dot" : string.Empty);
 
@@ -564,13 +544,7 @@ public partial class BitBadge : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-bdg-sm",
-            BitSize.Medium => "bit-bdg-md",
-            BitSize.Large => "bit-bdg-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-bdg"));
 
         ClassBuilder.Register(() => Variant switch
         {

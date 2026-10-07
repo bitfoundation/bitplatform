@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
 
@@ -68,6 +69,11 @@ public class BitSnackBarService
     /// <summary>
     /// Shows a new snackbar with Info color.
     /// </summary>
+    /// <remarks>
+    /// Info is named here, so it counts as a choice and wins over the <c>--bit-SnackBar-*</c> color variables, the
+    /// same as any other color passed in. The variables restyle only an item that leaves its color out, which
+    /// <c>Show</c> without a color does.
+    /// </remarks>
     public Task<BitSnackBarItem> Info(string title, string? body = "", bool persistent = false, TimeSpan? autoDismissTime = null) => Show(title, body, BitColor.Info, persistent: persistent, autoDismissTime: autoDismissTime);
 
     /// <summary>
@@ -117,6 +123,24 @@ public class BitSnackBarService
             AutoDismissTime = autoDismissTime
         });
     }
+
+    /// <summary>
+    /// Shows a new snackbar.
+    /// </summary>
+    /// <remarks>
+    /// Kept only for assemblies compiled against the earlier version of this method, whose color was a plain
+    /// <see cref="BitColor"/> defaulting to Info. Every parameter is required, so no call written today binds to it;
+    /// a call that does pass every one of them is handed over to the overload above unchanged.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Task<BitSnackBarItem> Show(
+        string title,
+        string? body,
+        BitColor color,
+        string? cssClass,
+        string? cssStyle,
+        bool persistent,
+        TimeSpan? autoDismissTime) => Show(title, body, (BitColor?)color, cssClass, cssStyle, persistent, autoDismissTime);
 
     /// <summary>
     /// Shows a new snackbar.

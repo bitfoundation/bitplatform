@@ -667,27 +667,7 @@ public partial class BitCard : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-crd-pri",
-            BitColor.Secondary => "bit-crd-sec",
-            BitColor.Tertiary => "bit-crd-ter",
-            BitColor.Info => "bit-crd-inf",
-            BitColor.Success => "bit-crd-suc",
-            BitColor.Warning => "bit-crd-wrn",
-            BitColor.SevereWarning => "bit-crd-swr",
-            BitColor.Error => "bit-crd-err",
-            BitColor.PrimaryBackground => "bit-crd-pbg",
-            BitColor.SecondaryBackground => "bit-crd-sbg",
-            BitColor.TertiaryBackground => "bit-crd-tbg",
-            BitColor.PrimaryForeground => "bit-crd-pfg",
-            BitColor.SecondaryForeground => "bit-crd-sfg",
-            BitColor.TertiaryForeground => "bit-crd-tfg",
-            BitColor.PrimaryBorder => "bit-crd-pbr",
-            BitColor.SecondaryBorder => "bit-crd-sbr",
-            BitColor.TertiaryBorder => "bit-crd-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-crd"));
 
         // The variant classes are named apart from the Outlined shorthand, which already holds bit-crd-otl.
         // A variant paints in a role color, so it only means anything once there is a role to paint in.

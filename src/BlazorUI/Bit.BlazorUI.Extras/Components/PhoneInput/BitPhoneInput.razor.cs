@@ -1038,13 +1038,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // Size, Color, Background and Border publish nothing while they are unset, which is what lets the stylesheet
         // tell a default from a choice: the public --bit-PhoneInput-* variables restyle the default and never an
         // explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-phi-sm",
-            BitSize.Medium => "bit-phi-md",
-            BitSize.Large => "bit-phi-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-phi"));
 
         ClassBuilder.Register(() => ColorClass ?? string.Empty);
 
@@ -1342,13 +1336,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // root element, so the class carrying them is repeated on it: without that the rows and the
     // flags of the list would ignore an explicit Size. Like the root's, it is empty while the Size is
     // unset, so the public --bit-PhoneInput-* variables restyle the default rows.
-    private string SizeClass => Size switch
-    {
-        BitSize.Small => "bit-phi-sm",
-        BitSize.Medium => "bit-phi-md",
-        BitSize.Large => "bit-phi-lg",
-        _ => string.Empty
-    };
+    private string SizeClass => BitCssClasses.Size(Size, "bit-phi");
 
     // The callout is rendered outside the root as well, and the keyboard cue of its active row takes the focus
     // color of the role, so the class is repeated on it the same way the size class is.

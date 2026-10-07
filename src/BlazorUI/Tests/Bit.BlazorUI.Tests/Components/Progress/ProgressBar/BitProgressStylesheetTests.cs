@@ -52,13 +52,15 @@ public class BitProgressStylesheetTests
         StringAssert.Contains(root, "--bit-prb-thickness: var(--bit-prb-thk, var(--bit-Progress-thickness, #{$siz-track-sm}));");
         StringAssert.Contains(root, "--bit-prb-ring-width: var(--bit-prb-ring-stroke, var(--bit-Progress-thickness, #{$siz-spinner-stroke}));");
         StringAssert.Contains(root, "--bit-prb-diameter: var(--bit-prb-dia, var(--bit-Progress-diameter, #{spacing(6.25)}));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-buf {"), "background-color: var(--bit-prb-buf-clr, var(--bit-Progress-buffer-color, ");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-cbf {"), "stroke: var(--bit-prb-buf-clr, var(--bit-Progress-buffer-color, ");
+
+        // No parameter paints the buffer - its default is only derived from the bar color - so the variable keeps it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-buf {"), "background-color: var(--bit-Progress-buffer-color, ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-cbf {"), "stroke: var(--bit-Progress-buffer-color, ");
+        Assert.DoesNotContain("--bit-prb-buf-clr", stylesheet);
 
         // The role classes are generated, so it is their template that is pinned: bare, so they win over the variables.
         StringAssert.Contains(stylesheet, "--bit-prb-clr: #{role($tokens, main)};");
         StringAssert.Contains(stylesheet, "--bit-prb-clr-on: #{role($tokens, on)};");
-        StringAssert.Contains(stylesheet, "--bit-prb-buf-clr: #{translucent(var(--bit-prb-bar-color), 38%)};");
 
         // The readout of a ring is the one exception: its step is worked out from the drawn size, not asked for.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Progress-[a-z-]+, var\(--bit-prb-(?!ctx-fs)"), "A public variable is read before the parameter it restyles the default of.");
@@ -72,7 +74,7 @@ public class BitProgressStylesheetTests
         // A progress can sit in the label of another one, which must not inherit the outer progress's Color or Size:
         // each root starts the values those classes publish out unset, and the classes - declared further down at the
         // same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-prb-fs", "--bit-prb-des-fs", "--bit-prb-clr", "--bit-prb-clr-on", "--bit-prb-thk", "--bit-prb-dia", "--bit-prb-ring-stroke", "--bit-prb-buf-clr" })
+        foreach (var property in new[] { "--bit-prb-fs", "--bit-prb-des-fs", "--bit-prb-clr", "--bit-prb-clr-on", "--bit-prb-thk", "--bit-prb-dia", "--bit-prb-ring-stroke" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }

@@ -788,13 +788,7 @@ public partial class BitCarousel : BitComponentBase
 
         // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Carousel-* variables restyle the default and never an explicit value.
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-csl-sm",
-            BitSize.Medium => "bit-csl-md",
-            BitSize.Large => "bit-csl-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-csl"));
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -807,27 +801,7 @@ public partial class BitCarousel : BitComponentBase
 
         // The color classes come after the accent ones in the stylesheet, so a carousel that sets both
         // ends up with the color it was given rather than with the accent it fell back to.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-csl-pri",
-            BitColor.Secondary => "bit-csl-sec",
-            BitColor.Tertiary => "bit-csl-ter",
-            BitColor.Info => "bit-csl-inf",
-            BitColor.Success => "bit-csl-suc",
-            BitColor.Warning => "bit-csl-wrn",
-            BitColor.SevereWarning => "bit-csl-swr",
-            BitColor.Error => "bit-csl-err",
-            BitColor.PrimaryBackground => "bit-csl-pbg",
-            BitColor.SecondaryBackground => "bit-csl-sbg",
-            BitColor.TertiaryBackground => "bit-csl-tbg",
-            BitColor.PrimaryForeground => "bit-csl-pfg",
-            BitColor.SecondaryForeground => "bit-csl-sfg",
-            BitColor.TertiaryForeground => "bit-csl-tfg",
-            BitColor.PrimaryBorder => "bit-csl-pbr",
-            BitColor.SecondaryBorder => "bit-csl-sbr",
-            BitColor.TertiaryBorder => "bit-csl-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-csl"));
     }
 
     protected override void RegisterCssStyles()

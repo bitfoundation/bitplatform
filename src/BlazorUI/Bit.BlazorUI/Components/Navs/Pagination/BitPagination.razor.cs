@@ -796,13 +796,7 @@ public partial class BitPagination : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-pgn-sm",
-            BitSize.Medium => "bit-pgn-md",
-            BitSize.Large => "bit-pgn-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-pgn"));
 
         ClassBuilder.Register(() => Rounded ? "bit-pgn-rnd" : string.Empty);
 
