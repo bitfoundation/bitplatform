@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
 public partial class BitDataGridDemo
 {
@@ -478,9 +478,9 @@ public partial class BitDataGridDemo
             Description = "Sort direction for a column.",
             Items =
             [
-                new() { Name = "None", Value = "0" },
-                new() { Name = "Ascending", Value = "1" },
-                new() { Name = "Descending", Value = "2" },
+                new() { Name = "None", Value = "0", Description = "The column is not sorted. Passed to SortByAsync it removes the column's sort, and on a group descriptor it keeps the groups in the order their keys are first met." },
+                new() { Name = "Ascending", Value = "1", Description = "Sorts from the smallest value to the largest." },
+                new() { Name = "Descending", Value = "2", Description = "Sorts from the largest value to the smallest." },
             ]
         },
         new()
@@ -502,12 +502,12 @@ public partial class BitDataGridDemo
             Description = "Built-in aggregate functions for summary/footer rows.",
             Items =
             [
-                new() { Name = "None", Value = "0" },
-                new() { Name = "Sum", Value = "1" },
-                new() { Name = "Average", Value = "2" },
-                new() { Name = "Count", Value = "3" },
-                new() { Name = "Min", Value = "4" },
-                new() { Name = "Max", Value = "5" },
+                new() { Name = "None", Value = "0", Description = "No aggregate: the column shows nothing in the footer and group rows, unless it has an AggregateBy delegate of its own." },
+                new() { Name = "Sum", Value = "1", Description = "The total of the values that convert to a number; the rest, nulls included, are skipped." },
+                new() { Name = "Average", Value = "2", Description = "The mean of the values that convert to a number, or 0 when there are none; the rest, nulls included, are skipped." },
+                new() { Name = "Count", Value = "3", Description = "The number of rows, whatever their values." },
+                new() { Name = "Min", Value = "4", Description = "The smallest non-null value." },
+                new() { Name = "Max", Value = "5", Description = "The largest non-null value." },
                 new() { Name = "Custom", Value = "6", Description = "The value was produced by the column's custom AggregateBy delegate rather than a built-in function." },
             ]
         },
@@ -519,14 +519,14 @@ public partial class BitDataGridDemo
             Description = "The kind of editor/filter rendered for a column based on its data type.",
             Items =
             [
-                new() { Name = "Auto", Value = "0" },
-                new() { Name = "Text", Value = "1" },
-                new() { Name = "Number", Value = "2" },
-                new() { Name = "Boolean", Value = "3" },
-                new() { Name = "Date", Value = "4" },
-                new() { Name = "DateTime", Value = "5" },
-                new() { Name = "DateTimeOffset", Value = "6" },
-                new() { Name = "Enum", Value = "7" },
+                new() { Name = "Auto", Value = "0", Description = "Picks the type from the bound property: bool is Boolean, an enum is Enum, DateOnly is Date, DateTime and DateTimeOffset are themselves, the numeric types are Number, and anything else is Text." },
+                new() { Name = "Text", Value = "1", Description = "A text box, filtered with the text operators (contains, starts with, ...)." },
+                new() { Name = "Number", Value = "2", Description = "A text box with the decimal keypad, filtered with equality and the comparison operators." },
+                new() { Name = "Boolean", Value = "3", Description = "A true/false dropdown." },
+                new() { Name = "Date", Value = "4", Description = "A date picker, for a value without a time of day." },
+                new() { Name = "DateTime", Value = "5", Description = "A date picker; an equality filter matches the whole calendar day, whatever the time of day." },
+                new() { Name = "DateTimeOffset", Value = "6", Description = "A date picker; an equality filter matches the whole calendar day, whatever the time of day." },
+                new() { Name = "Enum", Value = "7", Description = "A dropdown of the enum's member names." },
             ]
         },
         new()
@@ -536,19 +536,19 @@ public partial class BitDataGridDemo
             Description = "Comparison operators available for column filtering.",
             Items =
             [
-                new() { Name = "Unspecified", Value = "0" },
-                new() { Name = "Contains", Value = "1" },
-                new() { Name = "DoesNotContain", Value = "2" },
-                new() { Name = "StartsWith", Value = "3" },
-                new() { Name = "EndsWith", Value = "4" },
-                new() { Name = "Equals", Value = "5" },
-                new() { Name = "NotEquals", Value = "6" },
-                new() { Name = "GreaterThan", Value = "7" },
-                new() { Name = "GreaterThanOrEqual", Value = "8" },
-                new() { Name = "LessThan", Value = "9" },
-                new() { Name = "LessThanOrEqual", Value = "10" },
-                new() { Name = "IsEmpty", Value = "11" },
-                new() { Name = "IsNotEmpty", Value = "12" },
+                new() { Name = "Unspecified", Value = "0", Description = "No operator selected, so the filter is treated as omitted and matches every row." },
+                new() { Name = "Contains", Value = "1", Description = "The text of the value contains the term, ignoring case." },
+                new() { Name = "DoesNotContain", Value = "2", Description = "The text of the value does not contain the term, ignoring case." },
+                new() { Name = "StartsWith", Value = "3", Description = "The text of the value starts with the term, ignoring case." },
+                new() { Name = "EndsWith", Value = "4", Description = "The text of the value ends with the term, ignoring case." },
+                new() { Name = "Equals", Value = "5", Description = "The value equals the operand. A null operand matches the rows whose value is null." },
+                new() { Name = "NotEquals", Value = "6", Description = "The value does not equal the operand." },
+                new() { Name = "GreaterThan", Value = "7", Description = "The value is greater than the operand. A null value never matches." },
+                new() { Name = "GreaterThanOrEqual", Value = "8", Description = "The value is greater than or equal to the operand. A null value never matches." },
+                new() { Name = "LessThan", Value = "9", Description = "The value is less than the operand. A null value never matches." },
+                new() { Name = "LessThanOrEqual", Value = "10", Description = "The value is less than or equal to the operand. A null value never matches." },
+                new() { Name = "IsEmpty", Value = "11", Description = "The value is null or its text is empty. Takes no operand." },
+                new() { Name = "IsNotEmpty", Value = "12", Description = "The value is neither null nor empty text. Takes no operand." },
                 new() { Name = "In", Value = "13", Description = "Equals any member of the collection in Value." },
                 new() { Name = "NotIn", Value = "14", Description = "Equals no member of the collection in Value." },
             ]
