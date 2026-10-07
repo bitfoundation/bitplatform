@@ -56,16 +56,16 @@
              aria-label="@(_LabelOnItems ? AriaLabel : null)"
              aria-busy="@(_isLoadingMore ? "true" : null)"
              style="@Styles?.Items"
-             class="bit-bsl-itm @Classes?.Items">
+             class="bit-bsl-itm@(_VirtualizeWindowClass) @Classes?.Items">
             @if (Virtualize)
             {
-                if (ItemsProvider is null || LoadMore)
+                if (_VirtualizeProvider is false)
                 {
                     <_BitBasicListVirtualize Items="_viewItems"
                                              ItemSize="@ItemSize"
                                              EmptyContent="EmptyContent"
                                              OverscanCount="@OverscanCount">
-                        @_EffectiveRowTemplate(context)
+                        @VirtualizedRow(context)
                     </_BitBasicListVirtualize>
                 }
                 else
@@ -76,8 +76,41 @@
                                              OverscanCount="@OverscanCount"
                                              Placeholder="VirtualizePlaceholder"
                                              ItemsProvider="ProvideVirtualizedItems">
-                        @_EffectiveRowTemplate(context)
+                        @VirtualizedRow(context)
                     </_BitBasicListVirtualize>
+                }
+
+                @* Virtualize renders no row before its JS has measured the list, which a prerender or a static
+                   render never gets to and an interactive render only gets to a round trip later, so until then
+                   the list renders the first window itself, after the two spacers Virtualize starts out with:
+                   the rows of the items it holds (the same markup Virtualize renders them with) followed by the
+                   height of the rest, or the placeholders of a provider it may not call yet. *@
+                var windowCount = _VirtualizeWindowCount;
+                if (windowCount > 0)
+                {
+                    if (_VirtualizeProvider is false)
+                    {
+                        foreach (var item in _viewItems.Take(windowCount))
+                        {
+                            @_EffectiveRowTemplate(item)
+                        }
+
+                        if (_viewItems.Count > windowCount)
+                        {
+                            <div aria-hidden="true" style="@GetVirtualizeSpacerStyle(_viewItems.Count - windowCount)"></div>
+                        }
+                    }
+                    else if (VirtualizePlaceholder is not null)
+                    {
+                        for (var index = 0; index < windowCount; index++)
+                        {
+                            @VirtualizePlaceholder(new PlaceholderContext(index, ItemSize))
+                        }
+                    }
+                    else
+                    {
+                        <div aria-hidden="true" style="@GetVirtualizeSpacerStyle(windowCount)"></div>
+                    }
                 }
             }
             else if (_viewItems.Count > 0)

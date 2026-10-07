@@ -623,8 +623,10 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     }
 
     // Laid over the surface with the surface's own padding, so it starts where the first line of text does whatever
-    // --bit-RichTextEditor-padding says.
-    &.bit-rte-edt-empty::before {
+    // --bit-RichTextEditor-padding says. The bridge says when the surface is empty; before it is running (a prerendered
+    // or static page) a surface with nothing in it at all is the empty one.
+    &.bit-rte-edt-empty::before,
+    &:empty::before {
         inset-inline: 0;
         overflow: hidden;
         position: absolute;

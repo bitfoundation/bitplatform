@@ -766,15 +766,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The item accessors of the nav (which know how to read a custom item type) are only reachable once
-        // the nav itself is rendered, so a search text that arrived as a parameter is applied here rather
-        // than being dropped on the first pass.
-        if (firstRender && _searchText.HasValue())
-        {
-            SearchNavItems(_searchText);
-            StateHasChanged();
-        }
-
         // Everything the drawer of a small screen holds while it covers the page - the page it stops from
         // scrolling, the focus it keeps inside itself - is taken and handed back here rather than at the
         // moment a single parameter changes: whether the panel covers the page at all is decided by three
@@ -1128,6 +1119,28 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private void OnItemsSet()
     {
         SearchNavItems(_searchText);
+    }
+
+    // The item accessors of the nav (which know how to read a custom item type) are what a search reads the
+    // items through, so a search text that arrived as a parameter can filter nothing before there is a nav. The
+    // nav is handed over as soon as the render that creates it is processed - before the nav renders, and long
+    // before any after-render pass - so the search is applied right here and the panel renders again within the
+    // same batch: the HTML a prerender (or a static SSR page) sends is already filtered, and an interactive
+    // render never paints the unfiltered list first.
+    private BitNav<TItem>? _BitNavRef
+    {
+        get => _bitNavRef;
+        set
+        {
+            if (ReferenceEquals(_bitNavRef, value)) return;
+
+            _bitNavRef = value;
+
+            if (value is null || _searchText.HasNoValue()) return;
+
+            SearchNavItems(_searchText);
+            StateHasChanged();
+        }
     }
 
     // A rail that expands on hover renders everything the open panel does while the pointer is over it - or

@@ -273,6 +273,14 @@
     display: none;
 }
 
+// An image left to the browser - prerendered, or statically rendered for good - is shown while it loads, and
+// its placeholder is kept under it rather than over it: the image paints over the blur as it arrives, which
+// is the one way a placeholder can give way to the image with nothing there to take it away. Being positioned
+// is what lifts the image over the placeholder that comes before it; it moves nothing.
+.bit-img-nat {
+    position: relative;
+}
+
 // A lazily loaded image is only fetched once the browser expects it to be needed, and it works that
 // out from where the image sits in the page - which an element with no box does not. Taking it out of
 // the layout while it waits would therefore keep it waiting for good, so a hidden lazy image keeps its

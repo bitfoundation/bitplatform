@@ -45,7 +45,7 @@
                        appended to its own). *@
                     <div @key="GetItemKeyAt(index, hasItem, item)"
                          role="@ItemRole"
-                         aria-setsize="@(ItemRole.HasValue() ? _itemCount : null)"
+                         aria-setsize="@(ItemRole.HasValue() ? GetSetSize() : null)"
                          aria-posinset="@(ItemRole.HasValue() ? index + 1 : null)"
                          aria-busy="@(hasItem ? null : "true")"
                          @attributes="attributes"

@@ -3022,6 +3022,33 @@ public class BitNavTests : BunitTestContext
         Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
     }
 
+    [TestMethod]
+    public void BitNavShouldReportTheUrlSelectionOfTheOptionsOnce()
+    {
+        Navigate("/products");
+
+        var selections = new List<BitNavOption?>();
+
+        // The option that matches the URL is selected as it registers, and the pass after the render finds the
+        // very same option: a Reselectable nav must not report that re-check as a second selection.
+        var component = RenderComponent<BitNav<BitNavOption>>(parameters =>
+        {
+            parameters.Add(p => p.Reselectable, true);
+            parameters.Add(p => p.OnSelectItem, (BitNavOption? option) => selections.Add(option));
+            parameters.AddChildContent<BitNavOption>(o => o.Add(p => p.Text, "Home").Add(p => p.Url, "/"));
+            parameters.AddChildContent<BitNavOption>(o => o.Add(p => p.Text, "Products").Add(p => p.Url, "/products"));
+        });
+
+        Assert.AreEqual(1, selections.Count);
+        Assert.AreEqual("Products", selections[0]!.Text);
+        Assert.AreEqual("Products", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
+
+        // A navigation back to the same page is something the reader did, so that one is reported again.
+        Navigate("/products");
+
+        Assert.AreEqual(2, selections.Count);
+    }
+
     // The children of an option stay in the DOM while collapsed and are hidden through the style attribute,
     // so "shown" is the absence of that declaration rather than the absence of the whole attribute.
     private static bool IsHidden(string? style) => style?.Contains("display:none") is true;
