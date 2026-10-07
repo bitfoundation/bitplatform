@@ -400,15 +400,9 @@
 
         // The unfilled variants put the role's color on the page surface as text, and a role's main color is
         // picked to be a fill (a Warning yellow on white is well under 4.5:1): the text reads the role's
-        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3). A background
-        // or border role has no such shade - its fg is the surface or border color itself, which as text on the
-        // page surface would be invisible - so it is read with its on color, the text that role is paired with.
-        @if role($tokens, kind) == surface and $role != pfg and $role != sfg and $role != tfg {
-            --bit-snb-clr-txt: #{role($tokens, on)};
-        }
-        @else {
-            --bit-snb-clr-txt: #{role($tokens, fg)};
-        }
+        // foreground token instead, the shade the theme picks to be read on the page (WCAG 1.4.3) - for a
+        // background or border role, which would vanish as text on the page, that is its on color.
+        --bit-snb-clr-txt: #{role($tokens, fg)};
     }
 }
 

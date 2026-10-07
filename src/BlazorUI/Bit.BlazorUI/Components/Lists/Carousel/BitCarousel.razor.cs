@@ -822,7 +822,10 @@ public partial class BitCarousel : BitComponentBase
 
     protected override void OnInitialized()
     {
+        // The utility is shared, so another component may already have asked the page; what it knows is taken right
+        // away, and whatever it learns later - the answer to the first call, or to one it retried - comes as a change.
         _pageVisibility.OnChange += PageVisibilityChange;
+        _pageHidden = _pageVisibility.IsHidden;
 
         base.OnInitialized();
     }
@@ -891,6 +894,10 @@ public partial class BitCarousel : BitComponentBase
         {
             _dotnetObj = DotNetObjectReference.Create(this);
 
+            // The page is asked whether it is hidden alongside the round trips below, since the answer depends on
+            // none of them; it is only waited for where the timer could first start.
+            var pageVisibilityInit = _pageVisibility.Init();
+
             // The observer watches the container rather than the root, since that is the box the slides
             // are laid out in: the root also holds the row of dots, which is none of their business.
             await _js.BitObserversRegisterResize(UniqueId, _carouselContainer, _dotnetObj);
@@ -907,6 +914,11 @@ public partial class BitCarousel : BitComponentBase
                 _isPaused = true;
             }
 
+            // A tab that is already in the background is known before the layout below starts the timer, so the
+            // rotation never starts (or renders as playing) in a page nobody is looking at. A call that failed is
+            // retried by the utility itself, whose answer reaches PageVisibilityChange, so nothing waits for it here.
+            await pageVisibilityInit;
+
             _afterFirstRender = true;
             _needsReset = false;
             _needsRegister = false;
@@ -914,8 +926,6 @@ public partial class BitCarousel : BitComponentBase
             await ResetDimensionsAsync();
 
             await RegisterPreventDefaultsAsync();
-
-            await _pageVisibility.Init();
 
             UpdateAutoPlayTimer();
         }
@@ -2073,13 +2083,16 @@ public partial class BitCarousel : BitComponentBase
         }
     }
 
+    // The answer to an init the utility retried on its own comes from a timer rather than from the browser, so the
+    // change is brought onto the renderer's dispatcher before it touches the timer or asks for a render.
     private Task PageVisibilityChange(bool hidden)
     {
-        _pageHidden = hidden;
+        return InvokeAsync(() =>
+        {
+            _pageHidden = hidden;
 
-        UpdateAutoPlayTimer();
-
-        return Task.CompletedTask;
+            UpdateAutoPlayTimer();
+        });
     }
 
 

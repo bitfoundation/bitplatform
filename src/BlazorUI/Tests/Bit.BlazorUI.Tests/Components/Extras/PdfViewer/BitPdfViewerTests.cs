@@ -2855,7 +2855,11 @@ public class BitPdfViewerTests : BunitTestContext
 
     // The viewport record is internal to the library, so its interop result is set up
     // through reflection rather than the generic Setup<T> a public type would allow.
-    private void SetupViewport(double width, double height)
+    private void SetupViewport(double width, double height) => SetupPendingViewport()(width, height);
+
+    // The measurement is left unanswered until the returned callback supplies it, which
+    // is what holds a fit in flight across whatever the test does meanwhile.
+    private Action<double, double> SetupPendingViewport()
     {
         var viewportType = typeof(BitPdfViewer).Assembly.GetType("Bit.BlazorUI.BitPdfViewerViewport", throwOnError: true)!;
         var setup = typeof(BunitJSInteropSetupExtensions).GetMethods()
@@ -2864,7 +2868,30 @@ public class BitPdfViewerTests : BunitTestContext
                     .SequenceEqual([typeof(BunitJSInterop), typeof(string), typeof(InvocationMatcher)]))
             .MakeGenericMethod(viewportType)
             .Invoke(null, [Context.JSInterop, "BitBlazorUI.PdfViewer.getViewport", (InvocationMatcher)(_ => true)])!;
-        setup.GetType().GetMethod("SetResult")!.Invoke(setup, [Activator.CreateInstance(viewportType, width, height)]);
+        return (width, height) => setup.GetType().GetMethod("SetResult")!.Invoke(setup, [Activator.CreateInstance(viewportType, width, height)]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNotLetAFitStillMeasuringOverwriteACustomZoom()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        var answerViewport = SetupPendingViewport();
+
+        // The fit asks JS for the viewport and waits; the reader zooms in meanwhile.
+        var fit = component.InvokeAsync(() => component.Instance.SetZoomMode(BitPdfZoomMode.FitPage));
+        await component.InvokeAsync(() => component.Instance.SetZoom(2));
+
+        answerViewport(332, 332);
+        await fit;
+
+        Assert.AreEqual(BitPdfZoomMode.Custom, component.Instance.ZoomMode);
+        Assert.AreEqual(2, component.Instance.Zoom, 0.0001);
     }
 
     [TestMethod]
