@@ -167,7 +167,7 @@ public partial class BitLinkDemo
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Where to open the link, e.g. _blank for a new tab - which also adds noopener (unless Rel says otherwise) and the new-tab announcement.",
+            Description = "Where to open the link, e.g. _blank for a new tab - which also adds noopener (unless Rel already says NoOpener, NoReferrer or Opener) and the new-tab announcement.",
             LinkType = LinkType.Link,
             Href = "#link-target",
         },

@@ -114,6 +114,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public string? NewTabHint { get; set; }
 
     /// <summary>
+    /// Stops a link tag opening a new tab from announcing that it does.
+    /// </summary>
+    public bool? NoNewTabHint { get; set; }
+
+    /// <summary>
     /// Keeps the content of the tag on a single line and ends it with an ellipsis where it does not fit.
     /// </summary>
     public bool? NoWrap { get; set; }
@@ -305,6 +310,11 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (NewTabHint is not null && bitTag.HasNotBeenSet(nameof(NewTabHint)))
         {
             bitTag.NewTabHint = NewTabHint;
+        }
+
+        if (NoNewTabHint.HasValue && bitTag.HasNotBeenSet(nameof(NoNewTabHint)))
+        {
+            bitTag.NoNewTabHint = NoNewTabHint.Value;
         }
 
         if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)))

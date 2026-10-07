@@ -188,8 +188,8 @@
     user-select: text;
 }
 
-// The name of a static group header in the rail, which hides its visible text: read by assistive
-// technologies, drawn nowhere.
+// Text read by assistive technologies and drawn nowhere: the name of a static group header in the rail,
+// which hides its visible text, and the sentence saying that an item opens a new tab.
 .bit-nav-vhd {
     border: 0;
     padding: 0;

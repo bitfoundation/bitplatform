@@ -55,6 +55,12 @@
         // The list of a group is named after its header, so a screen reader that jumps from list to list tells
         // the groups apart instead of announcing a run of unnamed ones.
         var groupLabel = isGroupHeader ? (Nav.GetAriaLabel(Item) ?? text) : null;
+        // The rel and the new-tab sentence follow the rule every anchor of the library shares (BitNewTabUtils):
+        // a rel is document metadata, so it stays on an item that is disabled for now, while the sentence only
+        // describes a link that can be followed and so goes with the href.
+        var rel = url.HasValue() ? BitNewTabUtils.AddNoOpener(Nav.GetRel(Item), target) : null;
+        var newTabHint = href.HasValue() ? BitNewTabUtils.GetHint(target, Nav.NewTabHint, Nav.NoNewTabHint) : null;
+        var hint = BitNewTabUtils.PlaceHint(newTabHint, ariaLabel, null, string.Empty);
         // What this render leaves the keyboard to focus, read once it is in the DOM.
         _rendersHeader = false;
         _rendersContainer = false;
@@ -228,14 +234,15 @@
                                       OnKeyDown="HandleOnKeyDown"
                                       Disabled="isDisabled"
                                       AriaExpanded="@ariaExpanded"
-                                      AriaLabel="@ariaLabel"
+                                      AriaLabel="@hint.AriaLabel"
+                                      NewTabHint="@hint.HintText"
                                       AriaDescribedBy="@descriptionId"
                                       Title="@(title is not null ? title : text)"
                                       Class="@($"bit-nav-ict {GetItemContainerClasses(isSelectedAncestor)}")"
                                       Style="@($"padding-inline-start:{padding}px;{GetItemContainerStyles()}")"
                                       AriaCurrent="@(isSelected ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                       TabIndex="@(isDisabled ? "-1" : (renderLink && href.HasNoValue() ? "0" : null))"
-                                      Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
+                                      Rel="@rel">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                         @if (isChevronInteractive)
                         {

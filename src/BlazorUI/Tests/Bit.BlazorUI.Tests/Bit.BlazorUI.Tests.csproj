@@ -29,6 +29,12 @@
       <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeFluentPalettes.cs" Link="Utils\Theme\BitThemeFluentPalettes.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
+      <!-- Compile-linked so BitNewTabUtilsTests can pin the new-tab rule the anchors of the library
+           share (recognizing the target, hardening the rel, placing the announcement) without
+           InternalsVisibleTo. -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\BitNewTabUtils.cs" Link="Utils\BitNewTabUtils.cs" />
+      <!-- What BitNewTabUtils turns a set of BitLinkRels flags into a rel with. -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\Enums\BitLinkRelUtils.cs" Link="Utils\Enums\BitLinkRelUtils.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
            blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
       <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />

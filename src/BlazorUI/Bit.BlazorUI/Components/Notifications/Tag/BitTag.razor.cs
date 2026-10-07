@@ -28,11 +28,7 @@ public partial class BitTag : BitComponentBase
         {
             if (_isLink is false || Disabled) return null;
 
-            if (string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) is false) return null;
-
-            var hint = NewTabHint ?? "(opens in a new tab)";
-
-            return hint.HasValue() ? hint : null;
+            return BitNewTabUtils.GetHint(Target, NewTabHint, NoNewTabHint);
         }
     }
 
@@ -294,9 +290,21 @@ public partial class BitTag : BitComponentBase
     /// A tag whose <see cref="Target"/> is <c>_blank</c> carries the sentence saying so -
     /// "<c>(opens in a new tab)</c>" unless this replaces it - as visually hidden text after its content, or
     /// appended to its <c>AriaLabel</c> when it has one, since an aria-label replaces the content rather than
-    /// adding to it. An empty value takes the announcement off, for a tag whose label already says it.
+    /// adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
     /// </remarks>
     [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Stops a link tag opening a new tab from announcing that it does.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on a tag whose label already says it opens a
+    /// new tab, or inside a group whose heading already says that every tag in it does. See
+    /// <see cref="NewTabHint"/> for what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
     /// Keeps the content of the tag on a single line and ends it with an ellipsis where it does not fit.
@@ -383,9 +391,10 @@ public partial class BitTag : BitComponentBase
     /// anchor the tag becomes while <see cref="Href"/> is set.
     /// </summary>
     /// <remarks>
-    /// With no value of its own, a tag opening in a new browsing context (<see cref="Target"/> of
-    /// <c>_blank</c>) gets <c>rel="noopener"</c> on its own, which is what keeps the opened page from reaching
-    /// back into this one.
+    /// A tag opening in a new browsing context (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c>
+    /// added to whatever this says, which is what keeps the opened page from reaching back into this one -
+    /// unless this already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -520,8 +529,10 @@ public partial class BitTag : BitComponentBase
     /// The browsing context the <see cref="Href"/> of the tag is opened in, for example <c>_blank</c>.
     /// </summary>
     /// <remarks>
-    /// A tag opening a new browsing context gets <c>rel="noopener"</c> unless <see cref="Rel"/> says otherwise,
-    /// and is announced as opening a new tab - see <see cref="NewTabHint"/>.
+    /// A tag opening a new browsing context gets <c>noopener</c> added to its rel unless <see cref="Rel"/>
+    /// already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>), and is announced as opening
+    /// a new tab - see <see cref="NewTabHint"/> and <see cref="NoNewTabHint"/>.
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -743,21 +754,8 @@ public partial class BitTag : BitComponentBase
 
     internal void OnSetHrefAndRel()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context. The target
-        // attribute is matched case-insensitively by the browser, so a "_BLANK" opens the same new context
-        // and has to be recognized here as one.
-        _rel = string.Equals(Target, "_blank", StringComparison.OrdinalIgnoreCase) ? "noopener" : null;
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
+        // whatever rel the tag was given - a NoFollow alone is about crawling and says nothing about the opener.
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 }

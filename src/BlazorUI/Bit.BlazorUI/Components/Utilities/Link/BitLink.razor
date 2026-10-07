@@ -52,22 +52,12 @@
     @* A rel is document metadata rather than a navigation behaviour - it is what a crawler reads to learn
        that a link is sponsored, or that the profile it points at is the author's - so a disabled link keeps
        saying what it is a link to, and keeps the noopener that says what opening it must not hand over. *@
-    var rel = isHash ? splattedRel : BuildRel(_rel ?? splattedRel, target);
+    var rel = isHash ? splattedRel : BitNewTabUtils.AddNoOpener(_rel ?? splattedRel, target);
 
-    var newTabHint = GetNewTabHint(renderedTarget);
-    var label = AriaLabel ?? splattedLabel;
-
-    @* The new-tab sentence has to land wherever the link's name is coming from, since a name given from
-       somewhere else replaces the content rather than adding to it. An aria-labelledby is the one that wins,
-       and it points at elements rather than holding text, so the sentence is rendered as an element of its
-       own and its id appended to the list; an aria-label holds the text itself, so the sentence is appended
-       to it; a link named by nothing but its own content gets the sentence as a sibling of that content,
-       hidden from the screen but not from a reader. *@
-    var hintId = $"{_Id}-nth";
-    var labelledByHint = newTabHint.HasValue() && splattedLabelledBy.HasValue();
-    var ariaLabelledBy = labelledByHint ? $"{splattedLabelledBy} {hintId}" : splattedLabelledBy;
-    var ariaLabel = label.HasValue() && newTabHint.HasValue() && labelledByHint is false ? $"{label} {newTabHint}" : label;
-    var hintText = label.HasValue() && labelledByHint is false ? null : newTabHint;
+    @* The new-tab sentence lands wherever the link's name is coming from - see BitNewTabUtils.PlaceHint, which
+       every anchor announcing a new tab shares. *@
+    var newTabHint = BitNewTabUtils.GetHint(renderedTarget, NewTabHint, NoNewTabHint);
+    var hint = BitNewTabUtils.PlaceHint(newTabHint, AriaLabel ?? splattedLabel, splattedLabelledBy, $"{_Id}-nth");
 
     @* A description is read out after the name rather than as part of it, so it is an element of its own that
        the link points at - and one the link points at beside whatever the app was already pointing it at. *@
@@ -89,9 +79,9 @@
         {
             <i class="bit-lnk-icn bit-lnk-eic @icon.GetCssClasses()" aria-hidden="true" />
         }
-        @if (hintText.HasValue())
+        @if (hint.HintText.HasValue())
         {
-            <span id="@(labelledByHint ? hintId : null)" class="bit-lnk-hnt">@hintText</span>
+            <span id="@hint.HintId" class="bit-lnk-hnt">@hint.HintText</span>
         }
     </text>;
 }
@@ -108,7 +98,7 @@
        title="@title"
        tabindex="@tabIndex"
        autofocus="@autoFocus"
-       aria-label="@ariaLabel"
+       aria-label="@hint.AriaLabel"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        download="@download"
@@ -116,7 +106,7 @@
        target="@renderedTarget"
        aria-current="@ariaCurrent"
        aria-disabled="@ariaDisabled"
-       aria-labelledby="@ariaLabelledBy"
+       aria-labelledby="@hint.AriaLabelledBy"
        aria-describedby="@ariaDescribedBy">
         @body
     </a>
@@ -130,7 +120,7 @@ else
             title="@title"
             tabindex="@tabIndex"
             autofocus="@autoFocus"
-            aria-label="@ariaLabel"
+            aria-label="@hint.AriaLabel"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             aria-current="@ariaCurrent"

@@ -312,6 +312,28 @@ public partial class BitNavBar<TItem>
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
+    internal BitLinkRels? GetRel(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Rel;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
+    }
+
     internal string? GetTarget(TItem item)
     {
         if (item is BitNavBarItem navItem)

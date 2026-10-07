@@ -1,0 +1,142 @@
+@page "/regression/new-tab-anchors"
+
+<PageTitle>New-Tab Anchors Regression</PageTitle>
+
+@* What a bUnit render cannot see of the anchors that share BitNewTabUtils: whether the rel they render really
+   keeps the page a new tab opens from reaching back through window.opener - or hands it back where the rel
+   asks for opener - and the name the new-tab sentence gives the anchor, as the browser builds it. Every link
+   leads back into this host, so the opened page is same-origin and its window.opener can be read. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>New-Tab Anchors Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<section>
+    <BitLink Id="link-blank" Href="/" Target="_blank">Docs</BitLink>
+    <BitLink Id="link-upper" Href="/" Target="_BLANK">Upper</BitLink>
+    <BitLink Id="link-nofollow" Href="/" Target="_blank" Rel="BitLinkRels.NoFollow">NoFollow</BitLink>
+    <BitLink Id="link-opener" Href="/" Target="_blank" Rel="BitLinkRels.Opener">Opener</BitLink>
+    <BitLink Id="link-labelled" Href="/" Target="_blank" AriaLabel="Labelled">Ignored</BitLink>
+    <BitLink Id="link-nohint" Href="/" Target="_blank" NoNewTabHint>NoHint</BitLink>
+    <BitLink Id="link-splat" Href="/" @attributes="_splatLinkAttributes">Splat</BitLink>
+    <BitLink Id="link-self" Href="/" Target="_self">Self</BitLink>
+</section>
+
+<section>
+    <BitTag Id="tag-blank" Text="Tag" Href="/" Target="_blank" />
+    <BitTag Id="tag-noreferrer" Text="NoReferrer" Href="/" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" />
+    <BitTag Id="tag-opener" Text="TagOpener" Href="/" Target="_blank" Rel="BitLinkRels.Opener" />
+    <BitTag Id="tag-hint" Text="TagHint" Href="/" Target="_blank" NewTabHint="(new window)" />
+    <BitTag Id="tag-nohint" Text="TagNoHint" Href="/" Target="_blank" NoNewTabHint />
+</section>
+
+<section>
+    <BitButton Id="button-blank" Href="/" Target="_blank">Button</BitButton>
+    <BitButton Id="button-nofollow" Href="/" Target="_blank" Rel="BitLinkRels.NoFollow">ButtonNoFollow</BitButton>
+    <BitButton Id="button-opener" Href="/" Target="_blank" Rel="BitLinkRels.Opener">ButtonOpener</BitButton>
+    <BitButton Id="button-splat-rel" Href="/" Target="_blank" @attributes="_splatRel">ButtonSplatRel</BitButton>
+    <BitButton Id="button-splat-opener" Href="/" Target="_blank" @attributes="_splatOpener">ButtonSplatOpener</BitButton>
+    <BitButton Id="button-splat-target" Href="/" @attributes="_splatTarget">ButtonSplatTarget</BitButton>
+    <BitButton Id="button-hash" Href="#status" Target="_blank">ButtonHash</BitButton>
+</section>
+
+<section>
+    <BitActionButton Id="action-blank" Href="/" Target="_blank">Action</BitActionButton>
+    <BitActionButton Id="action-nofollow" Href="/" Target="_blank" Rel="BitLinkRels.NoFollow">ActionNoFollow</BitActionButton>
+    <BitActionButton Id="action-opener" Href="/" Target="_blank" Rel="BitLinkRels.Opener">ActionOpener</BitActionButton>
+</section>
+
+<section>
+    <BitButtonGroup Id="group" Items="_groupItems" />
+</section>
+
+<section>
+    <BitMenuButton Id="menu" Text="Menu" Items="_menuItems" />
+</section>
+
+<section>
+    <BitBreadcrumb Id="breadcrumb" Items="_breadcrumbItems" />
+</section>
+
+<section style="width: 260px;">
+    <BitNav Id="nav" Items="_navItems" />
+</section>
+
+<section>
+    <BitNavBar Id="navbar" Items="_navBarItems" />
+</section>
+
+<section>
+    <BitBadge Id="badge-blank" Content="@("Badge")" Href="/" Target="_blank" />
+    <BitBadge Id="badge-nofollow" Content="@("BadgeNoFollow")" Href="/" Target="_blank" Rel="BitLinkRels.NoFollow" />
+</section>
+
+<section>
+    <BitPersona Id="persona-blank" PrimaryText="Persona" Href="/" Target="_blank" />
+    <BitPersona Id="persona-opener" PrimaryText="PersonaOpener" Href="/" Target="_blank" Rel="BitLinkRels.Opener" />
+</section>
+
+<section style="display: flex; gap: 8px;">
+    <BitCard Id="card-blank" Title="Card" Href="/" Target="_blank" Style="width: 160px;">Card</BitCard>
+    <BitCard Id="card-nofollow" Title="CardNoFollow" Href="/" Target="_blank" Rel="BitLinkRels.NoFollow" Style="width: 160px;">CardNoFollow</BitCard>
+    <BitCard Id="card-opener" Title="CardOpener" Href="/" Target="_blank" Rel="BitLinkRels.Opener" Style="width: 160px;">CardOpener</BitCard>
+</section>
+
+@code {
+    private string _status = "Loading";
+
+    // A rel or a target written in the markup binds to the Rel or Target parameter - Razor matches a component's
+    // parameters case-insensitively - so the only way one reaches a component as an attribute of its own is a
+    // splatted dictionary.
+    private readonly Dictionary<string, object> _splatLinkAttributes = new() { ["target"] = "_blank", ["rel"] = " nofollow " };
+    private readonly Dictionary<string, object> _splatRel = new() { ["rel"] = "nofollow sponsored" };
+    private readonly Dictionary<string, object> _splatOpener = new() { ["rel"] = "opener" };
+    private readonly Dictionary<string, object> _splatTarget = new() { ["target"] = "_blank" };
+
+    private readonly List<BitButtonGroupItem> _groupItems =
+    [
+        new() { Text = "GroupBlank", Href = "/", Target = "_blank" },
+        new() { Text = "GroupNoFollow", Href = "/", Target = "_blank", Rel = BitLinkRels.NoFollow },
+        new() { Text = "GroupOpener", Href = "/", Target = "_blank", Rel = BitLinkRels.Opener },
+    ];
+
+    private readonly List<BitMenuButtonItem> _menuItems =
+    [
+        new() { Key = "blank", Text = "MenuBlank", Href = "/", Target = "_BLANK" },
+        new() { Key = "self", Text = "MenuSelf", Href = "/" },
+        new() { Key = "opener", Text = "MenuOpener", Href = "/", Target = "_blank", Rel = BitLinkRels.Opener },
+    ];
+
+    private readonly List<BitBreadcrumbItem> _breadcrumbItems =
+    [
+        new() { Text = "Home", Href = "/", Target = "_blank" },
+        new() { Text = "Opener", Href = "/", Target = "_blank", Rel = BitLinkRels.Opener },
+        new() { Text = "Here", Href = "/regression/new-tab-anchors", IsSelected = true },
+    ];
+
+    // The urls carry a query of their own, so no item matches this page and turns into its current one.
+    private readonly List<BitNavItem> _navItems =
+    [
+        new() { Text = "NavBlank", Url = "/?nav=blank", Target = "_blank" },
+        new() { Text = "NavExternal", Url = "http://127.0.0.1:5280/?nav=external", Target = "_blank" },
+        new() { Text = "NavNoReferrer", Url = "/?nav=noreferrer", Target = "_blank", Rel = BitLinkRels.NoReferrer },
+        new() { Text = "NavOpener", Url = "/?nav=opener", Target = "_blank", Rel = BitLinkRels.Opener },
+        new() { Text = "NavSelf", Url = "https://bitplatform.dev/", Target = "_self" },
+        new() { Text = "NavDocs", AriaLabel = "NavLabelled", Url = "/?nav=labelled", Target = "_blank" },
+    ];
+
+    private readonly List<BitNavBarItem> _navBarItems =
+    [
+        new() { Text = "BarBlank", Url = "/?bar=blank", Target = "_blank" },
+        new() { Text = "BarOpener", Url = "/?bar=opener", Target = "_blank", Rel = BitLinkRels.Opener },
+        new() { Text = "BarSelf", Url = "https://bitplatform.dev/", Target = "_self" },
+    ];
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

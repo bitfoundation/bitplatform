@@ -25,6 +25,11 @@ public partial class _BitNavItemContainer
 
     [Parameter] public string? Href { get; set; }
 
+    /// <summary>
+    /// The visually hidden sentence a link opening a new tab is announced with, rendered after the content.
+    /// </summary>
+    [Parameter] public string? NewTabHint { get; set; }
+
     [Parameter] public EventCallback OnClick { get; set; }
 
     [Parameter] public EventCallback OnFocusIn { get; set; }
