@@ -290,6 +290,10 @@ public static partial class ToolCatalog
         public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
         {
             var title = status.State is ToolState.Outdated ? "Update Node.js to the LTS version" : "Install Node.js LTS";
+            var manager = FindNodeVersionManager(context.Environment, context.Runner);
+
+            if (manager is not NodeVersionManager.None)
+                return VersionManagerInstall(context, manager, $"{title} with {VersionManagerName(manager)}");
 
             if (context.Environment.IsWindows)
                 return context.PackageManagers.WingetInstall(Id, title, "OpenJS.NodeJS.LTS");
@@ -316,6 +320,84 @@ public static partial class ToolCatalog
         }
 
         public override string? ManualInstructions(ToolContext context) => "https://nodejs.org/en/download";
+
+        private static string VersionManagerName(NodeVersionManager manager) => manager switch
+        {
+            NodeVersionManager.Volta => "Volta",
+            NodeVersionManager.Fnm => "fnm",
+            _ => "nvm"
+        };
+
+        private ToolAction VersionManagerInstall(ToolContext context, NodeVersionManager manager, string title)
+        {
+            static ProcessSpec Run(string fileName, params string[] arguments) => new() { FileName = fileName, Arguments = arguments, Timeout = TimeSpan.FromMinutes(15) };
+
+            return manager switch
+            {
+                NodeVersionManager.Volta => new ToolAction { ToolId = Id, Title = title, Commands = [Run("volta", "install", "node@lts")] },
+                NodeVersionManager.Fnm => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = title,
+                    Commands = [Run("fnm", "install", "--lts"), Run("fnm", "default", "lts-latest")],
+                    PathProbe = Run("fnm", "exec", "--using=lts-latest", "--", "node", "-p", "require('path').dirname(process.execPath)")
+                },
+                NodeVersionManager.NvmWindows => new ToolAction { ToolId = Id, Title = title, Elevation = Elevation.Admin, Commands = [Run("nvm", "install", "lts"), Run("nvm", "use", "lts")] },
+                _ => new ToolAction
+                {
+                    ToolId = Id,
+                    Title = title,
+                    Commands = [Run("bash", "-c", $"{LoadNvm(context.Environment)}; nvm install --lts && nvm alias default 'lts/*'")],
+                    PathProbe = Run("bash", "-c", $"{LoadNvm(context.Environment)}; dirname \"$(nvm which default)\"")
+                }
+            };
+        }
+
+        private static string LoadNvm(CliEnvironment environment)
+        {
+            return $". '{NvmDirectory(environment).Replace("'", "'\\''", StringComparison.Ordinal)}/nvm.sh' >/dev/null 2>&1";
+        }
+    }
+
+    private static string NvmDirectory(CliEnvironment environment) => environment.GetVariable("NVM_DIR") ?? Path.Combine(environment.HomeDirectory, ".nvm");
+
+    public enum NodeVersionManager
+    {
+        None,
+        Volta,
+        Fnm,
+        NvmWindows,
+        Nvm
+    }
+
+    public static NodeVersionManager FindNodeVersionManager(CliEnvironment environment, IProcessRunner runner)
+    {
+        static bool Under(string path, string? directory) => directory is not null && path.StartsWith(directory.Replace('\\', '/').TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase);
+
+        if (runner.FindExecutable("node")?.Replace('\\', '/') is { } node)
+        {
+            if (node.Contains("/.volta/", StringComparison.OrdinalIgnoreCase) || node.Contains("/Volta/", StringComparison.OrdinalIgnoreCase))
+                return NodeVersionManager.Volta;
+
+            if (node.Contains("/fnm_multishells/", StringComparison.OrdinalIgnoreCase) || node.Contains("/fnm/node-versions/", StringComparison.OrdinalIgnoreCase))
+                return NodeVersionManager.Fnm;
+
+            if (environment.IsWindows)
+                return environment.GetVariable("NVM_HOME") is { } nvmHome && (Under(node, environment.GetVariable("NVM_SYMLINK")) || Under(node, nvmHome)) ? NodeVersionManager.NvmWindows : NodeVersionManager.None;
+
+            return node.Contains("/.nvm/versions/node/", StringComparison.Ordinal) || Under(node, Path.Combine(NvmDirectory(environment), "versions", "node")) ? NodeVersionManager.Nvm : NodeVersionManager.None;
+        }
+
+        if (runner.FindExecutable("volta") is not null)
+            return NodeVersionManager.Volta;
+
+        if (runner.FindExecutable("fnm") is not null)
+            return NodeVersionManager.Fnm;
+
+        if (environment.IsWindows)
+            return environment.GetVariable("NVM_HOME") is not null && runner.FindExecutable("nvm") is not null ? NodeVersionManager.NvmWindows : NodeVersionManager.None;
+
+        return File.Exists(Path.Combine(NvmDirectory(environment), "nvm.sh")) ? NodeVersionManager.Nvm : NodeVersionManager.None;
     }
 
     private sealed class HomebrewTool : Tool

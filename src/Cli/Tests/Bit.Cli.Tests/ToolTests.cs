@@ -242,6 +242,85 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task NodeFromAVersionManager_Should_BeUpdatedThroughIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+        var needs = new ToolNeeds { NodeMajor = 24 };
+
+        host.Runner.Executables["node"] = "/home/me/.nvm/versions/node/v22.11.0/bin/node";
+        var nvm = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual("Update Node.js to the LTS version with nvm", nvm.Title);
+        Assert.AreEqual(Elevation.None, nvm.Elevation);
+        StringAssert.Contains(nvm.Commands.Single().CommandLine, "/nvm.sh' >/dev/null 2>&1; nvm install --lts && nvm alias default 'lts/*'");
+        StringAssert.Contains(nvm.PathProbe!.CommandLine, "nvm which default");
+
+        host.Runner.Executables["node"] = "/home/me/.volta/bin/node";
+        var volta = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual("volta install node@lts", volta.Commands.Single().CommandLine);
+
+        host.Runner.Executables["node"] = "/home/me/.local/state/fnm_multishells/123_456/bin/node";
+        var fnm = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node").Action!;
+
+        CollectionAssert.AreEqual(new[] { "fnm install --lts", "fnm default lts-latest" }, fnm.Commands.Select(c => c.CommandLine).ToArray());
+        StringAssert.Contains(fnm.PathProbe!.CommandLine, "--using=lts-latest");
+    }
+
+    [TestMethod]
+    public async Task NvmWindows_Should_SwitchNodeInTheAdministratorBatch()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["NVM_HOME"] = @"C:\Users\me\AppData\Roaming\nvm", ["NVM_SYMLINK"] = @"C:\Program Files\nodejs" });
+        AllInstalled(host.Runner);
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+        host.Runner.Executables["winget"] = @"C:\winget.exe";
+        host.Runner.Executables["node"] = @"C:\Program Files\nodejs\node.exe";
+
+        var action = (await CheckAsync(host, new ToolNeeds { NodeMajor = 24 })).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual(Elevation.Admin, action.Elevation);
+        CollectionAssert.AreEqual(new[] { "nvm install lts", "nvm use lts" }, action.Commands.Select(c => c.CommandLine).ToArray());
+    }
+
+    [TestMethod]
+    public async Task AMissingNode_Should_ComeFromTheVersionManagerTheUserHas()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("node");
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["volta"] = "/home/me/.volta/bin/volta";
+
+        var action = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "node").Action!;
+
+        Assert.AreEqual("Install Node.js LTS with Volta", action.Title);
+    }
+
+    [TestMethod]
+    public async Task TheNodeAVersionManagerInstalls_Should_BeOnThePathRightAway()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = Environment.GetEnvironmentVariable("PATH") ?? "" });
+        AllInstalled(host.Runner);
+        var installed = Directory.CreateDirectory(Path.Combine(host.Root, "nvm", "v24.9.0", "bin")).FullName;
+        host.Runner.On("node", "--version", 0, "v22.11.0");
+        host.Runner.Executables["node"] = "/home/me/.nvm/versions/node/v22.11.0/bin/node";
+        host.Runner.On("bash", "-c", spec => new ProcessResult { ExitCode = 0, Output = spec.Arguments[1].Contains("nvm which default", StringComparison.Ordinal) ? installed : "" });
+        var needs = new ToolNeeds { NodeMajor = 24 };
+        var node = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([node], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.IsFalse(steps.AnyFailed);
+        CollectionAssert.Contains(host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator), installed);
+    }
+
+    [TestMethod]
     public async Task WindowsInstalls_Should_UseWinget()
     {
         if (OperatingSystem.IsWindows() is false)

@@ -96,6 +96,12 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             var succeeded = last is not null && action.SuccessExitCodes.Contains(last.ExitCode) && last.NotFound is false && last.TimedOut is false;
             var done = DoneTitle(action.Title);
 
+            if (succeeded && action.PathProbe is { } probe && (await cli.Runner.RunAsync(probe, ct)) is { Succeeded: true } probed
+                && probed.OutputLines.LastOrDefault()?.Trim() is { Length: > 0 } directory && Directory.Exists(directory))
+            {
+                cli.Environment.PrependToPath([directory]);
+            }
+
             if (succeeded)
                 return StepResult.Succeeded(done, hint: action.AfterInstall) with { Status = action.AfterInstall is null ? StepStatus.Succeeded : StepStatus.Warning, Detail = action.AfterInstall };
 
