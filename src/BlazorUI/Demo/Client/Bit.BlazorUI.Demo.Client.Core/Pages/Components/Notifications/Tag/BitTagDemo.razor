@@ -184,8 +184,9 @@
     <DemoExample Title="Link" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>Href</b> makes the tag a real anchor, with <b>Target</b>, <b>Rel</b> and <b>Download</b>. A new-tab link gets
-            <code>rel="noopener"</code> unless Rel says otherwise, and is announced "(opens in a new tab)" - <b>NewTabHint</b> rewords it,
-            an empty one removes it. A disabled link drops its href and leaves the tab order. A <b>Selected</b> link reports
+            <code>noopener</code> added to its rel unless Rel already says NoOpener, NoReferrer or Opener (Source's NoReferrer
+            covers it), and is announced "(opens in a new tab)" - <b>NewTabHint</b> rewords it, and <b>NoNewTabHint</b> (or an
+            empty NewTabHint) removes it where a visible label already says so. A disabled link drops its href and leaves the tab order. A <b>Selected</b> link reports
             <code>aria-current</code>, whose value <b>AriaCurrent</b> sets (<b>Page</b> for the page you are on); a click navigates rather
             than toggling it.
         </div>

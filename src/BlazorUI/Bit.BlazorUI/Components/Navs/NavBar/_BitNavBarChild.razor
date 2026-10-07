@@ -21,6 +21,10 @@
        aria-current="@AriaCurrent"
        aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent
+        @if (NewTabHint.HasValue())
+        {
+            <span class="bit-nbr-vhd">@NewTabHint</span>
+        }
     </a>
 }
 else

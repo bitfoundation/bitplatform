@@ -283,7 +283,8 @@
 // pointed at through aria-describedby, and the live region that announces the loading label. Both are taken
 // out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
 .bit-mnb-dsc,
-.bit-mnb-sts {
+.bit-mnb-sts,
+.bit-mnb-nth {
     border: 0;
     padding: 0;
     width: 1px;

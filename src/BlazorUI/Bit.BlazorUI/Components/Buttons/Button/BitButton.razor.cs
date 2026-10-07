@@ -581,31 +581,24 @@ public partial class BitButton : BitComponentBase
         _resetDragPosition = true;
     }
 
+    // Only the Rel parameter itself is kept here, never the noopener a new tab adds to it: a null left for a link
+    // that has no Rel is what lets GetRel fall back to a rel written by hand.
     internal void OnSetHrefRelAndTarget()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
-        // author already said what the opener relationship should be.
-        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
+        _rel = BitNewTabUtils.IsInPageHref(Href) || Rel.HasValue is false ? null : BitLinkRelUtils.GetRels(Rel.Value);
     }
 
 
 
-    // The Target parameter's rel is resolved the moment the parameter is set. Neither a target nor a rel written by
-    // hand is a parameter, so neither reaches that path: the rel the anchor renders is resolved against the splatted
-    // one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is re-applied
-    // here against the target the anchor actually renders; it is idempotent, so a rel that already says what the
-    // opener relationship should be passes through untouched.
+    // Neither a target nor a rel written by hand is a parameter, so the rel the anchor renders is resolved against the
+    // splatted one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is applied
+    // once, here, against the target the anchor actually renders - unless the author already said what the opener
+    // relationship should be.
     private string? GetRel(string? target)
     {
         var rel = _rel ?? GetSplattedAttribute("rel");
 
-        if (Href.HasNoValue() || Href!.StartsWith('#')) return rel;
+        if (BitNewTabUtils.IsInPageHref(Href)) return rel;
 
         return BitNewTabUtils.AddNoOpener(rel, target);
     }

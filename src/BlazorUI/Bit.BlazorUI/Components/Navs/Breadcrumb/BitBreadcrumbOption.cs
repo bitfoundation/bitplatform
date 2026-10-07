@@ -74,6 +74,17 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     [Parameter] public RenderFragment<BitBreadcrumbOption>? OverflowTemplate { get; set; }
 
     /// <summary>
+    /// The relationship of the link of the breadcrumb option to the current document, rendered as the rel attribute of its anchor.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab (<see cref="Target"/> of <c>_blank</c>) gets <c>noopener</c> added to whatever this
+    /// says, unless it already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>). Nothing adds <c>noreferrer</c> on its
+    /// own: ask for it here where the page the link leads to must not learn which page it was followed from.
+    /// </remarks>
+    [Parameter] public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// Style attribute for breadcrumb option.
     /// </summary>
     [Parameter] public string? Style { get; set; }
@@ -116,7 +127,7 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
         // Template/OverflowTemplate are compared by reference identity since the parent renders them too.
         var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsDisabled, IsSelected,
-                                                  Class, Style, IconPlacement, Key, Title, Target, AriaLabel);
+                                                  Class, Style, IconPlacement, Key, Title, Target, Rel, AriaLabel);
 
         var changed = _lastParametersSignature != signature ||
                       ReferenceEquals(_lastTemplate, Template) is false ||

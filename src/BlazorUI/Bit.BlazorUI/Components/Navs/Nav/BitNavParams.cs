@@ -121,9 +121,20 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
     public BitNavMode? Mode { get; set; }
 
     /// <summary>
+    /// The text the items opening a new tab are announced with. The default is "(opens in a new tab)"; an empty
+    /// value takes the announcement off.
+    /// </summary>
+    public string? NewTabHint { get; set; }
+
+    /// <summary>
     /// Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item.
     /// </summary>
     public bool? NoCollapse { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    public bool? NoNewTabHint { get; set; }
 
     /// <summary>
     /// The way to render nav items.
@@ -292,6 +303,18 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
         if (urlMatchingChanged)
         {
             bitNav.OnUrlMatchingChanged();
+        }
+
+        // an empty hint is a value of its own - the one that takes the announcement off - so only null is
+        // what leaves the component to its default.
+        if (NewTabHint is not null && bitNav.HasNotBeenSet(nameof(NewTabHint)))
+        {
+            bitNav.NewTabHint = NewTabHint;
+        }
+
+        if (NoNewTabHint.HasValue && bitNav.HasNotBeenSet(nameof(NoNewTabHint)))
+        {
+            bitNav.NoNewTabHint = NoNewTabHint.Value;
         }
 
         if (NoCollapse.HasValue && bitNav.HasNotBeenSet(nameof(NoCollapse)))

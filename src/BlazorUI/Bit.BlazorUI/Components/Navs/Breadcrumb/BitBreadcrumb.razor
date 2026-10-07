@@ -66,12 +66,13 @@
                     var template = GetTemplate(item);
                     if (GetItemHref(item).HasValue())
                     {
+                        var hint = GetItemNewTabHint(item);
                         <a href="@GetItemHref(item)"
                            @onclick="() => HandleOnItemClick(item)"
                            title="@GetItemTitle(item)"
                            target="@GetItemTarget(item)"
                            rel="@GetItemRel(item)"
-                           aria-label="@GetItemAriaLabel(item)"
+                           aria-label="@hint.AriaLabel"
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
                            style="@GetStyles(item, false)"
                            class="bit-brc-itm @GetClasses(item, false)">
@@ -91,6 +92,10 @@
                                     <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
                                 <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                            @if (hint.HintText.HasValue())
+                            {
+                                <span class="bit-brc-vhd">@hint.HintText</span>
                             }
                         </a>
                     }
@@ -262,6 +267,7 @@
             <li @key="@GetItemKey(item, $"overflow-{idx}")" role="presentation" style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper">
                 @if (GetItemHref(item).HasValue())
                 {
+                    var hint = GetItemNewTabHint(item);
                     <a href="@GetItemHref(item)"
                        @onclick="() => HandleOnOverflowItemClick(item)"
                        role="menuitem"
@@ -269,7 +275,7 @@
                        title="@GetItemTitle(item, true)"
                        target="@GetItemTarget(item)"
                        rel="@GetItemRel(item)"
-                       aria-label="@GetItemAriaLabel(item)"
+                       aria-label="@hint.AriaLabel"
                        aria-current="@(GetIsSelected(item) ? "page" : null)"
                        style="@GetStyles(item, true)"
                        class="bit-brc-ofi @GetClasses(item, true)">
@@ -289,6 +295,10 @@
                                 <i aria-hidden="true" style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                             }
                             <span style="@Styles?.OverflowItemText" class="bit-brc-itx @Classes?.OverflowItemText">@GetItemText(item)</span>
+                        }
+                        @if (hint.HintText.HasValue())
+                        {
+                            <span class="bit-brc-vhd">@hint.HintText</span>
                         }
                     </a>
                 }

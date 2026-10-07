@@ -83,6 +83,11 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, BitNavMatch?> Match { get; set; } = new(nameof(BitNavItem.Match));
 
     /// <summary>
+    /// The Rel field name and selector of the custom input class (see <see cref="BitNavItem.Rel"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitNavItem.Rel));
+
+    /// <summary>
     /// The Style field name and selector of the custom input class (see <see cref="BitNavItem.Style"/>).
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitNavItem.Style));

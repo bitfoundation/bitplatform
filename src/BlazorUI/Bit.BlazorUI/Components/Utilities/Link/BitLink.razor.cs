@@ -472,7 +472,7 @@ public partial class BitLink : BitComponentBase
 
     private void OnSetHrefAndRel()
     {
-        _rel = Href.HasNoValue() || Href!.StartsWith('#') || Rel.HasValue is false
+        _rel = BitNewTabUtils.IsInPageHref(Href) || Rel.HasValue is false
                 ? null
                 : BitLinkRelUtils.GetRels(Rel!.Value);
     }

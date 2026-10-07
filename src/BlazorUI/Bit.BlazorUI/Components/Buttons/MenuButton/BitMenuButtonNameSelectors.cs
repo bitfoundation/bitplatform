@@ -79,6 +79,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> RadioGroup { get; set; } = new(nameof(BitMenuButtonItem.RadioGroup));
 
     /// <summary>
+    /// The Rel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitMenuButtonItem.Rel));
+
+    /// <summary>
     /// SecondaryText field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> SecondaryText { get; set; } = new(nameof(BitMenuButtonItem.SecondaryText));

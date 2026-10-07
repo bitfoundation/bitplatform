@@ -651,7 +651,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.AreEqual("The first folder", link.GetAttribute("title"));
         Assert.AreEqual("_blank", link.GetAttribute("target"));
-        Assert.AreEqual("Go to the first folder", link.GetAttribute("aria-label"));
+        Assert.AreEqual("Go to the first folder (opens in a new tab)", link.GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -883,7 +883,8 @@ public class BitBreadcrumbTests : BunitTestContext
         var links = component.FindAll("a.bit-brc-itm");
 
         Assert.AreEqual(2, links.Count);
-        Assert.AreEqual("Custom 1", links[0].TextContent.Trim());
+        Assert.AreEqual("Custom 1", links[0].QuerySelector(".bit-brc-itx")!.TextContent.Trim());
+        Assert.AreEqual("(opens in a new tab)", links[0].QuerySelector(".bit-brc-vhd")?.TextContent);
         Assert.AreEqual("/custom-1", links[0].GetAttribute("href"));
         Assert.AreEqual("The first one", links[0].GetAttribute("title"));
         Assert.AreEqual("_blank", links[0].GetAttribute("target"));
@@ -1236,13 +1237,13 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var links = component.FindAll(".bit-brc-icn a.bit-brc-itm");
 
-        Assert.AreEqual("noopener noreferrer", links[0].GetAttribute("rel"));
+        Assert.AreEqual("noopener", links[0].GetAttribute("rel"));
         Assert.IsFalse(links[1].HasAttribute("rel"));
         // Folder 2 and Folder 3 are the collapsed ones, only the second of them opens in a new context.
         var overflowLinks = component.FindAll(".bit-brc-scn a.bit-brc-ofi");
 
         Assert.IsFalse(overflowLinks[0].HasAttribute("rel"));
-        Assert.AreEqual("noopener noreferrer", overflowLinks[1].GetAttribute("rel"));
+        Assert.AreEqual("noopener", overflowLinks[1].GetAttribute("rel"));
     }
 
     [TestMethod]
@@ -1260,7 +1261,98 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual("noopener noreferrer", component.Find("a.bit-brc-itm").GetAttribute("rel"));
+        Assert.AreEqual("noopener", component.Find("a.bit-brc-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow(BitLinkRels.NoFollow, "_blank", "nofollow noopener"),
+        DataRow(BitLinkRels.NoReferrer, "_blank", "noreferrer"),
+        DataRow(BitLinkRels.Opener, "_blank", "opener"),
+        DataRow(BitLinkRels.NoFollow, null, "nofollow")]
+    public void BitBreadcrumbShouldRenderTheRelOfAnItem(BitLinkRels rel, string? target, string expectedRel)
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", Target = target, Rel = rel },
+            new() { Text = "Folder 2", Href = "/folder-2", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual(expectedRel, component.Find("a.bit-brc-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldAnnounceTheLinksOpeningANewTabOverflowedOnesIncluded()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", Target = "_blank" },
+            new() { Text = "Folder 2", Href = "/folder-2" },
+            new() { Text = "Folder 3", Href = "/folder-3", Target = "_blank" },
+            new() { Text = "Folder 4", Href = "/folder-4", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+        });
+
+        var links = component.FindAll(".bit-brc-icn a.bit-brc-itm");
+        Assert.AreEqual("(opens in a new tab)", links[0].QuerySelector(".bit-brc-vhd")?.TextContent);
+
+        var overflowLinks = component.FindAll(".bit-brc-scn a.bit-brc-ofi");
+        Assert.IsNull(overflowLinks[0].QuerySelector(".bit-brc-vhd"));
+        Assert.AreEqual("(opens in a new tab)", overflowLinks[1].QuerySelector(".bit-brc-vhd")?.TextContent);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbNewTabHintShouldRewordOrRemoveTheAnnouncement()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", Target = "_blank" },
+            new() { Text = "Folder 2", Href = "/folder-2", IsSelected = true }
+        };
+
+        var reworded = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NewTabHint, "(new window)");
+        });
+        Assert.AreEqual("(new window)", reworded.Find("a.bit-brc-itm .bit-brc-vhd").TextContent);
+
+        var suppressed = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NoNewTabHint, true);
+        });
+        Assert.IsNull(suppressed.Find("a.bit-brc-itm").QuerySelector(".bit-brc-vhd"));
+        Assert.AreEqual("noopener", suppressed.Find("a.bit-brc-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbParamsShouldCascadeTheNewTabHint()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitBreadcrumbParams { NoNewTabHint = true }]);
+            parameters.AddChildContent<BitBreadcrumb<BitBreadcrumbItem>>(breadcrumb =>
+            {
+                breadcrumb.Add(p => p.Items,
+                [
+                    new() { Text = "Folder 1", Href = "/folder-1", Target = "_blank" },
+                    new() { Text = "Folder 2", Href = "/folder-2", IsSelected = true }
+                ]);
+            });
+        });
+
+        Assert.IsNull(component.Find("a.bit-brc-itm").QuerySelector(".bit-brc-vhd"));
     }
 
     [TestMethod]

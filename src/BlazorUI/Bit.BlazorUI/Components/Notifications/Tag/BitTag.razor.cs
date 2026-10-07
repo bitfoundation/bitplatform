@@ -529,8 +529,10 @@ public partial class BitTag : BitComponentBase
     /// The browsing context the <see cref="Href"/> of the tag is opened in, for example <c>_blank</c>.
     /// </summary>
     /// <remarks>
-    /// A tag opening a new browsing context gets <c>rel="noopener"</c> unless <see cref="Rel"/> says otherwise,
-    /// and is announced as opening a new tab - see <see cref="NewTabHint"/>.
+    /// A tag opening a new browsing context gets <c>noopener</c> added to its rel unless <see cref="Rel"/>
+    /// already says what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>), and is announced as opening
+    /// a new tab - see <see cref="NewTabHint"/> and <see cref="NoNewTabHint"/>.
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -752,14 +754,8 @@ public partial class BitTag : BitComponentBase
 
     internal void OnSetHrefAndRel()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
         // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
         // whatever rel the tag was given - a NoFollow alone is about crawling and says nothing about the opener.
-        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 }

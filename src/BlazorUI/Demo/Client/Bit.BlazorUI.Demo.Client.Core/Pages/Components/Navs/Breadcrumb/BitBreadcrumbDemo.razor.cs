@@ -132,6 +132,20 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Replaces the visually hidden \"(opens in a new tab)\" an item whose Target is _blank is announced with, e.g. to translate it. An empty value removes it.",
+        },
+        new()
+        {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the items whose Target is _blank from announcing that they open a new tab - only for where a visible label or heading already says so.",
+        },
+        new()
+        {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
             Description = "Callback for when an item is clicked, whether it is rendered as a link or as a button."
@@ -464,6 +478,12 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   Description = "The rel attribute of the link of the breadcrumb item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+               },
+               new()
+               {
                    Name = "Target",
                    Type = "string?",
                    Description = "The target of the link of the breadcrumb item (for example \"_blank\"), applied when the Href is provided.",
@@ -570,6 +590,12 @@ public partial class BitBreadcrumbDemo
                    Name = "OverflowTemplate",
                    Type = "RenderFragment<BitBreadcrumbOption>?",
                    Description = "The custom template for the option in overflow list.",
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   Description = "The rel attribute of the link of the breadcrumb option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
                },
                new()
                {
@@ -857,6 +883,15 @@ public partial class BitBreadcrumbDemo
                    Description = "The OverflowTemplate field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Rel))",
+                   Description = "The Rel field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair",
                },
                new()
                {

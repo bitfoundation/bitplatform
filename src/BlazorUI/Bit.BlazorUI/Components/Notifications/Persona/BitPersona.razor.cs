@@ -547,8 +547,9 @@ public partial class BitPersona : BitComponentBase
     /// The browsing context the <see cref="Href"/> link opens in (maps to the anchor's target attribute).
     /// </summary>
     /// <remarks>
-    /// Setting it to <c>_blank</c> also adds <c>rel="noopener"</c> unless a <see cref="Rel"/> of its own says
-    /// otherwise.
+    /// Setting it to <c>_blank</c> also adds <c>noopener</c> to the rel unless <see cref="Rel"/> already says
+    /// what the opener relationship should be (<see cref="BitLinkRels.NoOpener"/>,
+    /// <see cref="BitLinkRels.NoReferrer"/> or <see cref="BitLinkRels.Opener"/>).
     /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -1342,14 +1343,8 @@ public partial class BitPersona : BitComponentBase
 
     internal void OnSetHrefAndRel()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
         // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
         // whatever rel it was given - a NoFollow alone is about crawling and says nothing about the opener.
-        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 }

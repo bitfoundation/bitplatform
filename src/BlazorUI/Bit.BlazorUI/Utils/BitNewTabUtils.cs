@@ -3,9 +3,19 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// What every component rendering an anchor shares about one that opens a new browsing context: recognizing
-/// it, keeping the opened page from reaching back into this one, and telling a screen reader it happens.
+/// What the components rendering an anchor from a target and a rel the app gives them - their own, or their
+/// items' - share about one that opens a new browsing context: recognizing it, keeping the opened page from
+/// reaching back into this one, and telling a screen reader it happens.
 /// </summary>
+/// <remarks>
+/// BitLink, BitTag, BitButton, BitActionButton, BitButtonGroup, BitBadge, BitPersona, BitCard, BitNav, BitNavBar,
+/// BitBreadcrumb and BitMenuButton resolve their rel here, and BitLink, BitTag, BitNav, BitNavBar, BitBreadcrumb
+/// and BitMenuButton their announcement. Two kinds of anchor keep a rule of their own, since the app hands them
+/// no target: the markdown renderer opens an external link in a new tab with <c>noopener noreferrer</c> (or the
+/// rel its link options give) and announces it with <see cref="DefaultHint"/>, worded through its texts; and the
+/// rich text editor's link popup and the PDF viewer's links always open a new tab, with a fixed
+/// <c>noopener noreferrer</c>.
+/// </remarks>
 internal static class BitNewTabUtils
 {
     /// <summary>
@@ -53,7 +63,43 @@ internal static class BitNewTabUtils
             }
         }
 
-        return tokens.Length > 0 ? $"{rel} noopener" : "noopener";
+        // the parsed tokens rather than the string itself, so a rel with stray whitespace around it does not
+        // carry that whitespace into the attribute.
+        return tokens.Length > 0 ? $"{string.Join(' ', tokens)} noopener" : "noopener";
+    }
+
+    /// <summary>
+    /// <see cref="AddNoOpener(string?, string?)"/> for the rel an anchor was given as <see cref="BitLinkRels"/> flags.
+    /// </summary>
+    /// <returns>The rel to render, or null where there is none.</returns>
+    internal static string? AddNoOpener(BitLinkRels? rel, string? target)
+    {
+        var resolved = AddNoOpener(rel.HasValue ? BitLinkRelUtils.GetRels(rel.Value) : null, target);
+
+        return resolved.HasValue() ? resolved : null;
+    }
+
+    /// <summary>
+    /// The rel the anchor of a component with Href, Rel and Target parameters renders.
+    /// </summary>
+    /// <remarks>
+    /// An empty href renders no anchor and a hash-only one stays on the page, so neither carries a rel; any
+    /// other one gets its <see cref="BitLinkRels"/> with <c>noopener</c> added where
+    /// <see cref="AddNoOpener(string?, string?)"/> says it belongs.
+    /// </remarks>
+    internal static string? ResolveRel(string? href, BitLinkRels? rel, string? target)
+    {
+        if (IsInPageHref(href)) return null;
+
+        return AddNoOpener(rel, target);
+    }
+
+    /// <summary>
+    /// Whether the href is empty or hash-only - one that renders no anchor or does not leave the page.
+    /// </summary>
+    internal static bool IsInPageHref(string? href)
+    {
+        return href.HasNoValue() || href!.StartsWith('#');
     }
 
     /// <summary>

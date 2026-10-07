@@ -418,7 +418,73 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Items, linkItems);
         });
 
-        Assert.AreEqual("noopener noreferrer", com.Find("a.bit-mnb-itm").GetAttribute("rel"));
+        Assert.AreEqual("noopener", com.Find("a.bit-mnb-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow(BitLinkRels.NoFollow, "_blank", "nofollow noopener"),
+        DataRow(BitLinkRels.NoReferrer, "_blank", "noreferrer"),
+        DataRow(BitLinkRels.Opener, "_blank", "opener"),
+        DataRow(BitLinkRels.NoFollow, null, "nofollow")]
+    public void BitMenuButtonShouldRenderTheRelOfAnItem(BitLinkRels rel, string? target, string expectedRel)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, [new() { Text = "Link item", Key = "A", Href = "https://bitplatform.dev", Target = target, Rel = rel }]);
+        });
+
+        Assert.AreEqual(expectedRel, com.Find("a.bit-mnb-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldAppendTheNewTabHintToTheAriaLabelOfAnItem()
+    {
+        // An aria-label replaces the content, so hidden text inside the item would never be read.
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, [new() { Text = "Docs", AriaLabel = "Documentation", Key = "A", Href = "https://bitplatform.dev", Target = "_blank" }]);
+        });
+
+        var anchor = com.Find("a.bit-mnb-itm");
+
+        Assert.AreEqual("Documentation (opens in a new tab)", anchor.GetAttribute("aria-label"));
+        Assert.IsNull(anchor.QuerySelector(".bit-mnb-nth"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonNewTabHintShouldRewordOrRemoveTheAnnouncement()
+    {
+        List<BitMenuButtonItem> linkItems = [new() { Text = "Docs", Key = "A", Href = "https://bitplatform.dev", Target = "_blank" }];
+
+        var reworded = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, linkItems);
+            parameters.Add(p => p.NewTabHint, "(new window)");
+        });
+        Assert.AreEqual("(new window)", reworded.Find("a.bit-mnb-itm .bit-mnb-nth").TextContent);
+
+        var suppressed = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, linkItems);
+            parameters.Add(p => p.NoNewTabHint, true);
+        });
+        Assert.IsNull(suppressed.Find("a.bit-mnb-itm").QuerySelector(".bit-mnb-nth"));
+        Assert.AreEqual("noopener", suppressed.Find("a.bit-mnb-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonParamsShouldCascadeTheNewTabHint()
+    {
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitMenuButtonParams { NewTabHint = "(new window)" }]);
+            parameters.AddChildContent<BitMenuButton<BitMenuButtonItem>>(menu =>
+            {
+                menu.Add(p => p.Items, [new() { Text = "Docs", Key = "A", Href = "https://bitplatform.dev", Target = "_blank" }]);
+            });
+        });
+
+        Assert.AreEqual("(new window)", com.Find("a.bit-mnb-itm .bit-mnb-nth").TextContent);
     }
 
     [TestMethod]
@@ -439,7 +505,8 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual("https://bitplatform.dev", anchor.GetAttribute("href"));
         Assert.AreEqual("_blank", anchor.GetAttribute("target"));
-        Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
+        Assert.AreEqual("(opens in a new tab)", anchor.QuerySelector(".bit-mnb-nth")?.TextContent);
         Assert.AreEqual("the title", anchor.GetAttribute("title"));
         Assert.AreEqual("menuitem", anchor.GetAttribute("role"));
 

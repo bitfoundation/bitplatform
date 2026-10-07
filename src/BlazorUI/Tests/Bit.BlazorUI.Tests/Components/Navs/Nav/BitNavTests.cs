@@ -506,18 +506,158 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("https://bitplatform.dev/", "_blank", "noopener noreferrer"),
-        DataRow("//bitplatform.dev/", "_blank", "noopener noreferrer"),
-        DataRow("mailto:info@bitplatform.dev", "_blank", "noopener noreferrer"),
-        DataRow("tel:+123456789", "_blank", "noopener noreferrer"),
-        DataRow("/home", "_blank", null),
+        DataRow("https://bitplatform.dev/", "_blank", "noopener"),
+        DataRow("//bitplatform.dev/", "_blank", "noopener"),
+        DataRow("mailto:info@bitplatform.dev", "_blank", "noopener"),
+        DataRow("/home", "_blank", "noopener"),
+        DataRow("/home", "_BLANK", "noopener"),
+        DataRow("https://bitplatform.dev/", "_self", null),
+        DataRow("https://bitplatform.dev/", "_top", null),
         DataRow("https://bitplatform.dev/", null, null)]
-    public void BitNavShouldOnlyAddRelToATargetedAbsoluteLink(string url, string? target, string? expectedRel)
+    public void BitNavShouldOnlyHardenALinkOpeningANewTab(string url, string? target, string? expectedRel)
     {
         var component = RenderNav([new() { Text = "Home", Url = url, Target = target }]);
 
-        // rel="noopener noreferrer" only protects against a cross-origin target, so an in-app link keeps it off.
+        // The rule every anchor of the library shares: noopener on a new tab whatever its origin, and nothing on
+        // a target that opens no new browsing context - the referrer is the app's to withhold, not the nav's.
         Assert.AreEqual(expectedRel, component.Find(".bit-nav-ict").GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow(BitLinkRels.NoFollow, "_blank", "nofollow noopener"),
+        DataRow(BitLinkRels.NoReferrer, "_blank", "noreferrer"),
+        DataRow(BitLinkRels.Opener, "_blank", "opener"),
+        DataRow(BitLinkRels.NoFollow, null, "nofollow")]
+    public void BitNavShouldRenderTheRelOfAnItem(BitLinkRels rel, string? target, string expectedRel)
+    {
+        var component = RenderNav([new() { Text = "Home", Url = "https://bitplatform.dev/", Target = target, Rel = rel }]);
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-nav-ict").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldAnnounceAnItemOpeningANewTab()
+    {
+        var component = RenderNav([new() { Text = "Docs", Url = "https://bitplatform.dev/", Target = "_blank" },
+                                   new() { Text = "Home", Url = "/home" }]);
+
+        var items = component.FindAll(".bit-nav-ict");
+
+        // The item is named by its content, so the sentence is visually hidden text inside it.
+        Assert.AreEqual("(opens in a new tab)", items[0].QuerySelector(".bit-nav-vhd")?.TextContent);
+        Assert.IsNull(items[0].GetAttribute("aria-label"));
+        Assert.IsNull(items[1].QuerySelector(".bit-nav-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldAppendTheNewTabHintToTheAriaLabelOfAnItem()
+    {
+        // An aria-label replaces the content, so hidden text inside the item would never be read.
+        var component = RenderNav([new() { Text = "Docs", AriaLabel = "Documentation", Url = "https://bitplatform.dev/", Target = "_blank" }]);
+
+        var item = component.Find(".bit-nav-ict");
+
+        Assert.AreEqual("Documentation (opens in a new tab)", item.GetAttribute("aria-label"));
+        Assert.IsNull(item.QuerySelector(".bit-nav-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavNewTabHintShouldRewordOrRemoveTheAnnouncement()
+    {
+        var items = new List<BitNavItem> { new() { Text = "Docs", Url = "https://bitplatform.dev/", Target = "_blank" } };
+
+        var reworded = RenderComponent<BitNav<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NewTabHint, "(new window)");
+        });
+        Assert.AreEqual("(new window)", reworded.Find(".bit-nav-vhd").TextContent);
+
+        var emptied = RenderComponent<BitNav<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NewTabHint, "");
+        });
+        Assert.IsEmpty(emptied.FindAll(".bit-nav-vhd"));
+
+        var suppressed = RenderComponent<BitNav<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NoNewTabHint, true);
+        });
+        Assert.IsEmpty(suppressed.FindAll(".bit-nav-vhd"));
+        // the hardening is not part of the announcement
+        Assert.AreEqual("noopener", suppressed.Find(".bit-nav-ict").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotAnnounceADisabledItemAsOpeningANewTab()
+    {
+        // A disabled item has no href, so it opens nothing - but it keeps the rel, which is document metadata.
+        var component = RenderNav([new() { Text = "Docs", Url = "https://bitplatform.dev/", Target = "_blank", IsDisabled = true }]);
+
+        var item = component.Find(".bit-nav-ict");
+
+        Assert.IsNull(item.QuerySelector(".bit-nav-vhd"));
+        Assert.AreEqual("noopener", item.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldReadTheRelOfACustomItemThroughTheNameSelectors()
+    {
+        var component = RenderComponent<BitNav<NavRelItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, [new() { Name = "Docs", Link = "https://bitplatform.dev/", Opens = "_blank", Relation = BitLinkRels.NoFollow }]);
+            parameters.Add(p => p.NameSelectors, new()
+            {
+                Text = { Selector = i => i.Name },
+                Url = { Selector = i => i.Link },
+                Target = { Selector = i => i.Opens },
+                Rel = { Name = nameof(NavRelItem.Relation) }
+            });
+        });
+
+        Assert.AreEqual("nofollow noopener", component.Find(".bit-nav-ict").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavOptionShouldRenderItsRel()
+    {
+        var component = RenderComponent<BitNav<BitNavOption>>(parameters =>
+        {
+            parameters.AddChildContent<BitNavOption>(option =>
+            {
+                option.Add(p => p.Text, "Docs");
+                option.Add(p => p.Url, "https://bitplatform.dev/");
+                option.Add(p => p.Target, "_blank");
+                option.Add(p => p.Rel, BitLinkRels.Opener);
+            });
+        });
+
+        Assert.AreEqual("opener", component.Find(".bit-nav-ict").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavParamsShouldCascadeTheNewTabHint()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitNavParams { NewTabHint = "(new window)" }]);
+            parameters.AddChildContent<BitNav<BitNavItem>>(nav =>
+            {
+                nav.Add(p => p.Items, [new() { Text = "Docs", Url = "https://bitplatform.dev/", Target = "_blank" }]);
+            });
+        });
+
+        Assert.AreEqual("(new window)", component.Find(".bit-nav-vhd").TextContent);
+    }
+
+    public class NavRelItem
+    {
+        public string? Name { get; set; }
+        public string? Link { get; set; }
+        public string? Opens { get; set; }
+        public BitLinkRels? Relation { get; set; }
     }
 
     [TestMethod]

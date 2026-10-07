@@ -103,8 +103,22 @@ public abstract class PerformanceTestBase
     {
         if (_context is not null)
         {
-            await _context.CloseAsync();
-            _context = null;
+            try
+            {
+                await _context.CloseAsync();
+            }
+            catch (PlaywrightException)
+            {
+                // Firefox's driver can fail to tear down a context that opened popups ("removeBrowserContext ...
+                // _maybeDontRestoreTabs"), and a browser left in that state fails to close every context after
+                // it. The test itself has already passed or failed on its own, so the browser is dropped and the
+                // next test launches a fresh one instead of inheriting the failure.
+                await DiscardBrowser();
+            }
+            finally
+            {
+                _context = null;
+            }
         }
 
         bool isLastTest;
@@ -131,6 +145,24 @@ public abstract class PerformanceTestBase
         }
         finally
         {
+            _browserLock.Release();
+        }
+    }
+
+    private static async Task DiscardBrowser()
+    {
+        await _browserLock.WaitAsync();
+        try
+        {
+            if (_browser is not null) await _browser.CloseAsync();
+        }
+        catch (PlaywrightException)
+        {
+            // already unusable; the driver reaps it with the Playwright instance
+        }
+        finally
+        {
+            _browser = null;
             _browserLock.Release();
         }
     }

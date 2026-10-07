@@ -244,7 +244,8 @@
         <div>
             <b>Href</b> stretches a link over the card, named by its <b>Title</b> and described by its <b>Subtitle</b> (or named by an
             <b>AriaLabel</b>). Controls in <b>Actions</b>, <b>Footer</b> and <b>FloatingActions</b> stay above it. <b>Target</b>, <b>Rel</b> and
-            <b>Download</b> reach the link; <code>_blank</code> adds <code>noopener</code>.
+            <b>Download</b> reach the link; <code>_blank</code> adds <code>noopener</code> to the rel, unless Rel already says NoOpener,
+            NoReferrer or Opener - Opener is the one way to hand the new tab its opener back.
         </div>
         <br /><br />
         <BitCard Href="https://blazorui.bitplatform.dev" Target="_blank"

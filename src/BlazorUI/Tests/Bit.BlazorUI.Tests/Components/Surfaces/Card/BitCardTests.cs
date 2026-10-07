@@ -2250,6 +2250,21 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardOpenerRelShouldHandTheNewTabItsOpenerBack()
+    {
+        // Opener is the one way an author asks for the opener relationship back, so no noopener is added to
+        // contradict it - the same rule every anchor of the library follows.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, "_blank");
+            parameters.Add(p => p.Rel, BitLinkRels.Opener);
+        });
+
+        Assert.AreEqual("opener", component.Find(".bit-crd-lnk").GetAttribute("rel"));
+    }
+
+    [TestMethod]
     public void BitCardFragmentHrefShouldNotGetARel()
     {
         var component = RenderComponent<BitCard>(parameters =>

@@ -654,15 +654,9 @@ public partial class BitBadge : BitComponentBase
 
     internal void OnSetHrefAndRel()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
         // protects against reverse-tabnabbing when opening the link in a new browsing context, on top of
         // whatever rel it was given - a NoFollow alone is about crawling and says nothing about the opener.
-        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 
     /// <summary>

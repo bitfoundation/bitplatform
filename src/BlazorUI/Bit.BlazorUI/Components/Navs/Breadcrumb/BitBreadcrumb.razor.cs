@@ -198,6 +198,30 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitBreadcrumbNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
+
+    /// <summary>
     /// Callback for when a breadcrumb item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
@@ -1025,10 +1049,41 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     }
 
     // Opening a link in another browsing context hands the opener over to it unless it is turned down,
-    // which the rel of the link does, the same way the other components of the library do it.
+    // which the rel of the link does, by the rule every anchor of the library shares (BitNewTabUtils).
     private string? GetItemRel(TItem item)
     {
-        return BitNewTabUtils.IsNewTab(GetItemTarget(item)) ? "noopener noreferrer" : null;
+        return BitNewTabUtils.AddNoOpener(GetRawItemRel(item), GetItemTarget(item));
+    }
+
+    // The new-tab sentence lands wherever the name of the link comes from - see BitNewTabUtils.PlaceHint. Only
+    // a link that can be followed is rendered as an anchor, so every one asking here opens what it says.
+    private BitNewTabHintPlacement GetItemNewTabHint(TItem item)
+    {
+        var hint = BitNewTabUtils.GetHint(GetItemTarget(item), NewTabHint, NoNewTabHint);
+
+        return BitNewTabUtils.PlaceHint(hint, GetItemAriaLabel(item), null, string.Empty);
+    }
+
+    private BitLinkRels? GetRawItemRel(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Rel;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
     }
 
     private string? GetRawItemHref(TItem item)

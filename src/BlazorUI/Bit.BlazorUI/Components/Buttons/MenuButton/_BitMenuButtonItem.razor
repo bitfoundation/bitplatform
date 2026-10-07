@@ -41,6 +41,11 @@
         var hasSubmenu = _hasSubmenu;
         var href = hasSubmenu ? null : MenuButton.GetHref(Item);
         var target = MenuButton.GetTarget(Item);
+        // The rel and the new-tab sentence follow the rule every anchor of the library shares (BitNewTabUtils);
+        // only an item that renders as a followable anchor uses either of them.
+        var rel = BitNewTabUtils.AddNoOpener(MenuButton.GetRel(Item), target);
+        var hint = BitNewTabUtils.PlaceHint(BitNewTabUtils.GetHint(target, MenuButton.NewTabHint, MenuButton.NoNewTabHint),
+                                            MenuButton.GetAriaLabel(Item), null, string.Empty);
         // A row that opens a submenu is a way further in rather than a state, so neither kind of mark
         // belongs on it.
         var radioGroup = hasSubmenu ? null : MenuButton.GetRadioGroup(Item);
@@ -124,13 +129,17 @@
                    href="@href"
                    tabindex="-1"
                    target="@target"
-                   rel="@(BitNewTabUtils.IsNewTab(target) ? "noopener noreferrer" : null)"
+                   rel="@rel"
                    title="@MenuButton.GetTitle(Item)"
-                   aria-label="@MenuButton.GetAriaLabel(Item)"
+                   aria-label="@hint.AriaLabel"
                    aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                    style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
                    class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
+                    @if (hint.HintText.HasValue())
+                    {
+                        <span class="bit-mnb-nth">@hint.HintText</span>
+                    }
                 </a>
             }
             else

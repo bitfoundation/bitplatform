@@ -19,6 +19,10 @@
        aria-expanded="@AriaExpanded"
        aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent
+        @if (NewTabHint.HasValue())
+        {
+            <span class="bit-nav-vhd">@NewTabHint</span>
+        }
     </a>
 }
 else

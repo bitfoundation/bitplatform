@@ -404,15 +404,9 @@ public partial class BitActionButton : BitComponentBase
 
     internal void OnSetHrefRelAndTarget()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
         // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
         // author already said what the opener relationship should be.
-        _rel = BitNewTabUtils.AddNoOpener(Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null, Target);
+        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
     }
 
 

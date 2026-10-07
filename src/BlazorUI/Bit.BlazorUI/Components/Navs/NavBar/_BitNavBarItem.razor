@@ -37,6 +37,12 @@
         // explicitly; the default content is the item's own text, which names it either way.
         ariaLabel = $"{ariaLabel ?? text} ({badgeLabel})";
     }
+
+    // The rel and the new-tab sentence follow the rule every anchor of the library shares (BitNewTabUtils).
+    // A disabled item drops its href and its target, so it opens nothing and is announced as opening nothing.
+    var rel = url.HasValue() ? BitNewTabUtils.AddNoOpener(NavBar.GetRel(Item), target) : null;
+    var newTabHint = url.HasValue() && isDisabled is false ? BitNewTabUtils.GetHint(target, NavBar.NewTabHint, NavBar.NoNewTabHint) : null;
+    var hint = BitNewTabUtils.PlaceHint(newTabHint, ariaLabel, null, string.Empty);
 }
 
 @* The item sits in a list item of its own rather than being the list item itself, so the anchor (or the
@@ -55,7 +61,8 @@
                          Href="@url"
                          IsLink="@url.HasValue()"
                          Target="@target"
-                         AriaLabel="@ariaLabel"
+                         AriaLabel="@hint.AriaLabel"
+                         NewTabHint="@hint.HintText"
                          AriaCurrent="@ariaCurrent"
                          OnClick="HandleOnClick"
                          OnFocusIn="HandleOnFocusIn"
@@ -65,7 +72,7 @@
                          Title="@(title ?? (isTextHidden ? text : null))"
                          Class="@NavBar.GetItemCssClass(Item, isDisabled)"
                          TabIndex="@NavBar.GetItemTabIndex(Item, isDisabled)"
-                         Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url) is false ? "noopener noreferrer" : null)">
+                         Rel="@rel">
             @if (template is not null)
             {
                 @template(Item)

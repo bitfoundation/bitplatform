@@ -1728,10 +1728,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemRel(TItem item)
     {
-        var rels = GetRel(item);
-        var rel = BitNewTabUtils.AddNoOpener(rels.HasValue ? BitLinkRelUtils.GetRels(rels.Value) : null, GetTarget(item));
-
-        return rel.HasValue() ? rel : null;
+        return BitNewTabUtils.AddNoOpener(GetRel(item), GetTarget(item));
     }
 
     private BitLinkRels? GetRel(TItem? item)

@@ -40,6 +40,52 @@ public sealed class BitNewTabUtilsTests
     }
 
     [TestMethod,
+        DataRow(" nofollow ", "nofollow noopener"),
+        DataRow("nofollow  external", "nofollow external noopener"),
+        DataRow("\tnofollow\n", "nofollow noopener")
+    ]
+    public void AddNoOpenerShouldNotCarryStrayWhitespaceIntoTheRel(string rel, string expected)
+    {
+        Assert.AreEqual(expected, BitNewTabUtils.AddNoOpener(rel, "_blank"));
+    }
+
+    [TestMethod]
+    public void AddNoOpenerShouldResolveTheRelFlags()
+    {
+        Assert.AreEqual("nofollow noopener", BitNewTabUtils.AddNoOpener(BitLinkRels.NoFollow, "_blank"));
+        Assert.AreEqual("opener", BitNewTabUtils.AddNoOpener(BitLinkRels.Opener, "_blank"));
+        Assert.AreEqual("nofollow", BitNewTabUtils.AddNoOpener(BitLinkRels.NoFollow, "_self"));
+        Assert.AreEqual("noopener", BitNewTabUtils.AddNoOpener((BitLinkRels?)null, "_blank"));
+        Assert.IsNull(BitNewTabUtils.AddNoOpener((BitLinkRels?)null, null));
+        // no flag at all renders no rel rather than an empty one
+        Assert.IsNull(BitNewTabUtils.AddNoOpener((BitLinkRels)0, null));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(""),
+        DataRow("#"),
+        DataRow("#section")
+    ]
+    public void ResolveRelShouldGiveAnInPageHrefNoRel(string? href)
+    {
+        Assert.IsNull(BitNewTabUtils.ResolveRel(href, BitLinkRels.NoFollow, "_blank"));
+    }
+
+    [TestMethod]
+    public void ResolveRelShouldHardenANewTabHref()
+    {
+        const string href = "https://bitplatform.dev";
+
+        Assert.AreEqual("noopener", BitNewTabUtils.ResolveRel(href, null, "_blank"));
+        Assert.AreEqual("nofollow noopener", BitNewTabUtils.ResolveRel(href, BitLinkRels.NoFollow, "_BLANK"));
+        Assert.AreEqual("noreferrer", BitNewTabUtils.ResolveRel(href, BitLinkRels.NoReferrer, "_blank"));
+        Assert.AreEqual("opener", BitNewTabUtils.ResolveRel(href, BitLinkRels.Opener, "_blank"));
+        Assert.AreEqual("nofollow", BitNewTabUtils.ResolveRel(href, BitLinkRels.NoFollow, null));
+        Assert.IsNull(BitNewTabUtils.ResolveRel(href, null, "_self"));
+    }
+
+    [TestMethod,
         DataRow("noopener"),
         DataRow("NoOpener"),
         DataRow("noreferrer"),
