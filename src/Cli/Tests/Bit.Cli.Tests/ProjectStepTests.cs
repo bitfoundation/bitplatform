@@ -75,6 +75,27 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task Git_Should_CommitAsTheUserWhenGitDoesntKnowThem()
+    {
+        using var host = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["USERNAME"] = "Jane Doe" });
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var commits = 0;
+        host.Runner.On("git", "commit", _ => ++commits == 1
+            ? new ProcessResult { ExitCode = 128, Output = "Author identity unknown\n*** Please tell me who you are." }
+            : new ProcessResult { ExitCode = 0 });
+        var project = CreateFakeProject(host, "Contoso");
+
+        var result = await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("develop and main, committed as Jane Doe <Jane.Doe@git.com>", result.Detail);
+        Assert.IsTrue(project.GitReady);
+        var configs = host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "config").Select(c => string.Join(' ', c.Arguments)).ToArray();
+        CollectionAssert.AreEqual(new[] { "config user.name Jane Doe", "config user.email Jane.Doe@git.com" }, configs);
+    }
+
+    [TestMethod]
     public async Task Git_Should_StayOutOfAnExistingRepository()
     {
         if (await GitAvailableAsync() is false)
@@ -446,6 +467,22 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.AreEqual("Installed 1 VS Code extension", result.Title);
         CollectionAssert.AreEqual(new[] { "--install-extension", "GitHub.copilot" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task AFailedExtensionInstall_Should_PointAtVsCodesOwnPath()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var code = typeof(ProjectStepTests).Assembly.Location;
+        host.Runner.Executables["code"] = code;
+        var project = CreateFakeProject(host, "Contoso");
+        WriteRecommendations(project, "Anthropic.claude-code");
+        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--install-extension", 1, "error: the marketplace can't be reached");
+
+        var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        Assert.AreEqual($"{ProcessSpec.Quote(code)} --install-extension Anthropic.claude-code", result.FollowUp);
     }
 
     [TestMethod]

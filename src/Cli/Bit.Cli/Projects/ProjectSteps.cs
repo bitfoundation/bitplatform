@@ -69,22 +69,27 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         await Git(["add", "-A"], cancellationToken);
         var commit = await Git(["commit", "-q", "-m", $"Create {project.Name} with bit new"], cancellationToken);
+        string? identity = null;
+
+        if (commit.Succeeded is false && (commit.Output.Contains("user.email", StringComparison.Ordinal) || commit.Output.Contains("Please tell me who you are", StringComparison.Ordinal)))
+        {
+            var name = cli.Environment.GetVariable("USERNAME") ?? cli.Environment.GetVariable("USER") ?? Path.GetFileName(cli.Environment.HomeDirectory.TrimEnd('/', '\\'));
+            var email = $"{(GitEmailRegex().Replace(name, ".").Trim('.') is { Length: > 0 } local ? local : "user")}@git.com";
+            await Git(["config", "user.name", name], cancellationToken);
+            await Git(["config", "user.email", email], cancellationToken);
+            commit = await Git(["commit", "-q", "-m", $"Create {project.Name} with bit new"], cancellationToken);
+            identity = $"{name} <{email}>";
+        }
 
         if (commit.Succeeded is false)
-        {
-            var identityMissing = commit.Output.Contains("user.email", StringComparison.Ordinal) || commit.Output.Contains("Please tell me who you are", StringComparison.Ordinal);
-
-            if (identityMissing is false)
-                return StepResult.FromProcess(commit, "", title, followUp);
-
-            var identityFollowUp = $"git config --global user.name \"Your Name\" && git config --global user.email you@example.com && cd {ProcessSpec.Quote(project.Directory)} && git commit -m \"Create {project.Name} with bit new\" && git branch main";
-            return StepResult.Warning("Initialized git, nothing committed", "git doesn't know your name and email yet", identityFollowUp, resultCode: "git.identity.missing");
-        }
+            return StepResult.FromProcess(commit, "", title, followUp);
 
         await Git(["branch", "main"], cancellationToken);
         project.GitReady = true;
 
-        return StepResult.Succeeded("Initialized git", "develop and main");
+        return identity is null
+            ? StepResult.Succeeded("Initialized git", "develop and main")
+            : StepResult.Succeeded("Initialized git", $"develop and main, committed as {identity}", "git didn't know your name, so this repository uses your user name; change it with git config user.name and user.email");
     }
 
     public async Task<StepResult> SdkAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -525,7 +530,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var names = string.Join(", ", missing.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (missing.Count > 3 ? $" and {missing.Count - 3} more" : "");
 
         return StepResult.FromProcess(result, $"Installed {missing.Count} VS Code extension{(missing.Count == 1 ? "" : "s")}", "Couldn't install the VS Code extensions",
-            $"code {string.Join(' ', arguments)}", names);
+            $"{ProcessSpec.Quote(code.Executable)} {string.Join(' ', arguments)}", names);
     }
 
     public static IReadOnlyList<string> ReadRecommendedExtensions(string projectDirectory)
@@ -716,4 +721,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     [GeneratedRegex(@"Xcode\s+(?<version>\d+\.\d+(\.\d+)?)")]
     private static partial Regex XcodeVersionRegex();
+
+    [GeneratedRegex(@"[^A-Za-z0-9._-]+")]
+    private static partial Regex GitEmailRegex();
 }

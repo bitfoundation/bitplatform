@@ -274,7 +274,10 @@ public sealed class VsCodeTrust : TrustWriter
             : LegacyStores(context.Environment).Where(File.Exists).Select(p => (p, false)).ToList();
 
         if (stores.Count == 0)
-            return new TrustOutcome(Name, TrustResultKind.Skipped, "no VS Code trust store found yet");
+        {
+            CreateStore(shared);
+            stores = [(shared, true)];
+        }
 
         var outcome = new TrustOutcome(Name, TrustResultKind.Skipped, "the trust store's format isn't one bit knows");
 
@@ -289,6 +292,16 @@ public sealed class VsCodeTrust : TrustWriter
         }
 
         return outcome;
+    }
+
+    private static void CreateStore(string store)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(store)!);
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = store, Mode = SqliteOpenMode.ReadWriteCreate, Pooling = false }.ToString());
+        connection.Open();
+        using var create = connection.CreateCommand();
+        create.CommandText = "CREATE TABLE IF NOT EXISTS ItemTable (key TEXT UNIQUE ON CONFLICT REPLACE, value BLOB)";
+        create.ExecuteNonQuery();
     }
 
     public TrustOutcome TrustInStore(string store, string folder, CliEnvironment environment, bool createKey)
