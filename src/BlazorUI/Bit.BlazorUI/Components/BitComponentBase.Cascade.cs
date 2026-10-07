@@ -13,7 +13,7 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
 
     /// <summary>
     /// Whether the markup set the named parameter on this render. Each class that tracks its own parameters adds
-    /// them, so the answer covers the whole hierarchy rather than the one level a HasNotBeenSet belongs to.
+    /// them, so the answer covers the whole hierarchy; <see cref="HasNotBeenSet"/> is its public negation.
     /// </summary>
     private protected virtual bool IsSetByMarkup(string name) => _assignedParameters.Contains(name);
 

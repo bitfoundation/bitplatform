@@ -511,17 +511,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
 
     /// <summary>
-    /// Determines whether the specified parameter has not been assigned a value.
+    /// Determines whether the specified parameter has not been assigned a value by the markup on this render.
     /// </summary>
+    /// <remarks>
+    /// The answer covers every parameter of the component, whichever class in its hierarchy declares it: the shared
+    /// parameters of <see cref="BitComponentBase"/>, those of an intermediate base such as
+    /// <see cref="BitInputBase{TValue}"/>, and the ones the component declares itself. So it is the same whatever
+    /// the static type of the reference it is called through.
+    /// </remarks>
     /// <param name="name">
     /// The name of the parameter to check. Cannot be null.
     /// </param>
     /// <returns>
     /// true if the parameter has not been set; otherwise, false.
     /// </returns>
-    public bool HasNotBeenSet(string name)
+    public virtual bool HasNotBeenSet(string name)
     {
-        return _assignedParameters.Contains(name) is false;
+        return IsSetByMarkup(name) is false;
     }
 
 

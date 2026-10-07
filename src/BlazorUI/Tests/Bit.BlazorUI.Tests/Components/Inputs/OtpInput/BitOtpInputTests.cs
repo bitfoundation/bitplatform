@@ -3012,7 +3012,7 @@ public class BitOtpInputTests : BunitTestContext
     public void BitOtpInputShouldApplyTheCascadedParametersOfTheInputBase()
     {
         // ReadOnly and Required are declared by BitInputBase rather than by the component, and they are taken
-        // out of the ParameterView before either of the sets that HasNotBeenSet reads is filled, so a cascade
+        // out of the ParameterView before the sets of BitComponentBase and the component are filled, so a cascade
         // reaching them is what this covers.
         var paramsList = new List<IBitComponentParams>
         {
