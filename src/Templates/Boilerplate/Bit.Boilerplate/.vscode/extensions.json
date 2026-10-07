@@ -1,7 +1,6 @@
 {
     "recommendations": [
         "GitHub.copilot",
-        "GitHub.copilot-chat",
         "ms-dotnettools.csharp",
         "Anthropic.claude-code",
         "ms-dotnettools.csdevkit",

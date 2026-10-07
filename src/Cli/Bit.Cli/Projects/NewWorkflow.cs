@@ -135,6 +135,11 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
         }
 
+        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild))
+        {
+            await RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
+        }
+
         if (request.GitHubRepo)
         {
             if (context.Exists && context.GitReady && await projectSteps.CanSignInToGitHubAsync(cancellationToken))
@@ -196,6 +201,8 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "playwright", cli.Environment.IsCI ? "Installing Playwright's browsers" : "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
         }
     }
+
+    public static bool StartsAspireOnce(CliServices cli, bool aspire, bool noBuild) => aspire && noBuild is false && cli.Environment.IsCI is false;
 
     public static async Task RunProjectStepAsync(StepRunner steps, ProjectContext context, string id, string title, Func<Action<string>, CancellationToken, Task<StepResult>> work, CancellationToken cancellationToken)
     {
@@ -462,6 +469,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
+        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild)) stepsList.Add("a first Aspire start");
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");

@@ -27,9 +27,10 @@ It needs a .NET 11 SDK or later. `dnx` asks once before it downloads the package
 6. Installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs the MAUI build tools and the Android SDK. Then it installs the Chromium that Playwright runs the UI tests with.
 7. Runs `dotnet format`, and commits that on its own.
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
-9. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
-10. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
-11. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
+9. With Aspire, starts the project once with `aspire start`, waits until its server is healthy and stops it with `aspire stop`, so the container images are already pulled when you first start it from the IDE. It needs Docker running; without it, the step says so and the rest goes on.
+10. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
+11. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
+12. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
 
 A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly build tools and the first build.
 
@@ -98,7 +99,7 @@ bit setup
 bit setup --platforms android
 ```
 
-It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, and the VS Code extensions the project recommends when VS Code is installed.
+It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, starts the project once with Aspire when it has an AppHost, and installs the VS Code extensions the project recommends when VS Code is installed.
 
 ## In CI
 
@@ -119,7 +120,7 @@ A job that publishes lets bit build first too, so its CSS and JS are generated b
 
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
-- Docker, WSL, the Aspire CLI and Windows features aren't installed.
+- Docker, WSL, the Aspire CLI and Windows features aren't installed, and the project isn't started with Aspire.
 - The HTTPS development certificate is trusted on Linux only. There it's trusted for some clients, and the step notes that .NET's own HTTPS calls also need `~/.aspnet/dev-certs/trust` in `SSL_CERT_DIR`; any other failure is a warning.
 - MAUI's `InstallAndroidDependencies` completes the runner's Android SDK, so a pipeline needs no `sdkmanager` step.
 - Playwright gets every browser with its system libraries, since CI may test more than Chromium.
@@ -211,6 +212,7 @@ Without a map, the newest `obj/**/bit-minifier.map` under the current folder is 
 - **Tools** you tick, with `winget` on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.
 - **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones, with `code --install-extension`.
 - **Playwright's Chromium**, in Playwright's own browser folder, with the driver the project's tests were built with.
+- **Container images** the project's AppHost uses, which Docker pulls during the first Aspire start and keeps.
 - **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
