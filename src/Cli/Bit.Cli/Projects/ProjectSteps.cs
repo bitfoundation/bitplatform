@@ -203,7 +203,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016", "DateTimeOffsetInsteadOfDateTimeAnalyzer"];
+        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments)}";
 
