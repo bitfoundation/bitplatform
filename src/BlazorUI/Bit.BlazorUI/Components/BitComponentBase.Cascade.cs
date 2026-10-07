@@ -23,7 +23,9 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
     /// </summary>
     private protected virtual IBitComponentParams? CascadedParams => GetCascadeMap()?.GetParams(this);
 
-    bool IBitCascadeTarget.IsSetByMarkup(string name) => IsSetByMarkup(name);
+    // Asked through HasNotBeenSet, not IsSetByMarkup: a class outside the assemblies that see IsSetByMarkup adds its
+    // own parameters by overriding HasNotBeenSet, so only that answer covers them too.
+    bool IBitCascadeTarget.IsSetByMarkup(string name) => HasNotBeenSet(name) is false;
 
     BitDir? IBitCascadeTarget.OwnDir
     {
